@@ -6,6 +6,7 @@ import type {
   ProfileWrite,
   ProxyOptionsRead,
 } from '../../shared/api/types'
+import { getViewportPreset } from './presets'
 
 const GRANDFATHERED_LOCALES = new Set([
   'art-lojban', 'cel-gaulish', 'en-gb-oed', 'i-ami', 'i-bnn', 'i-default', 'i-enochian',
@@ -83,6 +84,7 @@ function isTimezone(value: string): boolean {
 
 function isStartUrl(value: string): boolean {
   if (value === 'about:blank') return true
+  if (!/^https?:\/\/[^/]/i.test(value)) return false
   try {
     const url = new URL(value)
     return (url.protocol === 'http:' || url.protocol === 'https:') && Boolean(url.hostname)
@@ -91,11 +93,9 @@ function isStartUrl(value: string): boolean {
   }
 }
 
-function viewportDimension(min: number, max: number, label: string) {
-  return z.string().refine((value) => {
-    const number = Number(value)
-    return Number.isInteger(number) && number >= min && number <= max
-  }, `${label}必须是 ${min}–${max} 之间的整数`)
+function isViewportDimension(value: string, min: number, max: number) {
+  const number = Number(value)
+  return Number.isInteger(number) && number >= min && number <= max
 }
 
 const profileFormFields = z.object({
@@ -109,8 +109,9 @@ const profileFormFields = z.object({
   humanize: z.boolean(),
   humanPreset: z.enum(['default', 'careful']),
   userAgent: z.string(),
-  viewportWidth: viewportDimension(320, 7680, '视口宽度'),
-  viewportHeight: viewportDimension(240, 4320, '视口高度'),
+  viewportMode: z.enum(['browser', 'preset', 'custom']),
+  viewportWidth: z.string(),
+  viewportHeight: z.string(),
   colorScheme: z.enum(['', 'light', 'dark', 'no-preference']),
   browserKernel: z.string().min(1, '请选择浏览器内核'),
   releaseChannel: z.enum(['stable', 'preview']),
@@ -134,6 +135,7 @@ export const emptyProfileForm: ProfileFormValues = {
   humanize: false,
   humanPreset: 'default',
   userAgent: '',
+  viewportMode: 'preset',
   viewportWidth: '1280',
   viewportHeight: '800',
   colorScheme: '',
@@ -163,6 +165,14 @@ export function parseKernelKey(value: string): KernelRef | null {
 
 export function createProfileFormSchema(resources: ProfileFormResources) {
   return profileFormFields.superRefine((values, context) => {
+    if (values.viewportMode !== 'browser') {
+      if (!isViewportDimension(values.viewportWidth, 320, 7680)) {
+        context.addIssue({ code: 'custom', path: ['viewportWidth'], message: '视口宽度必须是 320–7680 之间的整数' })
+      }
+      if (!isViewportDimension(values.viewportHeight, 240, 4320)) {
+        context.addIssue({ code: 'custom', path: ['viewportHeight'], message: '视口高度必须是 240–4320 之间的整数' })
+      }
+    }
     const kernel = parseKernelKey(values.browserKernel)
     if (values.browserKernel && (!kernel || !resources.installedKernels.some((item) => kernelKey(item) === values.browserKernel))) {
       context.addIssue({ code: 'custom', path: ['browserKernel'], message: '所选浏览器内核已不可用，请重新选择' })
@@ -216,8 +226,11 @@ export function toForm(profile: ProfileRead): ProfileFormValues {
     humanize: profile.humanize,
     humanPreset: profile.humanPreset,
     userAgent: profile.userAgent ?? '',
-    viewportWidth: String(profile.viewportJson?.width ?? 1280),
-    viewportHeight: String(profile.viewportJson?.height ?? 800),
+    viewportMode: profile.viewportJson
+      ? getViewportPreset(String(profile.viewportJson.width), String(profile.viewportJson.height)) ? 'preset' : 'custom'
+      : 'browser',
+    viewportWidth: profile.viewportJson ? String(profile.viewportJson.width) : '',
+    viewportHeight: profile.viewportJson ? String(profile.viewportJson.height) : '',
     colorScheme: profile.colorScheme ?? '',
     browserKernel: `${profile.browserEdition}|${profile.browserVersion}`,
     releaseChannel: profile.browserEdition === 'public' ? 'stable' : profile.releaseChannel,
@@ -242,7 +255,9 @@ export function toWrite(values: ProfileFormValues): ProfileWrite {
     humanize: values.humanize,
     humanPreset: values.humanPreset,
     userAgent: values.userAgent || null,
-    viewportJson: { width: Number(values.viewportWidth), height: Number(values.viewportHeight) },
+    viewportJson: values.viewportMode === 'browser'
+      ? null
+      : { width: Number(values.viewportWidth), height: Number(values.viewportHeight) },
     colorScheme: values.colorScheme || null,
     extensionPathsJson: splitLines(values.extensionPathsText),
     expertArgsJson: splitLines(values.expertArgsText),

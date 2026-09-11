@@ -42,6 +42,9 @@ describe('profile form schema', () => {
     ['about:blank', true],
     ['https://example.com/path?q=1', true],
     ['http://localhost:3000', true],
+    ['https:example.com', false],
+    ['https:/example.com', false],
+    ['https:////example.com', false],
     ['http:', false],
     ['ftp://example.com', false],
     ['http://example.com:bad', false],
@@ -170,5 +173,38 @@ describe('profile wire conversion', () => {
       extensionPathsJson: ['/one', '/two'],
       expertArgsJson: ['--disable-notifications', '--window-position=40,40'],
     }))
+  })
+
+  it('preserves an unspecified viewport through a complete edit round-trip', () => {
+    const profile: ProfileRead = {
+      id: '67c727cd-b0d9-4f0f-8618-aec4e8a7d0ff',
+      fingerprintSeed: 12345,
+      createdAt: '2026-09-12T00:00:00Z',
+      updatedAt: '2026-09-12T01:00:00Z',
+      name: '跟随浏览器',
+      description: '',
+      startUrl: 'about:blank',
+      locale: null,
+      timezone: null,
+      geoip: false,
+      headless: false,
+      humanize: false,
+      humanPreset: 'default',
+      userAgent: null,
+      viewportJson: null,
+      colorScheme: null,
+      extensionPathsJson: [],
+      expertArgsJson: [],
+      browserVersion: '146.0.1.0',
+      browserEdition: 'public',
+      releaseChannel: 'stable',
+      proxyMode: 'none',
+      proxyId: null,
+      proxyPoolId: null,
+    }
+
+    const form = toForm(profile)
+    expect(form).toEqual(expect.objectContaining({ viewportMode: 'browser', viewportWidth: '', viewportHeight: '' }))
+    expect(toWrite(schema.parse(form)).viewportJson).toBeNull()
   })
 })

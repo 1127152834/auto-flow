@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId } from 'react'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import { FormField } from '../../../shared/components/FormField'
 import { Input } from '../../../shared/components/ui/input'
@@ -16,24 +16,29 @@ import {
 } from '../presets'
 
 export function EnvironmentFields() {
-  const { control, getValues, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
+  const { control, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
   const localeList = useId()
   const timezoneList = useId()
   const userAgentList = useId()
   const browserKernel = useWatch({ control, name: 'browserKernel' })
-  const [customViewport, setCustomViewport] = useState(() => !getViewportPreset(getValues('viewportWidth'), getValues('viewportHeight')))
+  const viewportMode = useWatch({ control, name: 'viewportMode' })
+  const viewportWidth = useWatch({ control, name: 'viewportWidth' })
+  const viewportHeight = useWatch({ control, name: 'viewportHeight' })
+  const customViewport = viewportMode === 'custom'
   const userAgentPresets = buildChromiumUserAgentPresets(parseKernelKey(browserKernel)?.version ?? '')
 
   const selectViewport = (value: string) => {
+    if (!value) {
+      setValue('viewportMode', 'browser', { shouldDirty: true, shouldValidate: true })
+      return
+    }
     const [width, height] = value.split('x')
     if (!width || !height) return
+    setValue('viewportMode', 'preset', { shouldDirty: true, shouldValidate: true })
     setValue('viewportWidth', width, { shouldDirty: true, shouldValidate: true })
     setValue('viewportHeight', height, { shouldDirty: true, shouldValidate: true })
   }
-  const viewportPreset = getViewportPreset(
-    useWatch({ control, name: 'viewportWidth' }),
-    useWatch({ control, name: 'viewportHeight' }),
-  )
+  const viewportPreset = getViewportPreset(viewportWidth, viewportHeight)
 
   return <section aria-labelledby="profile-environment-fields" className="grid gap-5">
     <div>
@@ -52,8 +57,18 @@ export function EnvironmentFields() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><span className="text-sm font-medium text-ink">浏览器视口</span><p className="mb-0 mt-1 text-xs text-muted">宽 320–7680、高 240–4320 像素。</p></div>
         <label className="flex items-center gap-2 text-sm text-ink">自定义尺寸<Switch aria-label="自定义尺寸" checked={customViewport} onCheckedChange={(checked) => {
-          setCustomViewport(checked)
-          if (!checked && !viewportPreset) selectViewport(VIEWPORT_PRESETS[0]!.value)
+          if (checked) {
+            if (!viewportWidth || !viewportHeight) {
+              const [width = '1280', height = '800'] = VIEWPORT_PRESETS[0]!.value.split('x')
+              setValue('viewportWidth', width, { shouldDirty: true, shouldValidate: true })
+              setValue('viewportHeight', height, { shouldDirty: true, shouldValidate: true })
+            }
+            setValue('viewportMode', 'custom', { shouldDirty: true, shouldValidate: true })
+          } else if (viewportPreset) {
+            setValue('viewportMode', 'preset', { shouldDirty: true, shouldValidate: true })
+          } else {
+            selectViewport(VIEWPORT_PRESETS[0]!.value)
+          }
         }} /></label>
       </div>
       {customViewport ? <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
@@ -64,7 +79,8 @@ export function EnvironmentFields() {
         <FormField label="视口高" htmlFor="profile-viewport-height" error={errors.viewportHeight?.message}>
           <Controller control={control} name="viewportHeight" render={({ field }) => <Input {...field} id="profile-viewport-height" inputMode="numeric" aria-invalid={Boolean(errors.viewportHeight)} aria-describedby={errors.viewportHeight ? 'profile-viewport-height-error' : undefined} />} />
         </FormField>
-      </div> : <Select aria-label="视口预设" value={viewportPreset || VIEWPORT_PRESETS[0]!.value} onChange={(event) => selectViewport(event.target.value)} className="w-full">
+      </div> : <Select aria-label="视口预设" value={viewportMode === 'browser' ? '' : viewportPreset || VIEWPORT_PRESETS[0]!.value} onChange={(event) => selectViewport(event.target.value)} className="w-full">
+        <option value="">跟随浏览器（未指定）</option>
         {VIEWPORT_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}
       </Select>}
     </div>

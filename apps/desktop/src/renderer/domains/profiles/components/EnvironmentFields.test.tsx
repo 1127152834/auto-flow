@@ -8,8 +8,8 @@ import { EnvironmentFields } from './EnvironmentFields'
 
 afterEach(cleanup)
 
-function Harness() {
-  const form = useForm<ProfileFormValues>({ defaultValues: { ...emptyProfileForm, browserKernel: 'licensed|146.0.1.1' } })
+function Harness({ initial = emptyProfileForm }: { initial?: ProfileFormValues }) {
+  const form = useForm<ProfileFormValues>({ defaultValues: { ...initial, browserKernel: 'licensed|146.0.1.1' } })
   const values = useWatch({ control: form.control })
   return <FormProvider {...form}><EnvironmentFields /><output data-testid="values">{JSON.stringify(values)}</output></FormProvider>
 }
@@ -39,6 +39,24 @@ it('applies viewport presets and supports custom integer dimensions', async () =
   await user.clear(screen.getByLabelText('视口宽'))
   await user.type(screen.getByLabelText('视口宽'), '1441')
   expect(screen.getByTestId('values')).toHaveTextContent('"viewportWidth":"1441"')
+})
+
+it('moves an unspecified viewport explicitly to a preset or custom size', async () => {
+  const user = userEvent.setup()
+  render(<Harness initial={{ ...emptyProfileForm, viewportMode: 'browser', viewportWidth: '', viewportHeight: '' }} />)
+  expect(screen.getByLabelText('视口预设')).toHaveValue('')
+  await user.selectOptions(screen.getByLabelText('视口预设'), '1920x1080')
+  expect(screen.getByTestId('values')).toHaveTextContent('"viewportMode":"preset"')
+  expect(screen.getByTestId('values')).toHaveTextContent('"viewportWidth":"1920"')
+
+  cleanup()
+  render(<Harness initial={{ ...emptyProfileForm, viewportMode: 'browser', viewportWidth: '', viewportHeight: '' }} />)
+  await user.click(screen.getByRole('switch', { name: '自定义尺寸' }))
+  expect(screen.getByTestId('values')).toHaveTextContent('"viewportMode":"custom"')
+  expect(screen.getByTestId('values')).toHaveTextContent('"viewportWidth":"1280"')
+  expect(screen.getByTestId('values')).toHaveTextContent('"viewportHeight":"800"')
+  expect(screen.getByLabelText('视口宽')).toBeInTheDocument()
+  expect(screen.getByLabelText('视口高')).toBeInTheDocument()
 })
 
 it('offers a kernel-major UA preset and binds environment preferences', async () => {
