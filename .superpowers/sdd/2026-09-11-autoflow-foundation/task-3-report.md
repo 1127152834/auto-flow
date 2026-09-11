@@ -24,6 +24,24 @@ npm --workspace @autoflow/desktop run typecheck
 passed
 ```
 
+## Review Fixes
+
+- Electron now prevents the first `before-quit`, stops the supervisor, and calls `app.quit()` after shutdown; the handler is guarded so stop runs once.
+- A pending startup is rejected and its timer cleared when restart or shutdown cancels it.
+- The supervisor only publishes `ready` after an authenticated loopback `/health` response confirms `status`, `apiVersion`, and `instanceId`.
+- Packaged startup requires an explicit sidecar executable path; main resolves it under `process.resourcesPath/sidecar` with the Windows `.exe` suffix.
+- Platform child paths use `node:path.join`.
+
+Review-fix validation:
+
+```text
+npm --workspace @autoflow/desktop test -- src/main/sidecar/ready-protocol.test.ts src/main/sidecar/supervisor.test.ts src/main/platform/paths.test.ts
+7 tests passed
+
+npm --workspace @autoflow/desktop run typecheck
+passed
+```
+
 ## Deviations
 
 - The Task 3 files were already present in the working tree as untracked files; this implementation completed and corrected that existing slice rather than recreating it.
