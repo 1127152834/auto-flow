@@ -3,7 +3,7 @@
 - 日期：2026-09-12
 - 状态：confirmed；合并代码通过本机验收，提交父节点记录实际来源。
 - 授权：用户要求将模型分支代码合并到baseline，并检查合并条件。
-- 输入：`codex/architecture-baseline@b45ca84`、`codex/model-management@fe3672a`；共同基点`ad08bdb`；后续接入浏览器客户端检查点`06153ca`。
+- 输入：`codex/architecture-baseline@b45ca84`、`codex/model-management@fe3672a`；共同基点`ad08bdb`；后续接入浏览器客户端检查点`06153ca`及代理预算修复`4a91407`。
 - 方法：从baseline创建独立worktree `autoflow-merge-models`，试合并、解决冲突和验证后，再将baseline快进到该合并提交。不重写模型或baseline历史，不推送远端。
 - 置信度：本机合并与回归结果高；Windows实机和线上供应商仍未验证。
 
@@ -31,7 +31,7 @@
 | --- | --- |
 | `uv run --directory apps/backend pytest -q` | 304 passed，2条既有依赖弃用提示 |
 | `ruff check .` / `mypy src` | 通过，102个Python源码文件 |
-| `npm test` | 23 files / 126 tests passed，包含原proxy/kernel和model组件回归 |
+| `npm test` | 24 files / 128 tests passed，包含原proxy/kernel和model组件回归 |
 | `npm run typecheck` / `npm run lint` | 通过 |
 | `npm run openapi:generate` / `npm run openapi:check` | 通过，internal路径未进入公开schema |
 | `npm run test:scripts` | 7 passed，含3个结构检查 |
@@ -45,9 +45,9 @@
 
 ## 并发检查点整合
 
-首次候选`9009285`验证的是`b45ca84 + fe3672a`（303后端、105前端）。快进时检测到浏览器任务正在修改共享客户端，Git中止且没有覆盖工作区；与该任务协调后，在独立worktree接入其已提交的`06153ca`再验收。上表为更新后的组合结果。
+首次候选`9009285`验证的是`b45ca84 + fe3672a`（303后端、105前端）。快进时检测到浏览器任务正在修改共享客户端，Git中止且没有覆盖工作区；与该任务协调后，在独立worktree接入其已提交的`06153ca`再验收。随后接入`4a91407`的代理远端预算修复；上表为最终组合结果。
 
-客户端保留Task7的普通请求body读取超时、headers之后SSE取消、连接阶段超时、字段错误和固定401文案；保留模型构造错误的code/details/requestId及代理风险确认元数据。模型的六类外部操作使用60秒前端总预算，避免新的10秒本地请求默认值截断目录和生成；后端15/30秒HTTP超时配置不变。新增慢目录12秒、生成20秒测试验证这一交集。
+客户端保留Task7的普通请求body读取超时、headers之后SSE取消、连接阶段超时、字段错误和固定401文案；保留模型构造错误的code/details/requestId及代理风险确认元数据。模型的六类外部操作使用60秒前端总预算，避免新的10秒本地请求默认值截断目录和生成；后端15/30秒HTTP超时配置不变。新增慢目录12秒、生成20秒测试验证这一交集。代理创建连接、换Key、同步和探测也沿用06153ca后修复提交的60秒领域预算，经过真实共享客户端的慢headers/body回归。
 
 `ApiProvider`（浏览器）与`query-provider`（模型）当前各自服务独立页面，未在当前App嵌套。浏览器Task11统一会话查询上下文和全局导航时必须保留模型入口以及SIDECAR_UNAUTHORIZED/epoch恢复，已经向所属任务交接。
 
