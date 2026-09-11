@@ -14,3 +14,5 @@
 - 并发协调：首次快进被Git因Task7未提交共享文件安全中止；随后接入其06153ca检查点，保留BrowserApiError、请求/流生命周期与ApiProvider，模型外部调用显式60秒预算。原checkout快进需等待该任务复审窗口，不覆盖正在编辑的文件。
 
 - 最终兼容修复：保留4a91407的proxy创建连接/换Key/同步/探测60秒预算；实际共享客户端慢headers和body测试通过。
+
+- 落地结果（confirmed，来源：Git fast-forward与SHA-256检查）：浏览器Task7最终独立复审PASS后开放共享文件窗口，原检出codex/architecture-baseline已从4a91407快进到2ae2648；fe3672a是其祖先。原20个未提交/未跟踪文件逐一SHA-256相同，index为空；既有Vite改动与目标字节相同并进入历史，其余automation/settings/浏览器草稿保持未提交。未推送远端。

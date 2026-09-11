@@ -1,7 +1,7 @@
 # 模型管理合入 baseline 的验收
 
 - 日期：2026-09-12
-- 状态：confirmed；合并代码通过本机验收，提交父节点记录实际来源。
+- 状态：confirmed；合并代码通过本机验收，baseline已在Task7最终复审PASS窗口快进到2ae2648（后续文档提交只记录落地结果）。
 - 授权：用户要求将模型分支代码合并到baseline，并检查合并条件。
 - 输入：`codex/architecture-baseline@b45ca84`、`codex/model-management@fe3672a`；共同基点`ad08bdb`；后续接入浏览器客户端检查点`06153ca`及代理预算修复`4a91407`。
 - 方法：从baseline创建独立worktree `autoflow-merge-models`，试合并、解决冲突和验证后，再将baseline快进到该合并提交。不重写模型或baseline历史，不推送远端。
@@ -53,7 +53,7 @@
 
 ## 工作区与能力边界
 
-baseline已有的automation计划、浏览器/automation未提交文件保持原样。Vite本地修改与模型分支的Tailwind配置字节一致，随这次合并进入版本历史；其内容不改变。未提交文件在合并前后按SHA-256核对，实际落地状态以会话记录为准。
+baseline已有的automation计划、浏览器/automation未提交文件保持原样。Vite本地修改与模型分支的Tailwind配置字节一致，随这次合并进入版本历史；其内容不改变。合并前后的20个未提交/未跟踪文件逐一SHA-256一致，index为空；已确认模型提交fe3672a位于baseline历史中。实际落地记录见 `.ai/sessions/2026-09-12-model-baseline-merge.md`。
 
 这是已批准模型模块与baseline现有能力的代码合并，不补做其他线程的浏览器工作台或代理全局导航。模型分支的顶部入口被保留；其余未提交页面继续由原任务推进。
 
