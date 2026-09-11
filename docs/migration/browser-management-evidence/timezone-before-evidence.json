@@ -1,0 +1,15 @@
+{
+  "status": 422,
+  "body": {
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Request validation failed",
+      "details": {
+        "fields": {
+          "timezone": "timezone is invalid"
+        }
+      },
+      "requestId": "46abe1c5-657c-4569-8878-80c3be40d6dd"
+    }
+  }
+}

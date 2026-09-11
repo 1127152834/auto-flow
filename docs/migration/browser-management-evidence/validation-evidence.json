@@ -1,0 +1,61 @@
+{
+  "catalog": {
+    "wrapperVersion": "0.5.9",
+    "platform": "darwin-arm64",
+    "releases": [
+      {
+        "edition": "licensed",
+        "version": "151.0.7922.108.3",
+        "chromiumVersion": "Chromium 151",
+        "releaseChannel": "stable",
+        "publishedAt": null,
+        "archive": null,
+        "size": null,
+        "installed": false
+      },
+      {
+        "edition": "public",
+        "version": "145.0.7632.109.2",
+        "chromiumVersion": "Chromium 145",
+        "releaseChannel": "stable",
+        "publishedAt": "2026-03-04T00:09:02Z",
+        "archive": "cloakbrowser-darwin-arm64.tar.gz",
+        "size": 147384149,
+        "installed": false
+      },
+      {
+        "edition": "public",
+        "version": "142.0.7444.175",
+        "chromiumVersion": "Chromium 142",
+        "releaseChannel": "stable",
+        "publishedAt": "2026-02-27T06:45:24Z",
+        "archive": "cloakbrowser-darwin-arm64.tar.gz",
+        "size": 144304310,
+        "installed": false
+      }
+    ],
+    "installed": [],
+    "catalogError": null
+  },
+  "operation": {
+    "id": "63e1732c-8b4e-4797-90e6-a9f1979c92dc",
+    "edition": "public",
+    "requestedVersion": "145.0.7632.109.2",
+    "resolvedVersion": "145.0.7632.109.2",
+    "releaseChannel": "stable",
+    "state": "completed",
+    "progress": null,
+    "message": "\u5b89\u88c5\u5b8c\u6210",
+    "error": null
+  },
+  "installed": {
+    "items": [
+      {
+        "edition": "public",
+        "version": "145.0.7632.109.2",
+        "executablePath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-kernel-9lctnbha/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+        "size": 367270152
+      }
+    ]
+  }
+}

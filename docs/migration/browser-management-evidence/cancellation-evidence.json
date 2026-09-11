@@ -1,0 +1,17 @@
+{
+  "operation": {
+    "id": "4c1f49ce-eaca-44aa-9890-e8176e3df6b7",
+    "edition": "public",
+    "requestedVersion": "142.0.7444.175",
+    "resolvedVersion": null,
+    "releaseChannel": "stable",
+    "state": "cancelled",
+    "progress": null,
+    "message": "\u5b89\u88c5\u5df2\u53d6\u6d88",
+    "error": null
+  },
+  "observedWorkerCount": 1,
+  "workersExited": true,
+  "stagingRemoved": true,
+  "health": "ok"
+}
