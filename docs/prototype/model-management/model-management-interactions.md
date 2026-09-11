@@ -1,7 +1,7 @@
 # 模型管理原型说明：复用旧布局与旧交互
 
 - 日期：2026-09-12
-- 状态：proposed；当前原型待用户确认，不代表功能已经实现。
+- 状态：confirmed；用户已确认原型并要求编写设计与实施计划，不代表功能已经实现。
 - 用户约束：模型管理须“和旧项目一样”，“交互也要做的一样”。
 - 范围：供应商连接配置、本地模型目录、连接测试、模型测试、启停与删除。
 - 依据：旧项目页面现场核对与静态源码复核。旧项目根目录为 `/Users/zhangtiancheng/Documents/projects/browser-automation/autoflow-desktop`。
@@ -18,7 +18,7 @@
 3. 左栏是供应商资源栏；右栏只显示当前选中供应商的详情及其模型目录。
 4. 供应商通过左栏纵向列表切换，不使用横向 Tabs。
 5. 模型编辑使用大尺寸 split Modal：左侧摘要与测试，右侧设置表单。
-6. 供应商新增和编辑使用大尺寸居中 Modal；新增显示横向三步指示，编辑直接进入连接信息。
+6. 供应商新增和编辑使用大尺寸居中 Modal；新增显示横向三步指示，编辑直接进入连接信息，仍保留旧三步指示并高亮当前步；步骤指示不作为导航。
 
 目标原型图：
 
@@ -26,7 +26,7 @@
 - [供应商接入与编辑画板](./model-management-provider-flow.png)
 - [模型添加、编辑、测试与删除画板](./model-management-model-flow.png)
 
-以上三张图片已由内置 imagegen 生成，当前待用户确认；它们不是完成实现，也不能据此推断后端已迁移。主页面指定设计视口 1440×1024，流程画板指定 3200×2400；实际生成尺寸见[生成记录](./imagegen-legacy-alignment-prompts.md)。生成图片不用于精确测量旧组件宽度，本文明确的交互规则和旧源码是行为基准。
+以上三张图片已由内置 imagegen 生成，已由用户确认；它们不是完成实现，也不能据此推断后端已迁移。主页面指定设计视口 1440×1024，流程画板指定 3200×2400；实际生成尺寸见[生成记录](./imagegen-legacy-alignment-prompts.md)。生成图片不用于精确测量旧组件宽度，本文明确的交互规则和旧源码是行为基准。
 
 ## 2. 主页面布局
 
@@ -279,7 +279,13 @@
 - `backend/src/autoflow/schemas.py`：供应商和模型字段契约。
 - `backend/src/autoflow/api.py`：连接、发现、测试、启停筛选与删除接口。
 
+- `backend/src/autoflow/model_provider_service.py`：目录连接测试和模型推理测试的实际请求差异。
+- `backend/src/autoflow/models.py`：供应商删除对本地模型的级联关系。
+- `backend/tests/test_models.py`、`backend/tests/test_model_editor_simplification.py`：唯一性、级联和无能力字段证据。
+
 ## 12. 图像校对与覆盖说明
+
+- 正式规格编写时再次核对旧源码：编辑供应商仍显示三步指示，但不能进入选择预设/选择模型；新增模型保留目录刷新按钮，复制 ID 的成功和失败提示均内联显示。图像若省略这些细节，以旧源码及正式规格为准。
 
 - 主页面、供应商流程和模型流程的入口及表单字段已对照源码和旧截图交叉检查；生成图片中的示例数据不代表实际服务状态。
 - 供应商画板 D 展示未修改连接时的“保存修改”。修改连接后的“测试并保存”已有现场观察和本文第 4 节规则，画板目前以外部注释表达，没有另画一个重复编辑窗。
@@ -288,8 +294,5 @@
 - 模型画板顶部说明中的“运行默认值等设置”应理解为折叠区里的“使用说明”；文案定稿使用“标签及使用说明”，不引入任何可配置采样参数。
 - 流程画板的外部注释在缩略显示时较小，完整交互以本文为准；注释、日期与“原型示例”脚注不进入实际应用。
 - 图片用于视觉审查，最终组件须按旧源码规则实现并完成交互验收；图片生成不等同于可点击原型或实际功能完成。
-- `backend/src/autoflow/model_provider_service.py`：目录连接测试和模型推理测试的实际请求差异。
-- `backend/src/autoflow/models.py`：供应商删除对本地模型的级联关系。
-- `backend/tests/test_models.py`、`backend/tests/test_model_editor_simplification.py`：唯一性、级联和无能力字段证据。
 
-本轮只定义可审查原型，不编写业务代码；原型经用户确认后，再编写正式规格、后端契约和实施计划。
+原型已确认；正式开发资料见[设计规格](../../superpowers/specs/2026-09-12-model-management-design.md)、[API 契约](../../references/model-management-api-contract.md)和[实施计划](../../superpowers/plans/2026-09-12-model-management-implementation.md)。当前未开始模型业务实现。

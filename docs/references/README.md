@@ -30,3 +30,12 @@ WebRPA 只作为源码和能力参考。AutoFlow 不运行 WebRPA、不连接 We
 - [代理管理设计](../superpowers/specs/2026-09-12-proxy-management-design.md)
 - [实施计划](../superpowers/plans/2026-09-12-proxy-management-implementation.md)
 - 当前状态：2026-09-12，proposed；已做文档核验，无真实 API Key 调用样本。
+
+## 模型管理源码迁移
+
+- [设计规格](../superpowers/specs/2026-09-12-model-management-design.md)
+- [API 与凭据契约](./model-management-api-contract.md)
+- [实施计划](../superpowers/plans/2026-09-12-model-management-implementation.md)
+- [源码哈希与新工程就绪度](../../.ai/knowledge/2026-09-12-model-management-implementation-readiness.md)
+- 日期：2026-09-12。原型及旧布局/交互已确认；规格和计划为 proposed，模型业务尚未开始实现。
+- 用户允许直接参考旧模型源码；复用状态机、协议和非秘密字段，按新架构重组。实际复制时登记来源和目标，不把本地源码阅读称为线上供应商验证。
