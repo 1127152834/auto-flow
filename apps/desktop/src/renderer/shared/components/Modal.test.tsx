@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import { Modal } from './Modal'
 
@@ -24,27 +24,40 @@ function Fixture({ closeDisabled = false }: { closeDisabled?: boolean }) {
 }
 
 describe('Modal', () => {
-  it('closes through Escape, overlay, and close button when unlocked', async () => {
+  it.each(['Escape', 'overlay', 'close button'] as const)('closes through %s and returns focus', async (method) => {
     const user = userEvent.setup()
-    const onOpenChange = vi.fn()
-    const { rerender } = render(<Modal open onOpenChange={onOpenChange} title="连接信息">正文</Modal>)
+    function CloseFixture() {
+      const [open, setOpen] = useState(false)
+      return <main><button onClick={() => setOpen(true)}>打开连接信息</button><Modal open={open} onOpenChange={setOpen} title="连接信息"><button>内部操作</button></Modal></main>
+    }
+    render(<CloseFixture />)
+    const opener = screen.getByRole('button', { name: '打开连接信息' })
+    await user.click(opener)
+    expect(screen.getByRole('dialog', { name: '连接信息' })).toContainElement(document.activeElement as HTMLElement)
+    if (method === 'Escape') await user.keyboard('{Escape}')
+    else if (method === 'overlay') {
+      const overlay = document.querySelector('[data-slot="modal-overlay"]')!
+      fireEvent.pointerDown(overlay)
+      fireEvent.pointerUp(overlay)
+      fireEvent.click(overlay)
+    } else await user.click(screen.getByRole('button', { name: '关闭' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: '连接信息' })).not.toBeInTheDocument())
+    await waitFor(() => expect(opener).toHaveFocus())
+  })
+
+  it('keeps a busy modal open and focused through Escape and a complete overlay interaction', async () => {
+    const user = userEvent.setup()
+    render(<Fixture closeDisabled />)
+    await user.click(screen.getByRole('button', { name: '编辑模型' }))
+    const dialog = screen.getByRole('dialog', { name: '编辑模型' })
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
     await user.keyboard('{Escape}')
-    expect(onOpenChange).toHaveBeenLastCalledWith(false)
-
-    onOpenChange.mockClear()
-    fireEvent.pointerDown(document.querySelector('[data-slot="modal-overlay"]')!)
-    fireEvent.click(document.querySelector('[data-slot="modal-overlay"]')!)
-    expect(onOpenChange).toHaveBeenCalledWith(false)
-
-    onOpenChange.mockClear()
-    await user.click(screen.getByRole('button', { name: '关闭' }))
-    expect(onOpenChange).toHaveBeenCalledWith(false)
-
-    rerender(<Modal open onOpenChange={onOpenChange} title="连接信息" closeDisabled>正文</Modal>)
-    onOpenChange.mockClear()
-    await user.keyboard('{Escape}')
-    fireEvent.pointerDown(document.querySelector('[data-slot="modal-overlay"]')!)
-    expect(onOpenChange).not.toHaveBeenCalled()
+    const overlay = document.querySelector('[data-slot="modal-overlay"]')!
+    fireEvent.pointerDown(overlay)
+    fireEvent.pointerUp(overlay)
+    fireEvent.click(overlay)
+    expect(dialog).toBeInTheDocument()
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
     expect(screen.getByRole('button', { name: '正在处理，请稍候' })).toBeDisabled()
   })
 
@@ -77,7 +90,7 @@ describe('Modal', () => {
       return <main>
         <button onClick={() => setOpen(true)}>入口一</button>
         <button onClick={() => setOpen(true)}>入口二</button>
-        <Modal open={open} onOpenChange={setOpen} title="快速重开"><button onClick={() => setOpen(false)}>立即关闭</button></Modal>
+        <Modal open={open} onOpenChange={setOpen} title="快速重开"><input aria-label="快速聚焦" autoFocus /><button onClick={() => setOpen(false)}>立即关闭</button></Modal>
       </main>
     }
     render(<RapidFixture />)
@@ -86,6 +99,9 @@ describe('Modal', () => {
     act(() => { first.focus(); first.click() })
     act(() => screen.getByRole('button', { name: '立即关闭' }).click())
     act(() => { second.focus(); second.click() })
+    const reopened = await screen.findByRole('dialog', { name: '快速重开' })
+    await waitFor(() => expect(screen.getByRole('textbox', { name: '快速聚焦' })).toHaveFocus())
+    expect(reopened).toContainElement(document.activeElement as HTMLElement)
     await user.keyboard('{Escape}')
     await waitFor(() => expect(second).toHaveFocus())
   })
