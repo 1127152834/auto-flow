@@ -4,6 +4,8 @@
 - 状态：confirmed（公开页面和 API 文档验证）；架构建议标记为 proposed
 - 验证方式：读取 ProxyPanel 官方首页、开发者 API 页面、旧版文档，并只读检查旧项目 `ProxiesPage.tsx`、proxy API、测试和后端代理服务；未执行购买、轮换、写入或外部账号操作。
 
+> 2026-09-12 修订：下文是初期调研记录。“所有字段已确认”“既有 CredentialStore”“Key 不进入 renderer”等宽泛表述已 superseded；当前未有真实 API 响应样本。以[可行性核验](./2026-09-12-proxypanel-feasibility-audit.md)和设计/API 契约为准：Key 首次输入短暂经过表单，系统凭据与 main 受控复制尚待实现，不保留 Provider 原始敏感响应。
+
 ## ProxyPanel 已确认能力
 
 来源：

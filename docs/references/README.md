@@ -21,3 +21,12 @@ WebRPA 只作为源码和能力参考。AutoFlow 不运行 WebRPA、不连接 We
 - Python 入口：`backend/src/autoflow/main.py`
 - Electron 打包：`electron-builder.yml`
 - Python 打包：`backend/autoflow-backend.spec`
+
+## ProxyPanel
+
+- 官方产品：https://proxypanel.io/
+- 新 API 文档：https://proxypanel.io/developers （登录会话中查看）
+- [API 与开发契约](./proxypanel-api-contract.md)：外部能力证据、内部 DTO/路由、错误/操作状态、桌面复制边界和真实样本要求。
+- [代理管理设计](../superpowers/specs/2026-09-12-proxy-management-design.md)
+- [实施计划](../superpowers/plans/2026-09-12-proxy-management-implementation.md)
+- 当前状态：2026-09-12，proposed；已做文档核验，无真实 API Key 调用样本。

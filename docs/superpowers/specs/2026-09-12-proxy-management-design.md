@@ -1,200 +1,187 @@
-# AutoFlow ProxyPanel 代理管理规格说明书
+# AutoFlow ProxyPanel 代理管理设计方案
 
 - 日期：2026-09-12
-- 状态：proposed，等待用户审查
-- 范围：代理管理模块；不实现购买、支付或其他供应商
-- 依据：ProxyPanel 官方页面/API 文档、旧项目代理模块、已确认的 ProxyPanel 本地代理组决策
+- 版本：1.1
+- 状态：proposed；原型风格已认可，本方案与实施计划尚待明确实施指令
+- 本轮产出：设计、接口开发资料、实施任务；不编写业务代码
+- 范围：代理管理一个模块，绑定 ProxyPanel，支持 Windows x64、macOS arm64/x64
+- 依据：[系统架构](../../architecture/README.md)、[目录基准](../../PROJECT_STRUCTURE.md)、[API 契约](../../references/proxypanel-api-contract.md)、[原型交互](../../prototype/proxy-management/proxy-management-interactions.md)
 
-## 1. 目标和边界
+## 1. 目标与取舍
 
-AutoFlow 的代理管理模块绑定 ProxyPanel，负责把 ProxyPanel 的专用移动代理舰队投影到本地，并为浏览器配置提供稳定的代理引用、健康状态、位置控制和轮换控制。
+代理管理完成以下闭环：连接 ProxyPanel → 同步代理 → 检查状态 → 按需调整位置/轮换 → 组成本地代理组 → 浏览器配置选择固定代理或本地组。
 
-本模块不把 ProxyPanel 当作通用代理 CRUD 服务。用户不能在 AutoFlow 中创建一个脱离 ProxyPanel 的任意代理端点；代理列表来自 ProxyPanel，AutoFlow 只维护本地显示名称、启用状态、同步投影、浏览器配置引用和本地代理组。
+ProxyPanel 负责远程专用移动代理，AutoFlow 负责本地配置、同步副本、健康检查、组成员顺序和浏览器引用。城市/运营商目录属于远程位置能力，本地代理组属于 AutoFlow 的启动策略，两者分别建模。
 
-ProxyPanel 的城市/运营商位置池是远程能力；AutoFlow 的本地代理组是本地编排实体。两者不能共用一个模型或 UI 名称。
+不兼容旧项目数据，不直接复制旧代理 CRUD 模型，不做多供应商插件框架。沿用本仓库的 Electron、React、FastAPI、SQLite 与 OpenAPI 生成流程。首版不包含购买、支付、续费、自动续费写入、子账号/团队管理，也没有任意代理批量导入。
 
-不纳入第一版：购买、续费、支付、自动续费写操作、团队/子账号管理、其他代理供应商、旧版 URL-key API 暴露、项目管理。
+原型图中的示例数据只表达布局和条件状态。字段证据与本文规则优先于图片中的数字、标签、地点延迟和固定冷却时间。
 
-## 2. 可行性结论和指标规则
+## 2. 可行性与显示规则
 
-| UI 信息 | 第一版规则 |
+官方页面证明了相关产品能力和新 API 路径，但尚未使用真实 API Key 调用；无真实返回样本可用于冻结外部 schema。外部接入的置信度为中，字段可用性仍须实测；本地代理组与组件工程方案的可实现性置信度为高。
+
+| 原型内容 | 实现来源 | 不能满足时的表现 |
+| --- | --- | --- |
+| 已同步数量 | SQLite 当前连接的有效投影计数 | 首次未同步显示 —；不得冒充账号总量 |
+| 总代理 | API 明确 total，或完整分页同步验证 | 标题改“已同步”，说明是否完整 |
+| 运行中/待启动 | 经核验的 Provider 状态映射 | 状态未知；本地健康不能冒充远程运行状态 |
+| 异常 | 已同步代理的健康失败/远程异常，按代理去重 | 连接同步失败单独放连接卡片，不把全部代理都算坏 |
+| 出口 IP | 有时间戳的 Provider probe 或本地代理探测 | —，展示来源和上次检查时间 |
+| 延迟 | AutoFlow 经代理的固定 HTTPS 探针耗时 | —，不是到地点的预测延迟，也不是 ICMP ping |
+| 即将到期 | 明确订阅截止字段并核验语义 | 默认隐藏；单资源可写“到期信息不可用” |
+| 地点/运营商 | 远程位置目录、当前代理详情 | 不硬编码可用城市与运营商数量 |
+| 轮换计划 | 已核验模式、间隔和上下限 | 未验证时保留说明，禁用保存 |
+| 白名单 | 已核验 enabled 与 IPv4 集合 | 不把读取失败当作空列表或关闭状态 |
+| 用量/余额 | 已核验字段、单位和时间范围 | 暂无数据；不填零、不画虚构曲线 |
+| 丢包率、每地点延迟 | 当前没有可靠依据 | 第一版移除，不从单次 HTTP 请求推算 |
+
+到期计算是本地显示规则：只有 capability 可用且截止时间有效时，`0 < expires_at-now <= 72h` 标记“即将到期”；已过期另显示“已到期”。72 小时是 AutoFlow 的设计阈值，不是 ProxyPanel 的保证。部分代理没有截止字段时摘要须标注“已知到期信息中”，不得给出全账号完整统计。
+
+不把到期标记混入运行状态枚举：一个代理可以“运行中”且“即将到期”。自动续费开关不会消除已知到期标记，也不据此推导下次扣费时间。
+
+## 3. 用户流程与 UI 结构
+
+### 3.1 主页面
+
+只保留应用级全局导航。单一内容区从上到下为：
+
+1. 标题“代理管理”与 ProxyPanel 连接卡片：名称、连接状态、最近同步、刷新、连接设置。
+2. 已同步/运行中/异常摘要；到期卡片仅在条件成立时出现。不强行保持四张卡片。
+3. 代理表格：名称、远程状态与健康标记、运营商、城市、出口 IP、延迟、轮换、关联配置、操作。
+4. 本地代理组区域：名称、成员数、健康概况、关联配置、编辑/删除；说明“AutoFlow 本地分组”。
+
+搜索和筛选仅针对本地已同步集合。刷新期间保留旧行、标记更新时间；不把 stale 数据伪装成刚刚获取。未知值用 —，有说明的状态徽标可聚焦，不仅靠颜色表达。
+
+### 3.2 连接设置弹窗
+
+名称和 API Key；Key 支持本次输入显示/隐藏，不回显既有 Key，只显示“已保存”。验证使用只读代理列表请求，不执行换 IP。
+
+首次连接：输入 → 正在验证 → 成功后存入凭据库并同步 → 显示本地连接。验证失败保留名称、显示脱敏错误；关闭清空 Key。替换 Key：先验证新 Key，成功后替换 secret_ref；失败保留原连接。
+
+API Key 没有可靠统一格式约束时只做非空检查，不根据示例前缀拒绝未来合法 Key。认证失败、网络失败、凭据库不可用分别提示。
+
+断开连接只清除本地账号连接与可清理投影，不购买/退订/删除远程代理；存在浏览器或组引用时列出引用并阻止断开。
+
+### 3.3 代理详情 Drawer
+
+从表格打开右侧覆盖式详情，不形成常驻资源侧栏。窄屏改为全宽，页面内不增加第二套导航。
+
+- 概览：远程状态、健康检查、当前位置/运营商、HTTP/SOCKS5 端点、出口 IP、上次同步/检测、引用配置。
+- 位置与轮换：更换 IP、地点选择、轮换模式与间隔、关闭轮换。仅显示已核验模式。
+- 凭据与白名单：用户名、密码可用状态、受控复制、轮换凭据、IPv4 集合。
+- 用量：数据存在且单位明确时才展示总量和趋势；不额外做账户账单页面。
+
+复制密码由 Electron main 写入系统剪贴板，renderer 只收到成功状态，不提供密码明文显示。用户名/host/port 可以作为普通展示字段。凭据旋转需确认可能影响当前会话；远端成功但本地存储失败时显示明确恢复状态，不报告全部成功。
+
+### 3.4 地点、更换 IP、轮换与白名单
+
+地点弹窗支持搜索城市、运营商过滤、当前地点标记、可用/不可用/未知；地点延迟列移除。选择项使用 API 返回稳定 ID，不由中文标签拼路径。
+
+更换 IP 和地点切换说明可能造成现有浏览器会话短暂重连。提交期间禁止重复提交；受理后显示“正在处理”，最终状态核验后才提示成功。结果不明时显示“结果未确认，请刷新”，不能自动再次触发。
+
+轮换模式由服务端 capability constraints 提供。保留原型的同城/随机城市/保持运营商作为候选设计；没有对应远程能力时不展示该选项。轮换冷却与自动轮换间隔分开，不混用旧 API 与 one-hit URL 的限额。
+
+白名单编辑采用覆盖完整集合；启用至少一个有效 IPv4，去重，上限来自核验后的 Provider 约束。关闭前确认；读取失败不能提供一张空表让用户误覆盖远程数据。
+
+### 3.5 本地代理组
+
+组编辑使用 Modal：名称、描述、成员多选、按名称/健康筛选、上移/下移、保存。空组允许作为草稿保存，但不能作为有效运行选择；浏览器保存表单选择空组时提示并阻止保存。
+
+加入异常或未检测成员时，首次保存只返回具体风险列表；用户确认后同一版本重提。远端缺失成员、重复成员与不存在 ID 始终拒绝。删除被浏览器引用的组返回引用详情，不强制解除引用。
+
+浏览器启动时用事务选择成员并推进 Round Robin，跳过禁用、远端缺失、最近检查失败和缺凭据成员。未检测成员必须在实际启动前探测；失败在成员数限定内继续选择。全部不可用时停止启动并提示修复，禁止静默直连。
+
+当前浏览器模型的 `proxy_mode=none|proxy|pool`、`proxy_id`、`proxy_pool_id` 继续使用；`proxy_pool_id` 引用本地组 ID，中文统一显示“本地代理组”。当前占位表由迁移扩展，不发展两套代理选择器数据。
+
+## 4. 状态与可访问性
+
+| 场景 | 界面行为 |
 | --- | --- |
-| 总代理 | 只在同步响应有明确 total 或本地投影集合完整时显示；否则显示“已同步 N 个”，不声称账户总量。 |
-| 运行中/待启动/未激活 | 使用 ProxyPanel 返回状态；未知值显示状态未知。若 live schema 没有状态字段，则由同步状态和本地探测标记为“可探测/不可探测”，不能冒充远程状态。 |
-| 异常 | AutoFlow 本地计算：认证失败、同步失败、实时探测失败、连接超时或最近一次写操作失败。显示来源和时间。 |
-| 延迟 | AutoFlow 后端探针测量，不使用首页营销平均值。 |
-| 出口 IP | 优先使用实时探测或数据面探针结果；外部响应没有字段时标记为本地探测结果。 |
-| 即将到期 | 默认隐藏。只有 live contract 明确返回 `expires_at`/订阅截止时间并通过 fixture 验证后才显示；不能从余额、套餐或自动续费推导。 |
-| 用量/余额 | 只有 API 返回可验证字段才显示；没有数据时显示“暂无数据”，不填零。 |
+| 未连接 | 连接说明和“连接 ProxyPanel”，不显示全为 0 的仪表盘 |
+| 首次加载 | 卡片/行 Skeleton，保持尺寸 |
+| 空代理 | “当前连接没有已同步代理”，提供刷新和连接设置 |
+| 同步失败 | 保留旧投影，警告条显示脱敏原因与上次成功同步 |
+| 单行检测 | 仅该行旋转图标、禁用重复探测，其他资源仍可操作 |
+| 缺少能力 | 隐藏非核心入口，已展示表单置灰并解释当前接口不可用 |
+| 429 | 按真实 Retry-After 显示倒计时；缺少时提示稍后手动重试 |
+| 未保存关闭 | 取消/放弃更改；危险项默认聚焦取消 |
+| 版本冲突 | 保留输入，提示重新载入并检查新状态，不静默覆盖 |
+| 结果不明 | “操作结果未确认”，刷新查询，不盲目重发 |
+| 成功 | 资源更新后 Toast，不以 HTTP 202 当作完成 |
 
-## 3. 领域模型
+Dialog/Drawer 150ms 淡入、位移最多 8px；Toast 150ms 淡入、2.6s 后淡出；进度 300ms linear；尊重 prefers-reduced-motion。焦点进入弹窗、Esc/遮罩关闭和关闭后回到触发器均通过共享组件实现。提交确认框正在发送时不可关闭；命令已受理后详情可关闭，后台状态保留，停止查看不代表取消远程操作。
 
-### ProxyPanelConnection
+## 5. 组件职责
 
-保存本地连接配置，不保存密钥明文：
+沿用 shadcn/ui + Tailwind。先检查浏览器管理已实现的组件；已有 Dialog、Toast、表单等状态通过测试后直接复用，不复制一套。
 
-- `id`
-- `name`
-- `provider = proxypanel`
-- `api_base_url` 固定为官方 allowlist，不允许用户输入任意地址
-- `api_key_secret_ref`
-- `has_secret`
-- `status`: unconfigured / verifying / connected / failed
-- `last_verified_at`
-- `last_synced_at`
-- `last_error`（脱敏）
+| 层 | 组件/职责 | 不能包含 |
+| --- | --- | --- |
+| packages/ui | Button、Input、Select、Tabs、Dialog、Drawer、Toast、Skeleton、必要的表格/空态基元 | ProxyPanel 请求、领域模型、业务导航 |
+| domains/proxies/components | ConnectionCard/Dialog、ProxySummary、ProxyTable、ProxyDetailDrawer、LocationPicker、RotationForm、CredentialPanel、AllowlistEditor、LocalGroupEditor | SQL、平台代码、API Key 持久化 |
+| domains/proxies/hooks | 连接/列表查询、同步/命令、版本与风险确认状态、缓存失效 | 直接访问 ProxyPanel |
+| domains/proxies/api.ts | 调用共享 HTTP client、使用生成 DTO | 维护另一套手写接口类型 |
+| domains/proxies/pages | 组装页面与 Drawer、搜索/筛选联动 | 复制表单逻辑、Provider 字段转换 |
+| Electron preload/main | 参数受限的复制 IPC 与系统剪贴板 | 组选择、健康判断、SQL |
 
-### ProxyEndpointProjection
+只提取确实跨领域复用的组合控件；不为了这一个表格建立通用表单引擎或多供应商 SDK。
 
-ProxyPanel 远程代理的本地投影：
+## 6. 后端结构与数据
 
-- `id`（AutoFlow 本地 ID）
-- `provider_proxy_id`
-- `connection_id`
-- `name_override`
-- `remote_status`（原始值保留为受控枚举/未知）
-- `remote_missing`（同步代际中未出现；引用存在时保留 tombstone）
-- `carrier`
-- `city`
-- `region`
-- `exit_ip`
-- `http_host/http_port`
-- `socks5_host/socks5_port`
-- `endpoint_secret_ref`
-- `credential_available`
-- `enabled`
-- `latency_ms`
-- `last_checked_at`
-- `health_state`
-- `health_error`
-- `subscription_expires_at` nullable
-- `source_updated_at`
-- `last_synced_at`
-- `last_error`
+保持 `adapters → application → domain`，providers/infrastructure 实现端口，bootstrap 装配。只为真实职责建立文件。
 
-投影同步采用 generation/tombstone：完整同步成功才替换 generation；部分失败保留旧数据并标记 `stale`；远端消失的记录标记 `remote_missing`，被浏览器配置或本地代理组引用时不得物理删除。
+| 路径 | 职责 |
+| --- | --- |
+| domain/proxies/{models,errors,ports}.py | 连接/投影/组的规则、仓储与 ProxyPanel 边界；不依赖 ORM/FastAPI |
+| domain/credentials.py | 跨领域最小 CredentialStore 端口（计划新增） |
+| application/proxies/ | 连接同步、健康探测、Provider 命令、本地组与浏览器解析用例 |
+| providers/proxy/ | ProxyPanel HTTP/响应转换和数据面探针；不是插件市场 |
+| infrastructure/database/ | 现有代理/组表迁移、连接/成员/操作记录、事务与引用查询 |
+| infrastructure/credentials/ | Windows 系统凭据库与 macOS Keychain 实现；当前尚未实现 |
+| adapters/http/proxies.py | 请求响应校验、错误与用例映射 |
+| tests/{unit,integration,contract,fixtures}/ | 规则、真实 SQLite、HTTP 与真实/人工样本分别验证 |
 
-API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安全策略返回；复制凭据由 sidecar 受控写入系统剪贴板，renderer 只收到 `{copied: true}`，不提供明文密码显示。
+### 6.1 实体与约束
 
-### LocalProxyGroup
+- Connection：ID、名称、secret_ref、连接状态、revision、最近验证/同步、脱敏错误。
+- Proxy projection：唯一 `(connection_id, provider_proxy_id)`，本地 ID、显示名称/启用、远程信息、健康、credential_ref、nullable expiry、revision、同步代际与 remote_missing。
+- Group：ID、名称/描述、revision、成员顺序、下一游标；成员唯一，删除与重排在同一事务。
+- Operation：ID、目标/类型、请求去重键、状态、结果资源 revision、脱敏错误和时间；不存密钥或原始敏感请求体。
 
-本地编排实体：
+端点/位置变化不更换本地 proxy_id，浏览器引用保持稳定。API 响应不返回 secret_ref；凭据库存储失败时不得落为“已连接/可运行”。
 
-- `id`
-- `name`
-- `member_ids` 与 position
-- `next_index`
-- `created_at/updated_at`
+### 6.2 同步一致性
 
-删除或修改被浏览器配置引用的代理/代理组时由后端返回稳定冲突错误。
+完整分页成功后才提交新的同步代际并标记远端消失记录。分页失败、schema 不匹配或中断保留旧数据与 stale 标记；未知分页完整性不能将“本次没看到”的代理判为已删除。
 
-## 4. Provider 适配器
+单独详情的 404 标记远端不可用并保留引用；401/403 标记连接失败，不批量删除本地资源。外部可选字段缺失映射 null，必需 ID 缺失使该次同步失败；任何字段错误不能清空用户配置。
 
-业务层只依赖 `ProxyProvider` 端口，不依赖 requests/httpx 或 ProxyPanel URL 细节：
+本地快照超过 5 分钟标 stale（AutoFlow 策略），进入页面按需刷新一次；同一连接单飞、无无界轮询。远程写入确认完成后失效对应详情、列表摘要、选择器和受影响的组缓存。
 
-- `verify_connection`
-- `list_proxies`
-- `get_proxy`
-- `probe_proxy`
-- `get_credentials`
-- `copy_credentials`（只返回 copied，不返回明文密码）
-- `rotate_credentials`
-- `change_ip`
-- `relocate`
-- `list_locations`
-- `get_rotation_schedule`
-- `set_rotation_schedule`
-- `delete_rotation_schedule`
-- `get_ip_allowlist`
-- `set_ip_allowlist`
-- `delete_ip_allowlist`
-- `get_usage`
-- `get_account_summary`
+### 6.3 API 与异步命令
 
-适配器要求：
+[API 开发契约](../../references/proxypanel-api-contract.md) 是接口路径、字段、错误、IPC 和操作状态的唯一详细定义，本方案不再重复维护第二份端点清单。
 
-- 只调用固定官方 base URL；
-- 对路径、query 和错误 body 做脱敏；
-- 识别 401/403、404、409、422、429、5xx；
-- 429 尊重 Retry-After，不自动高频重试；
-- 换 IP、改地点、轮换、凭据旋转不可盲重试，需要并发锁和 request id；
-- 对外部字段缺失保持 `null/unknown`，不能填默认零值；
-- 响应 schema 不匹配时返回 `PROXYPANEL_SCHEMA_UNSUPPORTED`，保留脱敏诊断。
+Provider 响应不透传 renderer。远程操作必须区分“受理”“完成”“结果未知”。本地 Idempotency-Key 只防 AutoFlow 重复派发；它不是远程 exactly-once 保证。应用异常退出后未知操作先核对现状，不自动重放。
 
-## 5. AutoFlow 内部 API
+## 7. 安全与跨平台
 
-### 连接和同步
+- API Key 首次输入/替换短暂存在 renderer 表单内存，提交/关闭后清空；不进入持久化状态、日志、query cache 或读取响应。
+- sidecar 从系统 CredentialStore 按 secret_ref 取密钥；API Key 与代理用户名/密码分开存储。凭据库不可用时不回退到 SQLite/文件明文。
+- 复制凭据走受限 preload IPC → Electron main → 独立 host token 保护的 sidecar 内部取密端点 → 系统剪贴板。renderer 不接收密码；main 不能把取密 token 暴露到 preload。
+- 复制完成 30 秒后只清理仍与本次内容相同的剪贴板；不覆盖用户后续复制。
+- 所有错误/日志从允许字段构造；不记录完整 URL、headers、请求体和原始响应。对异常和诊断应用已知 secret 脱敏。
+- sidecar 固定官方 Provider 基址；数据面探针只访问预设的 HTTPS 检测目标，不发送用户业务 URL，不提供任意 URL 调试入口。
+- OS 分支集中在凭据/桌面平台适配器。Windows 与 macOS 分别验证真实系统凭据读写删除、剪贴板及 sidecar 生命周期。
 
-- `GET/POST /api/v1/proxy-panel/connections`
-- `PUT/DELETE /api/v1/proxy-panel/connections/{connection_id}`
-- `POST /api/v1/proxy-panel/connections/{connection_id}/verify`
-- `POST /api/v1/proxy-panel/connections/{connection_id}/sync`
+## 8. 验收与实施前置
 
-### 代理投影
+1. **文档验收**：原型交互、API 契约、领域结构和计划无冲突；所有不确定外部字段标明。
+2. **内部实现验收**：生成 OpenAPI 与 TypeScript 一致；组件及本地组能用标明 synthetic 的样例测试，不能据此声称 Provider 已接通。
+3. **读取接入验收**：真实 Key 的只读响应完成脱敏采集，连接/列表/详情/地点/凭据状态通过契约与实际读验证。
+4. **变更接入验收**：经授权的测试代理完成换 IP、地点、轮换、白名单与凭据更新后的状态核对；每项独立开启 capability。
+5. **运行验收**：固定代理与组选择接入真实浏览器启动；重复启动去重、并发选择、全部失效和引用保护通过。
+6. **平台验收**：Windows x64、macOS arm64/x64 的凭据/复制/sidecar/打包冒烟分别记录证据。
 
-- `GET /api/v1/proxies`
-- `GET /api/v1/proxies/{proxy_id}`
-- `POST /api/v1/proxies/{proxy_id}/probe`
-- `POST /api/v1/proxies/{proxy_id}/change-ip`
-- `POST /api/v1/proxies/{proxy_id}/relocate`
-- `GET /api/v1/proxies/{proxy_id}/credentials`
-- `POST /api/v1/proxies/{proxy_id}/credentials/copy`
-- `POST /api/v1/proxies/{proxy_id}/credentials/rotate`
-- `GET/PUT/DELETE /api/v1/proxies/{proxy_id}/rotation-schedule`
-- `GET/PUT/DELETE /api/v1/proxies/{proxy_id}/ip-auth`
-- `GET /api/v1/proxies/{proxy_id}/usage`
-
-### 本地代理组
-
-- `GET/POST /api/v1/proxy-groups`
-- `GET/PUT/DELETE /api/v1/proxy-groups/{group_id}`
-- `PUT /api/v1/proxy-groups/{group_id}/members`
-- `POST /api/v1/proxy-groups/{group_id}/select`（事务内跳过失效成员并推进 Round Robin 游标）
-
-外部能力必须经过 capability flag 和脱敏 fixture 验证后才能启用 UI；未验证能力返回 `PROXYPANEL_SCHEMA_UNSUPPORTED` 并隐藏或禁用操作。所有有副作用的请求携带 `Idempotency-Key`，异步结果统一通过 `GET /api/v1/proxy-operations/{operation_id}` 查询。
-
-### 写操作结果
-
-同步完成的操作返回 `completed`；外部服务需要异步处理时返回 `accepted + operation_id`。本地 sidecar 提供 operation 状态查询，renderer 不直接轮询 ProxyPanel。
-
-统一错误码：
-
-`PROXYPANEL_NOT_CONFIGURED`、`PROXYPANEL_AUTH_FAILED`、`PROXYPANEL_RATE_LIMITED`、`PROXYPANEL_NOT_FOUND`、`PROXYPANEL_CONFLICT`、`PROXYPANEL_VALIDATION_ERROR`、`PROXYPANEL_UNAVAILABLE`、`PROXYPANEL_SCHEMA_UNSUPPORTED`、`PROXY_IN_USE`、`PROXY_GROUP_IN_USE`、`PROXY_GROUP_NO_AVAILABLE_MEMBER`、`STALE_PROJECTION`。
-
-## 6. UI 规格
-
-使用单一主内容区，不增加页面内侧栏。
-
-### 主页面
-
-- ProxyPanel 连接卡片：连接名称、状态、最近同步、刷新代理、连接设置；
-- 摘要：只显示可验证的运行中、异常、已同步数量；即将到期按第 2 节规则处理；
-- 代理舰队表格：名称、状态、运营商、城市、出口 IP、延迟、轮换、关联配置、操作；
-- 本地代理组区域：明确标识 AutoFlow 本地编排。
-
-### 详情 Drawer
-
-标签：概览、位置与轮换、凭据与白名单、用量。支持健康检查、Change IP、改地点、轮换计划、凭据轮换、IPv4 白名单和关联配置。
-
-### 状态
-
-必须覆盖加载、未连接、同步失败、健康检查中、429、认证失败、空数据、stale projection、成功 Toast 和危险操作确认。
-
-## 7. 安全与平台边界
-
-- API key 和 endpoint password 只在 sidecar 使用；CredentialStore 只返回 secret ref；
-- renderer 不直接访问 ProxyPanel；
-- 诊断、日志和异常过滤 key/password/完整 URL；
-- Windows/macOS 只通过既有 sidecar、filesystem 和 credential adapter，领域逻辑不判断平台；
-- 数据面健康探针默认使用固定探针，不发送用户业务 URL。
-
-## 8. 验收标准
-
-- 真实/脱敏 ProxyPanel fixture 能完成连接验证、同步、详情、探测、位置、轮换、白名单和凭据状态；
-- 缺少到期字段时 UI 不显示伪造的“即将到期”；
-- 429、401/403、404、409、422、5xx 都映射为稳定错误并脱敏；
-- API key、密码、认证 URL 不出现在 renderer、日志、错误、OpenAPI response；
-- 本地代理组 Round Robin、成员排序、风险二次确认和浏览器配置引用保护可用；
-- 前端只使用生成契约和 hooks，不保留长期 mock-only 页面；
-- 后端单测、契约测试、前端交互测试、Electron E2E、macOS/Windows CI 通过；
-- 无真实 key 时可以用脱敏 fixture 完成完整测试。
+缺少真实 Key 时可以继续本地结构、内部接口、组件和 synthetic 异常测试；Provider 阶段保持“未验证”，不能拿手写返回替代现场证据。所有代码实施均在用户明确要求开始实施后执行，按[实施计划](../plans/2026-09-12-proxy-management-implementation.md)逐切片完成前后端与验证。
