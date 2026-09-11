@@ -31,3 +31,5 @@ button { cursor: pointer; }
 @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
 @keyframes toast-enter { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
 .toast-enter { animation: toast-enter 150ms ease-out both; }
+@keyframes toast-exit { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(0.5rem); } }
+.toast-exit { animation: toast-exit 150ms ease-in both; }

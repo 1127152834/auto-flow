@@ -14,6 +14,10 @@ it('shows a toast and removes it after 2600ms', async () => {
   act(() => { vi.advanceTimersByTime(2599) })
   expect(screen.getByRole('status')).toBeInTheDocument()
   act(() => { vi.advanceTimersByTime(1) })
+  expect(screen.getByRole('status')).toHaveClass('toast-exit')
+  act(() => { vi.advanceTimersByTime(149) })
+  expect(screen.getByRole('status')).toBeInTheDocument()
+  act(() => { vi.advanceTimersByTime(1) })
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
 })
 

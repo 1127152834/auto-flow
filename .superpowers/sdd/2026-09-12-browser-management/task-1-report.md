@@ -58,4 +58,23 @@ npm run lint
 eslint . (passed)
 
 git diff --check (passed)
+
+## 修复轮 2（2026-09-12）
+
+- nested Dialog 测试现在验证打开内层后活动元素确实位于内层（内层按钮获得焦点），随后发送 Escape，断言只关闭最上层、外层仍在且焦点恢复到内层触发器。
+- Toaster 生命周期拆为两个阶段：2600ms 前保持 `toast-enter`，2600ms 进入 `toast-exit`，再经过 150ms 才从 DOM 移除；fake timer 测试覆盖两个边界。
+
+修复轮 2 验证：
+
+```text
+npm test -- --run src/renderer/shared/components
+Test Files  3 passed (3)
+Tests       8 passed (8)
+
+npm run typecheck
+tsc --noEmit (passed)
+
+npm run lint
+eslint . (passed)
+```
 ```
