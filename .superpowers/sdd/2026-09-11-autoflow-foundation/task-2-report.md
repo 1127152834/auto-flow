@@ -33,6 +33,21 @@ An additional subprocess check started `python -m autoflow --port 0`, parsed a n
 
 The implementation keeps startup output in `__main__.py`; routes never emit readiness text. The instance token is read from `AUTOFLOW_INSTANCE_TOKEN` and is never included in logs or readiness JSON. Socket pre-binding makes port 0 resolution deterministic before Uvicorn starts.
 
-## Concerns
+## Review repair
 
-No unresolved implementation concerns. The suite emits upstream Starlette/httpx deprecation warnings that are unrelated to this change.
+The review identified two protocol issues and both are fixed:
+
+- CLI startup now rejects every host except `127.0.0.1`, preventing non-loopback sidecar exposure.
+- `/api/v1/*` now requires a configured matching token; missing configuration and missing or incorrect headers all return 401.
+
+Added regression coverage for `0.0.0.0`, a LAN address, and an absent token configuration.
+
+Repair validation:
+
+```text
+uv --directory apps/backend run pytest -q
+```
+
+Result: `7 passed`, 2 upstream Starlette/httpx deprecation warnings.
+
+Remaining concern: the warnings come from the installed dependency stack and are unrelated to sidecar behavior.

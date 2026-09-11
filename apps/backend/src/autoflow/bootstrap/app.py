@@ -11,8 +11,8 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
-        if request.url.path.startswith("/api/v1/") and settings.instance_token is not None:
-            if request.headers.get("x-autoflow-token") != settings.instance_token:
+        if request.url.path.startswith("/api/v1/"):
+            if settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token:
                 return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         return await call_next(request)
 

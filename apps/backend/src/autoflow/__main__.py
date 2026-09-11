@@ -16,6 +16,8 @@ def main() -> None:
     parser.add_argument("--instance-id", required=True)
     parser.add_argument("--parent-pid", type=int)
     args = parser.parse_args()
+    if args.host != "127.0.0.1":
+        parser.error("sidecar host must be 127.0.0.1")
     if not 0 <= args.port <= 65535:
         parser.error("port must be between 0 and 65535")
 
