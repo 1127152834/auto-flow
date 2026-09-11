@@ -8,3 +8,6 @@ __pycache__/
 .ruff_cache/
 *.py[cod]
 .DS_Store
+
+# External source retained locally for architecture and capability research.
+reference/WebRPA/
