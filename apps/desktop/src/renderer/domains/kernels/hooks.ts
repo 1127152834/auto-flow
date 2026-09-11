@@ -30,6 +30,31 @@ const isTerminal = (operation: KernelOperation): operation is KernelOperation & 
   operation.state === 'cancelled' || operation.state === 'completed' || operation.state === 'failed'
 )
 
+const operationStateOrder: Record<KernelOperation['state'], number> = {
+  queued: 0,
+  downloading: 1,
+  verifying: 2,
+  extracting: 3,
+  cancelling: 4,
+  cancelled: 5,
+  completed: 5,
+  failed: 5,
+}
+
+export function mergeKernelOperation(current: KernelOperation | undefined, incoming: KernelOperation): KernelOperation {
+  if (!current) return incoming
+  if (isTerminal(current) || operationStateOrder[current.state] > operationStateOrder[incoming.state]) return current
+  return incoming
+}
+
+export function upsertKernelOperation(current: KernelOperation[] = [], incoming: KernelOperation): KernelOperation[] {
+  const index = current.findIndex((operation) => operation.id === incoming.id)
+  if (index < 0) return [...current, incoming]
+  const next = [...current]
+  next[index] = mergeKernelOperation(current[index], incoming)
+  return next
+}
+
 function notifyTerminal(operation: KernelOperation & { state: TerminalState }) {
   if (operation.state === 'completed') notify({ title: '内核安装完成', tone: 'success' })
   else if (operation.state === 'cancelled') notify({ title: '内核安装已取消', tone: 'info' })
@@ -53,8 +78,10 @@ export function useKernelEvents(options: KernelEventsOptions = {}) {
         if (controller.signal.aborted) return
         const cached = queryClient.getQueryData<KernelOperation[]>(kernelKeys.operations(instanceId)) ?? []
         const cachedStates = new Map(cached.map((operation) => [operation.id, operation.state]))
-        queryClient.setQueryData(kernelKeys.operations(instanceId), operations)
-        for (const operation of operations) {
+        const cachedById = new Map(cached.map((operation) => [operation.id, operation]))
+        const merged = operations.map((operation) => mergeKernelOperation(cachedById.get(operation.id), operation))
+        queryClient.setQueryData(kernelKeys.operations(instanceId), merged)
+        for (const operation of merged) {
           const previous = states.get(operation.id) ?? cachedStates.get(operation.id)
           states.set(operation.id, operation.state)
           if (previous !== undefined && previous !== operation.state && isTerminal(operation)) {
@@ -127,7 +154,7 @@ export function useDownloadKernel() {
     retry: false,
     onSuccess: (operation) => queryClient.setQueryData<KernelOperation[]>(
       kernelKeys.operations(instanceId),
-      (current = []) => [...current.filter((item) => item.id !== operation.id), operation],
+      (current = []) => upsertKernelOperation(current, operation),
     ),
   })
 }

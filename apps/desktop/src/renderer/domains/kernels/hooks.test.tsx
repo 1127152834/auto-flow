@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApiProvider } from '../../app/ApiProvider'
 import type { KernelOperation } from '../../shared/api/types'
-import { kernelKeys, useKernelEvents } from './hooks'
+import { kernelKeys, mergeKernelOperation, useKernelEvents } from './hooks'
 
 const encoder = new TextEncoder()
 
@@ -36,6 +36,12 @@ function Harness({
 }
 
 afterEach(() => vi.unstubAllGlobals())
+
+it('does not move an operation backward after a terminal or cancelling state', () => {
+  expect(mergeKernelOperation(operation('completed'), operation('queued')).state).toBe('completed')
+  expect(mergeKernelOperation(operation('cancelling'), operation('extracting')).state).toBe('cancelling')
+  expect(mergeKernelOperation(operation('downloading'), operation('verifying')).state).toBe('verifying')
+})
 
 it('drops late events from an old sidecar instance', async () => {
   const streams = new Map<string, ReadableStreamDefaultController<Uint8Array>>()

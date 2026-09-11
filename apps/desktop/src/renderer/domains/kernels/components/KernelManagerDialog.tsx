@@ -8,6 +8,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../../shared/components/ui/dialog'
 import {
   kernelKeys,
+  upsertKernelOperation,
   useCancelKernelDownload,
   useCheckKernelUpdate,
   useConnectKernelLicense,
@@ -36,6 +37,7 @@ export type KernelManagerDialogProps = {
 type Filter = 'all' | 'public' | 'licensed' | 'installed'
 const filters: readonly [Filter, string][] = [['all', '全部版本'], ['public', '公开版'], ['licensed', '正式版'], ['installed', '已安装']]
 const keyOf = (value: KernelRef) => `${value.edition}|${value.version}`
+const releaseKeyOf = (value: Pick<KernelReleaseItem, 'edition' | 'version' | 'releaseChannel'>) => `${keyOf(value)}|${value.releaseChannel ?? 'unknown'}`
 const message = (error: unknown) => error instanceof Error ? error.message : '操作未完成，请稍后重试'
 
 export function KernelManagerDialog({ open, onOpenChange, selectedKernel, returnFocusTo }: KernelManagerDialogProps) {
@@ -84,15 +86,15 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   const releases = useMemo<KernelReleaseItem[]>(() => {
     const local = new Map(localKernels.map((item) => [keyOf(item), item]))
     const values = new Map<string, KernelReleaseItem>()
-    for (const release of catalog.data?.releases ?? []) values.set(keyOf(release), {
+    for (const release of catalog.data?.releases ?? []) values.set(releaseKeyOf(release), {
       ...release,
       installed: local.has(keyOf(release)),
     })
-    for (const item of localKernels) if (!values.has(keyOf(item))) values.set(keyOf(item), {
+    for (const item of localKernels) if (![...values.values()].some((release) => keyOf(release) === keyOf(item))) values.set(`${keyOf(item)}|unknown`, {
       edition: item.edition,
       version: item.version,
       chromiumVersion: null,
-      releaseChannel: 'stable',
+      releaseChannel: null,
       publishedAt: null,
       archive: null,
       size: item.size,
@@ -121,6 +123,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
 
   async function startDownload(release: KernelReleaseItem) {
     setActionError(null)
+    if (!release.releaseChannel) { setActionError('该本机内核没有可用的发布通道信息。'); return }
     try {
       await download.mutateAsync({ edition: release.edition, version: release.version, releaseChannel: release.releaseChannel })
     } catch (error) {
@@ -142,7 +145,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
     setCancellingOperationId(operationId)
     try {
       const value = await cancel.mutateAsync(operationId)
-      queryClient.setQueryData<KernelOperation[]>(kernelKeys.operations(instanceId), (current = []) => current.map((item) => item.id === value.id ? value : item))
+      queryClient.setQueryData<KernelOperation[]>(kernelKeys.operations(instanceId), (current = []) => upsertKernelOperation(current, value))
       if (!operationIsActive(value)) { setCancellingOperationId(null); terminal(value) }
     } catch (error) {
       setCancellingOperationId(null)
@@ -216,7 +219,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
           {catalog.error || catalog.data?.catalogError ? <p role="alert" className="m-0 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">发布列表暂不可用：{catalog.data?.catalogError ?? message(catalog.error)}。仍可管理本机已安装内核。</p> : null}
           {selectedUnavailable ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">当前表单选择的内核已不可用；原选择值会保留，请改选已安装内核后再保存。</p> : null}
           {actionError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{actionError}</p> : null}
-          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationId={cancellingOperationId} busy={remove.isPending || setDefault.isPending || download.isPending} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
+          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationId={cancellingOperationId} busy={busy} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
         </section>
       </DialogContent>
     </Dialog>

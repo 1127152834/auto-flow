@@ -22,9 +22,9 @@ const catalog: KernelCatalog = {
 
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } })
 const eventFrame = (operations: KernelOperation[]) => encoder.encode(`event: snapshot\ndata: ${JSON.stringify({ type: 'snapshot', operations })}\n\n`)
-const operation = (id: string, state: KernelOperation['state'], edition: 'public' | 'licensed' = 'public'): KernelOperation => ({
+const operation = (id: string, state: KernelOperation['state'], edition: 'public' | 'licensed' = 'public', releaseChannel: 'stable' | 'preview' = edition === 'public' ? 'stable' : 'preview'): KernelOperation => ({
   id, edition, requestedVersion: edition === 'public' ? '146.0.1.1' : '151.0.1.1', resolvedVersion: state === 'completed' ? (edition === 'public' ? '146.0.1.1' : '151.0.1.1') : null,
-  releaseChannel: edition === 'public' ? 'stable' : 'preview', state, progress: null, message: null, error: state === 'failed' ? '网络中断' : null,
+  releaseChannel, state, progress: null, message: null, error: state === 'failed' ? '网络中断' : null,
 })
 
 type ServerOptions = {
@@ -136,6 +136,25 @@ it('calls the cancel API and blocks closing until a terminal event refreshes ins
   await waitFor(() => expect(server.installedReads).toBeGreaterThan(reads))
 })
 
+it('does not let a late cancelling response replace an SSE cancelled state', async () => {
+  let resolveCancel!: (response: Response) => void
+  const pendingCancel = new Promise<Response>((resolve) => { resolveCancel = resolve })
+  const server = fakeServer({ route(path, method) {
+    if (path === '/api/v1/kernels/operations/operation-1/cancel' && method === 'POST') return pendingCancel
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const card = (await screen.findByText('CloakBrowser 146.0.1.1')).closest('li') as HTMLElement
+  act(() => server.stream?.enqueue(eventFrame([operation('operation-1', 'downloading')])))
+  await user.click(await within(card).findByRole('button', { name: '取消下载' }))
+  act(() => server.stream?.enqueue(eventFrame([operation('operation-1', 'cancelled')])))
+  await within(card).findByText('下载已取消')
+  resolveCancel(json(operation('operation-1', 'cancelling'), 202))
+  await waitFor(() => expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeEnabled())
+  expect(within(card).getByText('下载已取消')).toBeInTheDocument()
+})
+
 it('retries a failed operation with a new operation id', async () => {
   const server = fakeServer({ license: validLicense, route(path, method, body) {
     if (path === '/api/v1/kernels/download' && method === 'POST') {
@@ -151,6 +170,69 @@ it('retries a failed operation with a new operation id', async () => {
   await user.click(await screen.findByRole('button', { name: '重试下载' }))
   await waitFor(() => expect(screen.getByText('准备下载')).toBeInTheDocument())
   expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(1)
+})
+
+it('shows same-version channels separately and downloads each channel payload', async () => {
+  const dualCatalog: KernelCatalog = { ...catalog, releases: [
+    { ...catalog.releases[1], releaseChannel: 'stable' },
+    { ...catalog.releases[1], releaseChannel: 'preview' },
+  ] }
+  let nextId = 1
+  const server = fakeServer({ catalog: dualCatalog, license: validLicense, route(path, method, body) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return json(operation(`operation-${nextId++}`, 'failed', 'licensed', body?.releaseChannel as 'stable' | 'preview'), 202)
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  await waitFor(() => expect(screen.getAllByText('CloakBrowser 151.0.1.1')).toHaveLength(2))
+  const stableCard = screen.getByText('Stable').closest('li') as HTMLElement
+  const previewCard = screen.getByText('Preview').closest('li') as HTMLElement
+  await user.click(within(stableCard).getByRole('button', { name: '下载安装' }))
+  await user.click(within(previewCard).getByRole('button', { name: '下载安装' }))
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download').map((call) => call.body)).toEqual([
+    { edition: 'licensed', version: '151.0.1.1', releaseChannel: 'stable' },
+    { edition: 'licensed', version: '151.0.1.1', releaseChannel: 'preview' },
+  ])
+})
+
+it('keeps an SSE terminal state when an older download response arrives later', async () => {
+  let resolveDownload!: (response: Response) => void
+  const pendingDownload = new Promise<Response>((resolve) => { resolveDownload = resolve })
+  const server = fakeServer({ license: validLicense, route(path, method) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return pendingDownload
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const card = (await screen.findByText('CloakBrowser 151.0.1.1')).closest('li') as HTMLElement
+  await user.click(within(card).getByRole('button', { name: '下载安装' }))
+  await waitFor(() => expect(server.calls.some((call) => call.path === '/api/v1/kernels/download')).toBe(true))
+  act(() => server.stream?.enqueue(eventFrame([operation('race-operation', 'queued', 'licensed')])))
+  await within(card).findByText('准备下载')
+  act(() => server.stream?.enqueue(eventFrame([operation('race-operation', 'completed', 'licensed')])))
+  await within(card).findByText('安装完成')
+  await waitFor(() => expect(server.installedReads).toBe(2))
+  expect(server.catalogReads).toBe(2)
+  resolveDownload(json(operation('race-operation', 'queued', 'licensed'), 202))
+  await waitFor(() => expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeEnabled())
+  expect(within(card).getByText('安装完成')).toBeInTheDocument()
+  expect(server.installedReads).toBe(2)
+  expect(server.catalogReads).toBe(2)
+})
+
+it('disables a second download while another release is active but keeps cancel available', async () => {
+  const extraRelease = { edition: 'public' as const, version: '147.0.1.1', chromiumVersion: '147.0.1.1', releaseChannel: 'stable' as const, publishedAt: null, archive: null, size: null, installed: false }
+  const server = fakeServer({ license: validLicense, catalog: { ...catalog, releases: [...catalog.releases, extraRelease] } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const secondCard = (await screen.findByText('CloakBrowser 147.0.1.1')).closest('li') as HTMLElement
+  act(() => server.stream?.enqueue(eventFrame([operation('operation-1', 'downloading', 'licensed')])))
+  const activeCard = screen.getByText('CloakBrowser 151.0.1.1').closest('li') as HTMLElement
+  await waitFor(() => expect(within(activeCard).getByRole('button', { name: '取消下载' })).toBeEnabled())
+  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeDisabled()
+  await user.click(within(secondCard).getByRole('button', { name: '下载安装' }))
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(0)
 })
 
 it('refreshes installed kernels after a completed operation', async () => {

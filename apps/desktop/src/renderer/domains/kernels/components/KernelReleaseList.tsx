@@ -3,8 +3,9 @@ import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { KernelOperationStatus, operationIsActive } from './KernelOperationStatus'
 
-export type KernelReleaseItem = Omit<KernelRelease, 'chromiumVersion'> & {
+export type KernelReleaseItem = Omit<KernelRelease, 'chromiumVersion' | 'releaseChannel'> & {
   chromiumVersion: string | null
+  releaseChannel: KernelRelease['releaseChannel'] | null
   localOnly?: boolean
 }
 
@@ -25,11 +26,12 @@ export type KernelReleaseListProps = {
 }
 
 const keyOf = (value: KernelRef) => `${value.edition}|${value.version}`
+const releaseKeyOf = (value: Pick<KernelReleaseItem, 'edition' | 'version' | 'releaseChannel'>) => `${keyOf(value)}|${value.releaseChannel ?? 'unknown'}`
 const formatSize = (size: number | null) => size === null ? '未知' : `${(size / 1024 / 1024).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`
 
 export function KernelReleaseList({ releases, defaultKernel, licensed, operations = [], cancellingOperationId, busy = false, canReveal = true, onDownload, onCancel, onRetry, onSetDefault, onReveal, onDelete }: KernelReleaseListProps) {
   const operationByRelease = new Map<string, KernelOperation>()
-  for (const operation of operations) operationByRelease.set(`${operation.edition}|${operation.requestedVersion}`, operation)
+  for (const operation of operations) operationByRelease.set(`${operation.edition}|${operation.requestedVersion}|${operation.releaseChannel}`, operation)
 
   if (!releases.length) return <p className="rounded-control border border-dashed border-line p-6 text-center text-sm text-muted">没有符合筛选条件的内核版本。</p>
 
@@ -37,16 +39,16 @@ export function KernelReleaseList({ releases, defaultKernel, licensed, operation
     {releases.map((release) => {
       const kernel: KernelRef = { edition: release.edition, version: release.version }
       const isDefault = defaultKernel ? keyOf(defaultKernel) === keyOf(kernel) : false
-      const operation = operationByRelease.get(keyOf(kernel))
+      const operation = operationByRelease.get(releaseKeyOf(release))
       const operationActive = operation ? operationIsActive(operation) : false
       const locked = release.edition === 'licensed' && !licensed && !release.installed
-      return <li key={keyOf(release)} className="rounded-card border border-line bg-surface p-4">
+      return <li key={releaseKeyOf(release)} className="rounded-card border border-line bg-surface p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <strong className="text-sm text-ink">CloakBrowser {release.version}</strong>
               <Badge>{release.edition === 'licensed' ? '正式版' : '公开版'}</Badge>
-              <Badge className="bg-surface-subtle text-muted">{release.releaseChannel === 'preview' ? 'Preview' : 'Stable'}</Badge>
+              <Badge className="bg-surface-subtle text-muted">{release.releaseChannel === 'preview' ? 'Preview' : release.releaseChannel === 'stable' ? 'Stable' : '通道未知'}</Badge>
               {release.installed ? <Badge className="bg-sage-soft text-sage-strong">已安装</Badge> : null}
               {isDefault ? <Badge className="bg-blue-50 text-blue-800">默认</Badge> : null}
             </div>
