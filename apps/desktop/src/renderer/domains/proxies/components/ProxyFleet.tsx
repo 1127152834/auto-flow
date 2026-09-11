@@ -91,7 +91,12 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
             <tbody>
               {page.items.map((proxy) => (
                 <tr className="border-t border-line hover:bg-surface-hover" key={proxy.id}>
-                  <td className="px-4 py-3 font-medium text-ink">{proxy.name_override || proxy.name}</td>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>{proxy.name_override || proxy.name}</span>
+                      {proxy.stale ? <StatusPill tone="warning">待同步</StatusPill> : null}
+                    </div>
+                  </td>
                   <td className="px-4 py-3"><StatusPill tone={proxy.remote_missing ? 'danger' : 'neutral'}>{proxy.remote_missing ? '远端缺失' : proxy.remote_status || '未知'}</StatusPill></td>
                   <td className="px-4 py-3"><HealthPill health={proxy.health} /></td>
                   <td className="px-4 py-3 text-muted">{proxy.carrier || '—'}</td>

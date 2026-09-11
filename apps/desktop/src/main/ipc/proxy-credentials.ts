@@ -92,6 +92,8 @@ export function createCopyProxyCredentialsHandler(dependencies: ProxyCredentialD
       response = await dependencies.request(internalEndpoint(status), {
         method: 'POST',
         cache: 'no-store',
+        redirect: 'error',
+        signal: AbortSignal.timeout(10_000),
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ArrowDown, ArrowUp, Plus, Stack } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, Plus, Stack, X } from '@phosphor-icons/react'
 import type { GroupDraft, GroupPage, GroupView, ProxyView } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
@@ -41,7 +41,7 @@ export function LocalProxyGroupTable({ page, proxies, retryAfterSeconds = 0, onC
             <tbody>{page.items.map((group) => {
               const members = group.member_ids.map((id) => proxyById.get(id)).filter((proxy): proxy is ProxyView => Boolean(proxy))
               const healthy = members.filter((proxy) => proxy.health.state === 'healthy').length
-              return <tr className="border-t border-line" key={group.id}><td className="px-4 py-3 font-medium text-ink">{group.name}</td><td className="px-4 py-3 text-muted">{group.member_ids.length} 个代理</td><td className="px-4 py-3 text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</td><td className="px-4 py-3 text-muted">{group.reference_count}</td><td className="max-w-xs truncate px-4 py-3 text-muted">{group.description || '—'}</td><td className="px-4 py-3"><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0}>删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，服务端会阻止删除并返回引用详情。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></td></tr>
+              return <tr className="border-t border-line" key={group.id}><td className="px-4 py-3 font-medium text-ink">{group.name}</td><td className="px-4 py-3 text-muted">{group.member_ids.length} 个代理</td><td className="px-4 py-3 text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</td><td className="px-4 py-3 text-muted">{group.reference_count}</td><td className="max-w-xs truncate px-4 py-3 text-muted">{group.description || '—'}</td><td className="px-4 py-3"><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0}>删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，请先解除这些浏览器配置的引用。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></td></tr>
             })}</tbody>
           </table>
         </div>
@@ -76,10 +76,11 @@ export function LocalProxyGroupEditor({ open, group, proxies, busy, retryAfterSe
     setHealth('')
   }, [group, open])
 
-  const ordered = memberIds.map((id) => proxies.find((proxy) => proxy.id === id)).filter((proxy): proxy is ProxyView => Boolean(proxy))
+  const proxyById = useMemo(() => new Map(proxies.map((proxy) => [proxy.id, proxy])), [proxies])
+  const ordered = memberIds.map((id) => ({ id, proxy: proxyById.get(id) }))
   const candidates = useMemo(() => proxies.filter((proxy) => {
     const searchable = `${proxy.name_override || proxy.name} ${proxy.city ?? ''} ${proxy.carrier ?? ''}`.toLowerCase()
-    return (!query || searchable.includes(query.toLowerCase())) && (!health || proxy.health.state === health)
+    return !proxy.remote_missing && (!query || searchable.includes(query.toLowerCase())) && (!health || proxy.health.state === health)
   }), [health, proxies, query])
 
   function toggle(id: string, selected: boolean) {
@@ -120,13 +121,16 @@ export function LocalProxyGroupEditor({ open, group, proxies, busy, retryAfterSe
             <div><h3 className="text-sm font-semibold text-ink">选择成员</h3><p className="mt-1 text-xs text-muted">远端缺失的代理不会出现在可选列表中。</p></div>
             <div className="grid gap-2 sm:grid-cols-2"><Input aria-label="搜索组成员" value={query} placeholder="搜索名称、城市或运营商" onChange={(event) => setQuery(event.target.value)} /><Select aria-label="筛选成员健康" value={health} onChange={(event) => setHealth(event.target.value)}><option value="">全部健康状态</option><option value="healthy">健康</option><option value="unhealthy">异常</option><option value="untested">未检测</option></Select></div>
             <div className="max-h-48 overflow-y-auto rounded-control border border-line">
-              {candidates.filter((proxy) => !proxy.remote_missing).map((proxy) => <label className="flex cursor-pointer items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-surface-hover" key={proxy.id}><input type="checkbox" checked={memberIds.includes(proxy.id)} onChange={(event) => toggle(proxy.id, event.target.checked)} /><span className="min-w-0 flex-1 truncate text-sm text-ink">{proxy.name_override || proxy.name}</span><HealthPill health={proxy.health} /></label>)}
+              {candidates.map((proxy) => <label className="flex cursor-pointer items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-surface-hover" key={proxy.id}><input type="checkbox" checked={memberIds.includes(proxy.id)} onChange={(event) => toggle(proxy.id, event.target.checked)} /><span className="min-w-0 flex-1 truncate text-sm text-ink">{proxy.name_override || proxy.name}</span><HealthPill health={proxy.health} /></label>)}
               {!candidates.length ? <p className="p-4 text-center text-sm text-muted">没有匹配代理</p> : null}
             </div>
           </section>
           <section className="grid gap-3">
             <h3 className="text-sm font-semibold text-ink">成员顺序</h3>
-            {ordered.length ? <ol className="grid gap-2">{ordered.map((proxy, index) => <li className="flex min-w-0 items-center gap-3 rounded-control border border-line bg-surface-subtle px-3 py-2" key={proxy.id}><span className="w-6 shrink-0 text-center text-xs text-muted">{index + 1}</span><span className="min-w-0 flex-1 truncate text-sm text-ink">{proxy.name_override || proxy.name}</span><Button type="button" className="h-8 w-8 shrink-0 px-0" variant="ghost" aria-label={`上移 ${proxy.name_override || proxy.name}`} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp /></Button><Button type="button" className="h-8 w-8 shrink-0 px-0" variant="ghost" aria-label={`下移 ${proxy.name_override || proxy.name}`} disabled={index === ordered.length - 1} onClick={() => move(index, 1)}><ArrowDown /></Button></li>)}</ol> : <p className="rounded-control border border-dashed border-line p-4 text-center text-sm text-muted">尚未选择成员</p>}
+            {ordered.length ? <ol className="grid gap-2">{ordered.map(({ id, proxy }, index) => {
+              const label = proxy ? proxy.name_override || proxy.name : '已失效代理'
+              return <li className="flex min-w-0 items-center gap-2 rounded-control border border-line bg-surface-subtle px-3 py-2" key={id}><span className="w-6 shrink-0 text-center text-xs text-muted">{index + 1}</span><span className="min-w-0 flex-1 truncate text-sm text-ink">{label}</span>{proxy?.remote_missing ? <StatusPill tone="danger">远端缺失</StatusPill> : null}<Button type="button" className="h-8 w-8 shrink-0 px-0" variant="ghost" aria-label={`上移 ${label}`} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp /></Button><Button type="button" className="h-8 w-8 shrink-0 px-0" variant="ghost" aria-label={`下移 ${label}`} disabled={index === ordered.length - 1} onClick={() => move(index, 1)}><ArrowDown /></Button><Button type="button" className="h-8 w-8 shrink-0 px-0" variant="ghost" aria-label={`移除 ${label}`} onClick={() => toggle(id, false)}><X /></Button></li>
+            })}</ol> : <p className="rounded-control border border-dashed border-line p-4 text-center text-sm text-muted">尚未选择成员</p>}
           </section>
           {error ? <div className="rounded-control bg-red-50 px-4 py-3 text-sm text-red-700" role="alert"><p>{error}</p>{riskRequired ? <Button className="mt-3" type="button" variant="primary" disabled={retryAfterSeconds > 0} onClick={(event) => void submit(event, true)}>{retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '了解风险并保存'}</Button> : null}</div> : null}
           <div className="flex flex-wrap justify-end gap-2"><DialogClose asChild><Button className="whitespace-nowrap" type="button">取消</Button></DialogClose><Button className="whitespace-nowrap" type="submit" variant="primary" disabled={busy || retryAfterSeconds > 0 || !name.trim()}>{busy ? '保存中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '保存代理组'}</Button></div>

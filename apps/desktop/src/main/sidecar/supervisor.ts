@@ -55,17 +55,25 @@ export class SidecarSupervisor {
   private status: SidecarStatus = initialSidecarStatus()
   private stopping = false
   private startupGeneration = 0
+  private hostToken: string | undefined
   private pendingStart: { generation: number; timer: ReturnType<typeof setTimeout>; reject: (reason?: unknown) => void } | undefined
 
   constructor(private readonly options: SupervisorOptions) {}
 
   getStatus(): SidecarStatus { return this.status }
 
+  // Only main-process IPC uses this. Never include it in renderer status events.
+  getHostStatus(): { state: 'ready'; baseUrl: string; hostToken: string } | { state: 'stopped' } {
+    if (this.status.state !== 'ready' || !this.hostToken) return { state: 'stopped' }
+    return { state: 'ready', baseUrl: this.status.baseUrl, hostToken: this.hostToken }
+  }
+
   async start(): Promise<SidecarStatus> {
     if (this.child) return this.status
     if (this.options.production && !this.options.sidecarPath) throw new Error('production sidecarPath is required')
     if (!this.options.dataDir) throw new Error('sidecar dataDir is required')
     const token = randomBytes(32).toString('hex')
+    this.hostToken = randomBytes(32).toString('hex')
     const sidecarArgs = [
       '--port', '0',
       '--instance-id', this.options.instanceId,
@@ -78,7 +86,7 @@ export class SidecarSupervisor {
     const generation = ++this.startupGeneration
     this.update(applySidecarEvent(this.status, { type: 'spawned' }))
     const child = spawn(command, args, {
-      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...resolveBackendEnvironment(this.options.dataDir), AUTOFLOW_RENDERER_ORIGIN: this.options.rendererOrigin ?? 'null' },
+      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, AUTOFLOW_HOST_TOKEN: this.hostToken, ...resolveBackendEnvironment(this.options.dataDir), AUTOFLOW_RENDERER_ORIGIN: this.options.rendererOrigin ?? 'null' },
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     })
@@ -122,6 +130,7 @@ export class SidecarSupervisor {
       })
       child.once('error', error => { clearTimeout(timer); this.pendingStart = undefined; reject(error) })
       child.once('exit', code => {
+        this.hostToken = undefined
         this.child = undefined
         if (this.stopping) return
         clearTimeout(timer)
@@ -144,6 +153,7 @@ export class SidecarSupervisor {
   async restart(): Promise<SidecarStatus> { await this.stop(); return this.start() }
 
   async stop(): Promise<void> {
+    this.hostToken = undefined
     const child = this.child
     if (!child || this.stopping) return
     this.startupGeneration += 1

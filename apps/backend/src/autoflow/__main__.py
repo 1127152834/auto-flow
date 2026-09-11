@@ -35,6 +35,7 @@ def main() -> None:
         instance_token=os.environ.get("AUTOFLOW_INSTANCE_TOKEN"),
         parent_pid=args.parent_pid,
         renderer_origin=os.environ.get("AUTOFLOW_RENDERER_ORIGIN"),
+        host_token=os.environ.get("AUTOFLOW_HOST_TOKEN"),
     )
     app = create_app(settings)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

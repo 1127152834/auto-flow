@@ -1,3 +1,5 @@
+import secrets
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -7,6 +9,7 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.bootstrap.config import Settings
+from autoflow.bootstrap.proxies import configure_proxy_management
 from autoflow.infrastructure.database.session import migrate_database
 from autoflow.infrastructure.filesystem.paths import AppPaths
 
@@ -17,13 +20,31 @@ def create_app(settings: Settings) -> FastAPI:
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
 
-    app = FastAPI()
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        try:
+            yield
+        finally:
+            close_proxies()
+
+    app = FastAPI(lifespan=lifespan)
     configure_openapi(app, api_version=settings.api_version)
     app.state.paths = paths
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
+    close_proxies = configure_proxy_management(app, paths.database)
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
+        if request.url.path.startswith("/internal/"):
+            supplied = request.headers.get("x-autoflow-host-token", "")
+            if (
+                not settings.host_token or request.headers.get("origin") is not None
+                or not secrets.compare_digest(supplied.encode(), settings.host_token.encode())
+            ):
+                return JSONResponse(
+                    {"detail": "Unauthorized"}, status_code=401,
+                    headers={"Cache-Control": "no-store"},
+                )
         if request.url.path.startswith("/api/v1/") and (
             settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
@@ -35,6 +56,6 @@ def create_app(settings: Settings) -> FastAPI:
             CORSMiddleware,
             allow_origins=[settings.renderer_origin],
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["x-autoflow-token", "content-type"],
+            allow_headers=["x-autoflow-token", "content-type", "Idempotency-Key"],
         )
     return app

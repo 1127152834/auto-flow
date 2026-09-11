@@ -70,7 +70,7 @@ export function ConnectionCard({ connection, syncing, retryAfterSeconds = 0, onC
           <Button onClick={onSync} disabled={syncing || retryAfterSeconds > 0 || connection.status !== 'connected'}>
             <ArrowsClockwise className={syncing ? 'animate-spin' : ''} />{syncing ? '同步中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '刷新代理'}
           </Button>
-          <Button variant="primary" onClick={onConfigure}><GearSix />连接设置</Button>
+          <Button variant="primary" disabled={syncing} onClick={onConfigure}><GearSix />连接设置</Button>
           <AlertDialog>
             <AlertDialogTrigger asChild><Button variant="ghost" disabled={retryAfterSeconds > 0}>断开</Button></AlertDialogTrigger>
             <AlertDialogContent>

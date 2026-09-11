@@ -1,13 +1,21 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
+import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 
 let mainWindow: BrowserWindow | undefined
 let supervisor: SidecarSupervisor | undefined
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({ webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  ipcMain.removeHandler('autoflow:copy-proxy-credentials')
+  ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
+    allowedSenderId: mainWindow.webContents.id,
+    getSidecarStatus: () => supervisor?.getHostStatus() ?? { state: 'stopped' },
+    request: fetch,
+    clipboard,
+  }))
   mainWindow.on('closed', () => { mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))

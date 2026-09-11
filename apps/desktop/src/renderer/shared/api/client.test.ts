@@ -26,3 +26,14 @@ it('adds the sidecar token to every request', async () => {
     headers: { 'x-autoflow-token': 'secret' },
   })
 })
+
+it('preserves structured errors for risk confirmation and rate limiting', async () => {
+  const error = { code: 'PROXYPANEL_RATE_LIMITED', message: '稍后重试', request_id: 'r1', field_errors: {}, retry_after_seconds: 12, outcome_unknown: false }
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error }), { status: 429 })))
+  await expect(createApiClient('http://127.0.0.1:43127', 'secret').request('/api/v1/proxies')).rejects.toMatchObject({ status: 429, error })
+})
+
+it('supports a no-content delete response', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 204 })))
+  await expect(createApiClient('http://127.0.0.1:43127', 'secret').request('/api/v1/proxy-groups/g1', { method: 'DELETE' })).resolves.toBeUndefined()
+})

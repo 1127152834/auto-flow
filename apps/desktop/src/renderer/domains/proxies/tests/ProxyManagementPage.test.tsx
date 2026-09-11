@@ -1,4 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
+import { StrictMode } from 'react'
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
@@ -156,6 +157,27 @@ it('preserves ordered members and requires an explicit risk acknowledgement', as
   expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ member_ids: [second.id, first.id] }), true)
 })
 
+it('keeps a missing group member visible so it can be removed before saving', async () => {
+  const user = userEvent.setup()
+  const group: GroupView = {
+    id: 'group-missing',
+    name: '待清理代理组',
+    description: '',
+    member_ids: ['missing-proxy'],
+    revision: 1,
+    reference_count: 0,
+    created_at: '2026-09-12T01:00:00Z',
+    updated_at: '2026-09-12T01:00:00Z',
+  }
+  const onSubmit = vi.fn(async () => undefined)
+  render(<LocalProxyGroupEditor open group={group} proxies={[]} busy={false} riskRequired={false} onOpenChange={() => undefined} onSubmit={onSubmit} />)
+
+  expect(screen.getByText('已失效代理')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: '移除 已失效代理' }))
+  await user.click(screen.getByRole('button', { name: '保存代理组' }))
+  expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ member_ids: [] }), false)
+})
+
 it('keeps the group draft and resubmits the same version after a server risk response', async () => {
   const user = userEvent.setup()
   const risky = proxy('proxy-2', 'Miami AT&T', 'untested')
@@ -293,4 +315,42 @@ it('probes SOCKS5 when it is the only available endpoint', async () => {
 
   await user.click(await screen.findByRole('button', { name: '检测' }))
   await waitFor(() => expect(requestedProtocol).toBe('socks5'))
+})
+
+it('marks stale projections and attempts one background sync for an expired connection', async () => {
+  const expiredConnection = {
+    ...connection,
+    last_synced_at: new Date(Date.now() - 6 * 60_000).toISOString(),
+  }
+  const staleProxy = { ...proxies.items[0], stale: true }
+  const syncError: ApiError = {
+    code: 'PROXYPANEL_UNAVAILABLE',
+    message: 'ProxyPanel 暂不可用',
+    request_id: 'request-auto-sync',
+    field_errors: {},
+    retry_after_seconds: null,
+    outcome_unknown: false,
+  }
+  let syncCalls = 0
+
+  render(
+    <StrictMode>
+      <ProxyManagementPage api={client((path) => {
+        if (path === '/api/v1/proxy-panel/connections') return { items: [expiredConnection] }
+        if (path === `/api/v1/proxy-panel/connections/${connection.id}/sync`) {
+          syncCalls += 1
+          throw new ApiClientError(syncError.message, 503, syncError)
+        }
+        if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+        if (path.startsWith('/api/v1/proxies?')) return { ...proxies, items: [staleProxy] }
+        throw new Error(`Unexpected request: ${path}`)
+      })} />
+    </StrictMode>,
+  )
+
+  expect(await screen.findByText('待同步')).toBeInTheDocument()
+  await waitFor(() => expect(syncCalls).toBe(1))
+  expect(screen.getByText('Dallas Verizon')).toBeInTheDocument()
+  expect(await screen.findByText(/ProxyPanel 暂不可用。已加载的数据会继续保留/)).toBeInTheDocument()
+  expect(syncCalls).toBe(1)
 })

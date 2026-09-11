@@ -55,6 +55,8 @@ export function useProxyManagement(api: ProxyApi) {
   const filterRequest = useRef(0)
   const detailRequest = useRef(0)
   const selectedProxyId = useRef<string | null>(null)
+  const connectionRequestInFlight = useRef(false)
+  const autoSyncAttempted = useRef(new Set<string>())
 
   const rememberRetryAfter = useCallback((error: unknown) => {
     const seconds = errorDetail(error)?.retry_after_seconds
@@ -120,6 +122,12 @@ export function useProxyManagement(api: ProxyApi) {
   }, [loadBase])
 
   const saveConnection = useCallback(async (name: string, apiKey: string) => {
+    if (connectionRequestInFlight.current) {
+      const message = '代理正在同步，请等待完成后再保存连接设置'
+      setConnectionError(message)
+      throw new Error(message)
+    }
+    connectionRequestInFlight.current = true
     setConnectionBusy(true)
     setConnectionError(undefined)
     try {
@@ -130,6 +138,7 @@ export function useProxyManagement(api: ProxyApi) {
       if (next.name !== name) next = await api.updateConnection(next, name)
       setConnection(next)
       if (keyChanged) {
+        autoSyncAttempted.current.add(next.id)
         try {
           await waitForAction(await api.sync(next.id))
         } catch (error) {
@@ -148,6 +157,7 @@ export function useProxyManagement(api: ProxyApi) {
       setConnectionError(errorMessage(error))
       throw error
     } finally {
+      connectionRequestInFlight.current = false
       setConnectionBusy(false)
     }
   }, [api, connection, loadBase, rememberRetryAfter])
@@ -167,8 +177,10 @@ export function useProxyManagement(api: ProxyApi) {
     }
   }, [api, connection, rememberRetryAfter])
 
-  const sync = useCallback(async () => {
-    if (!connection || syncing) return
+  const sync = useCallback(async (automatic = false) => {
+    if (!connection || connectionRequestInFlight.current || retryUntil > Date.now()) return
+    connectionRequestInFlight.current = true
+    if (!automatic) autoSyncAttempted.current.add(connection.id)
     setSyncing(true)
     try {
       await waitForAction(await api.sync(connection.id))
@@ -176,15 +188,26 @@ export function useProxyManagement(api: ProxyApi) {
       setConnection(nextConnection)
       setProxies(nextProxies)
       setGroupCandidates(nextCandidates)
-      notify({ title: '代理已同步', tone: 'success' })
+      if (!automatic) notify({ title: '代理已同步', tone: 'success' })
     } catch (error) {
       rememberRetryAfter(error)
       setLoadError(errorMessage(error))
       notify({ title: errorMessage(error), tone: 'error' })
     } finally {
+      connectionRequestInFlight.current = false
       setSyncing(false)
     }
-  }, [api, connection, filters, rememberRetryAfter, syncing])
+  }, [api, connection, filters, rememberRetryAfter, retryUntil])
+
+  useEffect(() => {
+    const lastSyncedAt = connection?.last_synced_at
+    if (!connection || !lastSyncedAt || connectionBusy || connectionRequestInFlight.current) return
+    const lastSyncedTime = Date.parse(lastSyncedAt)
+    if (!Number.isFinite(lastSyncedTime) || Date.now() - lastSyncedTime <= 5 * 60_000) return
+    if (autoSyncAttempted.current.has(connection.id)) return
+    autoSyncAttempted.current.add(connection.id)
+    void sync(true)
+  }, [connection, connectionBusy, sync])
 
   const probe = useCallback(async (proxy: ProxyView) => {
     if (checkingId) return

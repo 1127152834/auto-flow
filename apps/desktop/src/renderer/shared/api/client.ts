@@ -1,4 +1,5 @@
 import type { HealthResponse } from './types'
+import type { components } from './generated'
 
 export type ApiClientConfig = {
   baseUrl: string
@@ -9,6 +10,7 @@ export class ApiClientError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly error?: components['schemas']['ApiError'],
   ) {
     super(message)
     this.name = 'ApiClientError'
@@ -43,9 +45,17 @@ export function createApiClient(configOrBaseUrl: ApiClientConfig | string, token
     })
 
     if (!response.ok) {
-      throw new ApiClientError(`API request failed with status ${response.status}`, response.status)
+      const payload: unknown = await response.json().catch(() => undefined)
+      const detail = typeof payload === 'object' && payload !== null && 'error' in payload
+        ? payload.error : undefined
+      const error = typeof detail === 'object' && detail !== null
+        && 'code' in detail && typeof detail.code === 'string'
+        && 'message' in detail && typeof detail.message === 'string'
+        ? detail as components['schemas']['ApiError'] : undefined
+      throw new ApiClientError(error?.message ?? `API request failed with status ${response.status}`, response.status, error)
     }
 
+    if (response.status === 204) return undefined as T
     return response.json() as Promise<T>
   }
 
