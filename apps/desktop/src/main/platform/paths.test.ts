@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { join } from 'node:path'
 import { resolveBackendEnvironment, resolvePackagedSidecarPath, resolvePlatformPaths } from './paths'
 
 describe('platform paths', () => {
@@ -10,8 +11,8 @@ describe('platform paths', () => {
   })
 
   it('resolves the packaged sidecar executable by platform', () => {
-    expect(resolvePackagedSidecarPath('/app/resources', 'win32')).toBe('/app/resources/sidecar/autoflow-sidecar.exe')
-    expect(resolvePackagedSidecarPath('/app/resources', 'darwin')).toBe('/app/resources/sidecar/autoflow-sidecar')
+    expect(resolvePackagedSidecarPath('/app/resources', 'win32')).toBe(join('/app/resources', 'backend', 'autoflow-backend.exe'))
+    expect(resolvePackagedSidecarPath('/app/resources', 'darwin')).toBe(join('/app/resources', 'backend', 'autoflow-backend'))
   })
 
   it('passes the Electron userData directory to the backend', () => {

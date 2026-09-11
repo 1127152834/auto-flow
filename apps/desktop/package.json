@@ -1,5 +1,6 @@
 {
   "name": "@autoflow/desktop",
+  "version": "0.1.0",
   "private": true,
   "main": "./out/main/index.js",
   "scripts": {
@@ -8,12 +9,12 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "package:dir": "electron-builder --config electron-builder.yml --dir",
     "openapi:generate": "node ../../scripts/generate-api.mjs",
     "openapi:check": "node ../../scripts/generate-api.mjs --check"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",
-    "electron": "^37.3.1",
     "electron-vite": "^4.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -22,12 +23,14 @@
     "vitest": "^3.2.4"
   },
   "devDependencies": {
+    "electron": "37.10.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "eslint": "^10.10.0",
+    "electron-builder": "^26.0.12",
     "jsdom": "^30.0.1",
     "typescript-eslint": "^8.70.0"
   }

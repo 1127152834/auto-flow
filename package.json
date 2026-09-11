@@ -11,6 +11,8 @@
     "typecheck": "npm --workspace @autoflow/desktop run typecheck",
     "lint": "npm --workspace @autoflow/desktop run lint",
     "build": "npm --workspace @autoflow/desktop run build",
+    "backend:build": "node scripts/build-backend.mjs",
+    "package:dir": "npm --workspace @autoflow/desktop run package:dir",
     "openapi:generate": "node scripts/generate-api.mjs",
     "openapi:check": "node scripts/generate-api.mjs --check",
     "smoke:sidecar": "node scripts/smoke-sidecar.mjs"

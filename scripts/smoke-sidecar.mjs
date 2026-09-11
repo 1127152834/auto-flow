@@ -1,9 +1,14 @@
 import { spawn } from 'node:child_process'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
+const executableIndex = process.argv.indexOf('--executable')
+const suppliedExecutable = executableIndex === -1 ? undefined : process.argv[executableIndex + 1]
+if (executableIndex !== -1 && (!suppliedExecutable || suppliedExecutable.startsWith('--'))) {
+  throw new Error('--executable requires a path')
+}
 const suppliedBaseUrl = process.env.AUTOFLOW_BASE_URL
 const suppliedToken = process.env.AUTOFLOW_INSTANCE_TOKEN
 if ((suppliedBaseUrl && !suppliedToken) || (!suppliedBaseUrl && suppliedToken)) {
@@ -35,12 +40,16 @@ function waitForReady(child, timeoutMs = 15_000) {
 }
 
 async function stop(child) {
-  if (!child || child.exitCode !== null) return
+  if (!child) return
+  if (child.exitCode !== null || child.signalCode !== null) return
   child.kill('SIGTERM')
   await new Promise(resolveDone => {
-    const timer = setTimeout(() => { child.kill('SIGKILL'); resolveDone() }, 3_000)
+    const timer = setTimeout(() => child.kill('SIGKILL'), 3_000)
     child.once('exit', () => { clearTimeout(timer); resolveDone() })
   })
+  if (child.exitCode === null && child.signalCode === null) {
+    throw new Error('sidecar did not exit')
+  }
 }
 
 async function main() {
@@ -48,9 +57,33 @@ async function main() {
     await checkHealth(suppliedBaseUrl, suppliedToken)
     return
   }
+  if (suppliedExecutable) {
+    const executable = resolve(root, suppliedExecutable)
+    const details = await stat(executable).catch(() => undefined)
+    if (!details?.isFile()) throw new Error(`sidecar executable not found: ${executable}`)
+    await smokeExecutable(executable)
+    return
+  }
   const dataDir = await mkdtemp(resolve(tmpdir(), 'autoflow-smoke-'))
   const token = `smoke-${process.pid}-${Date.now()}`
   const child = spawn('uv', ['run', '--directory', 'apps/backend', 'python', '-m', 'autoflow', '--instance-id', 'smoke-sidecar', '--data-dir', dataDir, '--port', '0'], {
+    cwd: root,
+    env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token },
+    stdio: ['ignore', 'pipe', 'inherit'],
+  })
+  try {
+    const ready = await waitForReady(child)
+    await checkHealth(`http://127.0.0.1:${ready.port}`, token, ready)
+  } finally {
+    await stop(child)
+    await rm(dataDir, { recursive: true, force: true })
+  }
+}
+
+async function smokeExecutable(executable) {
+  const dataDir = await mkdtemp(resolve(tmpdir(), 'autoflow-smoke-'))
+  const token = `smoke-${process.pid}-${Date.now()}`
+  const child = spawn(executable, ['--instance-id', 'smoke-sidecar', '--data-dir', dataDir, '--port', '0'], {
     cwd: root,
     env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token },
     stdio: ['ignore', 'pipe', 'inherit'],

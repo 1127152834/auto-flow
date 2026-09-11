@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { packagedSidecarPath } from '../sidecar/ready-protocol'
 
 export type PlatformPaths = { userData: string; logs: string }
 export type BackendEnvironment = { AUTOFLOW_DATA_DIR: string }
@@ -12,5 +13,5 @@ export function resolveBackendEnvironment(userData: string): BackendEnvironment 
 }
 
 export function resolvePackagedSidecarPath(resourcesPath: string, platformName: NodeJS.Platform): string {
-  return join(resourcesPath, 'sidecar', platformName === 'win32' ? 'autoflow-sidecar.exe' : 'autoflow-sidecar')
+  return packagedSidecarPath(resourcesPath, platformName)
 }

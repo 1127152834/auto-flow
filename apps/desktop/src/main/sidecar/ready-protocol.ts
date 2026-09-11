@@ -1,3 +1,5 @@
+import { join } from 'node:path'
+
 export type SidecarReady = { apiVersion: 'v1'; instanceId: string; port: number }
 
 export function parseReadyLine(line: string): SidecarReady {
@@ -17,4 +19,8 @@ export function parseReadyLine(line: string): SidecarReady {
     throw new Error('invalid instance metadata')
   }
   return { apiVersion: 'v1', instanceId: data.instanceId, port: Number(data.port) }
+}
+
+export function packagedSidecarPath(resourcesPath: string, platformName: NodeJS.Platform): string {
+  return join(resourcesPath, 'backend', platformName === 'win32' ? 'autoflow-backend.exe' : 'autoflow-backend')
 }
