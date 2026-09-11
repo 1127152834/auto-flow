@@ -5,7 +5,10 @@ a = Analysis(
     ['src/autoflow/__main__.py'],
     pathex=['src'],
     binaries=[],
-    datas=[],
+    datas=[
+        ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
+        ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
