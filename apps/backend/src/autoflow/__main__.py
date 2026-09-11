@@ -1,6 +1,7 @@
 import argparse
 import os
 import socket
+from pathlib import Path
 
 import uvicorn
 
@@ -15,11 +16,14 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--instance-id", required=True)
     parser.add_argument("--parent-pid", type=int)
+    parser.add_argument("--data-dir", required=True)
     args = parser.parse_args()
     if args.host != "127.0.0.1":
         parser.error("sidecar host must be 127.0.0.1")
     if not 0 <= args.port <= 65535:
         parser.error("port must be between 0 and 65535")
+    if not Path(args.data_dir).is_absolute():
+        parser.error("data directory must be absolute")
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -27,7 +31,7 @@ def main() -> None:
     sock.listen(socket.SOMAXCONN)
     actual_port = sock.getsockname()[1]
     settings = Settings(
-        data_dir=os.environ.get("AUTOFLOW_DATA_DIR", "/tmp/autoflow"),
+        data_dir=args.data_dir,
         instance_id=args.instance_id,
         instance_token=os.environ.get("AUTOFLOW_INSTANCE_TOKEN"),
         parent_pid=args.parent_pid,

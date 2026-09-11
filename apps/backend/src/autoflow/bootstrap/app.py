@@ -1,12 +1,20 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.health import health_router
 from autoflow.bootstrap.config import Settings
+from autoflow.infrastructure.filesystem.paths import AppPaths
 
 
 def create_app(settings: Settings) -> FastAPI:
+    paths = AppPaths.from_data_dir(Path(settings.data_dir))
+    for directory in (paths.data_dir, paths.logs, paths.workspace, paths.cache, paths.temp):
+        directory.mkdir(parents=True, exist_ok=True)
+
     app = FastAPI()
+    app.state.paths = paths
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
 
     @app.middleware("http")

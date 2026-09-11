@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { platform } from 'node:process'
+import { resolveBackendEnvironment } from '../platform/paths'
 import { parseReadyLine, type SidecarReady } from './ready-protocol'
 
 export type SidecarStatus =
@@ -61,14 +62,20 @@ export class SidecarSupervisor {
   async start(): Promise<SidecarStatus> {
     if (this.child) return this.status
     if (this.options.production && !this.options.sidecarPath) throw new Error('production sidecarPath is required')
+    if (!this.options.dataDir) throw new Error('sidecar dataDir is required')
     const token = randomBytes(32).toString('hex')
-    const sidecarArgs = ['--port', '0', '--instance-id', this.options.instanceId, '--parent-pid', String(process.pid)]
+    const sidecarArgs = [
+      '--port', '0',
+      '--instance-id', this.options.instanceId,
+      '--parent-pid', String(process.pid),
+      '--data-dir', this.options.dataDir,
+    ]
     const args = this.options.production ? sidecarArgs : ['-m', 'autoflow', ...sidecarArgs]
     const command = this.options.production ? this.options.sidecarPath! : 'python'
     const generation = ++this.startupGeneration
     this.update(applySidecarEvent(this.status, { type: 'spawned' }))
     const child = spawn(command, args, {
-      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...(this.options.dataDir ? { AUTOFLOW_DATA_DIR: this.options.dataDir } : {}) },
+      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...resolveBackendEnvironment(this.options.dataDir) },
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     })

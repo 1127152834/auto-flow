@@ -42,8 +42,46 @@ describe('sidecar health validation', () => {
   })
 })
 
+describe('sidecar startup paths', () => {
+  it('passes the injected data directory through args and environment', async () => {
+    vi.mocked(spawn).mockReset()
+    const stdout = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), {
+      stdout,
+      pid: 123,
+      kill: vi.fn(),
+    })
+    vi.mocked(spawn).mockReturnValue(child as never)
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(
+      JSON.stringify({ status: 'ok', apiVersion: 'v1', instanceId: 'x' }),
+      { status: 200 },
+    )))
+
+    const supervisor = new (await import('./supervisor')).SidecarSupervisor({
+      instanceId: 'x',
+      dataDir: '/tmp/autoflow-test',
+      timeoutMs: 1000,
+    })
+    const start = supervisor.start()
+    stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
+
+    await expect(start).resolves.toMatchObject({ state: 'ready' })
+    expect(spawn).toHaveBeenCalledWith(
+      'python',
+      ['-m', 'autoflow', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-test'],
+      expect.objectContaining({
+        env: expect.objectContaining({
+          AUTOFLOW_DATA_DIR: '/tmp/autoflow-test',
+        }),
+      }),
+    )
+    vi.unstubAllGlobals()
+  })
+})
+
 describe('sidecar startup cancellation', () => {
   it('does not publish ready when health resolves after stop', async () => {
+    vi.mocked(spawn).mockReset()
     const stdout = new EventEmitter()
     const child = Object.assign(new EventEmitter(), {
       stdout,
@@ -56,6 +94,7 @@ describe('sidecar startup cancellation', () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { resolveHealth = resolve })))
     const supervisor = new (await import('./supervisor')).SidecarSupervisor({
       instanceId: 'x',
+      dataDir: '/tmp/autoflow-test',
       timeoutMs: 1000,
     })
     const start = supervisor.start()
