@@ -4,6 +4,8 @@
 - 状态：proposed；“即将到期”与远程聚合指标受 live contract/capability flag 约束
 - 来源：[ProxyPanel 首页](https://proxypanel.io/home)、[ProxyPanel Developers](https://proxypanel.io/developers)、[ProxyPanel 旧版 API 文档](https://proxypanel.io/documentation)
 
+总览图中的“即将到期”和“总代理”是已具备对应字段时的条件画板；运行时默认遵循 capability flag：到期字段未验证时隐藏或显示“到期信息不可用”，总量未确认时显示“已同步 N 个”。
+
 ## 1. 页面信息架构
 
 代理管理使用一个主内容区，不增加页面内侧栏。
