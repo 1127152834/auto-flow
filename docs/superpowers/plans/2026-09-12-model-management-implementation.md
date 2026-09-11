@@ -11,7 +11,7 @@
 **规格：** [模型管理设计](../specs/2026-09-12-model-management-design.md)、[API 契约](../../references/model-management-api-contract.md)、[已确认交互矩阵](../../prototype/model-management/model-management-interactions.md)。三份都要读。
 
 - 日期：2026-09-12
-- 状态：proposed，文档可审查；所有实施复选框未执行。用户本轮要求编写设计和计划，未要求立即编写业务代码。
+- 状态：in_progress；2026-09-12 用户授权在独立分支实施，保留主工作区运行代码。分支 codex/model-management，独立 worktree autoflow-model-management。
 - 来源与现状：[实施就绪度及旧源码哈希](../../../.ai/knowledge/2026-09-12-model-management-implementation-readiness.md)。
 
 ## 全局约束
@@ -100,7 +100,7 @@
 
 同一切片不能在只有组件 mock 或只有后端测试时标完成。前端提前编写纯组件不意味着页面已交付。主代理独占 bootstrap、全局错误、ORM metadata、迁移 head、生成类型、依赖锁、App/导航和全局样式；其他工作者通过消息提交所需片段，禁止同时编辑。每波最多主代理加三名有界工作者；独立审查者检查行为与结构，失败返回原负责者修正。
 
-## 3. 任务 1：冻结 DTO 并打通真实错误语义
+## 任务 1：冻结 DTO 并打通真实错误语义
 
 **文件：** 后端 `adapters/http/{schemas,profile_schemas,model_schemas,errors}.py`、`bootstrap/app.py`；`tests/unit/test_model_schemas.py`；前端 `shared/api/client.ts`、`client.test.ts`。主代理负责共享修改。
 
@@ -157,7 +157,7 @@ npm run typecheck
 
 - [ ] **步骤 5：审查并提交上述明确路径。** 提交建议 `refactor: preserve structured API errors and define model contracts`。本任务不会宣称 14 条模型路由已运行。
 
-## 4. 任务 2：共享控件先行
+## 任务 2：共享控件先行
 
 **文件：** `R/shared/components/Modal.tsx`、`Modal.test.tsx`、`ui/{textarea,badge,dropdown-menu}.tsx`、`ui/dropdown-menu.test.tsx`、必要 `ui/button.tsx`；依赖修改由主代理操作。
 
@@ -207,7 +207,7 @@ npm run lint
 
 - [ ] **步骤 5：审查组件后提交明确控件路径。** 提交建议 `feat: add reusable model workflow controls`。
 
-## 5. 任务 3：供应商用例、协议与持久化切片
+## 任务 3：供应商用例、协议与持久化切片
 
 **文件：** 后端目标树中的 domain/models、application/models、providers/model、database/model_providers、credentials/model_provider、model_schemas、HTTP models；主代理集成 ORM/迁移/bootstrap/errors；对应 unit、integration、contract 与 fixtures。前端任务 4 可并行编写组件，联调完成后一起验收。
 
@@ -269,7 +269,7 @@ uv run --directory apps/backend mypy src
 
 - [ ] **步骤 6：与任务 4 一起验收后提交。** 可先提交独立通过的后端提交 `feat: add verified model provider management`；切片完成状态必须等向导真实接口联调。更新来源账本中的实际复制函数与旧测试改动。
 
-## 6. 任务 4：供应商向导与连接编辑切片
+## 任务 4：供应商向导与连接编辑切片
 
 **文件：** `R/domains/models/api.ts`、`model.ts`、`provider-catalog.ts`、assets、ProviderLogo、ProviderWizard/三步骤、tests/ProviderWizard.test.tsx、test-utils.tsx；`R/app/query-provider.tsx` 与依赖由主代理接入。
 
@@ -321,7 +321,7 @@ npm run lint
 
 - [ ] **步骤 6：与任务 3 合并审查后提交。** 提交建议 `feat: preserve legacy provider onboarding and editing`。API 和组件测试、真实本地联调证据一起登记。
 
-## 7. 任务 5：模型编辑、单次测试与本地删除切片
+## 任务 5：模型编辑、单次测试与本地删除切片
 
 **文件：** 后端 service/provider/http schemas/routes 与 unit/contract；前端 ModelEditor、ModelForm、ModelTestPanel、ModelIdInput、ModelDeleteDialog、tests/ModelEditor.test.tsx、api.ts。主代理重新生成 DTO。
 
@@ -370,7 +370,7 @@ npm run typecheck
 
 - [ ] **步骤 6：审查并提交切片。** 提交建议 `feat: migrate model editing testing and local removal`；记录协议 fixture 通过与真实线上未验证的区别。
 
-## 8. 任务 6：工作台组装、缓存与异常流程
+## 任务 6：工作台组装、缓存与异常流程
 
 **文件：** ProviderSidebar、ProviderDetail、ModelDirectory、FeedbackCard、ProviderDeleteDialog、hooks/use-model-management、pages/ModelManagementPage、tests/ModelManagementPage.test；主代理集成 App/app-state/query-provider。
 
@@ -415,7 +415,7 @@ npm run build
 
 - [ ] **步骤 6：审查并提交。** 提交建议 `feat: assemble model management workspace with legacy interactions`。只有已接真实本地 API 的页面才算完成。
 
-## 9. 任务 7：跨存储、桌面与跨平台验收
+## 任务 7：跨存储、桌面与跨平台验收
 
 **文件：** 模型测试、`scripts/smoke-desktop.mjs`、`scripts/smoke-model-management.mjs`、`apps/desktop/tests/fixtures/model-provider-fixture.mjs`、source-map、verification、目录文档和 .ai 索引；若需修正实现只修改本模块明确路径。
 

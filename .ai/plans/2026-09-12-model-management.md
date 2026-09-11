@@ -1,7 +1,7 @@
 # 模型管理计划索引
 
 - 日期：2026-09-12
-- 状态：proposed（规格、契约与实施计划）；confirmed（用户确认旧布局/交互原型并允许参考旧代码）
+- 状态：in_progress；用户已确认独立分支实施（2026-09-12）
 - 来源：用户本轮明确要求设计和实施计划；旧源码与实际页面取证、新仓库基础设施核查。
 - 设计：`docs/superpowers/specs/2026-09-12-model-management-design.md`
 - API：`docs/references/model-management-api-contract.md`
@@ -14,3 +14,5 @@
 - 证据边界：原型和旧源码不代表新实现验收，mock 不证明当前线上供应商兼容；Windows/macOS 真实凭据验收在实施中分别记录。
 
 - 文档验证：10 个 Markdown 文件、48 个本地链接、14 条路由、7 个任务、14 份旧源码工作树 SHA-256 检查通过；已完成独立交叉复核并修正交互/DTO/缓存与凭据清理矛盾。仅文档检查，不是业务测试通过。
+
+- 实施隔离：分支 `codex/model-management`，worktree `/Users/zhangtiancheng/Documents/projects/autoflow-model-management`，基点 `ad08bdb`；原目录与 proxy worktree 不修改，合并留到实现完成后。
