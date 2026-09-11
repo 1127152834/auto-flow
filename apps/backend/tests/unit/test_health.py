@@ -4,8 +4,8 @@ from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 
 
-def test_health_returns_instance_metadata():
-    client = TestClient(create_app(Settings(data_dir="/tmp/autoflow-test", instance_id="test")))
+def test_health_returns_instance_metadata(tmp_path):
+    client = TestClient(create_app(Settings(data_dir=str(tmp_path), instance_id="test")))
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {

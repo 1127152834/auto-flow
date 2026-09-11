@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { join } from 'node:path'
 import { packagedSidecarPath, parseReadyLine } from './ready-protocol'

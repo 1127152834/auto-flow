@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
 import { spawn } from 'node:child_process'
@@ -60,6 +61,7 @@ describe('sidecar startup paths', () => {
     const supervisor = new (await import('./supervisor')).SidecarSupervisor({
       instanceId: 'x',
       dataDir: '/tmp/autoflow-test',
+      backendDirectory: '/backend',
       timeoutMs: 1000,
     })
     const start = supervisor.start()
@@ -67,8 +69,8 @@ describe('sidecar startup paths', () => {
 
     await expect(start).resolves.toMatchObject({ state: 'ready' })
     expect(spawn).toHaveBeenCalledWith(
-      'python',
-      ['-m', 'autoflow', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-test'],
+      'uv',
+      ['run', '--directory', '/backend', 'python', '-m', 'autoflow', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-test'],
       expect.objectContaining({
         env: expect.objectContaining({
           AUTOFLOW_DATA_DIR: '/tmp/autoflow-test',
@@ -95,6 +97,7 @@ describe('sidecar startup cancellation', () => {
     const supervisor = new (await import('./supervisor')).SidecarSupervisor({
       instanceId: 'x',
       dataDir: '/tmp/autoflow-test',
+      backendDirectory: '/backend',
       timeoutMs: 1000,
     })
     const start = supervisor.start()

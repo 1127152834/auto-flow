@@ -7,4 +7,5 @@ class Settings:
     instance_id: str
     instance_token: str | None = None
     parent_pid: int | None = None
+    renderer_origin: str | None = None
     api_version: str = "v1"

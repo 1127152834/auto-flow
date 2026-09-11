@@ -21,13 +21,14 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --directory apps/backend
+      - run: uv sync --directory apps/backend --locked
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:scripts
       - run: npm run lint
       - run: npm run build
+      - run: npm run smoke:desktop
       - run: npm run backend:build
       - run: npm run package:dir
       - name: Check and smoke packaged sidecar
@@ -35,7 +36,7 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           import { readdir, stat } from 'node:fs/promises'
-          import { join, relative, resolve } from 'node:path'
+          import { dirname, join, relative, resolve } from 'node:path'
           import { spawnSync } from 'node:child_process'
 
           const root = resolve('apps/desktop/dist')
@@ -55,7 +56,10 @@ jobs:
           if (!executable || !(await stat(executable)).isFile()) throw new Error('packaged sidecar executable not found')
           console.log(`smoking ${executable}`)
           const result = spawnSync(process.execPath, ['scripts/smoke-sidecar.mjs', '--executable', executable], { stdio: 'inherit' })
-          process.exitCode = result.status ?? 1
+          if (result.status !== 0) process.exit(result.status ?? 1)
+          const desktop = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
+          const desktopResult = spawnSync(process.execPath, ['scripts/smoke-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
+          process.exitCode = desktopResult.status ?? 1
           NODE
       - name: Build installer artifact
         shell: bash

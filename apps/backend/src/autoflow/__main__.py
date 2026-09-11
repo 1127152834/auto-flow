@@ -2,11 +2,13 @@ import argparse
 import os
 import socket
 from pathlib import Path
+from threading import Event, Thread
 
 import uvicorn
 
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
+from autoflow.bootstrap.parent import watch_parent
 from autoflow.bootstrap.ready import ready_line
 
 
@@ -18,6 +20,8 @@ def main() -> None:
     parser.add_argument("--parent-pid", type=int)
     parser.add_argument("--data-dir", required=True)
     args = parser.parse_args()
+    if args.parent_pid is not None and args.parent_pid <= 0:
+        parser.error("parent PID must be positive")
     if args.host != "127.0.0.1":
         parser.error("sidecar host must be 127.0.0.1")
     if not 0 <= args.port <= 65535:
@@ -35,10 +39,22 @@ def main() -> None:
         instance_id=args.instance_id,
         instance_token=os.environ.get("AUTOFLOW_INSTANCE_TOKEN"),
         parent_pid=args.parent_pid,
+        renderer_origin=os.environ.get("AUTOFLOW_RENDERER_ORIGIN"),
     )
     print(ready_line(port=actual_port, api_version=settings.api_version, instance_id=settings.instance_id), flush=True)
     config = uvicorn.Config(create_app(settings), host=args.host, port=actual_port, log_level="warning")
-    uvicorn.Server(config).run(sockets=[sock])
+    server = uvicorn.Server(config)
+    stopped = Event()
+    if args.parent_pid:
+        def parent_exited() -> None:
+            server.should_exit = True
+
+        Thread(target=watch_parent, args=(args.parent_pid, stopped, parent_exited), daemon=True).start()
+    try:
+        server.run(sockets=[sock])
+    finally:
+        stopped.set()
+        sock.close()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.health import health_router
@@ -27,4 +28,11 @@ def create_app(settings: Settings) -> FastAPI:
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         return await call_next(request)
 
+    if settings.renderer_origin:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=[settings.renderer_origin],
+            allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+            allow_headers=["x-autoflow-token", "content-type"],
+        )
     return app

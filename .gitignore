@@ -12,3 +12,5 @@ __pycache__/
 
 # External source retained locally for architecture and capability research.
 reference/WebRPA/
+
+.superpowers/verification/

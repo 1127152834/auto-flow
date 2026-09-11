@@ -27,6 +27,8 @@ export function applySidecarEvent(_status: SidecarStatus, event: SidecarEvent): 
 export type SupervisorOptions = {
   instanceId: string
   dataDir?: string
+  backendDirectory?: string
+  rendererOrigin?: string
   production?: boolean
   sidecarPath?: string
   timeoutMs?: number
@@ -70,16 +72,18 @@ export class SidecarSupervisor {
       '--parent-pid', String(process.pid),
       '--data-dir', this.options.dataDir,
     ]
-    const args = this.options.production ? sidecarArgs : ['-m', 'autoflow', ...sidecarArgs]
-    const command = this.options.production ? this.options.sidecarPath! : 'python'
+    if (!this.options.production && !this.options.backendDirectory) throw new Error('backendDirectory is required in development')
+    const args = this.options.production ? sidecarArgs : ['run', '--directory', this.options.backendDirectory!, 'python', '-m', 'autoflow', ...sidecarArgs]
+    const command = this.options.production ? this.options.sidecarPath! : 'uv'
     const generation = ++this.startupGeneration
     this.update(applySidecarEvent(this.status, { type: 'spawned' }))
     const child = spawn(command, args, {
-      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...resolveBackendEnvironment(this.options.dataDir) },
+      env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...resolveBackendEnvironment(this.options.dataDir), AUTOFLOW_RENDERER_ORIGIN: this.options.rendererOrigin ?? 'null' },
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     })
     this.child = child
+    child.stderr?.resume()
     let buffer = ''
     const ready = new Promise<SidecarStatus>((resolve, reject) => {
       const timer = setTimeout(() => {
