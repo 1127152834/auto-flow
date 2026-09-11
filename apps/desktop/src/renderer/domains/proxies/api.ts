@@ -1,4 +1,4 @@
-import type { ApiClient } from '../../shared/api/client'
+import type { ApiClient, ApiRequestInit } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
 
 export type ApiError = components['schemas']['ApiError']
@@ -41,7 +41,9 @@ function queryString(values: Record<string, string | number | boolean | undefine
   return serialized ? `?${serialized}` : ''
 }
 
-function json(body: unknown, idempotent = false): RequestInit {
+const REMOTE_REQUEST_TIMEOUT_MS = 60_000
+
+function json(body: unknown, idempotent = false): ApiRequestInit {
   return {
     method: 'POST',
     headers: {
@@ -77,7 +79,7 @@ export function capability(
 
 export function createProxyApi(client: ApiClient) {
   const get = <T>(path: string) => client.request<T>(`/api/v1${path}`)
-  const send = <T>(path: string, init: RequestInit) => client.request<T>(`/api/v1${path}`, init)
+  const send = <T>(path: string, init: ApiRequestInit) => client.request<T>(`/api/v1${path}`, init)
 
   return {
     async getConnection(): Promise<ConnectionView | null> {
@@ -85,7 +87,9 @@ export function createProxyApi(client: ApiClient) {
       return result.items[0] ?? null
     },
     createConnection(name: string, apiKey: string) {
-      return send<ConnectionView>('/proxy-panel/connections', json({ name, api_key: apiKey }))
+      return send<ConnectionView>('/proxy-panel/connections', {
+        ...json({ name, api_key: apiKey }), timeoutMs: REMOTE_REQUEST_TIMEOUT_MS,
+      })
     },
     updateConnection(connection: ConnectionView, name: string) {
       return send<ConnectionView>(`/proxy-panel/connections/${connection.id}`, {
@@ -97,13 +101,16 @@ export function createProxyApi(client: ApiClient) {
       return send<ConnectionView>(`/proxy-panel/connections/${connection.id}/api-key`, {
         ...json({ expected_revision: connection.revision, api_key: apiKey }),
         method: 'PUT',
+        timeoutMs: REMOTE_REQUEST_TIMEOUT_MS,
       })
     },
     disconnect(connectionId: string) {
       return send<void>(`/proxy-panel/connections/${connectionId}`, { method: 'DELETE' })
     },
     sync(connectionId: string) {
-      return send<ActionResult>(`/proxy-panel/connections/${connectionId}/sync`, json({}, true))
+      return send<ActionResult>(`/proxy-panel/connections/${connectionId}/sync`, {
+        ...json({}, true), timeoutMs: REMOTE_REQUEST_TIMEOUT_MS,
+      })
     },
     listProxies(filters: ProxyFilters = {}) {
       return get<ProxyPage>(`/proxies${queryString({
@@ -137,7 +144,9 @@ export function createProxyApi(client: ApiClient) {
       return send<ProxyView>(`/proxies/${proxy.id}`, { ...json(body), method: 'PATCH' })
     },
     probeProxy(proxyId: string, protocol: 'http' | 'socks5' = 'http') {
-      return send<ActionResult>(`/proxies/${proxyId}/probe`, json({ protocol }, true))
+      return send<ActionResult>(`/proxies/${proxyId}/probe`, {
+        ...json({ protocol }, true), timeoutMs: REMOTE_REQUEST_TIMEOUT_MS,
+      })
     },
     getLocations(connectionId: string, q = '', carrier = '') {
       return get<LocationList>(`/proxy-panel/connections/${connectionId}/locations${queryString({ q, carrier })}`)
