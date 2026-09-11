@@ -25,7 +25,7 @@ import {
 import { DeleteKernelDialog } from './DeleteKernelDialog'
 import { KernelReleaseList, type KernelReleaseItem } from './KernelReleaseList'
 import { LicensePanel } from './LicensePanel'
-import { operationIsActive } from './KernelOperationStatus'
+import { KernelOperationStatus, operationIsActive } from './KernelOperationStatus'
 
 export type KernelManagerDialogProps = {
   open: boolean
@@ -108,6 +108,8 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
 
   const visibleReleases = releases.filter((release) => filter === 'all' || (filter === 'installed' ? release.installed : release.edition === filter))
   const activeOperation = (operations.data ?? []).some(operationIsActive)
+  const hiddenActiveOperations = (operations.data ?? []).filter((operation) => operationIsActive(operation)
+    && !visibleReleases.some((release) => release.edition === operation.edition && release.version === operation.requestedVersion && release.releaseChannel === operation.releaseChannel))
   const busy = activeOperation || download.isPending || remove.isPending || setDefault.isPending || connect.isPending || disconnect.isPending
   const licensed = license.data?.configured === true && license.data.valid
   const selectedUnavailable = Boolean(selectedKernel && (installed.data || catalog.data) && !localKernels.some((item) => keyOf(item) === keyOf(selectedKernel)))
@@ -219,6 +221,12 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
         }} />
 
         <section aria-labelledby="kernel-release-title" className="grid gap-4">
+          {hiddenActiveOperations.length ? <section aria-label="活动内核下载">
+            {hiddenActiveOperations.map((operation) => <div key={operation.id}>
+              <h3 className="mb-0 text-sm font-semibold">CloakBrowser {operation.requestedVersion} · {operation.edition === 'licensed' ? '正式版' : '公开版'} · {operation.releaseChannel === 'preview' ? 'Preview' : 'Stable'}</h3>
+              <KernelOperationStatus operation={operation} cancelling={cancellingOperationId === operation.id} disabled={disabled} onCancel={() => cancelDownload(operation.id)} />
+            </div>)}
+          </section> : null}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div><h3 id="kernel-release-title" className="m-0 text-base font-semibold text-ink">版本列表</h3><p className="mb-0 mt-1 text-xs text-muted">Wrapper {catalog.data?.wrapperVersion ?? '未知'} · 本机已安装 {localKernels.length} 个</p></div>
             <Button type="button" disabled={disabled || checkUpdate.isPending} onClick={() => { if (disabled) return; setActionError(null); void checkUpdate.mutateAsync().catch((error) => setActionError(message(error))) }}>{checkUpdate.isPending ? '正在刷新…' : '刷新版本列表'}</Button>

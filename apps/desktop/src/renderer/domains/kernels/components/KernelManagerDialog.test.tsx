@@ -323,3 +323,35 @@ it('shows real login and logout failures without offering both actions', async (
   expect(await screen.findByText('授权任务仍在运行')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: '验证并登录' })).not.toBeInTheDocument()
 })
+
+it.each([{ installedItems: [] }, { installedItems: [publicKernel] }])('keeps cancellation reachable after catalog loss and filtering ($installedItems)', async ({ installedItems }) => {
+  const active = operation('orphan-download', 'downloading', 'licensed')
+  const server = fakeServer({ license: validLicense, installed: installedItems, route(path, method) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return json(active, 202)
+    if (path === '/api/v1/kernels/check-update' && method === 'POST') return json({ ...catalog, releases: [], installed: installedItems, catalogError: 'provider offline' })
+    if (path === '/api/v1/kernels/operations/orphan-download/cancel' && method === 'POST') return json({ ...active, state: 'cancelling' }, 202)
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><ControlledManager /></Provider>)
+  await user.click(screen.getByRole('button', { name: '管理内核' }))
+  const card = (await screen.findByText('CloakBrowser 151.0.1.1')).closest('li') as HTMLElement
+  await user.click(within(card).getByRole('button', { name: '下载安装' }))
+  expect(await screen.findByRole('button', { name: '取消下载' })).toBeEnabled()
+  await user.click(screen.getByRole('button', { name: '已安装' }))
+  expect(within(screen.getByRole('region', { name: '活动内核下载' })).getByRole('button', { name: '取消下载' })).toBeEnabled()
+  await user.click(screen.getByRole('button', { name: '刷新版本列表' }))
+  await screen.findByText(/provider offline/)
+  for (const filter of ['全部版本', '公开版', '正式版', '已安装']) {
+    await user.click(screen.getByRole('button', { name: filter }))
+    expect(screen.getByRole('button', { name: '取消下载' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeDisabled()
+  }
+  await user.click(screen.getByRole('button', { name: '取消下载' }))
+  await screen.findByText('正在取消')
+  expect(server.calls.filter(call => call.path.endsWith('/orphan-download/cancel'))).toHaveLength(1)
+  act(() => server.stream?.enqueue(eventFrame([{ ...active, state: 'cancelled' }])))
+  await waitFor(() => expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: '关闭内核管理' }))
+  expect(screen.queryByRole('dialog', { name: 'CloakBrowser 内核管理' })).not.toBeInTheDocument()
+})

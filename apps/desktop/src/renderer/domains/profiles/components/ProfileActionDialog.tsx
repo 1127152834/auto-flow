@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiClientError } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
 import { FormField } from '../../../shared/components/FormField'
@@ -30,9 +30,14 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
   const [nameError, setNameError] = useState('')
   const [operationError, setOperationError] = useState('')
   const lock = useRef(false)
+  const form = useRef<HTMLFormElement>(null)
   const formId = useId()
   const copying = action.kind === 'duplicate'
   const busy = duplicate.isPending || remove.isPending
+
+  useEffect(() => {
+    if (nameError && !busy && !disabled) form.current?.querySelector('input')?.focus()
+  }, [nameError, busy, disabled])
 
   const close = () => { if (!lock.current) onClose() }
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -63,8 +68,8 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
     <DialogContent className="w-[min(92vw,30rem)]">
       <DialogTitle>{copying ? '复制浏览器配置' : '删除浏览器配置'}</DialogTitle>
       <DialogDescription>{copying ? `复制自「${action.name}」` : `确认删除「${action.name}」？`}</DialogDescription>
-      {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，当前操作尚未执行。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
-      <form id={formId} className="grid gap-4" onSubmit={(event) => void submit(event)}>
+      {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，操作结果可能未确认。恢复连接后请核对列表再重试。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
+      <form ref={form} id={formId} className="grid gap-4" onSubmit={(event) => void submit(event)}>
         {copying ? <FormField label="新配置名称" htmlFor="profile-copy-name" error={nameError}>
           <Input id="profile-copy-name" autoFocus disabled={busy || disabled} value={name} placeholder="输入新配置名称" onChange={(event) => {
             setName(event.target.value)

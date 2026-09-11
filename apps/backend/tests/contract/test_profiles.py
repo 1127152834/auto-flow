@@ -70,12 +70,19 @@ def test_profile_crud_and_fingerprint_lifecycle(
 def test_profile_errors_use_stable_envelope_and_camel_case_fields(
     client: TestClient, profile_payload: dict[str, Any]
 ) -> None:
-    assert client.post("/api/v1/profiles", json=profile_payload).status_code == 201
+    original = client.post("/api/v1/profiles", json=profile_payload)
+    assert original.status_code == 201
 
     conflict = client.post("/api/v1/profiles", json=profile_payload)
     assert conflict.status_code == 409
     assert conflict.json()["error"]["code"] == "PROFILE_NAME_CONFLICT"
     assert conflict.json()["error"]["requestId"]
+    assert conflict.json()["error"]["details"]["fields"] == {"name": "Profile name is already in use"}
+    duplicate = client.post(
+        f"/api/v1/profiles/{original.json()['id']}/duplicate", json={"name": profile_payload["name"]}
+    )
+    assert duplicate.status_code == 409
+    assert duplicate.json()["error"]["details"]["fields"] == conflict.json()["error"]["details"]["fields"]
 
     invalid = client.post(
         "/api/v1/profiles",

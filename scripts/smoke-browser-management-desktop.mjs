@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
 import { launchElectron, wait, waitFor } from './electron-cdp.mjs'
-import { kernelExecutablePath } from './smoke-browser-management.mjs'
+import { kernelExecutablePath, smokeCooperativeShutdown } from './smoke-browser-management.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -113,6 +113,9 @@ try {
   await clickText(cdp, '确认删除')
   await waitFor(cdp, `document.body?.innerText.includes('还没有浏览器配置')`, 'empty profile list')
   assert.deepEqual(await profileList(sidecar), { items: [], total: 0 })
+
+  await smokeCooperativeShutdown(desktop.child, sidecar.baseUrl, sidecar.token,
+    () => cdp.evaluate('window.autoflow.quitApplication()'))
 
   console.log(`browser management desktop smoke passed (${desktop.packaged ? 'packaged' : 'development'}, ${process.platform}/${process.arch})`)
 } finally {

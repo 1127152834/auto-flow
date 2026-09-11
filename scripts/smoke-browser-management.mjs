@@ -172,6 +172,28 @@ async function smokeBrowserManagement(baseUrl, token) {
   }), { revision: 2, kernel: null })
 }
 
+export async function smokeCooperativeShutdown(child, baseUrl, token, requestShutdown) {
+  const stream = await fetch(`${baseUrl}/api/v1/kernels/events`, { headers: { 'x-autoflow-token': token } })
+  assert.equal(stream.status, 200)
+  const reader = stream.body.getReader()
+  try {
+    assert.match(new TextDecoder().decode((await reader.read()).value), /event: snapshot/)
+    const exited = new Promise((resolveExit, reject) => {
+      const timer = setTimeout(() => reject(new Error('cooperative shutdown exceeded 8s with SSE open')), 8000)
+      child.once('exit', (code, signal) => {
+        clearTimeout(timer)
+        if (code === 0 && signal === null) resolveExit()
+        else reject(new Error(`shutdown was not a clean exit: ${code}/${signal}`))
+      })
+    })
+    await Promise.all([exited, requestShutdown()])
+    const stillListening = await fetch(`${baseUrl}/health`, { signal: AbortSignal.timeout(1000) }).then(() => true, () => false)
+    assert.equal(stillListening, false, 'sidecar must exit before its host completes shutdown')
+  } finally {
+    await reader.cancel().catch(() => undefined)
+  }
+}
+
 async function main() {
   const { executable: suppliedExecutable } = smokeMode(process.argv.slice(2))
   const executable = suppliedExecutable ? resolve(root, suppliedExecutable) : undefined
@@ -180,6 +202,7 @@ async function main() {
   }
   const dataDirectory = await mkdtemp(join(tmpdir(), 'autoflow-browser-smoke-'))
   const token = `browser-smoke-${process.pid}-${Date.now()}`
+  const hostToken = `browser-smoke-host-${process.pid}-${Date.now()}`
   const sourceCommand = ['uv', 'run', '--directory', 'apps/backend', 'python', '-m', 'autoflow']
   const command = executable ? [executable] : sourceCommand
   await createKernelFixture(join(dataDirectory, 'data', 'kernels'))
@@ -187,7 +210,7 @@ async function main() {
   let child
   try {
     await smokeWorker(command, join(dataDirectory, 'worker-cache'))
-    const env = { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, PYTHONTZPATH: '' }
+    const env = { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, AUTOFLOW_HOST_TOKEN: hostToken, PYTHONTZPATH: '' }
     delete env.CLOAKBROWSER_BINARY_PATH
     delete env.CLOAKBROWSER_LICENSE_KEY
     child = spawn(command[0], [...command.slice(1), '--instance-id', 'smoke-browser-management', '--data-dir', dataDirectory, '--port', '0'], {
@@ -195,7 +218,11 @@ async function main() {
     })
     const ready = await waitForReady(child)
     assert.equal(ready.instanceId, 'smoke-browser-management')
-    await smokeBrowserManagement(`http://127.0.0.1:${ready.port}`, token)
+    const baseUrl = `http://127.0.0.1:${ready.port}`
+    await smokeBrowserManagement(baseUrl, token)
+    await smokeCooperativeShutdown(child, baseUrl, token, () => api(baseUrl, token, '/internal/lifecycle/shutdown', {
+      method: 'POST', headers: { 'x-autoflow-host-token': hostToken },
+    }))
     console.log(`browser management smoke passed (${executable ? 'packaged' : 'source'}, ${process.platform}/${process.arch})`)
   } finally {
     await stop(child)

@@ -118,3 +118,68 @@ describe('sidecar startup cancellation', () => {
     vi.unstubAllGlobals()
   })
 })
+
+describe('cooperative sidecar shutdown', () => {
+  it.each(['darwin', 'win32'])('uses the host-only shutdown request before the bounded kill on %s', async platform => {
+    vi.resetModules()
+    vi.doMock('node:process', () => ({ platform }))
+    vi.useFakeTimers()
+    const stdout = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), {
+      stdout, pid: 123, exitCode: null, signalCode: null, kill: vi.fn(),
+    })
+    vi.mocked(spawn).mockReset().mockReturnValue(child as never)
+    const fetchMock = vi.fn(async (url: string) => {
+      // Windows must preserve the budget even if the shutdown response is lost.
+      if (platform === 'win32' && url.endsWith('/shutdown')) throw new TypeError('response lost')
+      return new Response(JSON.stringify(
+        url.endsWith('/health') ? { status: 'ok', apiVersion: 'v1', instanceId: 'x' } : { stopping: true },
+      ), { status: 200 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    try {
+      const { SidecarSupervisor } = await import('./supervisor')
+      const supervisor = new SidecarSupervisor({ instanceId: 'x', dataDir: '/tmp/shutdown', backendDirectory: '/backend' })
+      const starting = supervisor.start()
+      stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
+      await starting
+      const host = supervisor.getHostStatus()
+      expect(host.state).toBe('ready')
+      const stopping = supervisor.stop()
+      expect(fetchMock).toHaveBeenLastCalledWith('http://127.0.0.1:43127/internal/lifecycle/shutdown', expect.objectContaining({
+        method: 'POST', headers: { 'x-autoflow-host-token': host.state === 'ready' ? host.hostToken : '' },
+        signal: expect.any(AbortSignal),
+      }))
+      expect(supervisor.getHostStatus()).toEqual({ state: 'stopped' })
+      await vi.advanceTimersByTimeAsync(9000)
+      expect(child.kill).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1000)
+      await stopping
+      if (platform === 'win32') expect(spawn).toHaveBeenLastCalledWith('taskkill', ['/pid', '123', '/t', '/f'])
+      else expect(child.kill).toHaveBeenCalledWith('SIGKILL')
+      expect(supervisor.getStatus()).toEqual({ state: 'stopped' })
+    } finally {
+      vi.useRealTimers(); vi.unstubAllGlobals(); vi.doUnmock('node:process'); vi.resetModules()
+    }
+  })
+
+  it('finishes immediately when the cooperative process exits', async () => {
+    const stdout = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), { stdout, pid: 123, exitCode: null, signalCode: null, kill: vi.fn() })
+    vi.mocked(spawn).mockReset().mockReturnValue(child as never)
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.endsWith('/shutdown')) queueMicrotask(() => child.emit('exit', 0))
+      return new Response(JSON.stringify({ status: 'ok', apiVersion: 'v1', instanceId: 'x' }), { status: 200 })
+    }))
+    try {
+      const { SidecarSupervisor } = await import('./supervisor')
+      const supervisor = new SidecarSupervisor({ instanceId: 'x', dataDir: '/tmp/shutdown', backendDirectory: '/backend' })
+      const starting = supervisor.start()
+      stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
+      await starting
+      await supervisor.stop()
+      expect(child.kill).not.toHaveBeenCalled()
+      expect(supervisor.getStatus()).toEqual({ state: 'stopped' })
+    } finally { vi.unstubAllGlobals() }
+  })
+})

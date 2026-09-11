@@ -14,14 +14,15 @@ PyInstaller 产物已确认包含：Alembic 配置、迁移脚本、SQLAlchemy S
 
 `scripts/smoke-browser-management.mjs` 支持源码模式和 `--executable <path>` 冻结模式，执行以下闭环：
 
-1. 在临时 worker cache 中提供本地 `CLOAKBROWSER_BINARY_PATH`，调用真实 `--kernel-worker` download 协议，验证 CloakBrowser 动态导入、进度消息和完成结果；不访问网络、不下载内核。
+1. 在临时 worker cache 中提供本地 `CLOAKBROWSER_BINARY_PATH`，调用真实 `--kernel-worker` download 协议，验证 CloakBrowser 动态导入、worker 入口和完成结果；不访问网络、不下载内核。此 smoke 不断言进度消息，进度由领域测试覆盖。
 2. 在临时 `data/kernels` 中创建当前平台目录结构，启动真实随机端口 sidecar，并使用实例 token 调用 HTTP API。
 3. 验证已安装公开内核扫描、默认内核 revision 设置与清除。
 4. 创建包含 locale、IANA timezone、viewport、humanize 和高级参数的公开版配置；复制后验证新 fingerprint seed；更新后重新 GET 验证持久化；最后删除两个配置。
+5. 保持已收到初始 snapshot 的真实 SSE 连接打开，经 host-token 内部退出接口请求正常退出；断言进程在 8 秒内以 code 0 退出且 sidecar 端口关闭。
 
 此 smoke 使用 `proxyMode=none`，没有注入生产 fixture endpoint。代理与代理池选择仍由独立 API/领域测试覆盖；最终 Electron 流程如需代理资源，只允许测试进程写入临时数据库。
 
-`scripts/smoke-browser-management-desktop.mjs` 同样支持开发态和 `--executable <desktop-path>` packaged 模式。它通过真实 Electron renderer 和 sidecar 完成列表进入、新建、内核管理打开/关闭、创建、完整页面 reload、编辑、重新生成指纹、复制和删除；每一步再用实例 token 读取 API，核对持久化值与 fingerprint seed。列表、配置表单和内核管理的 document、容器与可见控件分别在 1280px 和 1024px viewport 下检查横向边界。
+`scripts/smoke-browser-management-desktop.mjs` 同样支持开发态和 `--executable <desktop-path>` packaged 模式。它通过真实 Electron renderer 和 sidecar 完成列表进入、新建、内核管理打开/关闭、创建、完整页面 reload、编辑、重新生成指纹、复制和删除；每一步再用实例 token 读取 API，核对持久化值与 fingerprint seed。列表、配置表单和内核管理的 document、容器与可见控件分别在 1280px 和 1024px viewport 下检查横向边界。最终修复后还通过 `quitApplication` 触发真实 `before-quit → settings.shutdown → supervisor`，保持 SSE 打开并断言 Electron 正常 code 0 退出、sidecar 端口关闭。
 
 ## 本机证据
 
@@ -51,12 +52,30 @@ PyInstaller 产物已确认包含：Alembic 配置、迁移脚本、SQLAlchemy S
 
 CI 保留 `windows-2022`、`macos-15-intel` 和 `macos-15` 三个平台，并新增源码与 packaged browser-management sidecar/Electron smoke。CI 的 worker smoke 使用本地 binary override，不依赖远端 provider 响应；不能在 CI 实际完成前把 macOS Intel 或 Windows 标为通过。
 
-## 最终本机回归
+## 最终修复前的本机回归
 
 - Backend：ruff、mypy 通过；pytest `311 passed`，另有 2 个来自 Starlette/httpx 和 anyio 兼容别名的上游弃用提示。
 - Desktop：Vitest `45 files / 259 tests passed`；typecheck、lint、build 通过。build 仅报告第三方 zod 注释位置提示。
 - Repository：OpenAPI check、script tests `9 passed`、development desktop smoke、source browser sidecar smoke、development browser Electron smoke 全部通过。
 - Package：backend build、`package:dir`、包内 sidecar health/lifecycle、包内 browser sidecar smoke、packaged Electron browser smoke 全部通过。目录包使用默认图标且本机没有有效 Developer ID，因此没有代码签名；本轮没有把未签名目录包宣称为可发布安装器。
+
+## 最终修复后的本机复验（2026-09-12）
+
+- Backend：`uv run --directory apps/backend pytest -q` → **315 passed, 2 warnings**；`ruff check src tests`、`mypy src` 均通过（106 source files）。
+- Desktop：`npm test` → **45 files / 265 tests passed**；`npm run typecheck`、`npm run lint`、`npm run build` 通过。lint 与 build 串行执行。
+- 契约与脚本：`npm run openapi:check`、`npm run test:scripts` → **9 passed**。错误 envelope schema 没有变化，未手工修改生成类型。
+- 构建：`npm run backend:build`、`npm run package:dir` 通过。
+- 源码、frozen sidecar、开发 Electron、packaged Electron 重新执行上文 browser-management smoke，全部通过。最终目录包内 `Contents/Resources/backend/autoflow-backend` 的 health/lifecycle 与 browser-management smoke 也通过。
+
+本轮新增的真实源码进程回归为 `tests/integration/test_sidecar_shutdown.py`：host HTTP / POSIX SIGTERM × 无 worker / 活动 worker 共 4 项。本机保持 SSE 打开时，无 worker 在 3 秒内退出；活动 worker 使用本地 wrapper 夹具写入 partial/PID 并忽略 SIGTERM，8 秒内完成回收，验证 PID 消失、数据库 operation 为 cancelled、staging 删除。测试没有用网络下载替代夹具，也没有把夹具算作真实商业下载。它同时验证无 token、renderer instance token、携带 Origin 的 host-token 请求均被拒绝，且内部退出接口不进入 OpenAPI。
+
+宿主使用同一 host-token 鉴权协议协作退出。连接排空预算为 1 秒；现有 manager 先取消并 gather RPC 任务（多个 RPC 并行回收，3 秒 TERM 预算），再取消受安装锁限制的唯一安装 worker（再 3 秒），宿主总上限为 10 秒，覆盖控制请求、排空、回收及调度余量。Windows 的 HTTP 响应丢失时保留协作预算，不提前使用会强制终止的 SIGTERM；到总上限后仍有 taskkill 进程树兜底。平台模拟测试覆盖 darwin/win32 控制请求、预算与最终强杀，**不能替代 Windows 实机运行**。
+
+前端新增回归覆盖：活动下载后刷新为 empty/local-only catalog，遍历所有筛选时取消仍可达，终态后可关闭；真实 PROFILE_NAME_CONFLICT 的 details.fields.name 与名称控件 aria-invalid、错误描述和焦点；写入后响应丢失时显示结果未确认，保留输入，重连不自动重放，仅用户手动再次提交才发送新请求。
+
+已观察的非阻塞输出：pytest 保留 2 条 Starlette/httpx、anyio 上游弃用；前端构建保留第三方 zod 注释提示；有界排空 SSE 时 Uvicorn 会输出 `timeout graceful shutdown exceeded` 与 `CancelledError` 的 ERROR 日志。后者发生在取消长连接阶段，随后进程正常 code 0 退出（host HTTP 路径），活动 worker 清理断言通过，不能把输出描述为完全干净。本轮没有广泛过滤告警、升级依赖或隐去退出日志。PyInstaller 的可选数据库 hidden-import 提示及目录包默认图标、未签名状态也保持如实披露。
+
+本机范围仍为 macOS arm64；macOS Intel、Windows 新 CI、真实 License、签名发行安装器仍未验证。此前公开版下载/取消证据未重跑也未改写。本轮修复完成后由协调者进行一次定向独立复审。
 
 ## 未完成与限制
 

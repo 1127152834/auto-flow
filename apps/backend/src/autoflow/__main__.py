@@ -54,8 +54,21 @@ def main() -> None:
     sock.listen(socket.SOMAXCONN)
     actual_port = sock.getsockname()[1]
     print(ready_line(port=actual_port, api_version=settings.api_version, instance_id=settings.instance_id), flush=True)
-    config = uvicorn.Config(app, host=args.host, port=actual_port, log_level="warning")
+    # Bound connection draining (including SSE) before application/worker cleanup.
+    # The desktop supervisor reserves a further 6s for worker shutdown plus margin.
+    config = uvicorn.Config(
+        app, host=args.host, port=actual_port, log_level="warning",
+        timeout_graceful_shutdown=1,
+    )
     server = uvicorn.Server(config)
+
+    @app.post("/internal/lifecycle/shutdown", include_in_schema=False)
+    async def request_shutdown() -> dict[str, bool]:
+        # Uses create_app's host-only authentication, including Origin rejection.
+        # HTTP cooperates on Windows too, where SIGTERM forcibly ends the process.
+        server.should_exit = True
+        return {"stopping": True}
+
     stopped = Event()
     if args.parent_pid:
         def parent_exited() -> None:

@@ -153,6 +153,7 @@ export class SidecarSupervisor {
   async restart(): Promise<SidecarStatus> { await this.stop(); return this.start() }
 
   async stop(): Promise<void> {
+    const host = this.getHostStatus()
     this.hostToken = undefined
     const child = this.child
     if (!child || this.stopping) return
@@ -164,14 +165,27 @@ export class SidecarSupervisor {
       pending.reject(new Error('sidecar stopped'))
     }
     this.stopping = true
-    child.kill('SIGTERM')
     await new Promise<void>(resolve => {
+      // 1s shutdown request + 1s connection drain + 3s RPC and 3s install cleanup,
+      // with 2s scheduling/reaping margin. Keep in sync with backend __main__.
       const timer = setTimeout(() => {
         if (platform === 'win32' && child.pid) spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'])
         else child.kill('SIGKILL')
         resolve()
-      }, 3000)
+      }, 10_000)
       child.once('exit', () => { clearTimeout(timer); resolve() })
+      if (host.state === 'ready') {
+        void fetch(`${host.baseUrl}/internal/lifecycle/shutdown`, {
+          method: 'POST', headers: { 'x-autoflow-host-token': host.hostToken },
+          signal: AbortSignal.timeout(1000),
+        }).then(response => {
+          if (!response.ok && platform !== 'win32' && child.exitCode === null && child.signalCode === null) child.kill('SIGTERM')
+        }).catch(() => {
+          // A lost response may still have started cleanup. Windows SIGTERM
+          // would forcibly interrupt it, so retain the full cooperative budget.
+          if (platform !== 'win32' && child.exitCode === null && child.signalCode === null) child.kill('SIGTERM')
+        })
+      } else child.kill('SIGTERM')
     })
     this.child = undefined; this.stopping = false
     this.update(applySidecarEvent(this.status, { type: 'stopped' }))

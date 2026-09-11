@@ -159,9 +159,13 @@ def install_error_handlers(app: FastAPI) -> None:
             _safe_model_details(error.details),
         )
 
+    @app.exception_handler(ProfileNameConflict)
+    async def profile_name_conflict(_request: Request, _error: ProfileNameConflict) -> JSONResponse:
+        message = "Profile name is already in use"
+        return error_response(409, "PROFILE_NAME_CONFLICT", message, {"fields": {"name": message}})
+
     mappings: list[tuple[type[Exception], int, str, str]] = [
         (ProfileNotFound, 404, "PROFILE_NOT_FOUND", "Browser profile was not found"),
-        (ProfileNameConflict, 409, "PROFILE_NAME_CONFLICT", "Profile name is already in use"),
         (ProfileDirectoryBusy, 409, "PROFILE_DIRECTORY_BUSY", "Profile data directory is busy"),
         (KernelNotInstalled, 409, "KERNEL_NOT_INSTALLED", "Selected browser kernel is not installed"),
         (ProxyUnavailable, 409, "PROXY_UNAVAILABLE", "Selected proxy resource is unavailable"),
