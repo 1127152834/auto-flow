@@ -18,10 +18,10 @@ Validation:
 
 ```text
 npm --workspace @autoflow/desktop test -- src/renderer/app/App.test.tsx src/renderer/shared/api/client.test.ts
-3 tests passed
+5 tests passed
 
 npm --workspace @autoflow/desktop test
-11 tests passed
+13 tests passed
 
 npm --workspace @autoflow/desktop run typecheck
 passed
@@ -33,3 +33,17 @@ passed
 ## Scope
 
 - No business routes, workflow UI, Electron Node APIs, filesystem/database access, WebRPA runtime, or integration were added.
+
+## Review Fixes
+
+- Changed the renderer entry script to a relative `./main.tsx` path so `electron-vite build` resolves it from the renderer HTML root.
+- Initial connection now polls a starting sidecar until it is ready or the bounded readiness timeout expires.
+- Added a reconnect test that verifies `restartSidecar` is called and the health request succeeds afterward.
+- Added a startup polling regression test covering `starting` followed by `ready`.
+
+Additional validation:
+
+```text
+npm --workspace @autoflow/desktop run build
+passed
+```
