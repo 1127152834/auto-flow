@@ -9,19 +9,28 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.health import health_router
+from autoflow.adapters.http.kernels import internal_kernel_paths_router, kernels_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
+from autoflow.application.kernels.service import KernelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.bootstrap.config import Settings
-from autoflow.bootstrap.proxies import configure_proxy_management
+from autoflow.bootstrap.proxies import (
+    LazySystemCredentialStore,
+    configure_proxy_management,
+)
 from autoflow.domain.profiles.ports import (
     InstalledKernelLookup,
     ProfileDataStore,
     ProfileUsageGuard,
 )
+from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
+)
+from autoflow.infrastructure.database.kernel_settings import (
+    SqlAlchemyDefaultKernelRepository,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
@@ -30,17 +39,19 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.kernel_installations import (
+    FilesystemKernelInstallationStore,
+)
 from autoflow.infrastructure.filesystem.paths import AppPaths
 from autoflow.infrastructure.filesystem.profile_data import (
     FilesystemProfileDataStore,
     FilesystemProfileUsageGuard,
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
-
-
-class _NoInstalledKernels:
-    def is_installed(self, edition: str, version: str) -> bool:
-        return False
+from autoflow.providers.kernel.cloakbrowser import (
+    CloakBrowserCatalogProvider,
+    CloakBrowserLicenseProvider,
+)
 
 
 def create_app(
@@ -49,6 +60,7 @@ def create_app(
     installed_kernel_lookup: InstalledKernelLookup | None = None,
     profile_data_store: ProfileDataStore | None = None,
     profile_usage_guard: ProfileUsageGuard | None = None,
+    kernel_service: KernelService | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
@@ -62,6 +74,22 @@ def create_app(
         events=kernel_events,
     )
     kernel_worker_manager.recover_interrupted()
+    credentials = LazySystemCredentialStore()
+    catalog_provider = CloakBrowserCatalogProvider(
+        paths.kernels, licensed_catalog=kernel_worker_manager.licensed_catalog
+    )
+    license_store = CloakBrowserLicenseStore(credentials)
+    installations = FilesystemKernelInstallationStore(paths.kernels)
+    with installations.guard():
+        installations.retry_pending()
+    kernel_service = kernel_service or KernelService(
+        catalog_provider,
+        CloakBrowserLicenseProvider(license_store, kernel_worker_manager.validate_license),
+        license_store,
+        SqlAlchemyDefaultKernelRepository(session_factory),
+        installations,
+        kernel_worker_manager,
+    )
     transaction = partial(profile_repository_transaction, session_factory)
     proxy_options = SqlAlchemyProxyOptions(session_factory)
     data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
@@ -69,7 +97,7 @@ def create_app(
     data_store.retry_pending(lambda profile_id: _profile_exists(transaction, profile_id))
     profile_service = ProfileService(
         transaction,
-        installed_kernel_lookup or _NoInstalledKernels(),
+        installed_kernel_lookup or catalog_provider,
         proxy_options,
         usage_guard,
         data_store,
@@ -82,6 +110,7 @@ def create_app(
     app.state.session_factory = session_factory
     app.state.profile_service = profile_service
     app.state.kernel_worker_manager = kernel_worker_manager
+    app.state.kernel_service = kernel_service
     close_proxies = configure_proxy_management(app, paths.database)
 
     async def shutdown() -> None:
@@ -97,6 +126,8 @@ def create_app(
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
     app.include_router(profiles_router(profile_service))
     app.include_router(proxy_options_router(proxy_options))
+    app.include_router(kernels_router(kernel_service))
+    app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )

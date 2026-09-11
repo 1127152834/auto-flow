@@ -38,6 +38,13 @@ LICENSED_VERSION = "151.0.7922.108.3"
 RESOLVED_VERSION = "152.0.8000.1"
 
 
+def _async_status(status: LicenseStatus):
+    async def validate(_key: str) -> LicenseStatus:
+        return status
+
+    return validate
+
+
 @pytest.fixture
 def github_release_payload() -> list[object]:
     return [
@@ -261,13 +268,14 @@ async def test_catalog_combines_public_licensed_and_installed(
     tmp_path: Path, github_release_payload: list[object]
 ) -> None:
     _make_installed(tmp_path, f"chromium-{PUBLIC_VERSION}", "darwin-arm64")
+    async def licensed_catalog() -> list[object]:
+        return [SimpleNamespace(version=LICENSED_VERSION, resolved_channel="stable")]
+
     provider = CloakBrowserCatalogProvider(
         tmp_path,
         platform="darwin-arm64",
         client=_OnlineClient(github_release_payload),
-        licensed_catalog=lambda: [
-            SimpleNamespace(version=LICENSED_VERSION, resolved_channel="stable")
-        ],
+        licensed_catalog=licensed_catalog,
     )
 
     catalog = await provider.catalog()
@@ -281,12 +289,15 @@ async def test_catalog_combines_public_licensed_and_installed(
 
 @pytest.mark.asyncio
 async def test_catalog_network_failure_returns_installed_fallback(tmp_path: Path) -> None:
+    async def licensed_catalog() -> list[object]:
+        return []
+
     _make_installed(tmp_path, f"chromium-{PUBLIC_VERSION}", "windows-x64")
     provider = CloakBrowserCatalogProvider(
         tmp_path,
         platform="windows-x64",
         client=_OfflineClient(),
-        licensed_catalog=list,
+        licensed_catalog=licensed_catalog,
     )
 
     catalog = await provider.catalog()
@@ -421,62 +432,67 @@ def test_cloakbrowser_license_store_maps_shared_store_failure_without_secret() -
     assert "private-test-key" not in str(error.value)
 
 
-def test_wrapper_unavailable_does_not_replace_existing_credential(
+@pytest.mark.asyncio
+async def test_wrapper_unavailable_does_not_replace_existing_credential(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import cloakbrowser
 
     monkeypatch.setattr(cloakbrowser, "validate_license", lambda _key: None)
     generic = _MemoryCredentialStore(b"existing-key")
-    provider = CloakBrowserLicenseProvider(
-        CloakBrowserLicenseStore(generic), validate_license_with_wrapper
-    )
+    async def validate(key: str) -> LicenseStatus:
+        return validate_license_with_wrapper(key)
+
+    provider = CloakBrowserLicenseProvider(CloakBrowserLicenseStore(generic), validate)
 
     with pytest.raises(LicenseValidationUnavailable):
-        provider.connect("new-test-key")
+        await provider.connect("new-test-key")
 
     assert generic.values["cloakbrowser-license"] == b"existing-key"
 
 
-def test_invalid_license_does_not_replace_existing_credential() -> None:
+@pytest.mark.asyncio
+async def test_invalid_license_does_not_replace_existing_credential() -> None:
     generic = _MemoryCredentialStore(b"existing-key")
     provider = CloakBrowserLicenseProvider(
         CloakBrowserLicenseStore(generic),
-        validator=lambda _key: LicenseStatus(True, False, "free", None, None),
+        validator=_async_status(LicenseStatus(True, False, "free", None, None)),
     )
 
     with pytest.raises(LicenseInvalid) as error:
-        provider.connect("new-test-key")
+        await provider.connect("new-test-key")
 
     assert error.value.code == "LICENSE_INVALID"
     assert generic.values["cloakbrowser-license"] == b"existing-key"
     assert "new-test-key" not in str(error.value)
 
 
-def test_validation_failure_is_sanitized_and_preserves_existing_credential() -> None:
+@pytest.mark.asyncio
+async def test_validation_failure_is_sanitized_and_preserves_existing_credential() -> None:
     generic = _MemoryCredentialStore(b"existing-key")
 
-    def fail(key: str) -> LicenseStatus:
+    async def fail(key: str) -> LicenseStatus:
         raise RuntimeError(f"remote rejected {key}")
 
     provider = CloakBrowserLicenseProvider(CloakBrowserLicenseStore(generic), fail)
 
     with pytest.raises(LicenseValidationUnavailable) as error:
-        provider.connect("private-test-key")
+        await provider.connect("private-test-key")
 
     assert error.value.code == "LICENSE_VALIDATION_UNAVAILABLE"
     assert generic.values["cloakbrowser-license"] == b"existing-key"
     assert "private-test-key" not in str(error.value)
 
 
-def test_valid_license_is_saved_only_after_validation() -> None:
+@pytest.mark.asyncio
+async def test_valid_license_is_saved_only_after_validation() -> None:
     generic = _MemoryCredentialStore(b"existing-key")
     valid = LicenseStatus(True, True, "pro", None, None)
     provider = CloakBrowserLicenseProvider(
-        CloakBrowserLicenseStore(generic), validator=lambda _key: valid
+        CloakBrowserLicenseStore(generic), validator=_async_status(valid)
     )
 
-    assert provider.connect("replacement-key") == valid
+    assert await provider.connect("replacement-key") == valid
     assert generic.values["cloakbrowser-license"] == b"replacement-key"
 
 

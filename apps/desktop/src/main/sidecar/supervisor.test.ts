@@ -73,7 +73,7 @@ describe('sidecar startup paths', () => {
     expect(hostToken).toMatch(/^[0-9a-f]{64}$/)
     expect(hostToken).not.toBe(spawnedOptions.env.AUTOFLOW_INSTANCE_TOKEN)
     expect(JSON.stringify(supervisor.getStatus())).not.toContain(hostToken)
-    expect(supervisor.getHostStatus()).toEqual({ state: 'ready', baseUrl: 'http://127.0.0.1:43127', hostToken })
+    expect(supervisor.getHostStatus()).toEqual({ state: 'ready', baseUrl: 'http://127.0.0.1:43127', hostToken, dataDir: '/tmp/autoflow-test' })
     expect(spawn).toHaveBeenCalledWith(
       'uv',
       ['run', '--directory', '/backend', 'python', '-m', 'autoflow', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-test'],

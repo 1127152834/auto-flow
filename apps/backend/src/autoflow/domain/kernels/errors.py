@@ -49,3 +49,45 @@ class KernelCredentialStoreUnavailable(KernelError):
 
     def __init__(self) -> None:
         super().__init__("System credential storage is unavailable")
+
+
+class KernelNotFound(KernelError):
+    code = "KERNEL_NOT_FOUND"
+
+    def __init__(self) -> None:
+        super().__init__("Installed kernel was not found")
+
+
+class KernelDefaultConflict(KernelError):
+    code = "KERNEL_DEFAULT_CONFLICT"
+
+    def __init__(self) -> None:
+        super().__init__("Default kernel revision is stale")
+
+
+class KernelBusy(KernelError):
+    code = "KERNEL_BUSY"
+
+    def __init__(self) -> None:
+        super().__init__("A kernel installation is already active")
+
+
+class KernelPathInvalid(KernelError):
+    code = "KERNEL_PATH_INVALID"
+
+    def __init__(self) -> None:
+        super().__init__("Managed kernel path is invalid")
+
+
+class KernelOperationNotFound(KernelError):
+    code = "KERNEL_OPERATION_NOT_FOUND"
+
+    def __init__(self, _operation_id: str | None = None) -> None:
+        super().__init__("Kernel operation was not found")
+
+
+class KernelWorkerUnavailable(KernelError):
+    code = "KERNEL_WORKER_ERROR"
+
+    def __init__(self, message: str = "Kernel worker is unavailable") -> None:
+        super().__init__(message)

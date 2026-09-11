@@ -5,6 +5,20 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from autoflow.domain.kernels.errors import (
+    KernelBusy,
+    KernelCredentialStoreUnavailable,
+    KernelDefaultConflict,
+    KernelNotFound,
+    KernelOperationNotFound,
+    KernelPathInvalid,
+    KernelPlatformUnsupported,
+    KernelVersionInvalid,
+    KernelWorkerUnavailable,
+    LicenseInUse,
+    LicenseInvalid,
+    LicenseValidationUnavailable,
+)
 from autoflow.domain.profiles.errors import (
     KernelNotInstalled,
     ProfileDataPathInvalid,
@@ -77,6 +91,18 @@ def install_error_handlers(app: FastAPI) -> None:
         (KernelNotInstalled, 409, "KERNEL_NOT_INSTALLED", "Selected browser kernel is not installed"),
         (ProxyUnavailable, 409, "PROXY_UNAVAILABLE", "Selected proxy resource is unavailable"),
         (ProfileDataPathInvalid, 500, "PROFILE_DATA_PATH_INVALID", "Managed profile data path is invalid"),
+        (KernelNotFound, 404, "KERNEL_NOT_FOUND", "Installed kernel was not found"),
+        (KernelOperationNotFound, 404, "KERNEL_OPERATION_NOT_FOUND", "Kernel operation was not found"),
+        (KernelDefaultConflict, 409, "KERNEL_DEFAULT_CONFLICT", "Default kernel revision is stale"),
+        (KernelBusy, 409, "KERNEL_BUSY", "A kernel installation is already active"),
+        (LicenseInUse, 409, "LICENSE_IN_USE", "CloakBrowser license is in use"),
+        (KernelVersionInvalid, 422, "KERNEL_VERSION_INVALID", "CloakBrowser version is invalid"),
+        (LicenseInvalid, 422, "LICENSE_INVALID", "CloakBrowser license is invalid or expired"),
+        (KernelPlatformUnsupported, 422, "KERNEL_PLATFORM_UNSUPPORTED", "CloakBrowser is unavailable on this platform"),
+        (KernelCredentialStoreUnavailable, 503, "CREDENTIAL_STORE_UNAVAILABLE", "System credential storage is unavailable"),
+        (LicenseValidationUnavailable, 503, "LICENSE_VALIDATION_UNAVAILABLE", "CloakBrowser license validation is unavailable"),
+        (KernelWorkerUnavailable, 503, "KERNEL_WORKER_ERROR", "Kernel worker is unavailable"),
+        (KernelPathInvalid, 500, "KERNEL_PATH_INVALID", "Managed kernel path is invalid"),
     ]
     for exception_type, status, code, message in mappings:
         def handler(

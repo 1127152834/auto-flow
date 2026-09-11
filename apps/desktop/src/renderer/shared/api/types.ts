@@ -18,6 +18,7 @@ export type AutoflowBridge = {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
   copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>
+  revealKernel?: (kernel: { edition: 'public' | 'licensed'; version: string }) => Promise<{ revealed: true }>
 }
 
 declare global {

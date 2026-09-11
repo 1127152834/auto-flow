@@ -1,8 +1,9 @@
-import { app, BrowserWindow, clipboard, ipcMain } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
+import { createRevealKernelHandler } from './ipc/kernel-paths'
 
 let mainWindow: BrowserWindow | undefined
 let supervisor: SidecarSupervisor | undefined
@@ -15,6 +16,13 @@ async function createWindow(): Promise<void> {
     getSidecarStatus: () => supervisor?.getHostStatus() ?? { state: 'stopped' },
     request: fetch,
     clipboard,
+  }))
+  ipcMain.removeHandler('autoflow:reveal-kernel')
+  ipcMain.handle('autoflow:reveal-kernel', createRevealKernelHandler({
+    allowedSenderId: mainWindow.webContents.id,
+    getSidecarStatus: () => supervisor?.getHostStatus() ?? { state: 'stopped' },
+    request: fetch,
+    showItemInFolder: path => shell.showItemInFolder(path),
   }))
   mainWindow.on('closed', () => { mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)

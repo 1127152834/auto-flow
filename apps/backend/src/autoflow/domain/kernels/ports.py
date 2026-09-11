@@ -1,7 +1,14 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+from contextlib import AbstractContextManager
 from typing import Protocol
 
-from .models import InstalledKernel, KernelCatalog, LicenseStatus
+from .models import (
+    DefaultKernel,
+    InstalledKernel,
+    KernelCatalog,
+    KernelRef,
+    LicenseStatus,
+)
 
 
 class KernelCatalogProvider(Protocol):
@@ -16,4 +23,17 @@ class LicenseStore(Protocol):
     def delete(self) -> None: ...
 
 
-LicenseValidator = Callable[[str], LicenseStatus]
+LicenseValidator = Callable[[str], Awaitable[LicenseStatus]]
+
+
+class DefaultKernelRepository(Protocol):
+    def get(self) -> DefaultKernel: ...
+    def compare_and_set(self, expected_revision: int, kernel: KernelRef | None) -> DefaultKernel: ...
+    def clear_if_matches(self, kernel: KernelRef) -> DefaultKernel: ...
+
+
+class KernelInstallationStore(Protocol):
+    def guard(self) -> AbstractContextManager[None]: ...
+    def stage(self, kernel: KernelRef) -> str: ...
+    def restore(self, token: str) -> None: ...
+    def purge(self, token: str) -> None: ...

@@ -8,8 +8,7 @@ injected ports and must never import the stateful wrapper directly.
 
 from __future__ import annotations
 
-import asyncio
-from collections.abc import Callable, Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -58,7 +57,7 @@ class CloakBrowserCatalogProvider:
         self,
         kernels_dir: Path,
         *,
-        licensed_catalog: Callable[[], Sequence[object]],
+        licensed_catalog: Callable[[], Awaitable[Sequence[object]]],
         platform: str | None = None,
         client: _HttpClient | None = None,
     ) -> None:
@@ -85,7 +84,7 @@ class CloakBrowserCatalogProvider:
         except Exception:  # noqa: BLE001 -- sanitize every remote/parser failure.
             failed = True
         try:
-            licensed = await asyncio.to_thread(self._licensed_catalog)
+            licensed = await self._licensed_catalog()
             releases.extend(parse_licensed_catalog(licensed))
         except Exception:  # noqa: BLE001 -- wrapper failures are not typed.
             failed = True
@@ -195,17 +194,17 @@ class CloakBrowserLicenseProvider:
         self._store = store
         self._validator = validator
 
-    def status(self) -> LicenseStatus:
+    async def status(self) -> LicenseStatus:
         key = self._store.read()
         if key is None:
             return LicenseStatus(False, False, None, None, None)
-        return replace(self._validate(key), configured=True)
+        return replace(await self._validate(key), configured=True)
 
-    def connect(self, license_key: str) -> LicenseStatus:
+    async def connect(self, license_key: str) -> LicenseStatus:
         key = license_key.strip()
         if not key:
             raise LicenseInvalid()
-        status = replace(self._validate(key), configured=True)
+        status = replace(await self._validate(key), configured=True)
         if not status.valid:
             raise LicenseInvalid()
         self._store.write(key)
@@ -216,9 +215,9 @@ class CloakBrowserLicenseProvider:
             raise LicenseInUse()
         self._store.delete()
 
-    def _validate(self, key: str) -> LicenseStatus:
+    async def _validate(self, key: str) -> LicenseStatus:
         try:
-            return self._validator(key)
+            return await self._validator(key)
         except (LicenseInvalid, LicenseValidationUnavailable):
             raise
         except Exception:  # noqa: BLE001 -- worker/provider errors must not expose the key.

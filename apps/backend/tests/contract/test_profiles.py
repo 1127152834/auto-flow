@@ -116,7 +116,7 @@ def test_unavailable_kernel_and_proxy_are_rejected(
     assert missing_kernel.status_code == 409
     assert missing_kernel.json()["error"]["code"] == "KERNEL_NOT_INSTALLED"
 
-    installed_kernels.installed.add(("public", "146.0.1"))
+    installed_kernels.installed.add(("public", "146.0.1.1"))
     missing_proxy = client.post(
         "/api/v1/profiles",
         json={**profile_payload, "proxyMode": "proxy", "proxyId": "missing"},

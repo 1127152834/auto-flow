@@ -6,16 +6,24 @@ import os
 import shutil
 import sys
 from contextlib import suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path, PurePath
-from typing import Any, Literal, TypeVar
+from typing import Any, TypeVar
 from uuid import uuid4
 
 from autoflow.application.kernels.operations import (
     TERMINAL_OPERATION_STATES,
+    KernelInstallJob,
     KernelOperation,
     transition_operation,
 )
+from autoflow.domain.kernels.errors import (
+    KernelBusy,
+    KernelOperationNotFound,
+    KernelWorkerUnavailable,
+    LicenseValidationUnavailable,
+)
+from autoflow.domain.kernels.models import LicenseSeats, LicenseStatus
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
@@ -28,31 +36,20 @@ from autoflow.providers.kernel.catalog import (
 )
 
 DEFAULT_TERMINATION_TIMEOUT = 3.0
+DEFAULT_RPC_TIMEOUT = 20.0
 _T = TypeVar("_T")
 
 
-class KernelWorkerManagerError(RuntimeError):
-    code = "KERNEL_WORKER_ERROR"
+class KernelWorkerManagerError(KernelWorkerUnavailable):
+    pass
 
 
-class KernelWorkerManagerBusy(KernelWorkerManagerError):
-    code = "KERNEL_BUSY"
-
-
-class KernelOperationNotFound(KernelWorkerManagerError):
-    code = "KERNEL_OPERATION_NOT_FOUND"
+class KernelWorkerManagerBusy(KernelBusy):
+    pass
 
 
 class KernelWorkerProtocolError(KernelWorkerManagerError):
     pass
-
-
-@dataclass(frozen=True)
-class KernelInstallJob:
-    edition: Literal["public", "licensed"]
-    requested_version: str
-    release_channel: Literal["stable", "preview"]
-    license_key: str | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -85,6 +82,7 @@ class KernelWorkerManager:
         worker_env: dict[str, str] | None = None,
         platform: str | None = None,
         termination_timeout: float = DEFAULT_TERMINATION_TIMEOUT,
+        rpc_timeout: float = DEFAULT_RPC_TIMEOUT,
     ) -> None:
         self._kernels_dir = kernels_dir.resolve()
         self._repository = repository
@@ -93,9 +91,14 @@ class KernelWorkerManager:
         self._worker_env = worker_env or {}
         self._platform = platform
         self._termination_timeout = termination_timeout
+        self._rpc_timeout = rpc_timeout
         self._running: dict[str, _RunningWorker] = {}
+        self._rpc_tasks: set[asyncio.Task[Any]] = set()
+        self._rpc_processes: set[asyncio.subprocess.Process] = set()
+        self._shutting_down = False
         self._lock = asyncio.Lock()
         self._ownership = ExclusiveFileLock(self._kernels_dir / ".install.lock")
+        self._cleanup_rpc_cache()
 
     def recover_interrupted(self) -> list[KernelOperation]:
         if not self._ownership.acquire():
@@ -129,9 +132,9 @@ class KernelWorkerManager:
             raise ValueError("public downloads require the stable channel")
         async with self._lock:
             if any(item.process.returncode is None for item in self._running.values()):
-                raise KernelWorkerManagerBusy("A kernel installation is already active")
+                raise KernelWorkerManagerBusy()
             if not self._ownership.acquire():
-                raise KernelWorkerManagerBusy("A kernel installation is already active")
+                raise KernelWorkerManagerBusy()
             operation = KernelOperation.new(
                 operation_id=str(uuid4()),
                 edition=job.edition,
@@ -205,9 +208,7 @@ class KernelWorkerManager:
             if running is None:
                 if operation.state in TERMINAL_OPERATION_STATES:
                     return operation
-                raise KernelWorkerManagerBusy(
-                    "The kernel installation belongs to another sidecar"
-                )
+                raise KernelWorkerManagerBusy()
             if operation.state not in TERMINAL_OPERATION_STATES and operation.state != "cancelling":
                 operation = transition_operation(
                     operation, "cancelling", message="正在取消安装"
@@ -247,15 +248,145 @@ class KernelWorkerManager:
         return self._repository.list()
 
     def active_processes(self) -> list[ActiveKernelProcess]:
-        return [
+        installs = [
             ActiveKernelProcess(item.process.pid, self._command)
             for item in self._running.values()
             if item.process.returncode is None
         ]
+        return installs + [
+            ActiveKernelProcess(process.pid, self._command)
+            for process in self._rpc_processes
+            if process.returncode is None
+        ]
 
     async def shutdown(self) -> None:
+        self._shutting_down = True
+        rpc_tasks = tuple(self._rpc_tasks)
+        for task in rpc_tasks:
+            task.cancel()
+        if rpc_tasks:
+            await asyncio.gather(*rpc_tasks, return_exceptions=True)
         for operation_id in tuple(self._running):
             await self.cancel(operation_id)
+
+    async def licensed_catalog(self) -> list[object]:
+        message = await self._rpc("catalog", {})
+        releases = message.get("releases")
+        if message.get("type") != "catalog" or not isinstance(releases, list):
+            raise KernelWorkerProtocolError("Invalid catalog result")
+        return releases
+
+    async def validate_license(self, license_key: str) -> LicenseStatus:
+        try:
+            message = await self._rpc("license", {"licenseKey": license_key})
+            raw = message.get("status")
+            if message.get("type") != "license" or not isinstance(raw, dict):
+                raise KernelWorkerProtocolError("Invalid license result")
+            configured = raw.get("configured")
+            valid = raw.get("valid")
+            if type(configured) is not bool or type(valid) is not bool:
+                raise KernelWorkerProtocolError("Invalid license result")
+            seats = raw.get("seats")
+            parsed_seats = None
+            if seats is not None:
+                if not isinstance(seats, dict):
+                    raise KernelWorkerProtocolError("Invalid license seats")
+                parsed_seats = LicenseSeats(
+                    _license_optional_int(seats.get("active")),
+                    _license_optional_int(seats.get("limit")),
+                )
+            return LicenseStatus(
+                configured=configured,
+                valid=valid,
+                plan=_optional_message(raw.get("plan")),
+                expires=_optional_message(raw.get("expires")),
+                seats=parsed_seats,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception:  # noqa: BLE001 -- no worker detail or secret crosses this boundary.
+            raise LicenseValidationUnavailable() from None
+
+    async def _rpc(self, command: str, payload: dict[str, object]) -> dict[str, Any]:
+        current = asyncio.current_task()
+        assert current is not None
+        if self._shutting_down:
+            raise KernelWorkerManagerError("Kernel worker manager is shutting down")
+        self._rpc_tasks.add(current)
+        rpc_id = uuid4().hex
+        cache = self._kernels_dir / ".rpc" / rpc_id
+        cache_lock = ExclusiveFileLock(cache / ".owner.lock")
+        process: asyncio.subprocess.Process | None = None
+        try:
+            cache.mkdir(parents=True, exist_ok=False)
+            if not cache_lock.acquire():
+                raise KernelWorkerManagerError("Kernel RPC cache is unavailable")
+            env = os.environ.copy()
+            env.update(self._worker_env)
+            env["CLOAKBROWSER_CACHE_DIR"] = str(cache)
+            spawn = asyncio.create_task(
+                asyncio.create_subprocess_exec(
+                    *self._command,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                    env=env,
+                )
+            )
+            try:
+                process = await asyncio.shield(spawn)
+            except asyncio.CancelledError:
+                with suppress(BaseException):
+                    process, _ = await _wait_uninterruptibly(spawn)
+                raise
+            self._rpc_processes.add(process)
+            command_payload = {"command": command, "cacheDir": str(cache), **payload}
+            raw, _ = await asyncio.wait_for(
+                process.communicate((json.dumps(command_payload) + "\n").encode()),
+                timeout=self._rpc_timeout,
+            )
+            lines = raw.splitlines()
+            if process.returncode != 0 or len(lines) != 1:
+                raise KernelWorkerProtocolError("Kernel RPC worker failed")
+            message = json.loads(lines[0])
+            if not isinstance(message, dict) or message.get("type") == "error":
+                raise KernelWorkerProtocolError("Kernel RPC worker failed")
+            return message
+        except asyncio.CancelledError:
+            raise
+        except TimeoutError:
+            raise KernelWorkerManagerError("Kernel RPC worker timed out") from None
+        except KernelWorkerManagerError:
+            raise
+        except Exception:  # noqa: BLE001 -- child output and spawn errors are untrusted.
+            raise KernelWorkerManagerError("Kernel RPC worker failed") from None
+        finally:
+            if process is not None:
+                if process.returncode is None:
+                    cleanup = asyncio.create_task(self._stop_process(process))
+                    await _wait_uninterruptibly(cleanup)
+                self._rpc_processes.discard(process)
+            cache_lock.release()
+            shutil.rmtree(cache, ignore_errors=True)
+            self._rpc_tasks.discard(current)
+
+    def _cleanup_rpc_cache(self) -> None:
+        root = self._kernels_dir / ".rpc"
+        try:
+            entries = list(root.iterdir())
+        except FileNotFoundError:
+            return
+        for entry in entries:
+            if not entry.is_dir() or entry.is_symlink():
+                continue
+            lock = ExclusiveFileLock(entry / ".owner.lock")
+            try:
+                if not lock.acquire():
+                    continue
+                lock.release()
+                shutil.rmtree(entry, ignore_errors=True)
+            except OSError:
+                lock.release()
 
     async def _monitor(
         self,
@@ -471,6 +602,14 @@ class KernelWorkerManager:
 
 def _optional_message(value: object) -> str | None:
     return value if isinstance(value, str) else None
+
+
+def _license_optional_int(value: object) -> int | None:
+    if value is None:
+        return None
+    if type(value) is not int or value < 0:
+        raise KernelWorkerProtocolError("Invalid license seats")
+    return value
 
 
 async def _wait_uninterruptibly(task: asyncio.Task[_T]) -> tuple[_T, bool]:

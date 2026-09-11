@@ -16,6 +16,7 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.infrastructure.process.kernel_worker import (
     DEFAULT_TERMINATION_TIMEOUT,
     KernelInstallJob,
@@ -37,6 +38,16 @@ mode = os.environ.get("FAKE_WORKER_MODE", "complete")
 if mode == "ignore-term":
     signal.signal(signal.SIGTERM, signal.SIG_IGN)
 staging = Path(job["cacheDir"])
+if job["command"] == "catalog":
+    if mode in {"wait", "ignore-term"}:
+        time.sleep(30)
+    print(json.dumps({"type": "catalog", "releases": [{"version": "151.0.7922.108", "releaseChannel": "stable"}]}), flush=True)
+    raise SystemExit(0)
+if job["command"] == "license":
+    if mode in {"wait", "ignore-term"}:
+        time.sleep(30)
+    print(json.dumps({"type": "license", "status": {"configured": True, "valid": True, "plan": "pro", "expires": None, "seats": {"active": 1, "limit": 2}}}), flush=True)
+    raise SystemExit(0)
 name = f'chromium-{job["requestedVersion"]}' + ('-pro' if job["edition"] == 'licensed' else '')
 install = staging / name
 executable = install / "chrome.exe"
@@ -88,6 +99,7 @@ def _manager(
     *,
     mode: str = "complete",
     termination_timeout: float = 3.0,
+    rpc_timeout: float = 20.0,
 ) -> KernelWorkerManager:
     return KernelWorkerManager(
         kernels_dir=tmp_path / "kernels",
@@ -97,6 +109,7 @@ def _manager(
         worker_env={"FAKE_WORKER_MODE": mode},
         platform="windows-x64",
         termination_timeout=termination_timeout,
+        rpc_timeout=rpc_timeout,
     )
 
 
@@ -126,6 +139,93 @@ async def test_cancel_does_not_publish_install(
     assert manager.get(operation.id).state == "cancelled"
     assert not (tmp_path / "kernels" / "chromium-146.0.7680.80").exists()
     assert manager.active_processes() == []
+
+
+@pytest.mark.asyncio
+async def test_catalog_and_license_rpc_are_supervised_and_clean_their_cache(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+) -> None:
+    manager = _manager(tmp_path, repository, fake_worker)
+
+    releases = await manager.licensed_catalog()
+    status = await manager.validate_license("private-test-key")
+
+    assert releases == [{"version": "151.0.7922.108", "releaseChannel": "stable"}]
+    assert status.valid is True
+    assert status.seats is not None and status.seats.active == 1
+    assert manager.active_processes() == []
+    assert list((tmp_path / "kernels" / ".rpc").iterdir()) == []
+
+
+@pytest.mark.asyncio
+async def test_rpc_timeout_and_caller_cancellation_reap_workers_and_cache(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+) -> None:
+    manager = _manager(
+        tmp_path, repository, fake_worker, mode="wait", rpc_timeout=0.05,
+        termination_timeout=0.05,
+    )
+
+    with pytest.raises(Exception, match="timed out"):
+        await manager.licensed_catalog()
+    task = asyncio.create_task(manager.licensed_catalog())
+    while not manager.active_processes():
+        await asyncio.sleep(0.005)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    assert manager.active_processes() == []
+    assert list((tmp_path / "kernels" / ".rpc").iterdir()) == []
+
+
+@pytest.mark.asyncio
+async def test_shutdown_cancels_one_shot_rpc_and_preserves_install_staging_namespace(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+) -> None:
+    staging = tmp_path / "kernels" / ".staging" / "unrelated"
+    staging.mkdir(parents=True)
+    manager = _manager(tmp_path, repository, fake_worker, mode="wait", termination_timeout=0.05)
+    task = asyncio.create_task(manager.licensed_catalog())
+    while not manager.active_processes():
+        await asyncio.sleep(0.005)
+
+    await manager.shutdown()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert manager.active_processes() == []
+    assert list((tmp_path / "kernels" / ".rpc").iterdir()) == []
+    assert staging.is_dir()
+
+
+def test_rpc_startup_cleanup_removes_only_unowned_cache(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+) -> None:
+    root = tmp_path / "kernels" / ".rpc"
+    stale = root / "stale"
+    active = root / "active"
+    stale.mkdir(parents=True)
+    active.mkdir()
+    ownership = ExclusiveFileLock(active / ".owner.lock")
+    assert ownership.acquire()
+    try:
+        _manager(tmp_path, repository, fake_worker)
+        assert not stale.exists()
+        assert active.exists()
+    finally:
+        ownership.release()
+
+    _manager(tmp_path, repository, fake_worker)
+    assert not active.exists()
 
 
 @pytest.mark.asyncio

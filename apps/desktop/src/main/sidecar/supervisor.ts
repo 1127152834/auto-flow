@@ -63,9 +63,9 @@ export class SidecarSupervisor {
   getStatus(): SidecarStatus { return this.status }
 
   // Only main-process IPC uses this. Never include it in renderer status events.
-  getHostStatus(): { state: 'ready'; baseUrl: string; hostToken: string } | { state: 'stopped' } {
+  getHostStatus(): { state: 'ready'; baseUrl: string; hostToken: string; dataDir: string } | { state: 'stopped' } {
     if (this.status.state !== 'ready' || !this.hostToken) return { state: 'stopped' }
-    return { state: 'ready', baseUrl: this.status.baseUrl, hostToken: this.hostToken }
+    return { state: 'ready', baseUrl: this.status.baseUrl, hostToken: this.hostToken, dataDir: this.options.dataDir! }
   }
 
   async start(): Promise<SidecarStatus> {

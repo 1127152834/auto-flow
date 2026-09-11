@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Literal, cast
 
 KernelOperationState = Literal[
@@ -83,6 +83,14 @@ class KernelOperation:
             "message": self.message,
             "error": self.error,
         }
+
+
+@dataclass(frozen=True)
+class KernelInstallJob:
+    edition: Literal["public", "licensed"]
+    requested_version: str
+    release_channel: Literal["stable", "preview"]
+    license_key: str | None = field(default=None, repr=False)
 
 
 def transition_operation(

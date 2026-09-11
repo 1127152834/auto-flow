@@ -470,6 +470,162 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/kernels/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Catalog */
+        get: operations["get_catalog_api_v1_kernels_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/installed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Installed */
+        get: operations["get_installed_api_v1_kernels_installed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/check-update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check Update */
+        post: operations["check_update_api_v1_kernels_check_update_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/license": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get License */
+        get: operations["get_license_api_v1_kernels_license_get"];
+        put?: never;
+        /** Connect License */
+        post: operations["connect_license_api_v1_kernels_license_post"];
+        /** Disconnect License */
+        delete: operations["disconnect_license_api_v1_kernels_license_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Default */
+        get: operations["get_default_api_v1_kernels_default_get"];
+        /** Set Default */
+        put: operations["set_default_api_v1_kernels_default_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Download */
+        post: operations["download_api_v1_kernels_download_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Operations */
+        get: operations["get_operations_api_v1_kernels_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/operations/{operation_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_v1_kernels_operations__operation_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kernels/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove */
+        delete: operations["remove_api_v1_kernels__version__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/kernels/events": {
         parameters: {
             query?: never;
@@ -688,6 +844,18 @@ export type components = {
             /** Can Rotate */
             can_rotate: boolean;
         };
+        /** DefaultKernelRead */
+        DefaultKernelRead: {
+            /** Revision */
+            revision: number;
+            kernel: components["schemas"]["KernelRefRead"] | null;
+        };
+        /** DefaultKernelWrite */
+        DefaultKernelWrite: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            kernel: components["schemas"]["KernelRefRead"] | null;
+        };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
         /** Endpoint */
@@ -822,6 +990,25 @@ export type components = {
             source: "local_probe" | "provider_probe" | "none";
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** InstalledKernelList */
+        InstalledKernelList: {
+            /** Items */
+            items: components["schemas"]["InstalledKernelRead"][];
+        };
+        /** InstalledKernelRead */
+        InstalledKernelRead: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+            /** Executablepath */
+            executablePath: string;
+            /** Size */
+            size: number;
+        };
         /** IpAllowlist */
         IpAllowlist: {
             /** Enabled */
@@ -837,6 +1024,131 @@ export type components = {
             enabled: boolean;
             /** Ipv4S */
             ipv4s: string[];
+        };
+        /** KernelCatalogRead */
+        KernelCatalogRead: {
+            /** Wrapperversion */
+            wrapperVersion: string;
+            /** Platform */
+            platform: string;
+            /** Releases */
+            releases: components["schemas"]["KernelReleaseRead"][];
+            /** Installed */
+            installed: components["schemas"]["InstalledKernelRead"][];
+            /** Catalogerror */
+            catalogError: string | null;
+        };
+        /** KernelDownload */
+        KernelDownload: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+            /**
+             * Releasechannel
+             * @enum {string}
+             */
+            releaseChannel: "stable" | "preview";
+        };
+        /** KernelOperationList */
+        KernelOperationList: {
+            /** Items */
+            items: components["schemas"]["KernelOperationRead"][];
+        };
+        /** KernelOperationRead */
+        KernelOperationRead: {
+            /** Id */
+            id: string;
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Requestedversion */
+            requestedVersion: string;
+            /** Resolvedversion */
+            resolvedVersion: string | null;
+            /**
+             * Releasechannel
+             * @enum {string}
+             */
+            releaseChannel: "stable" | "preview";
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "downloading" | "verifying" | "extracting" | "cancelling" | "cancelled" | "completed" | "failed";
+            /** Progress */
+            progress: number | null;
+            /** Message */
+            message: string | null;
+            /** Error */
+            error: string | null;
+        };
+        /** KernelRefRead */
+        KernelRefRead: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+        };
+        /** KernelReleaseRead */
+        KernelReleaseRead: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+            /** Chromiumversion */
+            chromiumVersion: string;
+            /**
+             * Releasechannel
+             * @enum {string}
+             */
+            releaseChannel: "stable" | "preview";
+            /** Publishedat */
+            publishedAt: string | null;
+            /** Archive */
+            archive: string | null;
+            /** Size */
+            size: number | null;
+            /** Installed */
+            installed: boolean;
+        };
+        /** LicenseRead */
+        LicenseRead: {
+            /** Configured */
+            configured: boolean;
+            /** Valid */
+            valid: boolean;
+            /** Plan */
+            plan: string | null;
+            /** Expires */
+            expires: string | null;
+            seats: components["schemas"]["LicenseSeatsRead"] | null;
+        };
+        /** LicenseSeatsRead */
+        LicenseSeatsRead: {
+            /** Active */
+            active: number | null;
+            /** Limit */
+            limit: number | null;
+        };
+        /** LicenseWrite */
+        LicenseWrite: {
+            /**
+             * Licensekey
+             * Format: password
+             */
+            licenseKey: string;
         };
         /** LocationList */
         LocationList: {
@@ -3016,6 +3328,305 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProxyOptionsRead"];
+                };
+            };
+        };
+    };
+    get_catalog_api_v1_kernels_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelCatalogRead"];
+                };
+            };
+        };
+    };
+    get_installed_api_v1_kernels_installed_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstalledKernelList"];
+                };
+            };
+        };
+    };
+    check_update_api_v1_kernels_check_update_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelCatalogRead"];
+                };
+            };
+        };
+    };
+    get_license_api_v1_kernels_license_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenseRead"];
+                };
+            };
+        };
+    };
+    connect_license_api_v1_kernels_license_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenseWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenseRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_license_api_v1_kernels_license_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    get_default_api_v1_kernels_default_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefaultKernelRead"];
+                };
+            };
+        };
+    };
+    set_default_api_v1_kernels_default_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefaultKernelWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefaultKernelRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_api_v1_kernels_download_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KernelDownload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelOperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_operations_api_v1_kernels_operations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelOperationList"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_kernels_operations__operation_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelOperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_api_v1_kernels__version__delete: {
+        parameters: {
+            query: {
+                edition: "public" | "licensed";
+            };
+            header?: never;
+            path: {
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

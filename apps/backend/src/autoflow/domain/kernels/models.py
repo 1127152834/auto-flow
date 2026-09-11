@@ -7,6 +7,18 @@ ReleaseChannel = Literal["stable", "preview"]
 
 
 @dataclass(frozen=True)
+class KernelRef:
+    edition: KernelEdition
+    version: str
+
+
+@dataclass(frozen=True)
+class DefaultKernel:
+    revision: int
+    kernel: KernelRef | None
+
+
+@dataclass(frozen=True)
 class KernelRelease:
     edition: KernelEdition
     version: str

@@ -198,7 +198,12 @@ def _platform_asset(assets: Any, platform: str) -> dict[str, Any] | None:
 
 
 def _attribute_string(value: object, attribute: str) -> str | None:
-    raw = getattr(value, attribute, None)
+    if isinstance(value, dict):
+        raw = value.get(attribute)
+        if raw is None and attribute == "resolved_channel":
+            raw = value.get("releaseChannel")
+    else:
+        raw = getattr(value, attribute, None)
     return str(raw) if raw is not None and str(raw) else None
 
 
