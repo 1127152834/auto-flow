@@ -10,7 +10,7 @@ dependencies = [
   "sqlalchemy>=2.0,<3",
   "alembic>=1.13,<2",
   "cloakbrowser[geoip]==0.5.9",
-  "httpx>=0.28.1",
+  "httpx[socks]>=0.28,<1",
   "keyring>=25,<26",
   "tzdata>=2026.3",
 ]

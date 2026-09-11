@@ -1,3 +1,4 @@
+import secrets
 from functools import partial
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.application.profiles.service import ProfileService
 from autoflow.bootstrap.config import Settings
+from autoflow.bootstrap.proxies import configure_proxy_management
 from autoflow.domain.profiles.ports import (
     InstalledKernelLookup,
     ProfileDataStore,
@@ -80,10 +82,16 @@ def create_app(
     app.state.session_factory = session_factory
     app.state.profile_service = profile_service
     app.state.kernel_worker_manager = kernel_worker_manager
+    close_proxies = configure_proxy_management(app, paths.database)
 
     async def shutdown() -> None:
-        await kernel_worker_manager.shutdown()
-        session_factory.dispose()
+        try:
+            await kernel_worker_manager.shutdown()
+        finally:
+            try:
+                close_proxies()
+            finally:
+                session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
@@ -95,6 +103,18 @@ def create_app(
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
+        if request.url.path.startswith("/internal/"):
+            supplied = request.headers.get("x-autoflow-host-token", "")
+            if (
+                not settings.host_token
+                or request.headers.get("origin") is not None
+                or not secrets.compare_digest(supplied, settings.host_token)
+            ):
+                return JSONResponse(
+                    {"detail": "Unauthorized"},
+                    status_code=401,
+                    headers={"Cache-Control": "no-store"},
+                )
         if request.url.path.startswith("/api/v1/") and (
             settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
@@ -106,7 +126,7 @@ def create_app(
             CORSMiddleware,
             allow_origins=[settings.renderer_origin],
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["x-autoflow-token", "content-type"],
+            allow_headers=["x-autoflow-token", "content-type", "Idempotency-Key"],
         )
     return app
 

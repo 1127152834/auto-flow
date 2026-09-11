@@ -68,6 +68,12 @@ describe('sidecar startup paths', () => {
     stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
 
     await expect(start).resolves.toMatchObject({ state: 'ready' })
+    const spawnedOptions = vi.mocked(spawn).mock.calls[0][2] as { env: NodeJS.ProcessEnv }
+    const hostToken = spawnedOptions.env.AUTOFLOW_HOST_TOKEN
+    expect(hostToken).toMatch(/^[0-9a-f]{64}$/)
+    expect(hostToken).not.toBe(spawnedOptions.env.AUTOFLOW_INSTANCE_TOKEN)
+    expect(JSON.stringify(supervisor.getStatus())).not.toContain(hostToken)
+    expect(supervisor.getHostStatus()).toEqual({ state: 'ready', baseUrl: 'http://127.0.0.1:43127', hostToken })
     expect(spawn).toHaveBeenCalledWith(
       'uv',
       ['run', '--directory', '/backend', 'python', '-m', 'autoflow', '--port', '0', '--instance-id', 'x', '--parent-pid', String(process.pid), '--data-dir', '/tmp/autoflow-test'],
@@ -106,6 +112,7 @@ describe('sidecar startup cancellation', () => {
     const stopping = supervisor.stop()
     resolveHealth(new Response(JSON.stringify({ status: 'ok', apiVersion: 'v1', instanceId: 'x' }), { status: 200 }))
     await stopping
+    expect(supervisor.getHostStatus()).toEqual({ state: 'stopped' })
     await expect(start).rejects.toThrow('sidecar stopped')
     expect(supervisor.getStatus()).toEqual({ state: 'stopped' })
     vi.unstubAllGlobals()

@@ -1,13 +1,13 @@
 # ProxyPanel 代理管理实施计划
 
 - 日期：2026-09-12
-- 状态：proposed，等待用户明确批准实施
+- 状态：confirmed / integrated；2026-09-12 已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线
 - 关联规格：`docs/superpowers/specs/2026-09-12-proxy-management-design.md`
 - API 资料：`docs/references/proxypanel-api-contract.md`
 - 原型：`docs/prototype/proxy-management/proxy-management-overview.png`
 - 目标：按组件先行和前后端垂直切片，交付 ProxyPanel 连接、代理投影与健康详情、AutoFlow 本地代理组、浏览器配置引用，以及经真实契约验证后才启用的远程操作。
 
-本文只定义实施顺序、文件归属和验收方式。用户批准前不编写业务代码、不修改数据库迁移、不生成客户端类型。
+本文定义实施顺序、文件归属和验收方式。用户已批准代码实施；具体完成项、真实接入限制和公共文件合并顺序见 [实施状态](../../migration/proxy-management-status.md)。原定测试文件名是计划建议，最终执行命令以该状态记录中的实际文件为准。
 
 ## 1. 实施前提与证据边界
 
@@ -15,7 +15,7 @@
 
 以下能力必须在真实响应脱敏、字段语义核验和 contract test 通过后才能启用：地点变更、远程轮换计划、凭据轮换、IP 白名单写入、用量、余额、远程状态和订阅到期时间。`subscription_expires_at` 在此前始终为 `null`；UI 不渲染“即将到期”。
 
-当前仓库只有 `infrastructure/credentials/` 目录骨架，没有 CredentialStore 实现。连接密钥落库、代理端点密码保存和受控复制都依赖先完成 CredentialStore 端口及 Windows/macOS 适配器。
+规划时仓库只有 `infrastructure/credentials/` 目录骨架，没有 CredentialStore 实现。该前置条件现已在代理独立分支完成；真实端点凭据读取仍受 Provider 证据边界约束，不能因存储适配完成而宣称实网接入。
 
 安全边界如下：
 

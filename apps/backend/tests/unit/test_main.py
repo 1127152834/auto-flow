@@ -1,5 +1,5 @@
 import sys
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -46,6 +46,11 @@ def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
     from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
 
+    close_proxies = Mock()
+    monkeypatch.setattr(
+        "autoflow.bootstrap.app.configure_proxy_management",
+        lambda _app, _database: close_proxies,
+    )
     app = create_app(Settings(data_dir=str(tmp_path), instance_id="test"))
     shutdown = AsyncMock()
     monkeypatch.setattr(app.state.kernel_worker_manager, "shutdown", shutdown)
@@ -54,3 +59,4 @@ def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
         pass
 
     shutdown.assert_awaited_once_with()
+    close_proxies.assert_called_once_with()

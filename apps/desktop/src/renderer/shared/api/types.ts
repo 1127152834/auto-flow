@@ -17,6 +17,7 @@ export type HealthResponse = components['schemas']['HealthResponse']
 export type AutoflowBridge = {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
+  copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>
 }
 
 declare global {

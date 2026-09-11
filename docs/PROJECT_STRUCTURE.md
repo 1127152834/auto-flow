@@ -156,6 +156,21 @@ reference/
 
 ## 依赖与维护规则
 
+### 代理模块实施补充（2026-09-12，confirmed）
+
+代理领域实现已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线。完整接口、验证结果和限制见 [代理模块实施状态](migration/proxy-management-status.md)。
+
+- `application/proxies/facade.py`：事务边界与代理用例入口；HTTP adapter 不直接构造仓储。
+- `infrastructure/database/proxy_models.py`：代理扩展 ORM；复用现有 `proxies` / `proxy_pools` 的主键，不改写 `models.py` 中浏览器资源模型。
+- `infrastructure/database/proxies.py`：代理 SQLAlchemy 仓储与 Unit of Work。
+- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输；真实返回字段未核验时拒绝创建投影。
+- `providers/proxy/probe.py`：经过指定代理的固定 HTTPS 健康探针。
+- `domain/credentials.py` 与 `infrastructure/credentials/system.py`：原生系统凭据端口和适配器，供内核模块复用。
+- `bootstrap/proxies.py`：代理服务、数据库、Provider、凭据与 HTTP 装配。
+- `adapters/http/internal_proxy_credentials.py`：仅桌面主进程可以调用的取密通道，不进入 OpenAPI。
+- `renderer/domains/proxies/`：生成契约的 API facade、交互 hooks、领域组件与页面组合；基础控件复用 `shared/components/ui`。
+- `scripts/preview-proxies.mjs` 与 `renderer/proxy-preview.*`：不改动主应用 App 的独立开发预览，连接独立数据目录的真实本地 sidecar。
+
 - 后端依赖：`adapters → application → domain`；`infrastructure/providers` 实现领域端口，`bootstrap` 装配具体实现。业务规则不依赖 FastAPI、ORM 或平台 SDK。
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。

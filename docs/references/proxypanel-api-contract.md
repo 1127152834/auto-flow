@@ -160,7 +160,7 @@ ActionResult：`{status: completed|accepted|failed, operation_id: UUID|null, res
 
 API Key 首次录入/替换会短暂存在 renderer 表单内存；提交请求后或关闭后清空，不进入 query cache、localStorage、日志和读取响应。数据面 password 不进入 renderer。
 
-`CredentialStore` 当前尚未实现。设计端口放入 `domain/credentials.py`，平台实现放在 `infrastructure/credentials/`；SQLite 只存 secret_ref，sidecar 应用服务才解析明文。凭据库不可用时返回明确错误，禁止明文文件降级。
+`CredentialStore` 已接入浏览器主线。端口位于 `domain/credentials.py`，平台实现位于 `infrastructure/credentials/`；SQLite 只存 secret_ref，sidecar 应用服务才解析明文。凭据库不可用时返回明确错误，禁止明文文件降级。
 
 复制使用受限 preload 方法 `copyProxyCredentials({proxyId, protocol, format: username|password|url}) → {copied:true}`：
 
@@ -173,7 +173,7 @@ host token 启动与鉴权约定：Electron main 用密码学随机源生成 32 
 
 普通 renderer API 的 CORS 仅新增 `Idempotency-Key` 等明确所需 header，不允许 `x-autoflow-host-token`。`{copied:true}` 和复制请求类型归 main/preload IPC 定义，不注册到 renderer OpenAPI；OpenAPI 只含 CredentialView。
 
-Key 请求字段为 writeOnly/SecretStr 语义；Pydantic/FastAPI 校验错误必须去掉敏感 input，防止自动 422 响应或验证日志回显 Key。上述 host token、IPC 与凭据库均是待实现方案，不是现有能力。
+Key 请求字段为 writeOnly/SecretStr 语义；Pydantic/FastAPI 校验错误必须去掉敏感 input，防止自动 422 响应或验证日志回显 Key。上述 host token、IPC 与凭据库已接入浏览器主线并通过本机整合测试；跨平台实际验证状态见 `docs/migration/proxy-management-status.md`。
 
 B0 普通只读采样限列表/详情已有的 credential_available 等元信息；不因“读接口”而默认采集 credentials 明文。只有用户明确连接并使用代理或点击复制等已授权功能时，后端才按需读取凭据，原始用户名/密码不得进入 fixture。当前文档工作不触发该流程。Provider 变更现场测试另需明确测试代理和授权操作。
 
