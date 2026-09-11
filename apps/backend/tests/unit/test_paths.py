@@ -28,5 +28,5 @@ def test_bootstrap_creates_app_directories(tmp_path):
 
     create_app(Settings(data_dir=str(tmp_path), instance_id="test"))
 
-    for directory in (paths.data_dir, paths.logs, paths.workspace, paths.cache, paths.temp):
+    for directory in (paths.data_dir, paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp):
         assert directory.is_dir()

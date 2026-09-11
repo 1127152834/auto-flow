@@ -10,7 +10,7 @@ from autoflow.infrastructure.filesystem.paths import AppPaths
 
 def create_app(settings: Settings) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
-    for directory in (paths.data_dir, paths.logs, paths.workspace, paths.cache, paths.temp):
+    for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp):
         directory.mkdir(parents=True, exist_ok=True)
 
     app = FastAPI()
