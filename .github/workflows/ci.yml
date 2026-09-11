@@ -29,6 +29,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm run smoke:desktop
+      - run: node scripts/smoke-browser-management.mjs
       - run: npm run backend:build
       - run: npm run package:dir
       - name: Check and smoke packaged sidecar
@@ -57,6 +58,8 @@ jobs:
           console.log(`smoking ${executable}`)
           const result = spawnSync(process.execPath, ['scripts/smoke-sidecar.mjs', '--executable', executable], { stdio: 'inherit' })
           if (result.status !== 0) process.exit(result.status ?? 1)
+          const browser = spawnSync(process.execPath, ['scripts/smoke-browser-management.mjs', '--executable', executable], { stdio: 'inherit' })
+          if (browser.status !== 0) process.exit(browser.status ?? 1)
           const desktop = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
           const desktopResult = spawnSync(process.execPath, ['scripts/smoke-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
           process.exitCode = desktopResult.status ?? 1

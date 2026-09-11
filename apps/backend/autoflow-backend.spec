@@ -1,15 +1,33 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
+
+
+datas = [
+    ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
+    ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
+    *collect_data_files('tzdata'),
+    *copy_metadata('tzdata'),
+    *copy_metadata('cloakbrowser'),
+    *copy_metadata('keyring'),
+]
+hiddenimports = [
+    'autoflow.bootstrap.kernel_worker',
+    'autoflow.providers.kernel.worker',
+    'sqlalchemy.dialects.sqlite.pysqlite',
+    'keyring.backends.macOS',
+    'keyring.backends.macOS.api',
+    'keyring.backends.Windows',
+    *collect_submodules('cloakbrowser'),
+]
+
 
 a = Analysis(
     ['src/autoflow/__main__.py'],
     pathex=['src'],
     binaries=[],
-    datas=[
-        ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
-        ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
-    ],
-    hiddenimports=[],
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
