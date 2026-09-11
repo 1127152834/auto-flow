@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 import { ApiClientError, type ApiClient } from '../../../shared/api/client'
@@ -7,7 +7,10 @@ import type { ApiError, ConnectionView, GroupPage, GroupView, ProxyPage, ProxyVi
 import { ProxyManagementPage } from '../pages/ProxyManagementPage'
 import { LocalProxyGroupEditor } from '../components/LocalProxyGroups'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 const connection: ConnectionView = {
   id: 'connection-1',
@@ -194,4 +197,80 @@ it('keeps the group draft and resubmits the same version after a server risk res
   expect(await screen.findByText('组内包含未检测成员')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '了解风险并保存' }))
   await waitFor(() => expect(acknowledgements).toEqual([false, true]))
+})
+
+it('keeps a saved connection when its first sync is unavailable', async () => {
+  const user = userEvent.setup()
+  let saved = false
+  const syncError: ApiError = {
+    code: 'PROXYPANEL_SCHEMA_UNSUPPORTED',
+    message: '响应结构尚未核验',
+    request_id: 'request-sync',
+    field_errors: {},
+    retry_after_seconds: null,
+    outcome_unknown: false,
+  }
+  render(<ProxyManagementPage api={client((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections' && init?.method === 'POST') {
+      saved = true
+      return { ...connection, name: 'ProxyPanel' }
+    }
+    if (path === `/api/v1/proxy-panel/connections/${connection.id}/sync`) throw new ApiClientError(syncError.message, 502, syncError)
+    if (path === '/api/v1/proxy-panel/connections') return { items: saved ? [connection] : [] }
+    if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+    if (path.startsWith('/api/v1/proxies?')) return proxies
+    throw new Error(`Unexpected request: ${path}`)
+  })} />)
+
+  await user.click(await screen.findByRole('button', { name: '连接 ProxyPanel' }))
+  await user.type(screen.getByLabelText('API Key'), 'stored-before-sync')
+  await user.click(screen.getByRole('button', { name: '验证并连接' }))
+  expect(await screen.findByText(/连接已保存，代理同步暂不可用：响应结构尚未核验/)).toBeInTheDocument()
+  expect(screen.queryByRole('dialog', { name: '连接 ProxyPanel' })).not.toBeInTheDocument()
+  expect(screen.getByText('ProxyPanel 主连接')).toBeInTheDocument()
+})
+
+it('ignores a late detail response, then updates metadata and copies through the bridge', async () => {
+  const user = userEvent.setup()
+  let resolveFirst: ((value: ProxyView) => void) | undefined
+  let detailCalls = 0
+  let updateBody: { expected_revision: number; name_override: string | null; enabled: boolean | null } | undefined
+  const copy = vi.fn(async () => ({ copied: true as const }))
+  vi.stubGlobal('autoflow', {
+    getSidecarStatus: vi.fn(),
+    restartSidecar: vi.fn(),
+    copyProxyCredentials: copy,
+  })
+  render(<ProxyManagementPage api={client((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections') return { items: [connection] }
+    if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+    if (path.startsWith('/api/v1/proxies?')) return proxies
+    if (path === '/api/v1/proxies/proxy-1' && init?.method === 'PATCH') {
+      updateBody = JSON.parse(String(init.body)) as typeof updateBody
+      return { ...proxies.items[0], name_override: '工作代理', enabled: false, revision: 2 }
+    }
+    if (path === '/api/v1/proxies/proxy-1') {
+      detailCalls += 1
+      if (detailCalls === 1) return new Promise<ProxyView>((resolve) => { resolveFirst = resolve })
+      return proxies.items[0]
+    }
+    if (path === '/api/v1/proxies/proxy-1/references') return { profiles: [], groups: [] }
+    throw new Error(`Unexpected request: ${path}`)
+  })} />)
+
+  await user.click((await screen.findAllByRole('button', { name: '详情' }))[0])
+  await user.click(await screen.findByRole('button', { name: '关闭代理详情' }))
+  await act(async () => { resolveFirst?.(proxies.items[0]) })
+  expect(screen.queryByRole('dialog', { name: 'Dallas Verizon' })).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: '详情' }))
+  const drawer = await screen.findByRole('dialog', { name: 'Dallas Verizon' })
+  await user.clear(within(drawer).getByLabelText('显示名称'))
+  await user.type(within(drawer).getByLabelText('显示名称'), '工作代理')
+  await user.click(within(drawer).getByRole('switch', { name: '启用此代理' }))
+  await user.click(within(drawer).getByRole('button', { name: '保存本地设置' }))
+  await waitFor(() => expect(updateBody).toEqual({ expected_revision: 1, name_override: '工作代理', enabled: false }))
+  await user.click(within(drawer).getByRole('tab', { name: '凭据与白名单' }))
+  await user.click(within(drawer).getByRole('button', { name: '复制用户名' }))
+  expect(copy).toHaveBeenCalledWith({ proxyId: 'proxy-1', protocol: 'http', format: 'username' })
 })

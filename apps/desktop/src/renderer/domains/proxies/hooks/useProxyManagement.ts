@@ -10,6 +10,7 @@ import {
   type GroupView,
   type ProxyApi,
   type ProxyFilters,
+  type ProxyMetadataDraft,
   type ProxyPage,
   type ProxyReferences,
   type ProxyView,
@@ -47,7 +48,33 @@ export function useProxyManagement(api: ProxyApi) {
   const [groupBusy, setGroupBusy] = useState(false)
   const [groupError, setGroupError] = useState<string>()
   const [groupRiskRequired, setGroupRiskRequired] = useState(false)
+  const [detailBusy, setDetailBusy] = useState(false)
+  const [copying, setCopying] = useState<string>()
+  const [retryUntil, setRetryUntil] = useState(0)
+  const [clock, setClock] = useState(() => Date.now())
   const filterRequest = useRef(0)
+  const detailRequest = useRef(0)
+  const selectedProxyId = useRef<string | null>(null)
+
+  const rememberRetryAfter = useCallback((error: unknown) => {
+    const seconds = errorDetail(error)?.retry_after_seconds
+    if (seconds != null && seconds > 0) {
+      setClock(Date.now())
+      setRetryUntil(Date.now() + seconds * 1_000)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (retryUntil <= Date.now()) return
+    const timer = window.setInterval(() => {
+      const now = Date.now()
+      setClock(now)
+      if (now >= retryUntil) window.clearInterval(timer)
+    }, 250)
+    return () => window.clearInterval(timer)
+  }, [retryUntil])
+
+  const retryAfterSeconds = Math.max(0, Math.ceil((retryUntil - clock) / 1_000))
 
   const loadBase = useCallback(async () => {
     setLoading(true)
@@ -63,11 +90,12 @@ export function useProxyManagement(api: ProxyApi) {
         setGroupCandidates(await api.listAllProxies())
       }
     } catch (error) {
+      rememberRetryAfter(error)
       setLoadError(errorMessage(error))
     } finally {
       setLoading(false)
     }
-  }, [api])
+  }, [api, rememberRetryAfter])
 
   useEffect(() => { void loadBase() }, [loadBase])
 
@@ -78,11 +106,14 @@ export function useProxyManagement(api: ProxyApi) {
       void api.listProxies(filters).then((page) => {
         if (request === filterRequest.current) setProxies(page)
       }).catch((error) => {
-        if (request === filterRequest.current) setLoadError(errorMessage(error))
+        if (request === filterRequest.current) {
+          rememberRetryAfter(error)
+          setLoadError(errorMessage(error))
+        }
       })
     }, filters.q ? 200 : 0)
     return () => window.clearTimeout(timeout)
-  }, [api, connection, filters])
+  }, [api, connection, filters, rememberRetryAfter])
 
   const reload = useCallback(async () => {
     await loadBase()
@@ -98,16 +129,28 @@ export function useProxyManagement(api: ProxyApi) {
         : await api.createConnection(name, apiKey)
       if (next.name !== name) next = await api.updateConnection(next, name)
       setConnection(next)
-      if (keyChanged) await waitForAction(await api.sync(next.id))
+      if (keyChanged) {
+        try {
+          await waitForAction(await api.sync(next.id))
+        } catch (error) {
+          rememberRetryAfter(error)
+          await loadBase()
+          const message = `连接已保存，代理同步暂不可用：${errorMessage(error)}`
+          setLoadError(message)
+          notify({ title: '连接已保存，代理同步暂不可用', tone: 'info' })
+          return
+        }
+      }
       await loadBase()
       notify({ title: keyChanged ? 'ProxyPanel 已连接并同步' : '连接名称已更新', tone: 'success' })
     } catch (error) {
+      rememberRetryAfter(error)
       setConnectionError(errorMessage(error))
       throw error
     } finally {
       setConnectionBusy(false)
     }
-  }, [api, connection, loadBase])
+  }, [api, connection, loadBase, rememberRetryAfter])
 
   const disconnect = useCallback(async () => {
     if (!connection) return
@@ -118,27 +161,30 @@ export function useProxyManagement(api: ProxyApi) {
       setGroupCandidates([])
       notify({ title: '已断开 ProxyPanel', tone: 'success' })
     } catch (error) {
+      rememberRetryAfter(error)
       setLoadError(errorMessage(error))
       notify({ title: errorMessage(error), tone: 'error' })
     }
-  }, [api, connection])
+  }, [api, connection, rememberRetryAfter])
 
   const sync = useCallback(async () => {
     if (!connection || syncing) return
     setSyncing(true)
     try {
       await waitForAction(await api.sync(connection.id))
-      const [nextConnection, nextProxies] = await Promise.all([api.getConnection(), api.listProxies(filters)])
+      const [nextConnection, nextProxies, nextCandidates] = await Promise.all([api.getConnection(), api.listProxies(filters), api.listAllProxies()])
       setConnection(nextConnection)
       setProxies(nextProxies)
+      setGroupCandidates(nextCandidates)
       notify({ title: '代理已同步', tone: 'success' })
     } catch (error) {
+      rememberRetryAfter(error)
       setLoadError(errorMessage(error))
       notify({ title: errorMessage(error), tone: 'error' })
     } finally {
       setSyncing(false)
     }
-  }, [api, connection, filters, syncing])
+  }, [api, connection, filters, rememberRetryAfter, syncing])
 
   const probe = useCallback(async (proxy: ProxyView) => {
     if (checkingId) return
@@ -147,25 +193,72 @@ export function useProxyManagement(api: ProxyApi) {
       await waitForAction(await api.probeProxy(proxy.id))
       const refreshed = await api.getProxy(proxy.id)
       setProxies((current) => ({ ...current, items: current.items.map((item) => item.id === refreshed.id ? refreshed : item) }))
-      if (selectedProxy?.id === refreshed.id) setSelectedProxy(refreshed)
+      setGroupCandidates((current) => current.map((item) => item.id === refreshed.id ? refreshed : item))
+      if (selectedProxyId.current === refreshed.id) setSelectedProxy(refreshed)
       notify({ title: refreshed.health.state === 'healthy' ? '代理连接正常' : '代理检测完成', tone: refreshed.health.state === 'healthy' ? 'success' : 'info' })
     } catch (error) {
+      rememberRetryAfter(error)
       notify({ title: errorMessage(error), tone: 'error' })
     } finally {
       setCheckingId(undefined)
     }
-  }, [api, checkingId, selectedProxy?.id])
+  }, [api, checkingId, rememberRetryAfter])
 
   const openProxy = useCallback((proxy: ProxyView) => {
+    const request = ++detailRequest.current
+    selectedProxyId.current = proxy.id
     setSelectedProxy(proxy)
     setReferences(undefined)
     void Promise.all([api.getProxy(proxy.id), api.getProxyReferences(proxy.id)])
       .then(([detail, nextReferences]) => {
+        if (request !== detailRequest.current || selectedProxyId.current !== detail.id) return
         setSelectedProxy(detail)
         setReferences(nextReferences)
       })
-      .catch((error) => notify({ title: errorMessage(error), tone: 'error' }))
-  }, [api])
+      .catch((error) => {
+        if (request !== detailRequest.current) return
+        rememberRetryAfter(error)
+        notify({ title: errorMessage(error), tone: 'error' })
+      })
+  }, [api, rememberRetryAfter])
+
+  const closeProxy = useCallback(() => {
+    detailRequest.current += 1
+    selectedProxyId.current = null
+    setSelectedProxy(null)
+    setReferences(undefined)
+  }, [])
+
+  const updateProxy = useCallback(async (proxy: ProxyView, draft: ProxyMetadataDraft) => {
+    setDetailBusy(true)
+    try {
+      const updated = await api.updateProxy(proxy, draft)
+      setProxies((current) => ({ ...current, items: current.items.map((item) => item.id === updated.id ? updated : item) }))
+      setGroupCandidates((current) => current.map((item) => item.id === updated.id ? updated : item))
+      if (selectedProxyId.current === updated.id) setSelectedProxy(updated)
+      notify({ title: '代理本地设置已保存', tone: 'success' })
+    } catch (error) {
+      rememberRetryAfter(error)
+      notify({ title: errorMessage(error), tone: 'error' })
+    } finally {
+      setDetailBusy(false)
+    }
+  }, [api, rememberRetryAfter])
+
+  const copyCredentials = useCallback(async (proxy: ProxyView, protocol: 'http' | 'socks5', format: 'username' | 'password' | 'url') => {
+    const copy = window.autoflow?.copyProxyCredentials
+    if (!proxy.credential_available || !copy) return
+    const key = `${protocol}:${format}`
+    setCopying(key)
+    try {
+      await copy({ proxyId: proxy.id, protocol, format })
+      notify({ title: '已复制到剪贴板', tone: 'success' })
+    } catch (error) {
+      notify({ title: errorMessage(error), tone: 'error' })
+    } finally {
+      setCopying(undefined)
+    }
+  }, [])
 
   const saveGroup = useCallback(async (group: GroupView | null, draft: GroupDraft, acknowledgeRisk: boolean) => {
     setGroupBusy(true)
@@ -182,6 +275,7 @@ export function useProxyManagement(api: ProxyApi) {
       })
       notify({ title: '本地代理组已保存', tone: 'success' })
     } catch (error) {
+      rememberRetryAfter(error)
       const detail = errorDetail(error)
       setGroupError(errorMessage(error))
       setGroupRiskRequired(detail?.code === 'PROXY_MEMBER_RISK_CONFIRMATION_REQUIRED')
@@ -189,7 +283,7 @@ export function useProxyManagement(api: ProxyApi) {
     } finally {
       setGroupBusy(false)
     }
-  }, [api])
+  }, [api, rememberRetryAfter])
 
   const deleteGroup = useCallback(async (group: GroupView) => {
     try {
@@ -197,6 +291,7 @@ export function useProxyManagement(api: ProxyApi) {
       setGroups((current) => ({ ...current, items: current.items.filter((item) => item.id !== group.id), matched_count: Math.max(0, current.matched_count - 1) }))
       notify({ title: '本地代理组已删除', tone: 'success' })
     } catch (error) {
+      rememberRetryAfter(error)
       if (errorDetail(error)?.code === 'PROXY_GROUP_IN_USE') {
         try {
           const references = await api.getGroupReferences(group.id)
@@ -208,7 +303,7 @@ export function useProxyManagement(api: ProxyApi) {
       }
       notify({ title: errorMessage(error), tone: 'error' })
     }
-  }, [api])
+  }, [api, rememberRetryAfter])
 
   return {
     connection,
@@ -227,9 +322,12 @@ export function useProxyManagement(api: ProxyApi) {
     groupBusy,
     groupError,
     groupRiskRequired,
+    detailBusy,
+    copying,
+    retryAfterSeconds,
+    canCopyCredentials: Boolean(window.autoflow?.copyProxyCredentials),
     setFilters,
     setConnectionError,
-    setSelectedProxy,
     setGroupError,
     reload,
     saveConnection,
@@ -237,6 +335,9 @@ export function useProxyManagement(api: ProxyApi) {
     sync,
     probe,
     openProxy,
+    closeProxy,
+    updateProxy,
+    copyCredentials,
     saveGroup,
     deleteGroup,
   }

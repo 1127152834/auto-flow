@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowsClockwise, Copy, MapPin, Pulse, X } from '@phosphor-icons/react'
-import { capability, type Capability, type IpAllowlist, type LocationList, type ProxyReferences, type ProxyView, type RotationSchedule } from '../api'
+import { capability, type Capability, type IpAllowlist, type LocationList, type ProxyMetadataDraft, type ProxyReferences, type ProxyView, type RotationSchedule } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Select } from '../../../shared/components/ui/select'
@@ -24,8 +24,13 @@ type ProxyDetailDrawerProps = {
   references?: ProxyReferences
   probing: boolean
   actionBusy?: boolean
+  retryAfterSeconds?: number
+  canCopyCredentials?: boolean
+  copying?: string
   onOpenChange: (open: boolean) => void
   onProbe: (proxy: ProxyView) => void
+  onUpdateMetadata: (proxy: ProxyView, draft: ProxyMetadataDraft) => Promise<void>
+  onCopyCredentials: (proxy: ProxyView, protocol: 'http' | 'socks5', format: 'username' | 'password' | 'url') => void
   onChangeIp?: (proxy: ProxyView) => void
   onOpenLocations?: (proxy: ProxyView) => void
 }
@@ -34,7 +39,16 @@ function verifiedWrite(item?: Capability): boolean {
   return Boolean(item?.available && item.evidence === 'fixture-verified')
 }
 
-export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy = false, onOpenChange, onProbe, onChangeIp, onOpenLocations }: ProxyDetailDrawerProps) {
+export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy = false, retryAfterSeconds = 0, canCopyCredentials = false, copying, onOpenChange, onProbe, onUpdateMetadata, onCopyCredentials, onChangeIp, onOpenLocations }: ProxyDetailDrawerProps) {
+  const [nameOverride, setNameOverride] = useState(proxy?.name_override ?? '')
+  const [enabled, setEnabled] = useState(proxy?.enabled ?? false)
+  const [protocol, setProtocol] = useState<'http' | 'socks5'>(proxy?.http_endpoint ? 'http' : 'socks5')
+  useEffect(() => {
+    if (!proxy) return
+    setNameOverride(proxy.name_override ?? '')
+    setEnabled(proxy.enabled)
+    setProtocol(proxy.http_endpoint ? 'http' : 'socks5')
+  }, [proxy])
   if (!proxy) return null
   const capabilities = proxy.capabilities ?? []
   const changeIp = capability(capabilities, 'change_ip')
@@ -64,8 +78,13 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="overview" className="grid gap-4">
             <section className="flex flex-col gap-4 rounded-card border border-line p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2"><HealthPill health={proxy.health} /><StatusPill>{proxy.remote_status || '远程状态未知'}</StatusPill></div>
-              <Button disabled={probing || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : '测试连接'}</Button>
+              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
+            <DetailSection title="本地设置">
+              <label className="grid gap-2 text-sm text-ink">显示名称<Input value={nameOverride} maxLength={120} placeholder={proxy.name} onChange={(event) => setNameOverride(event.target.value)} /></label>
+              <label className="flex items-center justify-between text-sm text-ink">启用此代理<Switch checked={enabled} onCheckedChange={setEnabled} /></label>
+              <div className="flex justify-end"><Button variant="primary" disabled={actionBusy || retryAfterSeconds > 0 || (nameOverride.trim() === (proxy.name_override ?? '') && enabled === proxy.enabled)} onClick={() => void onUpdateMetadata(proxy, { name_override: nameOverride.trim() || null, enabled })}>{actionBusy ? '保存中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '保存本地设置'}</Button></div>
+            </DetailSection>
             <DetailSection title="网络信息">
               <DetailRow label="当前位置" value={[proxy.city, proxy.region].filter(Boolean).join(', ') || '—'} />
               <DetailRow label="运营商" value={proxy.carrier || '—'} />
@@ -108,7 +127,19 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="credentials" className="grid gap-4">
             <DetailSection title="代理凭据">
               <DetailRow label="凭据状态" value={proxy.credential_available ? '已保存' : '不可用'} />
-              <CapabilityNotice capability={credentials} fallback="受控凭据复制通道尚不可用。" />
+              <Select aria-label="凭据协议" value={protocol} onChange={(event) => setProtocol(event.target.value as 'http' | 'socks5')}>
+                <option value="http" disabled={!proxy.http_endpoint}>HTTP</option>
+                <option value="socks5" disabled={!proxy.socks5_endpoint}>SOCKS5</option>
+              </Select>
+              <div className="flex flex-wrap gap-2">
+                {(['username', 'password', 'url'] as const).map((format) => {
+                  const key = `${protocol}:${format}`
+                  const label = format === 'username' ? '复制用户名' : format === 'password' ? '复制密码' : '复制代理 URL'
+                  const endpointAvailable = protocol === 'http' ? Boolean(proxy.http_endpoint) : Boolean(proxy.socks5_endpoint)
+                  return <CopyButton key={format} label={copying === key ? '复制中…' : label} disabled={!endpointAvailable || !proxy.credential_available || !canCopyCredentials || Boolean(copying)} onCopy={() => onCopyCredentials(proxy, protocol, format)} />
+                })}
+              </div>
+              {!canCopyCredentials || !proxy.credential_available ? <CapabilityNotice capability={credentials} fallback={proxy.credential_available ? '当前预览环境未提供受控复制通道。' : '代理凭据尚不可用。'} /> : null}
             </DetailSection>
             <DetailSection title="IP 白名单">
               <CapabilityNotice capability={allowlist} fallback="白名单接口尚未通过真实契约验证。" />

@@ -15,6 +15,7 @@ export type IpAllowlist = components['schemas']['IpAllowlist']
 export type LocationList = components['schemas']['LocationList']
 export type ProxyPage = components['schemas']['ProxyPage']
 export type ProxyReferences = components['schemas']['ProxyReferences']
+export type ProxyUpdate = components['schemas']['ProxyUpdate']
 export type ProxyView = components['schemas']['ProxyView']
 export type RotationSchedule = components['schemas']['RotationSchedule']
 export type ActionResult = components['schemas']['ActionResult']
@@ -29,6 +30,7 @@ export type ProxyFilters = {
 }
 
 export type GroupDraft = Pick<GroupCreate, 'name' | 'description' | 'member_ids'>
+export type ProxyMetadataDraft = Pick<ProxyUpdate, 'name_override' | 'enabled'>
 
 function queryString(values: Record<string, string | number | boolean | undefined>): string {
   const query = new URLSearchParams()
@@ -129,6 +131,10 @@ export function createProxyApi(client: ApiClient) {
     },
     getProxyReferences(proxyId: string) {
       return get<ProxyReferences>(`/proxies/${proxyId}/references`)
+    },
+    updateProxy(proxy: ProxyView, draft: ProxyMetadataDraft) {
+      const body: ProxyUpdate = { expected_revision: proxy.revision, ...draft }
+      return send<ProxyView>(`/proxies/${proxy.id}`, { ...json(body), method: 'PATCH' })
     },
     probeProxy(proxyId: string, protocol: 'http' | 'socks5' = 'http') {
       return send<ActionResult>(`/proxies/${proxyId}/probe`, json({ protocol }, true))

@@ -17,9 +17,10 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { FormField } from '../../../shared/components/FormField'
 import { HealthPill, StatusPill } from './presentation'
 
-export function LocalProxyGroupTable({ page, proxies, onCreate, onEdit, onDelete }: {
+export function LocalProxyGroupTable({ page, proxies, retryAfterSeconds = 0, onCreate, onEdit, onDelete }: {
   page: GroupPage
   proxies: ProxyView[]
+  retryAfterSeconds?: number
   onCreate: () => void
   onEdit: (group: GroupView) => void
   onDelete: (group: GroupView) => Promise<void>
@@ -40,7 +41,7 @@ export function LocalProxyGroupTable({ page, proxies, onCreate, onEdit, onDelete
             <tbody>{page.items.map((group) => {
               const members = group.member_ids.map((id) => proxyById.get(id)).filter((proxy): proxy is ProxyView => Boolean(proxy))
               const healthy = members.filter((proxy) => proxy.health.state === 'healthy').length
-              return <tr className="border-t border-line" key={group.id}><td className="px-4 py-3 font-medium text-ink">{group.name}</td><td className="px-4 py-3 text-muted">{group.member_ids.length} 个代理</td><td className="px-4 py-3 text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</td><td className="px-4 py-3 text-muted">{group.reference_count}</td><td className="max-w-xs truncate px-4 py-3 text-muted">{group.description || '—'}</td><td className="px-4 py-3"><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost">删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，服务端会阻止删除并返回引用详情。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></td></tr>
+              return <tr className="border-t border-line" key={group.id}><td className="px-4 py-3 font-medium text-ink">{group.name}</td><td className="px-4 py-3 text-muted">{group.member_ids.length} 个代理</td><td className="px-4 py-3 text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</td><td className="px-4 py-3 text-muted">{group.reference_count}</td><td className="max-w-xs truncate px-4 py-3 text-muted">{group.description || '—'}</td><td className="px-4 py-3"><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0}>删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，服务端会阻止删除并返回引用详情。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></td></tr>
             })}</tbody>
           </table>
         </div>
@@ -49,11 +50,12 @@ export function LocalProxyGroupTable({ page, proxies, onCreate, onEdit, onDelete
   )
 }
 
-export function LocalProxyGroupEditor({ open, group, proxies, busy, error, riskRequired, onOpenChange, onSubmit }: {
+export function LocalProxyGroupEditor({ open, group, proxies, busy, retryAfterSeconds = 0, error, riskRequired, onOpenChange, onSubmit }: {
   open: boolean
   group: GroupView | null
   proxies: ProxyView[]
   busy: boolean
+  retryAfterSeconds?: number
   error?: string
   riskRequired: boolean
   onOpenChange: (open: boolean) => void
@@ -126,8 +128,8 @@ export function LocalProxyGroupEditor({ open, group, proxies, busy, error, riskR
             <h3 className="text-sm font-semibold text-ink">成员顺序</h3>
             {ordered.length ? <ol className="grid gap-2">{ordered.map((proxy, index) => <li className="flex items-center gap-3 rounded-control border border-line bg-surface-subtle px-3 py-2" key={proxy.id}><span className="w-6 text-center text-xs text-muted">{index + 1}</span><span className="min-w-0 flex-1 truncate text-sm text-ink">{proxy.name_override || proxy.name}</span><Button type="button" className="h-8 w-8 px-0" variant="ghost" aria-label={`上移 ${proxy.name_override || proxy.name}`} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp /></Button><Button type="button" className="h-8 w-8 px-0" variant="ghost" aria-label={`下移 ${proxy.name_override || proxy.name}`} disabled={index === ordered.length - 1} onClick={() => move(index, 1)}><ArrowDown /></Button></li>)}</ol> : <p className="rounded-control border border-dashed border-line p-4 text-center text-sm text-muted">尚未选择成员</p>}
           </section>
-          {error ? <div className="rounded-control bg-red-50 px-4 py-3 text-sm text-red-700" role="alert"><p>{error}</p>{riskRequired ? <Button className="mt-3" type="button" variant="primary" onClick={(event) => void submit(event, true)}>了解风险并保存</Button> : null}</div> : null}
-          <div className="flex justify-end gap-2"><DialogClose asChild><Button type="button">取消</Button></DialogClose><Button type="submit" variant="primary" disabled={busy || !name.trim()}>{busy ? '保存中…' : '保存代理组'}</Button></div>
+          {error ? <div className="rounded-control bg-red-50 px-4 py-3 text-sm text-red-700" role="alert"><p>{error}</p>{riskRequired ? <Button className="mt-3" type="button" variant="primary" disabled={retryAfterSeconds > 0} onClick={(event) => void submit(event, true)}>{retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '了解风险并保存'}</Button> : null}</div> : null}
+          <div className="flex justify-end gap-2"><DialogClose asChild><Button type="button">取消</Button></DialogClose><Button type="submit" variant="primary" disabled={busy || retryAfterSeconds > 0 || !name.trim()}>{busy ? '保存中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '保存代理组'}</Button></div>
         </form>
       </DialogContent>
     </Dialog>

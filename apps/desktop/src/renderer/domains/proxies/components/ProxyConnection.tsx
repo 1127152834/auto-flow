@@ -25,12 +25,13 @@ import {
 type ConnectionCardProps = {
   connection: ConnectionView | null
   syncing: boolean
+  retryAfterSeconds?: number
   onConfigure: () => void
   onSync: () => void
   onDisconnect: () => Promise<void>
 }
 
-export function ConnectionCard({ connection, syncing, onConfigure, onSync, onDisconnect }: ConnectionCardProps) {
+export function ConnectionCard({ connection, syncing, retryAfterSeconds = 0, onConfigure, onSync, onDisconnect }: ConnectionCardProps) {
   if (!connection) {
     return (
       <section className="flex flex-col gap-5 rounded-card border border-line bg-surface p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
@@ -66,12 +67,12 @@ export function ConnectionCard({ connection, syncing, onConfigure, onSync, onDis
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onSync} disabled={syncing || connection.status !== 'connected'}>
-            <ArrowsClockwise className={syncing ? 'animate-spin' : ''} />{syncing ? '同步中…' : '刷新代理'}
+          <Button onClick={onSync} disabled={syncing || retryAfterSeconds > 0 || connection.status !== 'connected'}>
+            <ArrowsClockwise className={syncing ? 'animate-spin' : ''} />{syncing ? '同步中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '刷新代理'}
           </Button>
           <Button variant="primary" onClick={onConfigure}><GearSix />连接设置</Button>
           <AlertDialog>
-            <AlertDialogTrigger asChild><Button variant="ghost">断开</Button></AlertDialogTrigger>
+            <AlertDialogTrigger asChild><Button variant="ghost" disabled={retryAfterSeconds > 0}>断开</Button></AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogTitle>断开 ProxyPanel？</AlertDialogTitle>
               <AlertDialogDescription>这只会清除本地连接和可清理的投影，不会删除远程代理。存在引用时系统会阻止操作。</AlertDialogDescription>
@@ -92,12 +93,13 @@ type ConnectionDialogProps = {
   open: boolean
   connection: ConnectionView | null
   busy: boolean
+  retryAfterSeconds?: number
   error?: string
   onOpenChange: (open: boolean) => void
   onSubmit: (name: string, apiKey: string) => Promise<void>
 }
 
-export function ConnectionDialog({ open, connection, busy, error, onOpenChange, onSubmit }: ConnectionDialogProps) {
+export function ConnectionDialog({ open, connection, busy, retryAfterSeconds = 0, error, onOpenChange, onSubmit }: ConnectionDialogProps) {
   const [name, setName] = useState('ProxyPanel')
   const [apiKey, setApiKey] = useState('')
   const [showKey, setShowKey] = useState(false)
@@ -142,7 +144,7 @@ export function ConnectionDialog({ open, connection, busy, error, onOpenChange, 
           </div>
           <div className="flex justify-end gap-2">
             <DialogClose asChild><Button type="button">取消</Button></DialogClose>
-            <Button type="submit" variant="primary" disabled={busy || !name.trim() || (!connection && !apiKey.trim())}>{busy ? '正在保存…' : connection ? apiKey.trim() ? '验证并保存' : '保存名称' : '验证并连接'}</Button>
+            <Button type="submit" variant="primary" disabled={busy || retryAfterSeconds > 0 || !name.trim() || (!connection && !apiKey.trim())}>{busy ? '正在保存…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : connection ? apiKey.trim() ? '验证并保存' : '保存名称' : '验证并连接'}</Button>
           </div>
         </form>
       </DialogContent>

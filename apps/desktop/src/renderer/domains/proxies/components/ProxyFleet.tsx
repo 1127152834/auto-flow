@@ -37,12 +37,13 @@ type ProxyTableProps = {
   page: ProxyPage
   filters: ProxyFilters
   checkingId?: string
+  retryAfterSeconds?: number
   onFiltersChange: (filters: ProxyFilters) => void
   onOpen: (proxy: ProxyView) => void
   onProbe: (proxy: ProxyView) => void
 }
 
-export function ProxyTable({ page, filters, checkingId, onFiltersChange, onOpen, onProbe }: ProxyTableProps) {
+export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, onFiltersChange, onOpen, onProbe }: ProxyTableProps) {
   const carriers = uniqueValues([...page.items.map((item) => item.carrier), filters.carrier])
   const cities = uniqueValues([...page.items.map((item) => item.city), filters.city])
 
@@ -101,7 +102,7 @@ export function ProxyTable({ page, filters, checkingId, onFiltersChange, onOpen,
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
                       <Button className="h-8 px-3" variant="ghost" onClick={() => onOpen(proxy)}>详情</Button>
-                      <Button className="h-8 px-3" variant="ghost" disabled={checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}>
+                      <Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}>
                         <Pulse className={checkingId === proxy.id ? 'animate-pulse' : ''} />检测
                       </Button>
                     </div>

@@ -33,6 +33,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         <ConnectionCard
           connection={state.connection}
           syncing={state.syncing}
+          retryAfterSeconds={state.retryAfterSeconds}
           onConfigure={() => { state.setConnectionError(undefined); setConnectionOpen(true) }}
           onSync={() => void state.sync()}
           onDisconnect={state.disconnect}
@@ -43,7 +44,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         {!state.loading && state.loadError ? (
           <div className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
             <span>{state.loadError}。已加载的数据会继续保留。</span>
-            <Button className="shrink-0" onClick={() => void state.reload()}>重新加载</Button>
+            <Button className="shrink-0" disabled={state.retryAfterSeconds > 0} onClick={() => void state.reload()}>{state.retryAfterSeconds > 0 ? `${state.retryAfterSeconds} 秒后可重试` : '重新加载'}</Button>
           </div>
         ) : null}
 
@@ -54,11 +55,12 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
               page={state.proxies}
               filters={state.filters}
               checkingId={state.checkingId}
+              retryAfterSeconds={state.retryAfterSeconds}
               onFiltersChange={state.setFilters}
               onOpen={state.openProxy}
               onProbe={(proxy) => void state.probe(proxy)}
             />
-            <LocalProxyGroupTable page={state.groups} proxies={state.groupCandidates} onCreate={() => openGroup(null)} onEdit={openGroup} onDelete={state.deleteGroup} />
+            <LocalProxyGroupTable page={state.groups} proxies={state.groupCandidates} retryAfterSeconds={state.retryAfterSeconds} onCreate={() => openGroup(null)} onEdit={openGroup} onDelete={state.deleteGroup} />
           </>
         ) : null}
       </div>
@@ -67,6 +69,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         open={connectionOpen}
         connection={state.connection}
         busy={state.connectionBusy}
+        retryAfterSeconds={state.retryAfterSeconds}
         error={state.connectionError}
         onOpenChange={setConnectionOpen}
         onSubmit={async (name, apiKey) => {
@@ -76,12 +79,19 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
       />
 
       <ProxyDetailDrawer
+        key={state.selectedProxy?.id ?? 'closed'}
         open={Boolean(state.selectedProxy)}
         proxy={state.selectedProxy}
         references={state.references}
         probing={state.checkingId === state.selectedProxy?.id}
-        onOpenChange={(open) => { if (!open) state.setSelectedProxy(null) }}
+        actionBusy={state.detailBusy}
+        retryAfterSeconds={state.retryAfterSeconds}
+        canCopyCredentials={state.canCopyCredentials}
+        copying={state.copying}
+        onOpenChange={(open) => { if (!open) state.closeProxy() }}
         onProbe={(proxy) => void state.probe(proxy)}
+        onUpdateMetadata={state.updateProxy}
+        onCopyCredentials={(proxy, protocol, format) => void state.copyCredentials(proxy, protocol, format)}
       />
 
       <LocalProxyGroupEditor
@@ -89,6 +99,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         group={editingGroup}
         proxies={state.groupCandidates}
         busy={state.groupBusy}
+        retryAfterSeconds={state.retryAfterSeconds}
         error={state.groupError}
         riskRequired={state.groupRiskRequired}
         onOpenChange={setGroupOpen}
