@@ -9,6 +9,8 @@ dependencies = [
   "uvicorn",
   "sqlalchemy>=2.0,<3",
   "alembic>=1.13,<2",
+  "keyring>=25,<26",
+  "httpx[socks]>=0.28,<1",
 ]
 
 [build-system]
