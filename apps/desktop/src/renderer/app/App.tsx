@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { initialAppState, type AppState } from './app-state'
-import { ApiClientError, createApiClient } from '../shared/api/client'
+import { ApiClientError, createApiClient, type ApiRequestInit } from '../shared/api/client'
 import { State } from '../shared/components/State'
 import type { HealthResponse, SidecarStatus } from '../shared/api/types'
 import { createModelApi } from '../domains/models/api'
@@ -53,7 +53,7 @@ export function App() {
       })
       const health: HealthResponse = await client.health()
       if (epoch !== connectionEpoch.current) return
-      const modelApi = createModelApi({ ...client, async request<T>(path: string, init?: RequestInit) {
+      const modelApi = createModelApi({ ...client, async request<T>(path: string, init?: ApiRequestInit) {
         try { return await client.request<T>(path, init) }
         catch (error) {
           if (error instanceof ApiClientError && error.code === 'SIDECAR_UNAUTHORIZED' && epoch === connectionEpoch.current) {

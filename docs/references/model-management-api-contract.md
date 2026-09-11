@@ -137,6 +137,7 @@ API Key 可选性由后端预设目录判定，不能信任 Renderer：首版只
 ### 4.2 请求行为
 
 - 目录请求 timeout 为 15 秒；模型生成测试 timeout 为 30 秒。
+- 2026-09-12 baseline客户端整合（confirmed，来源：实际API客户端与慢响应测试）：前端模型外部操作使用60秒总预算，覆盖目录读取、接入、连接更新、供应商测试与模型生成；本地CRUD沿用共享客户端10秒默认值。后端上述HTTP超时配置不变。
 - `httpx.AsyncClient(trust_env=False, follow_redirects=False)`；任何 3xx 都作为远端请求失败处理，绝不把认证信息跟随到新地址。
 - OpenAI/OpenAI-compatible：目录 `GET {baseUrl}/models`，测试 `POST {baseUrl}/chat/completions`。
 - Anthropic：目录 `GET {baseUrl}/models?limit=1000`，测试 `POST {baseUrl}/messages`，使用 `x-api-key`、`anthropic-version: 2023-06-01`。
