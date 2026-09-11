@@ -1,0 +1,12 @@
+# 模型分支合入 baseline
+
+- 日期：2026-09-12
+- 状态：confirmed；用户授权合并，隔离合并验收通过。
+- 输入：baseline b45ca84、model fe3672a；共同祖先ad08bdb。合并保留双亲历史，不squash、不推送。
+- 隔离：在`autoflow-merge-models`处理冲突、安装独立依赖、测试和打包；验收后的提交用于快进baseline。
+- 冲突解决：保留proxy/kernel装配与IPC，添加model服务；共享HTTP客户端支持两个现行错误信封；重新生成OpenAPI；记忆与文档按段落合并。
+- 迁移：新增0003_merge_proxy_models汇合两边0002；不改写已执行迁移。空库、0001、proxy0002、model0002四条升级路径通过且记录保留。
+- 验证：303后端、105前端、7脚本测试通过；ruff/mypy/typecheck/lint/OpenAPI/构建通过；macOS arm64开发与打包Electron完整模型流程、子进程清理通过。
+- 工作区保护：合并前记录原目录12个未提交/未跟踪文件的SHA-256；Vite已有改动与合入内容字节一致，原automation/浏览器草稿不纳入提交。落地后由主代理核对原文件内容。
+- 能力边界：未验证Windows/macOSx64、真实模型供应商和ProxyPanel实网；本次不实现其他线程尚未提交的全局页面。
+- 详见 [合并验收](../../docs/migration/model-management-baseline-merge.md)。

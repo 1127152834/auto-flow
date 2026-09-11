@@ -1,7 +1,7 @@
 # 模型管理 API 与迁移契约
 
 - 日期：2026-09-12
-- 状态：proposed；供设计规格与实施计划审查，不代表接口已经实现
+- 状态：confirmed；14 条内部接口已实现并通过契约测试；实际证据见 [验证记录](../migration/model-management-verification.md)
 - 范围：本地模型供应商、远端模型目录、模型调用测试、模型选项与凭据生命周期
 - 关联：[模型管理原型说明](../prototype/model-management/model-management-interactions.md)
 - 旧项目基线：`/Users/zhangtiancheng/Documents/projects/browser-automation/autoflow-desktop`，Git HEAD `324748abe7095f085b4ffb9467be9cb5c8851a5c`

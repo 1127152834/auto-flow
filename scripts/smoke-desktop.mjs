@@ -60,14 +60,22 @@ try {
       socket.send(JSON.stringify({ id: requestId, method: 'Runtime.evaluate', params: { expression, awaitPromise: true, returnByValue: true } }))
     })
   }
-  let body = ''
+  let readiness
   for (let attempt = 0; attempt < 100; attempt++) {
-    body = await evaluate('document.body?.innerText ?? ""')
-    if (body.includes('服务已连接')) break
+    readiness = await evaluate(`(async () => {
+      const status = await window.autoflow.getSidecarStatus()
+      if (status.state !== 'ready') return { ready: false, state: status.state }
+      try {
+        const response = await fetch(status.baseUrl + '/health', { headers: { 'x-autoflow-token': status.token } })
+        const health = response.ok ? await response.json() : null
+        return { ready: response.ok && health?.status === 'ok' && health?.instanceId === status.instanceId, status }
+      } catch { return { ready: false, state: status.state } }
+    })()`)
+    if (readiness?.ready) break
     await new Promise(resolveWait => setTimeout(resolveWait, 100))
   }
-  if (!body.includes('服务已连接')) throw new Error(`desktop did not connect: ${body}`)
-  const status = await evaluate('window.autoflow.getSidecarStatus()')
+  if (!readiness?.ready) throw new Error(`desktop sidecar did not become healthy: ${JSON.stringify(readiness)}`)
+  const status = readiness.status
   socket.close()
   console.log(`desktop connected (${packaged ? 'packaged' : 'development'}, ${process.platform}/${process.arch})`)
   // Kill the desktop host to exercise backend parent-exit monitoring, not only normal quit.

@@ -9,7 +9,7 @@ let mainWindow: BrowserWindow | undefined
 let supervisor: SidecarSupervisor | undefined
 
 async function createWindow(): Promise<void> {
-  mainWindow = new BrowserWindow({ webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
   ipcMain.removeHandler('autoflow:copy-proxy-credentials')
   ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
     allowedSenderId: mainWindow.webContents.id,

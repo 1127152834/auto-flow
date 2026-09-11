@@ -1,25 +1,42 @@
 import type { HealthResponse } from './types'
 import type { components } from './generated'
 
+type ProxyApiError = components['schemas']['ApiError']
+
 export type ApiClientConfig = {
   baseUrl: string
   token: string
 }
 
 export class ApiClientError extends Error {
+  readonly code: string | null
+  readonly details: Record<string, unknown>
+  readonly requestId: string | null
+  readonly error?: ProxyApiError
+
   constructor(
     message: string,
     readonly status: number,
-    readonly error?: components['schemas']['ApiError'],
+    codeOrError: string | ProxyApiError | null = null,
+    details: Record<string, unknown> = {},
+    requestId: string | null = null,
   ) {
     super(message)
     this.name = 'ApiClientError'
+    this.error = typeof codeOrError === 'object' && codeOrError !== null ? codeOrError : undefined
+    this.code = this.error?.code ?? (typeof codeOrError === 'string' ? codeOrError : null)
+    this.details = details
+    this.requestId = this.error?.request_id ?? requestId
   }
 }
 
 export type ApiClient = {
   request<T>(path: string, init?: RequestInit): Promise<T>
   health(): Promise<HealthResponse>
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function requestHeaders(headers: HeadersInit | undefined, token: string): Record<string, string> {
@@ -45,14 +62,27 @@ export function createApiClient(configOrBaseUrl: ApiClientConfig | string, token
     })
 
     if (!response.ok) {
-      const payload: unknown = await response.json().catch(() => undefined)
-      const detail = typeof payload === 'object' && payload !== null && 'error' in payload
-        ? payload.error : undefined
-      const error = typeof detail === 'object' && detail !== null
-        && 'code' in detail && typeof detail.code === 'string'
-        && 'message' in detail && typeof detail.message === 'string'
-        ? detail as components['schemas']['ApiError'] : undefined
-      throw new ApiClientError(error?.message ?? `API request failed with status ${response.status}`, response.status, error)
+      const fallback = `API request failed with status ${response.status}`
+      const body: unknown = await response.json().catch(() => undefined)
+      if (isRecord(body) && isRecord(body.error)) {
+        const error = body.error
+        if (typeof error.code === 'string' && typeof error.message === 'string') {
+          if (typeof error.request_id === 'string') {
+            throw new ApiClientError(error.message, response.status, {
+              code: error.code, message: error.message, request_id: error.request_id,
+              field_errors: isRecord(error.field_errors) ? error.field_errors : {},
+              retry_after_seconds: typeof error.retry_after_seconds === 'number' && Number.isFinite(error.retry_after_seconds) ? error.retry_after_seconds : null,
+              outcome_unknown: error.outcome_unknown === true,
+            })
+          }
+          throw new ApiClientError(
+            error.message, response.status, error.code,
+            isRecord(error.details) ? error.details : {},
+            typeof error.requestId === 'string' ? error.requestId : null,
+          )
+        }
+      }
+      throw new ApiClientError(fallback, response.status)
     }
 
     if (response.status === 204) return undefined as T

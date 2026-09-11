@@ -113,7 +113,7 @@ reference/
 | `apps/desktop/src/renderer/domains/kernels/hooks/` | 内核的查询、变更和交互状态组合。 |
 | `apps/desktop/src/renderer/domains/kernels/pages/` | 内核页面组合；组件完成后再组装页面。 |
 | `apps/desktop/src/renderer/domains/kernels/tests/` | 内核跨组件场景测试；局部单元测试也可与源码相邻。 |
-| `apps/desktop/src/renderer/domains/models/` | 模型供应商和模型目录前端模块；请求封装 api.ts 和必要 model.ts 在实际实现时添加。 |
+| `apps/desktop/src/renderer/domains/models/` | 已实现模型供应商和模型目录；api.ts 使用生成 DTO，cache.ts 处理冲突刷新，provider-catalog.ts 固定预设。 |
 | `apps/desktop/src/renderer/domains/models/components/` | 模型供应商和模型目录领域组件；使用共享 UI，不承载跨领域基础设施。 |
 | `apps/desktop/src/renderer/domains/models/hooks/` | 模型供应商和模型目录的查询、变更和交互状态组合。 |
 | `apps/desktop/src/renderer/domains/models/pages/` | 模型供应商和模型目录页面组合；组件完成后再组装页面。 |
@@ -180,3 +180,17 @@ reference/
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
 - `node_modules`、Python 虚拟环境、构建产物、运行时数据库、缓存及用户凭据不属于源码骨架；继续遵循现有忽略规则和平台数据目录。
+
+## 模型管理实现（2026-09-12）
+
+- `domain/models` 定义值对象/实体/端口/URL规则；`application/models/service.py` 协調接入、更新、测试和凭据清理。
+- `infrastructure/database/model_providers.py` 实现仓储与原子条件写；迁移 `0002_model_management.py` 增加供应商、模型和cleanup intent三表。
+- `providers/model/http.py` 使用httpx实现协议请求；不依赖ORM或GUI。
+- `renderer/domains/models/assets/` 保留旧品牌资源；components先于pages，hooks管理查询和选择状态。
+- `renderer/app/query-provider.tsx` 为每次sidecar握手建立独立缓存；共享Modal/Menu仍位于desktop shared，packages/ui尚非独立workspace。
+- `scripts/electron-cdp.mjs` 是桌面冒烟的调试连接助手；`smoke-model-management.mjs` 用临时目录与本地fixture执行完整UI闭环。
+- 实现及平台证据见 [模型管理验收](migration/model-management-verification.md)。
+
+### 模型合并补充（2026-09-12，confirmed）
+
+`0003_merge_proxy_models.py` 汇合代理/模型两条历史迁移，保持唯一head；`test_merged_model_migrations.py` 验证四种数据库起点。HTTP客户端同时支持现有代理与模型错误字段，Electron保留代理复制与内核目录IPC。详见 [baseline合并验收](migration/model-management-baseline-merge.md)。

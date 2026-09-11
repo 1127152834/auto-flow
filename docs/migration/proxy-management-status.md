@@ -109,3 +109,7 @@ CUA 已检查真实未连接预览与连接弹窗；另以显式标注“合成�
 主线整合专门保留了既有 profiles、kernel worker、SSE 和 shutdown 处理；shutdown 测试同时断言 kernel worker 与代理 session 的关闭函数均被调用。用户既有 Vite、automation、model 和 UI 草稿没有纳入本次提交。
 
 真实 ProxyPanel 响应映射/账号联调：**未验证**。Windows x64、macOS Intel 的本轮构建运行：**未在本机执行**，沿用 CI 矩阵进行平台验收。全局导航与浏览器启动到代理组的端到端调用：**待后续浏览器任务整合**。
+
+### 模型合并后的迁移状态（2026-09-12，confirmed）
+
+上文0002为代理接入时的历史head。模型合并后使用0003_merge_proxy_models作为唯一head；0002_proxy_management原文件和ID不变，已有代理数据库升级及记录保留测试通过。见 [合并验收](model-management-baseline-merge.md)。

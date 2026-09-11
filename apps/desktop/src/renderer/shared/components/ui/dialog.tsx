@@ -17,7 +17,7 @@ function DialogContent({ className, busy: contentBusy, onEscapeKeyDown, onPointe
   const contextBusy = useContext(BusyContext)
   const busy = contentBusy ?? contextBusy
   return <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-ink/35 data-[state=open]:animate-in data-[state=closed]:animate-out" />
+    <DialogPrimitive.Overlay data-slot="modal-overlay" className="fixed inset-0 z-40 bg-ink/35 data-[state=open]:animate-in data-[state=closed]:animate-out" />
     <DialogPrimitive.Content className={cn('fixed left-1/2 top-1/2 z-50 grid w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-card border border-line bg-surface p-6 shadow-xl focus:outline-none motion-safe:transition-all', className)} onEscapeKeyDown={(event) => { if (busy) { event.preventDefault(); return }; onEscapeKeyDown?.(event) }} onPointerDownOutside={(event) => { if (busy) { event.preventDefault(); return }; onPointerDownOutside?.(event) }} {...props}>{children}</DialogPrimitive.Content>
   </DialogPrimitive.Portal>
 }

@@ -2,18 +2,11 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 
-
-def _camel(value: str) -> str:
-    first, *rest = value.split("_")
-    return first + "".join(word.capitalize() for word in rest)
-
-
-class ApiModel(BaseModel):
-    model_config = ConfigDict(alias_generator=_camel, populate_by_name=True, extra="forbid")
+from .schemas import ApiModel
 
 
 class Viewport(ApiModel):

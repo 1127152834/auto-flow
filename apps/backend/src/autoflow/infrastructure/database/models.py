@@ -1,7 +1,17 @@
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, Integer, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -14,8 +24,12 @@ class ProfileRow(Base):
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     spec: Mapped[dict] = mapped_column(JSON, nullable=False)
     fingerprint_seed: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
 
 
 class ProxyRow(Base):
@@ -45,5 +59,70 @@ class KernelOperationRow(Base):
     status: Mapped[str] = mapped_column(String(30), nullable=False)
     result: Mapped[dict | None] = mapped_column(JSON)
     error: Mapped[dict | None] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+
+class ModelProviderRow(Base):
+    __tablename__ = "model_providers"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(
+        String(120, collation="BINARY"), nullable=False, unique=True
+    )
+    preset_id: Mapped[str | None] = mapped_column(String(80))
+    provider_kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    base_url: Mapped[str | None] = mapped_column(Text)
+    secret_ref: Mapped[str | None] = mapped_column(String(100), unique=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    connection_status: Mapped[str] = mapped_column(String(20), nullable=False)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_check_latency_ms: Mapped[float | None] = mapped_column(Float)
+    last_check_message: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    models: Mapped[list["LocalModelRow"]] = relationship(
+        cascade="all, delete-orphan",
+        order_by="LocalModelRow.created_at, LocalModelRow.id",
+    )
+
+
+class LocalModelRow(Base):
+    __tablename__ = "models"
+    __table_args__ = (
+        UniqueConstraint("provider_id", "model_key", name="uq_models_provider_key"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    provider_id: Mapped[str] = mapped_column(
+        ForeignKey("model_providers.id", ondelete="CASCADE"), nullable=False
+    )
+    model_key: Mapped[str] = mapped_column(
+        String(160, collation="BINARY"), nullable=False
+    )
+    display_name: Mapped[str] = mapped_column(String(160), nullable=False)
+    tags_json: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    context_window: Mapped[int | None] = mapped_column(Integer)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+
+class ModelCredentialCleanupRow(Base):
+    __tablename__ = "model_credential_cleanup"
+    secret_ref: Mapped[str] = mapped_column(String(100), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
