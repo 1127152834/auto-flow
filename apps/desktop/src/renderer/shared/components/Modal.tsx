@@ -13,6 +13,7 @@ type ModalProps = PropsWithChildren<{
   size?: 'small' | 'medium' | 'large'
   variant?: 'default' | 'form' | 'split'
   closeDisabled?: boolean
+  bodyClassName?: string
 }>
 
 const sizes = {
@@ -21,7 +22,7 @@ const sizes = {
   large: 'max-w-5xl',
 }
 
-export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName }: ModalProps) {
   const descriptionId = useId()
   const focusReturn = useRef<{ opener: HTMLElement | null; container: HTMLElement | null; content: HTMLElement | null }>({ opener: null, container: null, content: null })
 
@@ -70,7 +71,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
           </Button>
         </DialogClose>
       </header>
-      <div role="region" aria-label={`${title}内容`} tabIndex={0} className={cn('min-h-0 overflow-y-auto px-6 py-5', variant === 'form' && 'bg-surface-subtle', variant === 'split' && 'grid gap-6 md:grid-cols-2')}>
+      <div role="region" aria-label={`${title}内容`} tabIndex={0} className={cn('min-h-0 overflow-y-auto px-6 py-5', variant === 'form' && 'bg-surface-subtle', variant === 'split' && 'grid gap-6 md:grid-cols-2', bodyClassName)}>
         {children}
       </div>
       {footer ? <footer className="flex justify-end gap-3 border-t border-line px-6 py-4">{footer}</footer> : null}
