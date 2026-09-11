@@ -49,3 +49,16 @@ Success: no issues found in 18 source files
 ruff：All checks passed
 mypy：Success: no issues found in 19 source files
 ```
+
+## 独立复审修复 2（2026-09-12）
+
+- URL 解析现在主动求值 hostname/port，并将畸形 IPv6、非法端口等 `urlparse` 错误统一转为 `ProfileValidationError`。
+- timezone 将空 key、绝对路径、系统路径错误等 ZoneInfo 异常统一转为领域错误。
+- locale 改为按 BCP47 子标签结构解析，支持 extension、private-use 和 grandfathered 标签，拒绝重复 region、重复 variant/singleton 与缺失 extension/private-use 内容。
+
+```text
+ProfileSpec 聚焦测试：29 passed
+全量后端测试：46 passed, 2 warnings
+ruff：All checks passed
+mypy：Success: no issues found in 19 source files
+```

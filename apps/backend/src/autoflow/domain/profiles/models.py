@@ -1,4 +1,3 @@
-import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -8,7 +7,12 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from .errors import ProfileValidationError
 
 _FORBIDDEN = ("--user-data-dir", "--fingerprint", "--remote-debugging-address", "--remote-debugging-port", "--proxy-server", "--load-extension")
-_LOCALE = re.compile(r"^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$")
+_GRANDFATHERED = {
+    "art-lojban", "cel-gaulish", "en-gb-oed", "i-ami", "i-bnn", "i-default", "i-enochian", "i-hak",
+    "i-klingon", "i-lux", "i-mingo", "i-navajo", "i-pwn", "i-tao", "i-tay", "i-tsu", "no-bok",
+    "no-nyn", "sgn-be-fr", "sgn-be-nl", "sgn-ch-de", "zh-guoyu", "zh-hakka", "zh-min", "zh-min-nan",
+    "zh-xiang",
+}
 
 
 @dataclass(frozen=True)
@@ -41,17 +45,21 @@ class ProfileSpec:
         if not 1 <= len(name) <= 120:
             raise ProfileValidationError("name must contain 1-120 characters")
         start_url = _string(data.get("start_url", "about:blank"), "start_url").strip()
-        parsed = urlparse(start_url)
-        if start_url != "about:blank" and (parsed.scheme not in {"http", "https"} or not parsed.netloc):
+        try:
+            parsed = urlparse(start_url)
+            _ = parsed.hostname, parsed.port
+        except ValueError:
+            raise ProfileValidationError("start_url must use http, https, or about:blank") from None
+        if start_url != "about:blank" and (parsed.scheme not in {"http", "https"} or parsed.hostname is None):
             raise ProfileValidationError("start_url must use http, https, or about:blank")
         locale = data.get("locale")
-        if locale is not None and (not isinstance(locale, str) or _LOCALE.fullmatch(locale) is None):
+        if locale is not None and (not isinstance(locale, str) or not _is_bcp47(locale)):
             raise ProfileValidationError("locale is invalid")
         timezone = data.get("timezone")
         if timezone is not None:
             try:
                 ZoneInfo(timezone)
-            except (ZoneInfoNotFoundError, TypeError):
+            except (ZoneInfoNotFoundError, TypeError, ValueError, OSError):
                 raise ProfileValidationError("timezone is invalid") from None
         viewport = data.get("viewport")
         if viewport is not None:
@@ -119,6 +127,60 @@ def _string_list(value: Any, field: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         raise ProfileValidationError(f"{field} must be a list of strings")
     return value
+
+
+def _is_bcp47(tag: str) -> bool:
+    lowered = tag.lower()
+    if lowered in _GRANDFATHERED:
+        return True
+    parts = tag.split("-")
+    if not parts or any(not part or len(part) > 8 or not part.isascii() or not part.isalnum() for part in parts):
+        return False
+    if parts[0].lower() == "x":
+        return len(parts) > 1
+
+    language = parts[0]
+    if not language.isalpha() or not (2 <= len(language) <= 8):
+        return False
+    index = 1
+    if len(language) <= 3:
+        for _ in range(3):
+            if index < len(parts) and len(parts[index]) == 3 and parts[index].isalpha():
+                index += 1
+            else:
+                break
+    if index < len(parts) and len(parts[index]) == 4 and parts[index].isalpha():
+        index += 1
+    if index < len(parts) and ((len(parts[index]) == 2 and parts[index].isalpha()) or (len(parts[index]) == 3 and parts[index].isdigit())):
+        index += 1
+
+    variants: set[str] = set()
+    while index < len(parts) and ((5 <= len(parts[index]) <= 8) or (len(parts[index]) == 4 and parts[index][0].isdigit())):
+        variant = parts[index].lower()
+        if variant in variants:
+            return False
+        variants.add(variant)
+        index += 1
+
+    extensions: set[str] = set()
+    while index < len(parts) and len(parts[index]) == 1 and parts[index].lower() != "x":
+        singleton = parts[index].lower()
+        if singleton in extensions:
+            return False
+        extensions.add(singleton)
+        index += 1
+        start = index
+        while index < len(parts) and 2 <= len(parts[index]) <= 8:
+            index += 1
+        if index == start:
+            return False
+
+    if index < len(parts) and parts[index].lower() == "x":
+        index += 1
+        if index == len(parts):
+            return False
+        index = len(parts)
+    return index == len(parts)
 
 
 @dataclass(frozen=True)

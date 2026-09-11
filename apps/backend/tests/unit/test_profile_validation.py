@@ -36,8 +36,12 @@ def test_profile_spec_rejects_forbidden_expert_argument(valid_profile_values, ar
     ("field", "value"),
     [
         ("start_url", "http:"),
+        ("start_url", "http://[::1"),
+        ("start_url", "http://example.com:bad"),
         ("locale", "en--US"),
         ("timezone", "Mars/Olympus"),
+        ("timezone", ""),
+        ("timezone", "/etc/localtime"),
         ("viewport", {"width": "wide", "height": 720}),
         ("browser_version", ""),
         ("browser_edition", "wat"),
@@ -51,6 +55,12 @@ def test_profile_spec_rejects_invalid_contract_values(valid_profile_values, fiel
         ProfileSpec.from_values({**valid_profile_values, field: value})
 
 
-@pytest.mark.parametrize("locale", ["en", "en-US", "zh-Hans-CN"])
+@pytest.mark.parametrize("locale", ["en", "en-US", "zh-Hans-CN", "en-a-aaa", "x-private", "de-CH-1901"])
 def test_profile_spec_accepts_bcp47_locale_shapes(valid_profile_values, locale):
     assert ProfileSpec.from_values({**valid_profile_values, "locale": locale}).locale == locale
+
+
+@pytest.mark.parametrize("locale", ["en-US-GB", "en-a", "x", "en-a-aaa-a-bbb", "en-variant-variant"])
+def test_profile_spec_rejects_malformed_bcp47_locale_shapes(valid_profile_values, locale):
+    with pytest.raises(ProfileValidationError, match="locale"):
+        ProfileSpec.from_values({**valid_profile_values, "locale": locale})
