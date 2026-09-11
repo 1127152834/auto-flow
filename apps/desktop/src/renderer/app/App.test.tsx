@@ -24,6 +24,13 @@ function payload(path: string) {
   if (path.endsWith('/api/v1/model-providers')) return { items: [], total: 0 }
   if (path.endsWith('/api/v1/proxy-panel/connections')) return { items: [] }
   if (path.includes('/api/v1/proxy-groups')) return { items: [], offset: 0, limit: 100, matched_count: 0 }
+  if (path.endsWith('/api/v1/profiles')) return { items: [], total: 0 }
+  if (path.endsWith('/api/v1/proxy-options')) return { proxies: [], pools: [] }
+  if (path.endsWith('/api/v1/kernels/installed')) return { items: [] }
+  if (path.endsWith('/api/v1/kernels/default')) return { revision: 0, kernel: null }
+  if (path.endsWith('/api/v1/kernels/license')) return { configured: false, valid: false, plan: null, expires: null, seats: null }
+  if (path.endsWith('/api/v1/kernels/catalog')) return { wrapperVersion: '0.5.9', platform: 'darwin-arm64', catalogError: null, installed: [], releases: [] }
+  if (path.endsWith('/api/v1/kernels/events')) return {}
   throw new Error(`Unexpected request: ${path}`)
 }
 
@@ -47,11 +54,14 @@ it('keeps settings reachable while the sidecar is offline', async () => {
   expect(fetch).not.toHaveBeenCalled()
 })
 
-it('navigates to model and proxy management with their own requests', async () => {
+it('navigates to browser, model, and proxy management with their own requests', async () => {
   const paths: string[] = []
   vi.stubGlobal('fetch', vi.fn(async (url: string) => { paths.push(url); return Response.json(payload(url)) }))
   const user = userEvent.setup(); render(<App />)
   await screen.findByRole('heading', { name: '总览' })
+  await user.click(screen.getByRole('button', { name: '浏览器配置' }))
+  expect(await screen.findByText('还没有浏览器配置')).toBeInTheDocument()
+  expect(paths.some(path => path.endsWith('/api/v1/profiles'))).toBe(true)
   await user.click(screen.getByRole('button', { name: '模型管理' }))
   expect(await screen.findByRole('heading', { name: '模型管理' })).toBeInTheDocument()
   expect(paths.some(path => path.endsWith('/api/v1/model-providers'))).toBe(true)
@@ -104,4 +114,29 @@ it('rebuilds the dashboard client after the sidecar instance changes without reu
   await screen.findByRole('heading', { name: '总览' })
   await waitFor(() => expect(dashboardTokens).toContain('new-token'), { timeout: 2500 })
   expect(dashboardTokens.slice(dashboardTokens.indexOf('new-token'))).toEqual(['new-token'])
+})
+
+it('keeps an open browser draft when a new sidecar instance replaces the token', async () => {
+  window.location.hash = '#/profiles'
+  vi.mocked(window.autoflow.getSidecarStatus).mockResolvedValueOnce(ready('old-token', 'old', 43127)).mockResolvedValue(ready('new-token', 'new', 43128))
+  const requests: Array<{ token: string; path: string; method: string }> = []
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    const path = new URL(url).pathname
+    const token = new Headers(init?.headers).get('x-autoflow-token') ?? ''
+    const method = init?.method ?? 'GET'
+    requests.push({ token, path, method })
+    if (path === '/api/v1/kernels/events') return new Response(new ReadableStream({ start(controller) {
+      init?.signal?.addEventListener('abort', () => controller.error(new DOMException('Aborted', 'AbortError')), { once: true })
+    } }))
+    if (path === '/health') return Response.json({ status: 'ok', apiVersion: 'v1', instanceId: token === 'old-token' ? 'old' : 'new' })
+    return Response.json(payload(url))
+  }))
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(await screen.findByRole('button', { name: '新建配置' }))
+  await user.type(screen.getByLabelText('名称'), '跨实例草稿')
+  await waitFor(() => expect(requests.some((request) => request.token === 'new-token' && request.path === '/api/v1/profiles')).toBe(true), { timeout: 2500 })
+  expect(screen.getByLabelText('名称')).toHaveValue('跨实例草稿')
+  expect(requests.filter((request) => request.method !== 'GET')).toHaveLength(0)
 })

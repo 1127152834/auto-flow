@@ -21,11 +21,12 @@ export function operationIsActive(operation: KernelOperation): boolean {
 export type KernelOperationStatusProps = {
   operation: KernelOperation
   cancelling?: boolean
+  disabled?: boolean
   onCancel?(): void | Promise<void>
   onRetry?(): void | Promise<void>
 }
 
-export function KernelOperationStatus({ operation, cancelling = false, onCancel, onRetry }: KernelOperationStatusProps) {
+export function KernelOperationStatus({ operation, cancelling = false, disabled = false, onCancel, onRetry }: KernelOperationStatusProps) {
   const active = operationIsActive(operation)
   const knownProgress = operation.progress !== null
   return <div className="mt-3 rounded-control border border-line bg-surface-subtle p-3" role="status">
@@ -38,7 +39,7 @@ export function KernelOperationStatus({ operation, cancelling = false, onCancel,
     </div> : null}
     {operation.message ? <p className="mb-0 mt-2 text-xs text-muted">{operation.message}</p> : null}
     {operation.error ? <p role="alert" className="mb-0 mt-2 text-xs text-red-700">{operation.error}</p> : null}
-    {active && operation.state !== 'cancelling' && onCancel ? <Button type="button" variant="ghost" className="mt-2 h-8 px-2" disabled={cancelling} onClick={() => void onCancel()}>{cancelling ? '正在取消…' : '取消下载'}</Button> : null}
-    {operation.state === 'failed' && onRetry ? <Button type="button" className="mt-2 h-8 px-3" onClick={() => void onRetry()}>重试下载</Button> : null}
+    {active && operation.state !== 'cancelling' && onCancel ? <Button type="button" variant="ghost" className="mt-2 h-8 px-2" disabled={disabled || cancelling} onClick={() => void onCancel()}>{cancelling ? '正在取消…' : '取消下载'}</Button> : null}
+    {operation.state === 'failed' && onRetry ? <Button type="button" className="mt-2 h-8 px-3" disabled={disabled} onClick={() => void onRetry()}>重试下载</Button> : null}
   </div>
 }

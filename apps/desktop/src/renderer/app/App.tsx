@@ -10,6 +10,7 @@ import { ApplicationHeader, routeFromHash, type AppRoute } from './ApplicationHe
 import { DashboardPage } from '../domains/dashboard/pages/DashboardPage'
 import { SettingsPage } from '../domains/settings/pages/SettingsPage'
 import { ProxyManagementPage } from '../domains/proxies/pages/ProxyManagementPage'
+import { BrowserManagementPage } from '../domains/profiles/pages/BrowserManagementPage'
 import type { SettingsBridge } from '../../shared/settings'
 
 const SIDECAR_READY_TIMEOUT_MS = 10_000
@@ -145,7 +146,7 @@ export function App() {
           {route === 'dashboard' ? <DashboardPage client={session.client} onNavigate={navigate} />
             : route === 'proxies' ? <ProxyManagementPage api={session.client} />
             : route === 'models' ? <ModelManagementPage api={session.modelApi} instanceId={session.instanceId} />
-            : <State title="浏览器配置" description="浏览器管理页面正在由当前迁移任务接入。" />}
+            : <BrowserManagementPage disabled={state.status !== 'connected'} onReconnect={() => void connect(true)} />}
         </div>
       </ApiProvider> : null}
     </>}

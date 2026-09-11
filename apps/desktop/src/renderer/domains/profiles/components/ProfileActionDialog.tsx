@@ -17,11 +17,13 @@ export type ProfileAction = { kind: 'delete' | 'duplicate'; id: string; name: st
 export type ProfileActionDialogProps = {
   action: ProfileAction
   onClose(deleted?: boolean): void
+  disabled?: boolean
+  onReconnect?(): void
 }
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : '操作失败，请重试'
 
-export function ProfileActionDialog({ action, onClose }: ProfileActionDialogProps) {
+export function ProfileActionDialog({ action, onClose, disabled = false, onReconnect }: ProfileActionDialogProps) {
   const duplicate = useDuplicateProfile()
   const remove = useRemoveProfile()
   const [name, setName] = useState('')
@@ -35,7 +37,7 @@ export function ProfileActionDialog({ action, onClose }: ProfileActionDialogProp
   const close = () => { if (!lock.current) onClose() }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (lock.current) return
+    if (disabled || lock.current) return
     const trimmed = name.trim()
     if (copying && (!trimmed || [...trimmed].length > 120)) {
       setNameError(trimmed ? '名称最多 120 个字符' : '请输入新配置名称')
@@ -61,9 +63,10 @@ export function ProfileActionDialog({ action, onClose }: ProfileActionDialogProp
     <DialogContent className="w-[min(92vw,30rem)]">
       <DialogTitle>{copying ? '复制浏览器配置' : '删除浏览器配置'}</DialogTitle>
       <DialogDescription>{copying ? `复制自「${action.name}」` : `确认删除「${action.name}」？`}</DialogDescription>
+      {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，当前操作尚未执行。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
       <form id={formId} className="grid gap-4" onSubmit={(event) => void submit(event)}>
         {copying ? <FormField label="新配置名称" htmlFor="profile-copy-name" error={nameError}>
-          <Input autoFocus disabled={busy} value={name} placeholder="输入新配置名称" onChange={(event) => {
+          <Input id="profile-copy-name" autoFocus disabled={busy || disabled} value={name} placeholder="输入新配置名称" onChange={(event) => {
             setName(event.target.value)
             setNameError('')
             setOperationError('')
@@ -73,7 +76,7 @@ export function ProfileActionDialog({ action, onClose }: ProfileActionDialogProp
       </form>
       <div className="flex justify-end gap-2">
         <Button type="button" autoFocus={!copying} disabled={busy} onClick={close}>取消</Button>
-        <Button type="submit" form={formId} variant={copying ? 'primary' : 'danger'} disabled={busy}>
+        <Button type="submit" form={formId} variant={copying ? 'primary' : 'danger'} disabled={busy || disabled}>
           {busy ? copying ? '正在复制…' : '正在删除…' : copying ? '创建副本' : '确认删除'}
         </Button>
       </div>

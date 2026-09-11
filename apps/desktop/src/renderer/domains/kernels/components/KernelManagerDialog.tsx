@@ -32,6 +32,8 @@ export type KernelManagerDialogProps = {
   onOpenChange(open: boolean): void
   selectedKernel: KernelRef | null
   returnFocusTo?: HTMLButtonElement | null
+  disabled?: boolean
+  onReconnect?(): void
 }
 
 type Filter = 'all' | 'public' | 'licensed' | 'installed'
@@ -40,7 +42,7 @@ const keyOf = (value: KernelRef) => `${value.edition}|${value.version}`
 const releaseKeyOf = (value: Pick<KernelReleaseItem, 'edition' | 'version' | 'releaseChannel'>) => `${keyOf(value)}|${value.releaseChannel ?? 'unknown'}`
 const message = (error: unknown) => error instanceof Error ? error.message : '操作未完成，请稍后重试'
 
-export function KernelManagerDialog({ open, onOpenChange, selectedKernel, returnFocusTo }: KernelManagerDialogProps) {
+export function KernelManagerDialog({ open, onOpenChange, selectedKernel, returnFocusTo, disabled = false, onReconnect }: KernelManagerDialogProps) {
   const { instanceId } = useApi()
   const queryClient = useQueryClient()
   const catalog = useKernelCatalog()
@@ -122,6 +124,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function startDownload(release: KernelReleaseItem) {
+    if (disabled) return
     setActionError(null)
     if (!release.releaseChannel) { setActionError('该本机内核没有可用的发布通道信息。'); return }
     try {
@@ -132,6 +135,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function retryDownload(operation: KernelOperation) {
+    if (disabled) return
     setActionError(null)
     try {
       await download.mutateAsync({ edition: operation.edition, version: operation.requestedVersion, releaseChannel: operation.releaseChannel })
@@ -141,6 +145,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function cancelDownload(operationId: string) {
+    if (disabled) return
     setActionError(null)
     setCancellingOperationId(operationId)
     try {
@@ -154,6 +159,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function changeDefault(kernel: KernelRef | null) {
+    if (disabled) return
     if (!defaultQuery.data) return
     setActionError(null)
     try {
@@ -168,6 +174,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function reveal(kernel: KernelRef) {
+    if (disabled) return
     setActionError(null)
     try {
       if (!window.autoflow?.revealKernel) throw new Error('当前环境不支持打开内核目录')
@@ -178,6 +185,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function confirmDelete(kernel: KernelRef) {
+    if (disabled) return
     setDeleteError(null)
     try {
       await remove.mutateAsync(kernel)
@@ -198,7 +206,9 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
           <Button type="button" variant="ghost" aria-label="关闭内核管理" disabled={busy} onClick={() => changeOpen(false)}>关闭</Button>
         </div>
 
-        <LicensePanel status={license.data} busy={connect.isPending || disconnect.isPending} error={licenseError ?? (license.error ? message(license.error) : null)} onConnect={async (licenseKey) => {
+        {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，内核操作已暂停。重新连接后请手动重试。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
+
+        <LicensePanel status={license.data} busy={connect.isPending || disconnect.isPending} disabled={disabled} error={licenseError ?? (license.error ? message(license.error) : null)} onConnect={async (licenseKey) => {
           setLicenseError(null)
           try { await connect.mutateAsync({ licenseKey }); notify({ title: 'License 已登录', tone: 'success' }) }
           catch (error) { setLicenseError(message(error)); throw error }
@@ -211,7 +221,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
         <section aria-labelledby="kernel-release-title" className="grid gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div><h3 id="kernel-release-title" className="m-0 text-base font-semibold text-ink">版本列表</h3><p className="mb-0 mt-1 text-xs text-muted">Wrapper {catalog.data?.wrapperVersion ?? '未知'} · 本机已安装 {localKernels.length} 个</p></div>
-            <Button type="button" disabled={checkUpdate.isPending} onClick={() => { setActionError(null); void checkUpdate.mutateAsync().catch((error) => setActionError(message(error))) }}>{checkUpdate.isPending ? '正在刷新…' : '刷新版本列表'}</Button>
+            <Button type="button" disabled={disabled || checkUpdate.isPending} onClick={() => { if (disabled) return; setActionError(null); void checkUpdate.mutateAsync().catch((error) => setActionError(message(error))) }}>{checkUpdate.isPending ? '正在刷新…' : '刷新版本列表'}</Button>
           </div>
           <div className="flex flex-wrap gap-2" aria-label="内核版本筛选">
             {filters.map(([value, label]) => <Button key={value} type="button" variant={filter === value ? 'primary' : 'secondary'} className="h-8 px-3" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</Button>)}
@@ -219,10 +229,10 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
           {catalog.error || catalog.data?.catalogError ? <p role="alert" className="m-0 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">发布列表暂不可用：{catalog.data?.catalogError ?? message(catalog.error)}。仍可管理本机已安装内核。</p> : null}
           {selectedUnavailable ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">当前表单选择的内核已不可用；原选择值会保留，请改选已安装内核后再保存。</p> : null}
           {actionError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{actionError}</p> : null}
-          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationId={cancellingOperationId} busy={busy} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
+          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationId={cancellingOperationId} busy={busy} disabled={disabled} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { if (disabled) return; deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
         </section>
       </DialogContent>
     </Dialog>
-    <DeleteKernelDialog kernel={deleteTarget} busy={remove.isPending} error={deleteError} returnFocusTo={deleteTrigger.current} onOpenChange={(nextOpen) => { if (!nextOpen) setDeleteTarget(null) }} onConfirm={confirmDelete} />
+    <DeleteKernelDialog kernel={deleteTarget} busy={remove.isPending} disabled={disabled} error={deleteError} onReconnect={onReconnect} returnFocusTo={deleteTrigger.current} onOpenChange={(nextOpen) => { if (!nextOpen) setDeleteTarget(null) }} onConfirm={confirmDelete} />
   </>
 }

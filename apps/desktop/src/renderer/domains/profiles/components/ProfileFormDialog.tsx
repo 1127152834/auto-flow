@@ -39,6 +39,8 @@ export type ProfileFormDialogProps = {
   initialProfile: ProfileRead | null
   onManageKernel(selectedKernel: KernelRef | null, trigger: HTMLButtonElement): void
   onSaved?(profile: ProfileRead): void
+  disabled?: boolean
+  onReconnect?(): void
 }
 
 const fieldTabs: Record<keyof ProfileFormValues, Tab> = {
@@ -60,7 +62,7 @@ const focusSelectors: Partial<Record<keyof ProfileFormValues, string>> = {
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : '保存失败，请重试'
 
-export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManageKernel, onSaved }: ProfileFormDialogProps) {
+export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManageKernel, onSaved, disabled = false, onReconnect }: ProfileFormDialogProps) {
   const installed = useInstalledKernels()
   const defaultKernel = useDefaultKernel()
   const proxyOptions = useProxyOptions()
@@ -138,7 +140,7 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
   }
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (lock.current) return
+    if (disabled || lock.current) return
     lock.current = true
     setOperationError('')
     void form.handleSubmit(async (values) => {
@@ -169,34 +171,37 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
           <DialogTitle>{initialProfile ? '编辑浏览器配置' : '新建浏览器配置'}</DialogTitle>
           <DialogDescription className="mt-1">固定指纹种子由系统维护；选择资源后才能保存。</DialogDescription>
         </header>
+        {disabled ? <div role="alert" className="mx-6 flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，草稿已保留。重新连接后请手动保存。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
         <FormProvider {...form}>
           <form id={formId} className="min-h-0 overflow-y-auto px-6" onSubmit={submit}>
-            {operationError ? <p role="alert" className="mb-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
-            <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
-              <TabsList className="sticky top-0 z-10 w-full justify-start overflow-x-auto bg-surface pt-2">
-                <TabsTrigger value="basic">基础信息</TabsTrigger>
-                <TabsTrigger value="environment">浏览器环境</TabsTrigger>
-                <TabsTrigger value="resources">内核与代理</TabsTrigger>
-                <TabsTrigger value="advanced">高级选项</TabsTrigger>
-              </TabsList>
-              <TabsContent value="basic" className="pb-6"><BasicFields /></TabsContent>
-              <TabsContent value="environment" className="pb-6"><EnvironmentFields /></TabsContent>
-              <TabsContent value="resources" className="pb-6"><KernelProxyFields
-                installedKernels={installedKernels}
-                proxyOptions={proxies}
-                kernelsLoading={installed.isPending}
-                kernelsError={installed.error ? errorMessage(installed.error) : null}
-                proxyOptionsLoading={proxyOptions.isPending}
-                proxyOptionsError={proxyOptions.error ? errorMessage(proxyOptions.error) : null}
-                onManageKernel={(event) => onManageKernel(parseKernelKey(form.getValues('browserKernel')), event.currentTarget)}
-              /></TabsContent>
-              <TabsContent value="advanced" className="pb-6"><AdvancedFields /></TabsContent>
-            </Tabs>
+            <fieldset disabled={disabled} className="m-0 min-w-0 border-0 p-0">
+              {operationError ? <p role="alert" className="mb-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
+              <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
+                <TabsList className="sticky top-0 z-10 grid w-full grid-cols-4 bg-surface pt-2">
+                  <TabsTrigger value="basic">基础信息</TabsTrigger>
+                  <TabsTrigger value="environment">浏览器环境</TabsTrigger>
+                  <TabsTrigger value="resources">内核与代理</TabsTrigger>
+                  <TabsTrigger value="advanced">高级选项</TabsTrigger>
+                </TabsList>
+                <TabsContent value="basic" className="pb-6"><BasicFields /></TabsContent>
+                <TabsContent value="environment" className="pb-6"><EnvironmentFields /></TabsContent>
+                <TabsContent value="resources" className="pb-6"><KernelProxyFields
+                  installedKernels={installedKernels}
+                  proxyOptions={proxies}
+                  kernelsLoading={installed.isPending}
+                  kernelsError={installed.error ? errorMessage(installed.error) : null}
+                  proxyOptionsLoading={proxyOptions.isPending}
+                  proxyOptionsError={proxyOptions.error ? errorMessage(proxyOptions.error) : null}
+                  onManageKernel={(event) => onManageKernel(parseKernelKey(form.getValues('browserKernel')), event.currentTarget)}
+                /></TabsContent>
+                <TabsContent value="advanced" className="pb-6"><AdvancedFields /></TabsContent>
+              </Tabs>
+            </fieldset>
           </form>
         </FormProvider>
         <footer className="flex justify-end gap-2 border-t border-line bg-surface px-6 py-4">
           <Button type="button" disabled={busy} onClick={requestClose}>取消</Button>
-          <Button type="submit" form={formId} variant="primary" disabled={busy}>
+          <Button type="submit" form={formId} variant="primary" disabled={disabled || busy}>
             {busy ? '正在保存…' : initialProfile ? '保存' : '创建配置'}
           </Button>
         </footer>

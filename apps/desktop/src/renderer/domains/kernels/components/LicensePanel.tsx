@@ -6,19 +6,20 @@ import { Input } from '../../../shared/components/ui/input'
 export type LicensePanelProps = {
   status?: License | null
   busy: boolean
+  disabled?: boolean
   error?: string | null
   onConnect(licenseKey: string): void | Promise<void>
   onDisconnect(): void | Promise<void>
 }
 
-export function LicensePanel({ status, busy, error, onConnect, onDisconnect }: LicensePanelProps) {
+export function LicensePanel({ status, busy, disabled = false, error, onConnect, onDisconnect }: LicensePanelProps) {
   const [licenseKey, setLicenseKey] = useState('')
   const licensed = status?.configured === true && status.valid
 
   async function submit(event: FormEvent) {
     event.preventDefault()
     const key = licenseKey.trim()
-    if (!key) return
+    if (disabled || !key) return
     try {
       await onConnect(key)
       setLicenseKey('')
@@ -26,6 +27,7 @@ export function LicensePanel({ status, busy, error, onConnect, onDisconnect }: L
   }
 
   async function signOut() {
+    if (disabled) return
     try { await onDisconnect() }
     catch { /* The parent renders the mutation error. */ }
   }
@@ -38,12 +40,12 @@ export function LicensePanel({ status, busy, error, onConnect, onDisconnect }: L
           {status.plan ?? '套餐未知'} · 到期时间 {status.expires ?? '未知'} · 会话数 {status.seats ? `${status.seats.active ?? '未知'} / ${status.seats.limit ?? '未知'}` : '未知'}
         </p> : <p className="mb-0 mt-1 text-sm text-muted">登录后可下载正式版内核。</p>}
       </div>
-      {licensed ? <Button type="button" disabled={busy} onClick={() => void signOut()}>退出登录</Button> : null}
+      {licensed ? <Button type="button" disabled={disabled || busy} onClick={() => void signOut()}>退出登录</Button> : null}
     </div>
     {!licensed ? <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={(event) => void submit(event)}>
       <label className="sr-only" htmlFor="cloakbrowser-license-key">License Key</label>
-      <Input id="cloakbrowser-license-key" type="password" autoComplete="off" value={licenseKey} disabled={busy} placeholder="License Key" onChange={(event) => setLicenseKey(event.target.value)} />
-      <Button type="submit" variant="primary" disabled={busy || !licenseKey.trim()}>{busy ? '正在验证…' : '验证并登录'}</Button>
+      <Input id="cloakbrowser-license-key" type="password" autoComplete="off" value={licenseKey} disabled={disabled || busy} placeholder="License Key" onChange={(event) => setLicenseKey(event.target.value)} />
+      <Button type="submit" variant="primary" className="shrink-0 whitespace-nowrap" disabled={disabled || busy || !licenseKey.trim()}>{busy ? '正在验证…' : '验证并登录'}</Button>
     </form> : null}
     {status?.configured && !status.valid ? <p role="alert" className="mb-0 mt-3 text-sm text-red-700">已保存的 License 当前无效，请重新登录。</p> : null}
     {error ? <p role="alert" className="mb-0 mt-3 text-sm text-red-700">{error}</p> : null}

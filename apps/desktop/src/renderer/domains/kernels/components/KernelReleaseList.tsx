@@ -16,6 +16,7 @@ export type KernelReleaseListProps = {
   operations?: readonly KernelOperation[]
   cancellingOperationId?: string | null
   busy?: boolean
+  disabled?: boolean
   canReveal?: boolean
   onDownload(release: KernelReleaseItem): void | Promise<void>
   onCancel(operationId: string): void | Promise<void>
@@ -29,7 +30,7 @@ const keyOf = (value: KernelRef) => `${value.edition}|${value.version}`
 const releaseKeyOf = (value: Pick<KernelReleaseItem, 'edition' | 'version' | 'releaseChannel'>) => `${keyOf(value)}|${value.releaseChannel ?? 'unknown'}`
 const formatSize = (size: number | null) => size === null ? '未知' : `${(size / 1024 / 1024).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`
 
-export function KernelReleaseList({ releases, defaultKernel, licensed, operations = [], cancellingOperationId, busy = false, canReveal = true, onDownload, onCancel, onRetry, onSetDefault, onReveal, onDelete }: KernelReleaseListProps) {
+export function KernelReleaseList({ releases, defaultKernel, licensed, operations = [], cancellingOperationId, busy = false, disabled = false, canReveal = true, onDownload, onCancel, onRetry, onSetDefault, onReveal, onDelete }: KernelReleaseListProps) {
   const operationByRelease = new Map<string, KernelOperation>()
   for (const operation of operations) operationByRelease.set(`${operation.edition}|${operation.requestedVersion}|${operation.releaseChannel}`, operation)
 
@@ -62,13 +63,13 @@ export function KernelReleaseList({ releases, defaultKernel, licensed, operation
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {release.installed ? <>
-              <Button type="button" className="h-8 px-3" disabled={busy} onClick={() => void onSetDefault(isDefault ? null : kernel)}>{isDefault ? '取消默认' : '设为默认'}</Button>
-              <Button type="button" className="h-8 px-3" disabled={busy || !canReveal} onClick={() => void onReveal(kernel)}>打开目录</Button>
-              <Button type="button" variant="ghost" className="h-8 px-3 text-red-700" disabled={busy} onClick={(event) => onDelete(kernel, event.currentTarget)}>删除</Button>
-            </> : operationActive ? null : <Button type="button" variant="primary" className="h-8 px-3" disabled={busy || locked} onClick={() => void onDownload(release)}>{locked ? '需要 License' : '下载安装'}</Button>}
+              <Button type="button" className="h-8 px-3" disabled={disabled || busy} onClick={() => void onSetDefault(isDefault ? null : kernel)}>{isDefault ? '取消默认' : '设为默认'}</Button>
+              <Button type="button" className="h-8 px-3" disabled={disabled || busy || !canReveal} onClick={() => void onReveal(kernel)}>打开目录</Button>
+              <Button type="button" variant="ghost" className="h-8 px-3 text-red-700" disabled={disabled || busy} onClick={(event) => onDelete(kernel, event.currentTarget)}>删除</Button>
+            </> : operationActive ? null : <Button type="button" variant="primary" className="h-8 px-3" disabled={disabled || busy || locked} onClick={() => void onDownload(release)}>{locked ? '需要 License' : '下载安装'}</Button>}
           </div>
         </div>
-        {operation ? <KernelOperationStatus operation={operation} cancelling={cancellingOperationId === operation.id} onCancel={() => onCancel(operation.id)} onRetry={() => onRetry(operation)} /> : null}
+        {operation ? <KernelOperationStatus operation={operation} cancelling={cancellingOperationId === operation.id} disabled={disabled} onCancel={() => onCancel(operation.id)} onRetry={() => onRetry(operation)} /> : null}
       </li>
     })}
   </ul>
