@@ -1,6 +1,6 @@
 # AutoFlow 系统架构规格
 
-- 状态：草案，等待用户审阅
+- 状态：已批准，2026-09-11 用户确认架构规格
 - 日期：2026-09-11
 - 目标：为 Windows + macOS 的 AutoFlow 重建确定运行边界、代码边界、依赖方向和迁移规则
 - 适用范围：新仓库 `/Users/zhangtiancheng/Documents/projects/autoflow`
