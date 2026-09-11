@@ -2,17 +2,22 @@ import { spawn } from 'node:child_process'
 import { mkdtemp, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const root = resolve(import.meta.dirname, '..')
-const executableIndex = process.argv.indexOf('--executable')
-const suppliedExecutable = executableIndex === -1 ? undefined : process.argv[executableIndex + 1]
-if (executableIndex !== -1 && (!suppliedExecutable || suppliedExecutable.startsWith('--'))) {
-  throw new Error('--executable requires a path')
-}
-const suppliedBaseUrl = process.env.AUTOFLOW_BASE_URL
-const suppliedToken = process.env.AUTOFLOW_INSTANCE_TOKEN
-if ((suppliedBaseUrl && !suppliedToken) || (!suppliedBaseUrl && suppliedToken)) {
-  throw new Error('sidecar readiness environment is missing')
+export function smokeMode(args, env) {
+  const index = args.indexOf('--executable')
+  const executable = index === -1 ? undefined : args[index + 1]
+  if (index !== -1 && (!executable || executable.startsWith('--'))) {
+    throw new Error('--executable requires a path')
+  }
+  const baseUrl = env.AUTOFLOW_BASE_URL
+  const token = env.AUTOFLOW_INSTANCE_TOKEN
+  if (executable && (baseUrl || token)) {
+    throw new Error('--executable cannot be combined with external readiness environment')
+  }
+  if (Boolean(baseUrl) !== Boolean(token)) throw new Error('sidecar readiness environment is missing')
+  return { executable, baseUrl, token }
 }
 
 function waitForReady(child, timeoutMs = 15_000) {
@@ -39,20 +44,38 @@ function waitForReady(child, timeoutMs = 15_000) {
   })
 }
 
-async function stop(child) {
-  if (!child) return
-  if (child.exitCode !== null || child.signalCode !== null) return
-  child.kill('SIGTERM')
-  await new Promise(resolveDone => {
-    const timer = setTimeout(() => child.kill('SIGKILL'), 3_000)
-    child.once('exit', () => { clearTimeout(timer); resolveDone() })
+export async function stop(child, { graceMs = 3_000, killMs = 2_000 } = {}) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return
+  await new Promise((resolveDone, reject) => {
+    let forceTimer
+    let deadlineTimer
+    const finish = error => {
+      clearTimeout(forceTimer)
+      clearTimeout(deadlineTimer)
+      child.off('exit', onExit)
+      child.off('close', onExit)
+      child.off('error', onError)
+      if (error) reject(error)
+      else resolveDone()
+    }
+    const onExit = () => finish()
+    const onError = error => finish(error)
+    child.once('exit', onExit)
+    child.once('close', onExit)
+    child.once('error', onError)
+    forceTimer = setTimeout(() => child.kill('SIGKILL'), graceMs)
+    deadlineTimer = setTimeout(() => {
+      child.stdout?.destroy()
+      child.stderr?.destroy()
+      child.unref()
+      finish(new Error('sidecar did not exit before cleanup deadline'))
+    }, graceMs + killMs)
+    child.kill('SIGTERM')
   })
-  if (child.exitCode === null && child.signalCode === null) {
-    throw new Error('sidecar did not exit')
-  }
 }
 
 async function main() {
+  const { executable: suppliedExecutable, baseUrl: suppliedBaseUrl, token: suppliedToken } = smokeMode(process.argv.slice(2), process.env)
   if (suppliedBaseUrl) {
     await checkHealth(suppliedBaseUrl, suppliedToken)
     return
@@ -106,4 +129,6 @@ async function checkHealth(baseUrl, token, ready) {
   }
 }
 
-main().catch(error => { console.error(error instanceof Error ? error.message : error); process.exitCode = 1 })
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch(error => { console.error(error instanceof Error ? error.message : error); process.exitCode = 1 })
+}

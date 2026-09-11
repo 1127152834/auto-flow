@@ -15,7 +15,8 @@
     "package:dir": "npm --workspace @autoflow/desktop run package:dir",
     "openapi:generate": "node scripts/generate-api.mjs",
     "openapi:check": "node scripts/generate-api.mjs --check",
-    "smoke:sidecar": "node scripts/smoke-sidecar.mjs"
+    "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0"

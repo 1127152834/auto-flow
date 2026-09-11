@@ -25,6 +25,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:scripts
       - run: npm run lint
       - run: npm run build
       - run: npm run backend:build
@@ -45,7 +46,7 @@ jobs:
               if (entry.isDirectory()) {
                 const found = await find(path)
                 if (found) return found
-              } else if (entry.name === expected && relative(root, path).split('/').includes('backend')) {
+              } else if (entry.name === expected && relative(root, path).split(/[\\\\/]/).includes('backend')) {
                 return path
               }
             }
