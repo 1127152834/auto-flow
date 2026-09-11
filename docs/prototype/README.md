@@ -1,15 +1,18 @@
-# AutoFlow 高保真原型图
+# 浏览器管理模块高保真原型
 
-本目录保存基于旧项目真实页面和功能边界重新设计的高保真原型图。图片使用内置 imagegen 生成，后续组件和页面实现必须以这些图与原项目行为为基准。
+本目录只包含 AutoFlow 的浏览器配置管理模块原型。内核管理已经收进浏览器配置表单，通过“管理内核”按钮打开 CloakBrowser 内核管理弹窗，不再作为独立页面。
 
-## 已完成
+## 视觉基准
 
-- [内核管理](./images/kernel-management.png)：严格对应 CloakBrowser License、公开版/正式版、Wrapper、默认内核、下载/安装/删除和进度状态。
+- [浏览器管理总览图](./browser-management/browser-management-overview.png)
+- [交互与状态基准](./browser-management/browser-management-interactions.md)
 
-## 生成规则
+原型根据旧项目 `ProfilesPage.tsx`、`ProfileActionDialog.tsx`、`KernelPage.tsx` 和实际运行页面整理。图片使用内置 imagegen 生成，仅作为后续组件和页面实现的视觉基准。
 
-- 只复刻原项目已有能力，不擅自扩展业务范围。
-- WebRPA 只作为能力参考，不出现在 AutoFlow UI 中。
-- 原项目没有的浏览器品牌、内核类型和管理能力不得加入原型。
-- 每个模块补齐主要态：正常、加载、空、错误、异步进度、确认弹窗和 Toast。
-- 其余模块会在读取原项目对应页面后分别生成，不使用通用 SaaS 模板替代真实功能。
+## 约束
+
+- 只展示浏览器配置管理相关内容。
+- 不增加模块内部侧栏或资源侧栏。
+- 不出现独立内核页面。
+- CloakBrowser 是唯一内核品牌。
+- 不加入 Firefox、Safari、通用浏览器市场或项目管理内容。
