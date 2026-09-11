@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
+import { EventEmitter } from 'node:events'
+import { spawn } from 'node:child_process'
 import { applySidecarEvent, initialSidecarStatus, validateSidecarHealth } from './supervisor'
+
+vi.mock('node:child_process', () => ({ spawn: vi.fn() }))
 
 describe('sidecar status transitions', () => {
   it('only exposes a ready status after a valid ready event', () => {
@@ -34,6 +38,34 @@ describe('sidecar health validation', () => {
       'secret',
       { apiVersion: 'v1', instanceId: 'x', port: 43127 },
     )).rejects.toThrow('metadata mismatch')
+    vi.unstubAllGlobals()
+  })
+})
+
+describe('sidecar startup cancellation', () => {
+  it('does not publish ready when health resolves after stop', async () => {
+    const stdout = new EventEmitter()
+    const child = Object.assign(new EventEmitter(), {
+      stdout,
+      pid: 123,
+      kill: vi.fn(() => queueMicrotask(() => child.emit('exit', 0))),
+    })
+    vi.mocked(spawn).mockReturnValue(child as never)
+
+    let resolveHealth!: (response: Response) => void
+    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(resolve => { resolveHealth = resolve })))
+    const supervisor = new (await import('./supervisor')).SidecarSupervisor({
+      instanceId: 'x',
+      timeoutMs: 1000,
+    })
+    const start = supervisor.start()
+    stdout.emit('data', 'AUTOFLOW_READY {"apiVersion":"v1","instanceId":"x","port":43127}\n')
+    await Promise.resolve()
+    const stopping = supervisor.stop()
+    resolveHealth(new Response(JSON.stringify({ status: 'ok', apiVersion: 'v1', instanceId: 'x' }), { status: 200 }))
+    await stopping
+    await expect(start).rejects.toThrow('sidecar stopped')
+    expect(supervisor.getStatus()).toEqual({ state: 'stopped' })
     vi.unstubAllGlobals()
   })
 })

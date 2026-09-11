@@ -51,7 +51,8 @@ export class SidecarSupervisor {
   private child: ChildProcess | undefined
   private status: SidecarStatus = initialSidecarStatus()
   private stopping = false
-  private pendingStart: { timer: ReturnType<typeof setTimeout>; reject: (reason?: unknown) => void } | undefined
+  private startupGeneration = 0
+  private pendingStart: { generation: number; timer: ReturnType<typeof setTimeout>; reject: (reason?: unknown) => void } | undefined
 
   constructor(private readonly options: SupervisorOptions) {}
 
@@ -64,6 +65,7 @@ export class SidecarSupervisor {
     const sidecarArgs = ['--port', '0', '--instance-id', this.options.instanceId, '--parent-pid', String(process.pid)]
     const args = this.options.production ? sidecarArgs : ['-m', 'autoflow', ...sidecarArgs]
     const command = this.options.production ? this.options.sidecarPath! : 'python'
+    const generation = ++this.startupGeneration
     this.update(applySidecarEvent(this.status, { type: 'spawned' }))
     const child = spawn(command, args, {
       env: { ...process.env, AUTOFLOW_INSTANCE_TOKEN: token, ...(this.options.dataDir ? { AUTOFLOW_DATA_DIR: this.options.dataDir } : {}) },
@@ -78,7 +80,7 @@ export class SidecarSupervisor {
         reject(new Error('sidecar readiness timeout'))
         void this.stop()
       }, this.options.timeoutMs ?? 15000)
-      this.pendingStart = { timer, reject }
+      this.pendingStart = { generation, timer, reject }
       child.stdout?.on('data', (chunk: Buffer | string) => {
         buffer += chunk.toString()
         const lines = buffer.split(/\r?\n/)
@@ -90,10 +92,19 @@ export class SidecarSupervisor {
               const parsed = parseReadyLine(line)
               const baseUrl = `http://127.0.0.1:${parsed.port}`
               await validateSidecarHealth(baseUrl, token, parsed)
+              if (this.startupGeneration !== generation || this.child !== child || this.stopping) {
+                throw new Error('sidecar start cancelled')
+              }
               const next = applySidecarEvent(this.status, { type: 'ready', ...parsed, baseUrl, token })
               clearTimeout(timer); this.pendingStart = undefined; this.update(next); resolve(next)
             } catch (error) {
-              clearTimeout(timer); this.pendingStart = undefined; void this.stop(); reject(error)
+              clearTimeout(timer)
+              const current = this.startupGeneration === generation && this.child === child
+              if (current) {
+                this.pendingStart = undefined
+                void this.stop()
+              }
+              reject(error)
             }
           })()
         }
@@ -124,6 +135,7 @@ export class SidecarSupervisor {
   async stop(): Promise<void> {
     const child = this.child
     if (!child || this.stopping) return
+    this.startupGeneration += 1
     if (this.pendingStart) {
       clearTimeout(this.pendingStart.timer)
       const pending = this.pendingStart

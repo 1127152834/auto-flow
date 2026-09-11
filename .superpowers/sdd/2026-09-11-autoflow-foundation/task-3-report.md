@@ -42,6 +42,22 @@ npm --workspace @autoflow/desktop run typecheck
 passed
 ```
 
+## Race Fix
+
+- Added a startup generation token tied to the spawned child.
+- Delayed health responses from an expired, stopped, timed-out, or restarted startup can no longer publish `ready` or stop a newer child.
+- Added a hanging-health race test that stops the supervisor before releasing the health response.
+
+Race-fix validation:
+
+```text
+npm --workspace @autoflow/desktop test -- src/main/sidecar/ready-protocol.test.ts src/main/sidecar/supervisor.test.ts src/main/platform/paths.test.ts
+8 tests passed
+
+npm --workspace @autoflow/desktop run typecheck
+passed
+```
+
 ## Deviations
 
 - The Task 3 files were already present in the working tree as untracked files; this implementation completed and corrected that existing slice rather than recreating it.
