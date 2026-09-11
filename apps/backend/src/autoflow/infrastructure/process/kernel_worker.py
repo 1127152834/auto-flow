@@ -19,6 +19,7 @@ from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.providers.kernel.catalog import (
     current_platform_tag,
     executable_path,
@@ -92,24 +93,30 @@ class KernelWorkerManager:
         self._termination_timeout = termination_timeout
         self._running: dict[str, _RunningWorker] = {}
         self._lock = asyncio.Lock()
+        self._ownership = ExclusiveFileLock(self._kernels_dir / ".install.lock")
 
     def recover_interrupted(self) -> list[KernelOperation]:
+        if not self._ownership.acquire():
+            return []
         recovered: list[KernelOperation] = []
-        for operation in self._repository.list_active():
-            failed = transition_operation(
-                operation,
-                "failed",
-                error="应用关闭，安装中断",
-                message="安装中断",
-            )
-            self._repository.save(failed)
-            shutil.rmtree(
-                self._kernels_dir / ".staging" / operation.id, ignore_errors=True
-            )
-            recovered.append(failed)
-        if recovered:
-            self._events.publish(self.snapshot())
-        return recovered
+        try:
+            for operation in self._repository.list_active():
+                failed = transition_operation(
+                    operation,
+                    "failed",
+                    error="应用关闭，安装中断",
+                    message="安装中断",
+                )
+                self._repository.save(failed)
+                shutil.rmtree(
+                    self._kernels_dir / ".staging" / operation.id, ignore_errors=True
+                )
+                recovered.append(failed)
+            if recovered:
+                self._events.publish(self.snapshot())
+            return recovered
+        finally:
+            self._ownership.release()
 
     async def start(self, job: KernelInstallJob) -> KernelOperation:
         if not is_valid_kernel_version(job.requested_version):
@@ -121,20 +128,23 @@ class KernelWorkerManager:
         async with self._lock:
             if any(item.process.returncode is None for item in self._running.values()):
                 raise KernelWorkerManagerBusy("A kernel installation is already active")
+            if not self._ownership.acquire():
+                raise KernelWorkerManagerBusy("A kernel installation is already active")
             operation = KernelOperation.new(
                 operation_id=str(uuid4()),
                 edition=job.edition,
                 requested_version=job.requested_version,
                 release_channel=job.release_channel,
             )
-            self._repository.save(operation)
-            self._publish()
             staging = self._kernels_dir / ".staging" / operation.id
-            staging.mkdir(parents=True, exist_ok=False)
-            env = os.environ.copy()
-            env.update(self._worker_env)
-            env["CLOAKBROWSER_CACHE_DIR"] = str(staging)
+            process: asyncio.subprocess.Process | None = None
             try:
+                self._repository.save(operation)
+                self._publish()
+                staging.mkdir(parents=True, exist_ok=False)
+                env = os.environ.copy()
+                env.update(self._worker_env)
+                env["CLOAKBROWSER_CACHE_DIR"] = str(staging)
                 process = await asyncio.create_subprocess_exec(
                     *self._command,
                     stdin=asyncio.subprocess.PIPE,
@@ -142,37 +152,34 @@ class KernelWorkerManager:
                     stderr=asyncio.subprocess.DEVNULL,
                     env=env,
                 )
-            except Exception:
-                shutil.rmtree(staging, ignore_errors=True)
-                failed = transition_operation(
-                    operation, "failed", error="Kernel worker could not start"
-                )
-                self._repository.save(failed)
-                self._publish()
-                raise
-            assert process.stdin is not None
-            payload = {
-                "command": "download",
-                "cacheDir": str(staging),
-                "edition": job.edition,
-                "requestedVersion": job.requested_version,
-                "releaseChannel": job.release_channel,
-                "licenseKey": job.license_key,
-            }
-            try:
+                assert process.stdin is not None
+                payload = {
+                    "command": "download",
+                    "cacheDir": str(staging),
+                    "edition": job.edition,
+                    "requestedVersion": job.requested_version,
+                    "releaseChannel": job.release_channel,
+                    "licenseKey": job.license_key,
+                }
                 process.stdin.write((json.dumps(payload) + "\n").encode())
                 await process.stdin.drain()
                 process.stdin.close()
-            except Exception as error:
-                process.stdin.close()
-                await self._stop_process(process)
-                shutil.rmtree(staging, ignore_errors=True)
-                failed = transition_operation(
-                    operation, "failed", error="Kernel worker could not start"
-                )
-                self._repository.save(failed)
-                self._publish()
-                raise KernelWorkerManagerError("Kernel worker could not start") from error
+            except Exception:  # noqa: BLE001 -- every setup failure must release ownership.
+                try:
+                    if process is not None:
+                        if process.stdin is not None:
+                            process.stdin.close()
+                        if process.returncode is None:
+                            await self._stop_process(process)
+                    shutil.rmtree(staging, ignore_errors=True)
+                    failed = transition_operation(
+                        operation, "failed", error="Kernel worker could not start"
+                    )
+                    self._repository.save(failed)
+                    self._publish()
+                finally:
+                    self._ownership.release()
+                raise KernelWorkerManagerError("Kernel worker could not start") from None
             task = asyncio.create_task(self._monitor(operation.id, process, staging))
             self._running[operation.id] = _RunningWorker(process, task, staging)
             return operation
@@ -180,10 +187,14 @@ class KernelWorkerManager:
     async def cancel(self, operation_id: str) -> KernelOperation:
         async with self._lock:
             operation = self._required(operation_id)
-            if operation.state in TERMINAL_OPERATION_STATES:
-                return operation
             running = self._running.get(operation_id)
-            if operation.state != "cancelling":
+            if running is None:
+                if operation.state in TERMINAL_OPERATION_STATES:
+                    return operation
+                raise KernelWorkerManagerBusy(
+                    "The kernel installation belongs to another sidecar"
+                )
+            if operation.state not in TERMINAL_OPERATION_STATES and operation.state != "cancelling":
                 operation = transition_operation(
                     operation, "cancelling", message="正在取消安装"
                 )
@@ -283,8 +294,11 @@ class KernelWorkerManager:
                     pass
                 return operation
         finally:
+            if process.returncode is None:
+                await self._stop_process(process)
             shutil.rmtree(staging, ignore_errors=True)
             self._running.pop(operation_id, None)
+            self._ownership.release()
 
     async def _progress(self, operation_id: str, message: dict[str, Any]) -> None:
         state = message.get("state")

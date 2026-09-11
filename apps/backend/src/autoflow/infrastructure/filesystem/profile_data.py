@@ -1,14 +1,13 @@
 import logging
-import os
 import re
 import shutil
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import BinaryIO
 from uuid import UUID, uuid4
 
 from autoflow.domain.profiles.errors import ProfileDataPathInvalid, ProfileDirectoryBusy
+from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 
 logger = logging.getLogger(__name__)
 _TOKEN = re.compile(
@@ -150,20 +149,21 @@ class FilesystemProfileUsageGuard:
         lock_path = self.locks / f"{profile_id}.lock"
         if lock_path.is_symlink():
             raise ProfileDataPathInvalid
-        with lock_path.open("a+b") as handle:
-            try:
-                _lock(handle)
-            except OSError:
-                raise ProfileDirectoryBusy from None
-            try:
-                profile_path = self.root / profile_id
-                if profile_path.is_symlink():
-                    raise ProfileDataPathInvalid
-                if _has_chromium_activity_marker(profile_path):
-                    raise ProfileDirectoryBusy
-                yield
-            finally:
-                _unlock(handle)
+        lock = ExclusiveFileLock(lock_path)
+        try:
+            if not lock.acquire():
+                raise ProfileDirectoryBusy
+        except OSError:
+            raise ProfileDirectoryBusy from None
+        try:
+            profile_path = self.root / profile_id
+            if profile_path.is_symlink():
+                raise ProfileDataPathInvalid
+            if _has_chromium_activity_marker(profile_path):
+                raise ProfileDirectoryBusy
+            yield
+        finally:
+            lock.release()
 
 
 def _validate_profile_id(profile_id: str) -> None:
@@ -179,31 +179,3 @@ def _has_chromium_activity_marker(profile_path: Path) -> bool:
         (profile_path / marker).exists() or (profile_path / marker).is_symlink()
         for marker in _CHROMIUM_ACTIVITY_MARKERS
     )
-
-
-def _lock(handle: BinaryIO) -> None:
-    if os.name == "nt":
-        import msvcrt
-
-        handle.seek(0, os.SEEK_END)
-        if handle.tell() == 0:
-            handle.write(b"\0")
-            handle.flush()
-        handle.seek(0)
-        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)  # type: ignore[attr-defined]
-    else:
-        import fcntl
-
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-
-
-def _unlock(handle: BinaryIO) -> None:
-    if os.name == "nt":
-        import msvcrt
-
-        handle.seek(0)
-        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)  # type: ignore[attr-defined]
-    else:
-        import fcntl
-
-        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)

@@ -6,12 +6,12 @@
 
 ## 已完成
 
-- 内核安装 operation 使用现有 `kernel_operations` 表持久化完整快照，并按 queued/downloading/verifying/extracting/cancelling/terminal 状态机更新；启动恢复把未完成 operation 标记为 failed 并清理对应 staging。
+- 内核安装 operation 使用现有 `kernel_operations` 表持久化完整快照，并按 queued/downloading/verifying/extracting/cancelling/terminal 状态机更新；启动恢复先取得数据目录的跨进程 ownership 锁，再把未完成 operation 标记为 failed 并清理对应 staging。另一活跃 sidecar 持锁时不执行恢复或启动第二个 worker。
 - sidecar 通过同一冻结可执行文件的 `--kernel-worker` 分支或开发态 `python -m autoflow --kernel-worker` 启动一个受监管子进程。取消先 terminate，默认等待 3 秒，仍未退出才 kill，并在真实退出后清理 staging。
 - worker 只接受 catalog/license/download JSON 命令。每个命令在首次导入 CloakBrowser wrapper 前设置任务 cache；License 只经 stdin 传入，不进入 argv、operation 数据、协议输出或 wrapper 日志。
 - 下载先落入 `<kernels>/.staging/<operation-id>`。父进程校验版本、相对可执行路径、安装目录、越界符号链接和可执行文件后原子发布；已有有效目标只复用，不覆盖。
 - `/api/v1/kernels/events` 已接入实例 token 认证；连接首帧和后续事件均为完整 operation snapshot，慢消费者只保留最新 snapshot，15 秒空闲 heartbeat。
-- app shutdown 会沿同一取消路径停止所有 worker；worker 也监视 sidecar 父进程，避免宿主异常退出后长期成为孤儿。
+- app shutdown 以真实子进程状态为准停止并等待所有 worker，即使 operation 已先收到 completed/failed 消息；worker 也监视 sidecar 父进程，避免宿主异常退出后长期成为孤儿。staging 初始化或进程启动失败会把已持久化 queued 状态收敛为 failed 并释放 ownership。
 
 ## 验证边界
 
