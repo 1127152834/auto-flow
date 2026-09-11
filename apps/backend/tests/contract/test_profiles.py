@@ -158,3 +158,19 @@ def test_proxy_options_only_expose_usable_resources(
         json={**profile_payload, "proxyMode": "proxy", "proxyId": "proxy-enabled"},
     )
     assert created.status_code == 201, created.text
+
+
+def test_delete_rejects_profile_with_chromium_activity_marker(
+    client: TestClient, profile_payload: dict[str, Any]
+) -> None:
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    profile_data = client.app.state.paths.profiles / profile["id"]
+    profile_data.mkdir()
+    (profile_data / "SingletonLock").symlink_to("host-12345")
+
+    deleted = client.delete(f"/api/v1/profiles/{profile['id']}")
+
+    assert deleted.status_code == 409
+    assert deleted.json()["error"]["code"] == "PROFILE_DIRECTORY_BUSY"
+    assert client.get(f"/api/v1/profiles/{profile['id']}").status_code == 200
+    assert profile_data.is_dir()

@@ -64,8 +64,19 @@ class FakeDataStore:
         if self.purge_error:
             raise self.purge_error
 
-    def retry_pending(self) -> None:
+    def retry_pending(self, profile_exists) -> None:
         self.calls.append(("retry_pending",))
+
+
+class FakeUsageGuard:
+    def __init__(self, busy: bool = False) -> None:
+        self.busy = busy
+
+    @contextmanager
+    def guard(self, profile_id: str) -> Iterator[None]:
+        if self.busy:
+            raise ProfileDirectoryBusy
+        yield
 
 
 def _profile(valid_profile_values: dict[str, object]) -> Profile:
@@ -89,7 +100,21 @@ def _service(
             repository.profiles[:] = snapshot
             raise
 
-    return ProfileService(transaction, FakeKernels(), FakeProxies(), data_store)
+    return ProfileService(transaction, FakeKernels(), FakeProxies(), FakeUsageGuard(), data_store)
+
+
+def test_remove_rejects_active_profile_before_staging(valid_profile_values) -> None:
+    profile = _profile(valid_profile_values)
+    repository = FakeRepository([profile])
+    data_store = FakeDataStore()
+    service = _service(repository, data_store)
+    service.profile_usage = FakeUsageGuard(busy=True)
+
+    with pytest.raises(ProfileDirectoryBusy):
+        service.remove(profile.id)
+
+    assert repository.get(profile.id) == profile
+    assert data_store.calls == []
 
 
 def test_remove_keeps_database_when_directory_is_busy(valid_profile_values) -> None:

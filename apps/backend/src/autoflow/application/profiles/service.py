@@ -17,6 +17,7 @@ from autoflow.domain.profiles.ports import (
     InstalledKernelLookup,
     ProfileDataStore,
     ProfileRepository,
+    ProfileUsageGuard,
     ProxyOptionsLookup,
 )
 
@@ -37,11 +38,13 @@ class ProfileService:
         transaction: RepositoryTransaction,
         installed_kernels: InstalledKernelLookup,
         proxy_options: ProxyOptionsLookup,
+        profile_usage: ProfileUsageGuard,
         data_store: ProfileDataStore,
     ) -> None:
         self.transaction = transaction
         self.installed_kernels = installed_kernels
         self.proxy_options = proxy_options
+        self.profile_usage = profile_usage
         self.data_store = data_store
 
     def list(self) -> list[Profile]:
@@ -90,21 +93,22 @@ class ProfileService:
         return updated
 
     def remove(self, profile_id: str) -> None:
-        staged: str | None = None
-        try:
-            with self.transaction() as repository:
-                self._require(repository, profile_id)
-                staged = self.data_store.stage(profile_id)
-                repository.remove(profile_id)
-        except Exception:
-            if staged is not None:
-                self.data_store.restore(profile_id, staged)
-            raise
-        if staged is not None:
+        with self.profile_usage.guard(profile_id):
+            staged: str | None = None
             try:
-                self.data_store.purge(staged)
-            except (OSError, ProfileDataPathInvalid):
-                logger.warning("profile data cleanup remains pending for profile_id=%s", profile_id)
+                with self.transaction() as repository:
+                    self._require(repository, profile_id)
+                    staged = self.data_store.stage(profile_id)
+                    repository.remove(profile_id)
+            except Exception:
+                if staged is not None:
+                    self.data_store.restore(profile_id, staged)
+                raise
+            if staged is not None:
+                try:
+                    self.data_store.purge(staged)
+                except (OSError, ProfileDataPathInvalid):
+                    logger.warning("profile data cleanup remains pending for profile_id=%s", profile_id)
 
     @staticmethod
     def _require(repository: ProfileRepository, profile_id: str) -> Profile:

@@ -12,7 +12,11 @@ from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.application.profiles.service import ProfileService
 from autoflow.bootstrap.config import Settings
-from autoflow.domain.profiles.ports import InstalledKernelLookup, ProfileDataStore
+from autoflow.domain.profiles.ports import (
+    InstalledKernelLookup,
+    ProfileDataStore,
+    ProfileUsageGuard,
+)
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
@@ -20,7 +24,10 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.infrastructure.filesystem.paths import AppPaths
-from autoflow.infrastructure.filesystem.profile_data import FilesystemProfileDataStore
+from autoflow.infrastructure.filesystem.profile_data import (
+    FilesystemProfileDataStore,
+    FilesystemProfileUsageGuard,
+)
 
 
 class _NoInstalledKernels:
@@ -33,19 +40,23 @@ def create_app(
     *,
     installed_kernel_lookup: InstalledKernelLookup | None = None,
     profile_data_store: ProfileDataStore | None = None,
+    profile_usage_guard: ProfileUsageGuard | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
+    transaction = partial(profile_repository_transaction, session_factory)
     proxy_options = SqlAlchemyProxyOptions(session_factory)
     data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
-    data_store.retry_pending()
+    usage_guard = profile_usage_guard or FilesystemProfileUsageGuard(paths.profiles)
+    data_store.retry_pending(lambda profile_id: _profile_exists(transaction, profile_id))
     profile_service = ProfileService(
-        partial(profile_repository_transaction, session_factory),
+        transaction,
         installed_kernel_lookup or _NoInstalledKernels(),
         proxy_options,
+        usage_guard,
         data_store,
     )
 
@@ -76,3 +87,8 @@ def create_app(
             allow_headers=["x-autoflow-token", "content-type"],
         )
     return app
+
+
+def _profile_exists(transaction, profile_id: str) -> bool:
+    with transaction() as repository:
+        return repository.get(profile_id) is not None
