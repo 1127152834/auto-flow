@@ -1,7 +1,7 @@
 # 代理管理模块交互与状态基准
 
 - 日期：2026-09-12
-- 状态：proposed，依据 ProxyPanel 官方公开首页/API 文档和旧项目 `ProxiesPage.tsx` 整理
+- 状态：proposed；“即将到期”与远程聚合指标受 live contract/capability flag 约束
 - 来源：[ProxyPanel 首页](https://proxypanel.io/home)、[ProxyPanel Developers](https://proxypanel.io/developers)、[ProxyPanel 旧版 API 文档](https://proxypanel.io/documentation)
 
 ## 1. 页面信息架构
@@ -16,7 +16,9 @@
 - 刷新代理；
 - 连接设置。
 
-摘要区域显示运行中、即将到期、异常和总代理数量。
+页面先读取 connection capabilities；未达到 `fixture-verified` 的 Provider 操作不渲染可提交按钮，只显示“当前 API 未提供此能力”。
+
+摘要区域显示可验证的运行中、异常和已同步数量；“即将到期”只有 API 返回明确截止时间并通过 fixture 验证时才显示，否则显示“到期信息不可用”或隐藏。
 
 主体是 ProxyPanel 代理舰队表格，底部是 AutoFlow 本地代理组。ProxyPanel 远程代理舰队和本地代理组必须使用不同的视觉标签，避免用户误以为本地代理组是 ProxyPanel 远程对象。
 
@@ -45,7 +47,7 @@
 表格列：
 
 - 代理名称；
-- 状态：运行中、待启动、即将到期、异常、未激活；
+- 状态：运行中、待启动、异常、未激活；“即将到期”只有有明确 `subscription_expires_at` 时才显示；
 - 运营商；
 - 城市；
 - 出口 IP；
@@ -88,7 +90,7 @@
 - 延迟和丢包摘要；
 - 测试连接。
 
-复制端点或密码时显示短暂 Toast；密码默认隐藏，不能进入日志或诊断导出。
+复制端点时显示短暂 Toast；密码只通过 sidecar 受控复制，不进入 renderer、日志或诊断导出。
 
 ### 位置与轮换
 
@@ -112,7 +114,7 @@
 
 - HTTP/SOCKS5 端点展示；
 - 用户名复制；
-- 密码显示/隐藏和轮换；
+- 密码不进入 renderer；提供由 sidecar 读取凭据并写入系统剪贴板的“复制密码”操作，轮换仍需确认；
 - IPv4 白名单启用/禁用；
 - 白名单新增、删除、替换；
 - 每代理最多 16 个 IPv4 的限制在表单中提前提示。

@@ -23,6 +23,10 @@
 
 阶段验收：OpenAPI schema 校验通过；fixture 能驱动 adapter contract test；所有敏感字段扫描为空。
 
+### 0.4 能力开关与未确认字段
+
+为每项 Provider 能力记录 `enabled`、证据等级和 fixture 版本。未达到 `fixture-verified` 的位置、轮换、凭据轮换、用量和余额能力不进入可提交 UI；`subscription_expires_at` 未验证前永远为 `null`，不渲染“即将到期”。先完成无副作用的连接验证、列表和详情，再按夹具逐项开启写操作。
+
 ## 阶段 1：后端领域与 Provider Adapter
 
 ### 1.1 领域和仓储
@@ -37,7 +41,7 @@
 
 - 连接验证和代理同步；
 - 代理详情和实时探测；
-- 获取/轮换凭据；
+- 获取凭据状态和受控复制；轮换凭据只有 fixture 验证后开启；
 - Change IP、改变地点；
 - 轮换计划；
 - IPv4 白名单；
@@ -47,7 +51,7 @@
 
 ### 1.3 Application services
 
-实现 connection verify/sync、proxy probe、change-ip、relocate、rotation、credentials、allowlist、usage 和 local group CRUD。同步采用显式触发和 TTL stale 标记，不做无界后台轮询。
+实现 connection verify/sync、proxy probe、change-ip、relocate、rotation、credentials、allowlist、usage 和 local group CRUD。同步采用 generation/tombstone 和 TTL stale 标记；失败保留旧投影，不做无界后台轮询。代理组选择必须在事务内跳过 disabled/unhealthy/remote_missing 成员并推进游标。
 
 ### 1.4 HTTP adapter
 
@@ -65,7 +69,7 @@
 
 在 `renderer/domains/proxies/components` 完成：ProxyPanelConnectionCard、ProxySummary、ProxyFleetTable、ProxyStatusBadge、ProxyDetailDrawer、LocationPicker、RotationScheduleForm、CredentialPanel、IpAllowlistEditor、HealthResult、LocalProxyGroupTable、RiskConfirmationDialog。
 
-组件只接收类型化 props 和显式 action，不直接 fetch 或读取 secret。
+组件只接收类型化 props 和显式 action，不直接 fetch 或读取 secret；密码只提供受控复制按钮，不提供明文显示。
 
 ### 2.3 hooks 和客户端
 
@@ -127,4 +131,4 @@
 4. 再提交页面垂直切片；
 5. 最后提交浏览器配置集成和 E2E。
 
-任一阶段如果发现 ProxyPanel live schema 与 fixture 不一致，停止扩展 UI，先更新 adapter contract、规格中的字段证据等级和测试夹具。未确认 `subscription_expires_at` 前不得实现“即将到期”统计。
+任一阶段如果发现 ProxyPanel live schema 与 fixture 不一致，停止扩展 UI，先更新 adapter contract、规格中的字段证据等级和测试夹具。未确认 `subscription_expires_at` 前不得实现“即将到期”统计；未确认异步写操作前不实现取消按钮。

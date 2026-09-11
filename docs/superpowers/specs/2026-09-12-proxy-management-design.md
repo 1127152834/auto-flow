@@ -53,6 +53,7 @@ ProxyPanel 远程代理的本地投影：
 - `connection_id`
 - `name_override`
 - `remote_status`（原始值保留为受控枚举/未知）
+- `remote_missing`（同步代际中未出现；引用存在时保留 tombstone）
 - `carrier`
 - `city`
 - `region`
@@ -71,7 +72,9 @@ ProxyPanel 远程代理的本地投影：
 - `last_synced_at`
 - `last_error`
 
-API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安全策略返回；复制凭据使用受控一次性 action。
+投影同步采用 generation/tombstone：完整同步成功才替换 generation；部分失败保留旧数据并标记 `stale`；远端消失的记录标记 `remote_missing`，被浏览器配置或本地代理组引用时不得物理删除。
+
+API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安全策略返回；复制凭据由 sidecar 受控写入系统剪贴板，renderer 只收到 `{copied: true}`，不提供明文密码显示。
 
 ### LocalProxyGroup
 
@@ -94,6 +97,7 @@ API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安
 - `get_proxy`
 - `probe_proxy`
 - `get_credentials`
+- `copy_credentials`（只返回 copied，不返回明文密码）
 - `rotate_credentials`
 - `change_ip`
 - `relocate`
@@ -134,6 +138,7 @@ API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安
 - `POST /api/v1/proxies/{proxy_id}/change-ip`
 - `POST /api/v1/proxies/{proxy_id}/relocate`
 - `GET /api/v1/proxies/{proxy_id}/credentials`
+- `POST /api/v1/proxies/{proxy_id}/credentials/copy`
 - `POST /api/v1/proxies/{proxy_id}/credentials/rotate`
 - `GET/PUT/DELETE /api/v1/proxies/{proxy_id}/rotation-schedule`
 - `GET/PUT/DELETE /api/v1/proxies/{proxy_id}/ip-auth`
@@ -144,6 +149,9 @@ API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安
 - `GET/POST /api/v1/proxy-groups`
 - `GET/PUT/DELETE /api/v1/proxy-groups/{group_id}`
 - `PUT /api/v1/proxy-groups/{group_id}/members`
+- `POST /api/v1/proxy-groups/{group_id}/select`（事务内跳过失效成员并推进 Round Robin 游标）
+
+外部能力必须经过 capability flag 和脱敏 fixture 验证后才能启用 UI；未验证能力返回 `PROXYPANEL_SCHEMA_UNSUPPORTED` 并隐藏或禁用操作。所有有副作用的请求携带 `Idempotency-Key`，异步结果统一通过 `GET /api/v1/proxy-operations/{operation_id}` 查询。
 
 ### 写操作结果
 
@@ -151,7 +159,7 @@ API 响应不返回 API key、密码或完整带认证 URL。host/port 可按安
 
 统一错误码：
 
-`PROXYPANEL_NOT_CONFIGURED`、`PROXYPANEL_AUTH_FAILED`、`PROXYPANEL_RATE_LIMITED`、`PROXYPANEL_NOT_FOUND`、`PROXYPANEL_CONFLICT`、`PROXYPANEL_VALIDATION_ERROR`、`PROXYPANEL_UNAVAILABLE`、`PROXYPANEL_SCHEMA_UNSUPPORTED`、`PROXY_IN_USE`、`PROXY_GROUP_IN_USE`、`STALE_PROJECTION`。
+`PROXYPANEL_NOT_CONFIGURED`、`PROXYPANEL_AUTH_FAILED`、`PROXYPANEL_RATE_LIMITED`、`PROXYPANEL_NOT_FOUND`、`PROXYPANEL_CONFLICT`、`PROXYPANEL_VALIDATION_ERROR`、`PROXYPANEL_UNAVAILABLE`、`PROXYPANEL_SCHEMA_UNSUPPORTED`、`PROXY_IN_USE`、`PROXY_GROUP_IN_USE`、`PROXY_GROUP_NO_AVAILABLE_MEMBER`、`STALE_PROJECTION`。
 
 ## 6. UI 规格
 
