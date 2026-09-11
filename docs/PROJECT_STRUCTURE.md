@@ -29,8 +29,9 @@ apps/
 │   └── tests/{unit,integration,contract,fixtures}/
 └── desktop/
     ├── src/
-    │   ├── main/{sidecar,ipc,platform}/
+    │   ├── main/{sidecar,ipc,platform,settings}/
     │   ├── preload/
+    │   ├── shared/                     # main/preload/renderer 的桌面 IPC 契约
     │   └── renderer/
     │       ├── app/
     │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard}/
@@ -194,3 +195,15 @@ reference/
 ### 模型合并补充（2026-09-12，confirmed）
 
 `0003_merge_proxy_models.py` 汇合代理/模型两条历史迁移，保持唯一head；`test_merged_model_migrations.py` 验证四种数据库起点。HTTP客户端同时支持现有代理与模型错误字段，Electron保留代理复制与内核目录IPC。详见 [baseline合并验收](migration/model-management-baseline-merge.md)。
+
+## 设置与总览实现（2026-09-12，confirmed）
+
+- `main/settings/store.ts`：固定 userData 本机偏好、原子写入/备份、工作区标记与路径校验。
+- `main/settings/controller.ts`：服务重启、工作区切换/回退、受控目录打开、白名单诊断预览与保存；平台行为留在 main。
+- `main/ipc/settings.ts` 与 `src/shared/settings.ts`：窗口来源校验及跨 main/preload/renderer 的受控类型契约。
+- `application/settings/runtime.py`：当前轻量 runtime/总览查询协调与 quiesce 门控；复用同一个只读资源仓储，没有额外 dashboard 实体或重复服务层。
+- `infrastructure/database/settings_runtime.py`：真实资源计数、数据库任务及配置占用读取；`adapters/http/settings_dashboard.py` 提供公开查询和 host-only 内部控制。
+- `renderer/domains/settings/`：IPC 设置页、卡片、工作区确认与诊断弹窗；`domains/dashboard/`：生成 API 类型的总览查询、资源卡片和工作入口。
+- `renderer/app/ApiProvider.tsx`：统一领域 QueryClient，凭据/实例变化替换上下文与缓存；App 按工作区根设置 key，同工作区重连保持组件树，实际切换工作区重置。
+- `renderer/public/brand/autoflow-mark.png`：沿用旧项目 renderer/public/brand 的 AutoFlow 品牌资源。
+- 详细范围和证据见 [设置与总览实施状态](migration/settings-dashboard-status.md)。

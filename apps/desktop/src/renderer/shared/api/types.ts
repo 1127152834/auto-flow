@@ -1,4 +1,5 @@
 import type { components } from './generated'
+import type { SettingsBridge } from '../../../shared/settings'
 
 export type SidecarStatus =
   | { state: 'starting' | 'stopped' }
@@ -35,7 +36,7 @@ export type KernelOperation = components['schemas']['KernelOperationRead']
 export type KernelOperationList = components['schemas']['KernelOperationList']
 export type KernelRef = components['schemas']['KernelRefRead']
 
-export type AutoflowBridge = {
+export type AutoflowBridge = Partial<SettingsBridge> & {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
   copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>

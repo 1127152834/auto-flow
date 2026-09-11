@@ -816,6 +816,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/runtime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Runtime */
+        get: operations["runtime_api_v1_settings_runtime_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dashboard */
+        get: operations["dashboard_api_v1_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/kernels/events": {
         parameters: {
             query?: never;
@@ -1050,6 +1084,26 @@ export type components = {
             can_copy: boolean;
             /** Can Rotate */
             can_rotate: boolean;
+        };
+        /** DashboardRead */
+        DashboardRead: {
+            /** Profiles */
+            profiles: number;
+            /** Enabledproxies */
+            enabledProxies: number;
+            /** Proxygroups */
+            proxyGroups: number;
+            /** Installedkernels */
+            installedKernels: number;
+            /** Modelproviders */
+            modelProviders: number | null;
+            /** Models */
+            models: number | null;
+            /**
+             * Generatedat
+             * Format: date-time
+             */
+            generatedAt: string;
         };
         /** DefaultKernelRead */
         DefaultKernelRead: {
@@ -1954,6 +2008,33 @@ export type components = {
             mode: "same_city" | "random_city" | "same_carrier";
             /** Interval Seconds */
             interval_seconds: number;
+        };
+        /** RuntimePaths */
+        RuntimePaths: {
+            /** Workspace */
+            workspace: string;
+            /** Database */
+            database: string;
+            /** Profiles */
+            profiles: string;
+            /** Kernels */
+            kernels: string;
+            /** Logs */
+            logs: string;
+        };
+        /** RuntimeRead */
+        RuntimeRead: {
+            /** Apiversion */
+            apiVersion: string;
+            /** Backendversion */
+            backendVersion: string;
+            /** Pythonversion */
+            pythonVersion: string;
+            /** Sqliteversion */
+            sqliteVersion: string;
+            paths: components["schemas"]["RuntimePaths"];
+            /** Blockers */
+            blockers: string[];
         };
         /** SyncSnapshot */
         SyncSnapshot: {
@@ -5229,6 +5310,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    runtime_api_v1_settings_runtime_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuntimeRead"];
+                };
+            };
+        };
+    };
+    dashboard_api_v1_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardRead"];
                 };
             };
         };

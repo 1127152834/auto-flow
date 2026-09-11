@@ -5,7 +5,12 @@ import { State } from '../shared/components/State'
 import type { HealthResponse, SidecarStatus } from '../shared/api/types'
 import { createModelApi } from '../domains/models/api'
 import { ModelManagementPage } from '../domains/models/pages/ModelManagementPage'
-import { QueryProvider } from './query-provider'
+import { ApiProvider } from './ApiProvider'
+import { ApplicationHeader, routeFromHash, type AppRoute } from './ApplicationHeader'
+import { DashboardPage } from '../domains/dashboard/pages/DashboardPage'
+import { SettingsPage } from '../domains/settings/pages/SettingsPage'
+import { ProxyManagementPage } from '../domains/proxies/pages/ProxyManagementPage'
+import type { SettingsBridge } from '../../shared/settings'
 
 const SIDECAR_READY_TIMEOUT_MS = 10_000
 const SIDECAR_POLL_INTERVAL_MS = 50
@@ -34,11 +39,16 @@ async function getReadySidecarStatus(): Promise<Extract<SidecarStatus, { state: 
 
 export function App() {
   const [state, setState] = useState<AppState>(initialAppState)
+  const [route, setRoute] = useState<AppRoute>(routeFromHash)
+  const [session, setSession] = useState<Extract<AppState, { status: 'connected' }> | null>(null)
   const connectionEpoch = useRef(0)
+  const connectionKey = useRef<string | null>(null)
+  const connecting = useRef(false)
   const authRecoveryAttempted = useRef(false)
 
   const connect = useCallback(async (restart: boolean) => {
     const epoch = ++connectionEpoch.current
+    connecting.current = true
     if (restart) authRecoveryAttempted.current = false
     setState({ status: 'loading' })
     try {
@@ -53,57 +63,91 @@ export function App() {
       })
       const health: HealthResponse = await client.health()
       if (epoch !== connectionEpoch.current) return
-      const modelApi = createModelApi({ ...client, async request<T>(path: string, init?: ApiRequestInit) {
+      const authenticatedClient = { ...client, async request<T>(path: string, init?: ApiRequestInit) {
         try { return await client.request<T>(path, init) }
         catch (error) {
-          if (error instanceof ApiClientError && error.code === 'SIDECAR_UNAUTHORIZED' && epoch === connectionEpoch.current) {
+          if (error instanceof ApiClientError && (error.code === 'SIDECAR_UNAUTHORIZED' || (error.status === 401 && !error.code)) && epoch === connectionEpoch.current) {
             if (authRecoveryAttempted.current) setState({ status: 'offline', message: '本地服务认证失效，请重新连接' })
             else { authRecoveryAttempted.current = true; void connect(false) }
           }
           throw error
         }
-      } })
+      } }
+      const modelApi = createModelApi(authenticatedClient)
+      connectionKey.current = `${sidecar.instanceId}:${sidecar.baseUrl}:${sidecar.token}`
 
-      setState({
+      const desktop = await window.autoflow.getSettings?.().catch(() => undefined)
+      if (epoch !== connectionEpoch.current) return
+      const connected: Extract<AppState, { status: 'connected' }> = {
         status: 'connected',
         instanceId: health.instanceId,
         apiVersion: health.apiVersion,
         modelApi,
+        client: authenticatedClient,
+        baseUrl: sidecar.baseUrl,
+        token: sidecar.token,
+        workspaceKey: desktop?.ok ? desktop.value.workspace.path : 'current',
         generation: epoch,
-      })
+      }
+      setSession(connected)
+      setState(connected)
     } catch (error) {
       if (epoch === connectionEpoch.current) setState({ status: 'offline', message: offlineMessage(error) })
-    }
+    } finally { if (epoch === connectionEpoch.current) connecting.current = false }
   }, [])
 
   useEffect(() => {
     void connect(false)
+    void window.autoflow.getSettings?.().then(result => {
+      if (result.ok && result.value.workspace.needsSelection) { setRoute('settings'); window.location.hash = '/settings' }
+    }).catch(() => undefined)
   }, [connect])
 
-  if (state.status === 'loading') {
-    return <State title="正在连接服务..." description="正在检查本地服务状态" />
-  }
+  useEffect(() => {
+    const changed = () => setRoute(routeFromHash())
+    window.addEventListener('hashchange', changed)
+    return () => window.removeEventListener('hashchange', changed)
+  }, [])
 
-  if (state.status === 'offline') {
-    return (
-      <State
-        title="服务未连接"
-        description={state.message}
-        action={<button type="button" onClick={() => void connect(true)}>重新连接</button>}
-      />
-    )
-  }
+  useEffect(() => {
+    let disposed = false
+    let timer: number | undefined
+    const poll = async () => {
+      try {
+        const sidecar = await window.autoflow.getSidecarStatus()
+        if (!disposed && !connecting.current) {
+          if (sidecar.state === 'ready') {
+            const key = `${sidecar.instanceId}:${sidecar.baseUrl}:${sidecar.token}`
+            if (connectionKey.current !== key) void connect(false)
+          } else {
+            connectionKey.current = null
+            setState(previous => previous.status !== 'connected' ? previous : { status: 'offline', message: sidecar.state === 'starting' ? '本地服务正在重新连接' : '本地服务已停止，可在设置中恢复' })
+          }
+        }
+      } catch { /* Connection/recovery panel reports unavailable bridge state. */ }
+      if (!disposed) timer = window.setTimeout(poll, 1000)
+    }
+    timer = window.setTimeout(poll, 1000)
+    return () => { disposed = true; if (timer) window.clearTimeout(timer) }
+  }, [connect])
 
-  return (
-    <QueryProvider key={`${state.instanceId}-${state.generation}`}>
-      <div className="min-h-screen bg-canvas text-ink">
-        <header className="flex h-20 items-center gap-12 border-b border-line bg-surface px-8 max-[640px]:gap-6 max-[640px]:px-4">
-          <span className="flex items-center gap-3 text-xl font-semibold"><span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-lg bg-clay text-white">A</span>AutoFlow</span>
-          <nav aria-label="全局导航" className="flex h-full items-stretch"><span aria-current="page" className="flex items-center border-b-2 border-clay text-sm font-semibold text-clay">模型管理</span></nav>
-          <span role="status" className="ml-auto flex items-center gap-2 text-xs text-muted"><span className="h-2 w-2 rounded-full bg-sage" />本地服务正常</span>
-        </header>
-        <ModelManagementPage api={state.modelApi} instanceId={state.instanceId} />
-      </div>
-    </QueryProvider>
-  )
+  const navigate = (target: AppRoute) => { setRoute(target); window.location.hash = `/${target}` }
+  const settingsAvailable = typeof window.autoflow.getSettings === 'function'
+  return <div className="min-h-screen bg-canvas text-ink">
+    <ApplicationHeader route={route} onNavigate={navigate} status={state.status} />
+    {route === 'settings' ? settingsAvailable
+      ? <SettingsPage bridge={window.autoflow as SettingsBridge} restartService={() => window.autoflow.restartSidecar()} onServiceChanged={() => void connect(false)} />
+      : <State title="桌面设置不可用" description="请使用 AutoFlow 桌面应用打开设置。" />
+    : <>
+      {state.status === 'loading' ? <div role="status" className="border-b border-line bg-surface-subtle px-8 py-3 text-sm">正在连接服务…</div> : state.status === 'offline' ? <div role="alert" className="flex items-center justify-between gap-4 border-b border-red-200 bg-red-50 px-8 py-3 text-sm text-red-900"><span>{state.message}</span><button type="button" onClick={() => void connect(true)}>重新连接</button></div> : null}
+      {session ? <ApiProvider key={session.workspaceKey} baseUrl={session.baseUrl} token={session.token} instanceId={session.instanceId} client={session.client}>
+        <div inert={state.status !== 'connected'} aria-busy={state.status !== 'connected'} className={state.status !== 'connected' ? 'opacity-60' : undefined}>
+          {route === 'dashboard' ? <DashboardPage client={session.client} onNavigate={navigate} />
+            : route === 'proxies' ? <ProxyManagementPage api={session.client} />
+            : route === 'models' ? <ModelManagementPage api={session.modelApi} instanceId={session.instanceId} />
+            : <State title="浏览器配置" description="浏览器管理页面正在由当前迁移任务接入。" />}
+        </div>
+      </ApiProvider> : null}
+    </>}
+  </div>
 }

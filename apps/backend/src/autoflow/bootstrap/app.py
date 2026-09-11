@@ -14,9 +14,11 @@ from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
+from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
+from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
@@ -44,6 +46,9 @@ from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOption
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
+)
+from autoflow.infrastructure.database.settings_runtime import (
+    SqlAlchemySettingsRuntimeRepository,
 )
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.kernel_installations import (
@@ -120,6 +125,22 @@ def create_app(
     )
     model_service.recover_credentials()
 
+    quiesce_gate = QuiesceGate()
+    settings_runtime = SettingsRuntimeService(
+        SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
+        {
+            "workspace": str(paths.data_dir),
+            "database": str(paths.database),
+            "profiles": str(paths.profiles),
+            "kernels": str(paths.kernels),
+            "logs": str(paths.logs),
+        },
+        settings.api_version,
+        lambda: len(catalog_provider.installed()),
+        lambda: ["kernel_process_active"] if kernel_worker_manager.active_processes() else [],
+        quiesce_gate,
+    )
+
     app = FastAPI()
     configure_openapi(app, api_version=settings.api_version)
     install_error_handlers(app)
@@ -129,6 +150,7 @@ def create_app(
     app.state.model_service = model_service
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
+    app.state.settings_runtime = settings_runtime
     close_proxies = configure_proxy_management(app, paths.database)
 
     async def shutdown() -> None:
@@ -147,6 +169,7 @@ def create_app(
     app.include_router(models_router(model_service))
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
+    app.include_router(settings_dashboard_router(settings_runtime))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )
@@ -169,7 +192,26 @@ def create_app(
             settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
             return error_response(401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接")
-        return await call_next(request)
+        guarded_get = (
+            request.method == "GET"
+            and (
+                request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
+                or request.url.path.endswith("/models/discover")
+            )
+        )
+        guarded_request = request.url.path.startswith("/api/v1/") and (
+            request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get
+        )
+        if not guarded_request:
+            return await call_next(request)
+        with quiesce_gate.mutation() as admitted:
+            if not admitted:
+                return error_response(
+                    409,
+                    "SERVICE_QUIESCED",
+                    "Service is paused for a desktop operation",
+                )
+            return await call_next(request)
 
     if settings.renderer_origin:
         app.add_middleware(

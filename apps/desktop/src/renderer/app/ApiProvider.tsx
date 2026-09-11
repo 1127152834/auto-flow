@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import { createKernelsApi, type KernelsApi } from '../domains/kernels/api'
 import {
   createProfilesApi,
@@ -22,19 +22,21 @@ export type ApiProviderProps = {
   token: string
   instanceId: string
   children: ReactNode
+  client?: StreamingApiClient
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
 
-export function ApiProvider({ baseUrl, token, instanceId, children }: ApiProviderProps) {
+export function ApiProvider({ baseUrl, token, instanceId, children, client: providedClient }: ApiProviderProps) {
   const queryClient = useMemo(() => new QueryClient({
     defaultOptions: {
       queries: { retry: 2, refetchOnWindowFocus: false },
       mutations: { retry: false },
     },
-  }), [instanceId])
+  }), [instanceId, baseUrl, token, providedClient])
+  useEffect(() => () => { void queryClient.cancelQueries(); queryClient.clear() }, [queryClient])
   const value = useMemo<ApiContextValue>(() => {
-    const client = createApiClient({ baseUrl, token })
+    const client = providedClient ?? createApiClient({ baseUrl, token })
     return {
       instanceId,
       client,
@@ -42,7 +44,7 @@ export function ApiProvider({ baseUrl, token, instanceId, children }: ApiProvide
       kernels: createKernelsApi(client),
       proxyOptions: createProxyOptionsApi(client),
     }
-  }, [baseUrl, instanceId, token])
+  }, [baseUrl, instanceId, token, providedClient])
 
   return (
     <ApiContext.Provider value={value}>
