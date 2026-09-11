@@ -1,0 +1,19 @@
+from collections.abc import Callable
+from typing import Protocol
+
+from .models import InstalledKernel, KernelCatalog, LicenseStatus
+
+
+class KernelCatalogProvider(Protocol):
+    async def catalog(self) -> KernelCatalog: ...
+    def installed(self) -> list[InstalledKernel]: ...
+    def is_installed(self, edition: str, version: str) -> bool: ...
+
+
+class LicenseStore(Protocol):
+    def read(self) -> str | None: ...
+    def write(self, value: str) -> None: ...
+    def delete(self) -> None: ...
+
+
+LicenseValidator = Callable[[str], LicenseStatus]
