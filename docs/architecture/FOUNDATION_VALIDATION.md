@@ -29,6 +29,8 @@
 - smoke 产物模式与外部地址模式互斥，退出清理设置最终期限。
 - 构建工具归入开发依赖；Electron/Vitest 更新到审计通过版本。
 
+最终独立代码审查：通过，无剩余 Critical/Important 问题。
+
 ## 验证边界
 
 Windows x64 与 macOS Intel 已配置 CI，但本次没有远端 job 结果，不能声称这两个平台已运行通过。

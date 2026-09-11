@@ -1,6 +1,6 @@
 # AutoFlow 跨平台基础骨架实现计划
 
-> **面向 AI 代理的工作者：** 必需子技能：使用 subagent-driven-development（推荐）或 executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
+> **面向 AI 代理的工作者：** 必需子技能：使用 subagent-driven-development（推荐）或 executing-plans 逐任务实现此计划。步骤使用复选框（`- [x]`）语法来跟踪进度。
 
 **目标：** 在空仓库中建立可在 Windows 和 macOS 启动、测试和打包的 Electron + React + Python FastAPI sidecar 最小闭环。
 
@@ -9,6 +9,8 @@
 **技术栈：** Electron、React、TypeScript、Vite、Vitest、FastAPI、Pydantic 2、Uvicorn、Python 3.11、pytest、Ruff、mypy、npm workspaces、PyInstaller。
 
 **规格：** [`docs/architecture/README.md`](../../architecture/README.md)；迁移边界见 [`docs/migration/README.md`](../../migration/README.md)。
+
+**执行状态：** 任务 1–7 已实现并通过最终代码审查；本机 macOS arm64 已完成开发/打包端到端验证。Windows x64 和 macOS Intel 等待对应 CI 实测。详见 [验收记录](../../architecture/FOUNDATION_VALIDATION.md)。
 
 ## 全局约束
 
@@ -34,7 +36,7 @@
 - 创建：`scripts/structure.test.mjs`
 - 修改：`README.md`，补充开发命令入口
 
-- [ ] **步骤 1：编写失败的结构检查**
+- [x] **步骤 1：编写失败的结构检查**
 
 ```js
 // scripts/structure.test.mjs
@@ -56,13 +58,13 @@ test('root scripts expose the foundation checks', () => {
 })
 ```
 
-- [ ] **步骤 2：运行检查确认失败**
+- [x] **步骤 2：运行检查确认失败**
 
 运行：`node --test scripts/structure.test.mjs`
 
 预期：FAIL，报告所需配置文件尚不存在。
 
-- [ ] **步骤 3：编写最小工具链配置**
+- [x] **步骤 3：编写最小工具链配置**
 
 `package.json` 使用 npm workspaces：
 
@@ -100,7 +102,7 @@ test('root scripts expose the foundation checks', () => {
 
 `apps/backend/pyproject.toml` 固定 `requires-python = ">=3.11,<3.12"`，生产依赖只包含 FastAPI、Pydantic、Uvicorn；开发依赖包含 httpx、pytest、pytest-asyncio、ruff、mypy。
 
-- [ ] **步骤 4：运行检查确认通过**
+- [x] **步骤 4：运行检查确认通过**
 
 运行：
 
@@ -112,7 +114,7 @@ uv --directory apps/backend lock
 
 预期：结构测试和依赖锁定通过；后端测试从任务 2 开始运行。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add package.json apps/desktop/package.json apps/backend/pyproject.toml .gitignore .editorconfig scripts/structure.test.mjs README.md package-lock.json apps/backend/uv.lock
@@ -132,7 +134,7 @@ git commit -m "chore: establish monorepo toolchain"
 - 创建：`apps/backend/tests/unit/test_health.py`
 - 创建：`apps/backend/tests/unit/test_ready.py`
 
-- [ ] **步骤 1：编写配置、健康和就绪协议测试**
+- [x] **步骤 1：编写配置、健康和就绪协议测试**
 
 ```python
 # apps/backend/tests/unit/test_ready.py
@@ -163,13 +165,13 @@ def test_health_returns_instance_metadata():
     }
 ```
 
-- [ ] **步骤 2：运行测试确认失败**
+- [x] **步骤 2：运行测试确认失败**
 
 运行：`uv --directory apps/backend run pytest tests/unit/test_ready.py tests/unit/test_health.py -q`
 
 预期：FAIL，模块和 `create_app` 尚不存在。
 
-- [ ] **步骤 3：实现最小 bootstrap**
+- [x] **步骤 3：实现最小 bootstrap**
 
 `Settings` 只接收 `data_dir`、`instance_id`、`instance_token`、`parent_pid` 和 `api_version`；`create_app(settings)` 注册 `/health`，并在请求头 `x-autoflow-token` 不匹配时对 `/api/v1/*` 返回 401。
 
@@ -189,13 +191,13 @@ def ready_line(*, port: int, api_version: str, instance_id: str) -> str:
 
 `__main__.py` 接收 `--host 127.0.0.1`、`--port 0`、`--instance-id` 和 `--parent-pid`，启动 Uvicorn，在实际端口确定后输出一行 `AUTOFLOW_READY <compact-json>`。就绪输出只能来自启动入口，不能由业务路由拼接。
 
-- [ ] **步骤 4：运行测试确认通过**
+- [x] **步骤 4：运行测试确认通过**
 
 运行：`uv --directory apps/backend run pytest -q`
 
 预期：配置、健康、就绪和 token 测试全部 PASS。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add apps/backend
@@ -215,7 +217,7 @@ git commit -m "feat: add FastAPI sidecar foundation"
 - 创建：`apps/desktop/src/main/sidecar/ready-protocol.test.ts`
 - 创建：`apps/desktop/src/main/sidecar/supervisor.test.ts`
 
-- [ ] **步骤 1：编写就绪行解析和 supervisor 状态测试**
+- [x] **步骤 1：编写就绪行解析和 supervisor 状态测试**
 
 ```ts
 // apps/desktop/src/main/sidecar/ready-protocol.test.ts
@@ -255,13 +257,13 @@ describe('sidecar status transitions', () => {
 })
 ```
 
-- [ ] **步骤 2：运行测试确认失败**
+- [x] **步骤 2：运行测试确认失败**
 
 运行：`npm --workspace @autoflow/desktop test -- src/main/sidecar/ready-protocol.test.ts`
 
 预期：FAIL，解析器和 supervisor 状态尚不存在。
 
-- [ ] **步骤 3：实现 Electron foundation**
+- [x] **步骤 3：实现 Electron foundation**
 
 `ready-protocol.ts` 只负责校验前缀、JSON 字段、端口范围 1–65535 和 `apiVersion`；不启动进程。
 
@@ -303,7 +305,7 @@ export type SidecarStatus =
 
 `preload/index.ts` 只暴露 `window.autoflow.getSidecarStatus()`、`restartSidecar()` 和 `getPlatformPaths()`，不暴露 `ipcRenderer`。
 
-- [ ] **步骤 4：运行测试确认通过**
+- [x] **步骤 4：运行测试确认通过**
 
 运行：
 
@@ -314,7 +316,7 @@ npm --workspace @autoflow/desktop run typecheck
 
 预期：协议和状态测试 PASS，TypeScript 无错误。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add apps/desktop
@@ -338,7 +340,7 @@ git commit -m "feat: supervise local backend from Electron"
 - 创建：`apps/desktop/src/renderer/app/App.test.tsx`
 - 创建：`apps/desktop/src/renderer/shared/api/client.test.ts`
 
-- [ ] **步骤 1：编写健康加载和失败恢复测试**
+- [x] **步骤 1：编写健康加载和失败恢复测试**
 
 ```tsx
 // apps/desktop/src/renderer/app/App.test.tsx
@@ -370,19 +372,19 @@ it('shows recovery action when the API is unavailable', async () => {
 })
 ```
 
-- [ ] **步骤 2：运行测试确认失败**
+- [x] **步骤 2：运行测试确认失败**
 
 运行：`npm --workspace @autoflow/desktop test -- src/renderer/app/App.test.tsx`
 
 预期：FAIL，renderer、API client 和状态组件尚不存在。
 
-- [ ] **步骤 3：实现最小 renderer**
+- [x] **步骤 3：实现最小 renderer**
 
 API client 从 `window.autoflow.getSidecarStatus()` 取得 loopback base URL 和 token，所有请求统一附带 `x-autoflow-token`。`App` 只实现健康查询、服务已连接、服务离线和重新连接四种状态；页面路由和业务领域不在本任务中创建。
 
 React 测试使用 Vitest 的 `vi.stubGlobal('fetch', ...)` 模拟 `/health`，不启动真实 Electron 和 Python 进程。
 
-- [ ] **步骤 4：运行测试确认通过**
+- [x] **步骤 4：运行测试确认通过**
 
 运行：
 
@@ -394,7 +396,7 @@ npm --workspace @autoflow/desktop run lint
 
 预期：健康、离线、重连和 token 测试 PASS，TypeScript 和 ESLint 无错误。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add apps/desktop/src/renderer
@@ -411,7 +413,7 @@ git commit -m "feat: add renderer health shell"
 - 修改：`apps/backend/src/autoflow/bootstrap/config.py`
 - 修改：`apps/desktop/src/main/sidecar/supervisor.ts`
 
-- [ ] **步骤 1：编写路径规则测试**
+- [x] **步骤 1：编写路径规则测试**
 
 ```python
 # apps/backend/tests/unit/test_paths.py
@@ -433,7 +435,7 @@ it('passes the Electron userData directory instead of guessing an OS path', () =
 })
 ```
 
-- [ ] **步骤 2：运行测试确认失败**
+- [x] **步骤 2：运行测试确认失败**
 
 运行：
 
@@ -444,7 +446,7 @@ npm --workspace @autoflow/desktop test -- src/main/platform/paths.test.ts
 
 预期：两个测试均因 `AppPaths` 和 `resolveBackendEnvironment` 不存在而失败。
 
-- [ ] **步骤 3：实现注入式路径服务**
+- [x] **步骤 3：实现注入式路径服务**
 
 后端 `AppPaths.from_data_dir()` 只接受 Electron 或 CLI 注入的绝对路径，并派生 `data`、`logs`、`workspace`、`cache`、`tmp` 子目录；创建目录集中在 bootstrap，不在 domain 中创建。
 
@@ -473,7 +475,7 @@ class AppPaths:
 
 Electron 使用 `app.getPath('userData')` 计算数据目录，通过环境变量 `AUTOFLOW_DATA_DIR` 传入 sidecar。后端独立运行时必须要求显式 `--data-dir`，避免把测试数据写进源码目录。
 
-- [ ] **步骤 4：运行测试确认通过**
+- [x] **步骤 4：运行测试确认通过**
 
 运行：
 
@@ -485,7 +487,7 @@ npm --workspace @autoflow/desktop run typecheck
 
 预期：路径服务测试 PASS；Windows 风格和 macOS 风格的注入路径不会被业务代码重新解析或硬编码。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add apps/backend apps/desktop/src/main/platform apps/desktop/src/main/sidecar/supervisor.ts
@@ -503,7 +505,7 @@ git commit -m "feat: inject platform data paths"
 - 修改：`apps/desktop/package.json`
 - 修改：`apps/backend/pyproject.toml`
 
-- [ ] **步骤 1：编写契约和 smoke 命令的失败检查**
+- [x] **步骤 1：编写契约和 smoke 命令的失败检查**
 
 ```js
 // scripts/smoke-sidecar.mjs
@@ -518,13 +520,13 @@ const body = await response.json()
 if (body.apiVersion !== 'v1') throw new Error('unexpected API version')
 ```
 
-- [ ] **步骤 2：运行检查确认失败**
+- [x] **步骤 2：运行检查确认失败**
 
 运行：`npm run openapi:check && node scripts/smoke-sidecar.mjs`
 
 预期：FAIL，因为 OpenAPI 生成、sidecar 启动和 smoke 参数尚不存在。
 
-- [ ] **步骤 3：实现契约和 CI**
+- [x] **步骤 3：实现契约和 CI**
 
 后端导出 `/openapi.json`；`scripts/generate-api.mjs` 使用 `openapi-typescript` 生成 `apps/desktop/src/renderer/shared/api/generated.ts`，并在 CI 中检查生成文件无差异。
 
@@ -542,7 +544,7 @@ Runner 标签依据 [GitHub 官方清单](https://docs.github.com/en/actions/ref
 
 每个平台执行 Python lock 安装、pytest、Ruff、mypy、npm ci、类型检查、Vitest、OpenAPI 检查和 sidecar smoke；CI 不执行签名，签名只在发布工作流中配置。
 
-- [ ] **步骤 4：运行验证确认通过**
+- [x] **步骤 4：运行验证确认通过**
 
 运行：
 
@@ -559,7 +561,7 @@ node scripts/smoke-sidecar.mjs
 
 预期：生成文件无差异、前后端测试通过、静态检查通过、sidecar 启动和退出成功。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add package.json apps/desktop/package.json apps/backend/pyproject.toml scripts .github apps/desktop/src/renderer/shared/api/generated.ts
@@ -577,7 +579,7 @@ git commit -m "ci: verify cross-platform foundation"
 - 修改：`package.json` 和 `apps/desktop/package.json`，加入 backend:build、package:dir
 - 修改：`.github/workflows/ci.yml`，加入按平台打包和产物检查
 
-- [ ] **步骤 1：编写生产路径测试**
+- [x] **步骤 1：编写生产路径测试**
 
 ```ts
 import { expect, it } from 'vitest'
@@ -593,13 +595,13 @@ it('resolves the macOS executable name', () => {
 })
 ```
 
-- [ ] **步骤 2：运行路径测试确认失败**
+- [x] **步骤 2：运行路径测试确认失败**
 
 运行：`npm --workspace @autoflow/desktop test -- src/main/sidecar/ready-protocol.test.ts`
 
 预期：生产路径函数尚未导出。
 
-- [ ] **步骤 3：实现目录打包配置**
+- [x] **步骤 3：实现目录打包配置**
 
 路径函数使用运行平台的 `path.join`；测试使用 `path.join('/resources', 'backend', expectedName)` 断言，避免 Windows 测试硬编码正斜杠。实现定义如下：
 
@@ -632,7 +634,7 @@ mac:
 
 `build-backend.mjs` 使用 `spawnSync('uv', ['--directory', 'apps/backend', 'run', 'pyinstaller', '--noconfirm', 'autoflow-backend.spec'], { stdio: 'inherit' })`，透传失败退出码。构建依赖在后端 pyproject 的 build 组固定 PyInstaller，构建前同步该组。
 
-- [ ] **步骤 4：运行真实产物检查**
+- [x] **步骤 4：运行真实产物检查**
 
 运行：
 
@@ -647,7 +649,7 @@ node scripts/smoke-sidecar.mjs --executable <本平台打包资源中的真实si
 
 验收证据包含：平台、CPU 架构、Python/Electron 版本、产物路径、健康响应和退出码。本机只能声称本机架构通过；其他两平台以 CI 或对应机器结果为准。公开发布的签名/notarization 在发布阶段配置，本任务只生成内部测试产物。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add apps/backend apps/desktop scripts package.json .github/workflows/ci.yml

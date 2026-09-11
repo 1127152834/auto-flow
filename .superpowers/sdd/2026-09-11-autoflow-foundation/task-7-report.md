@@ -49,3 +49,7 @@ No WebRPA runtime or integration was added.
 - Packaged smoke now rejects conflicting external readiness environment; `--executable` cannot be bypassed.
 - Cleanup observes exit/close/error and fails at a final deadline after escalation, removing listeners and process handles.
 - 4 focused script regression tests pass; packaged arm64 executable smoke passes again.
+
+## Final integration validation
+
+The final artifact was rebuilt after global runtime fixes with Electron 41.10.3. Both development and packaged desktop E2E passed, including renderer connection and sidecar exit after forced host termination. Latest evidence: docs/architecture/FOUNDATION_VALIDATION.md. Final independent review passed at fee3657.
