@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, Response, status
 
 from autoflow.application.kernels.service import KernelService
 
+from .errors import browser_error_responses
 from .kernel_schemas import (
     DefaultKernelRead,
     DefaultKernelWrite,
@@ -21,7 +22,11 @@ from .kernel_schemas import (
 
 
 def kernels_router(service: KernelService) -> APIRouter:
-    router = APIRouter(prefix="/api/v1/kernels", tags=["kernels"])
+    router = APIRouter(
+        prefix="/api/v1/kernels",
+        tags=["kernels"],
+        responses=browser_error_responses(404, 409, 422, 500, 503),
+    )
 
     @router.get("/catalog", response_model=KernelCatalogRead)
     async def get_catalog() -> KernelCatalogRead:

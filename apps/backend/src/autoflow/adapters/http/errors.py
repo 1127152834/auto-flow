@@ -4,6 +4,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 
 from autoflow.domain.kernels.errors import (
     KernelBusy,
@@ -33,6 +34,23 @@ from autoflow.domain.profiles.errors import (
 def _camel(value: str) -> str:
     first, *rest = value.split("_")
     return first + "".join(word.capitalize() for word in rest)
+
+
+class BrowserApiError(BaseModel):
+    model_config = ConfigDict(alias_generator=_camel, populate_by_name=True)
+
+    code: str
+    message: str
+    details: dict[str, Any] = Field(default_factory=dict)
+    request_id: str
+
+
+class BrowserErrorEnvelope(BaseModel):
+    error: BrowserApiError
+
+
+def browser_error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
+    return {status_code: {"model": BrowserErrorEnvelope} for status_code in status_codes}
 
 
 def _response(

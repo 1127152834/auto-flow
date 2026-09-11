@@ -135,6 +135,22 @@ def test_proxy_options_and_missing_profile_contract(client: TestClient) -> None:
     assert missing.json()["error"]["code"] == "PROFILE_NOT_FOUND"
 
 
+def test_browser_error_runtime_matches_openapi_schema(client: TestClient) -> None:
+    document = client.get("/openapi.json").json()
+    schemas = document["components"]["schemas"]
+    error = schemas["BrowserApiError"]
+    assert set(error["required"]) == {"code", "message", "requestId"}
+    assert "details" in error["properties"]
+
+    response = document["paths"]["/api/v1/profiles/{profile_id}"]["get"]["responses"]["404"]
+    assert response["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/BrowserErrorEnvelope"
+    }
+
+    runtime = client.get("/api/v1/profiles/00000000-0000-0000-0000-000000000000")
+    assert set(runtime.json()["error"]) == set(error["properties"])
+
+
 def test_proxy_options_only_expose_usable_resources(
     client: TestClient, profile_payload: dict[str, Any]
 ) -> None:

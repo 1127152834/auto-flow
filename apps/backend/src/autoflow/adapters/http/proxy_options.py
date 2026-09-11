@@ -3,6 +3,8 @@ from pydantic import BaseModel, ConfigDict
 
 from autoflow.domain.profiles.ports import ProxyOptionsLookup
 
+from .errors import browser_error_responses
+
 
 class ProxyOption(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -23,7 +25,11 @@ class ProxyOptionsRead(BaseModel):
 
 
 def proxy_options_router(options: ProxyOptionsLookup) -> APIRouter:
-    router = APIRouter(prefix="/api/v1", tags=["proxy-options"])
+    router = APIRouter(
+        prefix="/api/v1",
+        tags=["proxy-options"],
+        responses=browser_error_responses(500),
+    )
 
     @router.get("/proxy-options", response_model=ProxyOptionsRead)
     def list_proxy_options() -> ProxyOptionsRead:

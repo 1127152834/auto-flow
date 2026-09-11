@@ -120,3 +120,7 @@ def test_kernel_openapi_contains_routes_and_never_internal_path(client: TestClie
     assert "/internal/kernels/resolve" not in document["paths"]
     license_key = document["components"]["schemas"]["LicenseWrite"]["properties"]["licenseKey"]
     assert license_key["writeOnly"] is True
+    conflict = document["paths"]["/api/v1/kernels/default"]["put"]["responses"]["409"]
+    assert conflict["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/BrowserErrorEnvelope"
+    }

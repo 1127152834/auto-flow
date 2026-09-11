@@ -2,11 +2,16 @@ from fastapi import APIRouter, Response, status
 
 from autoflow.application.profiles.service import ProfileService
 
+from .errors import browser_error_responses
 from .profile_schemas import ProfileDuplicate, ProfileList, ProfileRead, ProfileWrite
 
 
 def profiles_router(service: ProfileService) -> APIRouter:
-    router = APIRouter(prefix="/api/v1/profiles", tags=["profiles"])
+    router = APIRouter(
+        prefix="/api/v1/profiles",
+        tags=["profiles"],
+        responses=browser_error_responses(404, 409, 422, 500),
+    )
 
     @router.get("", response_model=ProfileList)
     def list_profiles() -> ProfileList:
