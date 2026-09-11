@@ -1,5 +1,7 @@
 # 浏览器管理 实现计划
 
+**执行状态（2026-09-12）：** 用户已授权实施，任务 1–12 及最终修复已完成，独立定向复审 PASS。最终生产修复 `3df5609`；[验收记录](../../migration/browser-management-validation.md)，[审查归档](../../../.ai/sessions/browser-management-review/README.md)。下列勾选表示任务实现与等价验证闭环，原命令示例保留；实际运行命令、计数与平台限制以验收记录为准。Windows/macOS Intel 等待 CI，真实 License 未验证。
+
 > **面向 AI 代理的工作者：** 必需子技能：使用 subagent-driven-development（推荐）或 executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
 
 **目标：** 在 Windows/macOS 的 AutoFlow 中交付可持久化的浏览器配置管理，以及从配置表单进入的 CloakBrowser 内核管理弹窗，完成前后端真实闭环。
@@ -12,7 +14,7 @@
 
 ## 全局约束
 
-- 本轮只写实施计划；本文件获得执行确认后才开始业务代码任务。
+- 计划编写阶段不启动业务代码；本文件已获得用户执行确认，实施结果见上述执行状态。
 - Windows：x64；macOS：Apple Silicon 和 Intel 分别构建。
 - Python `>=3.11,<3.12`；保留现有 sidecar 随机 loopback 端口、实例 token、父进程监管和服务恢复。
 - 不兼容或导入旧数据；不修改旧项目源码或用户已有数据目录。
@@ -154,7 +156,7 @@ type KernelManagerDialogProps = {
 
 **文件：** 创建文件职责表中的 shared UI/复合组件及 `ui/dialog.test.tsx`、`FormField.test.tsx`、`Toaster.test.tsx`；修改 desktop package、lock、样式、交互说明。既有 button/input/select 按实际 diff 迁成 shadcn 源码风格，保留 Tailwind 接入；不冒用原草稿为完整组件库。
 
-- [ ] 写失败交互测试，安装开发测试 `@testing-library/user-event`；示例为真实可访问性行为：
+- [x] 写失败交互测试，安装开发测试 `@testing-library/user-event`；示例为真实可访问性行为：
 ```tsx
 it('Escape closes the top dialog and returns focus', async () => {
   const user = userEvent.setup()
@@ -168,22 +170,22 @@ it('Escape closes the top dialog and returns focus', async () => {
   expect(screen.getByText('管理内核')).toHaveFocus()
 })
 ```
-- [ ] `npm test -- --run src/renderer/shared/components`，记录预期缺失组件失败。
-- [ ] 加入实际使用的 Radix dialog/select/tabs/alert-dialog/checkbox/switch/tooltip、clsx/tailwind-merge/CVA；复用其焦点管理，不自己写 focus trap。组件接口：
+- [x] `npm test -- --run src/renderer/shared/components`，记录预期缺失组件失败。
+- [x] 加入实际使用的 Radix dialog/select/tabs/alert-dialog/checkbox/switch/tooltip、clsx/tailwind-merge/CVA；复用其焦点管理，不自己写 focus trap。组件接口：
 ```tsx
 <FormField label="浏览器内核" error="请选择浏览器内核" htmlFor="kernel">
   <Input id="kernel" aria-invalid aria-describedby="kernel-error" />
 </FormField>
 ```
   FormField 生成 `kernel-error` 的 alert；Dialog 支持 `busy` 拦截 Escape/outside；ResourceState 接收 loading/error/empty/retry/children；Toaster 提供 `notify({title,tone})`。实现 reduced-motion CSS 与表单四标签布局基元。
-- [ ] 运行上面测试、`npm run typecheck`、`npm run lint`；补测嵌套弹窗焦点、busy 不关闭、Toast fake timer 2600ms、字段关联。
-- [ ] 仅 stage 本任务明确文件，提交 `feat(ui): add accessible browser management primitives`。
+- [x] 运行上面测试、`npm run typecheck`、`npm run lint`；补测嵌套弹窗焦点、busy 不关闭、Toast fake timer 2600ms、字段关联。
+- [x] 仅 stage 本任务明确文件，提交 `feat(ui): add accessible browser management primitives`。
 
 ### 任务 2：配置领域与新数据库
 
 **文件：** domain/profiles 三文件、database session/models/profiles/proxy_options、Alembic 四文件（包括 `alembic.ini`）、unit validation 测试和 integration database 测试；修改 pyproject/uv.lock、bootstrap app 装配和结构说明。
 
-- [ ] 为 `ProfileSpec` 写验证测试（tests 从源码导入 model 而非复制逻辑）：
+- [x] 为 `ProfileSpec` 写验证测试（tests 从源码导入 model 而非复制逻辑）：
 ```python
 def test_public_preview_is_rejected(valid_profile_values):
     values = {**valid_profile_values, 'browser_edition': 'public', 'release_channel': 'preview'}
@@ -191,16 +193,16 @@ def test_public_preview_is_rejected(valid_profile_values):
         ProfileSpec.from_values(values)
 ```
   `tests/fixtures/profiles.py` 定义 `valid_profile_values` 的完整默认数据，明确公开版 `146.0.1`、Stable、none、about:blank、无扩展。该版本只是夹具，不作为默认产品版本。
-- [ ] `uv run --directory apps/backend pytest tests/unit/test_profile_validation.py -q`，确认缺失领域模型导致失败。
-- [ ] 实现 frozen dataclass `ProfileSpec` 和 `Profile(id,spec,fingerprint_seed,created_at,updated_at)`；port 用 Protocol，domain 不 import SQLAlchemy/FastAPI。采用 SQLAlchemy 2 + Alembic，新增 `profiles`、最小 `proxies(id,name,enabled)`、`proxy_pools(id,name)`、`kernel_settings`、`kernel_operations`；代理表此次仅用于资源查询/引用完整性。事务 API：
+- [x] `uv run --directory apps/backend pytest tests/unit/test_profile_validation.py -q`，确认缺失领域模型导致失败。
+- [x] 实现 frozen dataclass `ProfileSpec` 和 `Profile(id,spec,fingerprint_seed,created_at,updated_at)`；port 用 Protocol，domain 不 import SQLAlchemy/FastAPI。采用 SQLAlchemy 2 + Alembic，新增 `profiles`、最小 `proxies(id,name,enabled)`、`proxy_pools(id,name)`、`kernel_settings`、`kernel_operations`；代理表此次仅用于资源查询/引用完整性。事务 API：
 ```python
 with session_factory.begin() as session:
     repository = SqlAlchemyProfileRepository(session)
     repository.add(profile)
 ```
   `session.py` 导出 `migrate_database(path)` 和 `create_session_factory(path)`；AppPaths 增加 `profiles=<workspace>/profiles`、`kernels=<data_dir>/kernels` 路径，启动应用前迁移，启动失败不能发 ready。
-- [ ] 测试空库 upgrade head、连续两次迁移、重建 engine 后持久化、并发重名冲突、所有字段往返。运行 `pytest tests/integration/test_browser_database.py tests/unit/test_profile_validation.py -q`（带统一 uv 前缀）。
-- [ ] 提交 `feat(profiles): add validated profile storage`。
+- [x] 测试空库 upgrade head、连续两次迁移、重建 engine 后持久化、并发重名冲突、所有字段往返。运行 `pytest tests/integration/test_browser_database.py tests/unit/test_profile_validation.py -q`（带统一 uv 前缀）。
+- [x] 提交 `feat(profiles): add validated profile storage`。
 
 ### 任务 3：配置用例、HTTP 和安全数据删除
 
@@ -208,7 +210,7 @@ with session_factory.begin() as session:
 
 **文件：** application/profiles/service.py、http errors/profile_schemas/profiles/proxy_options、filesystem/profile_data.py、bootstrap app；tests unit/profiles、integration/profile_data、contract/conftest/profiles。
 
-- [ ] 定义 conftest `client`：真实 create_app、临时 SQLite/data_dir、token header、fake installed lookup（只含夹具内核）、无网络。定义 `profile_payload` camelCase 全字段。写 API 失败测试：
+- [x] 定义 conftest `client`：真实 create_app、临时 SQLite/data_dir、token header、fake installed lookup（只含夹具内核）、无网络。定义 `profile_payload` camelCase 全字段。写 API 失败测试：
 ```python
 def test_duplicate_keeps_settings_but_changes_seed(client, profile_payload):
     original = client.post('/api/v1/profiles', json=profile_payload).json()
@@ -218,8 +220,8 @@ def test_duplicate_keeps_settings_but_changes_seed(client, profile_payload):
     assert copied['browserVersion'] == original['browserVersion']
     assert copied['fingerprintSeed'] != original['fingerprintSeed']
 ```
-- [ ] `uv run --directory apps/backend pytest tests/contract/test_profiles.py -q`，预期路由 404。
-- [ ] 实现第 2.1 节全部端点，application 暴露 `list/get/create/update/duplicate/regenerate/remove`；数据库 IntegrityError 映射名字冲突。种子算法：
+- [x] `uv run --directory apps/backend pytest tests/contract/test_profiles.py -q`，预期路由 404。
+- [x] 实现第 2.1 节全部端点，application 暴露 `list/get/create/update/duplicate/regenerate/remove`；数据库 IntegrityError 映射名字冲突。种子算法：
 ```python
 def new_seed(previous: int | None = None) -> int:
     seed = secrets.randbelow(90000) + 10000
@@ -228,8 +230,8 @@ def new_seed(previous: int | None = None) -> int:
     return seed
 ```
   删除用例调用 `ProfileDataStore.stage/restore/purge`，严格区分 DB 提交前/后；按确定文件目录授权而非任意用户路径。实现请求验证字段错误映射，隐藏原始异常敏感信息。
-- [ ] 验证 CRUD、复制隔离、指纹变化、重名409、无内核拒绝、无效代理拒绝、204空体、删除目录占用不删DB、DB失败恢复目录、提交后清理失败可重试、路径越界。运行上述 contract/unit/integration 测试。
-- [ ] 提交 `feat(profiles): expose profile lifecycle APIs`。
+- [x] 验证 CRUD、复制隔离、指纹变化、重名409、无内核拒绝、无效代理拒绝、204空体、删除目录占用不删DB、DB失败恢复目录、提交后清理失败可重试、路径越界。运行上述 contract/unit/integration 测试。
+- [x] 提交 `feat(profiles): expose profile lifecycle APIs`。
 
 ### 任务 4：真实 CloakBrowser provider 与系统 License
 
@@ -237,7 +239,7 @@ def new_seed(previous: int | None = None) -> int:
 
 **文件：** domain/kernels 三文件、providers/kernel/cloakbrowser.py/catalog.py、infrastructure/credentials/system_store.py；tests/unit/test_kernel_provider.py；pyproject/uv.lock 变更由主代理串行应用。
 
-- [ ] fixture 从旧源码构造公开 release（含 Windows/macOS 多资产）与授权响应，测试选当前平台：
+- [x] fixture 从旧源码构造公开 release（含 Windows/macOS 多资产）与授权响应，测试选当前平台：
 ```python
 def test_catalog_ignores_other_platform_assets(github_release_payload):
     releases = parse_public_catalog(github_release_payload, platform='darwin-arm64')
@@ -245,8 +247,8 @@ def test_catalog_ignores_other_platform_assets(github_release_payload):
     assert 'darwin-arm64' in releases[0].archive
     assert releases[0].edition == 'public'
 ```
-- [ ] `uv run --directory apps/backend pytest tests/unit/test_kernel_provider.py -q`，确认缺失 parser 失败。
-- [ ] 按旧 `kernel_manager.py` 的 release 解析和 license 调用提取 provider；锁 `cloakbrowser[geoip]==0.5.9`、httpx、keyring、tzdata。当前平台匹配在 provider，支持 windows-x64/darwin-arm64/darwin-x64，不能拿 macOS 资源代替 Windows。端口：
+- [x] `uv run --directory apps/backend pytest tests/unit/test_kernel_provider.py -q`，确认缺失 parser 失败。
+- [x] 按旧 `kernel_manager.py` 的 release 解析和 license 调用提取 provider；锁 `cloakbrowser[geoip]==0.5.9`、httpx、keyring、tzdata。当前平台匹配在 provider，支持 windows-x64/darwin-arm64/darwin-x64，不能拿 macOS 资源代替 Windows。端口：
 ```python
 class CredentialStore(Protocol):
     def read(self) -> str | None: ...
@@ -254,8 +256,8 @@ class CredentialStore(Protocol):
     def delete(self) -> None: ...
 ```
   使用 `keyring.get_password/set_password/delete_password('AutoFlow','cloakbrowser-license')`，仅允许系统后端；映射锁定/不可用为结构化错误。License validation 在 worker 中隔离 wrapper 状态，校验成功才替换已存 key，失败不丢原凭据。退出使凭据失效，阻止活动授权任务中退出（409），但不删除已安装内核。
-- [ ] 测试公开/授权、free plan 解析到实际版本、过期、无 seat 信息、catalog 断网、本机已安装回退、目录扫描不把 staging 计入 installed、所有错误不泄露测试 key。
-- [ ] 提交 `feat(kernels): adapt cloakbrowser catalog and credentials`。
+- [x] 测试公开/授权、free plan 解析到实际版本、过期、无 seat 信息、catalog 断网、本机已安装回退、目录扫描不把 staging 计入 installed、所有错误不泄露测试 key。
+- [x] 提交 `feat(kernels): adapt cloakbrowser catalog and credentials`。
 
 ### 任务 5：可取消内核安装工作进程与 SSE
 
@@ -263,7 +265,7 @@ class CredentialStore(Protocol):
 
 **文件：** application/kernels/operations.py、providers/kernel/worker.py、bootstrap/kernel_worker.py、infrastructure/process/kernel_worker.py、events/kernel_events.py、adapters/events/kernels.py、__main__.py；unit/kernel_operations、integration/kernel_worker、contract/kernel_events 测试。
 
-- [ ] 用测试 worker（只往临时 staging 写文件、输出进度、等待退出，不下载外网）验证取消会停止实际工作：
+- [x] 用测试 worker（只往临时 staging 写文件、输出进度、等待退出，不下载外网）验证取消会停止实际工作：
 ```python
 async def test_cancel_does_not_publish_install(worker_manager, fake_job):
     task = await worker_manager.start(fake_job)
@@ -274,14 +276,14 @@ async def test_cancel_does_not_publish_install(worker_manager, fake_job):
     assert worker_manager.active_processes() == []
 ```
   fixtures 在 integration 文件中定义，使用临时路径和 mock worker executable，不允许生产 API 选择测试模式。
-- [ ] `uv run --directory apps/backend pytest tests/integration/test_kernel_worker.py -q`，确认未实现 supervisor 失败。
-- [ ] 实现第 2.2 节状态机、单安装锁、staging 原子发布、持久化 operation；冻结进程复用 `autoflow-backend --kernel-worker`，开发进程用 `python -m autoflow --kernel-worker`。消息 schema：
+- [x] `uv run --directory apps/backend pytest tests/integration/test_kernel_worker.py -q`，确认未实现 supervisor 失败。
+- [x] 实现第 2.2 节状态机、单安装锁、staging 原子发布、持久化 operation；冻结进程复用 `autoflow-backend --kernel-worker`，开发进程用 `python -m autoflow --kernel-worker`。消息 schema：
 ```json
 {"type":"progress","state":"downloading","progress":62}
 ```
   完成消息含经过验证的 resolvedVersion/可执行相对路径；父进程校验后发布；worker 限定输入命令 `catalog/license/download`，不允许任意 shell。取消先请求终止，3 秒后强制停止，再 wait 确认退出后清 staging。生命周期关闭也执行该路径，异常中断记录 failed。SSE 每次连接先快照，队列满则丢弃旧中间进度保留最新快照，终态不丢。
-- [ ] 验证取消竞态、重复取消、cancel-vs-complete终态、并发启动409、worker崩溃、取消不会改变已安装旧版本、sidecar退出无孤儿、SSE token/断线快照及 unknown total indeterminate。
-- [ ] 提交 `feat(kernels): supervise cancellable install operations`。
+- [x] 验证取消竞态、重复取消、cancel-vs-complete终态、并发启动409、worker崩溃、取消不会改变已安装旧版本、sidecar退出无孤儿、SSE token/断线快照及 unknown total indeterminate。
+- [x] 提交 `feat(kernels): supervise cancellable install operations`。
 
 ### 任务 6：内核 API、默认项、删除和目录能力
 
@@ -289,7 +291,7 @@ async def test_cancel_does_not_publish_install(worker_manager, fake_job):
 
 **文件：** application/kernels/service.py、database/kernel_settings.py、adapters/http/kernel_schemas.py/kernels.py、main/ipc/kernel-paths.ts、preload/index.ts、shared/api/types.ts、bootstrap/app.py；tests/contract/test_kernels.py、unit/test_kernel_service.py、IPC同名测试。
 
-- [ ] 写默认项版本冲突测试；`installed_kernel` 为 fake provider 返回的合法安装引用：
+- [x] 写默认项版本冲突测试；`installed_kernel` 为 fake provider 返回的合法安装引用：
 ```python
 def test_default_uses_revision(client, installed_kernel):
     body = {'expectedRevision': 0, 'kernel': installed_kernel}
@@ -297,15 +299,15 @@ def test_default_uses_revision(client, installed_kernel):
     stale = client.put('/api/v1/kernels/default', json=body)
     assert stale.status_code == 409
 ```
-- [ ] `uv run --directory apps/backend pytest tests/contract/test_kernels.py -q`，预期路由404。
-- [ ] 实现所有内核端点及默认 revision compare-and-swap：
+- [x] `uv run --directory apps/backend pytest tests/contract/test_kernels.py -q`，预期路由404。
+- [x] 实现所有内核端点及默认 revision compare-and-swap：
 ```sql
 UPDATE kernel_settings SET value=:value, revision=revision+1
 WHERE key='default' AND revision=:expected_revision;
 ```
   默认指向存在安装；删除冲突返回409；成功删除清默认并保留配置的原引用以便提示修复。main 接收 `revealKernel(ref)`，通过已认证 sidecar installed 查到路径并校验位于应用 kernels 根、验证 sender frame 后 `shell.showItemInFolder`；不接受任意 renderer 路径。
-- [ ] 运行内核契约、默认/删除回滚、409/404、License脱敏、invalid path/sender、公开版离线管理测试；集成 profile 用真实 InstalledKernelLookup 取代默认测试装配。执行 `npm run openapi:generate`；核对生成 schemas 和路径。
-- [ ] 提交 `feat(kernels): expose embedded kernel management APIs`。
+- [x] 运行内核契约、默认/删除回滚、409/404、License脱敏、invalid path/sender、公开版离线管理测试；集成 profile 用真实 InstalledKernelLookup 取代默认测试装配。执行 `npm run openapi:generate`；核对生成 schemas 和路径。
+- [x] 提交 `feat(kernels): expose embedded kernel management APIs`。
 
 ### 任务 7：类型化客户端、查询与流恢复
 
@@ -313,7 +315,7 @@ WHERE key='default' AND revision=:expected_revision;
 
 **文件：** shared/api/client.ts/events.ts/types.ts/generated.ts、app/ApiProvider.tsx；domains/profiles/api.ts/hooks.ts 与 domains/kernels/api.ts/hooks.ts；同目录测试。
 
-- [ ] 测试已有 client 的 204 缺陷，另测业务错误正文：
+- [x] 测试已有 client 的 204 缺陷，另测业务错误正文：
 ```ts
 it('accepts an empty delete response', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, {status: 204})))
@@ -321,14 +323,14 @@ it('accepts an empty delete response', async () => {
   await expect(api.request<void>('/profiles/id', {method: 'DELETE'})).resolves.toBeUndefined()
 })
 ```
-- [ ] `npm test -- --run src/renderer/shared/api`，确认旧 response.json 导致失败。
-- [ ] request 对204返回 undefined，非空解析error fields/code/requestId，body发 JSON 自动 Content-Type；SSE fetch 共用 token 和 AbortController。Query key 包含 instanceId 与资源名；提供固定 API：`profiles.list/create/update/remove/duplicate/regenerate`、`kernels.catalog/installed/license/connect/disconnect/default/setDefault/download/cancel/remove/checkUpdate`、`proxyOptions.list`；schema类型全部 alias生成文件。
+- [x] `npm test -- --run src/renderer/shared/api`，确认旧 response.json 导致失败。
+- [x] request 对204返回 undefined，非空解析error fields/code/requestId，body发 JSON 自动 Content-Type；SSE fetch 共用 token 和 AbortController。Query key 包含 instanceId 与资源名；提供固定 API：`profiles.list/create/update/remove/duplicate/regenerate`、`kernels.catalog/installed/license/connect/disconnect/default/setDefault/download/cancel/remove/checkUpdate`、`proxyOptions.list`；schema类型全部 alias生成文件。
 ```ts
 const mutation = useMutation({ mutationFn: profiles.create, retry: false,
   onSuccess: () => queryClient.invalidateQueries({queryKey: [instanceId, 'profiles']}) })
 ```
-- [ ] 测试204、422字段、401、超时、SSE分块拆行/CRLF/心跳、重新连接快照、旧instance事件不更新新实例、终态只通知一次、write不自动重试。
-- [ ] 提交 `feat(api): connect browser resources and kernel events`。
+- [x] 测试204、422字段、401、超时、SSE分块拆行/CRLF/心跳、重新连接快照、旧instance事件不更新新实例、终态只通知一次、write不自动重试。
+- [x] 提交 `feat(api): connect browser resources and kernel events`。
 
 ### 任务 8：配置字段与纯表单规则
 
@@ -336,7 +338,7 @@ const mutation = useMutation({ mutationFn: profiles.create, retry: false,
 
 **文件：** domains/profiles/form-schema.ts/presets.ts、components/BasicFields.tsx/EnvironmentFields.tsx/KernelProxyFields.tsx/AdvancedFields.tsx；同名测试。
 
-- [ ] 写纯规则与字段交互测试：
+- [x] 写纯规则与字段交互测试：
 ```ts
 it('requires a real installed kernel selection', () => {
   const result = profileFormSchema.safeParse({...emptyProfileForm, browserKernel: ''})
@@ -344,8 +346,8 @@ it('requires a real installed kernel selection', () => {
 })
 ```
   `emptyProfileForm` 在 form-schema.ts 导出，取第2.1节默认；`ProfileFormValues` 为 UI 值（browserKernel选择键、textarea字符串等），不重定义wire DTO。
-- [ ] `npm test -- --run src/renderer/domains/profiles`，预期schema/字段缺失失败。
-- [ ] 加 React Hook Form/Zod/resolvers，按旧 `profile-presets.ts` 提取 locale/timezone/UA/viewport选项。实现 `toForm(ProfileRead)` 与 `toWrite(ProfileFormValues): ProfileWrite`，UUID/种子不在输入；切换代理/公开版清理互斥值。
+- [x] `npm test -- --run src/renderer/domains/profiles`，预期schema/字段缺失失败。
+- [x] 加 React Hook Form/Zod/resolvers，按旧 `profile-presets.ts` 提取 locale/timezone/UA/viewport选项。实现 `toForm(ProfileRead)` 与 `toWrite(ProfileFormValues): ProfileWrite`，UUID/种子不在输入；切换代理/公开版清理互斥值。
 ```tsx
 <div className="flex gap-2">
   <Select aria-label="浏览器内核" />
@@ -353,8 +355,8 @@ it('requires a real installed kernel selection', () => {
 </div>
 ```
   实际控件使用 FormProvider/Controller 绑定；无安装和加载失败也可打开管理。高级参数提示和保留参数错误对应真实字段。
-- [ ] 测试所有字段往返、中文名称长度、网址、locale/timezone、viewport界限、UA内核预设、public切换Stable、代理模式互斥、空proxy选项、缺资源阻止保存。
-- [ ] 提交 `feat(profiles-ui): add reusable profile editor fields`。
+- [x] 测试所有字段往返、中文名称长度、网址、locale/timezone、viewport界限、UA内核预设、public切换Stable、代理模式互斥、空proxy选项、缺资源阻止保存。
+- [x] 提交 `feat(profiles-ui): add reusable profile editor fields`。
 
 ### 任务 9：新建/编辑与配置操作弹窗
 
@@ -362,7 +364,7 @@ it('requires a real installed kernel selection', () => {
 
 **文件：** ProfileFormDialog.tsx/ProfileActionDialog.tsx/UnsavedChangesDialog.tsx，同名测试；只操作测试fixture，不触碰真实用户数据。
 
-- [ ] 先测试跨标签错误聚焦和脏表单保留：
+- [x] 先测试跨标签错误聚焦和脏表单保留：
 ```tsx
 it('does not lose the draft when dismissing discard confirmation', async () => {
   const user = userEvent.setup()
@@ -374,8 +376,8 @@ it('does not lose the draft when dismissing discard confirmation', async () => {
 })
 ```
   测试 renderer 包装 ApiProvider 与 fake queries，在同文件 `renderEditor` helper 固定实例数据；示例 render 用 helper 替换默认 render 以提供上下文。
-- [ ] `npm test -- --run src/renderer/domains/profiles/components/ProfileFormDialog.test.tsx`，预期组件未实现失败。
-- [ ] 同一FormProvider实现四横向Tabs、固定底栏“取消/创建配置或保存”；API422映射字段并跳tab；`onOpenChange` 对脏数据打开确认。复制输入名称，不复制数据；删除默认focus取消，提交中busy；指纹更新走列表用例而非编辑seed。
+- [x] `npm test -- --run src/renderer/domains/profiles/components/ProfileFormDialog.test.tsx`，预期组件未实现失败。
+- [x] 同一FormProvider实现四横向Tabs、固定底栏“取消/创建配置或保存”；API422映射字段并跳tab；`onOpenChange` 对脏数据打开确认。复制输入名称，不复制数据；删除默认focus取消，提交中busy；指纹更新走列表用例而非编辑seed。
 ```tsx
 const requestClose = () => {
   if (isSubmitting) return
@@ -383,8 +385,8 @@ const requestClose = () => {
   else onOpenChange(false)
 }
 ```
-- [ ] 验证新建/编辑payload、保存中双击仅一次、409重名不丢输入、最上层Escape、删除/复制错误留弹窗、成功Toast、编辑不受默认内核变化影响。
-- [ ] 提交 `feat(profiles-ui): implement profile editing dialogs`。
+- [x] 验证新建/编辑payload、保存中双击仅一次、409重名不丢输入、最上层Escape、删除/复制错误留弹窗、成功Toast、编辑不受默认内核变化影响。
+- [x] 提交 `feat(profiles-ui): implement profile editing dialogs`。
 
 ### 任务 10：内核管理组件与表单内嵌交互
 
@@ -392,7 +394,7 @@ const requestClose = () => {
 
 **文件：** domains/kernels/components 五文件及测试；集成 ProfileFormDialog 的 onManageKernel 由主代理合并。
 
-- [ ] 用完整createTestQueryClient包装测试 LicensePanel 的互斥状态：
+- [x] 用完整createTestQueryClient包装测试 LicensePanel 的互斥状态：
 ```tsx
 it('only offers disconnect when licensed', () => {
   render(<LicensePanel status={{configured:true, valid:true, plan:'pro', expires:null, seats:null}}
@@ -401,15 +403,15 @@ it('only offers disconnect when licensed', () => {
   expect(screen.queryByRole('button', {name:'验证并登录'})).not.toBeInTheDocument()
 })
 ```
-- [ ] `npm test -- --run src/renderer/domains/kernels`，确认缺失组件失败。
-- [ ] 内核组件纯props优先，KernelManagerDialog负责hook组合；四筛选、真实release信息、installed/default、refresh、License、download/cancel/retry、reveal/delete。无百分比显示indeterminate；缺外网catalog仍显示本机项。
+- [x] `npm test -- --run src/renderer/domains/kernels`，确认缺失组件失败。
+- [x] 内核组件纯props优先，KernelManagerDialog负责hook组合；四筛选、真实release信息、installed/default、refresh、License、download/cancel/retry、reveal/delete。无百分比显示indeterminate；缺外网catalog仍显示本机项。
 ```tsx
 <KernelManagerDialog open={kernelOpen} onOpenChange={setKernelOpen}
   selectedKernel={selectedKernel} />
 ```
   表单组件始终mounted；关闭管理后 invalidate installed，不自动选择新安装；删除所选内核后表单显示原值不可用。创建时默认仅应用一次。busy禁关闭、取消终态后可返回。删除内核使用最上层AlertDialog，返回内核弹窗焦点。
-- [ ] 测试无License锁定、登录/退出失败、安装后下拉刷新、关闭不丢draft、嵌套focus、catalog降级、取消按钮真实API调用、失败重试新id、下载中禁止关闭、默认冲突刷新、删除已选内核失效提示。
-- [ ] 提交 `feat(kernels-ui): embed cloakbrowser manager in profile editor`。
+- [x] 测试无License锁定、登录/退出失败、安装后下拉刷新、关闭不丢draft、嵌套focus、catalog降级、取消按钮真实API调用、失败重试新id、下载中禁止关闭、默认冲突刷新、删除已选内核失效提示。
+- [x] 提交 `feat(kernels-ui): embed cloakbrowser manager in profile editor`。
 
 ### 任务 11：真实列表页、服务恢复与草稿替换
 
@@ -417,7 +419,7 @@ it('only offers disconnect when licensed', () => {
 
 **文件：** ProfileList.tsx、pages/BrowserManagementPage.tsx、app/App.tsx、app-state.ts、profile-workspace-nav.tsx、对应测试；验证后移除未使用 features/profiles/profile-workspace.tsx 草稿。
 
-- [ ] 写列表与断线后草稿测试，test API fixture含一个配置和相同token：
+- [x] 写列表与断线后草稿测试，test API fixture含一个配置和相同token：
 ```tsx
 it('filters profiles by name without another write request', async () => {
   const user = userEvent.setup()
@@ -428,8 +430,8 @@ it('filters profiles by name without another write request', async () => {
 })
 ```
   `renderBrowserPage/workProfile/testProfile` 在页面测试文件定义，使用生成类型的 fixture 和 ApiProvider；服务断线由 fetch mock抛错或新instance返回驱动。
-- [ ] `npm test -- --run src/renderer/domains/profiles/pages src/renderer/app`，确认页面不存在失败。
-- [ ] 页面只组合资源列表+表单+操作弹窗；字段齐全、搜索/代理模式过滤、每页10条、筛选后回第一页、删除末项回有效页。全局不暴露内核入口；服务连接状态与编辑数据分离：
+- [x] `npm test -- --run src/renderer/domains/profiles/pages src/renderer/app`，确认页面不存在失败。
+- [x] 页面只组合资源列表+表单+操作弹窗；字段齐全、搜索/代理模式过滤、每页10条、筛选后回第一页、删除末项回有效页。全局不暴露内核入口；服务连接状态与编辑数据分离：
 ```tsx
 <>
   {connection.state === 'offline' && <ServiceOfflineNotice onReconnect={reconnect} />}
@@ -437,8 +439,8 @@ it('filters profiles by name without another write request', async () => {
 </>
 ```
   `ServiceOfflineNotice` 定义在 app/App.tsx，只负责提示/按钮；页面实例不因offline被卸载。成功重新握手更新ApiProvider并invalidate查询，write不重放。分别核对旧草稿hunks后替换，不修改其他领域文件。
-- [ ] 验证真API无硬编码示例数据、全部操作、加载/空/错误/Toast、键盘完成流程、窄窗1280/最小1024不横向溢出、断线保留表单、新instance更新token；`npm run typecheck && npm test && npm run lint && npm run build`。
-- [ ] 提交 `feat(browser-management): integrate live profile workspace`。
+- [x] 验证真API无硬编码示例数据、全部操作、加载/空/错误/Toast、键盘完成流程、窄窗1280/最小1024不横向溢出、断线保留表单、新instance更新token；`npm run typecheck && npm test && npm run lint && npm run build`。
+- [x] 提交 `feat(browser-management): integrate live profile workspace`。
 
 ### 任务 12：契约、跨平台打包与验收记录
 
@@ -446,16 +448,16 @@ it('filters profiles by name without another write request', async () => {
 
 **文件：** scripts/smoke-browser-management.mjs、scripts/build-backend.mjs、ci.yml、backend/bootstrap worker打包资源、`docs/migration/browser-management-validation.md`；Python/TS测试按前述路径补齐缺口。
 
-- [ ] 在现有桌面smoke模式上创建真实sidecar测试，不增加生产fixture endpoint。pytest集成临时资源安装目录与DB，Electron E2E通过临时data_dir运行；代理fixture只由测试进程写临时DB。
+- [x] 在现有桌面smoke模式上创建真实sidecar测试，不增加生产fixture endpoint。pytest集成临时资源安装目录与DB，Electron E2E通过临时data_dir运行；代理fixture只由测试进程写临时DB。
 ```js
 assert.equal(created.browserEdition, 'public')
 assert.notEqual(duplicated.fingerprintSeed, created.fingerprintSeed)
 assert.equal((await reloadProfile(created.id)).name, updatedName)
 ```
   `created/duplicated/updatedName` 来自测试实际CRUD，`reloadProfile` 在脚本定义为带测试实例token的GET；不用固定生产端口。
-- [ ] `node scripts/smoke-browser-management.mjs`，先记录缺失场景或打包资源导致的失败，再改打包收集。
-- [ ] 把SQLAlchemy/Alembic迁移资源、keyring系统后端、tzdata、cloakbrowser动态导入和worker入口收进PyInstaller；app退出停止worker。CI继续 win2022/macOS Intel/macOS arm64现有矩阵，增加本模块测试和packaged smoke；不用在mac上模拟宣称Windows通过。
-- [ ] 执行最终验证：
+- [x] `node scripts/smoke-browser-management.mjs`，先记录缺失场景或打包资源导致的失败，再改打包收集。
+- [x] 把SQLAlchemy/Alembic迁移资源、keyring系统后端、tzdata、cloakbrowser动态导入和worker入口收进PyInstaller；app退出停止worker。CI继续 win2022/macOS Intel/macOS arm64现有矩阵，增加本模块测试和packaged smoke；不用在mac上模拟宣称Windows通过。
+- [x] 执行最终验证：
 ```bash
 uv run --directory apps/backend ruff check .
 uv run --directory apps/backend mypy src
@@ -472,7 +474,7 @@ npm run backend:build
 npm run package:dir
 ```
   CI复用现有打包可执行定位方式执行worker和desktop smoke。公开内核实际下载/安装/目录检查至少本机一次并记录平台、真实版本、产物；授权下载只在环境已有有效License时手工测试，不索要明文key，缺凭据记录“未验证”；CI provider网络测试使用固定responses，不宣称商业服务实测成功。
-- [ ] 记录各平台通过/失败/未运行、公开/授权能力证据、取消是否真正退出进程、截图对比和已知代理资源限制，提交 `test(browser-management): verify desktop lifecycle and packaging`。
+- [x] 记录各平台通过/失败/未运行、公开/授权能力证据、取消是否真正退出进程、截图对比和已知代理资源限制，提交 `test(browser-management): verify desktop lifecycle and packaging`。
 
 ## 4. 并行调度与合并
 

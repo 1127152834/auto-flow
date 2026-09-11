@@ -38,7 +38,7 @@ PyInstaller 产物已确认包含：Alembic 配置、迁移脚本、SQLAlchemy S
 | macOS 26.4.1 arm64，frozen sidecar | 真实下载取消和进程清理 | 通过 | public `142.0.7444.175`；operation `4c1f49ce-eaca-44aa-9890-e8176e3df6b7` cancelled；观察到 1 个 worker；PID 已退出、staging 已删除、health 仍为 ok |
 | macOS 26.4.1 arm64，真实 Electron + CUA | 页面、四标签表单、嵌套焦点/草稿、真实内核选择、reload、Finder reveal、License nowrap | 通过 | [人工验收记录](../../.ai/sessions/2026-09-12-browser-management-ui-validation.md)；[列表](browser-management-screenshots/profiles.png)、[环境表单](browser-management-screenshots/profile-environment.png)、[内核管理](browser-management-screenshots/kernel-manager.png) |
 
-真实下载证据来自隔离目录 `/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-kernel-9lctnbha` 中的 `validation-evidence.json`、`cancellation-evidence.json` 和 `timezone-before-evidence.json`。没有重复下载公开内核。
+真实下载 JSON 已原样[归档](browser-management-evidence/README.md)，原始证据来自隔离目录 `/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-kernel-9lctnbha` 中的 `validation-evidence.json`、`cancellation-evidence.json` 和 `timezone-before-evidence.json`。没有重复下载公开内核。
 
 ## 平台与能力矩阵
 
@@ -75,7 +75,7 @@ CI 保留 `windows-2022`、`macos-15-intel` 和 `macos-15` 三个平台，并新
 
 已观察的非阻塞输出：pytest 保留 2 条 Starlette/httpx、anyio 上游弃用；前端构建保留第三方 zod 注释提示；有界排空 SSE 时 Uvicorn 会输出 `timeout graceful shutdown exceeded` 与 `CancelledError` 的 ERROR 日志。后者发生在取消长连接阶段，随后进程正常 code 0 退出（host HTTP 路径），活动 worker 清理断言通过，不能把输出描述为完全干净。本轮没有广泛过滤告警、升级依赖或隐去退出日志。PyInstaller 的可选数据库 hidden-import 提示及目录包默认图标、未签名状态也保持如实披露。
 
-本机范围仍为 macOS arm64；macOS Intel、Windows 新 CI、真实 License、签名发行安装器仍未验证。此前公开版下载/取消证据未重跑也未改写。本轮修复完成后由协调者进行一次定向独立复审。
+本机范围仍为 macOS arm64；macOS Intel、Windows 新 CI、真实 License、签名发行安装器仍未验证。此前公开版下载/取消证据未重跑也未改写。本轮修复完成后已通过一次定向独立复审（生产修复 `3df5609`）。复审额外实测 2 个忽略 TERM 的 RPC worker 与 1 个下载 worker 同时运行、SSE 保持打开：7.382 秒后 code 0 退出，3 个 PID 消失，RPC cache/staging 清理，任务 cancelled。关闭期间未完成 RPC 可返回 500；这是明确关闭后的取消现象，未作为正常运行期通过证据。详见 [审查归档](../../.ai/sessions/browser-management-review/README.md)。
 
 ## 未完成与限制
 
