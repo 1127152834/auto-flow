@@ -82,16 +82,16 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
             <thead className="bg-surface-subtle text-xs text-muted">
               <tr>
-                {['代理名称', '远程状态', '本地健康', '运营商', '城市', '出口 IP', '延迟', '关联配置', '操作'].map((label) => <th className="px-4 py-3 font-medium" scope="col" key={label}>{label}</th>)}
+                {['代理名称', '远程状态', '本地健康', '运营商', '城市', '出口 IP', '延迟', '关联配置', '操作'].map((label) => <th className="whitespace-nowrap px-4 py-3 font-medium" scope="col" key={label}>{label}</th>)}
               </tr>
             </thead>
             <tbody>
               {page.items.map((proxy) => (
                 <tr className="border-t border-line hover:bg-surface-hover" key={proxy.id}>
-                  <td className="px-4 py-3 font-medium text-ink">
+                  <td className="min-w-48 max-w-xs break-words px-4 py-3 font-medium text-ink">
                     <div className="flex flex-wrap items-center gap-2">
                       <span>{proxy.name_override || proxy.name}</span>
                       {proxy.stale ? <StatusPill tone="warning">待同步</StatusPill> : null}
@@ -99,15 +99,15 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
                   </td>
                   <td className="px-4 py-3"><StatusPill tone={proxy.remote_missing ? 'danger' : 'neutral'}>{proxy.remote_missing ? '远端缺失' : proxy.remote_status || '未知'}</StatusPill></td>
                   <td className="px-4 py-3"><HealthPill health={proxy.health} /></td>
-                  <td className="px-4 py-3 text-muted">{proxy.carrier || '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted">{proxy.carrier || '—'}</td>
                   <td className="px-4 py-3 text-muted">{[proxy.city, proxy.region].filter(Boolean).join(', ') || '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted">{proxy.exit_ip || proxy.health.exit_ip || '—'}</td>
-                  <td className="px-4 py-3 text-muted">{proxy.health.latency_ms == null ? '—' : `${Math.round(proxy.health.latency_ms)} ms`}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{proxy.exit_ip || proxy.health.exit_ip || '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-muted">{proxy.health.latency_ms == null ? '—' : `${Math.round(proxy.health.latency_ms)} ms`}</td>
                   <td className="px-4 py-3 text-muted">{proxy.reference_count}</td>
-                  <td className="px-4 py-3">
+                  <td className="w-40 whitespace-nowrap px-4 py-3">
                     <div className="flex gap-1">
-                      <Button className="h-8 px-3" variant="ghost" onClick={() => onOpen(proxy)}>详情</Button>
-                      <Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}>
+                      <Button className="h-8 shrink-0 whitespace-nowrap px-3" variant="ghost" onClick={() => onOpen(proxy)}>详情</Button>
+                      <Button className="h-8 shrink-0 whitespace-nowrap px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}>
                         <Pulse className={checkingId === proxy.id ? 'animate-pulse' : ''} />检测
                       </Button>
                     </div>

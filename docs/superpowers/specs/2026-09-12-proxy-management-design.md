@@ -2,8 +2,8 @@
 
 - 日期：2026-09-12
 - 版本：1.1
-- 状态：proposed；原型风格已认可，本方案与实施计划尚待明确实施指令
-- 本轮产出：设计、接口开发资料、实施任务；不编写业务代码
+- 状态：confirmed；2026-09-12 用户明确批准“开始实施”，要求与浏览器管理并行隔离
+- 执行记录：[代理模块实施状态与合并指引](../../migration/proxy-management-status.md)
 - 范围：代理管理一个模块，绑定 ProxyPanel，支持 Windows x64、macOS arm64/x64
 - 依据：[系统架构](../../architecture/README.md)、[目录基准](../../PROJECT_STRUCTURE.md)、[API 契约](../../references/proxypanel-api-contract.md)、[原型交互](../../prototype/proxy-management/proxy-management-interactions.md)
 
@@ -138,7 +138,7 @@ Dialog/Drawer 150ms 淡入、位移最多 8px；Toast 150ms 淡入、2.6s 后淡
 | application/proxies/ | 连接同步、健康探测、Provider 命令、本地组与浏览器解析用例 |
 | providers/proxy/ | ProxyPanel HTTP/响应转换和数据面探针；不是插件市场 |
 | infrastructure/database/ | 现有代理/组表迁移、连接/成员/操作记录、事务与引用查询 |
-| infrastructure/credentials/ | Windows 系统凭据库与 macOS Keychain 实现；当前尚未实现 |
+| infrastructure/credentials/ | Windows 系统凭据库与 macOS Keychain 适配；已在代理分支实现，平台实际验收见实施状态 |
 | adapters/http/proxies.py | 请求响应校验、错误与用例映射 |
 | tests/{unit,integration,contract,fixtures}/ | 规则、真实 SQLite、HTTP 与真实/人工样本分别验证 |
 

@@ -37,7 +37,7 @@
 
 行为：
 
-- API Key 首次输入/替换短暂存在 renderer 表单内存，提交/关闭后清空；CredentialStore 是待实现的系统凭据存储，SQLite 只记录 secret_ref/has_secret；
+- API Key 首次输入/替换短暂存在 renderer 表单内存，提交/关闭后清空；CredentialStore 使用系统凭据存储（代理独立分支已实现），SQLite 只记录 secret_ref/has_secret；
 - 验证按钮不能用换 IP 作为验证，因为换 IP 是有副作用且受频率限制；
 - 优先调用无副作用的认证/状态接口；
 - 验证成功后拉取代理列表和地点目录；

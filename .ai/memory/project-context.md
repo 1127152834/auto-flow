@@ -7,3 +7,4 @@
 - 前端视觉方向：已选择第三个原型，暖灰画布、黏土棕强调色、分栏工作台。
 - 前端技术约束：React、shadcn/ui、Tailwind CSS，组件先于页面。
 - 协作要求：先规格和实施计划，经确认后再开始功能实现；前后端按垂直功能切片一起开发。
+- 2026-09-12（confirmed，来源：用户明确实施指令）：代理模块已获准按计划实施，使用独立 `codex/proxy-management` 工作区，与另一 agent 的浏览器管理开发隔离；公共入口由浏览器主线串行整合。详见 `docs/migration/proxy-management-status.md`。

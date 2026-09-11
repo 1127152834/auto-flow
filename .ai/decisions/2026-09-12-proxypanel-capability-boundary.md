@@ -1,7 +1,7 @@
 # ProxyPanel 能力边界与到期指标
 
 - 日期：2026-09-12
-- 状态：proposed（强绑定 ProxyPanel/本地组方向已确认；具体实施边界待批准）
+- 状态：confirmed；2026-09-12 用户批准实施，缺少真实返回样本的能力边界继续有效
 - 来源：ProxyPanel 官方首页、已登录 Developers/Documentation 页面、旧项目代理源码和规格审查。
 
 ## 决定
@@ -10,7 +10,7 @@ AutoFlow 只把 ProxyPanel 远程代理投影到本地，并维护独立的本�
 
 “即将到期”不是可推导指标。只有响应明确提供 `expires_at`/订阅截止时间、字段语义经过 fixture 验证时才渲染；否则隐藏或显示“到期信息不可用”。余额、套餐和自动续费不能推导到期日。
 
-API Key 首次录入/替换会短暂经过 renderer 表单，提交/关闭后清空。持久化使用待实现的 CredentialStore；数据面 password 不返回 renderer。复制由受限 Electron main IPC 完成，main 经独立 host token 取密后写入剪贴板，仅返回 copied。此前“Key 永不进入 renderer、Python 直接复制”的表述为 superseded。
+API Key 首次录入/替换会短暂经过 renderer 表单，提交/关闭后清空。持久化使用原生 macOS/Windows CredentialStore；数据面 password 不返回 renderer。复制由受限 Electron main IPC 完成，main 经独立 host token 取密后写入剪贴板，仅返回 copied。此前“Key 永不进入 renderer、Python 直接复制”的表述为 superseded。原生存储和主进程复制已在隔离环境完成单元/契约验证，跨平台打包验收仍须 CI。
 
 ## 取舍
 

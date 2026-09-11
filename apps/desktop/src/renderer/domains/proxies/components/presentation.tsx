@@ -17,7 +17,7 @@ export function StatusPill({ tone = 'neutral', children }: {
     danger: 'bg-red-50 text-red-700',
     neutral: 'bg-surface-subtle text-muted',
   }
-  return <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${colors[tone]}`}>{children}</span>
+  return <span className={`inline-flex w-fit shrink-0 items-center whitespace-nowrap gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${colors[tone]}`}>{children}</span>
 }
 
 export function HealthPill({ health }: { health: HealthSnapshot }) {
