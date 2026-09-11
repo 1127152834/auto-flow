@@ -2,7 +2,7 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 
@@ -20,6 +20,15 @@ def migrate_database(path: Path) -> None:
 
 def create_session_factory(path: Path):
     engine = create_engine(_url(path), future=True)
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection, _record):
+        cursor = connection.cursor()
+        try:
+            cursor.execute("PRAGMA foreign_keys=ON")
+        finally:
+            cursor.close()
+
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     factory.dispose = engine.dispose  # type: ignore[attr-defined]
     return factory
