@@ -1,0 +1,243 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { notify } from '../../../shared/components/Toaster'
+import {
+  errorDetail,
+  errorMessage,
+  type ActionResult,
+  type ConnectionView,
+  type GroupDraft,
+  type GroupPage,
+  type GroupView,
+  type ProxyApi,
+  type ProxyFilters,
+  type ProxyPage,
+  type ProxyReferences,
+  type ProxyView,
+} from '../api'
+
+const emptyProxies: ProxyPage = { items: [], offset: 0, limit: 50, matched_count: 0 }
+const emptyGroups: GroupPage = { items: [], offset: 0, limit: 100, matched_count: 0 }
+
+function actionError(result: ActionResult): Error {
+  const error = new Error(result.error?.message ?? '操作失败') as Error & { error?: ActionResult['error'] }
+  if (result.error) error.error = result.error
+  return error
+}
+
+async function waitForAction(result: ActionResult): Promise<void> {
+  if (result.status === 'completed') return
+  if (result.status === 'failed' || !result.operation_id) throw actionError(result)
+  throw new Error('操作已受理，结果尚未确认，请稍后刷新')
+}
+
+export function useProxyManagement(api: ProxyApi) {
+  const [connection, setConnection] = useState<ConnectionView | null>(null)
+  const [proxies, setProxies] = useState<ProxyPage>(emptyProxies)
+  const [groups, setGroups] = useState<GroupPage>(emptyGroups)
+  const [groupCandidates, setGroupCandidates] = useState<ProxyView[]>([])
+  const [filters, setFilters] = useState<ProxyFilters>({ limit: 50 })
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string>()
+  const [syncing, setSyncing] = useState(false)
+  const [checkingId, setCheckingId] = useState<string>()
+  const [connectionBusy, setConnectionBusy] = useState(false)
+  const [connectionError, setConnectionError] = useState<string>()
+  const [selectedProxy, setSelectedProxy] = useState<ProxyView | null>(null)
+  const [references, setReferences] = useState<ProxyReferences>()
+  const [groupBusy, setGroupBusy] = useState(false)
+  const [groupError, setGroupError] = useState<string>()
+  const [groupRiskRequired, setGroupRiskRequired] = useState(false)
+  const filterRequest = useRef(0)
+
+  const loadBase = useCallback(async () => {
+    setLoading(true)
+    setLoadError(undefined)
+    try {
+      const [nextConnection, nextGroups] = await Promise.all([api.getConnection(), api.listGroups()])
+      setConnection(nextConnection)
+      setGroups(nextGroups)
+      if (!nextConnection) {
+        setProxies(emptyProxies)
+        setGroupCandidates([])
+      } else {
+        setGroupCandidates(await api.listAllProxies())
+      }
+    } catch (error) {
+      setLoadError(errorMessage(error))
+    } finally {
+      setLoading(false)
+    }
+  }, [api])
+
+  useEffect(() => { void loadBase() }, [loadBase])
+
+  useEffect(() => {
+    if (!connection) return
+    const request = ++filterRequest.current
+    const timeout = window.setTimeout(() => {
+      void api.listProxies(filters).then((page) => {
+        if (request === filterRequest.current) setProxies(page)
+      }).catch((error) => {
+        if (request === filterRequest.current) setLoadError(errorMessage(error))
+      })
+    }, filters.q ? 200 : 0)
+    return () => window.clearTimeout(timeout)
+  }, [api, connection, filters])
+
+  const reload = useCallback(async () => {
+    await loadBase()
+  }, [loadBase])
+
+  const saveConnection = useCallback(async (name: string, apiKey: string) => {
+    setConnectionBusy(true)
+    setConnectionError(undefined)
+    try {
+      const keyChanged = !connection || Boolean(apiKey.trim())
+      let next = connection
+        ? keyChanged ? await api.replaceApiKey(connection, apiKey) : connection
+        : await api.createConnection(name, apiKey)
+      if (next.name !== name) next = await api.updateConnection(next, name)
+      setConnection(next)
+      if (keyChanged) await waitForAction(await api.sync(next.id))
+      await loadBase()
+      notify({ title: keyChanged ? 'ProxyPanel 已连接并同步' : '连接名称已更新', tone: 'success' })
+    } catch (error) {
+      setConnectionError(errorMessage(error))
+      throw error
+    } finally {
+      setConnectionBusy(false)
+    }
+  }, [api, connection, loadBase])
+
+  const disconnect = useCallback(async () => {
+    if (!connection) return
+    try {
+      await api.disconnect(connection.id)
+      setConnection(null)
+      setProxies(emptyProxies)
+      setGroupCandidates([])
+      notify({ title: '已断开 ProxyPanel', tone: 'success' })
+    } catch (error) {
+      setLoadError(errorMessage(error))
+      notify({ title: errorMessage(error), tone: 'error' })
+    }
+  }, [api, connection])
+
+  const sync = useCallback(async () => {
+    if (!connection || syncing) return
+    setSyncing(true)
+    try {
+      await waitForAction(await api.sync(connection.id))
+      const [nextConnection, nextProxies] = await Promise.all([api.getConnection(), api.listProxies(filters)])
+      setConnection(nextConnection)
+      setProxies(nextProxies)
+      notify({ title: '代理已同步', tone: 'success' })
+    } catch (error) {
+      setLoadError(errorMessage(error))
+      notify({ title: errorMessage(error), tone: 'error' })
+    } finally {
+      setSyncing(false)
+    }
+  }, [api, connection, filters, syncing])
+
+  const probe = useCallback(async (proxy: ProxyView) => {
+    if (checkingId) return
+    setCheckingId(proxy.id)
+    try {
+      await waitForAction(await api.probeProxy(proxy.id))
+      const refreshed = await api.getProxy(proxy.id)
+      setProxies((current) => ({ ...current, items: current.items.map((item) => item.id === refreshed.id ? refreshed : item) }))
+      if (selectedProxy?.id === refreshed.id) setSelectedProxy(refreshed)
+      notify({ title: refreshed.health.state === 'healthy' ? '代理连接正常' : '代理检测完成', tone: refreshed.health.state === 'healthy' ? 'success' : 'info' })
+    } catch (error) {
+      notify({ title: errorMessage(error), tone: 'error' })
+    } finally {
+      setCheckingId(undefined)
+    }
+  }, [api, checkingId, selectedProxy?.id])
+
+  const openProxy = useCallback((proxy: ProxyView) => {
+    setSelectedProxy(proxy)
+    setReferences(undefined)
+    void Promise.all([api.getProxy(proxy.id), api.getProxyReferences(proxy.id)])
+      .then(([detail, nextReferences]) => {
+        setSelectedProxy(detail)
+        setReferences(nextReferences)
+      })
+      .catch((error) => notify({ title: errorMessage(error), tone: 'error' }))
+  }, [api])
+
+  const saveGroup = useCallback(async (group: GroupView | null, draft: GroupDraft, acknowledgeRisk: boolean) => {
+    setGroupBusy(true)
+    setGroupError(undefined)
+    setGroupRiskRequired(false)
+    try {
+      const saved = group
+        ? await api.updateGroup(group, draft, acknowledgeRisk)
+        : await api.createGroup(draft, acknowledgeRisk)
+      setGroups((current) => {
+        const exists = current.items.some((item) => item.id === saved.id)
+        const items = exists ? current.items.map((item) => item.id === saved.id ? saved : item) : [...current.items, saved]
+        return { ...current, items, matched_count: current.matched_count + (exists ? 0 : 1) }
+      })
+      notify({ title: '本地代理组已保存', tone: 'success' })
+    } catch (error) {
+      const detail = errorDetail(error)
+      setGroupError(errorMessage(error))
+      setGroupRiskRequired(detail?.code === 'PROXY_MEMBER_RISK_CONFIRMATION_REQUIRED')
+      throw error
+    } finally {
+      setGroupBusy(false)
+    }
+  }, [api])
+
+  const deleteGroup = useCallback(async (group: GroupView) => {
+    try {
+      await api.deleteGroup(group.id)
+      setGroups((current) => ({ ...current, items: current.items.filter((item) => item.id !== group.id), matched_count: Math.max(0, current.matched_count - 1) }))
+      notify({ title: '本地代理组已删除', tone: 'success' })
+    } catch (error) {
+      if (errorDetail(error)?.code === 'PROXY_GROUP_IN_USE') {
+        try {
+          const references = await api.getGroupReferences(group.id)
+          const names = (references.profiles ?? []).map((item) => item.name).join('、')
+          setLoadError(names ? `无法删除“${group.name}”，以下浏览器配置仍在引用：${names}` : errorMessage(error))
+        } catch {
+          setLoadError(errorMessage(error))
+        }
+      }
+      notify({ title: errorMessage(error), tone: 'error' })
+    }
+  }, [api])
+
+  return {
+    connection,
+    proxies,
+    groups,
+    groupCandidates,
+    filters,
+    loading,
+    loadError,
+    syncing,
+    checkingId,
+    connectionBusy,
+    connectionError,
+    selectedProxy,
+    references,
+    groupBusy,
+    groupError,
+    groupRiskRequired,
+    setFilters,
+    setConnectionError,
+    setSelectedProxy,
+    setGroupError,
+    reload,
+    saveConnection,
+    disconnect,
+    sync,
+    probe,
+    openProxy,
+    saveGroup,
+    deleteGroup,
+  }
+}
