@@ -51,8 +51,11 @@ const fieldTabs: Record<keyof ProfileFormValues, Tab> = {
 }
 const fieldOrder = Object.keys(fieldTabs) as Array<keyof ProfileFormValues>
 const wireFields: Record<string, keyof ProfileFormValues> = {
-  browserVersion: 'browserKernel', browserEdition: 'browserKernel', viewportJson: 'viewportWidth',
+  browserVersion: 'browserKernel', browserEdition: 'browserKernel', viewportJson: 'viewportMode',
   extensionPathsJson: 'extensionPathsText', expertArgsJson: 'expertArgsText',
+}
+const focusSelectors: Partial<Record<keyof ProfileFormValues, string>> = {
+  viewportMode: '[data-profile-viewport-focus]',
 }
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : '保存失败，请重试'
@@ -104,7 +107,8 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
   useEffect(() => {
     if (!pendingFocus) return
     const frame = window.requestAnimationFrame(() => {
-      document.querySelector<HTMLElement>(`.autoflow-dialog-content [name="${pendingFocus}"]`)?.focus()
+      const selector = focusSelectors[pendingFocus] ?? `[name="${pendingFocus}"]`
+      document.querySelector<HTMLElement>(`.autoflow-dialog-content ${selector}`)?.focus()
       setPendingFocus(null)
     })
     return () => window.cancelAnimationFrame(frame)

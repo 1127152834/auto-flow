@@ -102,6 +102,24 @@ it('maps a 422 field error to its tab and keeps the draft', async () => {
   expect(screen.getByLabelText('名称')).toHaveValue('工作环境')
 })
 
+it.each([
+  ['跟随浏览器', null],
+  ['预设', { width: 1280, height: 800 }],
+  ['自定义', { width: 1234, height: 777 }],
+])('shows and focuses a viewportJson 422 error in %s mode', async (_mode, viewportJson) => {
+  const user = userEvent.setup()
+  renderEditor({
+    initialProfile: { ...profile, viewportJson },
+    write: () => json({ error: {
+      code: 'VALIDATION_ERROR', message: '字段无效', details: { fields: { viewportJson: '视口不可用' } }, requestId: 'request-viewport',
+    } }, 422),
+  })
+  await user.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(screen.getByRole('tab', { name: '浏览器环境' })).toHaveAttribute('data-state', 'active'))
+  expect(await screen.findByText('视口不可用')).toBeVisible()
+  expect(screen.getByLabelText(_mode === '自定义' ? '视口宽' : '视口预设')).toHaveFocus()
+})
+
 it('applies the default once for create and passes the selected kernel with its trigger', async () => {
   const user = userEvent.setup()
   const { onManageKernel } = renderEditor()

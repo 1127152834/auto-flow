@@ -16,7 +16,7 @@ import {
 } from '../presets'
 
 export function EnvironmentFields() {
-  const { control, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
+  const { clearErrors, control, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
   const localeList = useId()
   const timezoneList = useId()
   const userAgentList = useId()
@@ -28,6 +28,7 @@ export function EnvironmentFields() {
   const userAgentPresets = buildChromiumUserAgentPresets(parseKernelKey(browserKernel)?.version ?? '')
 
   const selectViewport = (value: string) => {
+    clearErrors('viewportMode')
     if (!value) {
       setValue('viewportMode', 'browser', { shouldDirty: true, shouldValidate: true })
       return
@@ -57,6 +58,7 @@ export function EnvironmentFields() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><span className="text-sm font-medium text-ink">浏览器视口</span><p className="mb-0 mt-1 text-xs text-muted">宽 320–7680、高 240–4320 像素。</p></div>
         <label className="flex items-center gap-2 text-sm text-ink">自定义尺寸<Switch aria-label="自定义尺寸" checked={customViewport} onCheckedChange={(checked) => {
+          clearErrors('viewportMode')
           if (checked) {
             if (!viewportWidth || !viewportHeight) {
               const [width = '1280', height = '800'] = VIEWPORT_PRESETS[0]!.value.split('x')
@@ -72,17 +74,18 @@ export function EnvironmentFields() {
         }} /></label>
       </div>
       {customViewport ? <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
-        <FormField label="视口宽" htmlFor="profile-viewport-width" error={errors.viewportWidth?.message}>
-          <Controller control={control} name="viewportWidth" render={({ field }) => <Input {...field} id="profile-viewport-width" inputMode="numeric" aria-invalid={Boolean(errors.viewportWidth)} aria-describedby={errors.viewportWidth ? 'profile-viewport-width-error' : undefined} />} />
+        <FormField label="视口宽" htmlFor="profile-viewport-width" error={errors.viewportWidth?.message ?? errors.viewportMode?.message}>
+          <Controller control={control} name="viewportWidth" render={({ field }) => <Input {...field} data-profile-viewport-focus id="profile-viewport-width" inputMode="numeric" aria-invalid={Boolean(errors.viewportWidth || errors.viewportMode)} aria-describedby={errors.viewportWidth || errors.viewportMode ? 'profile-viewport-width-error' : undefined} />} />
         </FormField>
         <span className="mt-9 text-muted" aria-hidden="true">×</span>
         <FormField label="视口高" htmlFor="profile-viewport-height" error={errors.viewportHeight?.message}>
           <Controller control={control} name="viewportHeight" render={({ field }) => <Input {...field} id="profile-viewport-height" inputMode="numeric" aria-invalid={Boolean(errors.viewportHeight)} aria-describedby={errors.viewportHeight ? 'profile-viewport-height-error' : undefined} />} />
         </FormField>
-      </div> : <Select aria-label="视口预设" value={viewportMode === 'browser' ? '' : viewportPreset || VIEWPORT_PRESETS[0]!.value} onChange={(event) => selectViewport(event.target.value)} className="w-full">
+      </div> : <Select data-profile-viewport-focus aria-label="视口预设" aria-invalid={Boolean(errors.viewportMode)} aria-describedby={errors.viewportMode ? 'profile-viewport-error' : undefined} value={viewportMode === 'browser' ? '' : viewportPreset || VIEWPORT_PRESETS[0]!.value} onChange={(event) => selectViewport(event.target.value)} className="w-full">
         <option value="">跟随浏览器（未指定）</option>
         {VIEWPORT_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}
       </Select>}
+      {!customViewport && errors.viewportMode?.message ? <p id="profile-viewport-error" role="alert" className="m-0 text-xs text-clay">{errors.viewportMode.message}</p> : null}
     </div>
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField label="色彩模式" htmlFor="profile-color-scheme" hint="留空时跟随系统偏好。">
