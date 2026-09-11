@@ -1,26 +1,64 @@
+from functools import partial
 from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.profiles import profiles_router
+from autoflow.adapters.http.proxy_options import proxy_options_router
+from autoflow.application.profiles.service import ProfileService
 from autoflow.bootstrap.config import Settings
-from autoflow.infrastructure.database.session import migrate_database
+from autoflow.domain.profiles.ports import InstalledKernelLookup, ProfileDataStore
+from autoflow.infrastructure.database.profiles import profile_repository_transaction
+from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
 from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.infrastructure.filesystem.profile_data import FilesystemProfileDataStore
 
 
-def create_app(settings: Settings) -> FastAPI:
+class _NoInstalledKernels:
+    def is_installed(self, edition: str, version: str) -> bool:
+        return False
+
+
+def create_app(
+    settings: Settings,
+    *,
+    installed_kernel_lookup: InstalledKernelLookup | None = None,
+    profile_data_store: ProfileDataStore | None = None,
+) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
+    session_factory = create_session_factory(paths.database)
+    proxy_options = SqlAlchemyProxyOptions(session_factory)
+    data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
+    data_store.retry_pending()
+    profile_service = ProfileService(
+        partial(profile_repository_transaction, session_factory),
+        installed_kernel_lookup or _NoInstalledKernels(),
+        proxy_options,
+        data_store,
+    )
 
     app = FastAPI()
     configure_openapi(app, api_version=settings.api_version)
+    install_error_handlers(app)
     app.state.paths = paths
+    app.state.session_factory = session_factory
+    app.state.profile_service = profile_service
+    app.router.add_event_handler("shutdown", session_factory.dispose)
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
+    app.include_router(profiles_router(profile_service))
+    app.include_router(proxy_options_router(proxy_options))
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
