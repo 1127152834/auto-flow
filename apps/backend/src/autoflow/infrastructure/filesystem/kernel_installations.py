@@ -6,16 +6,22 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from autoflow.domain.kernels.errors import KernelBusy, KernelNotFound, KernelPathInvalid
+from autoflow.domain.kernels.errors import (
+    KernelBusy,
+    KernelNotFound,
+    KernelPathInvalid,
+    LicenseInUse,
+)
 from autoflow.domain.kernels.models import KernelRef
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
+from autoflow.providers.kernel.catalog import current_platform_tag, executable_path
 
 logger = logging.getLogger(__name__)
 _TOKEN = re.compile(r"[0-9a-f]{32}-chromium-[0-9]+(?:\.[0-9]+){3,4}(?:-pro)?")
 
 
 class FilesystemKernelInstallationStore:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, *, platform: str | None = None) -> None:
         absolute = Path(root).absolute()
         if absolute.is_symlink():
             raise KernelPathInvalid()
@@ -25,6 +31,7 @@ class FilesystemKernelInstallationStore:
         if self.trash.is_symlink():
             raise KernelPathInvalid()
         self.trash.mkdir(exist_ok=True)
+        self.platform = platform or current_platform_tag()
 
     @contextmanager
     def guard(self) -> Iterator[None]:
@@ -35,6 +42,19 @@ class FilesystemKernelInstallationStore:
                 raise KernelBusy()
         except OSError:
             raise KernelBusy() from None
+        try:
+            yield
+        finally:
+            lock.release()
+
+    @contextmanager
+    def license_guard(self) -> Iterator[None]:
+        lock = ExclusiveFileLock(self.root / ".license.lock")
+        try:
+            if not lock.acquire():
+                raise LicenseInUse()
+        except OSError:
+            raise LicenseInUse() from None
         try:
             yield
         finally:
@@ -77,7 +97,7 @@ class FilesystemKernelInstallationStore:
                 logger.warning("kernel recovery conflict preserved for token=%s", item.name)
                 continue
             try:
-                self._validate_tree(item)
+                self._validate_install(item)
                 item.rename(target)
             except (OSError, KernelPathInvalid):
                 logger.warning("kernel recovery remains pending for token=%s", item.name)
@@ -115,3 +135,8 @@ class FilesystemKernelInstallationStore:
                     item.resolve().relative_to(resolved_root)
         except (OSError, ValueError):
             raise KernelPathInvalid() from None
+
+    def _validate_install(self, root: Path) -> None:
+        self._validate_tree(root)
+        if not executable_path(root, self.platform).is_file():
+            raise KernelPathInvalid()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from autoflow.domain.kernels.errors import (
     KernelDefaultConflict,
     KernelNotFound,
     KernelPathInvalid,
+    LicenseInUse,
+    LicenseInvalid,
 )
 from autoflow.domain.kernels.models import (
     DefaultKernel,
@@ -88,6 +91,10 @@ class Installations:
 
     @contextmanager
     def guard(self):
+        yield
+
+    @contextmanager
+    def license_guard(self):
         yield
 
     def stage(self, kernel: KernelRef) -> str:
@@ -171,7 +178,7 @@ def test_startup_recovery_restores_an_orphaned_staged_deletion(tmp_path: Path) -
     assert not install.exists()
     assert (root / ".trash" / token).exists()
 
-    recovered = FilesystemKernelInstallationStore(root)
+    recovered = FilesystemKernelInstallationStore(root, platform="windows-x64")
     with recovered.guard():
         recovered.retry_pending()
 
@@ -204,3 +211,119 @@ def test_default_and_delete_guard_conflict_with_an_active_install(tmp_path: Path
             pass
     finally:
         install_lock.release()
+
+
+def test_startup_does_not_restore_partially_purged_install(tmp_path: Path) -> None:
+    root = tmp_path / "kernels"
+    trash = root / ".trash"
+    token = "0" * 32 + "-chromium-146.0.7680.80"
+    partial = trash / token
+    partial.mkdir(parents=True)
+    (partial / "resources.pak").write_bytes(b"partial")
+    store = FilesystemKernelInstallationStore(root, platform="windows-x64")
+
+    with store.guard():
+        store.retry_pending()
+
+    assert partial.is_dir()
+    assert not (root / "chromium-146.0.7680.80").exists()
+
+
+class MemoryLicenseStore:
+    def __init__(self, key: str | None) -> None:
+        self.key = key
+
+    def read(self) -> str | None:
+        return self.key
+
+    def write(self, value: str) -> None:
+        self.key = value
+
+    def delete(self) -> None:
+        self.key = None
+
+
+class DeletingLicense(License):
+    def __init__(self, store: MemoryLicenseStore) -> None:
+        self.store = store
+
+    def disconnect(self, *, has_active_licensed_operation: bool) -> None:
+        if has_active_licensed_operation:
+            raise LicenseInUse()
+        self.store.delete()
+
+
+class PausingOperations(Operations):
+    def __init__(self) -> None:
+        self.entered = asyncio.Event()
+        self.release = asyncio.Event()
+        self.started_job = None
+
+    async def start(self, job):
+        self.entered.set()
+        await self.release.wait()
+        self.started_job = job
+        return KernelOperation.new(
+            operation_id="operation-1",
+            edition=job.edition,
+            requested_version=job.requested_version,
+            release_channel=job.release_channel,
+        )
+
+
+@pytest.mark.asyncio
+async def test_license_disconnect_cannot_pass_while_download_is_registering(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "kernels"
+    credentials = MemoryLicenseStore("old-license")
+    operations = PausingOperations()
+    catalog = Catalog([])
+    downloader = KernelService(
+        catalog,
+        DeletingLicense(credentials),
+        credentials,
+        Defaults(),
+        FilesystemKernelInstallationStore(root, platform="windows-x64"),
+        operations,
+    )
+    disconnector = KernelService(
+        catalog,
+        DeletingLicense(credentials),
+        credentials,
+        Defaults(),
+        FilesystemKernelInstallationStore(root, platform="windows-x64"),
+        Operations(),
+    )
+    download = asyncio.create_task(
+        downloader.download("licensed", "151.0.7922.108", "stable")
+    )
+    await operations.entered.wait()
+
+    with pytest.raises(LicenseInUse):
+        disconnector.disconnect_license()
+
+    operations.release.set()
+    await download
+    assert operations.started_job.license_key == "old-license"
+    assert credentials.key == "old-license"
+
+
+@pytest.mark.asyncio
+async def test_download_cannot_use_deleted_license_when_disconnect_wins(
+    tmp_path: Path,
+) -> None:
+    credentials = MemoryLicenseStore("old-license")
+    subject = KernelService(
+        Catalog([]),
+        DeletingLicense(credentials),
+        credentials,
+        Defaults(),
+        FilesystemKernelInstallationStore(tmp_path / "kernels", platform="windows-x64"),
+        Operations(),
+    )
+
+    subject.disconnect_license()
+
+    with pytest.raises(LicenseInvalid):
+        await subject.download("licensed", "151.0.7922.108", "stable")

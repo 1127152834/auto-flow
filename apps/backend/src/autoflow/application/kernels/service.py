@@ -66,11 +66,12 @@ class KernelService:
         return await self.license_provider.connect(license_key)
 
     def disconnect_license(self) -> None:
-        active = any(
-            item.edition == "licensed" and item.state in ACTIVE_OPERATION_STATES
-            for item in self.operations.snapshot()
-        )
-        self.license_provider.disconnect(has_active_licensed_operation=active)
+        with self.installations.license_guard():
+            active = any(
+                item.edition == "licensed" and item.state in ACTIVE_OPERATION_STATES
+                for item in self.operations.snapshot()
+            )
+            self.license_provider.disconnect(has_active_licensed_operation=active)
 
     def get_default(self) -> DefaultKernel:
         return self.defaults.get()
@@ -89,17 +90,25 @@ class KernelService:
         version: str,
         release_channel: Literal["stable", "preview"],
     ) -> KernelOperation:
-        key = None
         if edition == "licensed":
-            key = self.license_store.read()
-            if key is None:
-                raise LicenseInvalid()
+            with self.installations.license_guard():
+                key = self.license_store.read()
+                if key is None:
+                    raise LicenseInvalid()
+                return await self.operations.start(
+                    KernelInstallJob(
+                        edition=edition,
+                        requested_version=version,
+                        release_channel=release_channel,
+                        license_key=key,
+                    )
+                )
         return await self.operations.start(
             KernelInstallJob(
                 edition=edition,
                 requested_version=version,
                 release_channel=release_channel,
-                license_key=key,
+                license_key=None,
             )
         )
 

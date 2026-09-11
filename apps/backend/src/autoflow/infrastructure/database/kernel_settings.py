@@ -2,6 +2,7 @@ import json
 from typing import Any
 
 from sqlalchemy import update
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.kernels.errors import KernelDefaultConflict
@@ -16,8 +17,11 @@ class SqlAlchemyDefaultKernelRepository:
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
         with self._session_factory.begin() as session:
-            if session.get(KernelSettingsRow, _DEFAULT_KEY) is None:
-                session.add(KernelSettingsRow(key=_DEFAULT_KEY, value="null", revision=0))
+            session.execute(
+                insert(KernelSettingsRow)
+                .values(key=_DEFAULT_KEY, value="null", revision=0)
+                .on_conflict_do_nothing(index_elements=[KernelSettingsRow.key])
+            )
 
     def get(self) -> DefaultKernel:
         with self._session_factory() as session:
