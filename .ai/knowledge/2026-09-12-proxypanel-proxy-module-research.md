@@ -39,3 +39,12 @@ ProxyPanel 的对象是专用移动代理舰队，而不是用户自建的通用
 控制面 API key 与数据面代理密码必须分开存储；SQLite 只存 secret_ref/hasSecret，凭据进入既有 CredentialStore。API key 不能进入 renderer、日志、错误或 OpenAPI 响应，provider adapter 必须对 URL 和异常做脱敏。
 
 默认 UI 以本地缓存投影为 source of truth，ProxyPanel 为控制面 source of truth。连接验证、地点刷新、换 IP、改地点、轮换计划和白名单变更都由 sidecar provider adapter 完成，操作成功后显式刷新本地投影；不做无边界后台轮询。
+
+## 证据等级修订
+
+- 日期：2026-09-12
+- 状态：confirmed/proposed
+- 新 `/api/v1` 端点来自已登录的 developers 页面观察，但响应 schema、分页、错误和到期字段尚未使用真实 key fixture 验证。
+- 无法从余额、套餐文案或自动续费状态推导“即将到期”；该指标必须保持 nullable/隐藏。
+- 旧版公开文档可以确认换 IP、地点、轮换和白名单动作，但不能证明账户级代理总量、异常聚合、用量、余额或到期字段。
+- 后续实现以 `docs/superpowers/specs/2026-09-12-proxy-management-design.md` 和 `docs/references/proxypanel-api-contract.md` 为准；本文件中的宽泛能力描述不得绕过证据等级。

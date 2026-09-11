@@ -1,5 +1,7 @@
 # AutoFlow 全功能迁移设计规格
 
+> 代理模块说明：本规格第 4.3 节关于通用代理 CRUD、远程代理池和“即将到期”等描述已被 `docs/superpowers/specs/2026-09-12-proxy-management-design.md` supersede。ProxyPanel 专用边界、字段证据等级和实施顺序以后者为准。
+
 ## 1. 目标与范围
 
 本阶段在 `/Users/zhangtiancheng/Documents/projects/autoflow` 内，将旧项目 `browser-automation/autoflow-desktop` 中除“项目管理”之外的功能，按新的工程化架构重新实现。旧项目仅作为行为和业务能力参考，不直接复制其目录结构、页面耦合或历史数据模型。
