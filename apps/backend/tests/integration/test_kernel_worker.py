@@ -350,6 +350,111 @@ async def test_staging_setup_failure_persists_failed_and_releases_ownership(
     assert completed.state == "completed"
 
 
+@pytest.mark.asyncio
+async def test_cancelling_start_while_spawn_is_pending_reaps_created_process(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_spawn = asyncio.create_subprocess_exec
+    entered = asyncio.Event()
+    continue_spawn = asyncio.Event()
+    spawned: list[asyncio.subprocess.Process] = []
+
+    async def delayed_spawn(*args: object, **kwargs: object) -> asyncio.subprocess.Process:
+        entered.set()
+        await continue_spawn.wait()
+        process = await real_spawn(*args, **kwargs)
+        spawned.append(process)
+        return process
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", delayed_spawn)
+    manager = _manager(
+        tmp_path, repository, fake_worker, mode="wait", termination_timeout=0.05
+    )
+    start = asyncio.create_task(manager.start(_job()))
+    await entered.wait()
+
+    start.cancel()
+    continue_spawn.set()
+    with pytest.raises(asyncio.CancelledError):
+        await start
+
+    assert spawned[0].returncode is not None
+    await _assert_cancelled_start_recovered(
+        tmp_path, repository, fake_worker, monkeypatch, real_spawn
+    )
+
+
+@pytest.mark.asyncio
+async def test_repeated_cancellation_during_stdin_drain_finishes_compensation(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_spawn = asyncio.create_subprocess_exec
+    drain_entered = asyncio.Event()
+    never = asyncio.Event()
+    spawned: list[asyncio.subprocess.Process] = []
+
+    async def blocked_drain_spawn(
+        *args: object, **kwargs: object
+    ) -> asyncio.subprocess.Process:
+        process = await real_spawn(*args, **kwargs)
+        assert process.stdin is not None
+
+        async def blocked_drain() -> None:
+            drain_entered.set()
+            await never.wait()
+
+        monkeypatch.setattr(process.stdin, "drain", blocked_drain)
+        spawned.append(process)
+        return process
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", blocked_drain_spawn)
+    manager = _manager(
+        tmp_path,
+        repository,
+        fake_worker,
+        mode="ignore-term",
+        termination_timeout=0.05,
+    )
+    start = asyncio.create_task(manager.start(_job()))
+    await drain_entered.wait()
+
+    start.cancel()
+    await asyncio.sleep(0.01)
+    start.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await start
+
+    assert spawned[0].returncode is not None
+    await _assert_cancelled_start_recovered(
+        tmp_path, repository, fake_worker, monkeypatch, real_spawn
+    )
+
+
+async def _assert_cancelled_start_recovered(
+    tmp_path: Path,
+    repository: SqlAlchemyKernelOperationRepository,
+    fake_worker: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    real_spawn: object,
+) -> None:
+    operations = repository.list()
+    assert len(operations) == 1
+    assert operations[0].state == "failed"
+    assert operations[0].error == "Kernel worker start was cancelled"
+    assert not (tmp_path / "kernels" / ".staging" / operations[0].id).exists()
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", real_spawn)
+    second = _manager(tmp_path, repository, fake_worker)
+    completed = await second.wait((await second.start(_job("147.0.7777.1"))).id)
+    assert completed.state == "completed"
+
+
 def test_operation_roundtrips_through_database(
     repository: SqlAlchemyKernelOperationRepository,
 ) -> None:

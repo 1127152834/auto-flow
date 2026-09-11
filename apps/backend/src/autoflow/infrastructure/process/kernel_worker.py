@@ -5,9 +5,10 @@ import json
 import os
 import shutil
 import sys
+from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path, PurePath
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 from uuid import uuid4
 
 from autoflow.application.kernels.operations import (
@@ -27,6 +28,7 @@ from autoflow.providers.kernel.catalog import (
 )
 
 DEFAULT_TERMINATION_TIMEOUT = 3.0
+_T = TypeVar("_T")
 
 
 class KernelWorkerManagerError(RuntimeError):
@@ -145,13 +147,23 @@ class KernelWorkerManager:
                 env = os.environ.copy()
                 env.update(self._worker_env)
                 env["CLOAKBROWSER_CACHE_DIR"] = str(staging)
-                process = await asyncio.create_subprocess_exec(
-                    *self._command,
-                    stdin=asyncio.subprocess.PIPE,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.DEVNULL,
-                    env=env,
+                spawn = asyncio.create_task(
+                    asyncio.create_subprocess_exec(
+                        *self._command,
+                        stdin=asyncio.subprocess.PIPE,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.DEVNULL,
+                        env=env,
+                    )
                 )
+                try:
+                    process = await asyncio.shield(spawn)
+                except asyncio.CancelledError:
+                    try:
+                        process, _ = await _wait_uninterruptibly(spawn)
+                    except BaseException:  # noqa: BLE001 -- preserve caller cancellation.
+                        process = None
+                    raise
                 assert process.stdin is not None
                 payload = {
                     "command": "download",
@@ -164,21 +176,23 @@ class KernelWorkerManager:
                 process.stdin.write((json.dumps(payload) + "\n").encode())
                 await process.stdin.drain()
                 process.stdin.close()
-            except Exception:  # noqa: BLE001 -- every setup failure must release ownership.
-                try:
-                    if process is not None:
-                        if process.stdin is not None:
-                            process.stdin.close()
-                        if process.returncode is None:
-                            await self._stop_process(process)
-                    shutil.rmtree(staging, ignore_errors=True)
-                    failed = transition_operation(
-                        operation, "failed", error="Kernel worker could not start"
+            except asyncio.CancelledError:
+                cleanup = asyncio.create_task(
+                    self._compensate_start(
+                        operation, staging, process, cancelled=True
                     )
-                    self._repository.save(failed)
-                    self._publish()
-                finally:
-                    self._ownership.release()
+                )
+                await _wait_uninterruptibly(cleanup)
+                raise
+            except Exception:  # noqa: BLE001 -- every setup failure must release ownership.
+                cleanup = asyncio.create_task(
+                    self._compensate_start(
+                        operation, staging, process, cancelled=False
+                    )
+                )
+                _, cancelled_during_cleanup = await _wait_uninterruptibly(cleanup)
+                if cancelled_during_cleanup:
+                    raise asyncio.CancelledError
                 raise KernelWorkerManagerError("Kernel worker could not start") from None
             task = asyncio.create_task(self._monitor(operation.id, process, staging))
             self._running[operation.id] = _RunningWorker(process, task, staging)
@@ -421,9 +435,49 @@ class KernelWorkerManager:
                 pass
             await process.wait()
 
+    async def _compensate_start(
+        self,
+        operation: KernelOperation,
+        staging: Path,
+        process: asyncio.subprocess.Process | None,
+        *,
+        cancelled: bool,
+    ) -> None:
+        try:
+            if process is not None:
+                if process.stdin is not None:
+                    with suppress(Exception):
+                        process.stdin.close()
+                if process.returncode is None:
+                    await self._stop_process(process)
+            shutil.rmtree(staging, ignore_errors=True)
+            failed = transition_operation(
+                operation,
+                "failed",
+                error=(
+                    "Kernel worker start was cancelled"
+                    if cancelled
+                    else "Kernel worker could not start"
+                ),
+            )
+            self._repository.save(failed)
+            self._publish()
+        finally:
+            self._ownership.release()
+
     def _publish(self) -> None:
         self._events.publish(self.snapshot())
 
 
 def _optional_message(value: object) -> str | None:
     return value if isinstance(value, str) else None
+
+
+async def _wait_uninterruptibly(task: asyncio.Task[_T]) -> tuple[_T, bool]:
+    cancelled = False
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            cancelled = True
+    return task.result(), cancelled

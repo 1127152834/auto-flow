@@ -12,6 +12,7 @@
 - 下载先落入 `<kernels>/.staging/<operation-id>`。父进程校验版本、相对可执行路径、安装目录、越界符号链接和可执行文件后原子发布；已有有效目标只复用，不覆盖。
 - `/api/v1/kernels/events` 已接入实例 token 认证；连接首帧和后续事件均为完整 operation snapshot，慢消费者只保留最新 snapshot，15 秒空闲 heartbeat。
 - app shutdown 以真实子进程状态为准停止并等待所有 worker，即使 operation 已先收到 completed/failed 消息；worker 也监视 sidecar 父进程，避免宿主异常退出后长期成为孤儿。staging 初始化或进程启动失败会把已持久化 queued 状态收敛为 failed 并释放 ownership。
+- setup 协程在 spawn 或 stdin drain 期间被取消时，会先在 shield 的补偿任务中取得可能刚创建的进程句柄，完成 terminate/kill/wait、failed 持久化、staging 清理和 ownership 释放，再重新抛出 `CancelledError`；补偿期间重复取消不会跳过清理。
 
 ## 验证边界
 
