@@ -29,6 +29,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm run smoke:desktop
+      - run: node scripts/smoke-browser-management-desktop.mjs
       - run: node scripts/smoke-browser-management.mjs
       - run: npm run backend:build
       - run: npm run package:dir
@@ -62,7 +63,9 @@ jobs:
           if (browser.status !== 0) process.exit(browser.status ?? 1)
           const desktop = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
           const desktopResult = spawnSync(process.execPath, ['scripts/smoke-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
-          process.exitCode = desktopResult.status ?? 1
+          if (desktopResult.status !== 0) process.exit(desktopResult.status ?? 1)
+          const browserDesktop = spawnSync(process.execPath, ['scripts/smoke-browser-management-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
+          process.exitCode = browserDesktop.status ?? 1
           NODE
       - name: Build installer artifact
         shell: bash
