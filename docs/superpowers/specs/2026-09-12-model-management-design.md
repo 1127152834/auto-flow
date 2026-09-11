@@ -1,8 +1,8 @@
 # 模型管理设计规格
 
 - 日期：2026-09-12
-- 状态：proposed；原型、旧布局与旧交互已获用户确认，本规格与实施计划供开发审查，尚未开始模型业务实现。
-- 类型：架构级功能迁移；本轮输出为规格、API 契约、实施计划与源码复用记录。
+- 状态：confirmed；用户已授权独立分支实施，模型功能已在 codex/model-management 实现；验收边界见 [验证记录](../../migration/model-management-verification.md)。
+- 类型：架构级功能迁移；保留已确认规格作为实现基准。
 - 产品依据：[已确认原型与交互矩阵](../../prototype/model-management/model-management-interactions.md)。
 - 开发依据：[API 契约](../../references/model-management-api-contract.md)、[实施计划](../plans/2026-09-12-model-management-implementation.md)、[基础设施与来源快照](../../../.ai/knowledge/2026-09-12-model-management-implementation-readiness.md)。
 - 事实置信度：高（本地源码、旧应用取证）；外部供应商当前线上兼容性未验证。
@@ -67,7 +67,7 @@
 
 视觉使用现有暖灰、黏土棕 tokens 和 Tailwind，遵循 shadcn/ui 可组合控件结构。动效复用现有设计令牌及 reduced-motion；不能增加会改变操作时机的等待动画或自动消失反馈。原型外部注释不进入产品。
 
-## 3. 当前基础与技术选择
+## 3. 开工时基础快照与技术选择
 
 | 项目 | 已核对状态 | 本模块决定 |
 | --- | --- | --- |
@@ -174,7 +174,7 @@ SQLite 与系统凭据存储没有跨存储事务，不能宣称它们同时 ACI
 | backend/src/autoflow/api.py、schemas.py、models.py | application/models、domain/models、http/model_schemas、database/model_providers | 迁移规则与非秘密字段；不复制全局路由大文件和明文 ORM。 |
 | 旧模型前后端测试 | 新 unit/integration/contract 与领域组件测试 | 迁移断言场景，删除明文回显预期；旧数据库兼容迁移测试不迁入。 |
 
-实施时在 `docs/migration/model-management-source-map.md` 按实际复制文件记录来源路径、HEAD/工作树哈希、目标、改动、保留依赖和原有许可证/资源来源。该账本在真正复制时填写；本轮只保存来源快照，不虚构已迁移文件。
+实施时在 `docs/migration/model-management-source-map.md` 按实际复制文件记录来源路径、HEAD/工作树哈希、目标、改动、保留依赖和原有许可证/资源来源。账本已按实际参考与复制填写；原工作树哈希与本次实现证据均已记录。
 
 ## 9. 验收与开发顺序
 
@@ -193,4 +193,4 @@ SQLite 与系统凭据存储没有跨存储事务，不能宣称它们同时 ACI
 
 验收不把 MockTransport 等同线上服务，不把 macOS 构建等同 Windows 验收。最终需记录实际平台、供应商、本地夹具、版本及运行结果；无法取得的真实平台/供应商证据明确列出。既有八张旧应用截图与源码提供交互基线，不是新实现的通过证据。
 
-本轮验证只针对文档、来源、相互引用及需求覆盖，不运行或声称通过尚不存在的模型业务测试。用户确认实施计划后再进入业务开发。
+设计阶段完成文档与来源校对后，用户于2026-09-12授权独立分支实施；实现与本机验证已完成，详细测试、截图及未验证项见 [验收记录](../../migration/model-management-verification.md)。

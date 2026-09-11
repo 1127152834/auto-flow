@@ -212,3 +212,7 @@ npm run package:dir
 | `17d1fed3f09c86062b015435f485a883153708e373b7e16eb346b45c4576e04f` | `src/renderer/features/models/model-row-styles.test.ts` |
 
 该快照用于后续确认复用来源。若旧工作树文件发生变化，实施记录必须重新计算哈希并说明采用了哪个版本，不能只引用仓库路径。
+
+## 实施后更新（2026-09-12，confirmed）
+
+本文保留开工前源码/基础设施快照，不继续用作当前实现状态。关于缺少业务代码、Query依赖与应用装配的旧现状已被独立分支实现取代（superseded）。当前事实及验证见 [实现验收](../../docs/migration/model-management-verification.md)。
