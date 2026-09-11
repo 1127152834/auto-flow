@@ -7,13 +7,15 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.bootstrap.config import Settings
+from autoflow.infrastructure.database.session import migrate_database
 from autoflow.infrastructure.filesystem.paths import AppPaths
 
 
 def create_app(settings: Settings) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
-    for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp):
+    for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
         directory.mkdir(parents=True, exist_ok=True)
+    migrate_database(paths.database)
 
     app = FastAPI()
     configure_openapi(app, api_version=settings.api_version)

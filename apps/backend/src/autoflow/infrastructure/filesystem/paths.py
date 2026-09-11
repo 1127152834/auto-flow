@@ -10,6 +10,8 @@ class AppPaths:
     workspace: Path
     cache: Path
     temp: Path
+    profiles: Path
+    kernels: Path
 
     @classmethod
     def from_data_dir(cls, root: Path) -> "AppPaths":
@@ -23,4 +25,6 @@ class AppPaths:
             workspace=root / "workspace",
             cache=root / "cache",
             temp=root / "tmp",
+            profiles=root / "workspace" / "profiles",
+            kernels=root / "data" / "kernels",
         )

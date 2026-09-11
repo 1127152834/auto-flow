@@ -7,6 +7,8 @@ dependencies = [
   "fastapi",
   "pydantic",
   "uvicorn",
+  "sqlalchemy>=2.0,<3",
+  "alembic>=1.13,<2",
 ]
 
 [build-system]
@@ -26,6 +28,7 @@ dev = [
   "pytest-asyncio",
   "ruff",
   "mypy",
+  "types-setuptools",
 ]
 build = [
   "pyinstaller",

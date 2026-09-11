@@ -16,6 +16,8 @@ def test_paths_are_children_of_injected_data_dir(tmp_path):
     assert paths.workspace == tmp_path / "workspace"
     assert paths.cache == tmp_path / "cache"
     assert paths.temp == tmp_path / "tmp"
+    assert paths.profiles == tmp_path / "workspace" / "profiles"
+    assert paths.kernels == tmp_path / "data" / "kernels"
 
 
 def test_paths_require_an_absolute_data_dir():
@@ -28,5 +30,5 @@ def test_bootstrap_creates_app_directories(tmp_path):
 
     create_app(Settings(data_dir=str(tmp_path), instance_id="test"))
 
-    for directory in (paths.data_dir, paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp):
+    for directory in (paths.data_dir, paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
         assert directory.is_dir()

@@ -79,6 +79,9 @@ reference/
 | `apps/backend/src/autoflow/domain/settings/` | 设置的业务规则和必要端口。 |
 | `apps/backend/src/autoflow/infrastructure/credentials/` | 系统凭据存储适配。 |
 | `apps/backend/src/autoflow/infrastructure/database/` | 连接、会话、事务和持久化实现。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
+| `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
+| `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
 | `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 未来 Alembic 版本脚本；此时仅保留目录，尚未初始化 Alembic。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
