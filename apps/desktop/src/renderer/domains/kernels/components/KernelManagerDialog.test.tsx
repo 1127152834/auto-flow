@@ -235,6 +235,26 @@ it('disables a second download while another release is active but keeps cancel 
   expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(0)
 })
 
+it('keeps a POST-created task after an older snapshot omits its id', async () => {
+  const extraRelease = { edition: 'public' as const, version: '147.0.1.1', chromiumVersion: '147.0.1.1', releaseChannel: 'stable' as const, publishedAt: null, archive: null, size: null, installed: false }
+  const server = fakeServer({ license: validLicense, catalog: { ...catalog, releases: [...catalog.releases, extraRelease] }, route(path, method) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return json(operation('operation-new', 'queued', 'licensed'), 202)
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const activeCard = (await screen.findByText('CloakBrowser 151.0.1.1')).closest('li') as HTMLElement
+  const secondCard = screen.getByText('CloakBrowser 147.0.1.1').closest('li') as HTMLElement
+  await user.click(within(activeCard).getByRole('button', { name: '下载安装' }))
+  await within(activeCard).findByText('准备下载')
+  act(() => server.stream?.enqueue(eventFrame([operation('operation-old', 'failed', 'licensed')])))
+  await waitFor(() => expect(within(activeCard).getByRole('button', { name: '取消下载' })).toBeEnabled())
+  expect(within(activeCard).queryByText('网络中断')).not.toBeInTheDocument()
+  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeDisabled()
+  await user.click(within(secondCard).getByRole('button', { name: '下载安装' }))
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(1)
+})
+
 it('refreshes installed kernels after a completed operation', async () => {
   const server = fakeServer({ license: validLicense })
   vi.stubGlobal('fetch', server.fetch)

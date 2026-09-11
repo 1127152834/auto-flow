@@ -55,6 +55,15 @@ export function upsertKernelOperation(current: KernelOperation[] = [], incoming:
   return next
 }
 
+export function mergeKernelOperationSnapshot(current: KernelOperation[] = [], incoming: KernelOperation[]): KernelOperation[] {
+  const cachedById = new Map(current.map((operation) => [operation.id, operation]))
+  const incomingIds = new Set(incoming.map((operation) => operation.id))
+  return [
+    ...incoming.map((operation) => mergeKernelOperation(cachedById.get(operation.id), operation)),
+    ...current.filter((operation) => !incomingIds.has(operation.id)),
+  ]
+}
+
 function notifyTerminal(operation: KernelOperation & { state: TerminalState }) {
   if (operation.state === 'completed') notify({ title: '内核安装完成', tone: 'success' })
   else if (operation.state === 'cancelled') notify({ title: '内核安装已取消', tone: 'info' })
@@ -78,8 +87,7 @@ export function useKernelEvents(options: KernelEventsOptions = {}) {
         if (controller.signal.aborted) return
         const cached = queryClient.getQueryData<KernelOperation[]>(kernelKeys.operations(instanceId)) ?? []
         const cachedStates = new Map(cached.map((operation) => [operation.id, operation.state]))
-        const cachedById = new Map(cached.map((operation) => [operation.id, operation]))
-        const merged = operations.map((operation) => mergeKernelOperation(cachedById.get(operation.id), operation))
+        const merged = mergeKernelOperationSnapshot(cached, operations)
         queryClient.setQueryData(kernelKeys.operations(instanceId), merged)
         for (const operation of merged) {
           const previous = states.get(operation.id) ?? cachedStates.get(operation.id)

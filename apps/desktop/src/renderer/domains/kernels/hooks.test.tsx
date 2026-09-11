@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApiProvider } from '../../app/ApiProvider'
 import type { KernelOperation } from '../../shared/api/types'
-import { kernelKeys, mergeKernelOperation, useKernelEvents } from './hooks'
+import { kernelKeys, mergeKernelOperation, mergeKernelOperationSnapshot, useKernelEvents } from './hooks'
 
 const encoder = new TextEncoder()
 
@@ -41,6 +41,12 @@ it('does not move an operation backward after a terminal or cancelling state', (
   expect(mergeKernelOperation(operation('completed'), operation('queued')).state).toBe('completed')
   expect(mergeKernelOperation(operation('cancelling'), operation('extracting')).state).toBe('cancelling')
   expect(mergeKernelOperation(operation('downloading'), operation('verifying')).state).toBe('verifying')
+})
+
+it('appends cached-only operations after an older snapshot', () => {
+  const old = { ...operation('failed'), id: 'operation-old' }
+  const newer = { ...operation('queued'), id: 'operation-new' }
+  expect(mergeKernelOperationSnapshot([newer], [old])).toEqual([old, newer])
 })
 
 it('drops late events from an old sidecar instance', async () => {
