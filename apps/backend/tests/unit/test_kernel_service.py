@@ -9,6 +9,7 @@ import pytest
 from autoflow.application.kernels.operations import KernelOperation
 from autoflow.application.kernels.service import KernelService
 from autoflow.domain.kernels.errors import (
+    KernelBusy,
     KernelDefaultConflict,
     KernelNotFound,
     KernelPathInvalid,
@@ -205,8 +206,6 @@ def test_default_and_delete_guard_conflict_with_an_active_install(tmp_path: Path
     install_lock = ExclusiveFileLock(root / ".install.lock")
     assert install_lock.acquire()
     try:
-        from autoflow.domain.kernels.errors import KernelBusy
-
         with pytest.raises(KernelBusy), store.guard():
             pass
     finally:
@@ -327,3 +326,36 @@ async def test_download_cannot_use_deleted_license_when_disconnect_wins(
 
     with pytest.raises(LicenseInvalid):
         await subject.download("licensed", "151.0.7922.108", "stable")
+
+
+@pytest.mark.asyncio
+async def test_second_licensed_download_maps_license_gate_contention_to_kernel_busy(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "kernels"
+    credentials = MemoryLicenseStore("license")
+    first_operations = PausingOperations()
+    first = KernelService(
+        Catalog([]),
+        DeletingLicense(credentials),
+        credentials,
+        Defaults(),
+        FilesystemKernelInstallationStore(root, platform="windows-x64"),
+        first_operations,
+    )
+    second = KernelService(
+        Catalog([]),
+        DeletingLicense(credentials),
+        credentials,
+        Defaults(),
+        FilesystemKernelInstallationStore(root, platform="windows-x64"),
+        Operations(),
+    )
+    running = asyncio.create_task(first.download("licensed", "151.0.7922.108", "stable"))
+    await first_operations.entered.wait()
+
+    with pytest.raises(KernelBusy):
+        await second.download("licensed", "151.0.7922.109", "stable")
+
+    first_operations.release.set()
+    await running

@@ -6,7 +6,12 @@ from autoflow.application.kernels.operations import (
     KernelInstallJob,
     KernelOperation,
 )
-from autoflow.domain.kernels.errors import KernelNotFound, LicenseInvalid
+from autoflow.domain.kernels.errors import (
+    KernelBusy,
+    KernelNotFound,
+    LicenseInUse,
+    LicenseInvalid,
+)
 from autoflow.domain.kernels.models import (
     DefaultKernel,
     InstalledKernel,
@@ -91,18 +96,21 @@ class KernelService:
         release_channel: Literal["stable", "preview"],
     ) -> KernelOperation:
         if edition == "licensed":
-            with self.installations.license_guard():
-                key = self.license_store.read()
-                if key is None:
-                    raise LicenseInvalid()
-                return await self.operations.start(
-                    KernelInstallJob(
-                        edition=edition,
-                        requested_version=version,
-                        release_channel=release_channel,
-                        license_key=key,
+            try:
+                with self.installations.license_guard():
+                    key = self.license_store.read()
+                    if key is None:
+                        raise LicenseInvalid()
+                    return await self.operations.start(
+                        KernelInstallJob(
+                            edition=edition,
+                            requested_version=version,
+                            release_channel=release_channel,
+                            license_key=key,
+                        )
                     )
-                )
+            except LicenseInUse:
+                raise KernelBusy() from None
         return await self.operations.start(
             KernelInstallJob(
                 edition=edition,
