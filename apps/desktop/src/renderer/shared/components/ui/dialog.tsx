@@ -4,9 +4,12 @@ import { cn } from '../../lib/utils'
 
 const BusyContext = createContext(false)
 type RootProps = ComponentPropsWithoutRef<typeof DialogPrimitive.Root> & { busy?: boolean }
-const Dialog = ({ busy = false, children, ...props }: RootProps) => <BusyContext.Provider value={busy}><DialogPrimitive.Root {...props}>{children}</DialogPrimitive.Root></BusyContext.Provider>
+const Dialog = ({ busy = false, children, onOpenChange, ...props }: RootProps) => <BusyContext.Provider value={busy}><DialogPrimitive.Root {...props} onOpenChange={(nextOpen) => { if (busy && !nextOpen) return; onOpenChange?.(nextOpen) }}>{children}</DialogPrimitive.Root></BusyContext.Provider>
 const DialogTrigger = DialogPrimitive.Trigger
-const DialogClose = DialogPrimitive.Close
+function DialogClose({ onClick, ...props }: ComponentPropsWithoutRef<typeof DialogPrimitive.Close>) {
+  const busy = useContext(BusyContext)
+  return <DialogPrimitive.Close {...props} onClick={(event) => { if (busy) { event.preventDefault(); return }; onClick?.(event) }} />
+}
 const DialogTitle = ({ className, ...props }: ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) => <DialogPrimitive.Title className={cn('text-lg font-semibold text-ink', className)} {...props} />
 const DialogDescription = ({ className, ...props }: ComponentPropsWithoutRef<typeof DialogPrimitive.Description>) => <DialogPrimitive.Description className={cn('text-sm text-muted', className)} {...props} />
 type ContentProps = ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { busy?: boolean; children?: ReactNode }

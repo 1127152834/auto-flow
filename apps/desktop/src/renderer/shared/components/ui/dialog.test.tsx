@@ -1,8 +1,8 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from './dialog'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from './dialog'
 
 afterEach(cleanup)
 
@@ -25,13 +25,26 @@ it('busy dialogs ignore Escape and outside interaction', async () => {
   expect(screen.getByRole('dialog')).toBeInTheDocument()
 })
 
+it('busy dialogs block DialogClose and controlled onOpenChange(false)', async () => {
+  const user = userEvent.setup()
+  const onOpenChange = vi.fn()
+  render(<Dialog open busy onOpenChange={onOpenChange}><DialogContent><DialogTitle>内核管理</DialogTitle><DialogDescription>本机内核</DialogDescription><DialogClose>关闭</DialogClose></DialogContent></Dialog>)
+  await user.click(screen.getByRole('button', { name: '关闭' }))
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
+  expect(onOpenChange).not.toHaveBeenCalledWith(false)
+})
+
 it('keeps focus in the top nested dialog', async () => {
   function Example() {
-    return <Dialog open><DialogContent><DialogTitle>外层</DialogTitle><DialogDescription>外层说明</DialogDescription><Dialog open><DialogTrigger>打开内层</DialogTrigger><DialogContent><DialogTitle>内层</DialogTitle><DialogDescription>内层说明</DialogDescription><button>内层按钮</button></DialogContent></Dialog></DialogContent></Dialog>
+    return <Dialog open><DialogContent><DialogTitle>外层</DialogTitle><DialogDescription>外层说明</DialogDescription><Dialog><DialogTrigger>打开内层</DialogTrigger><DialogContent><DialogTitle>内层</DialogTitle><DialogDescription>内层说明</DialogDescription><button>内层按钮</button><DialogClose>关闭内层</DialogClose></DialogContent></Dialog></DialogContent></Dialog>
   }
   render(<Example />)
   fireEvent.click(screen.getByText('打开内层'))
   expect(screen.getByRole('dialog', { name: '内层' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '关闭内层' }))
+  expect(screen.queryByRole('dialog', { name: '内层' })).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.getByText('打开内层')).toHaveFocus())
+  expect(screen.getByRole('dialog', { name: '外层' })).toBeInTheDocument()
 })
 
 it('allows controlled close callback', async () => {
