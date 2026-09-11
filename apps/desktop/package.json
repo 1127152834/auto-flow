@@ -7,7 +7,9 @@
     "build": "electron-vite build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "openapi:generate": "node ../../scripts/generate-api.mjs",
+    "openapi:check": "node ../../scripts/generate-api.mjs --check"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",

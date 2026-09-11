@@ -1,12 +1,21 @@
 {
   "name": "autoflow",
   "private": true,
-  "workspaces": ["apps/desktop"],
+  "workspaces": [
+    "apps/desktop"
+  ],
   "scripts": {
     "test:structure": "node --test scripts/structure.test.mjs",
     "dev": "npm --workspace @autoflow/desktop run dev",
     "test": "npm --workspace @autoflow/desktop test",
     "typecheck": "npm --workspace @autoflow/desktop run typecheck",
-    "lint": "npm --workspace @autoflow/desktop run lint"
+    "lint": "npm --workspace @autoflow/desktop run lint",
+    "build": "npm --workspace @autoflow/desktop run build",
+    "openapi:generate": "node scripts/generate-api.mjs",
+    "openapi:check": "node scripts/generate-api.mjs --check",
+    "smoke:sidecar": "node scripts/smoke-sidecar.mjs"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0"
   }
 }

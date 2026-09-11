@@ -1,3 +1,5 @@
+import type { components } from './generated'
+
 export type SidecarStatus =
   | { state: 'starting' | 'stopped' }
   | { state: 'failed'; message: string }
@@ -10,11 +12,7 @@ export type SidecarStatus =
       token: string
     }
 
-export type HealthResponse = {
-  status: 'ok'
-  apiVersion: string
-  instanceId: string
-}
+export type HealthResponse = components['schemas']['HealthResponse']
 
 export type AutoflowBridge = {
   getSidecarStatus: () => Promise<SidecarStatus>
