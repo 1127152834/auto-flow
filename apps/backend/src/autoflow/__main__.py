@@ -4,22 +4,26 @@ import socket
 from pathlib import Path
 from threading import Event, Thread
 
-import uvicorn
-
 from autoflow.bootstrap.app import create_app
-from autoflow.bootstrap.config import Settings
-from autoflow.bootstrap.parent import watch_parent
-from autoflow.bootstrap.ready import ready_line
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--kernel-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
-    parser.add_argument("--instance-id", required=True)
+    parser.add_argument("--instance-id")
     parser.add_argument("--parent-pid", type=int)
-    parser.add_argument("--data-dir", required=True)
+    parser.add_argument("--data-dir")
     args = parser.parse_args()
+    if args.kernel_worker:
+        from autoflow.bootstrap.kernel_worker import kernel_worker_main
+
+        raise SystemExit(kernel_worker_main())
+    if args.instance_id is None:
+        parser.error("the following arguments are required: --instance-id")
+    if args.data_dir is None:
+        parser.error("the following arguments are required: --data-dir")
     if args.parent_pid is not None and args.parent_pid <= 0:
         parser.error("parent PID must be positive")
     if args.host != "127.0.0.1":
@@ -28,6 +32,12 @@ def main() -> None:
         parser.error("port must be between 0 and 65535")
     if not Path(args.data_dir).is_absolute():
         parser.error("data directory must be absolute")
+
+    import uvicorn
+
+    from autoflow.bootstrap.config import Settings
+    from autoflow.bootstrap.parent import watch_parent
+    from autoflow.bootstrap.ready import ready_line
 
     settings = Settings(
         data_dir=args.data_dir,

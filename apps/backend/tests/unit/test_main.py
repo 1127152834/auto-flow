@@ -1,6 +1,8 @@
 import sys
+from unittest.mock import AsyncMock
 
 import pytest
+from fastapi.testclient import TestClient
 
 from autoflow.__main__ import main
 
@@ -38,3 +40,17 @@ def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path
         main()
 
     assert "AUTOFLOW_READY" not in capsys.readouterr().out
+
+
+def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
+    from autoflow.bootstrap.app import create_app
+    from autoflow.bootstrap.config import Settings
+
+    app = create_app(Settings(data_dir=str(tmp_path), instance_id="test"))
+    shutdown = AsyncMock()
+    monkeypatch.setattr(app.state.kernel_worker_manager, "shutdown", shutdown)
+
+    with TestClient(app):
+        pass
+
+    shutdown.assert_awaited_once_with()

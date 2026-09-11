@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.openapi import configure_openapi
@@ -17,17 +18,22 @@ from autoflow.domain.profiles.ports import (
     ProfileDataStore,
     ProfileUsageGuard,
 )
+from autoflow.infrastructure.database.kernel_operations import (
+    SqlAlchemyKernelOperationRepository,
+)
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.paths import AppPaths
 from autoflow.infrastructure.filesystem.profile_data import (
     FilesystemProfileDataStore,
     FilesystemProfileUsageGuard,
 )
+from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 
 
 class _NoInstalledKernels:
@@ -47,6 +53,13 @@ def create_app(
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
+    kernel_events = KernelEventBroker()
+    kernel_worker_manager = KernelWorkerManager(
+        kernels_dir=paths.kernels,
+        repository=SqlAlchemyKernelOperationRepository(session_factory),
+        events=kernel_events,
+    )
+    kernel_worker_manager.recover_interrupted()
     transaction = partial(profile_repository_transaction, session_factory)
     proxy_options = SqlAlchemyProxyOptions(session_factory)
     data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
@@ -66,10 +79,19 @@ def create_app(
     app.state.paths = paths
     app.state.session_factory = session_factory
     app.state.profile_service = profile_service
-    app.router.add_event_handler("shutdown", session_factory.dispose)
+    app.state.kernel_worker_manager = kernel_worker_manager
+
+    async def shutdown() -> None:
+        await kernel_worker_manager.shutdown()
+        session_factory.dispose()
+
+    app.router.add_event_handler("shutdown", shutdown)
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
     app.include_router(profiles_router(profile_service))
     app.include_router(proxy_options_router(proxy_options))
+    app.include_router(
+        kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
+    )
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
