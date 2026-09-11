@@ -37,6 +37,8 @@ WebRPA 是源码和能力参考来源。AutoFlow 不与 WebRPA 做运行时集�
 
 WebRPA 的 React、React Flow、Zustand、FastAPI、Pydantic、Playwright 选择与上述栈相容；这代表技术迁移便利，不代表复制其目录或运行方式。
 
+2026-09-12 实施补充（confirmed）：已批准的[浏览器管理计划](../superpowers/plans/2026-09-12-browser-management.md)将当前 UI 落点明确为 `apps/desktop/src/renderer/shared/components/ui`（shadcn/Radix + Tailwind），`packages/ui` 暂不注册为独立 workspace；上表的独立包导出属于后续有实际复用消费者时的目标。浏览器表单使用 React Hook Form/Zod，服务端状态使用 TanStack Query；不为了本模块引入额外 Zustand 编辑状态层。实际目录与已实现职责见[目录索引](../PROJECT_STRUCTURE.md)。
+
 ## 3. 运行边界
 
 ```mermaid

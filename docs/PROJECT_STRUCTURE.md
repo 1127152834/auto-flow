@@ -1,7 +1,7 @@
 # AutoFlow 项目目录结构
 
 - 日期：2026-09-12
-- 状态：本次已创建的目录骨架；目录存在不代表功能已经实现。
+- 状态：目录骨架与已实现领域的职责索引；空占位目录不代表功能已经实现。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
 ## 路径基准
@@ -10,9 +10,9 @@
 
 迁移规格 `docs/superpowers/specs/2026-09-11-autoflow-feature-migration-design.md` 第 3 节与此基准存在路径冲突，进入业务实施前须由主任务统一规格；本次没有修改该规格。
 
-正式前端领域使用 `renderer/domains`。现有 `renderer/features/profiles` 和 `shared/components/ui` 是此前未提交草稿，本次原样保留，后续迁移时归入领域目录或组件库。不要继续发展两套正式结构。
+正式前端领域使用 `renderer/domains`。`renderer/shared/components/ui` 已是经过交互测试的正式 shadcn/Radix 基础组件层；`renderer/features/profiles` 的旧 mock 草稿由浏览器页面接入任务替换，不再作为功能入口。此前把两者一并标为“未提交草稿”的描述已 superseded。
 
-`packages/ui` 此时只是目录骨架，尚未注册 workspace、安装 shadcn/ui 或变更 import。OpenAPI 类型继续生成到现有 `renderer/shared/api`；本阶段不额外创建重复的 contracts 包。
+`packages/ui` 仍只是目录骨架，尚未注册独立 workspace。当前实际使用的 shadcn/Radix 组件位于桌面端 `renderer/shared/components/ui`，Tailwind 主题位于 `renderer/styles/index.css`。OpenAPI 类型继续生成到 `renderer/shared/api/generated.ts`，不维护第二套 contracts 包。
 
 ## 骨架概览
 
@@ -119,7 +119,7 @@ reference/
 | `apps/desktop/src/renderer/domains/models/hooks/` | 模型供应商和模型目录的查询、变更和交互状态组合。 |
 | `apps/desktop/src/renderer/domains/models/pages/` | 模型供应商和模型目录页面组合；组件完成后再组装页面。 |
 | `apps/desktop/src/renderer/domains/models/tests/` | 模型供应商和模型目录跨组件场景测试；局部单元测试也可与源码相邻。 |
-| `apps/desktop/src/renderer/domains/profiles/` | 浏览器配置前端模块；请求封装 api.ts 和必要 model.ts 在实际实现时添加。 |
+| `apps/desktop/src/renderer/domains/profiles/` | 浏览器配置模块；api.ts 封装请求，hooks.ts 组合查询/变更，form-schema.ts 管理表单与生成 DTO 的转换。 |
 | `apps/desktop/src/renderer/domains/profiles/components/` | 浏览器配置领域组件；使用共享 UI，不承载跨领域基础设施。 |
 | `apps/desktop/src/renderer/domains/profiles/hooks/` | 浏览器配置的查询、变更和交互状态组合。 |
 | `apps/desktop/src/renderer/domains/profiles/pages/` | 浏览器配置页面组合；组件完成后再组装页面。 |
@@ -188,7 +188,7 @@ reference/
 - `infrastructure/database/model_providers.py` 实现仓储与原子条件写；迁移 `0002_model_management.py` 增加供应商、模型和cleanup intent三表。
 - `providers/model/http.py` 使用httpx实现协议请求；不依赖ORM或GUI。
 - `renderer/domains/models/assets/` 保留旧品牌资源；components先于pages，hooks管理查询和选择状态。
-- `renderer/app/query-provider.tsx` 为每次sidecar握手建立独立缓存；共享Modal/Menu仍位于desktop shared，packages/ui尚非独立workspace。
+- 缓存入口已统一为 `renderer/app/ApiProvider.tsx`（此前 `query-provider.tsx` 入口描述 superseded）；握手更新 API 与查询缓存，同一工作区重连不卸载编辑组件，实际切换工作区才重置。共享 Modal/Menu 仍位于 desktop shared，packages/ui 尚非独立 workspace。
 - `scripts/electron-cdp.mjs` 是桌面冒烟的调试连接助手；`smoke-model-management.mjs` 用临时目录与本地fixture执行完整UI闭环。
 - 实现及平台证据见 [模型管理验收](migration/model-management-verification.md)。
 
@@ -207,3 +207,12 @@ reference/
 - `renderer/app/ApiProvider.tsx`：统一领域 QueryClient，凭据/实例变化替换上下文与缓存；App 按工作区根设置 key，同工作区重连保持组件树，实际切换工作区重置。
 - `renderer/public/brand/autoflow-mark.png`：沿用旧项目 renderer/public/brand 的 AutoFlow 品牌资源。
 - 详细范围和证据见 [设置与总览实施状态](migration/settings-dashboard-status.md)。
+
+## 浏览器配置与内核实现边界（2026-09-12，confirmed）
+
+- `domain/profiles`、`application/profiles`、`adapters/http/profiles.py` 与数据库仓储分别负责规则、用例、HTTP 契约及持久化；配置目录删除具有占用检查、隔离删除和恢复策略。
+- `providers/kernel` 适配锁定的 CloakBrowser wrapper；`infrastructure/process/kernel_worker.py` 监管隔离 worker、下载取消、原子安装和恢复，`adapters/events/kernels.py` 提供带鉴权的状态快照。
+- `renderer/domains/profiles/components` 包含共享字段区块与配置弹窗；`domains/kernels/components` 提供从配置表单进入的内核管理弹窗，无独立内核导航。
+- 列表与表单使用生成的 API 类型、TanStack Query、React Hook Form 和 Zod；内核任务缓存同时处理 HTTP/SSE 乱序，页面不直接访问 SQL、凭据或文件系统。
+- `scripts/smoke-browser-management.mjs` 验证 source/frozen worker 和真实 HTTP 配置闭环；冻结时区检查显式禁用系统 zoneinfo，以验证随包 tzdata。
+- 实施与平台证据以 [浏览器管理验收记录](migration/browser-management-validation.md) 为准；其未运行项目不得视为已验收。
