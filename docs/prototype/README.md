@@ -7,12 +7,13 @@
 
 每个模块的交互、动效、弹窗、错误和空态规则位于对应的 `*-interactions.md`。原型图使用内置 imagegen 生成，后续实现必须先复用共享组件，再按原型和交互文档组装页面。
 
-## 模型管理：布局探索，待选择
+## 模型管理：沿用旧布局与交互，原型待确认
 
-- [布局 1](./model-management/model-management-layout-01.png)
-- [布局 2](./model-management/model-management-layout-02.png)
-- [布局 3](./model-management/model-management-layout-03.png)
-- [交互草案与待补画板](./model-management/model-management-interactions.md)
-- [生成方式与完整提示词](./model-management/imagegen-prompts.md)
+- [主页面](./model-management/model-management-overview.png)
+- [供应商接入三步与编辑](./model-management/model-management-provider-flow.png)
+- [模型添加、编辑、测试与删除确认](./model-management/model-management-model-flow.png)
+- [交互规则与验收矩阵](./model-management/model-management-interactions.md)
+- [旧页面现场取证](./model-management/reference/README.md)
+- [本次生成记录与提示词](./model-management/imagegen-legacy-alignment-prompts.md)
 
-日期：2026-09-12。以上三图是主页面布局候选，尚未成为模块视觉基准。选择布局后再补齐弹窗和状态画板，然后整理正式规格、API 契约与实施计划。
+日期：2026-09-12。用户已指定模型管理的布局和交互与旧项目相同；当前三张图属于同一设计，分别覆盖主页面与操作流程，不是三个待选方案。原 `model-management-layout-01/02/03.png` 和对应 `imagegen-prompts.md` 标记为 superseded，仅作历史记录，不用于实现。下一步为确认这套原型，再整理正式规格、API 契约与实施计划。

@@ -1,7 +1,7 @@
 # 模型管理原型：图像生成记录
 
 - 日期：2026-09-12
-- 状态：proposed，布局候选待选择。
+- 状态：superseded。用户后续明确要求沿用旧项目布局与交互；以下三种改版均不再参与选择，不作为实现基准。当前生成记录见 [旧版对齐修订](./imagegen-legacy-alignment-prompts.md)。
 - 生成方式：内置 imagegen，三次独立调用；每次附带 `docs/prototype/proxy-management/proxy-management-overview.png` 原图作为视觉参考。
 - 指定目标：1440×1024；实际输出：每张 1487×1058 PNG，原样保存。
 - 以下编号按对话中图片显示顺序记录。示例数据仅用于布局设计。
