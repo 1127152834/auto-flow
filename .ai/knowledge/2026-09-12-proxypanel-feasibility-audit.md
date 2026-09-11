@@ -12,7 +12,7 @@
 | 运行中/待启动/未激活 | confirmed | 使用 ProxyPanel 代理状态；未知状态映射为“状态未知”，不猜测。 |
 | 异常 | locally-derived | 由 API 状态异常、实时探测失败、同步失败或本地健康检查失败组合计算；必须标注来源和时间。 |
 | 运营商/城市/出口 IP | confirmed | 产品页和开发者 API 页面均展示/支持读取；详情和表格可用。 |
-| HTTP/SOCKS5 端点 | confirmed | 通过代理 credentials 能力读取；密码和完整凭据只进入受控复制/显示流程。 |
+| HTTP/SOCKS5 端点 | confirmed | 通过代理 credentials 能力读取；密码和完整凭据只进入 sidecar 受控复制流程，不返回 renderer。 |
 | 延迟/健康 | confirmed | `GET /proxies/{id}?probe=true` 的实时探测能力已在开发者页面说明；延迟和字段 schema 需 fixture/live 联调确认。 |
 | Change IP | confirmed | `POST /proxies/{id}/rotate` 或文档对应的轮换能力；有频率限制，不能盲目自动重试。 |
 | 改变地点 | confirmed | `POST /proxies/{id}/relocate`；地点目录来自 `GET /locations`。 |
