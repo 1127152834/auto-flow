@@ -2,7 +2,10 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
-from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
 
 
 def test_session_factory_enforces_foreign_keys_on_every_connection(tmp_path):
