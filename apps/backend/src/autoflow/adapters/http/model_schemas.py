@@ -10,7 +10,7 @@ from .schemas import ApiModel
 ProviderKind = Literal["openai", "anthropic", "gemini", "openai-compatible", "custom"]
 ConnectionStatus = Literal["untested", "connected", "failed"]
 ContextWindow = Annotated[int, Field(strict=True, ge=1, le=9_007_199_254_740_991)]
-LatencyMs = Annotated[float, Field(ge=0)]
+LatencyMs = Annotated[float, Field(strict=True, allow_inf_nan=False, ge=0)]
 ApiKey = Annotated[SecretStr, Field(json_schema_extra={"writeOnly": True})]
 OPTIONAL_API_KEY_PRESETS = {"ollama", "custom-openai-compatible"}
 

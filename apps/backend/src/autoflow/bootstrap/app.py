@@ -3,23 +3,33 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from autoflow.adapters.events.kernels import kernels_events_router
-from autoflow.adapters.http.errors import install_error_handlers
+from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.health import health_router
+from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
+from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.bootstrap.config import Settings
+from autoflow.domain.credentials import CredentialStore, CredentialStoreUnavailableError
+from autoflow.domain.models.ports import ModelGateway
 from autoflow.domain.profiles.ports import (
     InstalledKernelLookup,
     ProfileDataStore,
     ProfileUsageGuard,
 )
+from autoflow.infrastructure.credentials.model_provider import (
+    UnavailableCredentialStore,
+)
+from autoflow.infrastructure.credentials.system import SystemCredentialStore
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
+)
+from autoflow.infrastructure.database.model_providers import (
+    model_repository_transaction,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
@@ -34,6 +44,7 @@ from autoflow.infrastructure.filesystem.profile_data import (
     FilesystemProfileUsageGuard,
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
+from autoflow.providers.model.http import HttpModelProvider
 
 
 class _NoInstalledKernels:
@@ -47,6 +58,8 @@ def create_app(
     installed_kernel_lookup: InstalledKernelLookup | None = None,
     profile_data_store: ProfileDataStore | None = None,
     profile_usage_guard: ProfileUsageGuard | None = None,
+    credential_store: CredentialStore | None = None,
+    model_gateway: ModelGateway | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
@@ -72,6 +85,14 @@ def create_app(
         usage_guard,
         data_store,
     )
+    if credential_store is None:
+        try:
+            credential_store = SystemCredentialStore()
+        except CredentialStoreUnavailableError:
+            credential_store = UnavailableCredentialStore()
+    model_service = ModelService(partial(model_repository_transaction, session_factory), credential_store,
+                                 model_gateway or HttpModelProvider())
+    model_service.recover_credentials()
 
     app = FastAPI()
     configure_openapi(app, api_version=settings.api_version)
@@ -79,6 +100,7 @@ def create_app(
     app.state.paths = paths
     app.state.session_factory = session_factory
     app.state.profile_service = profile_service
+    app.state.model_service = model_service
     app.state.kernel_worker_manager = kernel_worker_manager
 
     async def shutdown() -> None:
@@ -89,6 +111,7 @@ def create_app(
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
     app.include_router(profiles_router(profile_service))
     app.include_router(proxy_options_router(proxy_options))
+    app.include_router(models_router(model_service))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )
@@ -98,7 +121,7 @@ def create_app(
         if request.url.path.startswith("/api/v1/") and (
             settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
-            return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+            return error_response(401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接")
         return await call_next(request)
 
     if settings.renderer_origin:

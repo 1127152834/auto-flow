@@ -191,6 +191,14 @@ def test_all_model_dtos_use_camel_case_and_forbid_extra_fields() -> None:
             type(instance).model_validate({**payload, "unexpected": True})
 
 
+@pytest.mark.parametrize("value", [True, "1", float("nan"), float("inf"), -float("inf")])
+def test_read_latency_rejects_non_numeric_or_non_finite_values(value: object) -> None:
+    with pytest.raises(ValidationError):
+        ModelDiscoveryRead(
+            items=[], total=0, latency_ms=value, endpoint="http://local/models", message="ok"
+        )
+
+
 def test_read_latency_accepts_fractional_non_negative_values() -> None:
     result = ModelDiscoveryRead(
         items=[], total=0, latency_ms=1.5, endpoint="http://local/models", message="ok"

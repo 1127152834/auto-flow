@@ -15,17 +15,15 @@ from autoflow.domain.models import (
     ProviderConnection,
     RemoteModel,
 )
+from autoflow.domain.models.validation import normalize_base_url as _normalize_base_url
+from autoflow.domain.models.validation import validate_connection
 
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_SAFE_INTEGER = 9_007_199_254_740_991
-DEFAULT_URLS = {
-    "openai": "https://api.openai.com/v1",
-    "anthropic": "https://api.anthropic.com/v1",
-    "gemini": "https://generativelanguage.googleapis.com/v1beta",
-}
-AUTH_QUERY_NAMES = {
-    "key", "api_key", "apikey", "token", "access_token", "authorization", "password"
-}
+
+
+def normalize_base_url(connection: ProviderConnection) -> str:
+    return _normalize_base_url(connection)
 
 
 class HttpModelProvider:
@@ -38,13 +36,17 @@ class HttpModelProvider:
         self._transport = transport
         self._client_factory = client_factory
 
-    async def discover(self, connection: ProviderConnection, secret: str) -> DiscoveryResult:
+    async def discover(
+        self, connection: ProviderConnection, secret: str
+    ) -> DiscoveryResult:
         base_url = validate_connection(connection, secret)
         headers = _headers(connection, secret)
         params: dict[str, str | int] = {}
         if connection.preset_id == "qwen":
             parsed = urlsplit(base_url)
-            endpoint = urlunsplit((parsed.scheme, parsed.netloc, "/api/v1/models", parsed.query, ""))
+            endpoint = urlunsplit(
+                (parsed.scheme, parsed.netloc, "/api/v1/models", parsed.query, "")
+            )
             params["page_size"] = 500
         else:
             endpoint = _append_path(base_url, "models")
@@ -53,11 +55,16 @@ class HttpModelProvider:
             elif connection.provider_kind == "anthropic":
                 params["limit"] = 1000
         started = time.perf_counter()
-        body = await self._request("GET", endpoint, headers, params, None, 15, "获取模型列表")
+        body = await self._request(
+            "GET", endpoint, headers, params, None, 15, "获取模型列表"
+        )
         items = _normalize_models(connection, body)
         latency = round((time.perf_counter() - started) * 1000, 2)
         return DiscoveryResult(
-            tuple(items), latency, _safe_endpoint(endpoint), f"连接正常，发现 {len(items)} 个模型"
+            tuple(items),
+            latency,
+            _safe_endpoint(endpoint),
+            f"连接正常，发现 {len(items)} 个模型",
         )
 
     async def test_model(
@@ -84,7 +91,11 @@ class HttpModelProvider:
             }
         else:
             endpoint = _append_path(base_url, "chat/completions")
-            token_key = "max_completion_tokens" if connection.provider_kind == "openai" else "max_tokens"
+            token_key = (
+                "max_completion_tokens"
+                if connection.provider_kind == "openai"
+                else "max_tokens"
+            )
             payload = {
                 "model": model_key,
                 "messages": [{"role": "user", "content": "只回复 OK"}],
@@ -92,7 +103,9 @@ class HttpModelProvider:
                 "stream": False,
             }
         started = time.perf_counter()
-        body = await self._request("POST", endpoint, headers, params, payload, 30, "模型测试")
+        body = await self._request(
+            "POST", endpoint, headers, params, payload, 30, "模型测试"
+        )
         output, reasoning = _previews(connection.provider_kind, body)
         return ModelTestResult(
             round((time.perf_counter() - started) * 1000, 2),
@@ -114,14 +127,17 @@ class HttpModelProvider:
     ) -> dict[str, Any]:
         try:
             endpoint = _with_params(endpoint, params)
-            async with self._client_factory(
-                timeout=timeout,
-                follow_redirects=False,
-                trust_env=False,
-                transport=self._transport,
-            ) as client, client.stream(
-                method, endpoint, headers=headers, json=payload
-            ) as response:
+            async with (
+                self._client_factory(
+                    timeout=timeout,
+                    follow_redirects=False,
+                    trust_env=False,
+                    transport=self._transport,
+                ) as client,
+                client.stream(
+                    method, endpoint, headers=headers, json=payload
+                ) as response,
+            ):
                 if response.status_code >= 300:
                     await response.aclose()
                     _raise_status(response)
@@ -137,36 +153,15 @@ class HttpModelProvider:
         except ModelError:
             raise
         except httpx.TimeoutException:
-            raise ModelError("MODEL_PROVIDER_TIMEOUT", f"{action}超时，请检查网络或 Base URL", 504) from None
+            raise ModelError(
+                "MODEL_PROVIDER_TIMEOUT", f"{action}超时，请检查网络或 Base URL", 504
+            ) from None
         except httpx.RequestError:
-            raise ModelError("MODEL_PROVIDER_UNREACHABLE", f"{action}失败：无法连接供应商", 409) from None
+            raise ModelError(
+                "MODEL_PROVIDER_UNREACHABLE", f"{action}失败：无法连接供应商", 409
+            ) from None
         except (json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
             raise _invalid(action) from None
-
-
-def normalize_base_url(connection: ProviderConnection) -> str:
-    value = (connection.base_url or DEFAULT_URLS.get(connection.provider_kind, "")).strip().rstrip("/")
-    if not value:
-        raise ModelError("MODEL_PROVIDER_BASE_URL_REQUIRED", "该供应商需要填写 Base URL", 422)
-    try:
-        parsed = urlsplit(value)
-        host = parsed.hostname
-        port = parsed.port
-    except ValueError as exc:
-        raise ModelError("MODEL_PROVIDER_BASE_URL_INVALID", "Base URL 格式无效", 422) from exc
-    if parsed.scheme not in {"http", "https"} or not host or parsed.username or parsed.password or parsed.fragment:
-        raise ModelError("MODEL_PROVIDER_BASE_URL_INVALID", "Base URL 格式无效", 422)
-    if port is not None and not 1 <= port <= 65535:
-        raise ModelError("MODEL_PROVIDER_BASE_URL_INVALID", "Base URL 格式无效", 422)
-    if any(name.casefold() in AUTH_QUERY_NAMES for name, _ in parse_qsl(parsed.query, keep_blank_values=True)):
-        raise ModelError("MODEL_PROVIDER_BASE_URL_INVALID", "Base URL 不得包含认证参数", 422)
-    return value
-
-
-def validate_connection(connection: ProviderConnection, secret: str) -> str:
-    base_url = normalize_base_url(connection)
-    _validate_key(connection, secret)
-    return base_url
 
 
 def _append_path(base_url: str, suffix: str) -> str:
@@ -179,13 +174,21 @@ def _with_params(endpoint: str, params: dict[str, str | int]) -> str:
     if not params:
         return endpoint
     parsed = urlsplit(endpoint)
-    query = urlencode([*parse_qsl(parsed.query, keep_blank_values=True), *params.items()])
+    existing: dict[str, str | int] = dict(
+        parse_qsl(parsed.query, keep_blank_values=True)
+    )
+    existing.update(params)
+    query = urlencode(existing)
     return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, ""))
 
 
 def _safe_endpoint(endpoint: str) -> str:
     parsed = urlsplit(endpoint)
-    host = f"[{parsed.hostname}]" if ":" in (parsed.hostname or "") else (parsed.hostname or "")
+    host = (
+        f"[{parsed.hostname}]"
+        if ":" in (parsed.hostname or "")
+        else (parsed.hostname or "")
+    )
     netloc = f"{host}:{parsed.port}" if parsed.port else host
     return urlunsplit((parsed.scheme, netloc, parsed.path, "", ""))
 
@@ -203,7 +206,10 @@ def _headers(connection: ProviderConnection, secret: str) -> dict[str, str]:
 def _validate_key(connection: ProviderConnection, secret: str) -> None:
     if connection.provider_kind in {"anthropic", "gemini"} and not secret.strip():
         raise ModelError("MODEL_PROVIDER_API_KEY_REQUIRED", "该供应商需要 API Key", 422)
-    if connection.preset_id not in {"ollama", "custom-openai-compatible"} and not secret.strip():
+    if (
+        connection.preset_id not in {"ollama", "custom-openai-compatible"}
+        and not secret.strip()
+    ):
         raise ModelError("MODEL_PROVIDER_API_KEY_REQUIRED", "该供应商需要 API Key", 422)
 
 
@@ -211,12 +217,18 @@ def _context_window(value: Any) -> int | None:
     return value if type(value) is int and 1 <= value <= MAX_SAFE_INTEGER else None
 
 
-def _normalize_models(connection: ProviderConnection, body: dict[str, Any]) -> list[RemoteModel]:
+def _normalize_models(
+    connection: ProviderConnection, body: dict[str, Any]
+) -> list[RemoteModel]:
     if connection.preset_id == "qwen":
         output = body.get("output")
         source = output.get("models") if isinstance(output, dict) else None
     else:
-        source = body.get("models") if connection.provider_kind == "gemini" else body.get("data")
+        source = (
+            body.get("models")
+            if connection.provider_kind == "gemini"
+            else body.get("data")
+        )
     if not isinstance(source, list):
         raise _invalid("获取模型列表")
     items: list[RemoteModel] = []
@@ -230,7 +242,11 @@ def _normalize_models(connection: ProviderConnection, body: dict[str, Any]) -> l
             owned_by = raw.get("provider") or "qwen"
             display = raw.get("name") or raw_id
         else:
-            raw_id = raw.get("name") if connection.provider_kind == "gemini" else raw.get("id")
+            raw_id = (
+                raw.get("name")
+                if connection.provider_kind == "gemini"
+                else raw.get("id")
+            )
             context = raw.get("inputTokenLimit") or raw.get("max_input_tokens")
             owned_by = raw.get("owned_by")
             display = raw.get("displayName") or raw.get("display_name") or raw_id
@@ -238,7 +254,9 @@ def _normalize_models(connection: ProviderConnection, body: dict[str, Any]) -> l
             continue
         key = raw_id.removeprefix("models/").strip()
         items.append(RemoteModel(key, str(display), owned_by, _context_window(context)))
-    return sorted(items, key=lambda item: (item.display_name.casefold(), item.model_key))
+    return sorted(
+        items, key=lambda item: (item.display_name.casefold(), item.model_key)
+    )
 
 
 def _text(value: Any) -> str:
@@ -246,7 +264,8 @@ def _text(value: Any) -> str:
         return value.strip()
     if isinstance(value, list):
         return " ".join(
-            item["text"] for item in value
+            item["text"]
+            for item in value
             if isinstance(item, dict) and isinstance(item.get("text"), str)
         ).strip()
     return ""
@@ -255,38 +274,73 @@ def _text(value: Any) -> str:
 def _previews(kind: str, body: dict[str, Any]) -> tuple[str, str]:
     if kind == "gemini":
         candidates = body.get("candidates")
-        if isinstance(candidates, list) and candidates and isinstance(candidates[0], dict):
+        if (
+            isinstance(candidates, list)
+            and candidates
+            and isinstance(candidates[0], dict)
+        ):
             content = candidates[0].get("content")
             parts = content.get("parts") if isinstance(content, dict) else None
             if isinstance(parts, list):
-                return _text([p for p in parts if isinstance(p, dict) and not p.get("thought")]), _text([p for p in parts if isinstance(p, dict) and p.get("thought")])
+                return _text(
+                    [p for p in parts if isinstance(p, dict) and not p.get("thought")]
+                ), _text([p for p in parts if isinstance(p, dict) and p.get("thought")])
     elif kind == "anthropic":
         content = body.get("content")
         if isinstance(content, list):
-            return _text([p for p in content if isinstance(p, dict) and p.get("type") == "text"]), " ".join(p["thinking"] for p in content if isinstance(p, dict) and p.get("type") == "thinking" and isinstance(p.get("thinking"), str)).strip()
+            return _text(
+                [p for p in content if isinstance(p, dict) and p.get("type") == "text"]
+            ), " ".join(
+                p["thinking"]
+                for p in content
+                if isinstance(p, dict)
+                and p.get("type") == "thinking"
+                and isinstance(p.get("thinking"), str)
+            ).strip()
     else:
         choices = body.get("choices")
         if isinstance(choices, list) and choices and isinstance(choices[0], dict):
             message = choices[0].get("message")
             if isinstance(message, dict):
-                return _text(message.get("content")), _text(message.get("reasoning_content") or message.get("reasoning"))
+                return _text(message.get("content")), _text(
+                    message.get("reasoning_content") or message.get("reasoning")
+                )
     raise _invalid("模型测试")
 
 
 def _raise_status(response: httpx.Response) -> None:
     status = response.status_code
     if status in {401, 403}:
-        raise ModelError("MODEL_PROVIDER_AUTH_FAILED", "供应商拒绝认证，请检查 API Key", 409, {"status": status})
+        raise ModelError(
+            "MODEL_PROVIDER_AUTH_FAILED",
+            "供应商拒绝认证，请检查 API Key",
+            409,
+            {"status": status},
+        )
     if status == 404:
-        raise ModelError("MODEL_PROVIDER_ENDPOINT_NOT_FOUND", "供应商接口不存在，请检查 Base URL 或模型标识", 409, {"status": status})
+        raise ModelError(
+            "MODEL_PROVIDER_ENDPOINT_NOT_FOUND",
+            "供应商接口不存在，请检查 Base URL 或模型标识",
+            409,
+            {"status": status},
+        )
     if status == 429:
         details: dict[str, Any] = {"status": status}
         retry_after = response.headers.get("retry-after")
         if retry_after and retry_after.isdigit():
             details["retryAfterSeconds"] = int(retry_after)
-        raise ModelError("MODEL_PROVIDER_RATE_LIMITED", "供应商触发速率或额度限制", 409, details)
-    raise ModelError("MODEL_PROVIDER_REQUEST_FAILED", f"供应商请求失败：远端返回 HTTP {status}", 409, {"status": status})
+        raise ModelError(
+            "MODEL_PROVIDER_RATE_LIMITED", "供应商触发速率或额度限制", 409, details
+        )
+    raise ModelError(
+        "MODEL_PROVIDER_REQUEST_FAILED",
+        f"供应商请求失败：远端返回 HTTP {status}",
+        409,
+        {"status": status},
+    )
 
 
 def _invalid(action: str) -> ModelError:
-    return ModelError("MODEL_PROVIDER_RESPONSE_INVALID", f"{action}失败：响应格式无效", 409)
+    return ModelError(
+        "MODEL_PROVIDER_RESPONSE_INVALID", f"{action}失败：响应格式无效", 409
+    )
