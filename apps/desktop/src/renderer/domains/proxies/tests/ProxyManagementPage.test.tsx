@@ -274,3 +274,23 @@ it('ignores a late detail response, then updates metadata and copies through the
   await user.click(within(drawer).getByRole('button', { name: '复制用户名' }))
   expect(copy).toHaveBeenCalledWith({ proxyId: 'proxy-1', protocol: 'http', format: 'username' })
 })
+
+it('probes SOCKS5 when it is the only available endpoint', async () => {
+  const user = userEvent.setup()
+  const socksOnly = { ...proxies.items[0], http_endpoint: null }
+  let requestedProtocol: string | undefined
+  render(<ProxyManagementPage api={client((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections') return { items: [connection] }
+    if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+    if (path.startsWith('/api/v1/proxies?')) return { ...proxies, items: [socksOnly] }
+    if (path === '/api/v1/proxies/proxy-1/probe') {
+      requestedProtocol = (JSON.parse(String(init?.body)) as { protocol: string }).protocol
+      return { status: 'completed', operation_id: null, resource: socksOnly.health, error: null }
+    }
+    if (path === '/api/v1/proxies/proxy-1') return socksOnly
+    throw new Error(`Unexpected request: ${path}`)
+  })} />)
+
+  await user.click(await screen.findByRole('button', { name: '检测' }))
+  await waitFor(() => expect(requestedProtocol).toBe('socks5'))
+})

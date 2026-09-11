@@ -102,7 +102,7 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
                       <Button className="h-8 px-3" variant="ghost" onClick={() => onOpen(proxy)}>详情</Button>
-                      <Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}>
+                      <Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}>
                         <Pulse className={checkingId === proxy.id ? 'animate-pulse' : ''} />检测
                       </Button>
                     </div>

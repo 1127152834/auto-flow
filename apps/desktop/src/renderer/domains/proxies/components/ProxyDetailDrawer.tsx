@@ -62,11 +62,11 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
     <Dialog open={open} onOpenChange={onOpenChange} busy={actionBusy}>
       <DialogContent className="left-auto right-0 top-0 h-dvh w-[min(100vw,43rem)] max-w-none translate-x-0 translate-y-0 content-start overflow-y-auto rounded-none border-y-0 border-r-0 p-0 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:slide-in-from-right-2" aria-describedby="proxy-detail-description">
         <header className="sticky top-0 z-10 flex items-start justify-between border-b border-line bg-surface/95 px-6 py-5 backdrop-blur">
-          <div>
-            <DialogTitle>{proxy.name_override || proxy.name}</DialogTitle>
+          <div className="min-w-0">
+            <DialogTitle className="break-words">{proxy.name_override || proxy.name}</DialogTitle>
             <DialogDescription id="proxy-detail-description" className="mt-1">ProxyPanel 投影详情</DialogDescription>
           </div>
-          <Button className="h-9 w-9 px-0" variant="ghost" aria-label="关闭代理详情" onClick={() => onOpenChange(false)} disabled={actionBusy}><X size={18} /></Button>
+          <Button className="h-9 w-9 shrink-0 px-0" variant="ghost" aria-label="关闭代理详情" onClick={() => onOpenChange(false)} disabled={actionBusy}><X size={18} /></Button>
         </header>
         <Tabs defaultValue="overview" className="p-6">
           <TabsList className="w-full justify-start overflow-x-auto">
@@ -78,12 +78,12 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="overview" className="grid gap-4">
             <section className="flex flex-col gap-4 rounded-card border border-line p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2"><HealthPill health={proxy.health} /><StatusPill>{proxy.remote_status || '远程状态未知'}</StatusPill></div>
-              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing} onClick={() => onProbe(proxy)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
+              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
             <DetailSection title="本地设置">
               <label className="grid gap-2 text-sm text-ink">显示名称<Input value={nameOverride} maxLength={120} placeholder={proxy.name} onChange={(event) => setNameOverride(event.target.value)} /></label>
               <label className="flex items-center justify-between text-sm text-ink">启用此代理<Switch checked={enabled} onCheckedChange={setEnabled} /></label>
-              <div className="flex justify-end"><Button variant="primary" disabled={actionBusy || retryAfterSeconds > 0 || (nameOverride.trim() === (proxy.name_override ?? '') && enabled === proxy.enabled)} onClick={() => void onUpdateMetadata(proxy, { name_override: nameOverride.trim() || null, enabled })}>{actionBusy ? '保存中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '保存本地设置'}</Button></div>
+              <div className="flex justify-end"><Button className="whitespace-nowrap" variant="primary" disabled={actionBusy || retryAfterSeconds > 0 || (nameOverride.trim() === (proxy.name_override ?? '') && enabled === proxy.enabled)} onClick={() => void onUpdateMetadata(proxy, { name_override: nameOverride.trim() || null, enabled })}>{actionBusy ? '保存中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '保存本地设置'}</Button></div>
             </DetailSection>
             <DetailSection title="网络信息">
               <DetailRow label="当前位置" value={[proxy.city, proxy.region].filter(Boolean).join(', ') || '—'} />
@@ -128,8 +128,8 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
             <DetailSection title="代理凭据">
               <DetailRow label="凭据状态" value={proxy.credential_available ? '已保存' : '不可用'} />
               <Select aria-label="凭据协议" value={protocol} onChange={(event) => setProtocol(event.target.value as 'http' | 'socks5')}>
-                <option value="http" disabled={!proxy.http_endpoint}>HTTP</option>
-                <option value="socks5" disabled={!proxy.socks5_endpoint}>SOCKS5</option>
+                {proxy.http_endpoint ? <option value="http">HTTP</option> : null}
+                {proxy.socks5_endpoint ? <option value="socks5">SOCKS5</option> : null}
               </Select>
               <div className="flex flex-wrap gap-2">
                 {(['username', 'password', 'url'] as const).map((format) => {

@@ -135,9 +135,9 @@ export function ConnectionDialog({ open, connection, busy, retryAfterSeconds = 0
           </FormField>
           <div className="grid gap-2">
             <label className="text-sm font-medium text-ink" htmlFor="proxy-api-key">API Key</label>
-            <div className="flex gap-2">
-              <Input id="proxy-api-key" type={showKey ? 'text' : 'password'} value={apiKey} onChange={(event) => setApiKey(event.target.value)} autoComplete="off" spellCheck={false} aria-invalid={error ? true : undefined} aria-describedby={error ? 'proxy-api-key-error' : connection?.has_secret ? 'proxy-api-key-hint' : undefined} />
-              <Button type="button" onClick={() => setShowKey((value) => !value)}>{showKey ? '隐藏' : '显示'}</Button>
+            <div className="flex min-w-0 gap-2">
+              <Input className="min-w-0" id="proxy-api-key" type={showKey ? 'text' : 'password'} value={apiKey} onChange={(event) => setApiKey(event.target.value)} autoComplete="off" spellCheck={false} aria-invalid={error ? true : undefined} aria-describedby={error ? 'proxy-api-key-error' : connection?.has_secret ? 'proxy-api-key-hint' : undefined} />
+              <Button className="shrink-0 whitespace-nowrap" type="button" onClick={() => setShowKey((value) => !value)}>{showKey ? '隐藏' : '显示'}</Button>
             </div>
             {connection?.has_secret && !error ? <p className="text-xs text-muted" id="proxy-api-key-hint">已保存现有 Key；输入新 Key 后会先验证再替换。</p> : null}
             {error ? <p className="text-xs text-clay" id="proxy-api-key-error" role="alert">{error}</p> : null}

@@ -188,9 +188,11 @@ export function useProxyManagement(api: ProxyApi) {
 
   const probe = useCallback(async (proxy: ProxyView) => {
     if (checkingId) return
+    const protocol = proxy.http_endpoint ? 'http' : proxy.socks5_endpoint ? 'socks5' : null
+    if (!protocol) return
     setCheckingId(proxy.id)
     try {
-      await waitForAction(await api.probeProxy(proxy.id))
+      await waitForAction(await api.probeProxy(proxy.id, protocol))
       const refreshed = await api.getProxy(proxy.id)
       setProxies((current) => ({ ...current, items: current.items.map((item) => item.id === refreshed.id ? refreshed : item) }))
       setGroupCandidates((current) => current.map((item) => item.id === refreshed.id ? refreshed : item))
