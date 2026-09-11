@@ -28,7 +28,7 @@
 
 - 稳定事实写入 `.ai/memory/`，调研与验证写入 `.ai/knowledge/`，取舍写入 `.ai/decisions/`，阶段方案写入 `.ai/plans/`，会话摘要写入 `.ai/sessions/`。
 - 记录必须包含日期、来源或验证方式、状态（confirmed/proposed/superseded）。
-- 不记录秘密、令牌、隐私和无筛选的对话全文。
+- 不记录秘密、令牌、个人隐私或无筛选的对话全文。
 - 发现旧记录与代码不一致时，先验证，再更新记录并标记旧结论为 `superseded`。
 
 ## 完成定义
