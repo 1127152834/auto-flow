@@ -1,0 +1,12 @@
+{
+  "name": "autoflow",
+  "private": true,
+  "workspaces": ["apps/desktop"],
+  "scripts": {
+    "test:structure": "node --test scripts/structure.test.mjs",
+    "dev": "npm --workspace @autoflow/desktop run dev",
+    "test": "npm --workspace @autoflow/desktop test",
+    "typecheck": "npm --workspace @autoflow/desktop run typecheck",
+    "lint": "npm --workspace @autoflow/desktop run lint"
+  }
+}

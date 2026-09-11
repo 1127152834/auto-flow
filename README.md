@@ -10,3 +10,14 @@ AutoFlow 是面向 Windows 和 macOS 的本地桌面自动化工作台。
 - [外部源码与能力参考](docs/references/README.md)
 
 旧项目参考源：`/Users/zhangtiancheng/Documents/projects/browser-automation/autoflow-desktop`
+## Development
+
+```bash
+npm install
+npm run dev
+npm run test:structure
+npm test
+npm run typecheck
+npm run lint
+uv --directory apps/backend lock
+```
