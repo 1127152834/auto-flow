@@ -24,3 +24,17 @@ def test_main_requires_explicit_data_dir(monkeypatch):
         main()
 
     assert error.value.code == 2
+
+
+def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path, capsys):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["autoflow", "--instance-id", "test", "--data-dir", str(tmp_path)],
+    )
+    monkeypatch.setattr("autoflow.__main__.create_app", lambda _settings: (_ for _ in ()).throw(RuntimeError("migration failed")))
+
+    with pytest.raises(RuntimeError, match="migration failed"):
+        main()
+
+    assert "AUTOFLOW_READY" not in capsys.readouterr().out

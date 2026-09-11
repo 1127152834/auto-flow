@@ -29,11 +29,6 @@ def main() -> None:
     if not Path(args.data_dir).is_absolute():
         parser.error("data directory must be absolute")
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((args.host, args.port))
-    sock.listen(socket.SOMAXCONN)
-    actual_port = sock.getsockname()[1]
     settings = Settings(
         data_dir=args.data_dir,
         instance_id=args.instance_id,
@@ -41,8 +36,14 @@ def main() -> None:
         parent_pid=args.parent_pid,
         renderer_origin=os.environ.get("AUTOFLOW_RENDERER_ORIGIN"),
     )
+    app = create_app(settings)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((args.host, args.port))
+    sock.listen(socket.SOMAXCONN)
+    actual_port = sock.getsockname()[1]
     print(ready_line(port=actual_port, api_version=settings.api_version, instance_id=settings.instance_id), flush=True)
-    config = uvicorn.Config(create_app(settings), host=args.host, port=actual_port, log_level="warning")
+    config = uvicorn.Config(app, host=args.host, port=actual_port, log_level="warning")
     server = uvicorn.Server(config)
     stopped = Event()
     if args.parent_pid:

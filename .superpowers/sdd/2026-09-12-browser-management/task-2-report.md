@@ -35,3 +35,17 @@ Success: no issues found in 18 source files
 - 当前任务只实现存储和领域校验；代理/内核业务用例、HTTP API、目录安全删除和内核 worker 属于后续任务。
 - locale 校验采用轻量 BCP47 形态检查；更完整的语言标签策略应在 API/schema 任务中补充。
 - Alembic 配置以包内 `alembic.ini` 为入口，未引入项目根级迁移配置。
+
+## 独立复审修复（2026-09-12）
+
+- `main()` 现在先完成 `create_app()` 及数据库迁移，成功后才绑定监听端口并输出 ready；失败测试确认迁移异常时 stdout 不含 ready。
+- 高级参数校验同时拦截 `--option=value` 和 `--option value`，覆盖代理与用户数据目录绕过形式。
+- 补齐 URL host、BCP47 形态、timezone、viewport 错误转换、browser edition/channel、human preset、color scheme 和非空 browser version 校验。
+- 数据库验收改为完整 Profile 对象往返，并增加两个独立 session 竞争同名配置、唯一约束失败后 rollback/session 可继续查询的测试。
+
+```text
+聚焦测试：23 passed
+全量后端测试：34 passed, 2 warnings
+ruff：All checks passed
+mypy：Success: no issues found in 19 source files
+```
