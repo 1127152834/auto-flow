@@ -7,7 +7,7 @@ let mainWindow: BrowserWindow | undefined
 let supervisor: SidecarSupervisor | undefined
 
 async function createWindow(): Promise<void> {
-  mainWindow = new BrowserWindow({ webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
   mainWindow.on('closed', () => { mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
