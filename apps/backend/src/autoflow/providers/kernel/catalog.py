@@ -15,11 +15,14 @@ from autoflow.domain.kernels.models import (
 )
 
 _VERSION_PATTERN = re.compile(
-    r"^chromium-v(?P<version>\d+(?:\.\d+)+)(?P<pro>-pro)?$", re.IGNORECASE
+    r"^chromium-v(?P<version>[0-9]+(?:\.[0-9]+){3,4})(?P<pro>-pro)?$",
+    re.IGNORECASE,
 )
 _DIRECTORY_PATTERN = re.compile(
-    r"^chromium-(?P<version>\d+(?:\.\d+)+)(?P<pro>-pro)?$", re.IGNORECASE
+    r"^chromium-(?P<version>[0-9]+(?:\.[0-9]+){3,4})(?P<pro>-pro)?$",
+    re.IGNORECASE,
 )
+_VERSION_VALUE_PATTERN = re.compile(r"^[0-9]+(?:\.[0-9]+){3,4}$")
 _ASSET_PATTERN = re.compile(
     r"^cloakbrowser-(?P<platform>[a-z0-9-]+)\.(?:zip|tar\.gz)$", re.IGNORECASE
 )
@@ -48,6 +51,11 @@ def executable_path(directory: Path, platform: str) -> Path:
     if platform.startswith("darwin-"):
         return directory / "Chromium.app" / "Contents" / "MacOS" / "Chromium"
     return directory / "chrome.exe"
+
+
+def is_valid_kernel_version(version: str) -> bool:
+    """Match cloakbrowser 0.5.9's four-or-five-component version contract."""
+    return _VERSION_VALUE_PATTERN.fullmatch(version) is not None
 
 
 def parse_public_catalog(payload: object, *, platform: str) -> list[KernelRelease]:
@@ -87,7 +95,11 @@ def parse_licensed_catalog(releases: Iterable[object]) -> list[KernelRelease]:
     for info in releases:
         version = _attribute_string(info, "version")
         channel = _attribute_string(info, "resolved_channel")
-        if version is None or channel not in {"stable", "preview"}:
+        if (
+            version is None
+            or not is_valid_kernel_version(version)
+            or channel not in {"stable", "preview"}
+        ):
             continue
         identity = (version, channel)
         if identity in seen:

@@ -16,6 +16,13 @@ class KernelPlatformUnsupported(KernelError):
         super().__init__("CloakBrowser is unavailable on this platform")
 
 
+class KernelVersionInvalid(KernelError):
+    code = "KERNEL_VERSION_INVALID"
+
+    def __init__(self) -> None:
+        super().__init__("CloakBrowser version is invalid")
+
+
 class LicenseInvalid(KernelError):
     code = "LICENSE_INVALID"
 

@@ -1,3 +1,11 @@
+"""CloakBrowser adapters with explicit worker-only wrapper entry points.
+
+Task 5 must set ``CLOAKBROWSER_CACHE_DIR`` to its task-specific staging directory
+before calling ``load_licensed_catalog``, ``validate_license_with_wrapper``, or
+``download_with_wrapper``. The sidecar process supplies those calls through the
+injected ports and must never import the stateful wrapper directly.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -10,6 +18,7 @@ from typing import Protocol
 import httpx
 
 from autoflow.domain.kernels.errors import (
+    KernelVersionInvalid,
     LicenseInUse,
     LicenseInvalid,
     LicenseValidationUnavailable,
@@ -24,6 +33,7 @@ from autoflow.domain.kernels.ports import LicenseStore, LicenseValidator
 
 from .catalog import (
     current_platform_tag,
+    is_valid_kernel_version,
     merge_catalog,
     parse_licensed_catalog,
     parse_public_catalog,
@@ -48,14 +58,14 @@ class CloakBrowserCatalogProvider:
         self,
         kernels_dir: Path,
         *,
+        licensed_catalog: Callable[[], Sequence[object]],
         platform: str | None = None,
         client: _HttpClient | None = None,
-        licensed_catalog: Callable[[], Sequence[object]] | None = None,
     ) -> None:
         self._kernels_dir = kernels_dir
         self._platform = platform or current_platform_tag()
         self._client = client
-        self._licensed_catalog = licensed_catalog or load_licensed_catalog
+        self._licensed_catalog = licensed_catalog
 
     def installed(self) -> list[InstalledKernel]:
         return scan_installed_kernels(self._kernels_dir, platform=self._platform)
@@ -107,7 +117,7 @@ class CloakBrowserCatalogProvider:
 
 
 def load_licensed_catalog() -> list[object]:
-    """Read wrapper release DTOs; callers run this at their process boundary."""
+    """Worker-only: call after setting its task-specific cache, before wrapper import."""
     from cloakbrowser.license import (  # type: ignore[import-untyped]
         get_pro_latest_release,
     )
@@ -120,11 +130,16 @@ def load_licensed_catalog() -> list[object]:
 
 
 def validate_license_with_wrapper(license_key: str) -> LicenseStatus:
-    """Call the stateful wrapper; task 5 invokes this inside its worker."""
-    from cloakbrowser import validate_license  # type: ignore[import-untyped]
-    from cloakbrowser.license import get_session_seats  # type: ignore[import-untyped]
+    """Worker-only: validate after setting its task-specific cache, before import."""
+    try:
+        from cloakbrowser import validate_license  # type: ignore[import-untyped]
+        from cloakbrowser.license import get_session_seats
 
-    info = validate_license(license_key)
+        info = validate_license(license_key)
+    except Exception:  # noqa: BLE001 -- wrapper errors must not expose the key.
+        raise LicenseValidationUnavailable() from None
+    if info is None:
+        raise LicenseValidationUnavailable()
     seats = None
     if info is not None and bool(getattr(info, "valid", False)):
         try:
@@ -132,6 +147,26 @@ def validate_license_with_wrapper(license_key: str) -> LicenseStatus:
         except Exception:  # noqa: BLE001 -- missing seat data does not invalidate a key.
             seats = None
     return parse_license_status(info, seats=seats, configured=True)
+
+
+def download_with_wrapper(
+    *,
+    license_key: str | None,
+    browser_version: str | None,
+    release_channel: str,
+) -> str:
+    """Worker-only: download after setting its task-specific cache, before import."""
+    if browser_version is not None and not is_valid_kernel_version(browser_version):
+        raise KernelVersionInvalid()
+    from cloakbrowser import ensure_binary as wrapper_ensure_binary
+
+    return str(
+        wrapper_ensure_binary(
+            license_key=license_key,
+            browser_version=browser_version,
+            release_channel=release_channel,
+        )
+    )
 
 
 def parse_license_status(
