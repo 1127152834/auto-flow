@@ -19,7 +19,7 @@ const proxyOptions: ProxyOptionsRead = {
 }
 
 function Harness(props: Partial<KernelProxyFieldsProps> = {}) {
-  const form = useForm<ProfileFormValues>({ defaultValues: { ...emptyProfileForm, browserKernel: 'licensed|146.0.1.1' } })
+  const form = useForm<ProfileFormValues>({ defaultValues: { ...emptyProfileForm, browserKernel: 'licensed|146.0.1.1', releaseChannel: 'preview' } })
   const values = useWatch({ control: form.control })
   return <FormProvider {...form}>
     <KernelProxyFields installedKernels={installedKernels} proxyOptions={proxyOptions} onManageKernel={() => undefined} {...props} />
@@ -30,10 +30,10 @@ function Harness(props: Partial<KernelProxyFieldsProps> = {}) {
 it('normalizes Preview to Stable when switching to a public kernel', async () => {
   const user = userEvent.setup()
   render(<Harness />)
-  await user.selectOptions(screen.getByLabelText('发布通道'), 'preview')
+  expect(screen.queryByLabelText('发布通道')).not.toBeInTheDocument()
+  expect(screen.getByTestId('values')).toHaveTextContent('"releaseChannel":"preview"')
   await user.selectOptions(screen.getByLabelText('浏览器内核'), 'public|146.0.1.0')
-  expect(screen.getByLabelText('发布通道')).toHaveValue('stable')
-  expect(screen.getByLabelText('发布通道')).toBeDisabled()
+  expect(screen.getByTestId('values')).toHaveTextContent('"releaseChannel":"stable"')
 })
 
 it('clears mutually exclusive proxy references as the mode changes', async () => {

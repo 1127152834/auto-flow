@@ -43,7 +43,7 @@ export function KernelProxyFields({
       <p className="mb-0 mt-1 text-sm text-muted">保存时会再次确认内核已安装，并校验代理资源仍然可用。</p>
     </div>
     {kernelsError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{kernelsError}</p> : null}
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4">
       <div className="grid gap-2">
         <label className="text-sm font-medium text-ink" htmlFor="profile-browser-kernel">浏览器内核</label>
         <div className="flex gap-2">
@@ -59,9 +59,6 @@ export function KernelProxyFields({
         </div>
         {errors.browserKernel?.message ? <p id="profile-browser-kernel-error" role="alert" className="text-xs text-clay">{errors.browserKernel.message}</p> : <p id="profile-browser-kernel-hint" className="text-xs text-muted">只列出本机已安装的 CloakBrowser 内核。</p>}
       </div>
-      <FormField label="发布通道" htmlFor="profile-release-channel" error={errors.releaseChannel?.message} hint={parsedKernel?.edition === 'licensed' ? '正式版可选择 Stable 或 Preview。' : '公开版固定使用 Stable。'}>
-        <Controller control={control} name="releaseChannel" render={({ field }) => <Select {...field} id="profile-release-channel" disabled={parsedKernel?.edition !== 'licensed'} aria-invalid={Boolean(errors.releaseChannel)} aria-describedby={errors.releaseChannel ? 'profile-release-channel-error' : 'profile-release-channel-hint'} className="w-full"><option value="stable">Stable</option><option value="preview">Preview</option></Select>} />
-      </FormField>
     </div>
     {proxyOptionsError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{proxyOptionsError}</p> : null}
     <div className="grid gap-4 sm:grid-cols-2">

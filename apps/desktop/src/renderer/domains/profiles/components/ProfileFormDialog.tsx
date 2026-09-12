@@ -53,7 +53,7 @@ const fieldTabs: Record<keyof ProfileFormValues, Tab> = {
 }
 const fieldOrder = Object.keys(fieldTabs) as Array<keyof ProfileFormValues>
 const wireFields: Record<string, keyof ProfileFormValues> = {
-  browserVersion: 'browserKernel', browserEdition: 'browserKernel', viewportJson: 'viewportMode',
+  browserVersion: 'browserKernel', browserEdition: 'browserKernel', releaseChannel: 'browserKernel', viewportJson: 'viewportMode',
   extensionPathsJson: 'extensionPathsText', expertArgsJson: 'expertArgsText',
 }
 const focusSelectors: Partial<Record<keyof ProfileFormValues, string>> = {
