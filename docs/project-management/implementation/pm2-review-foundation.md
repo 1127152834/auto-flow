@@ -25,3 +25,7 @@
 真实Electron、IPC、HTTP、Google实网、Windows及其他架构：本包未执行。
 
 Excel原七项规格问题复核通过，工程审查新发现字符串32768截断、ContentTypes无界解压、未关闭worksheet生成器、writer临时文件残留和坏数字解析异常；修复中，尚未验收。
+
+## Excel B1 最终复核
+
+原七项规格问题、五项工程问题全部闭合；最后修复公共迭代边界的数值解析异常（表头和数据），避免仅流读取处理而inspect泄漏。定向30测试、Ruff/mypy通过，独立工程复核通过。接口read_sheet返回可关闭的ExcelRowStream/ExcelRow，inspection保留有限sample及全量公式来源统计。这里只是文件适配，文件IPC、持久inspection、原子发布和实际导入页面尚未交付。
