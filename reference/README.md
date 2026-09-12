@@ -1,5 +1,12 @@
 # Reference projects
 
+## redroid management demo (planned)
+
+- Plan: [`redroid-demo/PLAN.md`](./redroid-demo/PLAN.md)
+- Date: 2026-09-13; status: proposed, awaiting plan confirmation.
+- Scope: independent Python + React demos for lifecycle management, screen/input/APK operations, small batch tasks and Magisk image checks; Windows via WSL2 + Docker Engine.
+- This user-requested demo is separate from the read-only upstream repositories. Its own source will be tracked by AutoFlow Git and will not be an AutoFlow runtime dependency. Only the plan exists at this stage.
+
 ## WebRPA
 
 - Local source: [`reference/WebRPA`](./WebRPA)
