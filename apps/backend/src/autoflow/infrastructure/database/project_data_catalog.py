@@ -18,6 +18,9 @@ from autoflow.infrastructure.database.project_data import (
     _operation_result,
     _operation_row,
 )
+from autoflow.infrastructure.database.project_data_impacts import (
+    SqlAlchemyProjectDataImpacts,
+)
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
     DataFieldRow,
@@ -30,6 +33,12 @@ from autoflow.infrastructure.database.project_data_models import (
 class SqlAlchemyProjectDataCatalog:
     def __init__(self, session_factory: sessionmaker[Session]):
         self._session_factory = session_factory
+        self._impacts = SqlAlchemyProjectDataImpacts(session_factory)
+
+    def preview_field_update(
+        self, project_id: str, ref: dict[str, Any], definition: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._impacts.preview_field_update(project_id, ref, definition)
 
     def fields(self, project_id: str, table_id: str) -> dict[str, Any]:
         with self._session_factory() as session:
@@ -170,6 +179,85 @@ class SqlAlchemyProjectDataCatalog:
                         session.flush()
                         for materialized in batch:
                             session.expunge(materialized)
+                session.commit()
+                return result, done, False
+            except IntegrityError as error:
+                session.rollback()
+                raise ProjectError(
+                    "FIELD_KEY_CONFLICT",
+                    "Field key is already in use",
+                    409,
+                    {"domainCode": "field_key_conflict", "retryable": False},
+                ) from error
+
+    def update_field(
+        self,
+        project_id: str,
+        table_id: str,
+        field_id: str,
+        definition: dict[str, Any],
+        expected_table_revision: int,
+        expected_field_revision: int,
+        impact_revision: int,
+        operation: ProjectOperation,
+    ) -> tuple[dict[str, Any], ProjectOperation, bool]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = self._existing(session, operation)
+            if existing is not None:
+                session.rollback()
+                return _operation_result(existing), _operation(existing), True
+            table = self._table(session, project_id, table_id, True)
+            row = session.scalar(
+                select(DataFieldRow).where(
+                    DataFieldRow.project_id == project_id,
+                    DataFieldRow.table_id == table_id,
+                    DataFieldRow.dataset_generation == table.current_generation,
+                    DataFieldRow.id == field_id,
+                )
+            )
+            if row is None:
+                session.rollback()
+                raise ProjectError("FIELD_NOT_FOUND", "Field was not found", 404)
+            self._cas(table.table_revision, expected_table_revision)
+            self._cas(row.field_revision, expected_field_revision, "Field")
+            ref = {
+                "projectId": project_id,
+                "tableId": table_id,
+                "datasetGeneration": table.current_generation,
+                "fieldId": field_id,
+            }
+            self._impacts.require_field_update(
+                session, project_id, ref, definition, impact_revision
+            )
+            before = _field(row)
+            changed = any(
+                before[key] != definition[key]
+                for key in ("key", "name", "type", "required", "validation")
+            )
+            if changed:
+                row.key = definition["key"]
+                row.name = definition["name"]
+                row.type = definition["type"]
+                row.required = definition["required"]
+                row.validation = definition["validation"]
+                row.field_revision += 1
+                table.table_revision += 1
+                table.updated_at = datetime.now(UTC)
+            snapshot = _field(row)
+            resource = {"type": "field", "fieldRef": ref}
+            operation = replace(operation, resource=resource)
+            result = {
+                "action": "update",
+                "field": snapshot,
+                "tableRevision": table.table_revision,
+            }
+            done = _completed(operation, result)
+            try:
+                session.add(_operation_row(done))
+                session.flush()
+                if changed:
+                    session.add(_change(done, 1, before, snapshot, resource))
                 session.commit()
                 return result, done, False
             except IntegrityError as error:

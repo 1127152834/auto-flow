@@ -25,6 +25,74 @@ class DataCatalogService:
         _ids(project_id, table_id)
         return self.catalog.fields(project_id, table_id)
 
+    def preview_field_update(
+        self, project_id: str, ref: dict[str, Any], definition: dict[str, Any]
+    ) -> dict[str, Any]:
+        _canonical_uuid(project_id, "projectId")
+        return self.catalog.preview_field_update(
+            project_id, ref, validate_field(definition)
+        )
+
+    def update_field(
+        self,
+        project_id: str,
+        table_id: str,
+        field_id: str,
+        key: str,
+        payload: dict[str, Any],
+    ) -> tuple[dict[str, Any], ProjectOperation, bool]:
+        _ids(project_id, table_id)
+        _canonical_uuid(field_id, "fieldId")
+        operation_key = _canonical_uuid(key, "Idempotency-Key")
+        required = {
+            "definition",
+            "expectedTableRevision",
+            "expectedFieldRevision",
+            "impactRevision",
+        }
+        if not isinstance(payload, dict) or set(payload) != required:
+            raise _validation("form", "Invalid field update request")
+        definition = validate_field(payload["definition"])
+        table_revision = _revision(
+            payload["expectedTableRevision"], "expectedTableRevision"
+        )
+        field_revision = _revision(
+            payload["expectedFieldRevision"], "expectedFieldRevision"
+        )
+        impact_revision = _revision(payload["impactRevision"], "impactRevision")
+        request = {
+            "action": "update",
+            "target": {
+                "projectId": project_id,
+                "tableId": table_id,
+                "fieldId": field_id,
+            },
+            "definition": definition,
+            "expectedTableRevision": table_revision,
+            "expectedFieldRevision": field_revision,
+            "impactRevision": impact_revision,
+        }
+        operation = _catalog_operation(
+            operation_key,
+            "mutateField",
+            request,
+            project_id,
+            table_id,
+            "field",
+            field_id,
+            datetime.now(UTC),
+        )
+        return self.catalog.update_field(
+            project_id,
+            table_id,
+            field_id,
+            definition,
+            table_revision,
+            field_revision,
+            impact_revision,
+            operation,
+        )
+
     def create_field(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:
