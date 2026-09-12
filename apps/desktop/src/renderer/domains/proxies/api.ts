@@ -18,6 +18,8 @@ export type ProxyReferences = components['schemas']['ProxyReferences']
 export type ProxyUpdate = components['schemas']['ProxyUpdate']
 export type ProxyView = components['schemas']['ProxyView']
 export type RotationSchedule = components['schemas']['RotationSchedule']
+export type RemoteState = components['schemas']['RemoteStateView']
+export type RemoteOperation = components['schemas']['OperationView']
 export type ActionResult = components['schemas']['ActionResult']
 
 export type ProxyFilters = {
@@ -148,8 +150,18 @@ export function createProxyApi(client: ApiClient) {
         ...json({ protocol }, true), timeoutMs: REMOTE_REQUEST_TIMEOUT_MS,
       })
     },
+    getRemoteState(proxyId: string) {
+      return send<RemoteState>(`/proxies/${proxyId}/remote-state`, { timeoutMs: REMOTE_REQUEST_TIMEOUT_MS })
+    },
+    getLatestOperation(proxyId: string) { return get<RemoteOperation | null>(`/proxies/${proxyId}/operation`) },
+    getOperation(id: string) { return get<RemoteOperation>(`/proxy-operations/${id}`) },
+    reconcileOperation(id: string) { return send<RemoteOperation>(`/proxy-operations/${id}/reconcile`, json({})) },
+    acknowledgeOperation(id: string) { return send<RemoteOperation>(`/proxy-operations/${id}/acknowledge`, json({})) },
+    clearRotation(proxy: ProxyView) {
+      return send<ActionResult>(`/proxies/${proxy.id}/rotation-schedule`, { ...json({expected_revision: proxy.revision}, true), method: 'DELETE' })
+    },
     getLocations(connectionId: string, q = '', carrier = '') {
-      return get<LocationList>(`/proxy-panel/connections/${connectionId}/locations${queryString({ q, carrier })}`)
+      return send<LocationList>(`/proxy-panel/connections/${connectionId}/locations${queryString({ q, carrier })}`, { timeoutMs: REMOTE_REQUEST_TIMEOUT_MS })
     },
     changeIp(proxy: ProxyView) {
       return send<ActionResult>(`/proxies/${proxy.id}/change-ip`, json({ expected_revision: proxy.revision }, true))
@@ -158,11 +170,11 @@ export function createProxyApi(client: ApiClient) {
       return send<ActionResult>(`/proxies/${proxy.id}/relocate`, json({ expected_revision: proxy.revision, location_id: locationId }, true))
     },
     getRotation(proxyId: string) {
-      return get<RotationSchedule>(`/proxies/${proxyId}/rotation-schedule`)
+      return send<RotationSchedule>(`/proxies/${proxyId}/rotation-schedule`, { timeoutMs: REMOTE_REQUEST_TIMEOUT_MS })
     },
     saveRotation(proxy: ProxyView, schedule: RotationSchedule) {
       return send<ActionResult>(`/proxies/${proxy.id}/rotation-schedule`, {
-        ...json({ expected_revision: proxy.revision, mode: schedule.mode, interval_seconds: schedule.interval_seconds }, true),
+        ...json({ expected_revision: proxy.revision, mode: schedule.mode, interval_minutes: schedule.interval_minutes }, true),
         method: 'PUT',
       })
     },

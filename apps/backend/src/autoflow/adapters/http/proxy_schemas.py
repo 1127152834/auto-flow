@@ -194,8 +194,8 @@ class RelocateRequest(ExpectedRevision):
 
 
 class RotationScheduleUpdate(ExpectedRevision):
-    mode: Literal["same_city", "random_city", "same_carrier"]
-    interval_seconds: int = Field(gt=0)
+    mode: Literal["same_city", "same_city_carriers", "full_pool"]
+    interval_minutes: Literal[5, 10, 30, 60]
 
 
 class IpAllowlistUpdate(ExpectedRevision):
@@ -254,6 +254,9 @@ class GroupReferences(BaseModel):
 
 
 class LocationView(BaseModel):
+    cities: list[str] = Field(default_factory=list)
+    country: str | None = None
+    available_slots: int | None = Field(default=None, ge=0)
     id: str
     city: str
     region: str | None = None
@@ -275,8 +278,8 @@ class AccountSummary(BaseModel):
 
 class RotationSchedule(BaseModel):
     enabled: bool
-    mode: Literal["same_city", "random_city", "same_carrier"] | None = None
-    interval_seconds: int | None = Field(default=None, gt=0)
+    mode: Literal["same_city", "same_city_carriers", "full_pool"] | None = None
+    interval_minutes: int | None = Field(default=None, ge=1, le=60)
 
 
 class IpAllowlist(BaseModel):

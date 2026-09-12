@@ -117,3 +117,7 @@ CUA 已检查真实未连接预览与连接弹窗；另以显式标注“合成�
 ### 模型合并后的迁移状态（2026-09-12，confirmed）
 
 上文0002为代理接入时的历史head。模型合并后使用0003_merge_proxy_models作为唯一head；0002_proxy_management原文件和ID不变，已有代理数据库升级及记录保留测试通过。见 [合并验收](model-management-baseline-merge.md)。
+
+### 位置与轮换补充（2026-09-12，confirmed）
+
+旧位置/轮换占位已由真实实现替代；当前唯一迁移 head 为 0004_proxy_remote_controls。实网只读与自动测试通过，真实写入待指定验收目标。见 [位置与轮换验收](proxy-remote-controls-verification.md)。

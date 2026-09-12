@@ -161,7 +161,10 @@ def create_app(
             await kernel_worker_manager.shutdown()
         finally:
             try:
-                close_proxies()
+                from inspect import isawaitable
+                closing = close_proxies()
+                if isawaitable(closing):
+                    await closing
             finally:
                 session_factory.dispose()
 

@@ -33,16 +33,12 @@ from .proxy_schemas import (
     HealthSnapshot,
     IpAllowlist,
     IpAllowlistUpdate,
-    LocationList,
     ProbeRequest,
     ProxyPage,
     ProxyReferences,
     ProxyUpdate,
     ProxyView,
-    RelocateRequest,
     ResourceReference,
-    RotationSchedule,
-    RotationScheduleUpdate,
     SyncSnapshot,
     UsageView,
 )
@@ -239,42 +235,6 @@ def proxy_router(application: ProxyApplication) -> APIRouter:
         except ProxyError as exc:
             return _error_response(exc)
 
-    @router.post(
-        "/proxies/{projection_id}/change-ip",
-        response_model=ActionResult[ProxyView],
-        responses=_error_responses(404, 503),
-    )
-    def unavailable_change_ip(projection_id: str, body: ExpectedRevision):
-        return _unavailable_projection(application, projection_id)
-
-    @router.post(
-        "/proxies/{projection_id}/relocate",
-        response_model=ActionResult[ProxyView],
-        responses=_error_responses(404, 503),
-    )
-    def unavailable_relocate(projection_id: str, body: RelocateRequest):
-        return _unavailable_projection(application, projection_id)
-
-    @router.get("/proxies/{projection_id}/rotation-schedule", response_model=RotationSchedule, responses=_error_responses(404, 503))
-    def unavailable_get_rotation(projection_id: str):
-        return _unavailable_projection(application, projection_id)
-
-    @router.put(
-        "/proxies/{projection_id}/rotation-schedule",
-        response_model=ActionResult[RotationSchedule],
-        responses=_error_responses(404, 503),
-    )
-    def unavailable_set_rotation(projection_id: str, body: RotationScheduleUpdate):
-        return _unavailable_projection(application, projection_id)
-
-    @router.delete(
-        "/proxies/{projection_id}/rotation-schedule",
-        response_model=ActionResult[RotationSchedule],
-        responses=_error_responses(404, 503),
-    )
-    def unavailable_delete_rotation(projection_id: str):
-        return _unavailable_projection(application, projection_id)
-
     @router.get("/proxies/{projection_id}/ip-auth", response_model=IpAllowlist, responses=_error_responses(404, 503))
     def unavailable_get_ip_auth(projection_id: str):
         return _unavailable_projection(application, projection_id)
@@ -307,16 +267,6 @@ def proxy_router(application: ProxyApplication) -> APIRouter:
     @router.get("/proxies/{projection_id}/usage", response_model=UsageView, responses=_error_responses(404, 503))
     def unavailable_usage(projection_id: str, since: datetime, until: datetime):
         return _unavailable_projection(application, projection_id)
-
-    @router.get(
-        "/proxy-panel/connections/{connection_id}/locations",
-        response_model=LocationList,
-        responses=_error_responses(404, 503),
-    )
-    def unavailable_locations(
-        connection_id: str, q: str | None = None, carrier: str | None = None, refresh: bool = False
-    ):
-        return _unavailable_connection(application, connection_id)
 
     @router.get(
         "/proxy-panel/connections/{connection_id}/account-summary",

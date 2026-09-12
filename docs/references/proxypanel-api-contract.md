@@ -1,5 +1,7 @@
 # ProxyPanel API 与开发契约
 
+> 当前位置与轮换实现以文末「2026-09-12 位置与轮换契约更新」为准；此前占位接口和未启用描述为历史记录。
+
 - 日期：2026-09-12
 - 状态：部分 confirmed；下方实时契约已验证，其余接口清单仍为 proposed，不代表已实现
 - 关联：[设计方案](../superpowers/specs/2026-09-12-proxy-management-design.md)、[实施计划](../superpowers/plans/2026-09-12-proxy-management-implementation.md)
@@ -195,3 +197,16 @@ B0 普通只读采样限列表/详情已有的 credential_available 等元信息
 必须覆盖：空/非空列表、两页列表（若支持）、详情缺可选字段、未知状态、到期字段缺失/有效/无效、地点、轮换、白名单、用量/余额缺失、凭据轮换的一次性结果、401/403/404/409/422/429/5xx、网络超时、写入结果不明。缺少真实场景时 synthetic 样例单独标识，不伪称现场验证。
 
 上文为最初样本验收清单；并非每种外部场景均已实测。实际 OpenAPI、生成客户端、列表/凭据 Provider、脱敏夹具和回归测试现已交付；远程写入与高级读取依然按各自能力单独核验。
+
+## 2026-09-12 位置与轮换契约更新（confirmed；写入实网验收待完成）
+
+官方来源：https://proxypanel.io/developers 、https://proxypanel.io/docs 。固定 Bearer v1 传输，不回退到 URL-key 或其他站点。
+
+- GET `/proxies/{id}`：详情中的 bound、rotation_available、rotation_blocked_reason、current_ip、location_generation。当前真实账户 not_bound 的即时 rotate 被阻止。
+- GET `/locations`：`locations[]` 内含 country/city/carriers[]；每个 carrier 包含 carrier/location_id/available_slots。同 target ID 的城市别名合并，容量不相加。本轮读取 243 个城市条目，合并为 125 个目标。数量是观察值，不写死。
+- POST `/proxies/{id}/rotate`，POST `/proxies/{id}/relocate` 的 JSON 为 `{location_id}`；不重试写请求。只按后续详情确认结果。
+- GET/PUT/DELETE `/proxies/{id}/rotation-schedule`：GET 的 `{schedule:null}` 已实读。非空计划按官方 mode/interval_minutes 严格映射，尚未实采；未知结构报错而非显示未开启。PUT mode 为 same_city/same_city_carriers/full_pool，分钟值编辑选项采用当前官网可见的 5/10/30/60；GET 可保留文档范围 1–60 内的已有值，未提供编辑选项的值需先选择支持周期。DELETE 接受 204；后续 GET=null 才确认已关闭。
+
+内部新增 GET `/api/v1/proxies/{id}/remote-state`、GET `/api/v1/proxies/{id}/operation`（仅查本地记录，网络失败也能恢复任务）；GET `/api/v1/proxy-operations/{id}`、POST `.../reconcile`、POST `.../acknowledge`。四种内部变更必须有 UUID `Idempotency-Key` 与 expected_revision，返回 202 + operation_id；键冲突/已有活跃任务返回 409。operation 只暴露 kind/status/error/revision/timestamps，隐藏密钥引用和前置快照。
+
+状态 queued/running 不等于成功；succeeded 需要读回匹配；明确远程拒绝 failed；超时、断开、崩溃 unknown。不承诺供应商原生幂等或任务 ID。120 秒确认预算是本地策略，受控 GET 退避且遵守 Retry-After；前端仅轮询本地状态。API 类型由实际 OpenAPI 生成。

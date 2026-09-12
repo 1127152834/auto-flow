@@ -155,59 +155,6 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/proxies/{projection_id}/change-ip": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Unavailable Change Ip */
-        post: operations["unavailable_change_ip_api_v1_proxies__projection_id__change_ip_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/proxies/{projection_id}/relocate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Unavailable Relocate */
-        post: operations["unavailable_relocate_api_v1_proxies__projection_id__relocate_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/proxies/{projection_id}/rotation-schedule": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Unavailable Get Rotation */
-        get: operations["unavailable_get_rotation_api_v1_proxies__projection_id__rotation_schedule_get"];
-        /** Unavailable Set Rotation */
-        put: operations["unavailable_set_rotation_api_v1_proxies__projection_id__rotation_schedule_put"];
-        post?: never;
-        /** Unavailable Delete Rotation */
-        delete: operations["unavailable_delete_rotation_api_v1_proxies__projection_id__rotation_schedule_delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/proxies/{projection_id}/ip-auth": {
         parameters: {
             query?: never;
@@ -269,23 +216,6 @@ export type paths = {
         };
         /** Unavailable Usage */
         get: operations["unavailable_usage_api_v1_proxies__projection_id__usage_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/proxy-panel/connections/{connection_id}/locations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Unavailable Locations */
-        get: operations["unavailable_locations_api_v1_proxy_panel_connections__connection_id__locations_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -359,6 +289,161 @@ export type paths = {
         get: operations["group_references_api_v1_proxy_groups__group_id__references_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxies/{projection_id}/remote-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Remote State */
+        get: operations["remote_state_api_v1_proxies__projection_id__remote_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxy-panel/connections/{connection_id}/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Locations */
+        get: operations["locations_api_v1_proxy_panel_connections__connection_id__locations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxies/{projection_id}/rotation-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Schedule */
+        get: operations["schedule_api_v1_proxies__projection_id__rotation_schedule_get"];
+        /** Save Rotation */
+        put: operations["save_rotation_api_v1_proxies__projection_id__rotation_schedule_put"];
+        post?: never;
+        /** Clear Rotation */
+        delete: operations["clear_rotation_api_v1_proxies__projection_id__rotation_schedule_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxies/{projection_id}/change-ip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Ip */
+        post: operations["change_ip_api_v1_proxies__projection_id__change_ip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxies/{projection_id}/relocate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Relocate */
+        post: operations["relocate_api_v1_proxies__projection_id__relocate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxies/{projection_id}/operation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Latest Operation */
+        get: operations["latest_operation_api_v1_proxies__projection_id__operation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxy-operations/{operation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Operation */
+        get: operations["get_operation_api_v1_proxy_operations__operation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxy-operations/{operation_id}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Operation */
+        post: operations["reconcile_operation_api_v1_proxy_operations__operation_id__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/proxy-operations/{operation_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge Unknown */
+        post: operations["acknowledge_unknown_api_v1_proxy_operations__operation_id__acknowledge_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -897,6 +982,19 @@ export type components = {
             /** Fetched At */
             fetched_at?: string | null;
         };
+        /** ActionResult */
+        ActionResult: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "completed" | "accepted" | "failed";
+            /** Operation Id */
+            operation_id?: string | null;
+            /** Resource */
+            resource?: unknown | null;
+            error?: components["schemas"]["ApiError"] | null;
+        };
         /** ActionResult[ConnectionView] */
         ActionResult_ConnectionView_: {
             /**
@@ -943,30 +1041,6 @@ export type components = {
             /** Operation Id */
             operation_id?: string | null;
             resource?: components["schemas"]["IpAllowlist"] | null;
-            error?: components["schemas"]["ApiError"] | null;
-        };
-        /** ActionResult[ProxyView] */
-        ActionResult_ProxyView_: {
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "completed" | "accepted" | "failed";
-            /** Operation Id */
-            operation_id?: string | null;
-            resource?: components["schemas"]["ProxyView"] | null;
-            error?: components["schemas"]["ApiError"] | null;
-        };
-        /** ActionResult[RotationSchedule] */
-        ActionResult_RotationSchedule_: {
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "completed" | "accepted" | "failed";
-            /** Operation Id */
-            operation_id?: string | null;
-            resource?: components["schemas"]["RotationSchedule"] | null;
             error?: components["schemas"]["ApiError"] | null;
         };
         /** ActionResult[SyncSnapshot] */
@@ -1446,6 +1520,12 @@ export type components = {
         };
         /** LocationView */
         LocationView: {
+            /** Cities */
+            cities?: string[];
+            /** Country */
+            country?: string | null;
+            /** Available Slots */
+            available_slots?: number | null;
             /** Id */
             id: string;
             /** City */
@@ -1710,6 +1790,33 @@ export type components = {
             reasoningPreview: string;
             /** Message */
             message: string;
+        };
+        /** OperationView */
+        OperationView: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Target Id */
+            target_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "succeeded" | "failed" | "unknown";
+            /** Resource Revision */
+            resource_revision?: number | null;
+            error?: components["schemas"]["ApiError"] | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** PoolOption */
         PoolOption: {
@@ -2014,6 +2121,29 @@ export type components = {
             /** Contextwindow */
             contextWindow?: number | null;
         };
+        /** RemoteStateView */
+        RemoteStateView: {
+            /** Status */
+            status: string | null;
+            /** City */
+            city: string | null;
+            /** Region */
+            region: string | null;
+            /** Carrier */
+            carrier: string | null;
+            /** Current Ip */
+            current_ip: string | null;
+            /** Bound */
+            bound: boolean | null;
+            /** Capabilities */
+            capabilities: components["schemas"]["Capability"][];
+            operation: components["schemas"]["OperationView"] | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+        };
         /** ResourceReference */
         ResourceReference: {
             /** Id */
@@ -2026,9 +2156,9 @@ export type components = {
             /** Enabled */
             enabled: boolean;
             /** Mode */
-            mode?: ("same_city" | "random_city" | "same_carrier") | null;
-            /** Interval Seconds */
-            interval_seconds?: number | null;
+            mode?: ("same_city" | "same_city_carriers" | "full_pool") | null;
+            /** Interval Minutes */
+            interval_minutes?: number | null;
         };
         /** RotationScheduleUpdate */
         RotationScheduleUpdate: {
@@ -2038,9 +2168,12 @@ export type components = {
              * Mode
              * @enum {string}
              */
-            mode: "same_city" | "random_city" | "same_carrier";
-            /** Interval Seconds */
-            interval_seconds: number;
+            mode: "same_city" | "same_city_carriers" | "full_pool";
+            /**
+             * Interval Minutes
+             * @enum {integer}
+             */
+            interval_minutes: 5 | 10 | 30 | 60;
         };
         /** RuntimePaths */
         RuntimePaths: {
@@ -2130,57 +2263,6 @@ export type components = {
             width: number;
             /** Height */
             height: number;
-        };
-        /** ActionResult */
-        ActionResult: {
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "completed" | "accepted" | "failed";
-            /**
-             * Operation Id
-             * @default null
-             */
-            operation_id: string | null;
-            /**
-             * Resource
-             * @default null
-             */
-            resource: unknown | null;
-            /** @default null */
-            error: components["schemas"]["ApiError"] | null;
-        };
-        /** OperationView */
-        OperationView: {
-            /** Id */
-            id: string;
-            /** Kind */
-            kind: string;
-            /** Target Id */
-            target_id: string;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "queued" | "running" | "succeeded" | "failed" | "unknown";
-            /**
-             * Resource Revision
-             * @default null
-             */
-            resource_revision: number | null;
-            /** @default null */
-            error: components["schemas"]["ApiError"] | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
         };
     };
     responses: never;
@@ -2790,263 +2872,6 @@ export interface operations {
             };
         };
     };
-    unavailable_change_ip_api_v1_proxies__projection_id__change_ip_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ExpectedRevision"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActionResult_ProxyView_"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unavailable_relocate_api_v1_proxies__projection_id__relocate_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RelocateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActionResult_ProxyView_"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unavailable_get_rotation_api_v1_proxies__projection_id__rotation_schedule_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RotationSchedule"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unavailable_set_rotation_api_v1_proxies__projection_id__rotation_schedule_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RotationScheduleUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActionResult_RotationSchedule_"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unavailable_delete_rotation_api_v1_proxies__projection_id__rotation_schedule_delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ActionResult_RotationSchedule_"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     unavailable_get_ip_auth_api_v1_proxies__projection_id__ip_auth_get: {
         parameters: {
             query?: never;
@@ -3272,59 +3097,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UsageView"];
-                };
-            };
-            /** @description Not Found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-            /** @description Service Unavailable */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unavailable_locations_api_v1_proxy_panel_connections__connection_id__locations_get: {
-        parameters: {
-            query?: {
-                q?: string | null;
-                carrier?: string | null;
-                refresh?: boolean;
-            };
-            header?: never;
-            path: {
-                connection_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LocationList"];
                 };
             };
             /** @description Not Found */
@@ -3647,6 +3419,374 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remote_state_api_v1_proxies__projection_id__remote_state_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemoteStateView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    locations_api_v1_proxy_panel_connections__connection_id__locations_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                carrier?: string;
+            };
+            header?: never;
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    schedule_api_v1_proxies__projection_id__rotation_schedule_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RotationSchedule"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_rotation_api_v1_proxies__projection_id__rotation_schedule_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RotationScheduleUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_rotation_api_v1_proxies__projection_id__rotation_schedule_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpectedRevision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_ip_api_v1_proxies__projection_id__change_ip_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpectedRevision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relocate_api_v1_proxies__projection_id__relocate_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+            };
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelocateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    latest_operation_api_v1_proxies__projection_id__operation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationView"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_operation_api_v1_proxy_operations__operation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_operation_api_v1_proxy_operations__operation_id__reconcile_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    acknowledge_unknown_api_v1_proxy_operations__operation_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationView"];
                 };
             };
             /** @description Validation Error */

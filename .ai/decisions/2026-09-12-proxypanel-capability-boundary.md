@@ -1,7 +1,7 @@
 # ProxyPanel 能力边界与到期指标
 
 - 日期：2026-09-12
-- 状态：confirmed；2026-09-12 用户批准实施，缺少真实返回样本的能力边界继续有效
+- 状态：confirmed；2026-09-12 用户批准实施，位置与轮换能力边界已按用户批准的设计更新
 - 来源：ProxyPanel 官方首页、已登录 Developers/Documentation 页面、旧项目代理源码和规格审查。
 
 ## 决定
@@ -23,3 +23,13 @@ API Key 首次录入/替换会短暂经过 renderer 表单，提交/关闭后清
 - `docs/references/proxypanel-api-contract.md`
 - `docs/superpowers/specs/2026-09-12-proxy-management-design.md`
 - `docs/superpowers/plans/2026-09-12-proxy-management-implementation.md`
+
+## 位置与轮换实施更新（2026-09-12，confirmed）
+
+旧“所有远程写入必须 evidence=fixture-verified 才能启用”门槛对本次批准的四种操作标记为 superseded。实现已按官方 v1 接通，evidence 仍保留 confirmed-authenticated-doc；available 依据实际运行状态与各操作独立条件决定。自动测试不提升实网证据等级。当前 rotation_available=false / not_bound 只阻止即时 rotate，不推断 relocate/schedule 同样不可调用；服务器明确拒绝始终有效。不调用 start，不改变购买/续费/白名单边界。
+
+远程命令通过 SQLite 唯一键登记、每代理互斥、受监管 asyncio 单次发送、只读确认。应用重启不会重发；未确认的结果保持 unknown，用户可以重新核实或显式结束核实。API Key 不进任务记录，只有内部 secret_ref 用于拒绝连接替换后的旧结果。
+
+真实地点目录存在同 location_id 多城市别名；以目标 ID 分组、容量不累加、显示覆盖城市。切换结果必须满足新 generation、目标覆盖城市、国家与运营商匹配；不保证精确到别名城市。计划使用官方 mode 和 interval_minutes；只显示经文档/当前页面确认的 5/10/30/60 分钟编辑选项，不推算 next_run。
+
+验证与未完成的实网写入验收见 docs/migration/proxy-remote-controls-verification.md。

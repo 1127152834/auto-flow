@@ -77,6 +77,9 @@ function connectedClient(): ApiClient {
     if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
     if (path.startsWith('/api/v1/proxies?')) return proxies
     if (path === '/api/v1/proxies/proxy-1') return proxies.items[0]
+    if (path === '/api/v1/proxies/proxy-1/remote-state') return {capabilities: proxies.items[0].capabilities, fetched_at: '2026-09-12T01:00:00Z'}
+    if (path === '/api/v1/proxies/proxy-1/rotation-schedule') return {enabled:false, mode:null, interval_minutes:null}
+    if (path === '/api/v1/proxies/proxy-1/operation') return null
     if (path === '/api/v1/proxies/proxy-1/references') return { profiles: [{ id: 'profile-1', name: '采集任务' }], groups: [] }
     throw new Error(`Unexpected request: ${path}`)
   })
@@ -106,7 +109,7 @@ it('loads proxies, opens the detail drawer, and keeps unverified writes disabled
   await user.click(within(drawer).getByRole('tab', { name: '位置与轮换' }))
   expect(within(drawer).getByRole('button', { name: '更换 IP' })).toBeDisabled()
   expect(within(drawer).getByRole('button', { name: '改变地点' })).toBeDisabled()
-  expect(within(drawer).getByText('真实响应尚未核验')).toBeInTheDocument()
+  expect(await within(drawer).findByText('真实响应尚未核验')).toBeInTheDocument()
   expect(within(drawer).queryByText('丢包')).not.toBeInTheDocument()
 })
 
@@ -276,6 +279,9 @@ it('ignores a late detail response, then updates metadata and copies through the
       if (detailCalls === 1) return new Promise<ProxyView>((resolve) => { resolveFirst = resolve })
       return proxies.items[0]
     }
+    if (path === '/api/v1/proxies/proxy-1/remote-state') return {capabilities: proxies.items[0].capabilities, fetched_at: '2026-09-12T01:00:00Z'}
+    if (path === '/api/v1/proxies/proxy-1/rotation-schedule') return {enabled:false, mode:null, interval_minutes:null}
+    if (path === '/api/v1/proxies/proxy-1/operation') return null
     if (path === '/api/v1/proxies/proxy-1/references') return { profiles: [], groups: [] }
     throw new Error(`Unexpected request: ${path}`)
   })} />)
@@ -391,6 +397,9 @@ it('uses the explicitly selected probe protocol without falling back silently', 
     if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
     if (path.startsWith('/api/v1/proxies?')) return proxies
     if (path === '/api/v1/proxies/proxy-1') return proxies.items[0]
+    if (path === '/api/v1/proxies/proxy-1/remote-state') return {capabilities: proxies.items[0].capabilities, fetched_at: '2026-09-12T01:00:00Z'}
+    if (path === '/api/v1/proxies/proxy-1/rotation-schedule') return {enabled:false, mode:null, interval_minutes:null}
+    if (path === '/api/v1/proxies/proxy-1/operation') return null
     if (path === '/api/v1/proxies/proxy-1/references') return { profiles: [], groups: [] }
     if (path === '/api/v1/proxies/proxy-1/probe') {
       protocols.push(JSON.parse(String(init?.body)).protocol)

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
+import { QueryClientContext } from '@tanstack/react-query'
 import type { ApiClient } from '../../../shared/api/client'
 import { Button } from '../../../shared/components/ui/button'
 import { Toaster } from '../../../shared/components/Toaster'
@@ -10,6 +11,7 @@ import { ProxyDetailDrawer } from '../components/ProxyDetailDrawer'
 import { LocalProxyGroupEditor, LocalProxyGroupTable } from '../components/LocalProxyGroups'
 
 export function ProxyManagementPage({ api }: { api: ApiClient }) {
+  const queries = useContext(QueryClientContext)
   const proxyApi = useMemo(() => createProxyApi(api), [api])
   const state = useProxyManagement(proxyApi)
   const [connectionOpen, setConnectionOpen] = useState(false)
@@ -79,6 +81,8 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
       />
 
       <ProxyDetailDrawer
+        api={proxyApi}
+        onRemoteChanged={async () => { if (state.selectedProxy) state.openProxy(await proxyApi.getProxy(state.selectedProxy.id)); await state.reload(); await queries?.invalidateQueries({predicate: query => query.queryKey[1] === 'proxy-options'}) }}
         key={state.selectedProxy?.id ?? 'closed'}
         open={Boolean(state.selectedProxy)}
         proxy={state.selectedProxy}

@@ -1,3 +1,4 @@
+import asyncio
 import ipaddress
 import json
 import re
@@ -50,12 +51,13 @@ class ProxyPanelReadProvider:
     def __init__(self, *, transport: httpx.AsyncBaseTransport | None = None):
         self._transport = transport
 
-    async def _request(self, api_key: bytes, path: str) -> object:
+    async def _request(self, api_key: bytes, path: str, *, method: str = "GET", body: dict | None = None) -> object:
         try:
             key = api_key.decode("utf-8")
             if not key or any(ord(char) < 32 or ord(char) > 126 for char in key):
                 raise ProviderAuthenticationError("API Key 格式无效，请重新输入")
             async with (
+                asyncio.timeout(30),
                 httpx.AsyncClient(
                     base_url=BASE_URL,
                     transport=self._transport,
@@ -64,7 +66,7 @@ class ProxyPanelReadProvider:
                     trust_env=False,
                 ) as client,
                 client.stream(
-                    "GET", path, headers={"Authorization": f"Bearer {key}"}
+                    method, path, headers={"Authorization": f"Bearer {key}"}, json=body
                 ) as response,
             ):
                 if response.status_code in (401, 403):
@@ -87,8 +89,10 @@ class ProxyPanelReadProvider:
                     raise ProviderUnavailableError("ProxyPanel 服务暂时不可用")
                 if not response.is_success:
                     raise ProxyPanelHttpError(
-                        "PROXYPANEL_UNAVAILABLE", "ProxyPanel 未接受此请求"
+                        {404: "PROXYPANEL_NOT_FOUND", 409: "PROXYPANEL_CONFLICT", 400: "PROXYPANEL_VALIDATION_ERROR", 422: "PROXYPANEL_VALIDATION_ERROR"}.get(response.status_code, "PROXYPANEL_REJECTED"), "ProxyPanel 拒绝此操作，请刷新代理状态并检查所选参数"
                     )
+                if response.status_code == 204:
+                    return None
                 chunks = bytearray()
                 async for chunk in response.aiter_bytes():
                     chunks.extend(chunk)
@@ -102,7 +106,7 @@ class ProxyPanelReadProvider:
                     ) from None
         except UnicodeDecodeError:
             raise ProviderAuthenticationError("API Key 格式无效，请重新输入") from None
-        except httpx.HTTPError:
+        except (httpx.HTTPError, TimeoutError):
             # Never surface the request URL, authentication header or raw body.
             raise ProviderUnavailableError(
                 "无法连接 ProxyPanel，请检查网络后重试"
@@ -132,6 +136,28 @@ class ProxyPanelReadProvider:
             http_endpoint=_endpoint(body, "http_port"),
             socks5_endpoint=_endpoint(body, "socks5_port"),
         )
+
+
+    async def get_state(self, key: bytes, provider_id: str):
+        from .remote_mapping import state
+        return state(await self._request(key, f"proxies/{_id(provider_id)}"))
+
+    async def get_locations(self, key: bytes):
+        from .remote_mapping import locations
+        return locations(await self._request(key, "locations"))
+
+    async def get_schedule(self, key: bytes, provider_id: str):
+        from .remote_mapping import schedule
+        return schedule(await self._request(key, f"proxies/{_id(provider_id)}/rotation-schedule"))
+
+    async def execute(self, key: bytes, provider_id: str, kind, payload: dict) -> None:
+        method, suffix = {
+            "change_ip": ("POST", "rotate"), "relocate": ("POST", "relocate"),
+            "save_rotation": ("PUT", "rotation-schedule"), "clear_rotation": ("DELETE", "rotation-schedule"),
+        }[kind]
+        # No automatic retries or redirects for remote mutations. Completion is
+        # established by the application reading the actual remote state back.
+        await self._request(key, f"proxies/{_id(provider_id)}/{suffix}", method=method, body=payload or None)
 
 
 def _schema() -> ProviderSchemaError:

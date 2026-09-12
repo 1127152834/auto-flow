@@ -100,6 +100,13 @@ class ProxyOperationRow(Base):
     __tablename__ = "proxy_operations"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     kind: Mapped[str] = mapped_column(String(80), nullable=False)
+    connection_id: Mapped[str | None] = mapped_column(String(36))
+    secret_ref: Mapped[str | None] = mapped_column(String(255))
+    idempotency_key: Mapped[str | None] = mapped_column(String(36), unique=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))
+    payload: Mapped[dict | None] = mapped_column(JSON)
+    before: Mapped[dict | None] = mapped_column(JSON)
+
     target_id: Mapped[str] = mapped_column(String(36), nullable=False)
     status: Mapped[str] = mapped_column(String(30), nullable=False)
     resource_revision: Mapped[int | None] = mapped_column(Integer)

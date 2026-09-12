@@ -101,12 +101,7 @@ def test_connection_sync_proxy_page_and_group_risk_contract(tmp_path: Path):
     checked = client.post(f"/api/v1/proxies/{page['items'][0]['id']}/probe", json={"protocol": "http"})
     assert checked.status_code == 200
     assert checked.json()["resource"]["state"] == "healthy"
-    remote_write = client.post(
-        f"/api/v1/proxies/{page['items'][0]['id']}/change-ip",
-        json={"expected_revision": page["items"][0]["revision"]},
-    )
-    assert remote_write.status_code == 503
-    assert remote_write.json()["error"]["code"] == "CAPABILITY_UNAVAILABLE"
+    # Remote command lifecycle is exercised by test_proxy_remote_controls.
     factory.dispose()
 
 

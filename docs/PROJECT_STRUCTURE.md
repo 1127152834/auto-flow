@@ -164,7 +164,7 @@ reference/
 - `application/proxies/facade.py`：事务边界与代理用例入口；HTTP adapter 不直接构造仓储。
 - `infrastructure/database/proxy_models.py`：代理扩展 ORM；复用现有 `proxies` / `proxy_pools` 的主键，不改写 `models.py` 中浏览器资源模型。
 - `infrastructure/database/proxies.py`：代理 SQLAlchemy 仓储与 Unit of Work。
-- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输，验证真实列表/分协议端点/到期字段/按需凭据；未知列表包装拒绝更新投影。
+- `providers/proxy/proxypanel.py`：固定官方地址的受控 HTTP 传输，验证真实列表/分协议端点/到期字段/按需凭据；未知列表包装拒绝更新投影。
 - `application/proxies/credential_loader.py`：按授权操作读取数据面凭据，检查连接/投影版本与端点一致性，只返回内存值，供探测和 host-only 复制复用。
 - `providers/proxy/probe.py`：经过指定代理的固定 HTTPS 健康探针。
 - `domain/credentials.py` 与 `infrastructure/credentials/system.py`：原生系统凭据端口和适配器，供内核模块复用。
@@ -218,3 +218,13 @@ reference/
 - 列表与表单使用生成的 API 类型、TanStack Query、React Hook Form 和 Zod；内核任务缓存同时处理 HTTP/SSE 乱序，页面不直接访问 SQL、凭据或文件系统。
 - `scripts/smoke-browser-management.mjs` 验证 source/frozen worker 和真实 HTTP 配置闭环；冻结时区检查显式禁用系统 zoneinfo，以验证随包 tzdata。
 - 实施与平台证据以 [浏览器管理验收记录](migration/browser-management-validation.md) 为准；其未运行项目不得视为已验收。
+
+## 代理位置与轮换实现（2026-09-12，confirmed）
+
+- `domain/proxies/remote.py`：远程状态、目标地点、轮换计划、命令记录及 Provider/仓储端口。
+- `providers/proxy/remote_mapping.py`：严格解析详情、公共地点目录与计划，分离运行条件与证据来源；`proxypanel.py` 只调用固定 v1 路径，不重试写入。
+- `application/proxies/remote_controls.py`：命令登记、单次发送、限时只读确认、取消和未知结果核实；没有额外调度服务。
+- `infrastructure/database/proxy_operations.py`：持久化去重与同代理排他；`0004_proxy_remote_controls.py` 在唯一 0003 head 上增量迁移。
+- `adapters/http/proxy_remote.py`：位置与轮换 HTTP 路由和安全操作摘要；旧 placeholders 已移除。
+- `renderer/domains/proxies/components/{LocationPicker,RotationScheduleForm,ProxyOperationStatus,ProxyRemoteControls}.tsx`：独立领域组件，由现有详情抽屉组合；`hooks/useProxyRemoteControls.ts` 处理读取、命令状态、限流和恢复。
+- 验证证据及尚未执行的实网写入项目见 [远程控制验收](migration/proxy-remote-controls-verification.md)。
