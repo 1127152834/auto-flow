@@ -2,11 +2,12 @@
 
 - 项目：AutoFlow
 - 目标平台：Windows、macOS
-- 目标：在新架构中迁移 browser-automation 的非项目管理功能。
+- 目标：在新架构中迁移 browser-automation 的功能；项目管理现处于完整设计与计划阶段，之后分批实现。
 - WebRPA：仅作为能力和实现思路参考，重写能力，不做运行时集成或兼容层。
 - 前端视觉方向：保留第三个原型的暖灰画布、黏土棕强调色；2026-09-12 用户明确浏览器配置采用单主内容区，无模块侧栏，内核管理从配置表单以弹窗进入。早期该模块“分栏工作台”的描述已 superseded。
 - 前端技术约束：React、shadcn/ui、Tailwind CSS，组件先于页面。
 - 协作要求：先规格和实施计划，经确认后再开始功能实现；前后端按垂直功能切片一起开发。
+- 2026-09-12（confirmed，来源：用户在项目管理审查后的明确纠正）：项目管理先形成相对完整的功能规格、跨模块业务规则、交互和总体实施计划，再小步开发。最小执行链仅是实施验收步骤；关键业务设计不留到各切片开发时临时决定。详见 `.ai/decisions/2026-09-12-project-management-complete-design-first.md`。
 - 2026-09-12（confirmed，来源：用户明确实施指令）：代理模块已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线；全局导航和浏览器启动到代理组的调用仍由后续浏览器任务完成。详见 `docs/migration/proxy-management-status.md`。
 
 - 2026-09-12（confirmed，来源：本轮用户授权及隔离worktree验收）：模型管理在 `codex/model-management` / `../autoflow-model-management` 实现，已通过baseline合并验收；保留旧供应商左栏、三步接入与split编辑，凭据仅写系统存储。验收边界见 `docs/migration/model-management-verification.md`。
