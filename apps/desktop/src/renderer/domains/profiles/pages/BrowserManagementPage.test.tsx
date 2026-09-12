@@ -2,6 +2,9 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { ApiProvider } from '../../../app/ApiProvider'
 import type { InstalledKernel, ProfileRead, ProfileTestBrowserList } from '../../../shared/api/types'
 import { BrowserManagementPage } from './BrowserManagementPage'
@@ -130,7 +133,7 @@ it('filters profiles by name and proxy mode without another write request', asyn
   expect(screen.getByText(workProfile.name)).toBeVisible()
   expect(screen.queryByText(testProfile.name)).not.toBeInTheDocument()
   await user.clear(screen.getByRole('searchbox'))
-  await user.selectOptions(screen.getByLabelText('代理模式筛选'), 'proxy')
+  await chooseOption(user, screen.getByLabelText('代理模式筛选'), 'proxy')
   expect(screen.getByText(testProfile.name)).toBeVisible()
   expect(screen.queryByText(workProfile.name)).not.toBeInTheDocument()
   expect(server.calls.filter((call) => call.method !== 'GET')).toHaveLength(0)
@@ -203,7 +206,7 @@ it('keeps the form draft mounted while the nested kernel manager opens and resto
   expect(await screen.findByRole('heading', { name: 'CloakBrowser 内核管理' })).toBeInTheDocument()
   const overlays = document.querySelectorAll('[data-slot="modal-overlay"]')
   expect(overlays).toHaveLength(2)
-  expect([...overlays].every((overlay) => overlay.classList.contains('z-[50]'))).toBe(true)
+  expect([...overlays].every((overlay) => (overlay as HTMLElement).style.zIndex.includes('var(--layer-modal)'))).toBe(true)
   await user.click(screen.getByRole('button', { name: '关闭内核管理' }))
   await waitFor(() => expect(trigger).toHaveFocus())
   await user.click(screen.getByRole('tab', { name: '基础信息' }))

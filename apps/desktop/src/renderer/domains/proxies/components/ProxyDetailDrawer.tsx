@@ -77,10 +77,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="overview" className="grid gap-4">
             <section className="flex flex-col gap-4 rounded-card border border-line p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2"><HealthPill health={proxy.health} /><StatusPill>{proxy.remote_status || '远程状态未知'}</StatusPill></div>
-              <Select aria-label="检测协议" value={protocol} disabled={probing} onChange={event => setProtocol(event.target.value as 'http' | 'socks5')}>
-                {proxy.socks5_endpoint && <option value="socks5">SOCKS5</option>}
-                {proxy.http_endpoint && <option value="http">HTTP</option>}
-              </Select>
+              <Select clearable={false} aria-label="检测协议" value={protocol} disabled={probing} onValueChange={value => setProtocol((value ?? 'http') as 'http' | 'socks5')} options={[...(proxy.socks5_endpoint ? [{ value: 'socks5', label: 'SOCKS5' }] : []), ...(proxy.http_endpoint ? [{ value: 'http', label: 'HTTP' }] : [])]} />
               <Button aria-busy={probing} disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}>{probing ? <CircleNotch className="animate-spin" aria-hidden="true" /> : <Pulse aria-hidden="true" />}{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
             <DetailSection title="本地设置">
@@ -115,10 +112,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="credentials" className="grid gap-4">
             <DetailSection title="代理凭据">
               <DetailRow label="凭据状态" value={proxy.credential_available ? '可用，操作时从 ProxyPanel 获取' : '不可用'} />
-              <Select aria-label="凭据协议" value={protocol} onChange={(event) => setProtocol(event.target.value as 'http' | 'socks5')}>
-                {proxy.http_endpoint ? <option value="http">HTTP</option> : null}
-                {proxy.socks5_endpoint ? <option value="socks5">SOCKS5</option> : null}
-              </Select>
+              <Select clearable={false} aria-label="凭据协议" value={protocol} onValueChange={(value) => setProtocol((value ?? 'http') as 'http' | 'socks5')} options={[...(proxy.http_endpoint ? [{ value: 'http', label: 'HTTP' }] : []), ...(proxy.socks5_endpoint ? [{ value: 'socks5', label: 'SOCKS5' }] : [])]} />
               <div className="flex flex-wrap gap-2">
                 {(['username', 'password', 'url'] as const).map((format) => {
                   const key = `${protocol}:${format}`

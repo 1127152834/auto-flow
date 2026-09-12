@@ -101,12 +101,9 @@ function VariableRow({ variable, names, onChange, onRename, onDelete, onEditStar
   return <div className="space-y-3 rounded-card border border-line bg-surface-subtle p-3" aria-label={`变量 ${variable.name}`}>
     <div className="flex items-center justify-between gap-2"><code className="truncate text-xs text-muted">{variable.name}</code><Button type="button" variant="ghost" className="h-7 w-7 px-0" aria-label={`删除变量 ${variable.name}`} onClick={onDelete} disabled={disabled}><Trash size={15} /></Button></div>
     <FormField htmlFor={`variable-${variable.name}-name`} label="变量名" error={nameError ? `${nameError}尚未重命名，原名称仍为 ${variable.name}。` : undefined}><Input value={name} disabled={disabled} onFocus={onEditStart} onChange={(event) => setName(event.target.value)} onBlur={rename} onKeyDown={(event) => { if (event.key === 'Enter') event.currentTarget.blur() }} /></FormField>
-    <FormField htmlFor={`variable-${variable.name}-type`} label="类型"><Select className="w-full" value={variable.type} disabled={disabled} onChange={(event) => onChange({ ...variable, type: event.target.value as WorkflowVariable['type'] })}>{variableTypes.map(([type, label]) => <option key={type} value={type}>{label}</option>)}</Select></FormField>
+    <FormField htmlFor={`variable-${variable.name}-type`} label="类型"><Select clearable={false} className="w-full" value={variable.type} disabled={disabled} onValueChange={(value) => onChange({ ...variable, type: (value ?? 'string') as WorkflowVariable['type'] })} options={variableTypes.map(([value, label]) => ({ value, label }))} /></FormField>
     <FormField htmlFor={`variable-${variable.name}-value`} label="初始值" error={valueError(variable)} hint={variable.type === 'array' || variable.type === 'object' ? '使用 JSON 格式；未完成的输入也会保留。' : undefined}>
-      {variable.type === 'boolean' ? <Select className="w-full" value={String(variable.value)} disabled={disabled} onChange={(event) => changeValue(event.target.value)}>
-        {typeof variable.value !== 'boolean' ? <option value={String(variable.value)}>请选择</option> : null}
-        <option value="true">true</option><option value="false">false</option>
-      </Select> : variable.type === 'array' || variable.type === 'object' ? <Textarea {...initialValueProps} className="font-mono text-xs" spellCheck={false} /> : <Input {...initialValueProps} inputMode={variable.type === 'number' ? 'decimal' : undefined} />}
+      {variable.type === 'boolean' ? <Select clearable={false} className="w-full" value={String(variable.value)} disabled={disabled} onValueChange={(value) => changeValue(value ?? 'false')} options={[{ value: 'true', label: 'true' }, { value: 'false', label: 'false' }]} /> : variable.type === 'array' || variable.type === 'object' ? <Textarea {...initialValueProps} className="font-mono text-xs" spellCheck={false} /> : <Input {...initialValueProps} inputMode={variable.type === 'number' ? 'decimal' : undefined} />}
     </FormField>
   </div>
 }

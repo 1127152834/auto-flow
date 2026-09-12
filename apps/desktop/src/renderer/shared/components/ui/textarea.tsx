@@ -1,6 +1,7 @@
-import type { TextareaHTMLAttributes } from 'react'
+import type { ComponentPropsWithRef } from 'react'
 import { cn } from '../../lib/utils'
 
-export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={cn('min-h-24 w-full resize-y rounded-control border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition-shadow placeholder:text-muted focus:border-clay focus:ring-2 focus:ring-clay/15 disabled:cursor-not-allowed disabled:opacity-50', className)} {...props} />
+type TextareaProps = ComponentPropsWithRef<'textarea'> & { size?: 'sm' | 'md' }
+export function Textarea({ className, size = 'md', ...props }: TextareaProps) {
+  return <textarea {...props} data-af-control className={cn('min-h-24 w-full min-w-0 px-3 py-2', size === 'sm' ? 'text-xs' : 'text-sm', className)} />
 }

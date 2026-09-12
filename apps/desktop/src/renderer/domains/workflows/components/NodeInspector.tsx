@@ -61,10 +61,8 @@ function NodeFields({ node, definition, variables, issues, onChange, onLabelChan
     </FormField>
   }
   const select = (field: string, label: string, options: [string, string][]) => <FormField key={field} htmlFor={`node-${node.id}-${field}`} label={label} error={fieldError(field)}>
-    <Select className="w-full" value={value(field)} disabled={disabled} onChange={(event) => onChange({ [field]: event.target.value })}>
-      {!options.some(([key]) => key === value(field)) ? <option value={value(field)}>{value(field) || '请选择'}</option> : null}
-      {options.map(([key, title]) => <option key={key} value={key}>{title}</option>)}
-    </Select>
+    <Select clearable={false} className="w-full" value={value(field)} disabled={disabled} onValueChange={(next) => onChange({ [field]: next ?? '' })}
+      options={options.map(([key, label]) => ({ value: key, label }))} />
   </FormField>
   const toggle = (field: string, label: string) => <div key={field} className="flex items-center justify-between gap-3">
     <label className="text-sm text-ink" htmlFor={`node-${node.id}-${field}`}>{label}</label>

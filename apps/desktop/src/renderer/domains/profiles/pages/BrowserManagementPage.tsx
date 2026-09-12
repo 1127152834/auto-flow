@@ -127,12 +127,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
           <MagnifyingGlass aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
           <Input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="搜索配置名称或描述" className="w-full pl-10" />
         </label>
-        <Select aria-label="代理模式筛选" value={proxyFilter} onChange={(event) => { setProxyFilter(event.target.value as ProxyFilter); setPage(1) }} className="w-full">
-          <option value="all">全部代理模式</option>
-          <option value="none">不使用代理</option>
-          <option value="proxy">固定代理</option>
-          <option value="pool">代理池</option>
-        </Select>
+        <Select clearable={false} aria-label="代理模式筛选" value={proxyFilter} onValueChange={(value) => { setProxyFilter((value ?? 'all') as ProxyFilter); setPage(1) }} className="w-full" options={[{ value: 'all', label: '全部代理模式' }, { value: 'none', label: '不使用代理' }, { value: 'proxy', label: '固定代理' }, { value: 'pool', label: '代理池' }]} />
       </section>
 
       {testBrowsers.isError ? <div role="alert" className="rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">浏览器运行状态同步失败，暂时无法操作测试浏览器。<Button className="ml-3" disabled={disabled} onClick={() => void testBrowsers.refetch()}>重试同步</Button></div> : null}

@@ -3,6 +3,9 @@ import { StrictMode } from 'react'
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { ApiClientError, type ApiClient } from '../../../shared/api/client'
 import type { ApiError, ConnectionView, GroupPage, GroupView, ProxyPage, ProxyView } from '../api'
 import { ProxyManagementPage } from '../pages/ProxyManagementPage'
@@ -410,9 +413,9 @@ it('uses the explicitly selected probe protocol without falling back silently', 
   await user.click(await screen.findByRole('button', { name: '详情' }))
   const drawer = await screen.findByRole('dialog', { name: 'Dallas Verizon' })
   const select = within(drawer).getByRole('combobox', { name: '检测协议' })
-  expect(select).toHaveValue('socks5')
-  await user.selectOptions(select, 'http')
+  expect(choiceValue(select)).toBe('socks5')
+  await chooseOption(user, select, 'http')
   await user.click(within(drawer).getByRole('button', { name: '测试连接' }))
   await waitFor(() => expect(protocols).toEqual(['http']))
-  expect(select).toHaveValue('http')
+  expect(choiceValue(select)).toBe('http')
 })

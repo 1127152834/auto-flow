@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { useState } from 'react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -33,12 +36,12 @@ it('keeps element screenshot selection incomplete and preserves its selector bet
   const user = userEvent.setup()
   render(<Harness initial={node('screenshot', { screenshotType: 'fullpage', selector: '', savePath: '', variableName: 'shot' })} />)
   expect(screen.queryByLabelText('元素选择器')).not.toBeInTheDocument()
-  await user.selectOptions(screen.getByLabelText('截图范围'), 'element')
+  await chooseOption(user, screen.getByLabelText('截图范围'), 'element')
   expect(screen.getByLabelText('元素选择器')).toHaveValue('')
   expect(screen.getByTestId('config')).toHaveTextContent('"screenshotType":"element"')
   await user.type(screen.getByLabelText('元素选择器'), 'xpath=//main')
-  await user.selectOptions(screen.getByLabelText('截图范围'), 'viewport')
-  await user.selectOptions(screen.getByLabelText('截图范围'), 'element')
+  await chooseOption(user, screen.getByLabelText('截图范围'), 'viewport')
+  await chooseOption(user, screen.getByLabelText('截图范围'), 'element')
   expect(screen.getByLabelText('元素选择器')).toHaveValue('xpath=//main')
 })
 

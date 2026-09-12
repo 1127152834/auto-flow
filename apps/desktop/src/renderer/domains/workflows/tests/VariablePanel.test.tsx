@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { useState } from 'react'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -20,17 +23,17 @@ it('adds distinct names and edits all five variable types', async () => {
   await user.click(screen.getByRole('button', { name: '添加变量' }))
   await user.type(screen.getByLabelText('初始值'), 'hello')
   expect(screen.getByTestId('variables')).toHaveTextContent('"value":"hello"')
-  await user.selectOptions(screen.getByLabelText('类型'), 'number')
+  await chooseOption(user, screen.getByLabelText('类型'), 'number')
   expect(screen.getByLabelText('初始值')).toHaveValue('hello')
   fireEvent.change(screen.getByLabelText('初始值'), { target: { value: '2.5' } })
   expect(screen.getByTestId('variables')).toHaveTextContent('"value":2.5')
-  await user.selectOptions(screen.getByLabelText('类型'), 'boolean')
-  await user.selectOptions(screen.getByLabelText('初始值'), 'false')
+  await chooseOption(user, screen.getByLabelText('类型'), 'boolean')
+  await chooseOption(user, screen.getByLabelText('初始值'), 'false')
   expect(screen.getByTestId('variables')).toHaveTextContent('"value":false')
-  await user.selectOptions(screen.getByLabelText('类型'), 'array')
+  await chooseOption(user, screen.getByLabelText('类型'), 'array')
   fireEvent.change(screen.getByLabelText('初始值'), { target: { value: '[1, 2]' } })
   expect(screen.getByTestId('variables')).toHaveTextContent('"value":[1,2]')
-  await user.selectOptions(screen.getByLabelText('类型'), 'object')
+  await chooseOption(user, screen.getByLabelText('类型'), 'object')
   fireEvent.change(screen.getByLabelText('初始值'), { target: { value: '{"ok":true}' } })
   expect(screen.getByTestId('variables')).toHaveTextContent('"value":{"ok":true}')
   await user.click(screen.getByRole('button', { name: '添加变量' }))

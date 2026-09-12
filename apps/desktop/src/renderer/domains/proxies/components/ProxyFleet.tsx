@@ -60,20 +60,9 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
             <MagnifyingGlass className="pointer-events-none absolute left-3 top-3 text-muted" />
             <Input className="pl-9" value={filters.q ?? ''} placeholder="搜索名称、城市、IP 或运营商" onChange={(event) => onFiltersChange({ ...filters, q: event.target.value, offset: 0 })} />
           </label>
-          <Select aria-label="健康状态" value={filters.health ?? ''} onChange={(event) => onFiltersChange({ ...filters, health: event.target.value as ProxyFilters['health'], offset: 0 })}>
-            <option value="">全部健康状态</option>
-            <option value="healthy">健康</option>
-            <option value="unhealthy">异常</option>
-            <option value="untested">未检测</option>
-          </Select>
-          <Select aria-label="运营商" value={filters.carrier ?? ''} onChange={(event) => onFiltersChange({ ...filters, carrier: event.target.value, offset: 0 })}>
-            <option value="">全部运营商</option>
-            {carriers.map((value) => <option value={value} key={value}>{value}</option>)}
-          </Select>
-          <Select aria-label="城市" value={filters.city ?? ''} onChange={(event) => onFiltersChange({ ...filters, city: event.target.value, offset: 0 })}>
-            <option value="">全部城市</option>
-            {cities.map((value) => <option value={value} key={value}>{value}</option>)}
-          </Select>
+          <Select clearable={false} aria-label="健康状态" value={filters.health ?? ''} onValueChange={(value) => onFiltersChange({ ...filters, health: (value ?? '') as ProxyFilters['health'], offset: 0 })} options={[{ value: '', label: '全部健康状态' }, { value: 'healthy', label: '健康' }, { value: 'unhealthy', label: '异常' }, { value: 'untested', label: '未检测' }]} />
+          <Select clearable={false} aria-label="运营商" value={filters.carrier ?? ''} onValueChange={(value) => onFiltersChange({ ...filters, carrier: value ?? '', offset: 0 })} options={[{ value: '', label: '全部运营商' }, ...carriers.map((value) => ({ value, label: value }))]} />
+          <Select clearable={false} aria-label="城市" value={filters.city ?? ''} onValueChange={(value) => onFiltersChange({ ...filters, city: value ?? '', offset: 0 })} options={[{ value: '', label: '全部城市' }, ...cities.map((value) => ({ value, label: value }))]} />
         </div>
       </div>
       {page.items.length === 0 ? (

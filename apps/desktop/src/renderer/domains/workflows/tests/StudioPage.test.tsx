@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { act, cleanup, createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -97,7 +100,7 @@ it('creates all six nodes, sends an authenticated manual save, then updates with
   await user.clear(screen.getByLabelText('流程名称'))
   await user.type(screen.getByLabelText('流程名称'), '六步流程')
   for (const item of catalog) await user.click(screen.getByRole('button', { name: `添加${item.title}` }))
-  await user.selectOptions(screen.getByLabelText('截图范围'), 'element')
+  await chooseOption(user, screen.getByLabelText('截图范围'), 'element')
   expect(screen.getByLabelText('元素选择器')).toHaveValue('')
   await user.click(screen.getByRole('button', { name: '移动全部节点' }))
   await user.click(screen.getByRole('button', { name: '顺序连接节点' }))

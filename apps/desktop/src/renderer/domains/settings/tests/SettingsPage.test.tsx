@@ -5,6 +5,9 @@ import '@testing-library/jest-dom/vitest'
 import type { DesktopSettingsSnapshot, SettingsBridge } from '../../../../shared/settings'
 import { SettingsPage } from '../pages/SettingsPage'
 import { DiagnosticDialog } from '../components/DiagnosticDialog'
+import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 
 afterEach(cleanup)
 const snapshot: DesktopSettingsSnapshot = {
@@ -35,7 +38,7 @@ it('renders real service information and persists preferences', async () => {
   render(<SettingsPage bridge={api} restartService={vi.fn()} />)
   expect(await screen.findByText('运行正常')).toBeInTheDocument()
   expect(screen.getByText('v1')).toBeInTheDocument()
-  await user.selectOptions(screen.getByLabelText('界面缩放'), '110')
+  await chooseOption(user, screen.getByLabelText('界面缩放'), '110')
   expect(api.setPreferences).toHaveBeenCalledWith({ zoom: 110, motion: 'system' })
 })
 
@@ -86,7 +89,7 @@ it('keeps operation errors visible across polling and lets the user dismiss them
   const user = userEvent.setup()
   render(<SettingsPage bridge={api} restartService={vi.fn()} />)
   await screen.findByText('运行正常')
-  await user.selectOptions(screen.getByLabelText('界面缩放'), '110')
+  await chooseOption(user, screen.getByLabelText('界面缩放'), '110')
   expect(await screen.findByRole('alert')).toHaveTextContent('偏好保存失败')
   await new Promise(resolve => window.setTimeout(resolve, 1100))
   expect(screen.getByRole('alert')).toHaveTextContent('偏好保存失败')
@@ -100,9 +103,9 @@ it('does not let polling overwrite a preference while its save is pending', asyn
   const user = userEvent.setup()
   render(<SettingsPage bridge={api} restartService={vi.fn()} />)
   const zoom = await screen.findByLabelText('界面缩放')
-  await user.selectOptions(zoom, '110')
+  await chooseOption(user, zoom, '110')
   await new Promise(resolve => window.setTimeout(resolve, 1100))
-  expect(zoom).toHaveValue('110')
+  expect(choiceValue(zoom)).toBe('110')
   resolveSave({ ok: true, value: { zoom: 110, motion: 'system' } })
   await waitFor(() => expect(zoom).toBeEnabled())
 })
