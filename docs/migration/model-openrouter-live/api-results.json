@@ -1,0 +1,156 @@
+{
+  "status": "PASS",
+  "summary": {
+    "passed": 25,
+    "failed": 0
+  },
+  "routesCovered": 14,
+  "generationRequestsMaximum": 1,
+  "requestedModel": "openai/gpt-4o-mini",
+  "credentialRefsCreated": 2,
+  "steps": [
+    {
+      "name": "connection_preview_not_persisted",
+      "status": "PASS",
+      "code": "OK",
+      "count": 445
+    },
+    {
+      "name": "invalid_key_rejected",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "connect_zero_models",
+      "status": "PASS",
+      "code": "OK",
+      "count": 0
+    },
+    {
+      "name": "discover_catalog_name_context",
+      "status": "PASS",
+      "code": "OK",
+      "count": 445
+    },
+    {
+      "name": "connect_with_model",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1
+    },
+    {
+      "name": "secret_free_responses_and_database",
+      "status": "PASS",
+      "code": "OK",
+      "count": 3
+    },
+    {
+      "name": "get_and_list_provider",
+      "status": "PASS",
+      "code": "OK",
+      "count": 2
+    },
+    {
+      "name": "provider_metadata_update",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "connection_wrong_key_preserves_state",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1
+    },
+    {
+      "name": "connection_bad_url_preserves_state",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1
+    },
+    {
+      "name": "model_create",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1
+    },
+    {
+      "name": "model_duplicate_rejected",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "model_field_validation",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "model_id_immutable",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "model_update",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "enabled_double_filter",
+      "status": "PASS",
+      "code": "OK",
+      "count": 2
+    },
+    {
+      "name": "model_delete",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "small_live_generation",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1,
+      "outputLength": 2
+    },
+    {
+      "name": "recreate_app_persistence_and_credential",
+      "status": "PASS",
+      "code": "OK",
+      "count": 2
+    },
+    {
+      "name": "provider_test",
+      "status": "PASS",
+      "code": "OK",
+      "count": 445
+    },
+    {
+      "name": "provider_cascade_and_credential_cleanup",
+      "status": "PASS",
+      "code": "OK",
+      "count": 1
+    },
+    {
+      "name": "zero_provider_cleanup",
+      "status": "PASS",
+      "code": "OK"
+    },
+    {
+      "name": "deleted_state_empty",
+      "status": "PASS",
+      "code": "OK",
+      "count": 0
+    },
+    {
+      "name": "rebuild_after_delete_empty",
+      "status": "PASS",
+      "code": "OK",
+      "count": 0
+    },
+    {
+      "name": "finally_credential_cleanup",
+      "status": "PASS",
+      "code": "OK",
+      "count": 2
+    }
+  ]
+}

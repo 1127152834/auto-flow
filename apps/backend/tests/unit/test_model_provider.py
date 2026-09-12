@@ -41,6 +41,86 @@ async def test_openai_discovery_preserves_query_and_normalizes_context():
 
 
 @pytest.mark.asyncio
+async def test_openrouter_validates_key_before_discovery_and_keeps_metadata():
+    calls = []
+
+    async def handler(request):
+        calls.append(request.url.path)
+        assert request.headers["authorization"] == "Bearer secret"
+        if request.url.path == "/api/v1/key":
+            return httpx.Response(200, json={"data": {"label": "test-key"}})
+        return httpx.Response(
+            200,
+            json={
+                "data": [
+                    {
+                        "id": "vendor/model",
+                        "name": "Model Name",
+                        "context_length": 131072,
+                    }
+                ]
+            },
+        )
+
+    result = await HttpModelProvider(
+        transport=httpx.MockTransport(handler)
+    ).discover(
+        connection(
+            preset="openrouter", url="https://gateway.example/api/v1"
+        ),
+        "secret",
+    )
+
+    assert calls == ["/api/v1/key", "/api/v1/models"]
+    assert (result.items[0].display_name, result.items[0].context_window) == (
+        "Model Name",
+        131072,
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "response,code",
+    [
+        (httpx.Response(401), "MODEL_PROVIDER_AUTH_FAILED"),
+        (httpx.Response(200, json={"data": []}), "MODEL_PROVIDER_RESPONSE_INVALID"),
+    ],
+)
+async def test_openrouter_rejects_invalid_key_response_before_public_catalog(
+    response, code
+):
+    calls = []
+
+    async def handler(request):
+        calls.append(request.url.path)
+        return response
+
+    with pytest.raises(ModelError) as caught:
+        await HttpModelProvider(transport=httpx.MockTransport(handler)).discover(
+            connection(preset="openrouter", url="https://openrouter.ai/api/v1"),
+            "invalid",
+        )
+
+    assert caught.value.code == code
+    assert calls == ["/api/v1/key"]
+
+
+@pytest.mark.asyncio
+async def test_non_openrouter_discovery_does_not_validate_key_separately():
+    calls = []
+
+    async def handler(request):
+        calls.append(request.url.path)
+        return httpx.Response(200, json={"data": []})
+
+    await HttpModelProvider(transport=httpx.MockTransport(handler)).discover(
+        connection(preset="deepseek"), "secret"
+    )
+
+    assert calls == ["/v1/models"]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("preset", ["ollama", "custom-openai-compatible"])
 async def test_optional_key_has_no_authorization_and_redirect_is_not_followed(preset):
     calls = []

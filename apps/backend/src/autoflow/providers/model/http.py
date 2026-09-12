@@ -42,6 +42,19 @@ class HttpModelProvider:
         base_url = validate_connection(connection, secret)
         headers = _headers(connection, secret)
         params: dict[str, str | int] = {}
+        started = time.perf_counter()
+        if connection.preset_id == "openrouter":
+            key_info = await self._request(
+                "GET",
+                _append_path(base_url, "key"),
+                headers,
+                {},
+                None,
+                15,
+                "验证 OpenRouter API Key",
+            )
+            if not isinstance(key_info.get("data"), dict):
+                raise _invalid("验证 OpenRouter API Key")
         if connection.preset_id == "qwen":
             parsed = urlsplit(base_url)
             endpoint = urlunsplit(
@@ -54,7 +67,6 @@ class HttpModelProvider:
                 params.update(pageSize=1000, key=secret)
             elif connection.provider_kind == "anthropic":
                 params["limit"] = 1000
-        started = time.perf_counter()
         body = await self._request(
             "GET", endpoint, headers, params, None, 15, "获取模型列表"
         )
@@ -247,9 +259,18 @@ def _normalize_models(
                 if connection.provider_kind == "gemini"
                 else raw.get("id")
             )
-            context = raw.get("inputTokenLimit") or raw.get("max_input_tokens")
+            context = (
+                raw.get("inputTokenLimit")
+                or raw.get("max_input_tokens")
+                or raw.get("context_length")
+            )
             owned_by = raw.get("owned_by")
-            display = raw.get("displayName") or raw.get("display_name") or raw_id
+            display = (
+                raw.get("displayName")
+                or raw.get("display_name")
+                or raw.get("name")
+                or raw_id
+            )
         if not isinstance(raw_id, str) or not raw_id.strip():
             continue
         key = raw_id.removeprefix("models/").strip()

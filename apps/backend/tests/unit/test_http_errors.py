@@ -74,9 +74,51 @@ def test_model_error_handler_only_returns_safe_structured_details() -> None:
     response = TestClient(app, raise_server_exceptions=False).get("/failure")
 
     assert response.status_code == 409
-    assert response.json()["error"]["message"] == "Model provider request failed"
+    assert response.json()["error"]["message"] == "供应商请求失败"
     assert response.json()["error"]["details"] == {
         "status": 502,
         "fields": {"apiKey": "Invalid value"},
     }
     assert "sk-test-secret" not in response.text
+
+
+def test_model_provider_status_messages_are_clear_and_never_echo_upstream_text() -> None:
+    app = FastAPI()
+    install_error_handlers(app)
+
+    @app.get("/failure/{status}")
+    def fail(status: int) -> None:
+        code = {
+            401: "MODEL_PROVIDER_AUTH_FAILED",
+            402: "MODEL_PROVIDER_REQUEST_FAILED",
+            404: "MODEL_PROVIDER_ENDPOINT_NOT_FOUND",
+            429: "MODEL_PROVIDER_RATE_LIMITED",
+        }[status]
+        raise ModelError(
+            code,
+            "upstream leaked sk-test-secret",
+            409,
+            {"status": status, "body": "remote sk-test-secret"},
+        )
+
+    client = TestClient(app, raise_server_exceptions=False)
+    expected = {
+        401: "供应商认证失败，请检查 API Key",
+        402: "供应商余额或额度不足，请充值或调整额度后重试",
+        404: "供应商接口不存在，请检查服务地址或模型标识",
+        429: "供应商触发限流或额度限制，请稍后重试",
+    }
+    for status, message in expected.items():
+        response = client.get(f"/failure/{status}")
+        assert response.json()["error"] == {
+            "code": {
+                401: "MODEL_PROVIDER_AUTH_FAILED",
+                402: "MODEL_PROVIDER_REQUEST_FAILED",
+                404: "MODEL_PROVIDER_ENDPOINT_NOT_FOUND",
+                429: "MODEL_PROVIDER_RATE_LIMITED",
+            }[status],
+            "message": message,
+            "details": {"status": status},
+            "requestId": response.json()["error"]["requestId"],
+        }
+        assert "sk-test-secret" not in response.text

@@ -32,24 +32,24 @@ from autoflow.domain.profiles.errors import (
 )
 
 _MODEL_ERROR_MESSAGES = {
-    "VALIDATION_ERROR": "Request validation failed",
-    "MODEL_PROVIDER_NOT_FOUND": "Model provider was not found",
-    "MODEL_NOT_FOUND": "Model was not found",
-    "MODEL_PROVIDER_EXISTS": "Model provider already exists",
-    "MODEL_EXISTS": "Model already exists",
-    "MODEL_PROVIDER_CHANGED": "Model provider changed during the request",
-    "MODEL_PROVIDER_MODEL_NOT_DISCOVERED": "Selected model was not discovered",
-    "MODEL_PROVIDER_ENDPOINT_NOT_FOUND": "Model provider endpoint was not found",
-    "MODEL_PROVIDER_AUTH_FAILED": "Model provider authentication failed",
-    "MODEL_PROVIDER_RATE_LIMITED": "Model provider rate limit was reached",
-    "MODEL_PROVIDER_REQUEST_FAILED": "Model provider request failed",
-    "MODEL_PROVIDER_RESPONSE_INVALID": "Model provider response was invalid",
-    "MODEL_PROVIDER_UNREACHABLE": "Model provider is unreachable",
-    "MODEL_PROVIDER_BASE_URL_REQUIRED": "Model provider base URL is required",
-    "MODEL_PROVIDER_API_KEY_REQUIRED": "Model provider API key is required",
-    "MODEL_PROVIDER_BASE_URL_INVALID": "Model provider base URL is invalid",
-    "CREDENTIAL_STORE_UNAVAILABLE": "Credential store is unavailable",
-    "MODEL_PROVIDER_TIMEOUT": "Model provider request timed out",
+    "VALIDATION_ERROR": "请求参数无效",
+    "MODEL_PROVIDER_NOT_FOUND": "模型供应商不存在",
+    "MODEL_NOT_FOUND": "模型不存在",
+    "MODEL_PROVIDER_EXISTS": "模型供应商已存在",
+    "MODEL_EXISTS": "模型已存在",
+    "MODEL_PROVIDER_CHANGED": "模型供应商已被修改，请刷新后重试",
+    "MODEL_PROVIDER_MODEL_NOT_DISCOVERED": "所选模型不在供应商目录中",
+    "MODEL_PROVIDER_ENDPOINT_NOT_FOUND": "供应商接口不存在，请检查服务地址或模型标识",
+    "MODEL_PROVIDER_AUTH_FAILED": "供应商认证失败，请检查 API Key",
+    "MODEL_PROVIDER_RATE_LIMITED": "供应商触发限流或额度限制，请稍后重试",
+    "MODEL_PROVIDER_REQUEST_FAILED": "供应商请求失败",
+    "MODEL_PROVIDER_RESPONSE_INVALID": "供应商返回了无效响应",
+    "MODEL_PROVIDER_UNREACHABLE": "无法连接模型供应商，请检查网络或服务地址",
+    "MODEL_PROVIDER_BASE_URL_REQUIRED": "请输入供应商服务地址",
+    "MODEL_PROVIDER_API_KEY_REQUIRED": "请输入供应商 API Key",
+    "MODEL_PROVIDER_BASE_URL_INVALID": "供应商服务地址无效",
+    "CREDENTIAL_STORE_UNAVAILABLE": "系统凭据存储当前不可用",
+    "MODEL_PROVIDER_TIMEOUT": "供应商请求超时，请稍后重试",
 }
 
 
@@ -152,10 +152,13 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ModelError)
     async def model_error(_request: Request, error: ModelError) -> JSONResponse:
+        message = _MODEL_ERROR_MESSAGES.get(error.code, "模型操作失败")
+        if error.code == "MODEL_PROVIDER_REQUEST_FAILED" and error.details.get("status") == 402:
+            message = "供应商余额或额度不足，请充值或调整额度后重试"
         return error_response(
             error.status,
             error.code,
-            _MODEL_ERROR_MESSAGES.get(error.code, "Model operation failed"),
+            message,
             _safe_model_details(error.details),
         )
 

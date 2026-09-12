@@ -140,6 +140,7 @@ API Key 可选性由后端预设目录判定，不能信任 Renderer：首版只
 - 2026-09-12 baseline客户端整合（confirmed，来源：实际API客户端与慢响应测试）：前端模型外部操作使用60秒总预算，覆盖目录读取、接入、连接更新、供应商测试与模型生成；本地CRUD沿用共享客户端10秒默认值。后端上述HTTP超时配置不变。
 - `httpx.AsyncClient(trust_env=False, follow_redirects=False)`；任何 3xx 都作为远端请求失败处理，绝不把认证信息跟随到新地址。
 - OpenAI/OpenAI-compatible：目录 `GET {baseUrl}/models`，测试 `POST {baseUrl}/chat/completions`。
+- OpenRouter 预设：先以同一 Base URL 和候选 Bearer Key 请求 `GET {baseUrl}/key`，仅在 200 响应包含对象类型的 `data` 后读取公共模型目录；不能用 `GET /models` 验证凭据。该规则按预设生效，因此自定义 OpenAI-compatible 服务不会增加请求，自定义 OpenRouter 网关须转发 `/key`。
 - Anthropic：目录 `GET {baseUrl}/models?limit=1000`，测试 `POST {baseUrl}/messages`，使用 `x-api-key`、`anthropic-version: 2023-06-01`。
 - Gemini：目录 `GET {baseUrl}/models?pageSize=1000&key=...`，测试 `POST {baseUrl}/models/{url-encoded-modelKey}:generateContent?key=...`。
 - Qwen 目录沿用旧适配特例：保留用户 Base URL 的 scheme/host/port，将 path 改为 `/api/v1/models` 并设置 `page_size=500`；默认地址对应 dashscope.aliyuncs.com。生成仍走所填 Base URL，不硬编码到官方 host。
@@ -332,6 +333,7 @@ Query key 必须包含当前 sidecar `instanceId`，防止重启后沿用旧进�
 | --- | --- |
 | Ollama，空 Key，302 Location 指向另一 host | 原请求不含 Authorization；只调用一次；MODEL_PROVIDER_REQUEST_FAILED；不访问 Location |
 | OpenAI/compatible、Anthropic、Gemini/Qwen 目录样本 | 路径、认证方式、参数和归一化字段符合 §4；Qwen 保留自定义 host |
+| OpenRouter 有效/无效 Key 与目录样本 | `/key` 成功且 `data` 为对象后才调用 `/models`；401 或无效结构不读取公共目录；映射 `name` 与 `context_length` |
 | 构造客户端 | spy 断言 trust_env=False、follow_redirects=False 与15/30秒 timeout；MockTransport 成功不是环境代理配置证据 |
 | JSON无效/超过8MiB/错误结构/超时 | 对应响应无效或超时码；无原始 body、Key、URL query进入错误/日志 |
 | 短生成正文及思考长样本 | 提示与16tokens参数正确；输出/思考最多240/2000字符；无能力推断 |
