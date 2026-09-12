@@ -1,0 +1,7 @@
+*.png
+*.json
+!packaged-saved.png
+!packaged-leave-confirmation.png
+!packaged-incomplete.png
+!packaged-conflict.png
+!packaged.json

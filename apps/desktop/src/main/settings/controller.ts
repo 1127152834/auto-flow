@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdirSync, realpathSync, lstatSync, existsSync } from 'node:fs'
 import { dirname, join, relative, sep } from 'node:path'
 import type { SidecarStatus } from '../sidecar/supervisor'
+import type { DesktopRuntimeContext } from '../../shared/runtime'
 import type { DesktopSettingsSnapshot, DiagnosticPreview, SettingsDirectory, UiPreferences, WorkspaceChoice } from '../../shared/settings'
 import { DesktopSettingsStore, ensureWritable, initializeWorkspace, inspectWorkspace, SettingsError, validatePreferences, writeAtomic, type StoredSettings } from './store'
 
@@ -54,6 +55,9 @@ export class SettingsController {
   getWorkspacePath(): string { return this.settings.currentPath }
   getStatus(): SidecarStatus { return this.sidecar?.getStatus() ?? { state: 'stopped' } }
   getPublicStatus(): SidecarStatus { return this.operation === 'switching' || this.operation === 'restarting' ? { state: 'starting' } : this.getStatus() }
+  getRuntimeContext(): DesktopRuntimeContext {
+    return { workspaceKey: this.settings.currentPath, sidecar: this.getPublicStatus(), preferences: this.getPreferences(), operation: this.operation }
+  }
   getHostStatus(): HostStatus { return this.sidecar?.getHostStatus() ?? { state: 'stopped' } }
   invalidateChoices(): void { this.choice = undefined; this.preview = undefined }
 

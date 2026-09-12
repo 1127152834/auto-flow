@@ -121,6 +121,20 @@ describe('desktop settings storage', () => {
 })
 
 describe('workspace and preference controller', () => {
+  it('reads a synchronous runtime snapshot without mixing workspace identity and credentials during a switch', async () => {
+    const target = temporary('runtime-context')
+    const h = harness({ selectDirectory: async () => target })
+    await h.controller.start()
+    const old = h.controller.getRuntimeContext()
+    expect(old).toMatchObject({ workspaceKey: realpathSync(h.userData), sidecar: { state: 'ready', token: 'renderer-token' }, operation: 'idle' })
+    expect(JSON.stringify(old)).not.toContain('host-token')
+    const choice = await h.controller.chooseWorkspace('choose')
+    const switching = h.controller.confirmWorkspace(choice!.id)
+    expect(h.controller.getRuntimeContext()).toMatchObject({ workspaceKey: old.workspaceKey, sidecar: { state: 'starting' }, operation: 'switching' })
+    await switching
+    expect(h.controller.getRuntimeContext()).toMatchObject({ workspaceKey: realpathSync(target), sidecar: { state: 'ready', instanceId: realpathSync(target) }, operation: 'idle' })
+  })
+
   it('rolls back applied preferences when persistence fails', async () => {
     const applied: UiPreferences[] = []
     const h = harness({ applyPreferences: value => applied.push(value) })

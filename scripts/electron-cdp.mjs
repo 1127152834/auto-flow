@@ -33,14 +33,14 @@ export async function launchElectron(root, { launchArgs = [], cliArgs = process.
     await wait(100)
   }
   if (!page) throw new Error('desktop renderer not created')
-  return { child, cdp: await connectCdp(page.webSocketDebuggerUrl), packaged }
+  return { child, cdp: await connectCdp(page.webSocketDebuggerUrl), packaged, debugOrigin: origin, inspectorUrl: output.match(/Debugger listening on (ws:\/\/[^\s]+)/)?.[1] }
   } catch (error) {
     await stop(child)
     throw error
   }
 }
 
-async function connectCdp(url) {
+export async function connectCdp(url) {
   const socket = new WebSocket(url)
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('desktop debugger connection timeout')), 5000)

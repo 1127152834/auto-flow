@@ -1,18 +1,9 @@
 import type { components } from './generated'
 import type { SettingsBridge } from '../../../shared/settings'
 import type { AutomationStudioBridge } from '../../../shared/automation-studio'
+import type { RuntimeBridge, SidecarStatus } from '../../../shared/runtime'
 
-export type SidecarStatus =
-  | { state: 'starting' | 'stopped' }
-  | { state: 'failed'; message: string }
-  | {
-      state: 'ready'
-      apiVersion: 'v1'
-      instanceId: string
-      port: number
-      baseUrl: string
-      token: string
-    }
+export type { SidecarStatus } from '../../../shared/runtime'
 
 export type HealthResponse = components['schemas']['HealthResponse']
 export type BrowserApiError = components['schemas']['BrowserApiError']
@@ -40,7 +31,7 @@ export type KernelOperation = components['schemas']['KernelOperationRead']
 export type KernelOperationList = components['schemas']['KernelOperationList']
 export type KernelRef = components['schemas']['KernelRefRead']
 
-export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge> & {
+export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge> & RuntimeBridge & {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
   copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>

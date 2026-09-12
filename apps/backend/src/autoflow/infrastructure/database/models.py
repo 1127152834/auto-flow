@@ -18,6 +18,17 @@ class Base(DeclarativeBase):
     pass
 
 
+class WorkflowDocumentRow(Base):
+    __tablename__ = "workflow_documents"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    document: Mapped[dict] = mapped_column(JSON, nullable=False)
+    layout: Mapped[dict] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class ProfileRow(Base):
     __tablename__ = "profiles"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)

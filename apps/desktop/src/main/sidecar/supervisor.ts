@@ -3,11 +3,9 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { platform } from 'node:process'
 import { resolveBackendEnvironment } from '../platform/paths'
 import { parseReadyLine, type SidecarReady } from './ready-protocol'
+import type { SidecarStatus } from '../../shared/runtime'
 
-export type SidecarStatus =
-  | { state: 'starting' | 'stopped' }
-  | { state: 'failed'; message: string }
-  | { state: 'ready'; apiVersion: 'v1'; instanceId: string; port: number; baseUrl: string; token: string }
+export type { SidecarStatus } from '../../shared/runtime'
 
 export type SidecarEvent =
   | { type: 'spawned' }

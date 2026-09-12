@@ -21,8 +21,8 @@ apps/
 ├── backend/
 │   ├── src/autoflow/
 │   │   ├── bootstrap/
-│   │   ├── domain/{profiles,proxies,kernels,models,settings}/
-│   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard}/
+│   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows}/
+│   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
 │   │   ├── adapters/{http,events}/
 │   │   ├── infrastructure/{database,filesystem,credentials,process,events}/
 │   │   └── providers/{browser,proxy,kernel,model,platform}/
@@ -34,7 +34,7 @@ apps/
     │   ├── shared/                     # main/preload/renderer 的桌面 IPC 契约
     │   └── renderer/
     │       ├── app/
-    │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard}/
+    │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
     │       │   └── 每个领域：components/、hooks/、pages/、tests/
     │       ├── shared/{api,components,hooks,lib}/
     │       └── styles/
@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 未来 Alembic 版本脚本；此时仅保留目录，尚未初始化 Alembic。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 在 0004 后新增 0005_workflow_documents。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -98,12 +98,12 @@ reference/
 | `apps/backend/tests/integration/` | 真实临时数据库、迁移和仓储测试。 |
 | `apps/backend/tests/unit/` | 纯规则、用例和隔离适配测试。 |
 | `apps/desktop/src/main/ipc/` | 有明确输入输出的 IPC handler；禁止任意文件或进程命令。 |
-| `apps/desktop/src/main/ipc/automation-studio.ts` | 工作流工作台的受控开窗入口及单窗口生命周期；当前加载空白页。 |
+| `apps/desktop/src/main/ipc/automation-studio.ts` | 正式工作流工作台的单窗口生命周期、离开握手和刷新保护；同 renderer 产物的独立 StudioApp 入口。 |
 | `apps/desktop/src/main/platform/macos/` | 必要的 macOS 桌面适配。 |
 | `apps/desktop/src/main/platform/windows/` | 必要的 Windows 桌面适配。 |
 | `apps/desktop/src/main/sidecar/` | 本地后端启动、就绪、恢复和退出监管。 |
 | `apps/desktop/src/preload/` | 受控桌面能力桥接。 |
-| `apps/desktop/src/shared/automation-studio.ts` | 主应用打开工作流工作台的固定桌面 IPC 类型契约。 |
+| `apps/desktop/src/shared/automation-studio.ts` | 工作台开窗、离开确认与编辑锁定的固定桌面 IPC 类型契约。 |
 | `apps/desktop/src/renderer/app/` | 应用入口、路由、装配、全局错误和服务恢复。 |
 | `apps/desktop/src/renderer/domains/` | 正式业务组件和页面；按已批准架构使用 domains。 |
 | `apps/desktop/src/renderer/domains/dashboard/` | 总览前端模块；请求封装 api.ts 和必要 model.ts 在实际实现时添加。 |
@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 未来自动化编排的研究资料；不表示本阶段实现范围。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1 范围和验收以 superpowers 规格与 migration 记录为准。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -239,3 +239,14 @@ reference/
 - `adapters/http/proxy_remote.py`：位置与轮换 HTTP 路由和安全操作摘要；旧 placeholders 已移除。
 - `renderer/domains/proxies/components/{LocationPicker,RotationScheduleForm,ProxyOperationStatus,ProxyRemoteControls}.tsx`：独立领域组件，由现有详情抽屉组合；`hooks/useProxyRemoteControls.ts` 处理读取、命令状态、限流和恢复。
 - 验证证据及尚未执行的实网写入项目见 [远程控制验收](migration/proxy-remote-controls-verification.md)。
+
+## 工作流编排 M1（2026-09-13，confirmed）
+
+- `domain/workflows/{models,catalog,validation}.py`：自有文档、六节点目录、结构与草稿诊断；不依赖 React Flow、HTTP、数据库或浏览器。
+- `application/workflows/service.py`：文档用例和仓储端口；`infrastructure/database/workflows.py` 实现 SQLite 幂等创建、revision CAS 和文档/布局原子写入。`0005_workflow_documents.py` 为增量迁移。
+- `adapters/http/workflows.py` 与 `workflow_schemas.py`：最小目录/列表/创建/读取/保存 API，复用鉴权、停写和错误包；类型生成到现有 `renderer/shared/api/generated.ts`。
+- `renderer/domains/workflows/components/`：动作库、画布、专用属性表单和变量面板；`hooks/useWorkflowEditor.ts` 管理文档历史和保存；`pages/StudioPage.tsx` 组合真实交互；`tests/` 集中组件、状态和页面测试。领域根保留 api/types、文档变换、历史和即时诊断。
+- `renderer/app/StudioApp.tsx` 是独立工作台入口，`useDesktopSession.ts` 复用主应用连接与恢复逻辑；同工作区重连保留草稿，实际切换工作区才更换文档上下文。旧 `app-state.ts` 已由该共享 hook 替代。
+- `shared/runtime.ts` 只给已登记窗口的主 frame 提供运行上下文；编辑、目录管理和凭据权限仍按各自 IPC 边界校验。
+- `scripts/smoke-workflow-studio.mjs` 使用真实 Electron/sidecar 与临时工作区验收；支持构建 HTML、`--dev` 开发 URL、`--executable` 打包入口。
+- M1 只提供编排编辑与保存，没有执行器、录制、Debug 或模拟运行。详细证据见 [M1 验收记录](migration/automation-studio-m1-validation.md)。

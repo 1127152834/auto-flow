@@ -15,6 +15,7 @@ const dashboard = { profiles: 4, enabledProxies: 3, proxyGroups: 2, installedKer
 beforeEach(() => {
   window.location.hash = '#/dashboard'
   vi.stubGlobal('autoflow', { getSidecarStatus: vi.fn(async () => ready()), restartSidecar: vi.fn(async () => ready()), getSettings: vi.fn(async () => ({ ok: true, value: settings })), setPreferences: vi.fn(), chooseWorkspace: vi.fn(), confirmWorkspace: vi.fn(), openSettingsDirectory: vi.fn(), previewDiagnostics: vi.fn(), saveDiagnostics: vi.fn(), quitApplication: vi.fn() })
+  window.autoflow.getRuntimeContext = vi.fn(async () => ({ workspaceKey: settings.workspace.path, sidecar: await window.autoflow.getSidecarStatus(), preferences: settings.preferences, operation: 'idle' as const }))
 })
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.location.hash = '' })
 

@@ -15,11 +15,13 @@ from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
+from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
@@ -51,6 +53,7 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
@@ -201,6 +204,7 @@ def create_app(
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(settings_dashboard_router(settings_runtime))
+    app.include_router(workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory))))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )

@@ -4,7 +4,7 @@ import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
-import { createOpenAutomationStudioHandler } from './ipc/automation-studio'
+import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
 import { SettingsController } from './settings/controller'
@@ -12,17 +12,35 @@ import type { UiPreferences } from '../shared/settings'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
+const studio = new StudioWindowController({
+  mainSenderId: () => mainWindow?.webContents.id,
+  preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'system' },
+  preloadPath: join(__dirname, '../preload/index.js'),
+  rendererFile: join(__dirname, '../renderer/index.html'),
+  rendererUrl: process.env.ELECTRON_RENDERER_URL,
+})
+
+function requireRuntimeSender(event: DesktopIpcEvent): void {
+  if (!isWindowMainFrame(event, mainWindow?.webContents.id) && !studio.isSender(event)) throw new Error('此窗口不能访问本地服务')
+}
+
+function publishRuntimeContext(): void {
+  if (!settings) return
+  const context = settings.getRuntimeContext()
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('autoflow:runtime-context-changed', context)
+  studio.notifyRuntime(context)
+}
 
 function applyPreferences(preferences: UiPreferences): void {
-  if (!mainWindow || mainWindow.isDestroyed()) return
-  mainWindow.webContents.setZoomFactor(preferences.zoom / 100)
-  mainWindow.webContents.send('autoflow:preferences-changed', preferences)
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setZoomFactor(preferences.zoom / 100)
+    mainWindow.webContents.send('autoflow:preferences-changed', preferences)
+  }
+  studio.applyPreferences(preferences)
 }
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
-  ipcMain.removeHandler('autoflow:open-automation-studio')
-  ipcMain.handle('autoflow:open-automation-studio', createOpenAutomationStudioHandler(mainWindow.webContents.id))
   ipcMain.removeHandler('autoflow:copy-proxy-credentials')
   ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
     allowedSenderId: mainWindow.webContents.id,
@@ -41,7 +59,10 @@ async function createWindow(): Promise<void> {
     'get': () => settings!.snapshot(),
     'preferences': value => settings!.setPreferences(value),
     'choose-workspace': source => settings!.chooseWorkspace(source),
-    'confirm-workspace': id => settings!.confirmWorkspace(id),
+    'confirm-workspace': async id => {
+      if (!await studio.prepareLeave('workspace')) throw new SettingsError('STUDIO_TRANSITION_CANCELLED', '已取消工作区切换，请先处理工作台中的修改')
+      try { return await settings!.confirmWorkspace(id) } finally { publishRuntimeContext(); studio.finishTransition() }
+    },
     'open-directory': directory => settings!.openDirectory(directory),
     'preview-diagnostics': includeLogs => settings!.previewDiagnostics(includeLogs),
     'save-diagnostics': id => settings!.saveDiagnostics(id),
@@ -54,10 +75,12 @@ async function createWindow(): Promise<void> {
   }
   ipcMain.removeHandler('autoflow:sidecar-restart')
   ipcMain.handle('autoflow:sidecar-restart', async event => {
-    if (event.sender.id !== mainWindow?.webContents.id || event.senderFrame !== event.sender.mainFrame) throw new Error('此窗口不能重启本地服务')
-    try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') }
+    requireRuntimeSender(event)
+    if (studio.isTransitioning()) throw new Error('工作台正在关闭或切换工作区，请稍候')
+    try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })
+  mainWindow.on('focus', () => studio.restoreReloadMenu())
   mainWindow.on('closed', () => { settings?.invalidateChoices(); mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -94,8 +117,15 @@ app.whenReady().then(async () => {
   })
   void settings.start().catch(() => undefined)
 
-  ipcMain.handle('autoflow:sidecar-status', () => settings?.getPublicStatus() ?? { state: 'stopped' })
-  ipcMain.handle('autoflow:platform-paths', () => resolvePlatformPaths(app.getPath('userData')))
+  ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
+  ipcMain.handle('autoflow:studio-ready', (event, ready: unknown) => studio.markReady(event, ready))
+  ipcMain.handle('autoflow:studio-leave-result', (event, id: unknown, approved: unknown) => studio.reply(event, id, approved))
+  ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
+  ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
+  ipcMain.handle('autoflow:platform-paths', event => {
+    if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能读取本机目录')
+    return resolvePlatformPaths(app.getPath('userData'))
+  })
   await createWindow()
 }).catch(() => { dialog.showErrorBox('AutoFlow 无法启动', '无法读取本机应用目录或设置，请检查目录权限后重新启动。现有数据未删除。'); app.quit() })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
@@ -107,5 +137,17 @@ app.on('before-quit', event => {
   event.preventDefault()
   if (isQuitting) return
   isQuitting = true
-  void (settings?.shutdown() ?? Promise.resolve()).finally(() => { stoppedForQuit = true; app.quit() })
+  void (async () => {
+    if (!await studio.prepareLeave('quit')) { isQuitting = false; return }
+    try {
+      await settings?.shutdown()
+      stoppedForQuit = true
+      studio.permitClose()
+      app.quit()
+    } catch {
+      isQuitting = false
+      studio.finishTransition()
+      dialog.showErrorBox('暂未退出 AutoFlow', '本地服务未能停止，请重试退出。工作台仍保持打开。')
+    }
+  })()
 })

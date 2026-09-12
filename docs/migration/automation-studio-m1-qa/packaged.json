@@ -1,0 +1,21 @@
+{
+  "result": "passed",
+  "entry": "packaged",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checks": [
+    "formal empty Studio, shared sidecar/workspace, single window reuse",
+    "six nodes configured, connected, dragged and undo/redone through actual canvas; variable and SQLite persistence",
+    "Studio reload shortcut cannot discard the active document",
+    "input deletion protection, node deletion with incident edges, undo, copy/paste internal edges",
+    "new cancel; native close cancel and save; Studio reopen/Open restores document",
+    "same-workspace sidecar restart retains draft/undo and saves against real revision",
+    "workspace cancel preserves draft; discard switch isolates lists/documents; switching back restores saved workflow",
+    "minimized Studio restores before confirmation; real backend switch failure preserves draft and undo",
+    "main window closes independently; Studio continues service recovery and saving",
+    "application quit cancel and save complete before sidecar shutdown",
+    "full application restart restores same SQLite document and layout",
+    "empty URL and disconnected node save as an incomplete draft with exact field issues",
+    "real external revision conflict preserves both versions through save-as-new"
+  ]
+}
