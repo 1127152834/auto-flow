@@ -10,9 +10,11 @@
 
 ## 领域规则规格审查
 
-- P1 日期offset重复编码与PM0契约相反：修复中；value必须不带offset，offset独立保存。
-- P1 隔开量词仍可导致不可控回溯：修复中；增加成熟regex引擎timeout，不依赖手写子集声称线性。依据[regex官方超时说明](https://pypi.org/project/regex/#timeout)，timeout覆盖整个匹配操作。
-- P2 巨大整数、非法offset、畸形精度和巨大重复计数泄漏异常：修复中，统一领域422。
+- P1 日期offset重复编码与PM0契约相反：已修复并通过规格复核；value必须不带offset，offset独立保存。
+- P1 隔开量词仍可导致不可控回溯：已修复并通过规格复核；增加成熟regex引擎timeout，不依赖手写子集声称线性。依据[regex官方超时说明](https://pypi.org/project/regex/#timeout)，timeout覆盖整个匹配操作。
+- P2 巨大整数、非法offset、畸形精度和巨大重复计数泄漏异常：已修复并通过规格复核，统一领域422。
+
+- 工程复核：总量词展开≤10000、禁用用户pattern隐式全局缓存、统一UPPER_SNAKE错误码；63项测试通过，独立工程复核通过。
 
 ## Excel规格审查
 
@@ -21,3 +23,5 @@
 - 16项初始测试通过不等于规格验收。修复后重新做定向测试、独立复审，再工程质量审查。
 
 真实Electron、IPC、HTTP、Google实网、Windows及其他架构：本包未执行。
+
+Excel原七项规格问题复核通过，工程审查新发现字符串32768截断、ContentTypes无界解压、未关闭worksheet生成器、writer临时文件残留和坏数字解析异常；修复中，尚未验收。
