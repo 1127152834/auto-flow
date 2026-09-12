@@ -1,4 +1,4 @@
-import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
+import type { StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
 
 type Schema = components['schemas']
@@ -7,38 +7,22 @@ export type TableCreate = Omit<Schema['DataTableCreate'], 'sourceKind'>
 export type TablePatch = Schema['DataTablePatch']
 export type DirectoryQuery = { query: string; page: number; pageSize: number; sort: 'name' | '-name' | 'updatedAt' | '-updatedAt'; sourceKind?: DataTable['sourceKind'] }
 
-import { DataCommandUncertain } from './data-command'
+import { createDataCommand } from './data-command'
 export { DataCommandUncertain } from './data-command'
 const encode = encodeURIComponent
-const definitive = (error: unknown) => error instanceof ApiClientError && error.status >= 400 && error.status < 500 && error.status !== 408
 
 export function createProjectDataApi(client: StreamingApiClient, projectId: string) {
   const base = `/api/v1/projects/${encode(projectId)}/tables`
-  async function command(kind: 'createTable' | 'updateTable', body: TableCreate | TablePatch, key: string, tableId?: string, resume = false): Promise<DataTable> {
-    const submit = () => client.request<DataTable>(tableId ? `${base}/${encode(tableId)}` : base, {
-      method: tableId ? 'PATCH' : 'POST', headers: { 'Idempotency-Key': key }, body,
-    })
-    if (!resume) {
-      try { return await submit() } catch (error) {
-        if (definitive(error) || (error instanceof DOMException && error.name === 'AbortError')) throw error
-      }
-    }
-    try {
-      const operation = await client.request<Schema['ProjectOperationView']>(`/api/v1/projects/${encode(projectId)}/operations/by-idempotency-key/${encode(key)}`)
+  const execute = createDataCommand(client, projectId)
+  function command(kind: 'createTable' | 'updateTable', body: TableCreate | TablePatch, key: string, tableId?: string, resume = false): Promise<DataTable> {
+    return execute(tableId ? `${base}/${encode(tableId)}` : base, tableId ? 'PATCH' : 'POST', body, key, kind, resume, operation => {
       const { resource, result } = operation
-      if (operation.idempotencyKey !== key || operation.kind !== kind || operation.status !== 'succeeded'
-        || resource.type !== 'table' || resource.projectId !== projectId || (tableId !== undefined && resource.tableId !== tableId)
+      if (resource.type !== 'table' || resource.projectId !== projectId || (tableId !== undefined && resource.tableId !== tableId)
         || !result || !('tableId' in result) || result.tableId !== resource.tableId || result.projectId !== projectId) {
         throw new Error('操作结果与当前数据表保存请求不一致')
       }
       return result
-    } catch (error) {
-      if (!(error instanceof ApiClientError && error.status === 404 && error.code === 'OPERATION_NOT_FOUND')) throw new DataCommandUncertain(error)
-      try { return await submit() } catch (retryError) {
-        if (definitive(retryError)) throw retryError
-        throw new DataCommandUncertain(retryError)
-      }
-    }
+    })
   }
   return {
     list: (query: DirectoryQuery, signal?: AbortSignal) => {

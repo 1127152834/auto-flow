@@ -7,7 +7,7 @@ function client(request: StreamingApiClient['request']): StreamingApiClient {
 }
 const table = { projectId: 'p', tableId: 't', name: 'Data', tableRevision: 1 }
 const operation = {
-  idempotencyKey: 'key', kind: 'createTable', status: 'succeeded',
+  projectId: 'p', idempotencyKey: 'key', kind: 'createTable', status: 'succeeded',
   resource: { type: 'table', projectId: 'p', tableId: 't' }, result: table,
 }
 
@@ -49,4 +49,22 @@ it('passes cancellation and URL encoded directory conditions', async () => {
   const signal = new AbortController().signal
   await createProjectDataApi(client(request), 'p').list({ query: 'a&b', page: 2, pageSize: 50, sort: 'name' }, signal)
   expect(request).toHaveBeenCalledWith('/api/v1/projects/p/tables?q=a%26b&page=2&pageSize=50&sort=name', { signal })
+})
+
+it('freezes table command values before a failed request and retry', async () => {
+  const body = { name: 'Original', description: '' }
+  const request = vi.fn().mockImplementationOnce(async () => { body.name = 'Later draft'; throw new TypeError('network') })
+    .mockRejectedValueOnce(new ApiClientError('absent', 404, 'OPERATION_NOT_FOUND')).mockResolvedValueOnce(table)
+  await createProjectDataApi(client(request), 'p').create(body, 'key')
+  expect(request.mock.calls[2][1].body.name).toBe('Original')
+})
+it('checks the operation project as well as its resource and result', async () => {
+  const request = vi.fn().mockResolvedValueOnce({ ...operation, projectId: 'other' })
+  await expect(createProjectDataApi(client(request), 'p').resumeCreate({ name: 'Data', description: '' }, 'key')).rejects.toBeInstanceOf(DataCommandUncertain)
+  expect(request).toHaveBeenCalledOnce()
+})
+it('rejects a recovered table edit belonging to another target', async () => {
+  const request = vi.fn().mockResolvedValueOnce({ ...operation, kind: 'updateTable' })
+  await expect(createProjectDataApi(client(request), 'p').resumePatch('other', { name: 'Edit', expectedTableRevision: 1 }, 'key')).rejects.toBeInstanceOf(DataCommandUncertain)
+  expect(request).toHaveBeenCalledOnce()
 })

@@ -215,3 +215,7 @@ A3c复用补充：将已验证的目录命令恢复机制收敛到`data-command.
 主协调限定新增`components/DataRecordsTable.tsx`及相邻测试。真实DataRecordPage/FieldView/StatusView作为受控props；分页回调只请求父层服务端页，不做本地过滤分页。复用Table/Pagination/Button/Badge/Skeleton，容器水平滚动，长值单元格截断但保留可访问文本，详情通过onOpen(record)查看。visibleFieldIds控制业务列，身份/状态/操作固定；初始全量列由父级选择，不伪造未实现的同步或占用状态。
 
 先RED覆盖text001/text1/integer1显示身份与回调、missing/null/空串/false/日期原精度、不可读不泄漏、状态空值/目录失效、分页、加载/空/无匹配/刷新失败保留旧页、readonly禁止写。onCreate/onStatusChange可选，仅接通真实消费者时显示；onOpen保持真实RecordRef。完成定向Vitest/typecheck/lint及独立规格→工程审查，C2真实页面挂载后再做应用验收。
+
+## A3d 表资料命令恢复收敛（2026-09-13）
+
+C2接入前代码复查发现旧表客户端未冻结body且未核验Operation自身projectId；目录/记录已通过createDataCommand解决相同问题。主协调仅改api.ts/api.test.ts复用该已验证helper，保留外部API签名和table资源/结果guard。先RED：异步失败期间调用方改name后原key重发仍应原值、Operation本身project不符时拒绝恢复；补update目标不匹配测试。通过后定向全API测试、类型/lint并由独立智能体规格→工程审查；无新端点/DTO。
