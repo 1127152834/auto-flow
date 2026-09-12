@@ -16,10 +16,12 @@ const userData = await mkdtemp(join(tmpdir(), 'autoflow-browser-desktop-smoke-')
 let desktop
 
 try {
-  const kernelDirectory = join(userData, 'data', 'kernels', `chromium-${version}`)
-  const kernelExecutable = kernelExecutablePath(kernelDirectory)
-  await mkdir(resolve(kernelExecutable, '..'), { recursive: true })
-  await writeFile(kernelExecutable, 'autoflow browser desktop smoke fixture\n', { mode: 0o755 })
+  for (const installedVersion of [version, '145.0.7632.6']) {
+    const kernelDirectory = join(userData, 'data', 'kernels', `chromium-${installedVersion}`)
+    const kernelExecutable = kernelExecutablePath(kernelDirectory)
+    await mkdir(resolve(kernelExecutable, '..'), { recursive: true })
+    await writeFile(kernelExecutable, 'autoflow browser desktop smoke fixture\n', { mode: 0o755 })
+  }
 
   process.env.PYTHONTZPATH = ''
   delete process.env.CLOAKBROWSER_BINARY_PATH
@@ -53,8 +55,14 @@ try {
   await waitFor(cdp, `document.body?.innerText.includes('CloakBrowser 内核管理')`, 'kernel manager dialog')
   await setViewport(cdp, 1280, 900)
   await assertNoHorizontalOverflow(cdp, '1280px kernel manager', 'CloakBrowser 内核管理')
+  await assertKernelColumns(cdp, 2)
   await setViewport(cdp, 1024, 800)
   await assertNoHorizontalOverflow(cdp, '1024px kernel manager', 'CloakBrowser 内核管理')
+  await assertKernelColumns(cdp, 2)
+  await setViewport(cdp, 640, 800)
+  await assertNoHorizontalOverflow(cdp, '640px kernel manager', 'CloakBrowser 内核管理')
+  await assertKernelColumns(cdp, 1)
+  await setViewport(cdp, 1024, 800)
   await clickAria(cdp, '关闭内核管理')
   await waitFor(cdp, `![...document.querySelectorAll('[role=dialog]')].some(node => node.getClientRects().length && node.textContent?.includes('CloakBrowser 内核管理'))`, 'kernel manager close')
   await clickText(cdp, '基础信息')
@@ -227,6 +235,18 @@ async function assertNoHorizontalOverflow(cdp, description, dialogTitle) {
   assert.ok(result.documentWidth <= result.viewport + 1, `${description}: document width ${result.documentWidth} > ${result.viewport}`)
   assert.ok(result.target.left >= -1 && result.target.right <= result.viewport + 1, `${description}: target outside viewport ${JSON.stringify(result.target)}`)
   assert.deepEqual(result.outside, [], `${description}: controls outside viewport`)
+}
+
+async function assertKernelColumns(cdp, count) {
+  const result = await waitFor(cdp, `(() => {
+    const grid = document.querySelector('[aria-label="内核版本卡片"]')
+    if (!grid || grid.children.length < 2) return null
+    const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').length
+    const [first, second] = [...grid.children].map(card => card.getBoundingClientRect())
+    return { columns, sameRow: Math.abs(first.top - second.top) < 1 }
+  })()`, 'installed kernel cards')
+  assert.equal(result.columns, count, 'kernel card column count')
+  assert.equal(result.sameRow, count === 2, 'kernel cards flow into expected rows')
 }
 
 async function profileList(sidecar) {

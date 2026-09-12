@@ -125,7 +125,7 @@ type ProfileWrite = {
 
 `KernelOperation`：`id, edition, requestedVersion, resolvedVersion, releaseChannel, state, progress:number|null, message, error`。状态图：`queued → downloading → verifying → extracting → completed`；活动状态可进入 `cancelling → cancelled` 或 `failed`。百分比仅在 provider 有真实下载进度时提供，校验/安装用 indeterminate。取消不等于暂停，不提供断点续传。
 
-运行一个安装工作进程，其他下载请求返回 409 `KERNEL_BUSY`；进程内串行调用旧 wrapper，防止其全局缓存路径/环境变量串扰。worker 从 stdin 收敏感输入，从 stdout 发限定 JSON 消息，不在命令行、数据库任务消息或日志中保存 License。worker 启动时设置 `CLOAKBROWSER_CACHE_DIR=<data_dir>/kernels/.staging/<task-id>`，在 import wrapper 前完成环境设置。下载到任务专有 staging，父进程验证 SDK 返回路径仍在该目录内、安装树无越界链接、可执行文件存在后，原子发布到 `<kernels>/chromium-<resolvedVersion>[-pro]`；若目标已存在，验证后复用而非覆盖。取消/失败不会破坏先前安装。
+2026-09-12 后续用户要求已将“整个应用仅一个安装工作进程”的限制标为 **superseded**，现行边界见[并行下载决策](../../../.ai/decisions/2026-09-12-kernel-parallel-downloads.md)：不同安装目标各自启动工作进程，同 edition/version 的重复请求返回 409 `KERNEL_BUSY`，发布/维护只持有短临界区。各 worker 仍隔离 wrapper 全局缓存路径/环境变量，从 stdin 收敏感输入，从 stdout 发限定 JSON 消息，不在命令行、数据库任务消息或日志中保存 License。worker 启动时设置 `CLOAKBROWSER_CACHE_DIR=<data_dir>/kernels/.staging/<task-id>`，在 import wrapper 前完成环境设置。下载到任务专有 staging，父进程验证 SDK 返回路径仍在该目录内、安装树无越界链接、可执行文件存在后，原子发布到 `<kernels>/chromium-<resolvedVersion>[-pro]`；若目标已存在，验证后复用而非覆盖。取消/失败不会破坏先前安装。
 
 SSE 使用带 `x-autoflow-token` 的 fetch 流，不能用无法附加该头的原生 EventSource；断流 1/2/5 秒重连并获取快照，重连仅查询，不重放写命令。终态以同一 task id 幂等收敛；新 sidecar instanceId 出现时废弃旧连接/缓存。退出 sidecar 时停止 worker；异常重启把未完成任务标记失败“应用关闭，安装中断”，不自动重试。
 
@@ -277,12 +277,12 @@ async def test_cancel_does_not_publish_install(worker_manager, fake_job):
 ```
   fixtures 在 integration 文件中定义，使用临时路径和 mock worker executable，不允许生产 API 选择测试模式。
 - [x] `uv run --directory apps/backend pytest tests/integration/test_kernel_worker.py -q`，确认未实现 supervisor 失败。
-- [x] 实现第 2.2 节状态机、单安装锁、staging 原子发布、持久化 operation；冻结进程复用 `autoflow-backend --kernel-worker`，开发进程用 `python -m autoflow --kernel-worker`。消息 schema：
+- [x] 实现第 2.2 节状态机、安装互斥、staging 原子发布、持久化 operation（原全局单安装限制已被后续并行下载决策替代）；冻结进程复用 `autoflow-backend --kernel-worker`，开发进程用 `python -m autoflow --kernel-worker`。消息 schema：
 ```json
 {"type":"progress","state":"downloading","progress":62}
 ```
   完成消息含经过验证的 resolvedVersion/可执行相对路径；父进程校验后发布；worker 限定输入命令 `catalog/license/download`，不允许任意 shell。取消先请求终止，3 秒后强制停止，再 wait 确认退出后清 staging。生命周期关闭也执行该路径，异常中断记录 failed。SSE 每次连接先快照，队列满则丢弃旧中间进度保留最新快照，终态不丢。
-- [x] 验证取消竞态、重复取消、cancel-vs-complete终态、并发启动409、worker崩溃、取消不会改变已安装旧版本、sidecar退出无孤儿、SSE token/断线快照及 unknown total indeterminate。
+- [x] 验证取消竞态、重复取消、cancel-vs-complete终态、同安装目标并发启动409、worker崩溃、取消不会改变已安装旧版本、sidecar退出无孤儿、SSE token/断线快照及 unknown total indeterminate。不同安装目标的并行验证由后续改动补充。
 - [x] 提交 `feat(kernels): supervise cancellable install operations`。
 
 ### 任务 6：内核 API、默认项、删除和目录能力

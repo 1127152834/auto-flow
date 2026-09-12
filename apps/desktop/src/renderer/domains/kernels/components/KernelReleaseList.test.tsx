@@ -18,7 +18,7 @@ it('locks an uninstalled licensed release and prints unknown nullable fields', (
   expect(screen.getByText('Preview')).toBeInTheDocument()
 })
 
-it('keeps same-version channels and their operations independent', async () => {
+it('keeps channel statuses separate but blocks a retry sharing an active install target', async () => {
   const user = userEvent.setup()
   const stable = { ...release, releaseChannel: 'stable' as const }
   const failed = { id: 'stable-op', edition: 'licensed' as const, requestedVersion: release.version, resolvedVersion: null, releaseChannel: 'stable' as const, state: 'failed' as const, progress: null, message: null, error: 'stable failed' }
@@ -31,8 +31,8 @@ it('keeps same-version channels and their operations independent', async () => {
   const previewCard = screen.getByText('Preview').closest('li') as HTMLElement
   expect(stableCard).toHaveTextContent('stable failed')
   expect(previewCard).toHaveTextContent('下载中')
-  await user.click(within(stableCard).getByRole('button', { name: '重试下载' }))
+  expect(within(stableCard).getByRole('button', { name: '重试下载' })).toBeDisabled()
   await user.click(within(previewCard).getByRole('button', { name: '取消下载' }))
-  expect(onRetry).toHaveBeenCalledWith(failed)
+  expect(onRetry).not.toHaveBeenCalled()
   expect(onCancel).toHaveBeenCalledWith('preview-op')
 })

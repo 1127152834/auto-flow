@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useApi } from '../../../app/ApiProvider'
 import { ApiClientError } from '../../../shared/api/client'
-import type { KernelOperation, KernelRef } from '../../../shared/api/types'
+import type { KernelDownload, KernelOperation, KernelRef } from '../../../shared/api/types'
 import { notify } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../../shared/components/ui/dialog'
@@ -41,6 +41,7 @@ const filters: readonly [Filter, string][] = [['all', '全部版本'], ['public'
 const keyOf = (value: KernelRef) => `${value.edition}|${value.version}`
 const releaseKeyOf = (value: Pick<KernelReleaseItem, 'edition' | 'version' | 'releaseChannel'>) => `${keyOf(value)}|${value.releaseChannel ?? 'unknown'}`
 const message = (error: unknown) => error instanceof Error ? error.message : '操作未完成，请稍后重试'
+const platformLabels: Record<string, string> = { 'windows-x64': 'Windows x64', 'darwin-arm64': 'macOS Apple Silicon', 'darwin-x64': 'macOS Intel' }
 
 export function KernelManagerDialog({ open, onOpenChange, selectedKernel, returnFocusTo, disabled = false, onReconnect }: KernelManagerDialogProps) {
   const { instanceId } = useApi()
@@ -62,7 +63,12 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   const [licenseError, setLicenseError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<KernelRef | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const [cancellingOperationId, setCancellingOperationId] = useState<string | null>(null)
+  const pendingDownloads = useRef(new Set<string>())
+  const pendingCancellations = useRef(new Set<string>())
+  const [pendingDownloadKeys, setPendingDownloadKeys] = useState<ReadonlySet<string>>(new Set())
+  const [cancellingOperationIds, setCancellingOperationIds] = useState<ReadonlySet<string>>(new Set())
+  const [downloadErrors, setDownloadErrors] = useState<Record<string, string>>({})
+  const [cancellationErrors, setCancellationErrors] = useState<Record<string, string>>({})
   const deleteTrigger = useRef<HTMLButtonElement | null>(null)
   const notifiedTerminalIds = useRef(new Set<string>())
 
@@ -73,7 +79,9 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
       queryClient.invalidateQueries({ queryKey: kernelKeys.installed(instanceId) }),
       queryClient.invalidateQueries({ queryKey: kernelKeys.catalog(instanceId) }),
     ])
-    setCancellingOperationId((current) => current === operation.id ? null : current)
+    setCancellationErrors((current) => ({ ...current, [operation.id]: '' }))
+    pendingCancellations.current.delete(operation.id)
+    setCancellingOperationIds(new Set(pendingCancellations.current))
     notify({
       title: operation.state === 'completed' ? '内核安装完成' : operation.state === 'cancelled' ? '内核安装已取消' : operation.error ?? '内核安装失败',
       tone: operation.state === 'completed' ? 'success' : operation.state === 'cancelled' ? 'info' : 'error',
@@ -110,7 +118,8 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   const activeOperation = (operations.data ?? []).some(operationIsActive)
   const hiddenActiveOperations = (operations.data ?? []).filter((operation) => operationIsActive(operation)
     && !visibleReleases.some((release) => release.edition === operation.edition && release.version === operation.requestedVersion && release.releaseChannel === operation.releaseChannel))
-  const busy = activeOperation || download.isPending || remove.isPending || setDefault.isPending || connect.isPending || disconnect.isPending
+  const actionBusy = remove.isPending || setDefault.isPending || connect.isPending || disconnect.isPending
+  const busy = activeOperation || pendingDownloadKeys.size > 0 || cancellingOperationIds.size > 0 || actionBusy
   const licensed = license.data?.configured === true && license.data.valid
   const selectedUnavailable = Boolean(selectedKernel && (installed.data || catalog.data) && !localKernels.some((item) => keyOf(item) === keyOf(selectedKernel)))
 
@@ -126,37 +135,47 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
   }
 
   async function startDownload(release: KernelReleaseItem) {
-    if (disabled) return
-    setActionError(null)
     if (!release.releaseChannel) { setActionError('该本机内核没有可用的发布通道信息。'); return }
-    try {
-      await download.mutateAsync({ edition: release.edition, version: release.version, releaseChannel: release.releaseChannel })
-    } catch (error) {
-      setActionError(message(error))
-    }
+    await requestDownload({ edition: release.edition, version: release.version, releaseChannel: release.releaseChannel })
   }
 
   async function retryDownload(operation: KernelOperation) {
-    if (disabled) return
-    setActionError(null)
+    await requestDownload({ edition: operation.edition, version: operation.requestedVersion, releaseChannel: operation.releaseChannel })
+  }
+
+  async function requestDownload(body: KernelDownload) {
+    const key = keyOf(body)
+    const active = queryClient.getQueryData<KernelOperation[]>(kernelKeys.operations(instanceId)) ?? []
+    if (disabled || actionBusy || pendingDownloads.current.has(key) || active.some((operation) => operationIsActive(operation)
+      && operation.edition === body.edition && (operation.requestedVersion === body.version || operation.resolvedVersion === body.version))) return
+    pendingDownloads.current.add(key)
+    setPendingDownloadKeys(new Set(pendingDownloads.current))
+    setDownloadErrors((current) => ({ ...current, [key]: '' }))
     try {
-      await download.mutateAsync({ edition: operation.edition, version: operation.requestedVersion, releaseChannel: operation.releaseChannel })
+      await download.mutateAsync(body)
     } catch (error) {
-      setActionError(message(error))
+      setDownloadErrors((current) => ({ ...current, [key]: message(error) }))
+    } finally {
+      pendingDownloads.current.delete(key)
+      setPendingDownloadKeys(new Set(pendingDownloads.current))
     }
   }
 
   async function cancelDownload(operationId: string) {
-    if (disabled) return
-    setActionError(null)
-    setCancellingOperationId(operationId)
+    if (disabled || pendingCancellations.current.has(operationId)) return
+    setCancellationErrors((current) => ({ ...current, [operationId]: '' }))
+    pendingCancellations.current.add(operationId)
+    setCancellingOperationIds(new Set(pendingCancellations.current))
     try {
       const value = await cancel.mutateAsync(operationId)
       queryClient.setQueryData<KernelOperation[]>(kernelKeys.operations(instanceId), (current = []) => upsertKernelOperation(current, value))
-      if (!operationIsActive(value)) { setCancellingOperationId(null); terminal(value) }
+      if (!operationIsActive(value)) terminal(value)
     } catch (error) {
-      setCancellingOperationId(null)
-      setActionError(message(error))
+      const latest = queryClient.getQueryData<KernelOperation[]>(kernelKeys.operations(instanceId))?.find((operation) => operation.id === operationId)
+      if (latest && operationIsActive(latest)) setCancellationErrors((current) => ({ ...current, [operationId]: message(error) }))
+    } finally {
+      pendingCancellations.current.delete(operationId)
+      setCancellingOperationIds(new Set(pendingCancellations.current))
     }
   }
 
@@ -221,14 +240,14 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
         }} />
 
         <section aria-labelledby="kernel-release-title" className="grid gap-4">
-          {hiddenActiveOperations.length ? <section aria-label="活动内核下载">
-            {hiddenActiveOperations.map((operation) => <div key={operation.id}>
+          {hiddenActiveOperations.length ? <section aria-label="活动内核下载" className="grid gap-3 md:grid-cols-2">
+            {hiddenActiveOperations.map((operation) => <div key={operation.id} className="min-w-0 rounded-card border border-line bg-surface p-4">
               <h3 className="mb-0 text-sm font-semibold">CloakBrowser {operation.requestedVersion} · {operation.edition === 'licensed' ? '正式版' : '公开版'} · {operation.releaseChannel === 'preview' ? 'Preview' : 'Stable'}</h3>
-              <KernelOperationStatus operation={operation} cancelling={cancellingOperationId === operation.id} disabled={disabled} onCancel={() => cancelDownload(operation.id)} />
+              <KernelOperationStatus operation={operation} cancelling={cancellingOperationIds.has(operation.id)} cancellationError={cancellationErrors[operation.id]} disabled={disabled} onCancel={() => cancelDownload(operation.id)} />
             </div>)}
           </section> : null}
           <div className="flex flex-wrap items-end justify-between gap-3">
-            <div><h3 id="kernel-release-title" className="m-0 text-base font-semibold text-ink">版本列表</h3><p className="mb-0 mt-1 text-xs text-muted">Wrapper {catalog.data?.wrapperVersion ?? '未知'} · 本机已安装 {localKernels.length} 个</p></div>
+            <div><h3 id="kernel-release-title" className="m-0 text-base font-semibold text-ink">版本列表</h3><p className="mb-0 mt-1 text-xs text-muted">Wrapper {catalog.data?.wrapperVersion ?? '未知'} · 本机已安装 {localKernels.length} 个 · 当前平台：{catalog.data?.platform ? platformLabels[catalog.data.platform] ?? catalog.data.platform : '未知'}</p></div>
             <Button type="button" disabled={disabled || checkUpdate.isPending} onClick={() => { if (disabled) return; setActionError(null); void checkUpdate.mutateAsync().catch((error) => setActionError(message(error))) }}>{checkUpdate.isPending ? '正在刷新…' : '刷新版本列表'}</Button>
           </div>
           <div className="flex flex-wrap gap-2" aria-label="内核版本筛选">
@@ -237,7 +256,7 @@ export function KernelManagerDialog({ open, onOpenChange, selectedKernel, return
           {catalog.error || catalog.data?.catalogError ? <p role="alert" className="m-0 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">发布列表暂不可用：{catalog.data?.catalogError ?? message(catalog.error)}。仍可管理本机已安装内核。</p> : null}
           {selectedUnavailable ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">当前表单选择的内核已不可用；原选择值会保留，请改选已安装内核后再保存。</p> : null}
           {actionError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{actionError}</p> : null}
-          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationId={cancellingOperationId} busy={busy} disabled={disabled} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { if (disabled) return; deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
+          {catalog.isLoading && installed.isLoading ? <p role="status" className="py-6 text-center text-sm text-muted">正在同步本地数据，请稍候…</p> : <KernelReleaseList releases={visibleReleases} defaultKernel={defaultQuery.data?.kernel} licensed={licensed} operations={operations.data} cancellingOperationIds={cancellingOperationIds} cancellationErrors={cancellationErrors} pendingDownloadKeys={pendingDownloadKeys} downloadErrors={downloadErrors} busy={actionBusy} disabled={disabled} canReveal={typeof window.autoflow?.revealKernel === 'function'} onDownload={startDownload} onCancel={cancelDownload} onRetry={retryDownload} onSetDefault={changeDefault} onReveal={reveal} onDelete={(kernel, trigger) => { if (disabled) return; deleteTrigger.current = trigger; setDeleteError(null); setDeleteTarget(kernel) }} />}
         </section>
       </DialogContent>
     </Dialog>

@@ -220,9 +220,11 @@ it('keeps an SSE terminal state when an older download response arrives later', 
   expect(server.catalogReads).toBe(2)
 })
 
-it('disables a second download while another release is active but keeps cancel available', async () => {
+it('starts a second version while another release stays active and cancellable', async () => {
   const extraRelease = { edition: 'public' as const, version: '147.0.1.1', chromiumVersion: '147.0.1.1', releaseChannel: 'stable' as const, publishedAt: null, archive: null, size: null, installed: false }
-  const server = fakeServer({ license: validLicense, catalog: { ...catalog, releases: [...catalog.releases, extraRelease] } })
+  const server = fakeServer({ license: validLicense, catalog: { ...catalog, releases: [...catalog.releases, extraRelease] }, route(path, method, body) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return json({ ...operation('operation-2', 'queued'), requestedVersion: body?.version }, 202)
+  } })
   vi.stubGlobal('fetch', server.fetch)
   const user = userEvent.setup()
   render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
@@ -230,9 +232,11 @@ it('disables a second download while another release is active but keeps cancel 
   act(() => server.stream?.enqueue(eventFrame([operation('operation-1', 'downloading', 'licensed')])))
   const activeCard = screen.getByText('CloakBrowser 151.0.1.1').closest('li') as HTMLElement
   await waitFor(() => expect(within(activeCard).getByRole('button', { name: '取消下载' })).toBeEnabled())
-  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeDisabled()
+  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeEnabled()
   await user.click(within(secondCard).getByRole('button', { name: '下载安装' }))
-  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(0)
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(1)
+  await within(secondCard).findByText('准备下载')
+  expect(within(activeCard).getByRole('button', { name: '取消下载' })).toBeEnabled()
 })
 
 it('keeps a POST-created task after an older snapshot omits its id', async () => {
@@ -250,8 +254,7 @@ it('keeps a POST-created task after an older snapshot omits its id', async () =>
   act(() => server.stream?.enqueue(eventFrame([operation('operation-old', 'failed', 'licensed')])))
   await waitFor(() => expect(within(activeCard).getByRole('button', { name: '取消下载' })).toBeEnabled())
   expect(within(activeCard).queryByText('网络中断')).not.toBeInTheDocument()
-  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeDisabled()
-  await user.click(within(secondCard).getByRole('button', { name: '下载安装' }))
+  expect(within(secondCard).getByRole('button', { name: '下载安装' })).toBeEnabled()
   expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(1)
 })
 
@@ -266,6 +269,105 @@ it('refreshes installed kernels after a completed operation', async () => {
   server.setInstalled([publicKernel, licensedKernel])
   act(() => server.stream?.enqueue(eventFrame([operation('operation-1', 'completed', 'licensed')])))
   await waitFor(() => expect(within(card).getByRole('button', { name: '打开目录' })).toBeEnabled())
+})
+
+it('tracks concurrent starts and cancellations separately, including responses arriving out of order', async () => {
+  const publicRelease = { ...catalog.releases[0], version: '147.0.1.1', installed: false }
+  const stableRelease = { ...catalog.releases[1], releaseChannel: 'stable' as const }
+  const activeA = operation('parallel-a', 'downloading', 'licensed')
+  const activeB = { ...operation('parallel-b', 'downloading'), requestedVersion: publicRelease.version }
+  const starts = new Map<string, (response: Response) => void>()
+  const cancellations = new Map<string, (response: Response) => void>()
+  const server = fakeServer({ license: validLicense, catalog: { ...catalog, releases: [catalog.releases[1], publicRelease, stableRelease] }, route(path, method, body) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') return new Promise<Response>((resolve) => starts.set(String(body?.version), resolve))
+    if (path.endsWith('/cancel')) return new Promise<Response>((resolve) => cancellations.set(path, resolve))
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const cardB = (await screen.findByText(`CloakBrowser ${publicRelease.version}`)).closest('li') as HTMLElement
+  const cardA = screen.getByText('Preview').closest('li') as HTMLElement
+  const stableCard = screen.getAllByText('Stable').map((node) => node.closest('li') as HTMLElement).find((card) => card.textContent?.includes(stableRelease.version))!
+  await user.dblClick(within(cardA).getByRole('button', { name: '下载安装' }))
+  expect(starts.size).toBe(1)
+  expect(within(cardA).getByRole('button', { name: '处理中…' })).toBeDisabled()
+  expect(within(stableCard).getByRole('button', { name: '处理中…' })).toBeDisabled()
+  expect(within(cardB).getByRole('button', { name: '下载安装' })).toBeEnabled()
+  await user.click(within(cardB).getByRole('button', { name: '下载安装' }))
+  expect(starts.size).toBe(2)
+  await act(async () => starts.get(publicRelease.version)!(json(activeB, 202)))
+  await within(cardB).findByText('下载中')
+  expect(within(cardA).getByRole('button', { name: '处理中…' })).toBeDisabled()
+  await act(async () => starts.get(activeA.requestedVersion)!(json(activeA, 202)))
+  await within(cardA).findByText('下载中')
+  await user.click(within(cardA).getByRole('button', { name: '取消下载' }))
+  await user.click(within(cardB).getByRole('button', { name: '取消下载' }))
+  expect(cancellations.size).toBe(2)
+  expect(within(cardA).getByRole('button', { name: '正在取消…' })).toBeDisabled()
+  expect(within(cardB).getByRole('button', { name: '正在取消…' })).toBeDisabled()
+  await act(async () => cancellations.get('/api/v1/kernels/operations/parallel-a/cancel')!(json({ ...activeA, state: 'cancelled' })))
+  await within(cardA).findByText('下载已取消')
+  expect(within(cardB).getByRole('button', { name: '正在取消…' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeDisabled()
+  await act(async () => cancellations.get('/api/v1/kernels/operations/parallel-b/cancel')!(json({ ...activeB, state: 'cancelled' })))
+  await waitFor(() => expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeEnabled())
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(2)
+})
+
+it('keeps a start failure on its own card while another version downloads and allows retry', async () => {
+  const extraRelease = { ...catalog.releases[0], version: '147.0.1.1', installed: false }
+  const server = fakeServer({ license: validLicense, catalog: { ...catalog, platform: 'windows-x64', releases: [catalog.releases[1], extraRelease] }, route(path, method, body) {
+    if (path === '/api/v1/kernels/download' && method === 'POST') {
+      return body?.version === extraRelease.version
+        ? json({ ...operation('other-download', 'downloading'), requestedVersion: extraRelease.version }, 202)
+        : json({ error: { code: 'KERNEL_WORKER_UNAVAILABLE', message: '该版本暂时无法下载', details: {}, requestId: '' } }, 503)
+    }
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const cardA = (await screen.findByText('CloakBrowser 151.0.1.1')).closest('li') as HTMLElement
+  const cardB = screen.getByText(`CloakBrowser ${extraRelease.version}`).closest('li') as HTMLElement
+  expect(screen.getByText(/当前平台：Windows x64/)).toBeInTheDocument()
+  await user.click(within(cardA).getByRole('button', { name: '下载安装' }))
+  expect(await within(cardA).findByRole('alert')).toHaveTextContent('该版本暂时无法下载')
+  await user.click(within(cardB).getByRole('button', { name: '下载安装' }))
+  await within(cardB).findByText('下载中')
+  expect(within(cardB).queryByRole('alert')).not.toBeInTheDocument()
+  expect(within(cardA).getByRole('alert')).toHaveTextContent('该版本暂时无法下载')
+  expect(within(cardA).getByRole('button', { name: '重试下载' })).toBeEnabled()
+  await user.click(within(cardA).getByRole('button', { name: '重试下载' }))
+  expect(server.calls.filter((call) => call.path === '/api/v1/kernels/download')).toHaveLength(3)
+})
+
+it('keeps cancellation errors with their operation across other cancellations and filters', async () => {
+  const activeA = operation('cancel-a', 'downloading', 'licensed')
+  const activeB = operation('cancel-b', 'downloading')
+  let attempts = 0
+  const server = fakeServer({ license: validLicense, route(path) {
+    if (path.endsWith('/cancel-a/cancel')) return ++attempts === 1
+      ? json({ error: { code: 'CANCEL_UNAVAILABLE', message: '暂时无法取消 A', details: {}, requestId: '' } }, 503)
+      : json({ ...activeA, state: 'cancelled' })
+    if (path.endsWith('/cancel-b/cancel')) return json({ ...activeB, state: 'cancelled' })
+  } })
+  vi.stubGlobal('fetch', server.fetch)
+  const user = userEvent.setup()
+  render(<Provider><KernelManagerDialog open onOpenChange={vi.fn()} selectedKernel={null} /></Provider>)
+  const cardA = (await screen.findByText('CloakBrowser 151.0.1.1')).closest('li') as HTMLElement
+  const cardB = screen.getByText('CloakBrowser 146.0.1.1').closest('li') as HTMLElement
+  act(() => server.stream?.enqueue(eventFrame([activeA, activeB])))
+  await user.click(await within(cardA).findByRole('button', { name: '取消下载' }))
+  expect(await within(cardA).findByRole('alert')).toHaveTextContent('暂时无法取消 A')
+  await user.click(within(cardB).getByRole('button', { name: '取消下载' }))
+  await within(cardB).findByText('下载已取消')
+  expect(within(cardA).getByRole('alert')).toHaveTextContent('暂时无法取消 A')
+  expect(within(cardB).queryByRole('alert')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: '公开版' }))
+  const hiddenTasks = screen.getByRole('region', { name: '活动内核下载' })
+  expect(within(hiddenTasks).getByRole('alert')).toHaveTextContent('暂时无法取消 A')
+  await user.click(within(hiddenTasks).getByRole('button', { name: '取消下载' }))
+  await waitFor(() => expect(screen.queryByText(/暂时无法取消 A/)).not.toBeInTheDocument())
+  expect(screen.getByRole('button', { name: '关闭内核管理' })).toBeEnabled()
 })
 
 it('refreshes the default revision after a compare-and-swap conflict', async () => {
