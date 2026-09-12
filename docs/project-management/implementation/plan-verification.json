@@ -1,0 +1,138 @@
+{
+  "date": "2026-09-13",
+  "status": "document-verification-only",
+  "checked_at": "2026-09-12T17:57:12.819638+00:00",
+  "design_revision": "906deda",
+  "plan": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
+  "main_head_read_only": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+  "ui_head_read_only": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+  "counts": {
+    "milestones": 10,
+    "delivery_packages": 30,
+    "features": 48,
+    "acceptance_scenarios": 178,
+    "execution_contracts": 18,
+    "capability_gates": 7,
+    "local_links_checked": 19
+  },
+  "checks": {
+    "coverage_exact": true,
+    "source_id_locations_valid": true,
+    "milestone_dependencies_acyclic": true,
+    "all_implementation_evidence_empty": true,
+    "historical_design_unchanged": true,
+    "git_diff_check": true,
+    "scoped_changes_documents_only": true
+  },
+  "source_snapshots": [
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "package.json",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "38b55fe8f9c9cbc7b2a9b9810474680b8b22895bf4aa4d058f8f5916f29b0c00"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/package.json",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "5dee6d692c6c830176d23118dfd2df3dd169b73c29d3a4f2f65bf2295afb3813"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/backend/pyproject.toml",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "b78c5b2e9c77ed90234cc4d0c877fbbe05ae1ae9e3a31840bb83121a92236daf"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": ".github/workflows/ci.yml",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "6a9fdbf01c57c85e63617b2a9eb7cb2b3eaa752ec743905429e5a9be2bae2e5c"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/backend/src/autoflow/application/settings/runtime.py",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "96d4cd5a9e77a9feb88c4a86334cee2baef6c54a07348bebcb41d262128848fa"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/main/ipc/automation-studio.ts",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "57097d35e8ec29556f887f0fe208b3a115ff365063389a6904248eb9733063ee"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": ".ai/decisions/2026-09-13-automation-studio-core-parity-scope.md",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "48504255c7805d4cdaa0db38dc0d4e7a170bc855e7a224be47acb4b30174da8b"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/superpowers/plans/2026-09-13-automation-studio-core-parity-milestones.md",
+      "kind": "git-object",
+      "revision": "f0b115c6510464b18b56414bc1753c30cc46afb4",
+      "sha256": "71b94bcbb247dc7e28bb52089f3441d60f6e88d144dbf3dd760d64025b8e0af7"
+    },
+    {
+      "repo": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+      "path": "apps/desktop/src/renderer/shared/components/ui/combobox.tsx",
+      "kind": "git-object",
+      "revision": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+      "sha256": "191d872d86b7d65fdbe6c509455274abc2fe920b85a473601892bb36f4cc13ca"
+    }
+  ],
+  "document_hashes": [
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
+      "sha256": "66719c5e7ac1d7e135e7f0f91534e526e628ff5b976bbf1b99728cb551169111"
+    },
+    {
+      "path": "docs/project-management/implementation/coverage.md",
+      "sha256": "62437d557729be1caf20dfafb06cd46af6ef7d7309345d9df9a6a25cf1ec1564"
+    },
+    {
+      "path": "docs/project-management/implementation/current-baseline.md",
+      "sha256": "e85ccce7b88312463ee0292cfc12b1a90695adc958d2531a8b1ed971c7cfa8c5"
+    },
+    {
+      "path": ".ai/decisions/2026-09-13-project-management-design-approved.md",
+      "sha256": "3ff53ef8a861fbdb72e589b74e0f58c0b2c16ea2371ef5e412ff8d5436dedce0"
+    },
+    {
+      "path": ".ai/plans/2026-09-13-project-management-milestones.md",
+      "sha256": "5c0de2f051a6c060bf1d423564dd394b32e54b55acd3922ad813cb7a4e0402ad"
+    },
+    {
+      "path": ".ai/sessions/2026-09-13-project-management-milestones.md",
+      "sha256": "2ecaee2c2f1fe2a26fcb5d5885b3050fc6c0a31898f1a0f8ece27a3df1dafc0d"
+    },
+    {
+      "path": ".ai/memory/project-context.md",
+      "sha256": "fa47e7dac2b1ae66df822573c2b6f6a6a451c3142dc5383209e2bbabb09565d5"
+    },
+    {
+      "path": "docs/project-management/implementation/coverage.json",
+      "sha256": "f31f54fe6fc3ce3421e434e81982428b03879c82b754ecdbed11750919e4000e"
+    }
+  ],
+  "review": {
+    "method": "root self-check plus three bounded specialist source/coverage tasks and one final core-dependency review",
+    "final_review_result": "no material contradiction in execution ownership, dependencies, first-release safety, or confirmed scope"
+  },
+  "not_run": [
+    "pytest or Vitest feature tests",
+    "real application UI",
+    "CloakBrowser business workflows",
+    "Google Sheets live operations",
+    "Windows/macOS builds or acceptance"
+  ],
+  "errors": []
+}
