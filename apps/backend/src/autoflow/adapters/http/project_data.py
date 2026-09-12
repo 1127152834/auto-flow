@@ -6,9 +6,19 @@ from uuid import UUID
 from fastapi import APIRouter, Header, Query, Response
 from pydantic import BeforeValidator
 
+from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.tables import DataTableService
 
 from .errors import browser_error_responses
+from .project_data_catalog_schemas import (
+    DataFieldCreate,
+    DataFieldDirectory,
+    DataFieldMutationView,
+    DataStatusCreate,
+    DataStatusDirectory,
+    DataStatusPatch,
+    DataStatusView,
+)
 from .project_data_schemas import (
     DataTableCreate,
     DataTablePage,
@@ -27,7 +37,9 @@ CanonicalId = Annotated[UUID, BeforeValidator(_canonical_uuid)]
 Key = Annotated[CanonicalId, Header(alias="Idempotency-Key")]
 
 
-def project_data_router(service: DataTableService) -> APIRouter:
+def project_data_router(
+    service: DataTableService, catalog: DataCatalogService
+) -> APIRouter:
     router = APIRouter(prefix="/api/v1/projects/{projectId}/tables")
 
     @router.get(
@@ -73,7 +85,10 @@ def project_data_router(service: DataTableService) -> APIRouter:
         },
     )
     def create_table(
-        projectId: CanonicalId, body: DataTableCreate, response: Response, idempotency_key: Key
+        projectId: CanonicalId,
+        body: DataTableCreate,
+        response: Response,
+        idempotency_key: Key,
     ):
         table, _operation, replayed = service.create(
             str(projectId), str(idempotency_key), body.model_dump(by_alias=True)
@@ -98,7 +113,10 @@ def project_data_router(service: DataTableService) -> APIRouter:
         responses=browser_error_responses(401, 404, 409, 422, 423),
     )
     def update_table(
-        projectId: CanonicalId, tableId: CanonicalId, body: DataTablePatch, idempotency_key: Key
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: DataTablePatch,
+        idempotency_key: Key,
     ):
         table, _operation, _replayed = service.update(
             str(projectId),
@@ -107,5 +125,87 @@ def project_data_router(service: DataTableService) -> APIRouter:
             body.model_dump(by_alias=True, exclude_unset=True),
         )
         return table
+
+    @router.get(
+        "/{tableId}/fields",
+        response_model=DataFieldDirectory,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def list_fields(projectId: CanonicalId, tableId: CanonicalId):
+        return catalog.fields(str(projectId), str(tableId))
+
+    @router.post(
+        "/{tableId}/fields",
+        response_model=DataFieldMutationView,
+        responses=browser_error_responses(401, 404, 409, 412, 422, 423),
+    )
+    def create_field(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: DataFieldCreate,
+        idempotency_key: Key,
+    ):
+        result, _, _ = catalog.create_field(
+            str(projectId),
+            str(tableId),
+            str(idempotency_key),
+            body.model_dump(by_alias=True, exclude_unset=True),
+        )
+        return {"field": result["field"], "tableRevision": result["tableRevision"]}
+
+    @router.get(
+        "/{tableId}/statuses",
+        response_model=DataStatusDirectory,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def list_statuses(projectId: CanonicalId, tableId: CanonicalId):
+        return catalog.statuses(str(projectId), str(tableId))
+
+    @router.post(
+        "/{tableId}/statuses",
+        response_model=DataStatusView,
+        status_code=201,
+        responses={
+            200: {"model": DataStatusView},
+            **browser_error_responses(401, 404, 409, 422, 423),
+        },
+    )
+    def create_status(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: DataStatusCreate,
+        response: Response,
+        idempotency_key: Key,
+    ):
+        result, _, replayed = catalog.create_status(
+            str(projectId),
+            str(tableId),
+            str(idempotency_key),
+            body.model_dump(by_alias=True),
+        )
+        if replayed:
+            response.status_code = 200
+        return result["status"]
+
+    @router.patch(
+        "/{tableId}/statuses/{statusId}",
+        response_model=DataStatusView,
+        responses=browser_error_responses(401, 404, 409, 422, 423),
+    )
+    def update_status(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        statusId: CanonicalId,
+        body: DataStatusPatch,
+        idempotency_key: Key,
+    ):
+        result, _, _ = catalog.update_status(
+            str(projectId),
+            str(tableId),
+            str(statusId),
+            str(idempotency_key),
+            body.model_dump(by_alias=True, exclude_unset=True),
+        )
+        return result["status"]
 
     return router
