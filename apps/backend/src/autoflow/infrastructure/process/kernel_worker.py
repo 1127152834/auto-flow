@@ -28,6 +28,7 @@ from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.kernel_installations import kernel_target_lock
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.providers.kernel.catalog import (
     current_platform_tag,
@@ -63,6 +64,8 @@ class _RunningWorker:
     process: asyncio.subprocess.Process
     task: asyncio.Task[KernelOperation]
     staging: Path
+    owner: ExclusiveFileLock
+    target: ExclusiveFileLock
 
 
 def kernel_worker_command() -> tuple[str, ...]:
@@ -97,15 +100,20 @@ class KernelWorkerManager:
         self._rpc_processes: set[asyncio.subprocess.Process] = set()
         self._shutting_down = False
         self._lock = asyncio.Lock()
-        self._ownership = ExclusiveFileLock(self._kernels_dir / ".install.lock")
         self._cleanup_rpc_cache()
 
     def recover_interrupted(self) -> list[KernelOperation]:
-        if not self._ownership.acquire():
-            return []
         recovered: list[KernelOperation] = []
-        try:
-            for operation in self._repository.list_active():
+        for candidate in self._repository.list_active():
+            staging = self._kernels_dir / ".staging" / candidate.id
+            owner = ExclusiveFileLock(staging / ".owner.lock")
+            should_clean = False
+            try:
+                if not owner.acquire():
+                    continue
+                operation = self._repository.get(candidate.id)
+                if operation is None or operation.state in TERMINAL_OPERATION_STATES:
+                    continue
                 failed = transition_operation(
                     operation,
                     "failed",
@@ -113,15 +121,15 @@ class KernelWorkerManager:
                     message="安装中断",
                 )
                 self._repository.save(failed)
-                shutil.rmtree(
-                    self._kernels_dir / ".staging" / operation.id, ignore_errors=True
-                )
                 recovered.append(failed)
-            if recovered:
-                self._events.publish(self.snapshot())
-            return recovered
-        finally:
-            self._ownership.release()
+                should_clean = True
+            finally:
+                owner.release()
+            if should_clean:
+                shutil.rmtree(staging, ignore_errors=True)
+        if recovered:
+            self._events.publish(self.snapshot())
+        return recovered
 
     async def start(self, job: KernelInstallJob) -> KernelOperation:
         if not is_valid_kernel_version(job.requested_version):
@@ -131,9 +139,16 @@ class KernelWorkerManager:
         if job.edition == "public" and job.release_channel != "stable":
             raise ValueError("public downloads require the stable channel")
         async with self._lock:
-            if any(item.process.returncode is None for item in self._running.values()):
-                raise KernelWorkerManagerBusy()
-            if not self._ownership.acquire():
+            if self._shutting_down:
+                raise KernelWorkerManagerError("Kernel worker manager is shutting down")
+            target = kernel_target_lock(
+                self._kernels_dir, job.edition, job.requested_version
+            )
+            try:
+                acquired = target.acquire()
+            except OSError:
+                acquired = False
+            if not acquired:
                 raise KernelWorkerManagerBusy()
             operation = KernelOperation.new(
                 operation_id=str(uuid4()),
@@ -142,11 +157,14 @@ class KernelWorkerManager:
                 release_channel=job.release_channel,
             )
             staging = self._kernels_dir / ".staging" / operation.id
+            owner = ExclusiveFileLock(staging / ".owner.lock")
             process: asyncio.subprocess.Process | None = None
             try:
+                staging.mkdir(parents=True, exist_ok=False)
+                if not owner.acquire():
+                    raise KernelWorkerManagerBusy()
                 self._repository.save(operation)
                 self._publish()
-                staging.mkdir(parents=True, exist_ok=False)
                 env = os.environ.copy()
                 env.update(self._worker_env)
                 env["CLOAKBROWSER_CACHE_DIR"] = str(staging)
@@ -182,7 +200,7 @@ class KernelWorkerManager:
             except asyncio.CancelledError:
                 cleanup = asyncio.create_task(
                     self._compensate_start(
-                        operation, staging, process, cancelled=True
+                        operation, staging, process, owner, target, cancelled=True
                     )
                 )
                 await _wait_uninterruptibly(cleanup)
@@ -190,15 +208,21 @@ class KernelWorkerManager:
             except Exception:  # noqa: BLE001 -- every setup failure must release ownership.
                 cleanup = asyncio.create_task(
                     self._compensate_start(
-                        operation, staging, process, cancelled=False
+                        operation, staging, process, owner, target, cancelled=False
                     )
                 )
                 _, cancelled_during_cleanup = await _wait_uninterruptibly(cleanup)
                 if cancelled_during_cleanup:
                     raise asyncio.CancelledError
-                raise KernelWorkerManagerError("Kernel worker could not start") from None
-            task = asyncio.create_task(self._monitor(operation.id, process, staging))
-            self._running[operation.id] = _RunningWorker(process, task, staging)
+                raise KernelWorkerManagerError(
+                    "Kernel worker could not start"
+                ) from None
+            task = asyncio.create_task(
+                self._monitor(operation.id, process, staging, owner, target)
+            )
+            self._running[operation.id] = _RunningWorker(
+                process, task, staging, owner, target
+            )
             return operation
 
     async def cancel(self, operation_id: str) -> KernelOperation:
@@ -209,7 +233,10 @@ class KernelWorkerManager:
                 if operation.state in TERMINAL_OPERATION_STATES:
                     return operation
                 raise KernelWorkerManagerBusy()
-            if operation.state not in TERMINAL_OPERATION_STATES and operation.state != "cancelling":
+            if (
+                operation.state not in TERMINAL_OPERATION_STATES
+                and operation.state != "cancelling"
+            ):
                 operation = transition_operation(
                     operation, "cancelling", message="正在取消安装"
                 )
@@ -260,14 +287,20 @@ class KernelWorkerManager:
         ]
 
     async def shutdown(self) -> None:
-        self._shutting_down = True
-        rpc_tasks = tuple(self._rpc_tasks)
+        async with self._lock:
+            self._shutting_down = True
+            rpc_tasks = tuple(self._rpc_tasks)
+            operation_ids = tuple(self._running)
         for task in rpc_tasks:
             task.cancel()
-        if rpc_tasks:
-            await asyncio.gather(*rpc_tasks, return_exceptions=True)
-        for operation_id in tuple(self._running):
-            await self.cancel(operation_id)
+        results = await asyncio.gather(
+            *rpc_tasks,
+            *(self.cancel(operation_id) for operation_id in operation_ids),
+            return_exceptions=True,
+        )
+        for result in results[len(rpc_tasks) :]:
+            if isinstance(result, BaseException):
+                raise result
 
     async def licensed_catalog(self) -> list[object]:
         message = await self._rpc("catalog", {})
@@ -393,6 +426,8 @@ class KernelWorkerManager:
         operation_id: str,
         process: asyncio.subprocess.Process,
         staging: Path,
+        owner: ExclusiveFileLock,
+        target: ExclusiveFileLock,
     ) -> KernelOperation:
         try:
             assert process.stdout is not None
@@ -400,7 +435,9 @@ class KernelWorkerManager:
                 try:
                     message = json.loads(raw_line)
                     if not isinstance(message, dict):
-                        raise KernelWorkerProtocolError("Worker message must be an object")
+                        raise KernelWorkerProtocolError(
+                            "Worker message must be an object"
+                        )
                     if message.get("type") == "progress":
                         await self._progress(operation_id, message)
                     elif message.get("type") == "completed":
@@ -441,9 +478,10 @@ class KernelWorkerManager:
         finally:
             if process.returncode is None:
                 await self._stop_process(process)
+            owner.release()
             shutil.rmtree(staging, ignore_errors=True)
             self._running.pop(operation_id, None)
-            self._ownership.release()
+            target.release()
 
     async def _progress(self, operation_id: str, message: dict[str, Any]) -> None:
         state = message.get("state")
@@ -465,34 +503,41 @@ class KernelWorkerManager:
     async def _complete(
         self, operation_id: str, staging: Path, message: dict[str, Any]
     ) -> None:
-        async with self._lock:
-            operation = self._required(operation_id)
-            if operation.state == "cancelling":
-                return
-            if operation.state != "extracting":
-                raise KernelWorkerProtocolError("Worker completed out of order")
-            resolved_version = message.get("resolvedVersion")
-            relative_executable = message.get("executableRelativePath")
-            if not isinstance(resolved_version, str) or not isinstance(
-                relative_executable, str
-            ):
-                raise KernelWorkerProtocolError("Incomplete worker result")
-            self._publish_install(
-                operation, staging, resolved_version, relative_executable
-            )
-            completed = transition_operation(
-                operation,
-                "completed",
-                resolved_version=resolved_version,
-                message="安装完成",
-            )
-            self._repository.save(completed)
-            self._publish()
+        maintenance = await self._acquire_maintenance_lock()
+        try:
+            async with self._lock:
+                operation = self._required(operation_id)
+                if operation.state == "cancelling":
+                    return
+                if operation.state != "extracting":
+                    raise KernelWorkerProtocolError("Worker completed out of order")
+                resolved_version = message.get("resolvedVersion")
+                relative_executable = message.get("executableRelativePath")
+                if not isinstance(resolved_version, str) or not isinstance(
+                    relative_executable, str
+                ):
+                    raise KernelWorkerProtocolError("Incomplete worker result")
+                self._publish_install(
+                    operation, staging, resolved_version, relative_executable
+                )
+                completed = transition_operation(
+                    operation,
+                    "completed",
+                    resolved_version=resolved_version,
+                    message="安装完成",
+                )
+                self._repository.save(completed)
+                self._publish()
+        finally:
+            maintenance.release()
 
     async def _fail(self, operation_id: str, error: str) -> None:
         async with self._lock:
             operation = self._required(operation_id)
-            if operation.state in TERMINAL_OPERATION_STATES or operation.state == "cancelling":
+            if (
+                operation.state in TERMINAL_OPERATION_STATES
+                or operation.state == "cancelling"
+            ):
                 return
             failed = transition_operation(
                 operation, "failed", error=error, message="安装失败"
@@ -566,11 +611,22 @@ class KernelWorkerManager:
                 pass
             await process.wait()
 
+    async def _acquire_maintenance_lock(self) -> ExclusiveFileLock:
+        lock = ExclusiveFileLock(self._kernels_dir / ".install.lock")
+        deadline = asyncio.get_running_loop().time() + self._termination_timeout
+        while not lock.acquire():
+            if asyncio.get_running_loop().time() >= deadline:
+                raise KernelWorkerManagerBusy()
+            await asyncio.sleep(0.01)
+        return lock
+
     async def _compensate_start(
         self,
         operation: KernelOperation,
         staging: Path,
         process: asyncio.subprocess.Process | None,
+        owner: ExclusiveFileLock,
+        target: ExclusiveFileLock,
         *,
         cancelled: bool,
     ) -> None:
@@ -581,7 +637,6 @@ class KernelWorkerManager:
                         process.stdin.close()
                 if process.returncode is None:
                     await self._stop_process(process)
-            shutil.rmtree(staging, ignore_errors=True)
             failed = transition_operation(
                 operation,
                 "failed",
@@ -594,7 +649,9 @@ class KernelWorkerManager:
             self._repository.save(failed)
             self._publish()
         finally:
-            self._ownership.release()
+            owner.release()
+            shutil.rmtree(staging, ignore_errors=True)
+            target.release()
 
     def _publish(self) -> None:
         self._events.publish(self.snapshot())

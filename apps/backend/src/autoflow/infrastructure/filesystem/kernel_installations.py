@@ -14,7 +14,11 @@ from autoflow.domain.kernels.errors import (
 )
 from autoflow.domain.kernels.models import KernelRef
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
-from autoflow.providers.kernel.catalog import current_platform_tag, executable_path
+from autoflow.providers.kernel.catalog import (
+    current_platform_tag,
+    executable_path,
+    is_valid_kernel_version,
+)
 
 logger = logging.getLogger(__name__)
 _TOKEN = re.compile(r"[0-9a-f]{32}-chromium-[0-9]+(?:\.[0-9]+){3,4}(?:-pro)?")
@@ -34,18 +38,27 @@ class FilesystemKernelInstallationStore:
         self.platform = platform or current_platform_tag()
 
     @contextmanager
-    def guard(self) -> Iterator[None]:
+    def guard(self, kernel: KernelRef | None = None) -> Iterator[None]:
         self._ensure_roots()
+        target_lock = (
+            kernel_target_lock(self.root, kernel.edition, kernel.version)
+            if kernel is not None
+            else None
+        )
         lock = ExclusiveFileLock(self.root / ".install.lock")
         try:
-            if not lock.acquire():
-                raise KernelBusy()
-        except OSError:
-            raise KernelBusy() from None
-        try:
+            try:
+                if target_lock is not None and not target_lock.acquire():
+                    raise KernelBusy()
+                if not lock.acquire():
+                    raise KernelBusy()
+            except OSError:
+                raise KernelBusy() from None
             yield
         finally:
             lock.release()
+            if target_lock is not None:
+                target_lock.release()
 
     @contextmanager
     def license_guard(self) -> Iterator[None]:
@@ -75,7 +88,12 @@ class FilesystemKernelInstallationStore:
     def restore(self, token: str) -> None:
         source = self._trash_path(token)
         target = self.root / token[33:]
-        if target.exists() or target.is_symlink() or not source.is_dir() or source.is_symlink():
+        if (
+            target.exists()
+            or target.is_symlink()
+            or not source.is_dir()
+            or source.is_symlink()
+        ):
             raise KernelPathInvalid()
         self._validate_tree(source)
         source.rename(target)
@@ -94,13 +112,17 @@ class FilesystemKernelInstallationStore:
                 continue
             target = self.root / item.name[33:]
             if target.exists() or target.is_symlink():
-                logger.warning("kernel recovery conflict preserved for token=%s", item.name)
+                logger.warning(
+                    "kernel recovery conflict preserved for token=%s", item.name
+                )
                 continue
             try:
                 self._validate_install(item)
                 item.rename(target)
             except (OSError, KernelPathInvalid):
-                logger.warning("kernel recovery remains pending for token=%s", item.name)
+                logger.warning(
+                    "kernel recovery remains pending for token=%s", item.name
+                )
 
     def _kernel_path(self, kernel: KernelRef) -> Path:
         if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){3,4}", kernel.version):
@@ -140,3 +162,12 @@ class FilesystemKernelInstallationStore:
         self._validate_tree(root)
         if not executable_path(root, self.platform).is_file():
             raise KernelPathInvalid()
+
+
+def kernel_target_lock(root: Path, edition: str, version: str) -> ExclusiveFileLock:
+    if edition not in {"public", "licensed"} or not is_valid_kernel_version(version):
+        raise KernelPathInvalid()
+    suffix = "-pro" if edition == "licensed" else ""
+    return ExclusiveFileLock(
+        root / ".install-targets" / f"chromium-{version}{suffix}.lock"
+    )

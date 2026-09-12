@@ -81,7 +81,9 @@ class KernelService:
     def get_default(self) -> DefaultKernel:
         return self.defaults.get()
 
-    def set_default(self, expected_revision: int, kernel: KernelRef | None) -> DefaultKernel:
+    def set_default(
+        self, expected_revision: int, kernel: KernelRef | None
+    ) -> DefaultKernel:
         with self.installations.guard():
             if kernel is not None and not self.catalog_provider.is_installed(
                 kernel.edition, kernel.version
@@ -127,7 +129,7 @@ class KernelService:
         return self.operations.snapshot()
 
     def remove(self, kernel: KernelRef) -> DefaultKernel:
-        with self.installations.guard():
+        with self.installations.guard(kernel):
             if not self.catalog_provider.is_installed(kernel.edition, kernel.version):
                 raise KernelNotFound()
             token = self.installations.stage(kernel)
@@ -144,6 +146,9 @@ class KernelService:
 
     def resolve_installed(self, kernel: KernelRef) -> InstalledKernel:
         for installed in self.catalog_provider.installed():
-            if installed.edition == kernel.edition and installed.version == kernel.version:
+            if (
+                installed.edition == kernel.edition
+                and installed.version == kernel.version
+            ):
                 return installed
         raise KernelNotFound()

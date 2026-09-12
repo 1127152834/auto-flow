@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
-
 from autoflow.application.kernels.operations import KernelOperation
 from autoflow.application.kernels.service import KernelService
 from autoflow.domain.kernels.errors import (
@@ -25,6 +24,7 @@ from autoflow.domain.kernels.models import (
 )
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
+    kernel_target_lock,
 )
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 
@@ -40,7 +40,9 @@ class Catalog:
         return list(self.items)
 
     def is_installed(self, edition: str, version: str) -> bool:
-        return any(item.edition == edition and item.version == version for item in self.items)
+        return any(
+            item.edition == edition and item.version == version for item in self.items
+        )
 
 
 class License:
@@ -70,7 +72,9 @@ class Defaults:
     def get(self) -> DefaultKernel:
         return self.value
 
-    def compare_and_set(self, expected_revision: int, kernel: KernelRef | None) -> DefaultKernel:
+    def compare_and_set(
+        self, expected_revision: int, kernel: KernelRef | None
+    ) -> DefaultKernel:
         if expected_revision != self.value.revision:
             raise KernelDefaultConflict()
         self.value = DefaultKernel(expected_revision + 1, kernel)
@@ -91,7 +95,7 @@ class Installations:
         self.purged: list[str] = []
 
     @contextmanager
-    def guard(self):
+    def guard(self, _kernel: KernelRef | None = None):
         yield
 
     @contextmanager
@@ -123,11 +127,20 @@ class Operations:
 
 def service(default: KernelRef | None = None):
     ref = KernelRef("public", "146.0.7680.80")
-    installed = InstalledKernel(ref.edition, ref.version, Path("/kernels/chrome.exe"), 1)
+    installed = InstalledKernel(
+        ref.edition, ref.version, Path("/kernels/chrome.exe"), 1
+    )
     defaults = Defaults(default)
     installations = Installations()
     return (
-        KernelService(Catalog([installed]), License(), Store(), defaults, installations, Operations()),
+        KernelService(
+            Catalog([installed]),
+            License(),
+            Store(),
+            defaults,
+            installations,
+            Operations(),
+        ),
         ref,
         defaults,
         installations,
@@ -200,16 +213,40 @@ def test_kernel_removal_rejects_symlink_escape(tmp_path: Path) -> None:
         store.stage(KernelRef("public", "146.0.7680.80"))
 
 
-def test_default_and_delete_guard_conflict_with_an_active_install(tmp_path: Path) -> None:
+def test_delete_guard_conflicts_only_with_the_same_active_install_target(
+    tmp_path: Path,
+) -> None:
     root = tmp_path / "kernels"
     store = FilesystemKernelInstallationStore(root)
-    install_lock = ExclusiveFileLock(root / ".install.lock")
-    assert install_lock.acquire()
+    ref = KernelRef("public", "146.0.7680.80")
+    target_lock = kernel_target_lock(root, ref.edition, ref.version)
+    assert target_lock.acquire()
     try:
-        with pytest.raises(KernelBusy), store.guard():
+        with store.guard():
+            pass
+        with pytest.raises(KernelBusy), store.guard(ref):
             pass
     finally:
-        install_lock.release()
+        target_lock.release()
+
+
+def test_delete_target_guard_releases_reservation_when_maintenance_is_busy(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "kernels"
+    store = FilesystemKernelInstallationStore(root)
+    ref = KernelRef("public", "146.0.7680.80")
+    maintenance = ExclusiveFileLock(root / ".install.lock")
+    assert maintenance.acquire()
+    try:
+        with pytest.raises(KernelBusy), store.guard(ref):
+            pass
+    finally:
+        maintenance.release()
+
+    target = kernel_target_lock(root, ref.edition, ref.version)
+    assert target.acquire()
+    target.release()
 
 
 def test_startup_does_not_restore_partially_purged_install(tmp_path: Path) -> None:
@@ -351,7 +388,9 @@ async def test_second_licensed_download_maps_license_gate_contention_to_kernel_b
         FilesystemKernelInstallationStore(root, platform="windows-x64"),
         Operations(),
     )
-    running = asyncio.create_task(first.download("licensed", "151.0.7922.108", "stable"))
+    running = asyncio.create_task(
+        first.download("licensed", "151.0.7922.108", "stable")
+    )
     await first_operations.entered.wait()
 
     with pytest.raises(KernelBusy):
