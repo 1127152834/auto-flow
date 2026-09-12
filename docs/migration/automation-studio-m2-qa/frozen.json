@@ -1,0 +1,89 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "frozen",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "six real nodes; unsaved snapshot; idempotent request; extraction and real PNG; cleanup",
+    "replacement, append, empty input, container, contenteditable, CSS/XPath first match",
+    "six extraction modes including raw attributes/null/large UTF-8 results; all wait states",
+    "popup follow on/off and no-popup success; double/right clicks",
+    "viewport/element screenshots, relative directory, explicit absolute PNG, retained copy, collision/traversal refusal",
+    "preflight, fractional timeout, fail-fast, single active run, resource deletion guard, stop interrupts wait",
+    "ordered event pagination, SSE cursor replay, restart restores run/log/results without replay",
+    "temporary sessions isolated; actual locale/timezone; Profile start URL not visited"
+  ],
+  "observations": [
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    },
+    {
+      "cookie": "",
+      "storage": null,
+      "locale": "ja-JP",
+      "timezone": "Asia/Tokyo",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+    }
+  ],
+  "complete": true
+}

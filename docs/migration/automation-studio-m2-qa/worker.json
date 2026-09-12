@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-09-12T21:38:12.624581+00:00",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "source",
+  "checks": [
+    {
+      "name": "closed_current_page_does_not_switch_to_surviving_opener",
+      "status": "passed",
+      "result": {
+        "state": "failed",
+        "error": {
+          "code": "workflow_page_closed",
+          "message": "当前网页已关闭",
+          "nodeId": "n3",
+          "path": []
+        }
+      },
+      "method": "real popup close button invokes window.close(); native OS red-close button not exercised",
+      "cleanup": {
+        "capturedProcessCount": 8,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "stop_during_real_browser_startup",
+      "status": "passed",
+      "result": {
+        "state": "cancelled",
+        "error": null
+      },
+      "method": "SIGSTOP owned Chromium before ready; manager stop must force-reap the paused process",
+      "cleanup": {
+        "capturedProcessCount": 3,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "stop_during_pending_navigation",
+      "status": "passed",
+      "result": {
+        "state": "cancelled",
+        "error": null
+      },
+      "method": "local HTTP connection accepted; no response sent",
+      "cleanup": {
+        "capturedProcessCount": 8,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "stop_during_real_screenshot",
+      "status": "passed",
+      "result": {
+        "state": "cancelled",
+        "error": null
+      },
+      "method": "screenshot pending on actual font resource; no image output after stop",
+      "cleanup": {
+        "capturedProcessCount": 8,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "abrupt_worker_exit_reaps_real_browser_tree",
+      "status": "passed",
+      "result": {
+        "state": "failed",
+        "error": {
+          "code": "workflow_worker_failed",
+          "message": "工作流执行进程失败",
+          "nodeId": null,
+          "path": []
+        }
+      },
+      "method": "SIGKILL source worker only; manager performs remaining tree cleanup",
+      "cleanup": {
+        "capturedProcessCount": 8,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "abrupt_sidecar_exit_reaps_unresponsive_real_browser_tree",
+      "status": "passed",
+      "result": {
+        "sidecarExit": -9
+      },
+      "method": "SIGSTOP owned Chromium then SIGKILL real HTTP sidecar; child parent watcher must reap all descendants",
+      "cleanup": {
+        "capturedProcessCount": 8,
+        "remainingGroupProcesses": 0,
+        "remainingCapturedProcesses": 0,
+        "remainingOwnedBrowserProcesses": 0
+      }
+    },
+    {
+      "name": "crashed_sidecar_restart_marks_interrupted_without_replay",
+      "status": "passed",
+      "recoveredState": "interrupted",
+      "newBrowserProcesses": 0,
+      "newPageRequests": 0,
+      "gracefulShutdownExit": 0
+    }
+  ],
+  "complete": true,
+  "limitations": [
+    "Windows not executed",
+    "Native window close button not exercised; a real popup close button covers the same closed-page ownership guard"
+  ],
+  "kernelVersion": "145.0.7632.109.2",
+  "temporaryWorkspaceRemoved": true
+}

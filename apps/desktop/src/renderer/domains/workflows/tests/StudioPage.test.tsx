@@ -5,13 +5,17 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { ApiProvider } from '../../../app/ApiProvider'
 import { StudioPage } from '../pages/StudioPage'
 import type { WorkflowCanvasProps } from '../components/WorkflowCanvas'
-import type { NodeDefinition, WorkflowContent, WorkflowRead } from '../types'
+import type { NodeDefinition, WorkflowContent, WorkflowIssue, WorkflowRead } from '../types'
+import { isRunActive, type RunRead } from '../run-types'
+import { runEvent, runRecord } from './run-fixtures'
 
 // Canvas geometry belongs to its component/Electron tests; document state and the
 // inspector, variable editor, persistence hook and HTTP client remain real here.
 vi.mock('../components/WorkflowCanvas', () => ({
-  WorkflowCanvas: ({ content, disabled, onSelect, onMove, onConnect, onEditStart, onEditEnd }: WorkflowCanvasProps) => <section aria-label="测试画布">
+  WorkflowCanvas: ({ content, disabled, runMarkers, locate, onSelect, onMove, onConnect, onEditStart, onEditEnd }: WorkflowCanvasProps) => <section aria-label="测试画布">
     <output data-testid="document">{JSON.stringify(content)}</output>
+    <output data-testid="run-markers">{JSON.stringify(runMarkers ?? {})}</output>
+    <output data-testid="run-locate">{JSON.stringify(locate ?? null)}</output>
     {content.document.nodes.map((node) => <button key={node.id} disabled={disabled} onClick={() => onSelect([node.id], [])}>选择节点 {node.type}</button>)}
     <button disabled={disabled} onClick={() => { onEditStart(); onMove(Object.fromEntries(content.document.nodes.map((node, index) => [node.id, { x: 300 + index * 100, y: 200 }]))); onEditEnd() }}>移动全部节点</button>
     <button disabled={disabled} onClick={() => content.document.nodes.slice(1).forEach((node, index) => onConnect(content.document.nodes[index].id, node.id))}>顺序连接节点</button>
@@ -20,7 +24,7 @@ vi.mock('../components/WorkflowCanvas', () => ({
 
 const text = { type: 'string' }
 function definition(type: NodeDefinition['type'], title: string, defaults: Record<string, unknown>, properties: Record<string, unknown>, required: string[]): NodeDefinition {
-  return { type, title, description: '', category: '浏览器', defaultConfig: { ...defaults, timeoutSeconds: 60 }, configSchema: { type: 'object', properties: { ...properties, timeoutSeconds: { type: 'number', exclusiveMinimum: 0 } }, required, additionalProperties: false }, inputPorts: ['in'], outputPorts: ['out'], runnable: false }
+  return { type, title, description: '', category: '浏览器', defaultConfig: { ...defaults, timeoutSeconds: 60 }, configSchema: { type: 'object', properties: { ...properties, timeoutSeconds: { type: 'number', exclusiveMinimum: 0 } }, required, additionalProperties: false }, inputPorts: ['in'], outputPorts: ['out'], runnable: true }
 }
 const catalog = [
   definition('open_page', '打开网页', { url: '', openMode: 'new_tab', waitUntil: 'load' }, { url: text, openMode: text, waitUntil: text }, ['url']),
@@ -41,18 +45,45 @@ function savedFlow(id = 'saved-flow', name = '已保存的流程'): WorkflowRead
   }
 }
 
-type Request = { path: string; method: string; body?: WorkflowContent & { expectedRevision?: number }; headers: Headers }
-function testServer(initial: WorkflowRead[] = []) {
+type Request = { path: string; method: string; body?: WorkflowContent & { expectedRevision?: number; runId?: string; profileId?: string }; headers: Headers }
+function testServer(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
   const documents = new Map(initial.map((record) => [record.document.id, structuredClone(record)]))
+  const runs = new Map(initialRuns.map(record => [record.runId, structuredClone(record)]))
   const requests: Request[] = []
   let writeError: string | null = null
   let readBarrier: Promise<void> | null = null
   let writeBarrier: Promise<void> | null = null
+  let stopBarrier: Promise<void> | null = null
+  let loseStartResponse = false
+  let runIssue: WorkflowIssue | null = null
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = new URL(String(input)).pathname
     const method = init?.method ?? 'GET'
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) as Request['body'] : undefined
     requests.push({ path, method, body, headers: new Headers(init?.headers) })
+    if (path === '/api/v1/profiles') return json({ items: [{ id: 'profile-1', name: '真实配置', headless: false }], total: 1 })
+    if (path === '/api/v1/workflows/runs' && method === 'GET') return json({ items: [...runs.values()], activeRunId: [...runs.values()].find(isRunActive)?.runId ?? null, nextOffset: null })
+    if (path === '/api/v1/workflows/runs' && method === 'POST' && body) {
+      if (runIssue) return json({ error: { code: 'WORKFLOW_INVALID', message: '运行校验未通过', details: { issues: [runIssue] }, requestId: 'fixture' } }, 422)
+      const record = runRecord({ document: body.document, layout: body.layout, runId: body.runId!, workflowId: body.document.id, name: body.document.name, nodeOrder: body.document.nodes.map(node => node.id), currentNodeId: body.document.nodes[0]?.id ?? null })
+      runs.set(record.runId, structuredClone(record))
+      if (loseStartResponse) throw new TypeError('connection lost after acceptance')
+      return json(record, 201)
+    }
+    if (path.startsWith('/api/v1/workflows/runs/')) {
+      const id = path.split('/')[5]
+      const record = runs.get(id)
+      if (!record) return json({ error: { code: 'RUN_NOT_FOUND', message: '运行不存在', details: {}, requestId: 'fixture' } }, 404)
+      if (path.endsWith('/stop')) {
+        if (stopBarrier) await stopBarrier
+        const stopped = { ...record, state: 'cancelled' as const, finishedAt: time, latestSeq: 2 }
+        runs.set(id, stopped)
+        return json(stopped)
+      }
+      if (path.endsWith('/events')) return json({ items: [runEvent(1, { runId: id, nodeId: record.document.nodes[0]?.id ?? null, message: '真实节点开始执行' })], hasMore: false, nextSeq: 1 })
+      if (path.endsWith('/stream')) return new Response(new ReadableStream({ start(controller) { init?.signal?.addEventListener('abort', () => controller.close(), { once: true }) } }), { headers: { 'content-type': 'text/event-stream' } })
+      return json(record)
+    }
     if (path === '/api/v1/workflows/node-catalog') return json({ items: catalog })
     if (path === '/api/v1/workflows' && method === 'GET') return json({ items: [...documents.values()].map((record) => ({ id: record.document.id, name: record.document.name, revision: record.revision, updatedAt: record.updatedAt })) })
     if (method === 'GET' && path.startsWith('/api/v1/workflows/')) {
@@ -72,12 +103,12 @@ function testServer(initial: WorkflowRead[] = []) {
     }
     throw new Error(`Unexpected request ${method} ${path}`)
   })
-  return { fetch, requests, documents, setWriteError(message: string | null) { writeError = message }, pauseRead(barrier: Promise<void>) { readBarrier = barrier }, pauseWrite(barrier: Promise<void>) { writeBarrier = barrier } }
+  return { fetch, requests, documents, runs, setWriteError(message: string | null) { writeError = message }, pauseRead(barrier: Promise<void>) { readBarrier = barrier }, pauseWrite(barrier: Promise<void>) { writeBarrier = barrier }, pauseStop(barrier: Promise<void>) { stopBarrier = barrier }, loseStartResponse() { loseStartResponse = true }, setRunIssue(issue: WorkflowIssue) { runIssue = issue } }
 }
 
 type LeaveHandler = (reason: 'close' | 'quit' | 'workspace' | 'new' | 'open') => Promise<boolean>
-function setup(initial: WorkflowRead[] = []) {
-  const server = testServer(initial)
+function setup(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
+  const server = testServer(initial, initialRuns)
   vi.stubGlobal('fetch', server.fetch)
   let leave: LeaveHandler | null = null
   const registerLeave = vi.fn((handler: LeaveHandler | null) => { leave = handler })
@@ -87,7 +118,7 @@ function setup(initial: WorkflowRead[] = []) {
 }
 
 const content = () => JSON.parse(screen.getByTestId('document').textContent!) as WorkflowContent
-const writes = (server: ReturnType<typeof testServer>) => server.requests.filter((request) => request.method === 'POST' || request.method === 'PUT')
+const writes = (server: ReturnType<typeof testServer>) => server.requests.filter((request) => (request.method === 'POST' || request.method === 'PUT') && !request.path.includes('/runs'))
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 it('creates all six nodes, sends an authenticated manual save, then updates with a revision through Ctrl+S', async () => {
@@ -331,4 +362,176 @@ it('waits for an in-flight save before deciding whether an undo back to the old 
   await user.click(within(dialog).getByRole('button', { name: '取消' }))
   expect(await leaving).toBe(false)
   expect(content().document.nodes).toHaveLength(0)
+})
+
+async function beginRun(view: ReturnType<typeof setup>) {
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: '添加打开网页' }))
+  await user.type(screen.getByLabelText('网页地址'), 'https://example.test')
+  await user.selectOptions(screen.getByLabelText('浏览器配置'), 'profile-1')
+  await waitFor(() => expect(screen.getByRole('button', { name: '运行当前草稿' })).toBeEnabled())
+  await user.click(screen.getByRole('button', { name: '运行当前草稿' }))
+  await waitFor(() => expect(view.server.runs.size).toBe(1))
+  await screen.findByText('真实节点开始执行')
+  return user
+}
+
+it('runs a still-focused rename in a cloned unsaved draft, without saving or adding undo history', async () => {
+  const view = setup()
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: '添加打开网页' }))
+  await user.type(screen.getByLabelText('网页地址'), 'https://example.test')
+  await user.selectOptions(screen.getByLabelText('浏览器配置'), 'profile-1')
+  await user.click(screen.getByRole('tab', { name: /流程变量/ }))
+  await user.click(screen.getByRole('button', { name: '添加变量' }))
+  await user.clear(screen.getByLabelText('变量名'))
+  await user.type(screen.getByLabelText('变量名'), '新名称')
+  expect(content().document.variables[0].name).toBe('variable_1')
+  fireEvent.click(screen.getByRole('button', { name: '运行当前草稿' }))
+  await waitFor(() => expect(view.server.runs.size).toBe(1))
+  expect([...view.server.runs.values()][0].document.variables[0].name).toBe('新名称')
+  expect(writes(view.server)).toHaveLength(0)
+  expect(screen.getByText('有未保存修改')).toBeVisible()
+  await user.click(screen.getByRole('button', { name: '撤销' }))
+  expect(content().document.variables[0].name).toBe('variable_1')
+  expect([...view.server.runs.values()][0].document.variables[0].name).toBe('新名称')
+})
+
+it('blocks an invalid uncommitted variable rename even after switching away from its tab', async () => {
+  const user = userEvent.setup()
+  const view = setup()
+  await screen.findByRole('button', { name: '添加打开网页' })
+  await user.selectOptions(screen.getByLabelText('浏览器配置'), 'profile-1')
+  await user.click(screen.getByRole('tab', { name: /流程变量/ }))
+  await user.click(screen.getByRole('button', { name: '添加变量' }))
+  await user.clear(screen.getByLabelText('变量名'))
+  await user.type(screen.getByLabelText('变量名'), '123 bad')
+  await user.click(screen.getByRole('tab', { name: '节点属性' }))
+  await user.click(screen.getByRole('button', { name: '运行当前草稿' }))
+  expect(await screen.findByText('变量名称尚未成功修改，请修正后再运行')).toBeVisible()
+  expect(view.server.runs.size).toBe(0)
+})
+
+it('recovers a lost start response by the same run id and never automatically submits another start', async () => {
+  const view = setup()
+  view.server.loseStartResponse()
+  await beginRun(view)
+  const starts = view.server.requests.filter(request => request.path === '/api/v1/workflows/runs' && request.method === 'POST')
+  expect(starts).toHaveLength(1)
+  expect(view.server.requests.some(request => request.path === `/api/v1/workflows/runs/${starts[0].body!.runId}` && request.method === 'GET')).toBe(true)
+  expect(screen.getByRole('button', { name: '运行当前草稿' })).toBeDisabled()
+})
+
+it('keeps snapshot markers for layout changes, removes them on document changes, and restores them on undo', async () => {
+  const view = setup()
+  const user = await beginRun(view)
+  await waitFor(() => expect(screen.getByTestId('run-markers')).toHaveTextContent('执行中'))
+  await user.click(screen.getByRole('button', { name: '移动全部节点' }))
+  expect(screen.getByTestId('run-markers')).toHaveTextContent('执行中')
+  await user.type(screen.getByLabelText('网页地址'), '/edited')
+  expect(screen.getByTestId('run-markers')).toHaveTextContent('{}')
+  expect(screen.getByRole('button', { name: '打开网页' })).toBeDisabled()
+  expect([...view.server.runs.values()][0].document.nodes[0].config.url).toBe('https://example.test')
+  await user.click(screen.getByRole('button', { name: '撤销' }))
+  expect(screen.getByTestId('run-markers')).toHaveTextContent('执行中')
+  await user.click(screen.getByRole('button', { name: '打开网页' }))
+  expect(screen.getByTestId('run-locate')).toHaveTextContent(content().document.nodes[0].id)
+})
+
+it('cancel and failed save keep a dirty run alive, then new waits for cleanup after save succeeds', async () => {
+  const view = setup()
+  const user = await beginRun(view)
+  await user.click(screen.getByRole('button', { name: '新建' }))
+  await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '取消' }))
+  expect(view.server.requests.filter(request => request.path.endsWith('/stop'))).toHaveLength(0)
+  view.server.setWriteError('磁盘已满')
+  await user.click(screen.getByRole('button', { name: '新建' }))
+  await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '保存并停止' }))
+  expect(await within(screen.getByRole('dialog')).findByRole('alert')).toHaveTextContent('磁盘已满')
+  expect(view.server.requests.filter(request => request.path.endsWith('/stop'))).toHaveLength(0)
+  view.server.setWriteError(null)
+  let cleaned!: () => void
+  view.server.pauseStop(new Promise(resolve => { cleaned = resolve }))
+  const id = content().document.id
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '保存并停止' }))
+  await waitFor(() => expect(view.server.requests.some(request => request.path.endsWith('/stop'))).toBe(true))
+  expect(content().document.id).toBe(id)
+  expect(screen.getByRole('dialog')).toBeVisible()
+  await act(async () => cleaned())
+  await waitFor(() => expect(content().document.id).not.toBe(id))
+  expect(view.server.documents.get(id)?.document.nodes).toHaveLength(1)
+})
+
+it('prompts even for a clean active run and blocks leaving while the connection is unknown', async () => {
+  const view = setup()
+  const user = await beginRun(view)
+  await user.click(screen.getByRole('button', { name: '保存' }))
+  await screen.findByText('已保存')
+  let leaving!: Promise<boolean>
+  act(() => { leaving = view.prepareLeave('close') })
+  expect(await screen.findByText('停止运行后离开？')).toBeVisible()
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '取消' }))
+  expect(await leaving).toBe(false)
+  view.setConnection(false)
+  await act(async () => expect(await view.prepareLeave('workspace')).toBe(false))
+  expect(view.server.requests.some(request => request.path.endsWith('/stop'))).toBe(false)
+  expect(content().document.nodes).toHaveLength(1)
+})
+
+it('retains the displayed run and logs while offline, then deduplicates replayed logs on reconnect', async () => {
+  const view = setup()
+  await beginRun(view)
+  const id = [...view.server.runs.keys()][0]
+  view.setConnection(false)
+  expect(screen.getByText('真实节点开始执行')).toBeVisible()
+  view.setConnection(true)
+  await waitFor(() => expect(view.server.requests.filter(request => request.path === `/api/v1/workflows/runs/${id}/events`).length).toBeGreaterThan(1))
+  expect(screen.getAllByText('真实节点开始执行')).toHaveLength(1)
+  expect(view.server.requests.filter(request => request.path === '/api/v1/workflows/runs' && request.method === 'POST')).toHaveLength(1)
+})
+
+it.each(['new', 'close'] as const)('still permits offline discard for %s after confirming there was no active run', async reason => {
+  const view = setup()
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: '添加打开网页' }))
+  await waitFor(() => expect(screen.queryByText(/正在核实运行状态/)).not.toBeInTheDocument())
+  const id = content().document.id
+  view.setConnection(false)
+  let leaving: Promise<boolean> | undefined
+  if (reason === 'new') await user.click(screen.getByRole('button', { name: '新建' }))
+  else act(() => { leaving = view.prepareLeave('close') })
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByRole('button', { name: '保存并继续' })).toBeDisabled()
+  await user.click(within(dialog).getByRole('button', { name: '放弃修改' }))
+  if (leaving) expect(await leaving).toBe(true)
+  else await waitFor(() => expect(content().document.id).not.toBe(id))
+  expect(view.server.requests.some(request => request.path.endsWith('/stop'))).toBe(false)
+})
+
+it('shows server validation paths and locates the rejected snapshot node only while its document still matches', async () => {
+  const view = setup()
+  const user = userEvent.setup()
+  await user.click(await screen.findByRole('button', { name: '添加打开网页' }))
+  const id = content().document.nodes[0].id
+  view.server.setRunIssue({ code: 'FORWARD_REFERENCE', message: '引用的输出尚未产生', nodeId: id, path: ['config', 'url'] })
+  await user.selectOptions(screen.getByLabelText('浏览器配置'), 'profile-1')
+  await user.click(screen.getByRole('button', { name: '运行当前草稿' }))
+  expect(await screen.findByLabelText('运行校验问题')).toHaveTextContent('config / url')
+  await user.click(screen.getByRole('button', { name: '定位 打开网页' }))
+  expect(screen.getByTestId('run-locate')).toHaveTextContent(id)
+  expect(view.server.runs.size).toBe(0)
+  await user.type(screen.getByLabelText('网页地址'), 'https://example.test')
+  expect(screen.getByRole('button', { name: '定位 打开网页' })).toBeDisabled()
+  expect(screen.getByTestId('run-locate')).toHaveTextContent('null')
+})
+
+
+it('marks the current node failed after worker loss without a node_failed event', async () => {
+  const view = setup()
+  await beginRun(view)
+  const record = [...view.server.runs.values()][0]
+  view.server.runs.set(record.runId, { ...record, state: 'failed', finishedAt: time, latestSeq: 2, error: { code: 'WORKFLOW_WORKER_EXITED', message: '运行进程异常退出', nodeId: null, path: [] } })
+  await userEvent.setup().click(screen.getByRole('button', { name: '刷新运行状态' }))
+  await waitFor(() => expect(JSON.parse(screen.getByTestId('run-markers').textContent!)).toEqual({ [record.currentNodeId!]: '失败' }))
+  expect(screen.getByTestId('run-markers')).not.toHaveTextContent('执行中')
 })

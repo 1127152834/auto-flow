@@ -1,4 +1,4 @@
-import type { NodeDefinition, Point, WorkflowContent, WorkflowNode } from './types'
+import type { NodeDefinition, Point, WorkflowContent, WorkflowDocument, WorkflowNode } from './types'
 
 export function createWorkflow(): WorkflowContent {
   return {
@@ -16,6 +16,11 @@ function ordered(value: unknown): unknown {
 /** Camera movement is saved explicitly, but never prompts the user to save. */
 export function signature(content: WorkflowContent): string {
   return JSON.stringify(ordered({ document: content.document, positions: content.layout.nodes }))
+}
+
+/** Run markers compare the normalized document only, never saved/dirty state or layout. */
+export function documentSignature(document: WorkflowDocument, catalog: NodeDefinition[]): string {
+  return JSON.stringify(ordered({ ...document, nodes: document.nodes.map(node => ({ ...node, config: { ...catalog.find(item => item.type === node.type)?.defaultConfig, ...node.config } })) }))
 }
 
 export function addNode(content: WorkflowContent, definition: NodeDefinition, point: Point): WorkflowContent {

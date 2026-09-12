@@ -64,6 +64,14 @@ it('fails visibly without fabricating a workspace identity when runtime context 
   expect(fetch).not.toHaveBeenCalled()
 })
 
+it('ordinary recovery reconnects without restarting the sidecar or an active browser run', async () => {
+  const view = renderHook(() => useDesktopSession())
+  await waitFor(() => expect(view.result.current.status).toBe('connected'))
+  await act(async () => view.result.current.reconnect())
+  expect(window.autoflow.restartSidecar).not.toHaveBeenCalled()
+  expect(view.result.current.status).toBe('connected')
+})
+
 it('ignores a delayed polling snapshot after a newer runtime notification connected', async () => {
   let finishOldPoll!: (value: DesktopRuntimeContext) => void
   vi.mocked(window.autoflow.getRuntimeContext)

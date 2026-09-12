@@ -81,6 +81,18 @@ it('disables restart and workspace changes while occupied', async () => {
   expect(screen.getByText(/内核安装/)).toBeInTheDocument()
 })
 
+it('keeps restart blocked but allows choosing a target for the workflow leave guard', async () => {
+  const api = bridge({ getSettings: vi.fn(async () => ({ ok: true as const, value: { ...snapshot, workspace: { ...snapshot.workspace, blocked: true, canChoose: true, blockers: ['工作流正在运行'] } } })) })
+  const user = userEvent.setup()
+  render(<SettingsPage bridge={api} restartService={vi.fn()} />)
+  expect(await screen.findByRole('button', { name: '重启服务' })).toBeDisabled()
+  await user.click(screen.getByRole('tab', { name: '工作区' }))
+  expect(screen.getByRole('button', { name: '切换工作区' })).toBeEnabled()
+  await user.click(screen.getByRole('button', { name: '切换工作区' }))
+  expect(api.chooseWorkspace).toHaveBeenCalledWith('choose')
+  expect(api.confirmWorkspace).not.toHaveBeenCalled()
+})
+
 it('keeps operation errors visible across polling and lets the user dismiss them', async () => {
   const api = bridge({ setPreferences: vi.fn(async () => ({ ok: false as const, error: { code: 'WRITE_FAILED', message: '偏好保存失败' } })) })
   const user = userEvent.setup()

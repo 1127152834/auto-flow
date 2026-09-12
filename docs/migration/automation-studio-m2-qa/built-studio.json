@@ -1,0 +1,11 @@
+{
+  "mode": "built",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checks": [
+    "formal Studio draws/configures/connects six nodes and runs unsaved snapshot; concurrent edit preserved; real results",
+    "native close, quit and workspace switch cancellation preserve active run; explicit restart blocked",
+    "discard-and-stop cleans before native close; service restart retains completed record"
+  ],
+  "complete": true
+}

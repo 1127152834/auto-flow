@@ -137,3 +137,22 @@ class ModelCredentialCleanupRow(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
+
+
+class WorkflowRunRow(Base):
+    __tablename__ = "workflow_runs"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    started_at: Mapped[str] = mapped_column(String(40), nullable=False)
+    active_slot: Mapped[int | None] = mapped_column(Integer, unique=True)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowRunEventRow(Base):
+    __tablename__ = "workflow_run_events"
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True
+    )
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)

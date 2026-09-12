@@ -1,0 +1,6 @@
+*.png
+!packaged-logs.png
+!packaged-results.png
+!packaged-leave.png
+*-failure.txt
+m1-regression/*.png

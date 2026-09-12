@@ -1,27 +1,13 @@
 import json
 import math
-import re
-import unicodedata
 from collections import Counter
 from typing import Any
 from urllib.parse import urlsplit
 
 from .catalog import node_catalog
 from .models import WorkflowError, WorkflowIssue
-
-_REFERENCE = re.compile(r"\$\{([^{}]*)\}|(?<![${])\{([^{}]*)\}(?!})")
-
-
-def _name(value: object) -> bool:
-    return (
-        isinstance(value, str)
-        and bool(value)
-        and (value[0] == "_" or unicodedata.category(value[0]).startswith("L"))
-        and all(
-            character == "_" or unicodedata.category(character)[0] in {"L", "N"}
-            for character in value
-        )
-    )
+from .references import REFERENCE_PATTERN as _REFERENCE
+from .references import is_variable_name as _name
 
 
 def validate_structure(document: dict[str, Any], layout: dict[str, Any]) -> None:
@@ -177,7 +163,11 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
                 issue("REQUIRED", "此字段尚未填写", ["config", field], node["id"])
         for field, value in config.items():
             path = ["config", field]
-            if field != "variableName":
+            if field != "variableName" and not (
+                field == "selector"
+                and node["type"] == "screenshot"
+                and config.get("screenshotType", "fullpage") != "element"
+            ):
                 check_references(value, path, node["id"])
             definition = schema["properties"].get(field)
             if definition is None:

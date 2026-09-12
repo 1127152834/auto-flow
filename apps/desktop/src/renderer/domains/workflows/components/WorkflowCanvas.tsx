@@ -1,10 +1,10 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Background, BackgroundVariant, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps, type ReactFlowInstance } from '@xyflow/react'
 import { BracketsCurly, Camera, CursorClick, Globe, TextT, Timer, WarningCircle } from '@phosphor-icons/react'
 import '@xyflow/react/dist/style.css'
 import type { NodeDefinition, Point, WorkflowContent, WorkflowIssue } from '../types'
 
-type CanvasNode = Node<{ label: string; title: string; kind: string; summary: string; issueCount: number }, 'workflow'>
+type CanvasNode = Node<{ label: string; title: string; kind: string; summary: string; issueCount: number; runStatus?: string }, 'workflow'>
 const icons = { open_page: Globe, click_element: CursorClick, input_text: TextT, wait_element: Timer, get_element_info: BracketsCurly, screenshot: Camera }
 function WorkflowNodeView({ data, selected }: NodeProps<CanvasNode>) {
   const Icon = icons[data.kind as keyof typeof icons] ?? Globe
@@ -12,6 +12,7 @@ function WorkflowNodeView({ data, selected }: NodeProps<CanvasNode>) {
     <Handle type="target" position={Position.Left} id="in" className="!h-3 !w-3 !border-2 !border-surface !bg-clay" />
     <div className="flex items-start gap-3 p-3.5"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-clay-soft text-clay"><Icon size={19} /></span><div className="min-w-0"><div className="truncate text-sm font-semibold text-ink">{data.label || data.title}</div><p className="mt-1 truncate text-[11px] text-muted">{data.summary || data.title}</p></div></div>
     {data.issueCount > 0 ? <div className="flex items-center gap-1.5 border-t border-line px-3.5 py-2 text-[11px] text-amber-800"><WarningCircle size={13} />{data.issueCount} 项待配置</div> : null}
+    {data.runStatus ? <div role="status" className={`border-t border-line px-3.5 py-2 text-[11px] ${data.runStatus === '失败' ? 'text-red-700' : 'text-clay'}`}>{data.runStatus}</div> : null}
     <Handle type="source" position={Position.Right} id="out" className="!h-3 !w-3 !border-2 !border-surface !bg-clay" />
   </div>
 }
@@ -20,6 +21,8 @@ const nodeTypes = { workflow: WorkflowNodeView }
 export type WorkflowCanvasProps = {
   content: WorkflowContent; catalog: NodeDefinition[]; issues: WorkflowIssue[]
   selectedNodes: string[]; selectedEdges: string[]; disabled?: boolean
+  runMarkers?: Record<string, string>
+  locate?: { nodeId: string; request: number } | null
   onSelect(nodes: string[] | null, edges: string[] | null): void
   onMove(positions: Record<string, Point>): void
   onViewport(viewport: WorkflowContent['layout']['viewport']): void
@@ -30,7 +33,7 @@ export type WorkflowCanvasProps = {
 }
 
 export function WorkflowCanvas(props: WorkflowCanvasProps) {
-  const { content, catalog, issues, selectedNodes, selectedEdges, disabled, onSelect, onMove, onViewport, onConnect, onAdd, onEditStart, onEditEnd, onPointer } = props
+  const { content, catalog, issues, selectedNodes, selectedEdges, disabled, runMarkers, locate, onSelect, onMove, onViewport, onConnect, onAdd, onEditStart, onEditEnd, onPointer } = props
   const instance = useRef<ReactFlowInstance<CanvasNode, Edge> | null>(null)
   const nodes = useMemo<CanvasNode[]>(() => content.document.nodes.map(node => ({
     id: node.id, type: 'workflow', position: content.layout.nodes[node.id], selected: selectedNodes.includes(node.id),
@@ -38,9 +41,11 @@ export function WorkflowCanvas(props: WorkflowCanvasProps) {
       label: node.label, title: catalog.find(item => item.type === node.type)?.title ?? node.type, kind: node.type,
       summary: String(node.config.url || node.config.selector || (node.type === 'screenshot' ? '网页截图' : '')),
       issueCount: issues.filter(issue => issue.nodeId === node.id).length,
+      runStatus: runMarkers?.[node.id],
     },
-  })), [content, catalog, issues, selectedNodes])
+  })), [content, catalog, issues, selectedNodes, runMarkers])
   const edges = useMemo<Edge[]>(() => content.document.edges.map(edge => ({ ...edge, selected: selectedEdges.includes(edge.id), style: { stroke: selectedEdges.includes(edge.id) ? '#a2684a' : '#989087', strokeWidth: 2 } })), [content.document.edges, selectedEdges])
+  useEffect(() => { if (locate && instance.current) void instance.current.fitView({ nodes: [{ id: locate.nodeId }], duration: 250, maxZoom: 1, padding: 1 }) }, [locate])
 
   return <div className="relative h-full min-h-[320px] flex-1 bg-canvas" aria-label="工作流画布">
     <ReactFlow<CanvasNode, Edge> nodes={nodes} edges={edges} nodeTypes={nodeTypes} onInit={flow => { instance.current = flow }}

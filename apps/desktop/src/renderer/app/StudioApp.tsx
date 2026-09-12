@@ -10,7 +10,7 @@ export function StudioApp() {
   const prepare = useRef<((reason: StudioLeaveReason) => Promise<boolean>) | null>(null)
   const registerLeave = useCallback((handler: ((reason: StudioLeaveReason) => Promise<boolean>) | null) => { prepare.current = handler }, [])
   useEffect(() => {
-    const leave = window.autoflow.onPrepareStudioLeave?.(reason => prepare.current?.(reason) ?? Promise.resolve(true))
+    const leave = window.autoflow.onPrepareStudioLeave?.(reason => prepare.current?.(reason) ?? Promise.resolve(false))
     const changed = window.autoflow.onStudioTransition?.(setTransition)
     return () => { leave?.(); changed?.() }
   }, [])

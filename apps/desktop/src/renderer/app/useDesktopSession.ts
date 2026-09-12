@@ -113,6 +113,6 @@ export function useDesktopSession() {
     }
   }, [connect])
 
-  const reconnect = useCallback((restart = true) => connect(restart), [connect])
+  const reconnect = useCallback((restart = false) => { authRecoveryAttempted.current = false; return connect(restart) }, [connect])
   return { session, status, message, reconnect, workspaceChanging }
 }

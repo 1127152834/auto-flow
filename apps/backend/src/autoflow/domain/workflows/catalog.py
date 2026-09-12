@@ -37,7 +37,7 @@ def _definition(
         },
         "inputPorts": ["in"],
         "outputPorts": ["out"],
-        "runnable": False,
+        "runnable": True,
     }
 
 

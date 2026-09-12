@@ -121,6 +121,24 @@ describe('desktop settings storage', () => {
 })
 
 describe('workspace and preference controller', () => {
+  it('allows target selection during a workflow but refuses replacement until cleanup', async () => {
+    let occupied = true
+    const target = temporary('workflow-choice')
+    const h = harness({ selectDirectory: async () => target, request: vi.fn(async () => new Response(JSON.stringify({ blockers: occupied ? ['workflow_run_active', 'profile_in_use'] : [] }))) })
+    await h.controller.start()
+    expect((await h.controller.snapshot()).workspace).toMatchObject({ blocked: true, canChoose: true })
+    const choice = await h.controller.chooseWorkspace('choose')
+    expect(choice?.path).toBe(realpathSync(target))
+    await expectCode(h.controller.restart(), 'WORKSPACE_BUSY')
+    expect(h.sidecars[0].stops).toBe(0)
+    await expectCode(h.controller.confirmWorkspace(choice!.id), 'WORKSPACE_BUSY')
+    expect(h.sidecars[0].stops).toBe(0)
+    occupied = false
+    const nextChoice = await h.controller.chooseWorkspace('choose')
+    await h.controller.confirmWorkspace(nextChoice!.id)
+    expect(h.sidecars[0].stops).toBe(1)
+  })
+
   it('reads a synchronous runtime snapshot without mixing workspace identity and credentials during a switch', async () => {
     const target = temporary('runtime-context')
     const h = harness({ selectDirectory: async () => target })

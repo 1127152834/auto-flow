@@ -42,3 +42,8 @@
 ## 阶段 5：发布和持续质量
 
 增加 Windows NSIS、macOS DMG、签名/notarization、sidecar 更新、崩溃日志和跨平台端到端冒烟测试。此阶段前不承诺完整的自动化模块数量，也不复制 WebRPA 的重量级依赖集合。
+
+
+## Automation Studio 当前交付（2026-09-13）
+
+上述阶段为总体迁移顺序；本轮用户确认的实际范围以 [M1 验收](automation-studio-m1-validation.md) 与 [M2 规格](../superpowers/specs/2026-09-13-automation-studio-m2-design.md) 为准。M2 实现六节点顺序运行、真实日志/结果与临时浏览器清理，见 [M2 验收](automation-studio-m2-validation.md)。条件/循环/子流程、调试和录制尚未实施；企业、Windows 控制、发布/版本管理不在当前复刻范围。

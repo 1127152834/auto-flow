@@ -22,6 +22,13 @@ from autoflow.domain.profiles.models import (
     ProfileTestBrowserSession,
     ProfileTestBrowserStatus,
 )
+from autoflow.infrastructure.process.browser_processes import (
+    OwnedProcesses,
+    capture_processes,
+    living_processes,
+    process_birth,
+    signal_processes,
+)
 
 __test__ = False
 
@@ -67,6 +74,8 @@ class TestBrowserWorkerManager:
         self._lock = asyncio.Lock()
         self._start_tasks: dict[str, asyncio.Task[Any]] = {}
         self._stop_tasks: dict[str, asyncio.Task[None]] = {}
+        self._births: dict[int, int | None] = {}
+        self._executables: dict[int, Path] = {}
 
     async def start(
         self,
@@ -117,9 +126,13 @@ class TestBrowserWorkerManager:
             except asyncio.CancelledError:
                 try:
                     process = await _wait_for_spawn(spawn)
+                    self._births[process.pid] = process_birth(process.pid) if sys.platform != "win32" else None
+                    self._executables[process.pid] = executable
                 except BaseException:  # noqa: BLE001 -- preserve cancellation.
                     process = None
                 raise
+            self._births[process.pid] = process_birth(process.pid) if sys.platform != "win32" else None
+            self._executables[process.pid] = executable
             async with self._lock:
                 if self._shutting_down:
                     raise ProfileTestBrowserUnavailable
@@ -167,7 +180,8 @@ class TestBrowserWorkerManager:
             async with self._lock:
                 self._stopping.add(profile.id)
             if process is not None:
-                await self._stop_process_tree(process)
+                cleanup = asyncio.create_task(self._stop_process_tree(process, directory))
+                await _wait_for_cleanup(cleanup)
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._starting.pop(profile.id, None)
@@ -187,10 +201,14 @@ class TestBrowserWorkerManager:
             if closing is None:
                 starting = self._start_tasks.get(profile_id)
                 session = self._session_for_profile(profile_id)
-                if starting is None and session is None:
+                process = self._starting.get(profile_id)
+                if starting is None and session is None and process is None:
                     return
                 self._stopping.add(profile_id)
-                if starting is not None:
+                if starting is None and session is None:
+                    assert process is not None
+                    closing = asyncio.create_task(self._stop_pending_start(profile_id, process))
+                elif starting is not None:
                     starting.cancel()
                     closing = asyncio.create_task(
                         self._wait_for_start_cleanup(profile_id, starting),
@@ -235,31 +253,10 @@ class TestBrowserWorkerManager:
     async def shutdown(self) -> None:
         async with self._lock:
             self._shutting_down = True
-            start_tasks = tuple(
-                task
-                for task in self._start_tasks.values()
-                if task is not asyncio.current_task()
-            )
-            sessions = tuple(self._sessions.values())
-            stop_tasks = tuple(self._stop_tasks.values())
-            stopping_profiles = set(self._stop_tasks)
-            self._stopping.update(self._starting)
-            self._stopping.update(item.profile_id for item in sessions)
-        for task in start_tasks:
-            task.cancel()
-        await asyncio.gather(
-            *start_tasks,
-            *stop_tasks,
-            *(
-                self._stop_process_tree(item.process)
-                for item in sessions
-                if item.profile_id not in stopping_profiles
-            ),
-            return_exceptions=True,
-        )
-        await asyncio.gather(
-            *(item.monitor for item in sessions), return_exceptions=True
-        )
+            profiles = set(self._starting) | {item.profile_id for item in self._sessions.values()}
+        await asyncio.gather(*(self.stop(profile_id) for profile_id in profiles), return_exceptions=True)
+        if self.busy():
+            raise ProfileTestBrowserUnavailable
         shutil.rmtree(self._root, ignore_errors=True)
         try:
             self._base.rmdir()
@@ -276,31 +273,55 @@ class TestBrowserWorkerManager:
         try:
             await process.wait()
             # A clean worker exit does not prove that Chromium descendants exited.
-            await self._force_process_tree(process)
-        finally:
+            await self._force_process_tree(process, directory)
+        except Exception:  # noqa: BLE001 -- retain session ownership for an explicit stop retry.
+            async with self._lock:
+                self._stopping.add(profile_id)
+            return
+        shutil.rmtree(directory, ignore_errors=True)
+        async with self._lock:
+            self._sessions.pop(session_id, None)
+            self._stopping.discard(profile_id)
+
+    async def _stop_pending_start(self, profile_id: str, process: asyncio.subprocess.Process) -> None:
+        directory = self._root / self._starting_sessions[profile_id]
+        try:
+            await self._stop_process_tree(process, directory)
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
-                self._sessions.pop(session_id, None)
+                self._starting.pop(profile_id, None)
+                self._starting_sessions.pop(profile_id, None)
                 self._stopping.discard(profile_id)
+        finally:
+            async with self._lock:
+                self._stop_tasks.pop(profile_id, None)
 
     async def _wait_for_start_cleanup(
         self, profile_id: str, task: asyncio.Task[Any]
     ) -> None:
         try:
             await asyncio.gather(task, return_exceptions=True)
+            if profile_id in self._starting:
+                raise ProfileTestBrowserUnavailable
         finally:
             async with self._lock:
-                self._stopping.discard(profile_id)
+                if profile_id not in self._starting:
+                    self._stopping.discard(profile_id)
                 if self._stop_tasks.get(profile_id) is asyncio.current_task():
                     self._stop_tasks.pop(profile_id, None)
 
     async def _stop_running(self, session: _RunningBrowser) -> None:
         try:
-            await self._stop_process_tree(session.process)
+            await self._stop_process_tree(session.process, session.directory)
             await session.monitor
+            shutil.rmtree(session.directory, ignore_errors=True)
+            async with self._lock:
+                for session_id, item in list(self._sessions.items()):
+                    if item is session:
+                        self._sessions.pop(session_id, None)
+                self._stopping.discard(session.profile_id)
         finally:
             async with self._lock:
-                self._stopping.discard(session.profile_id)
                 if self._stop_tasks.get(session.profile_id) is asyncio.current_task():
                     self._stop_tasks.pop(session.profile_id, None)
 
@@ -310,52 +331,17 @@ class TestBrowserWorkerManager:
             None,
         )
 
-    async def _stop_process_tree(self, process: asyncio.subprocess.Process) -> None:
-        if process.stdin is not None:
-            process.stdin.close()
-        if process.returncode is None:
-            try:
-                await asyncio.wait_for(
-                    asyncio.shield(process.wait()), self._termination_timeout
-                )
-            except TimeoutError:
-                pass
-        await self._force_process_tree(process)
+    async def _stop_process_tree(self, process: asyncio.subprocess.Process, directory: Path | None = None) -> None:
+        await stop_process_tree(process, self._termination_timeout, directory,
+                                self._executables.get(process.pid), self._births.get(process.pid))
+        self._births.pop(process.pid, None)
+        self._executables.pop(process.pid, None)
 
-    async def _force_process_tree(self, process: asyncio.subprocess.Process) -> None:
-        if sys.platform == "win32":
-            killer = await asyncio.create_subprocess_exec(
-                "taskkill",
-                "/pid",
-                str(process.pid),
-                "/t",
-                "/f",
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL,
-            )
-            await killer.wait()
-            if process.returncode is None:
-                process.kill()
-                await process.wait()
-            return
-        try:
-            os.killpg(process.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            return
-        if process.returncode is None:
-            try:
-                await asyncio.wait_for(
-                    asyncio.shield(process.wait()), self._termination_timeout
-                )
-            except TimeoutError:
-                pass
-        # A dead group leader says nothing about descendants that ignored TERM.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        if process.returncode is None:
-            await process.wait()
+    async def _force_process_tree(self, process: asyncio.subprocess.Process, directory: Path | None = None) -> None:
+        await force_process_tree(process, self._termination_timeout, directory,
+                                 self._executables.get(process.pid), self._births.get(process.pid))
+        self._births.pop(process.pid, None)
+        self._executables.pop(process.pid, None)
 
 
 def _worker_payload(
@@ -406,3 +392,62 @@ async def _wait_for_spawn(
         except asyncio.CancelledError:
             continue
     return task.result()
+
+
+async def _wait_for_cleanup(task: asyncio.Task[Any]) -> Any:
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            continue
+    return task.result()
+
+
+async def stop_process_tree(
+    process: asyncio.subprocess.Process, termination_timeout: float,
+    directory: Path | None = None, executable: Path | None = None, birth: int | None = None,
+) -> None:
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable) if sys.platform != "win32" else {}
+    if process.stdin is not None:
+        process.stdin.close()
+    if process.returncode is None:
+        try:
+            await asyncio.wait_for(
+                asyncio.shield(process.wait()), termination_timeout
+            )
+        except TimeoutError:
+            pass
+    await force_process_tree(process, termination_timeout, directory, executable, birth, owned)
+
+
+async def force_process_tree(
+    process: asyncio.subprocess.Process, termination_timeout: float,
+    directory: Path | None = None, executable: Path | None = None, birth: int | None = None,
+    owned: OwnedProcesses | None = None,
+) -> None:
+    if sys.platform == "win32":
+        killer = await asyncio.create_subprocess_exec(
+            "taskkill", "/pid", str(process.pid), "/t", "/f",
+            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL,
+        )
+        await killer.wait()
+        if process.returncode is None:
+            process.kill()
+            await process.wait()
+        return
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned)
+    await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+    if process.returncode is None:
+        try:
+            await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
+        except TimeoutError:
+            pass
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned)
+    await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+    if process.returncode is None:
+        await process.wait()
+    deadline = asyncio.get_running_loop().time() + max(termination_timeout, 2)
+    while await asyncio.to_thread(living_processes, owned):
+        if asyncio.get_running_loop().time() >= deadline:
+            raise RuntimeError("Browser process tree cleanup did not finish")
+        await asyncio.sleep(0.01)

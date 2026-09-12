@@ -104,7 +104,7 @@ def test_worker_launches_fresh_headed_context_with_saved_seed_and_all_options(
     assert browser_proxy["server"].startswith("http://127.0.0.1:")
     assert captured == {
         "headless": False,
-        "args": ["--lang=en-US", "--fingerprint=54321"],
+        "args": ["--lang=en-US", "--accept-lang=zh-CN", "--fingerprint=54321"],
         "stealth_args": True,
         "user_agent": "AutoFlow",
         "locale": "zh-CN",

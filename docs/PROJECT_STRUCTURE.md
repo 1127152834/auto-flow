@@ -1,6 +1,6 @@
 # AutoFlow 项目目录结构
 
-- 日期：2026-09-12
+- 日期：2026-09-13
 - 状态：目录骨架与已实现领域的职责索引；空占位目录不代表功能已经实现。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 在 0004 后新增 0005_workflow_documents。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1 范围和验收以 superpowers 规格与 migration 记录为准。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2 范围和验收以 superpowers 规格与 migration 记录为准。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -179,7 +179,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理和工作流执行模块；后续确认范围后再扩展。已有自动化研究文档仍保留。
+- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；控制流、录制和 Debug 留给后续已确认里程碑。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -250,3 +250,18 @@ reference/
 - `shared/runtime.ts` 只给已登记窗口的主 frame 提供运行上下文；编辑、目录管理和凭据权限仍按各自 IPC 边界校验。
 - `scripts/smoke-workflow-studio.mjs` 使用真实 Electron/sidecar 与临时工作区验收；支持构建 HTML、`--dev` 开发 URL、`--executable` 打包入口。
 - M1 只提供编排编辑与保存，没有执行器、录制、Debug 或模拟运行。详细证据见 [M1 验收记录](migration/automation-studio-m1-validation.md)。
+
+
+## 工作流真实运行（2026-09-13，confirmed）
+
+- `domain/workflows/run_validation.py`：单链运行门槛、初值依赖和单次引用解析；`references.py` 与 M1 共用标识符规则。
+- `application/workflows/runs.py`：不可变草稿/Profile 快照、单运行协调、资源锁、幂等启动、停止及持久化异常恢复责任。
+- `infrastructure/database/workflow_runs.py` 与增量迁移 `0006_workflow_runs.py`：运行记录、连续事件与产物元数据；节点状态/事件原子提交。运行不要求来源文档已保存。
+- `infrastructure/process/browser_processes.py`：POSIX 原生 PID 启动身份、浏览器 argv/专属环境和进程组归属；不按命令文本子串认领进程。Windows 继续使用 Job/taskkill。
+- `infrastructure/process/workflow_worker.py`：一次运行一个 worker，关闭通道和取消、进程树清理；`infrastructure/filesystem/workflow_artifacts.py`：结果/PNG 独占写入和登记路径读取。
+- `providers/browser/workflow_executor.py`、`workflow_worker.py`：临时 CloakBrowser context、六节点顺序执行、当前页和统一节点预算；复用测试浏览器已有启动/代理参数和进程清理，不建立通用 RPC。
+- `bootstrap/workflow_worker.py` 与主入口 `--workflow-worker` 同时供源码和冻结后端使用。
+- `adapters/http/workflow_runs.py` 与 `adapters/events/workflows.py`：现有鉴权/停写门控、运行与产物 API、可续读 SSE；前端类型仍从 OpenAPI 生成。
+- `renderer/domains/workflows/hooks/useWorkflowRun.ts`：独立于编辑历史的运行快照、当前运行/历史选择、日志补读与同编号重试；`RunToolbar`、`RunPanel` 先实现再接入 `StudioPage`。
+- 工作区选择允许先展示保存/停止确认；真正切换和服务重启仍经过原有资源门控。Electron 不执行网页动作。
+- 真实受控网页和验收入口：`tests/fixtures/workflow-page.html`、`scripts/smoke-workflow-runs.mjs`、`scripts/smoke-workflow-studio-runs.mjs`。证据见 [M2 验收记录](migration/automation-studio-m2-validation.md)。

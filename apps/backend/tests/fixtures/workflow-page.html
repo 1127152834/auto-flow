@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>AutoFlow controlled workflow fixture</title>
+<style>body{font:18px system-ui;padding:24px}input,textarea,button,[contenteditable]{margin:8px;padding:12px;border:1px solid #999}#long{height:1600px;background:linear-gradient(#eee,#bc8a70)}#hidden{display:none}</style>
+<h1>AutoFlow M2 controlled page</h1>
+<input id="entry" value="seed"><input class="many" value="first"><input class="many" value="second">
+<textarea id="area">seed</textarea><div id="editable" contenteditable="true">seed</div><div id="container"><input value="seed"></div>
+<button id="submit">Submit</button><button id="popup">Popup</button><button id="noop">No popup</button>
+<button id="double">Double</button><button id="right">Right</button><button id="timers">Start timers</button>
+<div id="result">waiting</div><div id="hidden">hidden</div><div id="remove">remove later</div>
+<div id="info">plain<span style="display:none">hidden text</span></div>
+<a id="link" href="/relative" data-label="中文">link</a><img id="image" src="/pixel.svg" width="24" height="24">
+<div id="large"></div><div id="long">Long page</div>
+<script>
+document.querySelector('#large').textContent = '中文数据'.repeat(20000);
+document.querySelector('#submit').onclick = () => { document.querySelector('#result').textContent = document.querySelector('#entry').value; fetch('/action', {method:'POST',body:document.querySelector('#entry').value}); };
+document.querySelector('#popup').onclick = () => window.open('/popup', '_blank');
+document.querySelector('#double').ondblclick = () => document.querySelector('#result').textContent='double';
+document.querySelector('#right').oncontextmenu = event => { event.preventDefault(); document.querySelector('#result').textContent='right'; };
+document.querySelector('#timers').onclick = () => { setTimeout(() => { document.querySelector('#hidden').style.display='block'; document.querySelector('#remove').remove(); const e=document.createElement('div');e.id='attached';e.hidden=true;document.body.append(e); },200); };
+fetch('/observation', {method:'POST',body:JSON.stringify({cookie:document.cookie,storage:localStorage.getItem('visit'),locale:navigator.language,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,userAgent:navigator.userAgent})});
+document.cookie='visit=1';localStorage.setItem('visit','1');
+</script></html>

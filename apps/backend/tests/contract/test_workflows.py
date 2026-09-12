@@ -14,7 +14,7 @@ def test_catalog_and_openapi_have_one_explicit_editing_contract(client):
     assert response.json()["items"] == node_catalog()
     assert len(response.json()["items"]) == 6
     for item in response.json()["items"]:
-        assert item["runnable"] is False
+        assert item["runnable"] is True
         assert item["defaultConfig"]["timeoutSeconds"] == 60
         assert item["inputPorts"] == ["in"] and item["outputPorts"] == ["out"]
         assert set(item["defaultConfig"]) == set(item["configSchema"]["properties"])

@@ -42,50 +42,13 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
     session_id = _required_string(command, "sessionId")
     profile_id = _required_string(command, "profileId")
     seed = command.get("fingerprintSeed")
-    if type(seed) is not int or not 10000 <= seed <= 99999:
-        raise ValueError("fingerprintSeed is invalid")
-    expert_args = _string_list(command, "expertArgs")
-    if any(
-        arg.split(maxsplit=1)[0].split("=", 1)[0] in _FORBIDDEN_ARGS
-        for arg in expert_args
-    ):
-        raise ValueError("reserved browser argument")
-    expert_args = [
-        arg for arg in expert_args if arg.split("=", 1)[0] != "--headless"
-    ]
-
+    launch = browser_launch_options(command, headless=False)
     from cloakbrowser import launch_context_async  # type: ignore[import-untyped]
 
     upstream_proxy = _optional_proxy(command)
     relay_context = (
         BrowserProxyRelay(upstream_proxy) if upstream_proxy is not None else nullcontext()
     )
-    launch: dict[str, Any] = {
-        "headless": False,
-        "args": [*expert_args, f"--fingerprint={seed}"],
-        "stealth_args": True,
-        "user_agent": _optional_string(command, "userAgent"),
-        "locale": _optional_string(command, "locale"),
-        "timezone": _optional_string(command, "timezone"),
-        "color_scheme": _optional_string(command, "colorScheme"),
-        "geoip": _boolean(command, "geoip"),
-        "humanize": _boolean(command, "humanize"),
-        "human_preset": _required_string(command, "humanPreset"),
-        "extension_paths": _string_list(command, "extensionPaths"),
-        "license_key": _optional_string(command, "licenseKey"),
-        "browser_version": _required_string(command, "browserVersion"),
-        "release_channel": _required_string(command, "releaseChannel"),
-    }
-    viewport = command.get("viewport")
-    if viewport is not None:
-        if (
-            not isinstance(viewport, dict)
-            or type(viewport.get("width")) is not int
-            or type(viewport.get("height")) is not int
-        ):
-            raise ValueError("viewport is invalid")
-        launch["viewport"] = viewport
-
     context = None
     try:
         with relay_context as relay:
@@ -133,6 +96,58 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
                         await context.close()
     finally:
         shutil.rmtree(cache, ignore_errors=True)
+
+
+def browser_launch_options(
+    command: dict[str, Any], *, headless: bool
+) -> dict[str, Any]:
+    seed = command.get("fingerprintSeed")
+    if type(seed) is not int or not 10000 <= seed <= 99999:
+        raise ValueError("fingerprintSeed is invalid")
+    expert_args = _string_list(command, "expertArgs")
+    if any(
+        arg.split(maxsplit=1)[0].split("=", 1)[0] in _FORBIDDEN_ARGS
+        for arg in expert_args
+    ):
+        raise ValueError("reserved browser argument")
+    expert_args = [
+        arg for arg in expert_args if arg.split("=", 1)[0] != "--headless"
+    ]
+
+    locale = _optional_string(command, "locale")
+    if locale:
+        # macOS Chromium 145 ignores --lang/--fingerprint-locale for navigator
+        # languages; the native preference flag also aligns Accept-Language.
+        # https://github.com/CloakHQ/CloakBrowser/discussions/376
+        expert_args.append(f"--accept-lang={locale}")
+
+    launch: dict[str, Any] = {
+        "headless": headless,
+        "args": [*expert_args, f"--fingerprint={seed}"],
+        "stealth_args": True,
+        "user_agent": _optional_string(command, "userAgent"),
+        "locale": locale,
+        "timezone": _optional_string(command, "timezone"),
+        "color_scheme": _optional_string(command, "colorScheme"),
+        "geoip": _boolean(command, "geoip"),
+        "humanize": _boolean(command, "humanize"),
+        "human_preset": _required_string(command, "humanPreset"),
+        "extension_paths": _string_list(command, "extensionPaths"),
+        "license_key": _optional_string(command, "licenseKey"),
+        "browser_version": _required_string(command, "browserVersion"),
+        "release_channel": _required_string(command, "releaseChannel"),
+    }
+    viewport = command.get("viewport")
+    if viewport is not None:
+        if (
+            not isinstance(viewport, dict)
+            or type(viewport.get("width")) is not int
+            or type(viewport.get("height")) is not int
+        ):
+            raise ValueError("viewport is invalid")
+        launch["viewport"] = viewport
+
+    return launch
 
 
 def _read_command(stdin: TextIO) -> dict[str, Any]:

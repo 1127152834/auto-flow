@@ -123,7 +123,7 @@ class WorkflowNodeDefinition(ApiModel):
     config_schema: dict[str, JsonValue]
     input_ports: list[Literal["in"]]
     output_ports: list[Literal["out"]]
-    runnable: Literal[False]
+    runnable: bool
 
 
 class WorkflowCatalog(ApiModel):

@@ -1,5 +1,7 @@
 # Automation Studio M1 验收记录
 
+> 本文记录 M1 交付时点。M2 已增加真实运行与日志，当前能力及 M1 回归结果见 [M2 验收](automation-studio-m2-validation.md)。
+
 - 日期：2026-09-13
 - 状态：实现完成；macOS arm64 已执行源代码、开发 URL 和打包入口验收。Windows 实机尚未验收。
 - 依据：[已批准设计](../superpowers/specs/2026-09-13-automation-studio-m1-design.md)、[实施清单](../superpowers/plans/2026-09-13-automation-studio-m1-implementation.md)。

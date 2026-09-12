@@ -10,7 +10,8 @@ const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-studio-sm
 const secondWorkspace = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-studio-workspace-')))
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await writeFile(join(userData, 'desktop-settings.json'), JSON.stringify({ schemaVersion: 1, currentPath: userData, previousPath: secondWorkspace, preferences: { zoom: 100, motion: 'system' } }))
-const qa = join(root, 'docs/migration/automation-studio-m1-qa')
+const qaIndex = process.argv.indexOf('--qa-directory')
+const qa = qaIndex < 0 ? join(root, 'docs/migration/automation-studio-m1-qa') : resolve(process.argv[qaIndex + 1])
 await mkdir(qa, { recursive: true })
 let desktop, studio, native, devServer
 const checks = []
@@ -315,6 +316,7 @@ async function click(cdp, selector, text, prefix) {
   await cdp.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...position, button: 'left', clickCount: 1 })
   await cdp.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...position, button: 'left', clickCount: 1 })
   await wait(100)
+  if (text === '取消') await waitFor(cdp, `!document.querySelector('[data-slot=modal-overlay]')`, 'cancel transition completed')
 }
 async function drag(cdp, from, to) {
   const a = await point(cdp, from), b = typeof to === 'string' ? await point(cdp, to) : to

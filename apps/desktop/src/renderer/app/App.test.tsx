@@ -80,12 +80,12 @@ it('waits for a starting sidecar before checking health', async () => {
   expect(window.autoflow.getSidecarStatus).toHaveBeenCalledTimes(2)
 })
 
-it('restarts the sidecar and reconnects after the recovery action', async () => {
+it('reconnects after the recovery action without restarting the sidecar', async () => {
   const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError('network error')).mockImplementation(async (url: string) => Response.json(payload(url)))
   vi.stubGlobal('fetch', fetchMock); render(<App />)
   fireEvent.click(await screen.findByRole('button', { name: '重新连接' }))
   expect(await screen.findByText('本地服务正常')).toBeInTheDocument()
-  expect(window.autoflow.restartSidecar).toHaveBeenCalledOnce()
+  expect(window.autoflow.restartSidecar).not.toHaveBeenCalled()
 })
 
 it('reacquires the sidecar once after a model auth error and stops repeated recovery', async () => {

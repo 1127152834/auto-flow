@@ -1,0 +1,472 @@
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import json
+import logging
+from collections.abc import Awaitable, Callable, Iterator, Sequence
+from contextlib import AbstractContextManager, ExitStack, contextmanager
+from copy import deepcopy
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from threading import RLock
+from typing import Any
+
+from autoflow.application.profiles.service import ProfileService
+from autoflow.domain.kernels.errors import KernelBusy, LicenseInvalid
+from autoflow.domain.kernels.models import InstalledKernel
+from autoflow.domain.profiles.errors import (
+    KernelNotInstalled,
+    ProfileDirectoryBusy,
+    ProfileNotFound,
+    ProxyUnavailable,
+)
+from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
+from autoflow.domain.workflows.models import WorkflowError, WorkflowIssue
+from autoflow.domain.workflows.run_validation import PreparedWorkflow, prepare_run
+from autoflow.domain.workflows.runs import (
+    ACTIVE_RUN_STATES,
+    RunRecord,
+    WorkflowRunLauncher,
+    WorkflowRunRepository,
+)
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class _ActiveRun:
+    task: asyncio.Task[None] | None = None
+    executing: bool = False
+    stopping: bool = False
+    stop_task: asyncio.Task[None] | None = None
+    cleanup_task: asyncio.Task[None] | None = None
+    cleanup_failed: bool = False
+    guards: ExitStack | None = None
+    result: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class _PendingCompletion:
+    event: dict[str, Any]
+    changes: dict[str, Any]
+
+
+class WorkflowRunService:
+    def __init__(
+        self, repository: WorkflowRunRepository, profiles: ProfileService,
+        installed_kernels: Callable[[], Sequence[InstalledKernel]],
+        kernel_guard: Callable[[Profile], AbstractContextManager[None]],
+        resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
+        read_license: Callable[[], str | None], launcher: WorkflowRunLauncher,
+        artifact_path: Callable[[str, str], Path],
+    ) -> None:
+        self.repository = repository
+        self._profiles = profiles
+        self._installed_kernels = installed_kernels
+        self._kernel_guard = kernel_guard
+        self._resolve_proxy = resolve_proxy
+        self._read_license = read_license
+        self._launcher = launcher
+        self._artifact_path = artifact_path
+        self._active: dict[str, _ActiveRun] = {}
+        self._pending_completions: dict[str, _PendingCompletion] = {}
+        self._completion_lock = RLock()
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._subscribers: dict[str, set[asyncio.Event]] = {}
+        self._closing = False
+        self._shutdown_task: asyncio.Task[None] | None = None
+
+    def get(self, run_id: str) -> dict[str, Any]:
+        self._retry_completions(run_id)
+        with self._completion_lock:
+            if run_id in self._pending_completions:
+                raise WorkflowError(
+                    "WORKFLOW_RUN_PERSISTENCE_PENDING",
+                    "浏览器已关闭，但运行结果暂未保存；请重试查询或停止操作", 503,
+                )
+        record = self.repository.get(run_id)
+        if record is None:
+            raise WorkflowError("WORKFLOW_RUN_NOT_FOUND", "运行记录不存在", 404)
+        operation = self._active.get(run_id)
+        if operation is not None and operation.cleanup_failed:
+            return {**record.data, "state": "stopping" if operation.stopping else "finishing", "error": _cleanup_error_data()}
+        return record.data
+
+    def list(self, workflow_id: str | None, offset: int, limit: int) -> dict[str, Any]:
+        self._retry_completions()
+        items = self.repository.list_runs(workflow_id, offset, limit + 1)
+        return {
+            "items": [item.data for item in items[:limit]],
+            "activeRunId": self.repository.active_id(),
+            "nextOffset": offset + limit if len(items) > limit else None,
+        }
+
+    async def start(
+        self, run_id: str, document: dict[str, Any], layout: dict[str, Any], profile_id: str,
+    ) -> dict[str, Any]:
+        # No await between admission, resource guards, persistence and task ownership.
+        self._loop = asyncio.get_running_loop()
+        self._retry_completions()
+        request_hash = hashlib.sha256(json.dumps(
+            [document, layout, profile_id], sort_keys=True, ensure_ascii=False, allow_nan=False,
+        ).encode()).hexdigest()
+        existing = self.repository.get(run_id)
+        if existing is not None:
+            if existing.request_hash != request_hash:
+                raise WorkflowError("WORKFLOW_RUN_ID_CONFLICT", "运行标识已用于不同请求", 409)
+            return self.get(run_id)
+        if self._closing:
+            raise WorkflowError("WORKFLOW_RUN_SHUTTING_DOWN", "运行服务正在退出", 409)
+        if self.busy():
+            raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
+        prepared = prepare_run(document, layout)
+        guards = ExitStack()
+        try:
+            guards.enter_context(self._profiles.profile_usage.guard(profile_id))
+            profile = self._profiles.get(profile_id)
+            guards.enter_context(self._kernel_guard(profile))
+            executable = self._kernel_executable(profile)
+            # Verify configured resource references before accepting the run.
+            spec = profile.spec
+            if spec.proxy_mode == "proxy" and (
+                spec.proxy_id is None or not self._profiles.proxy_options.proxy_is_available(spec.proxy_id)
+            ):
+                raise ProxyUnavailable
+            if spec.proxy_mode == "pool" and (
+                spec.proxy_pool_id is None or not self._profiles.proxy_options.pool_exists(spec.proxy_pool_id)
+            ):
+                raise ProxyUnavailable
+            now = datetime.now(UTC).isoformat()
+            snapshot = {_camel(key): value for key, value in asdict(profile.spec).items()}
+            snapshot.update(id=profile.id, fingerprintSeed=profile.fingerprint_seed)
+            record = RunRecord(request_hash, {
+                "runId": run_id, "workflowId": document["id"], "name": document["name"],
+                "profileId": profile_id, "profileName": profile.spec.name,
+                "state": "starting", "document": deepcopy(document), "layout": deepcopy(layout),
+                "profileSnapshot": snapshot, "nodeOrder": list(prepared.node_ids),
+                "currentNodeId": None, "startedAt": now, "finishedAt": None,
+                "latestSeq": 1, "completedNodeIds": [], "error": None, "artifacts": [],
+                "warnings": [_issue(issue) for issue in prepared.warnings],
+            })
+            saved = self.repository.create(record)
+            if saved is not record:
+                guards.close()
+                return saved.data
+            operation = _ActiveRun(guards=guards)
+            self._active[run_id] = operation
+            operation.task = asyncio.create_task(
+                self._execute(run_id, operation, prepared, profile, executable),
+                name=f"workflow-run-{run_id}",
+            )
+            # Acceptance already committed this snapshot. Reading again after task
+            # handoff could fail and release guards while the task owns execution.
+            return deepcopy(saved.data)
+        except Exception as error:  # noqa: BLE001 - normalize process/resource failures without exposing credentials
+            guards.close()
+            raise _resource_error(error) from None
+
+    async def stop(self, run_id: str) -> dict[str, Any]:
+        operation = self._active.get(run_id)
+        if operation is None:
+            record = self.get(run_id)
+            if record["state"] in ACTIVE_RUN_STATES:
+                raise WorkflowError("WORKFLOW_RUN_UNAVAILABLE", "运行进程状态不可用，请重新连接", 409)
+            return record
+        # Cleanup has its own task before touching persistence. A failed write or
+        # disconnected HTTP request cannot leave stopping=True without a cancel owner.
+        await asyncio.shield(self._request_stop(run_id, operation))
+        return self.get(run_id)
+
+    def _request_stop(self, run_id: str, operation: _ActiveRun) -> asyncio.Task[None]:
+        if operation.stop_task is None or operation.stop_task.done():
+            _reset_cleanup_retry(operation)
+            operation.stopping = True
+            operation.stop_task = asyncio.create_task(
+                self._stop(run_id, operation), name=f"stop-workflow-{run_id}",
+            )
+        return operation.stop_task
+
+    async def _stop(self, run_id: str, operation: _ActiveRun) -> None:
+        try:
+            if self._active.get(run_id) is operation:
+                self._append(run_id, {"type": "stopping", "message": "正在停止运行并回收浏览器"}, {"state": "stopping"})
+        except Exception:  # noqa: BLE001 - persistence failure must never prevent process cleanup
+            logger.warning("workflow stopping event could not be saved: run_id=%s", run_id)
+        if operation.executing:
+            try:
+                await self._cleanup(run_id, operation)
+            except Exception:  # noqa: BLE001 - preserve cleanup ownership for an explicit retry
+                self._record_cleanup_failure(run_id, operation)
+                raise _cleanup_error() from None
+        elif operation.task is not None:
+            # Let an unstarted task enter its try/finally before cancellation.
+            await asyncio.sleep(0)
+            if not operation.executing and not operation.task.done():
+                operation.task.cancel()
+            elif operation.executing:
+                try:
+                    await self._cleanup(run_id, operation)
+                except Exception:  # noqa: BLE001 - preserve cleanup ownership for an explicit retry
+                    self._record_cleanup_failure(run_id, operation)
+                    raise _cleanup_error() from None
+        if operation.task is not None:
+            await asyncio.shield(operation.task)
+        if not await self._finish(run_id, operation):
+            raise _cleanup_error()
+
+    async def shutdown(self) -> None:
+        self._closing = True
+        if self._shutdown_task is None or (self._shutdown_task.done() and self._active):
+            self._shutdown_task = asyncio.create_task(self._shutdown(), name="workflow-shutdown")
+        await _wait_cleanup(self._shutdown_task)
+
+    async def _shutdown(self) -> None:
+        await asyncio.gather(*(
+            self._request_stop(run_id, operation)
+            for run_id, operation in list(self._active.items())
+        ), return_exceptions=True)
+        await self._launcher.shutdown()
+        for run_id, operation in list(self._active.items()):
+            _reset_cleanup_retry(operation)
+            if operation.task is not None:
+                await _wait_cleanup(operation.task)
+            if not await self._finish(run_id, operation):
+                raise _cleanup_error()
+        self._retry_completions()
+
+    def busy(self) -> bool:
+        self._retry_completions()
+        with self._completion_lock:
+            pending = bool(self._pending_completions)
+        return pending or bool(self._active) or self._launcher.busy() or self.repository.active_id() is not None
+
+    def events(self, run_id: str, after_seq: int, limit: int) -> dict[str, Any]:
+        self.get(run_id)
+        items = self.repository.events(run_id, after_seq, limit + 1)
+        visible = items[:limit]
+        return {"items": visible, "hasMore": len(items) > limit, "nextSeq": visible[-1]["seq"] if visible else after_seq}
+
+    @contextmanager
+    def subscribe(self, run_id: str) -> Iterator[asyncio.Event]:
+        self._loop = asyncio.get_running_loop()
+        self.get(run_id)
+        signal = asyncio.Event()
+        subscribers = self._subscribers.setdefault(run_id, set())
+        subscribers.add(signal)
+        try:
+            yield signal
+        finally:
+            subscribers.discard(signal)
+            if not subscribers:
+                self._subscribers.pop(run_id, None)
+
+    def artifact(self, run_id: str, artifact_id: str) -> tuple[Path, dict[str, Any]]:
+        for artifact in self.get(run_id)["artifacts"]:
+            if artifact["id"] == artifact_id:
+                try:
+                    path = self._artifact_path(run_id, artifact["relativePath"])
+                    if not path.is_file():
+                        raise OSError
+                except (OSError, ValueError):
+                    raise WorkflowError("WORKFLOW_ARTIFACT_UNAVAILABLE", "产物文件不存在或路径不安全", 404) from None
+                return path, artifact
+        raise WorkflowError("WORKFLOW_ARTIFACT_NOT_FOUND", "运行产物不存在", 404)
+
+    async def _execute(
+        self, run_id: str, operation: _ActiveRun, prepared: PreparedWorkflow,
+        profile: Profile, executable: Path,
+    ) -> None:
+        result: dict[str, Any] = {"state": "cancelled", "error": None}
+        cleanup_failed = False
+        try:
+            if operation.stopping:
+                return
+            for warning in prepared.warnings:
+                self._append(run_id, {"type": "log", "level": "warning", "nodeId": warning.node_id, "message": warning.message})
+            async with asyncio.timeout(110):
+                proxy = await self._resolve_proxy(profile, run_id)
+                license_key = self._read_license() if profile.spec.browser_edition == "licensed" else None
+                if profile.spec.browser_edition == "licensed" and not license_key:
+                    raise LicenseInvalid
+            if operation.stopping:
+                return
+            operation.executing = True
+            result = await self._launcher.execute(
+                run_id, prepared, profile, executable, proxy, license_key,
+                lambda event: self._worker_event(run_id, operation, event),
+            )
+        except asyncio.CancelledError:
+            result = {"state": "cancelled", "error": None}
+        except Exception as error:  # noqa: BLE001 - normalize process/resource failures without exposing credentials
+            normalized = _resource_error(error)
+            cleanup_failed = normalized.code == "WORKFLOW_CLEANUP_FAILED"
+            issue = normalized.issues[0] if normalized.issues else None
+            result = {"state": "failed", "error": {
+                "code": normalized.code, "message": normalized.message,
+                "nodeId": issue.node_id if issue else None, "path": issue.path if issue else [],
+            }}
+        finally:
+            operation.result = result
+            if cleanup_failed:
+                self._record_cleanup_failure(run_id, operation)
+            else:
+                await self._finish(run_id, operation)
+
+    async def _cleanup(self, run_id: str, operation: _ActiveRun) -> None:
+        if operation.cleanup_task is None:
+            operation.cleanup_task = asyncio.create_task(self._launcher.stop(run_id))
+        await _wait_cleanup(operation.cleanup_task)
+
+    def _record_cleanup_failure(self, run_id: str, operation: _ActiveRun) -> None:
+        if operation.cleanup_failed:
+            return
+        operation.cleanup_failed = True
+        try:
+            self._append(run_id, {
+                "type": "cleanup_failed", "level": "error", "message": _cleanup_error().message,
+                "error": _cleanup_error_data(),
+            }, {"state": "stopping" if operation.stopping else "finishing", "error": _cleanup_error_data()})
+        except Exception:  # noqa: BLE001 - cleanup and retry ownership survives failed diagnostics
+            logger.warning("workflow cleanup failure could not be saved: run_id=%s", run_id)
+
+    async def _finish(self, run_id: str, operation: _ActiveRun) -> bool:
+        if self._active.get(run_id) is not operation:
+            return True
+        if operation.executing:
+            try:
+                await self._cleanup(run_id, operation)
+            except Exception:  # noqa: BLE001 - keep guards and the slot until cleanup is confirmed
+                self._record_cleanup_failure(run_id, operation)
+                return False
+        if self._active.get(run_id) is not operation:
+            return True
+        assert operation.result is not None
+        state = "cancelled" if operation.stopping else operation.result["state"]
+        outcome_error = None if state == "cancelled" else operation.result.get("error")
+        completion = _PendingCompletion({"type": state, "level": "error" if state == "failed" else "info", "message": {
+            "succeeded": "运行完成，浏览器已关闭", "failed": "运行失败，浏览器已关闭", "cancelled": "运行已停止，浏览器已关闭",
+        }[state], "error": outcome_error}, {"state": state, "finishedAt": datetime.now(UTC).isoformat(), "error": outcome_error})
+        with self._completion_lock:
+            self._pending_completions[run_id] = completion
+        self._retry_completions(run_id)
+        if operation.guards is not None:
+            operation.guards.close()
+        self._active.pop(run_id, None)
+        return True
+
+    async def _worker_event(self, run_id: str, operation: _ActiveRun, event: dict[str, Any]) -> None:
+        record = self.get(run_id)
+        changes: dict[str, Any] = {}
+        kind = event.get("type", "log")
+        node_id = event.get("nodeId")
+        if kind == "ready" and not operation.stopping:
+            changes["state"] = "running"
+        elif kind == "node_started":
+            changes["currentNodeId"] = node_id
+        elif kind == "node_succeeded":
+            completed = record["completedNodeIds"]
+            if node_id not in completed:
+                changes["completedNodeIds"] = [*completed, node_id]
+            if len(changes.get("completedNodeIds", completed)) == len(record["nodeOrder"]) and not operation.stopping:
+                changes["state"] = "finishing"
+        elif kind == "node_failed" and not operation.stopping:
+            changes["state"] = "finishing"
+        stored: dict[str, Any] = {key: event[key] for key in ("type", "nodeId", "level", "message", "durationMs", "error") if key in event}
+        artifact = event.get("artifact")
+        if artifact is not None:
+            self._artifact_path(run_id, artifact["relativePath"])
+            changes["artifacts"] = [*record["artifacts"], deepcopy(artifact)]
+            stored["artifactId"] = artifact["id"]
+        self._append(run_id, stored, changes)
+
+    def _append(self, run_id: str, event: dict[str, Any], changes: dict[str, Any] | None = None) -> None:
+        self.repository.append(run_id, event, changes or {})
+        # Notification follows the successful state/event transaction. Signals can coalesce:
+        # every subscriber always re-reads durable events, so no log is ever dropped.
+        if self._loop is not None and not self._loop.is_closed():
+            self._loop.call_soon_threadsafe(self._notify, run_id)
+
+    def _notify(self, run_id: str) -> None:
+        for signal in self._subscribers.get(run_id, ()):
+            signal.set()
+
+    def _retry_completions(self, run_id: str | None = None) -> None:
+        # One bounded attempt per read/control operation. Keep retry ownership in
+        # memory until commit succeeds; startup recovers the durable active record
+        # as interrupted if the service must exit while storage remains unavailable.
+        with self._completion_lock:
+            for pending_id, completion in list(self._pending_completions.items()):
+                if run_id is not None and pending_id != run_id:
+                    continue
+                try:
+                    record = self.repository.get(pending_id)
+                    if record is None or record.data["state"] in ACTIVE_RUN_STATES:
+                        self._append(pending_id, completion.event, completion.changes)
+                    # A commit whose acknowledgment failed may already be terminal.
+                    # Checking first avoids duplicating its terminal event on retry.
+                    self._pending_completions.pop(pending_id)
+                except Exception:  # noqa: BLE001 - retain completion for a later bounded retry
+                    logger.warning("workflow terminal event remains pending: run_id=%s", pending_id)
+
+    def _kernel_executable(self, profile: Profile) -> Path:
+        for kernel in self._installed_kernels():
+            if (kernel.edition == profile.spec.browser_edition
+                and kernel.version == profile.spec.browser_version
+                and kernel.executable_path.is_file()):
+                return kernel.executable_path
+        raise KernelNotInstalled
+
+
+def _reset_cleanup_retry(operation: _ActiveRun) -> None:
+    task = operation.cleanup_task
+    if task is not None and task.done() and (task.cancelled() or task.exception() is not None):
+        operation.cleanup_task = None
+
+
+def _cleanup_error() -> WorkflowError:
+    return WorkflowError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未完成，请重试停止", 503)
+
+
+def _cleanup_error_data() -> dict[str, Any]:
+    error = _cleanup_error()
+    return {"code": error.code, "message": error.message, "nodeId": None, "path": []}
+
+
+def _camel(value: str) -> str:
+    first, *rest = value.split("_")
+    return first + "".join(word.capitalize() for word in rest)
+
+
+def _issue(issue: WorkflowIssue) -> dict[str, Any]:
+    return {"nodeId": issue.node_id, "path": issue.path, "code": issue.code, "message": issue.message}
+
+
+def _resource_error(error: Exception) -> WorkflowError:
+    if isinstance(error, WorkflowError):
+        return error
+    mappings: list[tuple[type[Exception], str, str, str, int]] = [
+        (ProfileNotFound, "WORKFLOW_PROFILE_NOT_FOUND", "所选浏览器配置不存在", "profileId", 422),
+        (ProfileDirectoryBusy, "WORKFLOW_PROFILE_BUSY", "所选浏览器配置正在使用", "profileId", 409),
+        (KernelNotInstalled, "WORKFLOW_KERNEL_UNAVAILABLE", "所选浏览器内核未安装或不可用", "profileId", 422),
+        (KernelBusy, "WORKFLOW_KERNEL_BUSY", "所选浏览器内核正在使用或安装", "profileId", 409),
+        (ProxyUnavailable, "WORKFLOW_PROXY_UNAVAILABLE", "所选代理或代理池不可用", "profileId", 422),
+        (LicenseInvalid, "WORKFLOW_LICENSE_UNAVAILABLE", "所选内核需要有效的 License", "profileId", 422),
+        (TimeoutError, "WORKFLOW_RESOURCE_TIMEOUT", "运行资源准备超时", "profileId", 422),
+    ]
+    for exception, code, message, path, status in mappings:
+        if isinstance(error, exception):
+            return WorkflowError(code, message, status, [WorkflowIssue(None, [path], code, message)])
+    return WorkflowError("WORKFLOW_RUN_FAILED", "运行失败，请检查配置与本地服务状态", 500)
+
+
+async def _wait_cleanup(task: asyncio.Task[None]) -> None:
+    # Request/host cancellation must not expose a terminal record or release guards
+    # while the independent cleanup task still owns a browser process tree.
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            continue
+    task.result()
