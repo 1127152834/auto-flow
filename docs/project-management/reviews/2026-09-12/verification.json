@@ -1,0 +1,88 @@
+{
+  "date": "2026-09-12",
+  "verified_at_utc": "2026-09-12T10:02:38.178847+00:00",
+  "status": "passed",
+  "source_count": 15,
+  "source_checks": [
+    {
+      "id": "target-spec",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-product",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-inputs",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-concurrency",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-environment",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-sheets",
+      "matches_sha256": true
+    },
+    {
+      "id": "legacy-identity",
+      "matches_sha256": true
+    },
+    {
+      "id": "current-navigation",
+      "matches_sha256": true
+    },
+    {
+      "id": "current-settings-language",
+      "matches_sha256": true
+    },
+    {
+      "id": "profile-boundary",
+      "matches_sha256": true
+    },
+    {
+      "id": "studio-roadmap",
+      "matches_sha256": true
+    },
+    {
+      "id": "studio-plan",
+      "matches_sha256": true
+    },
+    {
+      "id": "root-scripts",
+      "matches_sha256": true
+    },
+    {
+      "id": "desktop-scripts",
+      "matches_sha256": true
+    },
+    {
+      "id": "backend-checks",
+      "matches_sha256": true
+    }
+  ],
+  "markdown_file_count": 6,
+  "local_link_count": 18,
+  "broken_links": [],
+  "reviewed_spec_unchanged": true,
+  "artifact_sha256": {
+    "docs/project-management/reviews/2026-09-12/README.md": "cac7e24104cb12bc6cdc098d92ce584696caf5274843d0bb436fb4e06d7ea171",
+    "docs/project-management/reviews/2026-09-12/agent-data-environment.md": "15f82a1165713af2cc1869ace8b0ad0fdf309f7e762726c9f34b2b686669a504",
+    "docs/project-management/reviews/2026-09-12/agent-execution.md": "b1f3506e35afd8daf8a386b323224a82833ef5033f161526867e9ba55a20cd91",
+    "docs/project-management/reviews/2026-09-12/agent-product.md": "fbb32b7ded683a2b92b5290961e5c97e5f1cddb92452f699bb884744ab6cb204",
+    "docs/project-management/reviews/2026-09-12/evidence.md": "30b618c9570ea2ad370860bd7e26ec7ee3ad31edb8c7df093be3b2ea85e7ab0b",
+    "docs/project-management/reviews/2026-09-12/review-manifest.json": "000efe0a96086b101ac512dc637e873d27effb951ca2890c02a7fe811f89b329"
+  },
+  "git_diff_check": "passed: git diff --cached --check",
+  "scope": "Only review documents and one session record",
+  "application_tests_run": false,
+  "sheets_live_operations": false,
+  "cross_platform_validation": "not-run",
+  "link_check_scope": "Rendered Markdown links, excluding verbatim historical text in fenced code blocks",
+  "changed_file_count": 8,
+  "changed_paths_within_review_scope": true
+}
