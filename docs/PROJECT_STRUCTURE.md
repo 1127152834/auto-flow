@@ -300,3 +300,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ### PM2 记录与字段编辑补充（2026-09-13）
 
 `application/project_data/records.py`与领域records端口负责显式记录命令；`infrastructure/database/project_data_records.py`维护内容/状态/关联分离修订、typed身份和原子操作事实。`adapters/http/project_data_records.py`与record_schemas提供真实四接口，`project_data_impacts.py`与impact_schemas提供字段影响确认，原project_data路由PATCH字段。字段修改由catalog在同一写事务内重新核对影响事实。真实生成类型仍只有shared/api/generated.ts。记录查询、删除、批状态、文件IPC和正式页面继续实施；本次命令核验不代表完整数据管理。
+
+### PM2 查询与状态组件（2026-09-13）
+
+`domain/project_data/query.py`负责严格查询表达式和保真类型比较；`application/project_data/queries.py`校验查询身份/分页，`infrastructure/database/project_data_queries.py`在同一SQLite读快照完成过滤、稳定排序和分页，退出前清理连接临时函数。record HTTP集合GET返回真实DataRecordPage；不改变数据库结构。
+
+`renderer/domains/project-data/catalog-api.ts`负责字段/状态真实命令与原操作恢复，`components/StatusEditorDialog.tsx`及status-form-schema维护状态草稿/校验/差异提交。共享记录投影已纠正缺项与null区别。字段/记录编辑器、五页签与文件IPC尚未装配；最新范围核验见pm2-query-editor-verification.json。

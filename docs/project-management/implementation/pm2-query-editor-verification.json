@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-09-12T22:58:42.195686+00:00",
+  "status": "passed-for-query-and-status-editor-scope",
+  "milestoneStatus": "PM2-inProgress",
+  "codeCommits": [
+    "c5e40e4",
+    "beb6a3b",
+    "5a90c55",
+    "5137c1b",
+    "068d9e3"
+  ],
+  "scope": [
+    "record snapshot missing/null fidelity with immutable historical operations",
+    "field/status frontend command recovery",
+    "status editor component only",
+    "typed record filtering/sorting/pagination with real HTTP"
+  ],
+  "checks": [
+    {
+      "command": "uv run pytest -q",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "passed": 698,
+      "warnings": 2,
+      "log": "/tmp/autoflow-pm2-query-editor-backend-final.log",
+      "scopeNote": "After final UDF cleanup ordering and both concurrency regressions."
+    },
+    {
+      "command": "uv run ruff check src tests",
+      "cwd": "apps/backend",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run mypy src",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "sourceFiles": 166
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test",
+      "exitCode": 0,
+      "passed": 490,
+      "files": 78,
+      "log": "/tmp/autoflow-pm2-query-editor-frontend.log"
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Existing Zod PURE annotations stripped by Rollup"
+      ]
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "passed": 3
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "reviews": {
+    "recordSnapshotFix": "independent specification and engineering approved",
+    "catalogClient": "independent specification and engineering approved",
+    "statusEditor": "root independent specification, engineering, fixes and final verification approved",
+    "queryCore": "independent specification and engineering approved after exact-value, scale and concurrency counterexamples",
+    "queryHttp": "independent specification and engineering approved",
+    "record": "docs/project-management/implementation/pm2-review-foundation.md"
+  },
+  "coverage": {
+    "features": 48,
+    "acceptanceScenarios": 178,
+    "executionContracts": 18,
+    "capabilityGates": 7,
+    "identitiesPreserved": true,
+    "featureEvidenceUnchangedFrom": "ef3178a",
+    "completePm2FeaturesNotPromoted": true
+  },
+  "actualApp": {
+    "pm2DataAcceptance": "not-executed",
+    "scopeNote": "Status editor is an isolated tested component; formal data pages not mounted. Prior foundation QA is PM1 regression only."
+  },
+  "notVerified": [
+    "record deletion and fixed-target status batches",
+    "field/record editors and formal data pages",
+    "controlled Excel IPC/import/reimport/export",
+    "Google Sheets live resources",
+    "Studio project execution and End preservation",
+    "Windows",
+    "macOS x64",
+    "release package"
+  ],
+  "next": [
+    "complete field and record components and their page integration",
+    "record/status deletion impacts and fixed-target status batches",
+    "controlled file capabilities and persistent Excel operations",
+    "full PM2 real Electron acceptance; then remaining PM3-PM9"
+  ],
+  "continuationAudit": {
+    "promptWritingReply": "no implementation progress; existing worktree and terminal handles revalidated before resuming",
+    "currentTurn": "progress: committed actual record/field/query/client/editor code and new verification evidence",
+    "goal": "active; full scope not complete",
+    "externalBlocker": "none for remaining local PM2 work"
+  }
+}

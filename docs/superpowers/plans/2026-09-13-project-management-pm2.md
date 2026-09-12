@@ -169,3 +169,11 @@ A1、B1、A2a表资料和C1表资料组件已分别通过独立规格/工程复�
 ### A2d 保真投影纠正（2026-09-13）
 
 A2f规格审查发现既有记录_snapshot把缺fieldId投影为显式null，与冻结RecordSnapshot事实契约不符。pm2_rules_spec_review转为修复实施者，仅修改共享_snapshot和记录integration/HTTP测试；先RED证明create/新增可选字段/GET的缺项与显式null区别，再修复实际存在键的投影，PATCH明确null仍输出，历史Operation保持原快照不迁移。独立复审由其他智能体承担。旧通过报告保留但不能视为该未覆盖边界的通过证明。
+
+## A2f/C1b/A3b 实际完成记录（2026-09-13）
+
+- [x] A2f：5137c1b核心、068d9e3 HTTP；类型边界、任意小数秒、默认排序负载、分页sort、同快照和池清理竞态均经独立复核闭合。
+- [x] C1b：5a90c55状态组件；12项覆盖invalid草稿/空PATCH/dirty清理/readonly/码点/数值边界。
+- [x] A3b：beb6a3b字段/状态客户端原命令恢复；17项新测试通过。
+- [x] 最终自动回归：后端698、前端490；Ruff/mypy166、OpenAPI、typecheck/lint/build、scripts18/structure3通过。
+- [ ] PM2完整页面/文件IPC/实际应用仍待交付，下一步继续C1与B2、删除影响和固定目标批状态。B2只读接入依据见`.ai/knowledge/2026-09-13-project-files-baseline.md`。

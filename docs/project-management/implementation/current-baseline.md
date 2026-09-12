@@ -78,3 +78,9 @@ PM0的契约是后续实现必须达到的规范，核心所有者尚未提交�
 ### PM2 命令基线补充（2026-09-13，confirmed）
 
 cc86607记录显式写入、3630e78字段编辑事务和7a2986f真实HTTP已交付。记录create/get/update/status与字段影响preview/PATCH共六个新增handler；连同之前表和目录，实际15项数据HTTP操作。670项后端全量通过，最后记录类型增量再跑33项通过；前端461项回归。详细范围见pm2-records-fields-verification.json。早期“记录写入和字段PATCH尚未接通”的当前描述由本节取代；记录列表、删除/批状态、五页签、文件IPC和实际PM2页面仍未交付。
+
+### PM2 查询基线（2026-09-13，confirmed）
+
+5137c1b/068d9e3交付服务端记录查询及GET集合，实际数据HTTP共16项；c5e40e4纠正缺项/null投影，beb6a3b接入字段/状态客户端，5a90c55交付状态编辑组件。698项后端、490项前端及工程检查通过；同快照分页和连接池复用异常由真实并发回归覆盖。来源见pm2-query-editor-verification.json。
+
+前文“记录列表尚未交付”的当前描述由本节取代；删除/批状态、字段/记录编辑器与完整页面、文件IPC及Excel原子发布仍未交付。正式应用数据能力仍notImplemented，组件/接口不冒充完整PM2。下一文件接入只读盘点见.ai/knowledge/2026-09-13-project-files-baseline.md。

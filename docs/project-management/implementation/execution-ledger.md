@@ -139,3 +139,10 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - A2e：pm2_excel_adapter_impl实现，pm2_data_rules_impl独立规格/工程复核；3630e78。
 - HTTP：主协调实现，record由pm2_excel_adapter_impl、field由pm2_data_rules_impl独立复核；7a2986f。
 - 证据：pm2-records-fields-verification.json；只标记上述命令包通过，DT完整功能验收和未来编号证据不提升。A2f服务端查询与C1b状态组件继续实施。
+
+### A2f/C1b 与后续边界（2026-09-13）
+
+- A2f：pm2_excel_adapter_impl实现，pm2_rules_spec_review独立规格/工程复核，5137c1b；根协调HTTP由pm2_data_rules_impl独立审查，068d9e3。
+- C1b：pm2_data_rules_impl实现，主协调规格/工程复核修复，5a90c55；12组件测试。
+- A3b：主协调客户端，pm2_data_rules_impl独立复核，beb6a3b；17新API测试。
+- 最新完整自动回归698后端/490前端；PM2实际应用未执行，完整DT编号证据不提升。后续字段/记录组件、删除/批状态、受控Excel和五页签继续实施。
