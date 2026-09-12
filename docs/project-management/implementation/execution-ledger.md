@@ -132,3 +132,10 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - A2d：记录create/get/patch/显式状态正在实现；列表筛选、删除影响、批量状态、五页签、文件IPC和Electron数据场景仍待完成。
 - PM2-A/B/C尚未整体交付，不把基础包/目录API通过当作DT功能完整验收。PM1真实应用回归另存pm2-foundation-qa并明确scope，原PM0/PM1历史报告保留。
 - 主线已正式交付Studio M2 9490924，未来按PM3契约核对接入；此分支仍M1，未宣称项目执行已接通。
+
+### PM2 A2d/A2e 命令包（2026-09-13）
+
+- A2d：pm2_data_rules_impl实现，pm2_rules_spec_review独立规格/工程及类型增量复核；cc86607。
+- A2e：pm2_excel_adapter_impl实现，pm2_data_rules_impl独立规格/工程复核；3630e78。
+- HTTP：主协调实现，record由pm2_excel_adapter_impl、field由pm2_data_rules_impl独立复核；7a2986f。
+- 证据：pm2-records-fields-verification.json；只标记上述命令包通过，DT完整功能验收和未来编号证据不提升。A2f服务端查询与C1b状态组件继续实施。

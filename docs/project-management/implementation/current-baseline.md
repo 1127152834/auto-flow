@@ -74,3 +74,7 @@ PM0的契约是后续实现必须达到的规范，核心所有者尚未提交�
 新独立分支 codex/project-management-implementation 从 ef3178a 继续；执行卡677b60f、持久结构c1e4a6d、身份与字段规则e78b0e6、XLSX适配d915b6c、表资料API2226d19、表目录/表单组件a872db2、字段影响确认d3f76af。A2b字段/状态目录8ff3b6e完成事务和真实HTTP联调，记录写入A2d正在独立实现；五页签及文件IPC仍未接通，不能视为完整数据管理交付。
 
 2026-09-13再次只读核对：主目录HEAD已推进9490924（Studio M2正式提交，82文件，包含0006_workflow_runs从0005派生、持久Run/日志和浏览器清理）。旧“核心全部WIP”的当前描述superseded，但该提交尚未接入此实施分支，也未证明满足项目全部XE执行契约。PM3集成前核对prepareRun共享UoW、事件补读、占用/End等实际差距，按正式提交接入并处理0006与pm02迁移分叉；不复制主目录仍未提交文件。PM1 ef3178a、设计9c361f4、UI1fb58e1工作区均干净，本任务只读。
+
+### PM2 命令基线补充（2026-09-13，confirmed）
+
+cc86607记录显式写入、3630e78字段编辑事务和7a2986f真实HTTP已交付。记录create/get/update/status与字段影响preview/PATCH共六个新增handler；连同之前表和目录，实际15项数据HTTP操作。670项后端全量通过，最后记录类型增量再跑33项通过；前端461项回归。详细范围见pm2-records-fields-verification.json。早期“记录写入和字段PATCH尚未接通”的当前描述由本节取代；记录列表、删除/批状态、五页签、文件IPC和实际PM2页面仍未交付。

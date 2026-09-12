@@ -122,3 +122,50 @@ A1、B1、A2a表资料和C1表资料组件已分别通过独立规格/工程复�
 - [ ] 先比幂等完整目标/摘要，再校验项目/当前代次/版本；全字段必填和标量规则、禁止公式/只读字段写、身份字段不可静默改变RecordRef。局部PATCH保留其他字段，无变化不推进contentRevision。状态明确null每次推进statusRevision，同非null不变不推进；前态条件与同表状态scope严格校验。
 - [ ] 验证typed001/1/integer1、原key响应恢复、不同target同key冲突、人工CAS、代次410、删除行404、跨表状态、生命周期只读、写入与Operation/完整RecordRef证据的故障原子回滚。执行`uv run --directory apps/backend pytest tests/integration/test_project_data_records.py -q`，随后定向Ruff/mypy，再独立规格/工程审查。
 - 依赖边界：本分支尚无可执行项目Task/lease，不能声称已验收占用条件；PM4接真实占用guard。来源只开放可靠local/excel，Sheets写入及外部同步仍在PM6。记录DELETE/影响确认和固定批量状态仍是当前PM2未完成工作，不因本包通过而省略。
+
+### A2e 字段影响确认与实际编辑闭环（2026-09-13）
+
+- 责任：pm2_excel_adapter_impl在已提交catalog基础上扩展`application/project_data/catalog.py`、`domain/project_data/catalog.py`、`infrastructure/database/project_data_catalog.py`；新增`tests/integration/test_project_data_field_changes.py`。root独占HTTP/schema/generated/装配/文档；不碰记录包。
+- [ ] `preview_field_update(project_id,ref,definition)`代理到已实现impact预检，返回真实报告；`update_field(project_id,table_id,field_id,key,payload)`使用完整definition、expectedTableRevision/FieldRevision/impactRevision，返回(result,Operation,replayed)。请求缺少或非法属性422；目标UUID/修订安全范围严格验证。
+- [ ] 更新摘要含明确action、项目/表/字段目标及全部规范请求（包含impactRevision）。事务先查幂等，再项目写准入、当前字段及CAS；从当前代次构造FieldRef，在同一BEGIN IMMEDIATE调用`require_field_update`后立即改字段、修订与完整嵌套资源证据。确认过期或事实变化412；不可兼容值、公式/只读或身份字段改型拒绝。不修改业务值，不推进record三类修订。更换字面key仍须同代次唯一。无变化不推进table/field修订，仍保存原始操作结果供恢复。
+- [ ] 先失败测试：正常预检→修改→query/replay原结果；预检后改值/增行/表修订导致拒绝；两个请求CAS只有一个成功；同key不同field不重放；scope/lifecycle/formula/identity/类型冲突；修改后故障rollback同时撤销字段、表修订、operation/change；metadata修改保持record values/status/link和旧快照。执行`uv run --directory apps/backend pytest tests/integration/test_project_data_field_changes.py tests/integration/test_project_data_impacts.py -q`并定向Ruff/mypy，最后独立规格/工程审查。
+- [ ] root随后开放`POST /api/v1/projects/{projectId}/mutation-impact`的已实现updateField动作和`PATCH /tables/{tableId}/fields/{fieldId}`，字段响应为{field,tableRevision}，op.result为{action:'update',field,tableRevision}；生成类型并接领域表单。未来delete动作另行实现，当前不得接受后返回假报告。
+
+## C1b 状态编辑组件执行卡（2026-09-13）
+
+前置：真实 DataStatusCreate/Patch/View 已生成；仅交付组件，正式页面由 C2 接入。负责人 pm2_data_rules_impl，修改边界为 domains/project-data/components/StatusEditorDialog.tsx、status-form-schema.ts、tests/StatusEditorDialog.test.tsx；不改共享控件、API、生成文件或 App。
+
+1. 先写失败行为测试：新建/编辑合法值、trim 后 1–120 Unicode 码点、#RRGGBB 色值、非负安全整数顺序、只读、保存中防重复、失败保留、脏表单关闭确认、同会话刷新不覆盖输入、换会话迟到响应隔离。
+2. 复用现有 Modal/FormField/Input/NumberInput/Button/AlertDialog 及 RHF/Zod；暖灰与黏土棕，颜色选择使用统一按钮色板及可填写十六进制文本，不调用系统颜色面板。名称/颜色/顺序均可编辑；编辑仅提交真实变化的字段，不把默认值写成未改字段。
+3. 组件 props 使用 workspace/project/status/formSession 合成 sessionKey（不含 instance）；父层持有关闭和命令身份，onSubmit 成功不擅自关闭；请求代次仅在 React 提交阶段更新，兼容 Suspense；busy 禁止关闭和丢弃。暴露 onDirtyChange 给未来导航保护，卸载清理。
+4. 先组件 Vitest，再 typecheck/lint，独立规格审查后工程复核。验收只证明组件行为，不登记状态页面已交付。
+
+## A2f 记录查询执行卡（2026-09-13）
+
+来源：冻结 api-contracts.md §2/§3.3；旧提交324748a的 automation_conditions.py、automation_preview.py 及对应测试。旧空白字符串合并null、naive日期补UTC、简单CAST文本排序不适用于新契约，不照搬。负责人 pm2_excel_adapter_impl；主协调负责随后HTTP和生成类型。
+
+文件：拟新增 domain/project_data/query.py、application/project_data/queries.py、infrastructure/database/project_data_queries.py、tests/unit/test_project_data_query.py、tests/integration/test_project_data_queries.py。已有记录写入模块只读复用快照和scope helper；无迁移、无App改动。
+
+1. 失败测试先覆盖封闭表达式、字段/状态引用、类型、null、日期比较、稳定分页与读取快照，然后实现查询用例。filter/orderBy为一次严格canonical base64url UTF8 JSON（无padding），拒绝重复JSON键、NaN/Infinity、surrogate、超限、未知键/操作符；filter最大深度5、每组50项、叶子100，编码输入各≤64KiB，排序≤8项且目标唯一；页码正安全整数，pageSize默认50、上限200。
+2. all空组为true、any空组为false。isNull/isNotNull禁止value；其他比较必须非null且类型正确；状态eq/neq必须合法当前表statusId，null操作禁止statusId。string支持eq/neq/contains/startsWith和null；number/date支持eq/neq/range和null；boolean支持eq/neq和null。字段/状态引用失效422。
+3. 缺项及显式null仅在筛选isNull中同视为空（返回快照仍区分），空字符串和空白均不为空。普通比较面对null/不兼容值一律false，包括neq。字符串大小写敏感、不trim。日期保持源precision/value/offset；比较只在相同precision和同为无时区/有时区的类别内：date按日期，naive datetime按字面值，aware datetime按真实UTC时间比较（仅比较过程，不重写保存值，不用机器时区）；类别不可比false。
+4. 排序按字段类型比较，字符串Unicode码点、number数值、boolean false<true；日期分date/naive datetime/aware datetime明确固定类别，然后在类别内上述排序。null/缺失固定last不随desc倒置。status按order/statusId，系统createdAt/updatedAt为UTC时间。最终稳定typed RecordKey按text/integer/uuid类别固定升序，integer用数值，文本保留前导零；任何显式排序都追加该稳定tie。
+5. 服务端在完整有效集合上筛选、排序后分页，不先分页再筛选，不把全记录载入Python列表；可用现有SQLite/SQLAlchemy及只读连接受控函数，不新增依赖。表归属/生命周期/currentGeneration/deleted约束必须有效；total和items来自同一显式只读事务快照。返回 {items,total,page,pageSize,sort}，sort为有效orderBy规范JSON（含最终recordKey asc收尾；无显式排序为该收尾），不依赖对象键输入顺序。items复用保真记录快照；当前_snapshot把缺项合并null的缺陷由独立修复包先纠正，不改写历史Operation。
+6. 测试跨页筛选、同序稳定、NULL DESC仍last、日期精度/已知偏移/机器时区不参与、typed001/1/int1、归属404/旧代次410/归档读、并发写时total/items一致，以及大量数据只实例化一页。独立规格→工程审查通过后由主协调添加GET collection真实HTTP、生成类型和契约测试。
+
+## A2d/A2e 实际完成记录（2026-09-13）
+
+- [x] 记录显式命令、同事务字段影响复验与六项真实HTTP新增，三个独立提交cc86607/3630e78/7a2986f。
+- [x] 规格→工程→修复复核：记录标量与keyType、字段消费者并发/回滚覆盖、最后类型边界全部闭合。
+- [x] 670项后端全量（最终注解前）+33项最终定向、461项前端、Ruff/mypy163、OpenAPI/typecheck/lint/build/scripts18/structure3通过。
+- [ ] PM2完整页面与真实应用验收。A2f、C1b进入实施；本记录不提升完整功能编号通过状态。
+
+## A3b 字段/状态前端命令接入执行卡（2026-09-13）
+
+主协调新增 domains/project-data/catalog-api.ts 及相邻 catalog-api.test.ts；不与C1b组件文件交叉。使用真实生成类型，固定project/table/generation上下文，字段/状态目录支持AbortSignal，字段影响纯预检不建Operation。创建/编辑命令使用调用方原key；保存请求复制快照避免等待恢复时被草稿修改。
+
+先失败测试：丢响应查询匹配原Operation，操作kind/action/项目/表/字段/代次/状态身份不匹配必须结果未知且不重发；只有明确OPERATION_NOT_FOUND可用原key原body重发一次，确认422/409/412不盲重发，查询不可用保持未知。resume路径先查询；成功返回原快照。以真实生成字段/状态DTO区分原操作包装结果与直接HTTP响应。定向Vitest及typecheck/lint，独立规格后工程审查。该客户端不直接写缓存或显示Toast，跨实例迟到响应的界面隔离由正式页面协调。
+
+### A2d 保真投影纠正（2026-09-13）
+
+A2f规格审查发现既有记录_snapshot把缺fieldId投影为显式null，与冻结RecordSnapshot事实契约不符。pm2_rules_spec_review转为修复实施者，仅修改共享_snapshot和记录integration/HTTP测试；先RED证明create/新增可选字段/GET的缺项与显式null区别，再修复实际存在键的投影，PATCH明确null仍输出，历史Operation保持原快照不迁移。独立复审由其他智能体承担。旧通过报告保留但不能视为该未覆盖边界的通过证明。

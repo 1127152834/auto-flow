@@ -27,3 +27,5 @@
 - 2026-09-13（confirmed，用户持续目标）：PM2–PM9已授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。
 
 - 2026-09-13（confirmed，实际源码与独立审查）：PM2基础包已交付typed身份、原子持久结构、XLSX流式适配、表资料API与组件，字段/状态目录进入真实HTTP集成，字段影响确认已有持久事实绑定。完整记录、五页签、文件IPC仍实施中。主线9490924现有正式Studio M2，旧“核心仍全部WIP”现状superseded；实施分支尚未接入，PM3须核对契约与0006/pm02迁移汇合。证据见pm2-review-foundation.md及current-baseline.md。
+
+- 2026-09-13（confirmed，实际源码/独立审查/自动验证）：PM2记录create/get/update/显式状态与字段影响preview/PATCH已由cc86607、3630e78、7a2986f交付；670后端全量及最后类型增量33定向、461前端回归通过。仍无正式数据页面、文件IPC或运行闭环；详见pm2-records-fields-verification.json，不将基础命令等同完整PM2。

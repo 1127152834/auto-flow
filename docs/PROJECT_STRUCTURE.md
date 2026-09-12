@@ -296,3 +296,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `infrastructure/filesystem/project_excel.py` 仅为可信基础设施路径的 XLSX 适配器，不能直接暴露 renderer 路径。
 表资料目录GET/POST、详情GET/PATCH已交付；字段目录GET/POST、状态目录GET/POST/PATCH通过仓储与真实HTTP验证。`application/project_data/catalog.py`协调目录命令，`infrastructure/database/project_data_catalog.py`保存字段、状态与默认回填原子事实，`project_data_impacts.py`保存字段变更确认并在写事务内复验。`adapters/http/project_data_catalog_schemas.py`声明当前目录DTO，统一Operation查询可恢复字段/状态的原始结果。
 `renderer/domains/project-data/components`当前包含已审查的数据表目录与表单组件；正式五页签、记录、文件IPC和实际导入发布仍未完成。迁移/领域/目录接口测试不能据此标记完整PM2验收。
+
+### PM2 记录与字段编辑补充（2026-09-13）
+
+`application/project_data/records.py`与领域records端口负责显式记录命令；`infrastructure/database/project_data_records.py`维护内容/状态/关联分离修订、typed身份和原子操作事实。`adapters/http/project_data_records.py`与record_schemas提供真实四接口，`project_data_impacts.py`与impact_schemas提供字段影响确认，原project_data路由PATCH字段。字段修改由catalog在同一写事务内重新核对影响事实。真实生成类型仍只有shared/api/generated.ts。记录查询、删除、批状态、文件IPC和正式页面继续实施；本次命令核验不代表完整数据管理。
