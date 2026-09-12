@@ -3,7 +3,7 @@
 - 日期：2026-09-12
 - 状态：confirmed；列表、凭据和 SOCKS5 实网链路通过。HTTP 实网未通过，远程管理写操作未实现。
 - 来源：用户要求补齐真实代理能力；[官方 Developers](https://proxypanel.io/developers)、[连接说明](https://proxypanel.io/docs)、授权只读响应与本机隔离测试。
-- 工作区：`../autoflow-proxy-live`，分支 `codex/proxy-live`，起点 `c7c3021`。使用隔离 SQLite；未改动原应用的代理、浏览器配置或账号凭据。
+- 工作区：`../autoflow-proxy-live`，分支 `codex/proxy-live`，起点 `c7c3021`。实现与首轮验证使用隔离 SQLite；随后合入 baseline 并在原应用执行正常同步和检测。未改动浏览器配置或账号凭据。
 
 ## 根因与修复
 
@@ -46,3 +46,11 @@
 | npm run openapi:generate / npm run openapi:check | 通过，内部取密路由未进入公开契约 |
 
 脱敏 fixture 来源见 `apps/backend/tests/fixtures/proxypanel/README.md`。回归额外覆盖连接替换期间凭据晚返回、端点漂移、过期代理、协议选择、完整同步保留本地名称、失败重试恢复。没有数据库迁移或新依赖；Windows/macOS Intel 本轮未运行，真实凭据与网络验证在 macOS 本机完成。
+
+## baseline 运行验收（同日 confirmed）
+
+功能提交 `60bc035` 已快进合入 `codex/architecture-baseline`。先校验原有未提交文件的 SHA-256，合并后逐一一致，自动化编排工作未被覆盖。
+
+CUA 确认供应商向导停在未填写连接信息的第一步后关闭；重启本地服务并在原应用点击刷新，真实数据库同步得到 6 条记录。之后正常退出并重新启动 Electron，重新编译 main/preload，验证新宿主和后端均载入修复。正式代理页显示已连接；一条有效代理的实际 SOCKS5 检测显示健康、5029 ms。其余有效代理尚未逐条检测，不把它们标为已验证健康。到期代理继续保留记录且禁止检测。
+
+当前应用停在代理管理列表。没有执行代理远程写操作，也没有实际复制真实密码到剪贴板。自动测试已覆盖 host-only 取密与受控复制；Windows 本轮未运行。
