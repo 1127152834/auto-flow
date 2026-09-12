@@ -9,7 +9,7 @@ import { KernelManagerDialog } from '../../kernels/components/KernelManagerDialo
 import { ProfileActionDialog, type ProfileAction } from '../components/ProfileActionDialog'
 import { ProfileFormDialog } from '../components/ProfileFormDialog'
 import { ProfileList } from '../components/ProfileList'
-import { useOpenTestBrowser, useProfiles, useRegenerateProfile } from '../hooks'
+import { useCloseTestBrowser, useOpenTestBrowser, useProfiles, useRegenerateProfile, useTestBrowsers } from '../hooks'
 
 export type BrowserManagementPageProps = {
   disabled?: boolean
@@ -24,6 +24,10 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
   const profiles = useProfiles()
   const regenerate = useRegenerateProfile()
   const openTestBrowser = useOpenTestBrowser()
+  const closeTestBrowser = useCloseTestBrowser()
+  const testBrowsers = useTestBrowsers(!disabled)
+  const browserStatusUnavailable = testBrowsers.isPending || testBrowsers.isError
+  const [closingIds, setClosingIds] = useState<ReadonlySet<string>>(new Set())
   const pendingLaunches = useRef(new Set<string>())
   const [launchingIds, setLaunchingIds] = useState<ReadonlySet<string>>(new Set())
   const [launchErrors, setLaunchErrors] = useState<Record<string, string>>({})
@@ -72,9 +76,9 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
   }
 
   async function launchTestBrowser(profile: ProfileRead) {
-    if (disabled || pendingLaunches.current.has(profile.id) || regeneratingId === profile.id) return
+    if (disabled || browserStatusUnavailable || testBrowsers.data?.items.some((item) => item.profileId === profile.id) || pendingLaunches.current.has(profile.id) || regeneratingId === profile.id) return
     pendingLaunches.current.add(profile.id)
-    setLaunchingIds(new Set(pendingLaunches.current))
+    setLaunchingIds((current) => new Set([...current, profile.id]))
     setLaunchErrors((current) => ({ ...current, [profile.id]: '' }))
     try {
       const result = await openTestBrowser.mutateAsync(profile.id)
@@ -84,7 +88,23 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
       setLaunchErrors((current) => ({ ...current, [profile.id]: errorMessage(error) }))
     } finally {
       pendingLaunches.current.delete(profile.id)
-      setLaunchingIds(new Set(pendingLaunches.current))
+      setLaunchingIds((current) => new Set([...current].filter((id) => id !== profile.id)))
+    }
+  }
+
+  async function stopTestBrowser(profile: ProfileRead) {
+    if (disabled || pendingLaunches.current.has(profile.id)) return
+    pendingLaunches.current.add(profile.id)
+    setClosingIds((current) => new Set([...current, profile.id]))
+    setLaunchErrors((current) => ({ ...current, [profile.id]: '' }))
+    try {
+      await closeTestBrowser.mutateAsync(profile.id)
+      notify({ title: `${profile.name} 的测试浏览器已关闭`, tone: 'success' })
+    } catch (error) {
+      setLaunchErrors((current) => ({ ...current, [profile.id]: errorMessage(error) }))
+    } finally {
+      pendingLaunches.current.delete(profile.id)
+      setClosingIds((current) => new Set([...current].filter((id) => id !== profile.id)))
     }
   }
 
@@ -115,6 +135,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
         </Select>
       </section>
 
+      {testBrowsers.isError ? <div role="alert" className="rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">浏览器运行状态同步失败，暂时无法操作测试浏览器。<Button className="ml-3" disabled={disabled} onClick={() => void testBrowsers.refetch()}>重试同步</Button></div> : null}
       {profiles.isFetching && profiles.data ? <p role="status" className="m-0 text-xs text-muted">正在同步本地数据…</p> : null}
       {profiles.isError && profiles.data ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>{errorMessage(profiles.error)}。已加载的数据会继续保留。</span><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></div> : null}
 
@@ -123,7 +144,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
         : !hasProfiles ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-10 text-center"><h2 className="m-0 text-lg font-semibold">还没有浏览器配置</h2><p className="mb-0 mt-2 text-sm text-muted">创建第一份浏览器配置，再打开临时窗口验证效果。</p><Button type="button" className="mt-5" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} />新建配置</Button></section>
         : !filtered.length ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-8 text-center"><h2 className="m-0 text-base font-semibold">没有匹配的配置</h2><p className="mb-0 mt-2 text-sm text-muted">调整搜索内容或代理模式筛选。</p></section>
         : <>
-          <ProfileList profiles={visibleProfiles} disabled={disabled} regeneratingId={regeneratingId} launchingIds={launchingIds} launchErrors={launchErrors} onOpen={(profile) => void launchTestBrowser(profile)} onEdit={(profile) => openForm(profile)} onDuplicate={(profile) => setAction({ kind: 'duplicate', id: profile.id, name: profile.name })} onRegenerate={(profile) => void regenerateFingerprint(profile)} onDelete={(profile) => setAction({ kind: 'delete', id: profile.id, name: profile.name })} />
+          <ProfileList profiles={visibleProfiles} disabled={disabled} regeneratingId={regeneratingId} launchingIds={launchingIds} closingIds={closingIds} browserSessions={testBrowsers.data} browserStatusUnavailable={browserStatusUnavailable} onClose={(profile) => void stopTestBrowser(profile)} launchErrors={launchErrors} onOpen={(profile) => void launchTestBrowser(profile)} onEdit={(profile) => openForm(profile)} onDuplicate={(profile) => setAction({ kind: 'duplicate', id: profile.id, name: profile.name })} onRegenerate={(profile) => void regenerateFingerprint(profile)} onDelete={(profile) => setAction({ kind: 'delete', id: profile.id, name: profile.name })} />
           <footer className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
             <span>共 {filtered.length} 个配置</span>
             <div className="flex items-center gap-3">

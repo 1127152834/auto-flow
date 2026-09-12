@@ -5,6 +5,7 @@ import type {
   ProfileList,
   ProfileRead,
   ProfileTestBrowser,
+  ProfileTestBrowserList,
   ProfileWrite,
   ProxyOptionsRead,
 } from '../../shared/api/types'
@@ -34,6 +35,11 @@ export function createProfilesApi(client: ApiClient) {
     openTestBrowser: (profileId: string) => client.request<ProfileTestBrowser>(
       apiPath(`/profiles/${segment(profileId)}/test-browser`),
       { method: 'POST', timeoutMs: 120_000 },
+    ),
+    testBrowsers: () => client.request<ProfileTestBrowserList>(apiPath('/profiles/test-browsers')),
+    closeTestBrowser: (profileId: string) => client.request<void>(
+      apiPath(`/profiles/${segment(profileId)}/test-browser`),
+      { method: 'DELETE', timeoutMs: 120_000 },
     ),
     regenerate: (profileId: string) => client.request<ProfileRead>(
       apiPath(`/profiles/${segment(profileId)}/regenerate-fingerprint`),

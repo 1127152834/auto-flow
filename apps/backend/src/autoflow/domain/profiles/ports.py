@@ -4,7 +4,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from .models import Profile, ProfileBrowserProxy, ProfileTestBrowserSession
+from .models import (
+    Profile,
+    ProfileBrowserProxy,
+    ProfileTestBrowserSession,
+    ProfileTestBrowserStatus,
+)
 
 
 class ProfileRepository(Protocol):
@@ -59,6 +64,10 @@ class ProfileTestBrowserLauncher(Protocol):
         proxy: ProfileBrowserProxy | None,
         license_key: str | None,
     ) -> ProfileTestBrowserSession: ...
+
+    async def stop(self, profile_id: str) -> None: ...
+
+    def statuses(self) -> list[ProfileTestBrowserStatus]: ...
 
 
 @dataclass(frozen=True)

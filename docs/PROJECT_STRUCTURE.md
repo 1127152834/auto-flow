@@ -225,7 +225,7 @@ reference/
 - `application/profiles/test_browser.py` 协调读取已保存配置、选择已安装内核、解析代理凭据并调用启动端口；HTTP 仍由 `adapters/http/profiles.py` 提供，类型通过 OpenAPI 生成。
 - `infrastructure/process/test_browser_worker.py` 管理临时测试工作进程及回收；`bootstrap/test_browser_worker.py` 提供源代码/冻结共用入口；`providers/browser/worker.py` 适配 CloakBrowser 非持久化上下文。平台路径、环境和进程行为不进入 React 或 domain。
 - `providers/browser/proxy_relay.py` 为单个测试会话转发 HTTP/SOCKS5 认证代理；浏览器只接收无凭据的本地地址，认证信息留在 worker 内存与上游认证握手中。Windows Job Object 和 POSIX 进程组回收集中在进程适配器。
-- `renderer/domains/profiles/components/ProfileCard.tsx` 是配置卡片领域组件，`ProfileList.tsx` 负责双列布局，页面只组合查询和操作。测试启动按卡片记录等待和错误，重置结果直接更新 seed 缓存。
+- `renderer/domains/profiles/components/ProfileCard.tsx` 是配置卡片领域组件，`ProfileList.tsx` 负责双列布局，页面只组合查询和操作。测试启动/关闭按卡片记录等待和错误，运行态通过每秒查询后端同步，包含原生关窗；每份配置仅一个会话，重置结果直接更新 seed 缓存。
 - 决策及验证边界见 `.ai/decisions/2026-09-12-profile-test-browser.md` 和对应会话记录。
 
 ## 代理位置与轮换实现（2026-09-12，confirmed）

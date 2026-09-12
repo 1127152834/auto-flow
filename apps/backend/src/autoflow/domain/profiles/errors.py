@@ -27,7 +27,7 @@ class ProxyUnavailable(Exception):
 
 
 class ProfileTestBrowserBusy(Exception):
-    """Raised while the same profile already has a test browser starting."""
+    """Raised while the profile already owns a temporary test browser."""
 
 
 class ProfileTestBrowserUnavailable(Exception):

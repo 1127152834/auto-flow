@@ -17,7 +17,7 @@ const profile: ProfileRead = {
 afterEach(cleanup)
 
 it('shows the original profile fields and routes every action', async () => {
-  const actions = { onOpen: vi.fn(), onEdit: vi.fn(), onDuplicate: vi.fn(), onRegenerate: vi.fn(), onDelete: vi.fn() }
+  const actions = { onOpen: vi.fn(), onClose: vi.fn(), onEdit: vi.fn(), onDuplicate: vi.fn(), onRegenerate: vi.fn(), onDelete: vi.fn() }
   const user = userEvent.setup()
   render(<ProfileList profiles={[profile]} {...actions} />)
   const item = screen.getByRole('listitem')
@@ -37,8 +37,21 @@ it('shows the original profile fields and routes every action', async () => {
 })
 
 it('blocks writes and exposes the active fingerprint state while disabled', () => {
-  render(<ProfileList profiles={[profile]} disabled regeneratingId={profile.id} onOpen={vi.fn()} onEdit={vi.fn()} onDuplicate={vi.fn()} onRegenerate={vi.fn()} onDelete={vi.fn()} />)
+  render(<ProfileList profiles={[profile]} disabled regeneratingId={profile.id} onOpen={vi.fn()} onClose={vi.fn()} onEdit={vi.fn()} onDuplicate={vi.fn()} onRegenerate={vi.fn()} onDelete={vi.fn()} />)
   expect(screen.getAllByRole('button')).toHaveLength(5)
   expect(screen.getAllByRole('button').every((button) => button.hasAttribute('disabled'))).toBe(true)
   expect(screen.getByText('生成中…')).toBeInTheDocument()
+})
+
+it('uses the running action and prevents deleting a configuration with an active browser', async () => {
+  const onOpen = vi.fn(), onClose = vi.fn()
+  const actions = { onOpen, onClose, onEdit: vi.fn(), onDuplicate: vi.fn(), onRegenerate: vi.fn(), onDelete: vi.fn() }
+  const view = render(<ProfileList profiles={[profile]} browserSessions={{ items: [{ profileId: profile.id, sessionId: 'session', state: 'running' }] }} {...actions} />)
+  await userEvent.setup().click(screen.getByRole('button', { name: '关闭 工作环境 的测试浏览器' }))
+  expect(onClose).toHaveBeenCalledWith(profile)
+  expect(onOpen).not.toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: '删除 工作环境' })).toBeDisabled()
+  view.rerender(<ProfileList profiles={[profile]} browserSessions={{ items: [{ profileId: profile.id, sessionId: 'session', state: 'stopping' }] }} {...actions} />)
+  expect(screen.getByRole('button', { name: '关闭 工作环境 的测试浏览器' })).toBeDisabled()
+  expect(screen.getByText('正在关闭…')).toBeVisible()
 })

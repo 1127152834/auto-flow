@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -198,6 +198,13 @@ class ProfileTestBrowserSession:
     profile_id: str
     fingerprint_seed: int
     warning: str | None = None
+
+
+@dataclass(frozen=True)
+class ProfileTestBrowserStatus:
+    profile_id: str
+    session_id: str | None
+    state: Literal["starting", "running", "stopping"]
 
 
 @dataclass(frozen=True)

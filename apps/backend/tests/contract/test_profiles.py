@@ -4,7 +4,10 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from autoflow.domain.profiles.models import ProfileTestBrowserSession
+from autoflow.domain.profiles.models import (
+    ProfileTestBrowserSession,
+    ProfileTestBrowserStatus,
+)
 from autoflow.infrastructure.database.models import ProxyPoolRow, ProxyRow
 
 
@@ -100,6 +103,45 @@ def test_profile_test_browser_contract_returns_only_ready_session(
         "sessionId",
         "profileId",
         "fingerprintSeed",
+    }
+
+
+def test_profile_test_browser_status_and_idempotent_close_contract(
+    client: TestClient, profile_payload: dict[str, Any], monkeypatch
+) -> None:
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    session_id = str(uuid4())
+    status_item = ProfileTestBrowserStatus(profile["id"], session_id, "running")
+    statuses = lambda: [status_item]
+    stop = AsyncMock(return_value=None)
+    monkeypatch.setattr(client.app.state.profile_test_browser, "statuses", statuses)
+    monkeypatch.setattr(client.app.state.profile_test_browser, "stop", stop)
+
+    listed = client.get("/api/v1/profiles/test-browsers")
+    closed = client.delete(f"/api/v1/profiles/{profile['id']}/test-browser")
+    closed_again = client.delete(f"/api/v1/profiles/{profile['id']}/test-browser")
+    profile_delete = client.delete(f"/api/v1/profiles/{profile['id']}")
+
+    assert listed.status_code == 200
+    assert listed.json() == {
+        "items": [
+            {
+                "profileId": profile["id"],
+                "sessionId": session_id,
+                "state": "running",
+            }
+        ]
+    }
+    assert closed.status_code == closed_again.status_code == 204
+    assert stop.await_count == 2
+    assert profile_delete.status_code == 409
+    assert profile_delete.json()["error"]["code"] == "PROFILE_TEST_BROWSER_BUSY"
+    schema = client.get("/openapi.json").json()["components"]["schemas"]
+    assert set(schema["ProfileTestBrowserList"]["required"]) == {"items"}
+    assert set(schema["ProfileTestBrowserStatusRead"]["required"]) == {
+        "profileId",
+        "sessionId",
+        "state",
     }
 
 

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import { ApiProvider } from '../../../app/ApiProvider'
-import type { InstalledKernel, ProfileRead } from '../../../shared/api/types'
+import type { InstalledKernel, ProfileRead, ProfileTestBrowserList } from '../../../shared/api/types'
 import { BrowserManagementPage } from './BrowserManagementPage'
 
 const kernel: InstalledKernel = { edition: 'public', version: '145.0.1.1', executablePath: '/kernels/public/145', size: 1024 }
@@ -19,6 +19,9 @@ export const testProfile: ProfileRead = { ...workProfile, id: 'profile-test', na
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } })
 
 function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false) {
+  let sessions: ProfileTestBrowserList['items'] = []
+  let statusError = false
+  let closeResponse: Promise<Response> | undefined
   let values = [...initialProfiles]
   let profileError = initialProfileError
   let regenerateResponse: Promise<Response> | undefined
@@ -35,9 +38,20 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
     if (path === '/api/v1/profiles' && method === 'GET') return profileError
       ? json({ error: { code: 'SERVICE_UNAVAILABLE', message: '配置服务暂不可用', details: {}, requestId: 'request-list' } }, 503)
       : json({ items: values, total: values.length })
+    if (path === '/api/v1/profiles/test-browsers') return statusError ? json({ error: { message: '状态同步失败' } }, 503) : json({ items: sessions })
+    if (path.endsWith('/test-browser') && method === 'DELETE') {
+      const response = closeResponse ? await closeResponse : new Response(null, { status: 204 })
+      if (response.ok) sessions = sessions.filter((item) => item.profileId !== decodeURIComponent(path.split('/').at(-2)!))
+      return response
+    }
     if (path.endsWith('/test-browser') && method === 'POST') {
       const id = decodeURIComponent(path.split('/').at(-2)!)
-      return launchResponses.get(id) ?? json({ sessionId: crypto.randomUUID(), profileId: id, fingerprintSeed: values.find((profile) => profile.id === id)!.fingerprintSeed, warning: null }, 201)
+      const response = await (launchResponses.get(id) ?? json({ sessionId: crypto.randomUUID(), profileId: id, fingerprintSeed: values.find((profile) => profile.id === id)!.fingerprintSeed, warning: null }, 201))
+      if (response.ok) {
+        const result = await response.clone().json()
+        sessions = [...sessions.filter((item) => item.profileId !== id), { sessionId: result.sessionId, profileId: id, state: 'running' }]
+      }
+      return response
     }
     if (path.endsWith('/regenerate-fingerprint') && method === 'POST') {
       if (regenerateResponse) return regenerateResponse.then(async (response) => {
@@ -80,6 +94,9 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
   return {
     fetch,
     calls,
+    setSessions(value: ProfileTestBrowserList['items']) { sessions = value },
+    setStatusError(value: boolean) { statusError = value },
+    setCloseResponse(value: Promise<Response>) { closeResponse = value },
     setLaunchResponse(profileId: string, response: Promise<Response>) { launchResponses.set(profileId, response) },
     setProfileError(value: boolean) { profileError = value },
     setRegenerateResponse(response: Promise<Response>) { regenerateResponse = response },
@@ -250,7 +267,7 @@ it('blocks an already-open kernel or delete action while offline but still allow
 })
 
 
-it('opens fresh test browsers, deduplicates pending clicks, and keeps different cards independent', async () => {
+it('retains running state, closes the browser, and keeps different cards independent', async () => {
   let resolve!: (response: Response) => void
   const pending = new Promise<Response>((done) => { resolve = done })
   const user = userEvent.setup()
@@ -267,8 +284,11 @@ it('opens fresh test browsers, deduplicates pending clicks, and keeps different 
   expect(first).toBeDisabled()
   resolve(json({ sessionId: 'session-1', profileId: workProfile.id, fingerprintSeed: workProfile.fingerprintSeed, warning: null }, 201))
   await waitFor(() => expect(first).toBeEnabled())
+  expect(first).toHaveAccessibleName(`关闭 ${workProfile.name} 的测试浏览器`)
   await user.click(first)
-  expect(server.calls.filter((call) => call.path.endsWith('/test-browser'))).toHaveLength(3)
+  expect(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` })).toBeEnabled()
+  expect(server.calls.filter((call) => call.path.endsWith('/test-browser') && call.method === 'POST')).toHaveLength(2)
+  expect(server.calls.filter((call) => call.path.endsWith('/test-browser') && call.method === 'DELETE')).toHaveLength(1)
   expect(server.calls.filter((call) => call.path.endsWith('/test-browser')).every((call) => call.body === undefined)).toBe(true)
 })
 
@@ -292,5 +312,47 @@ it('reports a navigation warning without claiming that the browser failed to ope
   server.setLaunchResponse(workProfile.id, Promise.resolve(json({ sessionId: 'session-1', profileId: workProfile.id, fingerprintSeed: 12345, warning: '起始页面加载失败，请在窗口中重试。' }, 201)))
   await user.click(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }))
   expect(await screen.findByRole('alert')).toHaveTextContent('测试浏览器已打开，但起始页面加载失败')
-  expect(screen.getByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` })).toBeEnabled()
+  expect(screen.getByRole('button', { name: `关闭 ${workProfile.name} 的测试浏览器` })).toBeEnabled()
+})
+
+
+it('reconciles native close and an existing session from backend polling', async () => {
+  const { server } = renderBrowserPage({ profiles: [workProfile] })
+  server.setSessions([{ profileId: workProfile.id, sessionId: 'existing', state: 'running' }])
+  expect(await screen.findByRole('button', { name: `关闭 ${workProfile.name} 的测试浏览器` }, { timeout: 3000 })).toBeEnabled()
+  expect(server.calls.filter((call) => call.method !== 'GET')).toHaveLength(0)
+  server.setSessions([])
+  expect(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }, { timeout: 3000 })).toBeEnabled()
+})
+
+it('disables repeated close until completion and retains running state on close failure', async () => {
+  const user = userEvent.setup()
+  const { server } = renderBrowserPage({ profiles: [workProfile] })
+  await user.click(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }))
+  let resolve!: (response: Response) => void
+  server.setCloseResponse(new Promise((done) => { resolve = done }))
+  const button = await screen.findByRole('button', { name: `关闭 ${workProfile.name} 的测试浏览器` })
+  await user.dblClick(button)
+  expect(button).toBeDisabled()
+  expect(button).toHaveTextContent('正在关闭…')
+  expect(server.calls.filter((call) => call.method === 'DELETE')).toHaveLength(1)
+  resolve(json({ error: { code: 'PROFILE_TEST_BROWSER_UNAVAILABLE', message: '关闭失败，请重试', details: {}, requestId: 'close-test' } }, 503))
+  expect(await screen.findByRole('alert')).toHaveTextContent('关闭失败')
+  expect(button).toBeEnabled()
+  expect(button).toHaveTextContent('关闭浏览器')
+})
+
+it('keeps last known running state and blocks actions when status synchronization fails', async () => {
+  const user = userEvent.setup()
+  const view = renderBrowserPage({ profiles: [workProfile] })
+  await user.click(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }))
+  const close = await screen.findByRole('button', { name: `关闭 ${workProfile.name} 的测试浏览器` })
+  view.server.setStatusError(true)
+  expect(await screen.findByText(/浏览器运行状态同步失败/, {}, { timeout: 3000 })).toBeVisible()
+  expect(close).toBeDisabled()
+  view.server.setStatusError(false)
+  await user.click(screen.getByRole('button', { name: '重试同步' }))
+  await waitFor(() => expect(close).toBeEnabled())
+  view.rerenderDisabled(true)
+  expect(close).toBeDisabled()
 })

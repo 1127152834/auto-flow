@@ -8,6 +8,7 @@ from autoflow.domain.profiles.models import (
     Profile,
     ProfileSpec,
     ProfileTestBrowserSession,
+    ProfileTestBrowserStatus,
 )
 
 from .schemas import ApiModel
@@ -147,6 +148,26 @@ class ProfileTestBrowserRead(ApiModel):
             fingerprint_seed=session.fingerprint_seed,
             warning=session.warning,
         )
+
+
+class ProfileTestBrowserStatusRead(ApiModel):
+    profile_id: UUID
+    session_id: UUID | None
+    state: Literal["starting", "running", "stopping"]
+
+    @classmethod
+    def from_status(
+        cls, status: ProfileTestBrowserStatus
+    ) -> "ProfileTestBrowserStatusRead":
+        return cls(
+            profile_id=UUID(status.profile_id),
+            session_id=UUID(status.session_id) if status.session_id else None,
+            state=status.state,
+        )
+
+
+class ProfileTestBrowserList(ApiModel):
+    items: list[ProfileTestBrowserStatusRead]
 
 
 class EnvironmentOptionRead(ApiModel):

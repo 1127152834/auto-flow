@@ -5,6 +5,7 @@ from fastapi import APIRouter, Response, status
 
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.domain.profiles.errors import ProfileTestBrowserBusy
 from autoflow.domain.profiles.ports import ProfileEnvironmentOptions
 
 from .errors import browser_error_responses
@@ -13,7 +14,9 @@ from .profile_schemas import (
     ProfileEnvironmentOptionsRead,
     ProfileList,
     ProfileRead,
+    ProfileTestBrowserList,
     ProfileTestBrowserRead,
+    ProfileTestBrowserStatusRead,
     ProfileWrite,
 )
 
@@ -41,6 +44,15 @@ def profiles_router(
     @router.get("/environment-options", response_model=ProfileEnvironmentOptionsRead)
     def environment_options() -> ProfileEnvironmentOptionsRead:
         return ProfileEnvironmentOptionsRead.model_validate(asdict(read_environment_options()))
+
+    @router.get("/test-browsers", response_model=ProfileTestBrowserList)
+    async def list_test_browsers() -> ProfileTestBrowserList:
+        return ProfileTestBrowserList(
+            items=[
+                ProfileTestBrowserStatusRead.from_status(item)
+                for item in test_browser.statuses()
+            ]
+        )
 
     @router.get("/{profile_id}", response_model=ProfileRead)
     def get_profile(profile_id: str) -> ProfileRead:
@@ -70,8 +82,17 @@ def profiles_router(
     async def open_test_browser(profile_id: str) -> ProfileTestBrowserRead:
         return ProfileTestBrowserRead.from_session(await test_browser.start(profile_id))
 
+    @router.delete(
+        "/{profile_id}/test-browser", status_code=status.HTTP_204_NO_CONTENT
+    )
+    async def close_test_browser(profile_id: str) -> Response:
+        await test_browser.stop(profile_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
     @router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
-    def delete_profile(profile_id: str) -> Response:
+    async def delete_profile(profile_id: str) -> Response:
+        if test_browser.active(profile_id):
+            raise ProfileTestBrowserBusy
         service.remove(profile_id)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 

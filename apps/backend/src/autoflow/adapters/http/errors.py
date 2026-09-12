@@ -174,7 +174,7 @@ def install_error_handlers(app: FastAPI) -> None:
         (ProfileDirectoryBusy, 409, "PROFILE_DIRECTORY_BUSY", "Profile data directory is busy"),
         (KernelNotInstalled, 409, "KERNEL_NOT_INSTALLED", "Selected browser kernel is not installed"),
         (ProxyUnavailable, 409, "PROXY_UNAVAILABLE", "Selected proxy resource is unavailable"),
-        (ProfileTestBrowserBusy, 409, "PROFILE_TEST_BROWSER_BUSY", "此配置的测试浏览器正在启动"),
+        (ProfileTestBrowserBusy, 409, "PROFILE_TEST_BROWSER_BUSY", "此配置的测试浏览器正在运行或切换状态"),
         (ProfileTestBrowserUnavailable, 503, "PROFILE_TEST_BROWSER_UNAVAILABLE", "测试浏览器启动失败，请检查内核与配置后重试"),
         (ProfileDataPathInvalid, 500, "PROFILE_DATA_PATH_INVALID", "Managed profile data path is invalid"),
         (KernelNotFound, 404, "KERNEL_NOT_FOUND", "Installed kernel was not found"),

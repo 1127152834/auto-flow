@@ -20,6 +20,7 @@ from autoflow.domain.profiles.models import (
     Profile,
     ProfileBrowserProxy,
     ProfileTestBrowserSession,
+    ProfileTestBrowserStatus,
 )
 
 __test__ = False
@@ -59,10 +60,13 @@ class TestBrowserWorkerManager:
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._starting: dict[str, asyncio.subprocess.Process | None] = {}
+        self._starting_sessions: dict[str, str] = {}
         self._sessions: dict[str, _RunningBrowser] = {}
+        self._stopping: set[str] = set()
         self._shutting_down = False
         self._lock = asyncio.Lock()
-        self._start_tasks: set[asyncio.Task[Any]] = set()
+        self._start_tasks: dict[str, asyncio.Task[Any]] = {}
+        self._stop_tasks: dict[str, asyncio.Task[None]] = {}
 
     async def start(
         self,
@@ -79,10 +83,15 @@ class TestBrowserWorkerManager:
         async with self._lock:
             if self._shutting_down:
                 raise ProfileTestBrowserUnavailable
-            if profile.id in self._starting:
+            if (
+                profile.id in self._starting
+                or profile.id in self._stopping
+                or self._session_for_profile(profile.id) is not None
+            ):
                 raise ProfileTestBrowserBusy
             self._starting[profile.id] = None
-            self._start_tasks.add(current)
+            self._starting_sessions[profile.id] = session_id
+            self._start_tasks[profile.id] = current
         try:
             directory.mkdir(parents=True, exist_ok=False)
             env = os.environ.copy()
@@ -143,7 +152,9 @@ class TestBrowserWorkerManager:
                     monitor.cancel()
                     raise ProfileTestBrowserUnavailable
                 self._starting.pop(profile.id, None)
-                self._start_tasks.discard(current)
+                self._starting_sessions.pop(profile.id, None)
+                self._start_tasks.pop(profile.id, None)
+                self._stopping.discard(profile.id)
                 self._sessions[session_id] = _RunningBrowser(
                     profile.id, process, directory, monitor
                 )
@@ -153,17 +164,65 @@ class TestBrowserWorkerManager:
         except ProfileTestBrowserBusy:
             raise
         except BaseException as error:
+            async with self._lock:
+                self._stopping.add(profile.id)
             if process is not None:
                 await self._stop_process_tree(process)
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._starting.pop(profile.id, None)
+                self._starting_sessions.pop(profile.id, None)
+                self._stopping.discard(profile.id)
             if isinstance(error, asyncio.CancelledError):
                 raise
             raise ProfileTestBrowserUnavailable from None
         finally:
             async with self._lock:
-                self._start_tasks.discard(current)
+                if self._start_tasks.get(profile.id) is current:
+                    self._start_tasks.pop(profile.id, None)
+
+    async def stop(self, profile_id: str) -> None:
+        async with self._lock:
+            closing = self._stop_tasks.get(profile_id)
+            if closing is None:
+                starting = self._start_tasks.get(profile_id)
+                session = self._session_for_profile(profile_id)
+                if starting is None and session is None:
+                    return
+                self._stopping.add(profile_id)
+                if starting is not None:
+                    starting.cancel()
+                    closing = asyncio.create_task(
+                        self._wait_for_start_cleanup(profile_id, starting),
+                        name=f"stop-starting-test-browser-{profile_id}",
+                    )
+                else:
+                    assert session is not None
+                    closing = asyncio.create_task(
+                        self._stop_running(session),
+                        name=f"stop-test-browser-{profile_id}",
+                    )
+                self._stop_tasks[profile_id] = closing
+        await asyncio.shield(closing)
+
+    def statuses(self) -> list[ProfileTestBrowserStatus]:
+        items = [
+            ProfileTestBrowserStatus(
+                profile_id,
+                self._starting_sessions.get(profile_id),
+                "stopping" if profile_id in self._stopping else "starting",
+            )
+            for profile_id in self._starting
+        ]
+        items.extend(
+            ProfileTestBrowserStatus(
+                item.profile_id,
+                session_id,
+                "stopping" if item.profile_id in self._stopping else "running",
+            )
+            for session_id, item in self._sessions.items()
+        )
+        return sorted(items, key=lambda item: item.profile_id)
 
     def active_processes(self) -> list[int]:
         processes = [process for process in self._starting.values() if process]
@@ -171,20 +230,31 @@ class TestBrowserWorkerManager:
         return [process.pid for process in processes if process.returncode is None]
 
     def busy(self) -> bool:
-        return bool(self._starting or self.active_processes())
+        return bool(self._starting or self._sessions)
 
     async def shutdown(self) -> None:
         async with self._lock:
             self._shutting_down = True
             start_tasks = tuple(
-                task for task in self._start_tasks if task is not asyncio.current_task()
+                task
+                for task in self._start_tasks.values()
+                if task is not asyncio.current_task()
             )
             sessions = tuple(self._sessions.values())
+            stop_tasks = tuple(self._stop_tasks.values())
+            stopping_profiles = set(self._stop_tasks)
+            self._stopping.update(self._starting)
+            self._stopping.update(item.profile_id for item in sessions)
         for task in start_tasks:
             task.cancel()
         await asyncio.gather(
             *start_tasks,
-            *(self._stop_process_tree(item.process) for item in sessions),
+            *stop_tasks,
+            *(
+                self._stop_process_tree(item.process)
+                for item in sessions
+                if item.profile_id not in stopping_profiles
+            ),
             return_exceptions=True,
         )
         await asyncio.gather(
@@ -211,6 +281,34 @@ class TestBrowserWorkerManager:
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._sessions.pop(session_id, None)
+                self._stopping.discard(profile_id)
+
+    async def _wait_for_start_cleanup(
+        self, profile_id: str, task: asyncio.Task[Any]
+    ) -> None:
+        try:
+            await asyncio.gather(task, return_exceptions=True)
+        finally:
+            async with self._lock:
+                self._stopping.discard(profile_id)
+                if self._stop_tasks.get(profile_id) is asyncio.current_task():
+                    self._stop_tasks.pop(profile_id, None)
+
+    async def _stop_running(self, session: _RunningBrowser) -> None:
+        try:
+            await self._stop_process_tree(session.process)
+            await session.monitor
+        finally:
+            async with self._lock:
+                self._stopping.discard(session.profile_id)
+                if self._stop_tasks.get(session.profile_id) is asyncio.current_task():
+                    self._stop_tasks.pop(session.profile_id, None)
+
+    def _session_for_profile(self, profile_id: str) -> _RunningBrowser | None:
+        return next(
+            (item for item in self._sessions.values() if item.profile_id == profile_id),
+            None,
+        )
 
     async def _stop_process_tree(self, process: asyncio.subprocess.Process) -> None:
         if process.stdin is not None:

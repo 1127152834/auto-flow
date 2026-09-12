@@ -502,6 +502,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/profiles/test-browsers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Test Browsers */
+        get: operations["list_test_browsers_api_v1_profiles_test_browsers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/profiles/{profile_id}": {
         parameters: {
             query?: never;
@@ -566,7 +583,8 @@ export type paths = {
         put?: never;
         /** Open Test Browser */
         post: operations["open_test_browser_api_v1_profiles__profile_id__test_browser_post"];
-        delete?: never;
+        /** Close Test Browser */
+        delete: operations["close_test_browser_api_v1_profiles__profile_id__test_browser_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1962,6 +1980,11 @@ export type components = {
              */
             updatedAt: string;
         };
+        /** ProfileTestBrowserList */
+        ProfileTestBrowserList: {
+            /** Items */
+            items: components["schemas"]["ProfileTestBrowserStatusRead"][];
+        };
         /** ProfileTestBrowserRead */
         ProfileTestBrowserRead: {
             /**
@@ -1978,6 +2001,21 @@ export type components = {
             fingerprintSeed: number;
             /** Warning */
             warning?: string | null;
+        };
+        /** ProfileTestBrowserStatusRead */
+        ProfileTestBrowserStatusRead: {
+            /**
+             * Profileid
+             * Format: uuid
+             */
+            profileId: string;
+            /** Sessionid */
+            sessionId: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "starting" | "running" | "stopping";
         };
         /** ProfileWrite */
         ProfileWrite: {
@@ -4053,6 +4091,71 @@ export interface operations {
             };
         };
     };
+    list_test_browsers_api_v1_profiles_test_browsers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileTestBrowserList"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     get_profile_api_v1_profiles__profile_id__get: {
         parameters: {
             query?: never;
@@ -4413,6 +4516,71 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProfileTestBrowserRead"];
                 };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    close_test_browser_api_v1_profiles__profile_id__test_browser_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                profile_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Not Found */
             404: {

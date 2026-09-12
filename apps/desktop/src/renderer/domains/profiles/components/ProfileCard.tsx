@@ -1,4 +1,4 @@
-import { ArrowClockwise, Browser, Copy, PencilSimple, Play, Trash } from '@phosphor-icons/react'
+import { ArrowClockwise, Browser, Copy, PencilSimple, Play, Stop, Trash } from '@phosphor-icons/react'
 import type { ProfileRead } from '../../../shared/api/types'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
@@ -8,6 +8,10 @@ export type ProfileCardProps = {
   disabled?: boolean
   regenerating?: boolean
   regenerationDisabled?: boolean
+  browserState?: 'starting' | 'running' | 'stopping'
+  browserStatusUnavailable?: boolean
+  closing?: boolean
+  onClose(profile: ProfileRead): void
   launching?: boolean
   launchError?: string
   onOpen(profile: ProfileRead): void
@@ -21,8 +25,11 @@ const proxyLabels: Record<ProfileRead['proxyMode'], string> = {
   none: '不使用代理', proxy: '固定代理', pool: '代理池',
 }
 
-export function ProfileCard({ profile, disabled = false, regenerating = false, regenerationDisabled = false, launching = false, launchError, onOpen, onEdit, onDuplicate, onRegenerate, onDelete }: ProfileCardProps) {
-  const busy = disabled || launching || regenerating
+export function ProfileCard({ profile, disabled = false, regenerating = false, regenerationDisabled = false, launching = false, closing = false, browserState, browserStatusUnavailable = false, launchError, onOpen, onClose, onEdit, onDuplicate, onRegenerate, onDelete }: ProfileCardProps) {
+  const starting = launching || browserState === 'starting'
+  const stopping = closing || browserState === 'stopping'
+  const running = browserState === 'running'
+  const busy = disabled || starting || stopping || regenerating
   return <li className="flex min-w-0 flex-col gap-5 rounded-card border border-line bg-surface p-5 shadow-sm">
     <div className="flex items-start gap-3">
       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-subtle text-clay"><Browser size={24} aria-hidden="true" /></div>
@@ -47,14 +54,14 @@ export function ProfileCard({ profile, disabled = false, regenerating = false, r
     <div className="mt-auto border-t border-line pt-4">
       {launchError ? <p role="alert" className="mb-3 mt-0 break-words text-sm text-red-700">{launchError}</p> : null}
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="primary" className="h-9 px-3" type="button" disabled={busy} aria-label={`打开 ${profile.name} 的测试浏览器`} onClick={() => onOpen(profile)}>{launching ? <ArrowClockwise className="motion-safe:animate-spin" size={16} /> : <Play size={16} weight="fill" />}{launching ? '正在打开…' : '打开测试浏览器'}</Button>
+        <Button variant={running || stopping ? 'secondary' : 'primary'} className="h-9 px-3" type="button" disabled={busy || browserStatusUnavailable} aria-label={`${running || stopping ? '关闭' : '打开'} ${profile.name} 的测试浏览器`} onClick={() => running ? onClose(profile) : onOpen(profile)}>{starting || stopping ? <ArrowClockwise className="motion-safe:animate-spin" size={16} /> : running ? <Stop size={16} weight="fill" /> : <Play size={16} weight="fill" />}{stopping ? '正在关闭…' : starting ? '正在打开…' : running ? '关闭浏览器' : '打开测试浏览器'}</Button>
         <Button className="h-9 px-3" type="button" disabled={busy} aria-label={`编辑 ${profile.name}`} onClick={() => onEdit(profile)}><PencilSimple size={16} />编辑</Button>
         <div className="ml-auto flex gap-1">
           <Button className="h-9 px-2" variant="ghost" type="button" disabled={busy} aria-label={`复制 ${profile.name}`} title="复制配置" onClick={() => onDuplicate(profile)}><Copy size={17} /></Button>
-          <Button className="h-9 px-2 text-red-700" variant="ghost" type="button" disabled={busy} aria-label={`删除 ${profile.name}`} title="删除配置" onClick={() => onDelete(profile)}><Trash size={17} /></Button>
+          <Button className="h-9 px-2 text-red-700" variant="ghost" type="button" disabled={busy || Boolean(browserState) || browserStatusUnavailable} aria-label={`删除 ${profile.name}`} title="删除配置" onClick={() => onDelete(profile)}><Trash size={17} /></Button>
         </div>
       </div>
-      <p className="mb-0 mt-3 text-xs leading-5 text-muted">每次打开全新测试窗口，关闭后不保留浏览数据。</p>
+      <p className="mb-0 mt-3 text-xs leading-5 text-muted">{running ? '测试浏览器运行中，关闭后可重新打开全新会话。' : '每份配置仅打开一个测试浏览器，关闭后不保留浏览数据。'}</p>
     </div>
   </li>
 }

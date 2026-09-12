@@ -511,17 +511,25 @@ async function smoke(kernel, kernelDetails, sidecarExecutable, report) {
     })
     const ready = await waitForReady(sidecar)
     const baseUrl = `http://127.0.0.1:${ready.port}`
+    const profilePayload = {
+      name: 'Profile test browser smoke', description: 'Isolated real-browser verification',
+      startUrl: fixture.url, locale: 'zh-CN', timezone: 'Asia/Shanghai', geoip: false,
+      headless: true, humanize: false, humanPreset: 'default', userAgent: null,
+      viewportJson: { width: 960, height: 640 }, colorScheme: 'dark', extensionPathsJson: [],
+      expertArgsJson: ['--lang=zh-CN'], browserVersion: kernel.version, browserEdition: 'public',
+      releaseChannel: 'stable', proxyMode: 'none', proxyId: null, proxyPoolId: null,
+    }
     const profile = await api(baseUrl, token, '/api/v1/profiles', {
       method: 'POST',
-      body: JSON.stringify({
-        name: 'Profile test browser smoke', description: 'Isolated real-browser verification',
-        startUrl: fixture.url, locale: 'zh-CN', timezone: 'Asia/Shanghai', geoip: false,
-        headless: true, humanize: false, humanPreset: 'default', userAgent: null,
-        viewportJson: { width: 960, height: 640 }, colorScheme: 'dark', extensionPathsJson: [],
-        expertArgsJson: ['--lang=zh-CN'], browserVersion: kernel.version, browserEdition: 'public',
-        releaseChannel: 'stable', proxyMode: 'none', proxyId: null, proxyPoolId: null,
-      }),
+      body: JSON.stringify(profilePayload),
     })
+    let otherProfile = await api(baseUrl, token, '/api/v1/profiles', {
+      method: 'POST', body: JSON.stringify({ ...profilePayload, name: 'Profile test browser smoke B' }),
+    })
+    for (let attempt = 0; otherProfile.fingerprintSeed === profile.fingerprintSeed && attempt < 5; attempt += 1) {
+      otherProfile = await api(baseUrl, token, `/api/v1/profiles/${otherProfile.id}/regenerate-fingerprint`, { method: 'POST' })
+    }
+    assert.notEqual(otherProfile.fingerprintSeed, profile.fingerprintSeed)
     assert.equal(profile.headless, true)
     assert.deepEqual(await listFiles(join(dataDirectory, 'workspace', 'profiles')), [])
 
@@ -530,6 +538,10 @@ async function smoke(kernel, kernelDetails, sidecarExecutable, report) {
       apiResponse(baseUrl, token, `/api/v1/profiles/${profile.id}/test-browser`, { method: 'POST' }),
     ]
     await waitFor(() => fixture.visits.length === 1, 'first browser navigation')
+    const startingStatus = await waitFor(async () => {
+      const item = (await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items.find(item => item.profileId === profile.id)
+      return item?.state === 'starting' ? item : undefined
+    }, 'starting browser state')
     fixture.releaseFirst()
     const startResponses = await Promise.all(starts)
     const startedResponse = startResponses.find(response => response.status === 201)
@@ -541,6 +553,14 @@ async function smoke(kernel, kernelDetails, sidecarExecutable, report) {
     assert.equal(firstSession.profileId, profile.id)
     assert.equal(firstSession.fingerprintSeed, profile.fingerprintSeed)
     assert.equal(firstSession.warning, null)
+    if (startingStatus.sessionId !== null) assert.equal(startingStatus.sessionId, firstSession.sessionId)
+    await waitFor(async () => {
+      const item = (await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items.find(item => item.profileId === profile.id)
+      return item?.state === 'running' && item.sessionId === firstSession.sessionId
+    }, 'running browser state')
+    const repeated = await apiResponse(baseUrl, token, `/api/v1/profiles/${profile.id}/test-browser`, { method: 'POST' })
+    assert.equal(repeated.status, 409)
+    assert.equal((await repeated.json()).error.code, 'PROFILE_TEST_BROWSER_BUSY')
 
     const firstMain = await waitFor(async () => {
       const processes = await browserProcesses(copiedKernel.directory)
@@ -550,48 +570,78 @@ async function smoke(kernel, kernelDetails, sidecarExecutable, report) {
     assert.ok(!firstMain.command.includes('--proxy-server'), 'proxyMode=none must not add a proxy server')
     assert.equal((await api(baseUrl, token, `/api/v1/profiles/${profile.id}`)).headless, true)
 
+    const beforeOther = new Set((await browserProcesses(copiedKernel.directory)).map(item => item.pid))
+    const otherSession = await api(baseUrl, token, `/api/v1/profiles/${otherProfile.id}/test-browser`, { method: 'POST' })
+    assert.equal(otherSession.fingerprintSeed, otherProfile.fingerprintSeed)
+    assert.equal(otherSession.warning, null)
+    await waitFor(() => fixture.reports.length === 2, 'second profile storage report')
+    const otherMain = await waitFor(async () => (await browserProcesses(copiedKernel.directory)).find(item =>
+      !beforeOther.has(item.pid) && !item.command.includes('--type=') && item.command.includes(`--fingerprint=${otherProfile.fingerprintSeed}`)
+    ), 'second profile Chromium argv')
+    await waitFor(async () => {
+      const items = (await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items
+      return items.some(item => item.profileId === profile.id && item.state === 'running')
+        && items.some(item => item.profileId === otherProfile.id && item.state === 'running')
+    }, 'different profiles running together')
+
+    const sessionBase = join(dataDirectory, 'tmp', 'test-browser')
+    const firstDirectory = await waitFor(() => findSessionDirectory(sessionBase, firstSession.sessionId), 'first live session directory')
+    const otherDirectory = await waitFor(() => findSessionDirectory(sessionBase, otherSession.sessionId), 'second profile live session directory')
+    await closeMacWindow(firstMain.pid)
+    await waitFor(async () => {
+      const items = (await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items
+      return !items.some(item => item.profileId === profile.id)
+        && items.some(item => item.profileId === otherProfile.id && item.state === 'running')
+    }, 'native close reflected in browser state', 20_000)
+    await waitFor(async () => !(await stat(firstDirectory).catch(() => undefined)), 'native-close session cleanup', 20_000)
+    assert.ok(await stat(otherDirectory))
+    assert.throws(() => process.kill(firstMain.pid, 0))
+
+    const beforeSameSeed = new Set((await browserProcesses(copiedKernel.directory)).map(item => item.pid))
     const sameSeedSession = await api(baseUrl, token, `/api/v1/profiles/${profile.id}/test-browser`, { method: 'POST' })
     assert.notEqual(sameSeedSession.sessionId, firstSession.sessionId)
     assert.equal(sameSeedSession.fingerprintSeed, profile.fingerprintSeed)
     assert.equal(sameSeedSession.warning, null)
-    await waitFor(() => fixture.reports.length === 2, 'same-seed browser storage report')
+    await waitFor(() => fixture.reports.length === 3, 'same-seed browser storage report')
+    const sameSeedMain = await waitFor(async () => (await browserProcesses(copiedKernel.directory)).find(item =>
+      !beforeSameSeed.has(item.pid) && !item.command.includes('--type=') && item.command.includes(`--fingerprint=${profile.fingerprintSeed}`)
+    ), 'reopened same-seed Chromium argv')
+    const sameSeedDirectory = await waitFor(() => findSessionDirectory(sessionBase, sameSeedSession.sessionId), 'reopened session directory')
+    const deleted = await apiResponse(baseUrl, token, `/api/v1/profiles/${profile.id}/test-browser`, { method: 'DELETE' })
+    assert.equal(deleted.status, 204)
+    await waitFor(async () => !(await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items.some(item => item.profileId === profile.id), 'DELETE state cleanup')
+    await waitFor(async () => !(await stat(sameSeedDirectory).catch(() => undefined)), 'DELETE session cleanup', 20_000)
+    assert.throws(() => process.kill(sameSeedMain.pid, 0))
 
     const regenerated = await api(baseUrl, token, `/api/v1/profiles/${profile.id}/regenerate-fingerprint`, { method: 'POST' })
     assert.notEqual(regenerated.fingerprintSeed, profile.fingerprintSeed)
     assert.equal((await api(baseUrl, token, `/api/v1/profiles/${profile.id}`)).fingerprintSeed, regenerated.fingerprintSeed)
+    const beforeResetSeed = new Set((await browserProcesses(copiedKernel.directory)).map(item => item.pid))
     const resetSeedSession = await api(baseUrl, token, `/api/v1/profiles/${profile.id}/test-browser`, { method: 'POST' })
     assert.notEqual(resetSeedSession.sessionId, firstSession.sessionId)
     assert.notEqual(resetSeedSession.sessionId, sameSeedSession.sessionId)
     assert.equal(resetSeedSession.fingerprintSeed, regenerated.fingerprintSeed)
     assert.equal(resetSeedSession.warning, null)
+    await waitFor(() => fixture.reports.length === 4, 'reset-seed browser storage report')
+    await waitFor(async () => (await browserProcesses(copiedKernel.directory)).find(item =>
+      !beforeResetSeed.has(item.pid) && !item.command.includes('--type=') && item.command.includes(`--fingerprint=${regenerated.fingerprintSeed}`)
+    ), 'reset-seed Chromium argv')
     const processes = await waitFor(async () => {
       const current = await browserProcesses(copiedKernel.directory)
       const main = current.filter(item => !item.command.includes('--type='))
-      return main.filter(item => item.command.includes(`--fingerprint=${profile.fingerprintSeed}`)).length >= 2
+      return main.some(item => item.pid === otherMain.pid)
         && main.some(item => item.command.includes(`--fingerprint=${regenerated.fingerprintSeed}`)) ? current : undefined
-    }, 'three independent Chromium windows')
+    }, 'different profiles running after fingerprint reset')
+    await waitFor(async () => {
+      const items = (await api(baseUrl, token, '/api/v1/profiles/test-browsers')).items
+      return items.some(item => item.profileId === profile.id && item.sessionId === resetSeedSession.sessionId && item.state === 'running')
+        && items.some(item => item.profileId === otherProfile.id && item.sessionId === otherSession.sessionId && item.state === 'running')
+    }, 'final two-profile running state')
 
-    await waitFor(() => fixture.reports.length === 3, 'three browser storage reports')
-    assert.deepEqual(fixture.visits.map(item => item.requestCookie), ['', '', ''])
-    assert.deepEqual(fixture.reports.map(item => item.before), [null, null, null])
+    assert.deepEqual(fixture.visits.map(item => item.requestCookie), ['', '', '', ''])
+    assert.deepEqual(fixture.reports.map(item => item.before), [null, null, null, null])
     for (const visit of fixture.reports) assert.match(visit.cookie, new RegExp(`autoflow-smoke-cookie=${visit.visitId}`))
     assert.deepEqual(await listFiles(join(dataDirectory, 'workspace', 'profiles')), [])
-
-    const sessionBase = join(dataDirectory, 'tmp', 'test-browser')
-    const sessionDirectories = await waitFor(async () => {
-      const directories = await Promise.all([
-        findSessionDirectory(sessionBase, firstSession.sessionId),
-        findSessionDirectory(sessionBase, sameSeedSession.sessionId),
-        findSessionDirectory(sessionBase, resetSeedSession.sessionId),
-      ])
-      return directories.every(Boolean) ? directories : undefined
-    }, 'three live session directories')
-
-    await closeMacWindow(firstMain.pid)
-    await waitFor(async () => !(await stat(sessionDirectories[0]).catch(() => undefined)), 'closed-window session cleanup', 20_000)
-    assert.ok(await stat(sessionDirectories[1]))
-    assert.ok(await stat(sessionDirectories[2]))
-    report.push('- PASS：首个窗口通过 macOS 辅助功能按 PID 关闭，其 worker 与会话临时目录已回收。')
 
     const trackedPids = processes.map(item => item.pid)
     await api(baseUrl, token, '/internal/lifecycle/shutdown', {
@@ -601,11 +651,12 @@ async function smoke(kernel, kernelDetails, sidecarExecutable, report) {
     await waitFor(async () => (await browserProcesses(copiedKernel.directory)).length === 0, 'browser process cleanup', 15_000)
     assert.equal(await stat(sessionBase).catch(() => undefined), undefined)
     for (const pid of trackedPids) assert.throws(() => process.kill(pid, 0))
-    const [firstObservation, sameSeedObservation, resetSeedObservation] = fixture.reports
-    report.push('- PASS：重置前后种子持久化，三个实际 Chromium argv 分别带对应 `--fingerprint`。')
-    report.push('- PASS：同一配置三个并存窗口的首次 Cookie 与 localStorage 均为空。')
+    const [firstObservation, , sameSeedObservation, resetSeedObservation] = fixture.reports
+    report.push('- PASS：同一配置启动中和 running 时均返回 409；不同配置可同时 running。')
+    report.push('- PASS：原生关闭同步清除状态和会话目录；同配置可重新打开新 session；DELETE 关闭后同样清除。')
+    report.push('- PASS：重置前后种子持久化，重新打开的实际 Chromium argv 使用对应 `--fingerprint`。')
+    report.push('- PASS：四个全新会话的首次 Cookie 与 localStorage 均为空。')
     report.push('- PASS：保存的 headless=true 未改变；测试窗口实际无 `--headless`；proxyMode=none 未添加代理参数。')
-    report.push('- PASS：同配置启动中返回 409；启动成功后可再启动独立窗口。')
     report.push('- PASS：workspace/profiles 未产生文件；sidecar 退出后无测试浏览器进程和会话临时目录。')
     report.push(`- API 与 argv 验证的旧 seed：${profile.fingerprintSeed}；新 seed：${regenerated.fingerprintSeed}`)
     report.push(`- 观察到的测试浏览器进程数（含 helper）：${processes.length}`)

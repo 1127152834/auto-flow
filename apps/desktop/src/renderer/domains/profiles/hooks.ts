@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../app/ApiProvider'
-import type { ProfileDuplicate, ProfileList, ProfileWrite } from '../../shared/api/types'
+import type { ProfileDuplicate, ProfileList, ProfileTestBrowserList, ProfileWrite } from '../../shared/api/types'
 
 export const profileKeys = {
   all: (instanceId: string) => [instanceId, 'profiles'] as const,
+  testBrowsers: (instanceId: string) => [instanceId, 'profile-test-browsers'] as const,
   proxyOptions: (instanceId: string) => [instanceId, 'proxy-options'] as const,
   environmentOptions: (instanceId: string) => [instanceId, 'profile-environment-options'] as const,
 }
@@ -82,7 +83,44 @@ export function useRegenerateProfile() {
   })
 }
 
+export function useTestBrowsers(enabled: boolean) {
+  const { profiles, instanceId } = useApi()
+  return useQuery({
+    queryKey: profileKeys.testBrowsers(instanceId), queryFn: profiles.testBrowsers,
+    enabled, retry: false, refetchInterval: 1000, refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+  })
+}
+
 export function useOpenTestBrowser() {
-  const { profiles } = useApi()
-  return useMutation({ mutationFn: profiles.openTestBrowser, retry: false })
+  const { profiles, instanceId } = useApi()
+  const queryClient = useQueryClient()
+  const key = profileKeys.testBrowsers(instanceId)
+  return useMutation({
+    mutationFn: profiles.openTestBrowser, retry: false,
+    onSuccess: async (session) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      queryClient.setQueryData<ProfileTestBrowserList>(key, (current) => ({ items: [
+        ...(current?.items ?? []).filter((item) => item.profileId !== session.profileId),
+        { profileId: session.profileId, sessionId: session.sessionId, state: 'running' },
+      ] }))
+    },
+    onSettled: () => { void queryClient.invalidateQueries({ queryKey: key }) },
+  })
+}
+
+export function useCloseTestBrowser() {
+  const { profiles, instanceId } = useApi()
+  const queryClient = useQueryClient()
+  const key = profileKeys.testBrowsers(instanceId)
+  return useMutation({
+    mutationFn: profiles.closeTestBrowser, retry: false,
+    onSuccess: async (_, profileId) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      queryClient.setQueryData<ProfileTestBrowserList>(key, (current) => ({
+        items: (current?.items ?? []).filter((item) => item.profileId !== profileId),
+      }))
+    },
+    onSettled: () => { void queryClient.invalidateQueries({ queryKey: key }) },
+  })
 }

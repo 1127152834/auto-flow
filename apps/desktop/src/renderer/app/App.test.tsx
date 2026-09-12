@@ -24,6 +24,7 @@ function payload(path: string) {
   if (path.endsWith('/api/v1/model-providers')) return { items: [], total: 0 }
   if (path.endsWith('/api/v1/proxy-panel/connections')) return { items: [] }
   if (path.includes('/api/v1/proxy-groups')) return { items: [], offset: 0, limit: 100, matched_count: 0 }
+  if (path.endsWith('/api/v1/profiles/test-browsers')) return { items: [] }
   if (path.endsWith('/api/v1/profiles')) return { items: [], total: 0 }
   if (path.endsWith('/api/v1/proxy-options')) return { proxies: [], pools: [] }
   if (path.endsWith('/api/v1/kernels/installed')) return { items: [] }
