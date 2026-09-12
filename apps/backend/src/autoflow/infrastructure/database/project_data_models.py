@@ -126,7 +126,13 @@ class DataStatusRow(Base):
         sa.UniqueConstraint(
             "project_id", "table_id", "id", name="uq_project_data_status_scope"
         ),
-        sa.UniqueConstraint("table_id", "name_key", name="uq_project_data_status_name"),
+        sa.Index(
+            "uq_project_data_status_active_name",
+            "table_id",
+            "name_key",
+            unique=True,
+            sqlite_where=sa.text("deleted = 0"),
+        ),
         sa.ForeignKeyConstraint(
             ["project_id", "table_id"],
             ["project_data_tables.project_id", "project_data_tables.id"],
@@ -145,6 +151,9 @@ class DataStatusRow(Base):
     color: Mapped[str] = mapped_column(sa.String(7), nullable=False)
     position: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
     status_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
+    deleted: Mapped[bool] = mapped_column(
+        sa.Boolean(), nullable=False, default=False, server_default=sa.false()
+    )
 
 
 class DataRecordRow(Base):

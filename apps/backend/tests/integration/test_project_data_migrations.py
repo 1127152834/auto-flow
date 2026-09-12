@@ -42,7 +42,17 @@ def seed_table(connection, table="t", generation="g", project="p"):
         (id,project_id,name,name_key,search_text,description,source_kind,current_generation,table_revision,
         identity,slot_definitions,created_at,updated_at)
         VALUES (?,?,?,?,?,?,'local',?,1,'{"mode":"system"}','[]',?,?)""",
-        (table, project, table, table, table.casefold(), "", generation, "2026-09-13", "2026-09-13"),
+        (
+            table,
+            project,
+            table,
+            table,
+            table.casefold(),
+            "",
+            generation,
+            "2026-09-13",
+            "2026-09-13",
+        ),
     )
     connection.execute(
         """INSERT INTO project_data_generations
@@ -75,7 +85,7 @@ def add_record(
 def test_pm2_upgrade_preserves_projects_and_has_one_head(tmp_path, existing):
     path = tmp_path / "data.sqlite3"
     config = config_for(path)
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_project_data"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_status_tombstones"]
     before = []
     if existing:
         command.upgrade(config, "pm01_projects")
@@ -137,7 +147,7 @@ def test_generation_and_status_cannot_cross_project_or_table(database):
     seed_project(database, "other")
     seed_table(database, "other-table", "other-gen", "other")
     database.execute(
-        "INSERT INTO project_data_statuses VALUES ('status','other','other-table','done','done','#AABBCC',0,1)"
+        "INSERT INTO project_data_statuses (id,project_id,table_id,name,name_key,color,position,status_revision) VALUES ('status','other','other-table','done','done','#AABBCC',0,1)"
     )
     with pytest.raises(sqlite3.IntegrityError):
         add_record(database, status="status")
@@ -149,7 +159,7 @@ def test_generation_and_status_cannot_cross_project_or_table(database):
 
 def test_status_references_in_historical_generation_prevent_delete(database):
     database.execute(
-        "INSERT INTO project_data_statuses VALUES ('status','p','t','done','done','#AABBCC',0,1)"
+        "INSERT INTO project_data_statuses (id,project_id,table_id,name,name_key,color,position,status_revision) VALUES ('status','p','t','done','done','#AABBCC',0,1)"
     )
     add_record(database, status="status")
     database.execute(
@@ -275,29 +285,35 @@ def test_downgrade_then_upgrade_preserves_pm1_projects(tmp_path):
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
-@pytest.mark.parametrize('starting_revision', ['pm01_projects', 'base'])
+@pytest.mark.parametrize("starting_revision", ["pm01_projects", "base"])
 def test_failed_upgrade_rolls_back_ddl_and_can_restart(tmp_path, starting_revision):
     from sqlalchemy import event
     from sqlalchemy.engine import Engine
 
-    path = tmp_path / 'interrupted.sqlite3'
+    path = tmp_path / "interrupted.sqlite3"
     config = config_for(path)
     command.upgrade(config, starting_revision)
 
-    def fail_mid_migration(connection, cursor, statement, parameters, context, executemany):
-        if 'CREATE TABLE project_data_generations' in statement:
-            raise RuntimeError('synthetic migration interruption')
+    def fail_mid_migration(
+        connection, cursor, statement, parameters, context, executemany
+    ):
+        if "CREATE TABLE project_data_generations" in statement:
+            raise RuntimeError("synthetic migration interruption")
 
-    event.listen(Engine, 'before_cursor_execute', fail_mid_migration)
+    event.listen(Engine, "before_cursor_execute", fail_mid_migration)
     try:
-        with pytest.raises(RuntimeError, match='synthetic migration interruption'):
+        with pytest.raises(RuntimeError, match="synthetic migration interruption"):
             database_session.migrate_database(path)
     finally:
-        event.remove(Engine, 'before_cursor_execute', fail_mid_migration)
+        event.remove(Engine, "before_cursor_execute", fail_mid_migration)
     with sqlite3.connect(path) as connection:
-        partial = connection.execute("SELECT name FROM sqlite_master WHERE name LIKE 'project_data_%' OR name='uq_project_operations_scope'").fetchall()
+        partial = connection.execute(
+            "SELECT name FROM sqlite_master WHERE name LIKE 'project_data_%' OR name='uq_project_operations_scope'"
+        ).fetchall()
         assert partial == []
     database_session.migrate_database(path)
     with sqlite3.connect(path) as connection:
-        assert connection.execute('SELECT version_num FROM alembic_version').fetchone() == ('pm02_project_data',)
-        assert connection.execute('PRAGMA foreign_key_check').fetchall() == []
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone() == ("pm02_status_tombstones",)
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
