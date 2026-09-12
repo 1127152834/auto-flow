@@ -9,7 +9,7 @@ import tailwind from '@tailwindcss/vite'
 import { _electron, expect } from '@playwright/test'
 
 const root = resolve(import.meta.dirname, '..')
-const evidence = join(root, 'docs/design-system/verification/t4')
+const evidence = join(root, 'docs/design-system/verification/t5')
 await mkdir(evidence, { recursive: true })
 const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-ui-g0-')))
 let electron
@@ -74,6 +74,7 @@ try {
   await capture('01-lab.png')
   checks.push('isolated userData, development lab entry, runtime colors, read-only/disabled surfaces and 32/40 density')
 
+  await page.getByRole('tab', { name: '验证基础' }).click()
   await page.getByRole('button', { name: '验证保存' }).click()
   const formChoice = page.getByRole('combobox', { name: '验证内核', exact: true })
   await expect(formChoice).toBeFocused()
@@ -91,6 +92,12 @@ try {
   checks.push('RHF error focus/setFocus, 500-item search/select, dirty, submit and reset')
 
   await page.getByRole('button', { name: '打开嵌套验证' }).click()
+  const nestedSelect = page.getByRole('combobox', { name: '弹窗内通道' })
+  await nestedSelect.click()
+  assert.equal(await page.locator('[data-af-popup]').evaluate(el => el.closest('[data-overlay-depth]')?.getAttribute('data-overlay-depth')), '0')
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('listbox')).toHaveCount(0)
+  await expect(nestedSelect).toBeFocused()
   await page.getByRole('button', { name: '管理内核 · 验证' }).click()
   const inner = page.getByRole('dialog', { name: '内核管理 · 验证' })
   const choice = page.getByRole('combobox', { name: '内层内核', exact: true })
@@ -100,6 +107,14 @@ try {
   const popupBox = await page.getByRole('listbox').boundingBox()
   assert.ok(popupBox && popupBox.height > 0)
   await expect(page.locator('[data-af-popup]')).toBeInViewport({ ratio: 1 })
+  assert.ok(await page.getByRole('option').count() < 50, '500-item list should render a bounded visible subset')
+  await page.keyboard.press('End')
+  const longVirtualOption = page.getByRole('option', { name: /^长名称验收/ })
+  await expect(longVirtualOption).toBeVisible()
+  await expect(longVirtualOption).toHaveAttribute('aria-posinset', '501')
+  await expect(longVirtualOption).toHaveAttribute('aria-setsize', '501')
+  await page.keyboard.press('Home')
+  await expect(page.getByRole('option', { name: 'CloakBrowser 146 · #0001' })).toBeVisible()
   await capture('02-nested-choice.png')
   await page.keyboard.press('Escape')
   await expect(page.getByRole('listbox')).toHaveCount(0)
@@ -140,6 +155,8 @@ try {
     // Wait for the dialog's real entrance animation before the first pointer hit.
     await expect.poll(() => inner.evaluate(el => el.getAnimations().filter(animation => animation.playState === 'running').length)).toBe(0)
     const toggle = page.getByRole('button', { name: '展开 内层内核', exact: true })
+    await toggle.scrollIntoViewIfNeeded()
+    await settle()
     await toggle.click()
     await expect(page.getByRole('listbox')).toBeVisible()
     assert.equal(await page.locator('[data-af-popup]').evaluate(el => el.closest('[data-overlay-depth]')?.getAttribute('data-overlay-depth')), '1')
@@ -314,6 +331,121 @@ try {
   await capture('11-toggle-200.png')
   await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1))
   checks.push('T4 RHF error focus/submit/reset, selected error border, reduced motion, emulated forced colors and 200% long label without horizontal overflow')
+
+  // T5: application-facing choices and own overflow rails, after G0 at normal scale.
+  const choiceSection = page.getByRole('region', { name: '选择与自由输入' })
+  await choiceSection.scrollIntoViewIfNeeded()
+  await settle()
+  const select = page.getByRole('combobox', { name: '通道选择', exact: true })
+  await select.click()
+  await expect(page.locator('[data-af-popup]')).toBeInViewport({ ratio: 1 })
+  await page.getByRole('option', { name: '跟随系统' }).click()
+  await expect(select).toContainText('跟随系统')
+  await expect(choiceSection.getByText(/^选择值：/)).toContainText('选择值：""')
+  await select.focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(page.getByRole('listbox')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(select).toBeFocused()
+  const readOnlySelect = page.getByRole('combobox', { name: '只读通道' })
+  await readOnlySelect.focus(); await page.keyboard.press('s')
+  await expect(choiceSection.getByText(/^选择值：/)).toContainText('选择值：""')
+  await expect(readOnlySelect).toHaveAttribute('aria-expanded', 'false')
+  const strict = page.getByRole('combobox', { name: '搜索通道', exact: true })
+  await strict.fill('__custom__')
+  await expect(page.getByRole('option')).toHaveCount(1)
+  await page.getByRole('option', { name: /标识 __custom__/ }).click()
+  await expect(choiceSection.getByText(/^选择值：/)).toContainText('选择值："__custom__"')
+  await strict.fill('不存在的查询')
+  await page.keyboard.press('Escape')
+  await expect(strict).toHaveValue('同名资源')
+  const free = page.getByRole('combobox', { name: '自由输入样本', exact: true })
+  await free.fill('稳定')
+  await page.getByRole('option', { name: /公开版稳定通道/ }).click()
+  await expect(free).toHaveValue('stable')
+  await free.fill('自定义 UA / 值')
+  await page.keyboard.press('Escape')
+  await expect(free).toHaveValue('自定义 UA / 值')
+  await page.getByRole('button', { name: '重试加载', exact: true }).click()
+  await expect(choiceSection.getByRole('alert')).toHaveCount(0)
+  await select.click()
+  await page.getByRole('option', { name: /^长名称/ }).click()
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+  await capture('10-choices.png')
+  await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2))
+  await select.scrollIntoViewIfNeeded(); await select.focus(); await settle()
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+  await capture('12-choice-zoom-200.png')
+  await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1))
+  checks.push('T5 Select custom listbox/null versus empty, key-safe selection, strict draft restore, free input/value callback, retry and long-label layout')
+
+  const viewport = page.getByLabel('双轴滚动验收', { exact: true })
+  await viewport.scrollIntoViewIfNeeded()
+  await settle()
+  const rootArea = viewport.locator('..')
+  const vertical = rootArea.locator('[data-orientation="vertical"]')
+  const horizontal = rootArea.locator('[data-orientation="horizontal"]')
+  await expect(vertical).toBeVisible(); await expect(horizontal).toBeVisible()
+  assert.equal((await vertical.boundingBox()).width, 12)
+  assert.equal((await vertical.locator('.af-scroll-thumb').boundingBox()).width, 6)
+  await viewport.hover()
+  await page.mouse.wheel(0, 220)
+  await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(0)
+  const oldLeft = await viewport.evaluate(el => el.scrollLeft)
+  const thumb = await horizontal.locator('.af-scroll-thumb').boundingBox()
+  await page.mouse.move(thumb.x + thumb.width / 2, thumb.y + thumb.height / 2)
+  await page.mouse.down(); await page.mouse.move(thumb.x + thumb.width / 2 + 110, thumb.y + thumb.height / 2, { steps: 8 }); await page.mouse.up()
+  await expect.poll(() => viewport.evaluate(el => el.scrollLeft)).toBeGreaterThan(oldLeft)
+  await viewport.focus(); await page.keyboard.press('End')
+  await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(500)
+  await expect(page.getByLabel('无溢出滚动验收').locator('..').locator('.af-scrollbar')).toHaveCount(0)
+  await capture('11-scroll-area.png')
+  checks.push('T5 ScrollArea 12/6px rails/thumbs, overflow-only visibility, wheel, horizontal thumb drag and keyboard End')
+
+  // Measure event-to-next-paint latency; omit Playwright IPC and locator waiting time.
+  await page.getByRole('button', { name: '重置表单' }).click()
+  const profiler = process.env.UI_CHOICE_PROFILE ? await page.context().newCDPSession(page) : null
+  if (profiler) { await profiler.send('Profiler.enable'); await profiler.send('Profiler.start') }
+  const openTimes = [], filterTimes = []
+  const armTiming = async (eventType, readyCount) => page.evaluate(({ eventType, readyCount }) => {
+    globalThis.__choiceTiming = null
+    document.addEventListener(eventType, () => {
+      const start = performance.now()
+      const observer = new MutationObserver(() => {
+        const count = document.querySelectorAll('[role="listbox"] [role="option"]').length
+        if (readyCount === 'visible' ? count === 0 : count !== readyCount) return
+        observer.disconnect()
+        requestAnimationFrame(() => { globalThis.__choiceTiming = performance.now() - start })
+      })
+      observer.observe(document.body, { childList: true, subtree: true })
+    }, { once: true, capture: true })
+  }, { eventType, readyCount })
+  for (let i = 0; i < 20; i++) {
+    const toggle = page.getByRole('button', { name: '展开 验证内核', exact: true })
+    await toggle.scrollIntoViewIfNeeded(); await settle()
+    await armTiming('pointerdown', 'visible')
+    await toggle.click()
+    await expect.poll(() => page.evaluate(() => globalThis.__choiceTiming)).not.toBeNull()
+    openTimes.push(await page.evaluate(() => globalThis.__choiceTiming))
+    await armTiming('input', 1)
+    await formChoice.fill(`#${String(249 + i).padStart(4, '0')}`)
+    await expect.poll(() => page.evaluate(() => globalThis.__choiceTiming)).not.toBeNull()
+    filterTimes.push(await page.evaluate(() => globalThis.__choiceTiming))
+    await page.keyboard.press('Escape')
+  }
+  const p95 = values => [...values].sort((a, b) => a - b)[Math.ceil(values.length * .95) - 1]
+  const performanceSamples = { methodology: 'capturing pointerdown/input to requestAnimationFrame after first visible options (open) or one filtered option (filter); local DEV Electron, 20 samples (first open included), no IPC waiting included', openTimes, filterTimes, openP95: p95(openTimes), filterP95: p95(filterTimes), targets: { open: 200, filter: 100 } }
+  await writeFile(join(evidence, 'choice-performance.json'), JSON.stringify(performanceSamples, null, 2) + '\n')
+  if (profiler) {
+    const { profile } = await profiler.send('Profiler.stop')
+    const hits = new Map()
+    for (const node of profile.nodes) { const key = `${node.callFrame.functionName} @ ${node.callFrame.url.split('?')[0].split('/').slice(-2).join('/')}`; hits.set(key, (hits.get(key) ?? 0) + (node.hitCount ?? 0)) }
+    await writeFile(join(evidence, 'choice-profile-before.json'), JSON.stringify({ durationMs: (profile.endTime - profile.startTime) / 1000, sampleCount: profile.samples.length, topSelfSamples: [...hits].sort((a, b) => b[1] - a[1]).slice(0, 35), performanceSamples }, null, 2))
+    await profiler.detach()
+  }
+  if (!profiler) assert.ok(performanceSamples.openP95 <= 200, `500-option open p95 ${performanceSamples.openP95}ms > 200ms`)
+  if (!profiler) assert.ok(performanceSamples.filterP95 <= 100, `500-option filter p95 ${performanceSamples.filterP95}ms > 100ms`)
+  checks.push(profiler ? 'T5 profiling only; performance thresholds not enforced' : 'T5 20-sample 500-option event-to-render performance within open 200ms / filter 100ms targets')
 
   await page.goto(`http://127.0.0.1:${address.port}/#/profiles`)
   // The DEV lab is chosen at module bootstrap, so a hash change alone cannot leave it.

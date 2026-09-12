@@ -1,0 +1,626 @@
+{
+  "events": [
+    {
+      "type": "Escape",
+      "time": 3609.099999964237,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": [
+        [
+          "1",
+          false
+        ]
+      ]
+    },
+    {
+      "type": "Escape",
+      "time": 3890.199999988079,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "Escape",
+      "time": 4086.2999999523163,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "Escape",
+      "time": 5209.799999952316,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": [
+        [
+          "1",
+          false
+        ]
+      ]
+    },
+    {
+      "type": "Escape",
+      "time": 5308,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "Escape",
+      "time": 5504.399999976158,
+      "scroll": 0,
+      "layers": [
+        [
+          "0",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "scroll:#document:undefined:top=undefined",
+      "time": 5810.799999952316,
+      "scroll": 711.3333129882812,
+      "layers": [
+        [
+          "0",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "scroll:DIV:min-h-0 overflow-y-auto p-1:top=0",
+      "time": 6636.699999988079,
+      "scroll": 711.3333129882812,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": [
+        [
+          "1",
+          false
+        ]
+      ]
+    },
+    {
+      "type": "Escape",
+      "time": 7141.099999964237,
+      "scroll": 711.3333129882812,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": [
+        [
+          "1",
+          false
+        ]
+      ]
+    },
+    {
+      "type": "Escape",
+      "time": 7235,
+      "scroll": 711.3333129882812,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "Escape",
+      "time": 7428.599999964237,
+      "scroll": 711.3333129882812,
+      "layers": [
+        [
+          "0",
+          "open"
+        ]
+      ],
+      "popup": []
+    },
+    {
+      "type": "scroll:#document:undefined:top=undefined",
+      "time": 7645.699999988079,
+      "scroll": 711.25,
+      "layers": [],
+      "popup": []
+    },
+    {
+      "type": "scroll:DIV:min-h-0 overflow-y-auto p-1:top=16.5",
+      "time": 8510.299999952316,
+      "scroll": 711.25,
+      "layers": [
+        [
+          "0",
+          "open"
+        ],
+        [
+          "1",
+          "open"
+        ]
+      ],
+      "popup": [
+        [
+          "1",
+          false
+        ]
+      ]
+    }
+  ],
+  "calls": [
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_12_",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "DIV",
+      "id": "",
+      "active": null,
+      "name": "内核滚动内容",
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLDivElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_1j_",
+      "active": null,
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at onPressStart (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:26614:25)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:3855:7\n    at pressProps2.onPointerDown (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:4047:35)\n    at executeDispatch (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14740:11)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at processDispatchQueue (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14776:37)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:15170:11\n    at batchedUpdates$1 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:2769:42)"
+    },
+    {
+      "method": "focus",
+      "tag": "DIV",
+      "id": "",
+      "active": "react-aria3221943782-_r_1f_",
+      "name": null,
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLDivElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$var$supportsPreventScroll (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:739:17)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:7)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_1j_",
+      "active": "react-aria3221943782-_r_1f_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:62)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_1h9_",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "DIV",
+      "id": "",
+      "active": null,
+      "name": "内核滚动内容",
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLDivElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_1hq_",
+      "active": null,
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at onPressStart (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:26614:25)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:3855:7\n    at pressProps2.onPointerDown (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:4047:35)\n    at executeDispatch (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14740:11)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at processDispatchQueue (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14776:37)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:15170:11\n    at batchedUpdates$1 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:2769:42)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_1hq_",
+      "active": "react-aria3221943782-_r_1hm_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:62)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_31g_",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "DIV",
+      "id": "",
+      "active": null,
+      "name": "内核滚动内容",
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLDivElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_321_",
+      "active": null,
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at onPressStart (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:26614:25)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:3855:7\n    at pressProps2.onPointerDown (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:4047:35)\n    at executeDispatch (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14740:11)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at processDispatchQueue (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14776:37)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:15170:11\n    at batchedUpdates$1 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:2769:42)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_321_",
+      "active": "react-aria3221943782-_r_31t_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:62)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_321_",
+      "active": "react-aria3221943782-_r_321_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at onPressStart (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:26614:25)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:3855:7\n    at pressProps2.onPointerDown (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:4047:35)\n    at executeDispatch (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14740:11)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at processDispatchQueue (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14776:37)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:15170:11\n    at batchedUpdates$1 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:2769:42)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_321_",
+      "active": "react-aria3221943782-_r_31t_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:62)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "BUTTON",
+      "id": "",
+      "active": null,
+      "name": null,
+      "before": [],
+      "after": [],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLButtonElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-LYKUTPCW.js?v=9f6e3b31:173:39\n    at Object.handleEvent [as current] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-7OLBHTS2.js?v=9f6e3b31:22:31)\n    at HTMLDivElement.<anonymous> (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-NG7EW6IZ.js?v=9f6e3b31:35:66)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:464:23"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_60s_",
+      "active": null,
+      "name": null,
+      "depth": "0",
+      "before": [],
+      "after": [],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "DIV",
+      "id": "",
+      "active": null,
+      "name": "内核滚动内容",
+      "depth": "1",
+      "before": [
+        0
+      ],
+      "after": [
+        0
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLDivElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at focus (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:557:13)\n    at focusFirst (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:505:5)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/chunk-5YPFBAFT.js?v=9f6e3b31:453:13\n    at Object.react_stack_bottom_frame (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:20317:20)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at commitHookEffectListMount (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9773:163)\n    at commitHookPassiveMountEffects (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:9827:60)\n    at commitPassiveMountOnFiber (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:12031:29)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_61d_",
+      "active": null,
+      "name": null,
+      "depth": "1",
+      "before": [
+        16.5
+      ],
+      "after": [
+        16.5
+      ],
+      "args": [],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at onPressStart (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:26614:25)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:3855:7\n    at pressProps2.onPointerDown (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:4047:35)\n    at executeDispatch (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14740:11)\n    at runWithFiberInDEV (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:1133:72)\n    at processDispatchQueue (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:14776:37)\n    at http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:15170:11\n    at batchedUpdates$1 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-dom_client.js?v=7f617531:2769:42)"
+    },
+    {
+      "method": "focus",
+      "tag": "INPUT",
+      "id": "react-aria3221943782-_r_61d_",
+      "active": "react-aria3221943782-_r_619_",
+      "name": null,
+      "depth": "1",
+      "before": [
+        16.5
+      ],
+      "after": [
+        16.5
+      ],
+      "args": [
+        {
+          "preventScroll": true
+        }
+      ],
+      "stack": "Error\n    at prototype.<computed> (eval at evaluate (:311:30), <anonymous>:10:315)\n    at HTMLInputElement.value [as focus] (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:1220:13)\n    at $1969ac565cfec8d0$export$de79e2c695e052f3 (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:724:62)\n    at onFocusIn (http://127.0.0.1:5174/@fs/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-ui-g0-vTS9ir/node_modules/.vite/deps/react-aria-components.js?v=57a64b28:947:55)"
+    }
+  ]
+}

@@ -234,3 +234,7 @@ reference/
 ### 控件统一 T4（2026-09-12，implemented）
 
 `shared/components/ui` 补齐 Checkbox Indicator、RadioGroup Root/Item/Indicator、Switch Thumb 与原生 Disclosure；状态外观集中在 `styles/controls.css`。`shared/ui-lab/ToggleCases.tsx` 提供状态、组错误、RHF及折叠案例；脚本当前输出到 `docs/design-system/verification/t4/`，验证浏览器配置Switch与设置诊断Checkbox。未替换领域中的原生radio/details。详见 `docs/design-system/verification/toggle-controls.md`；UI-G0-01及UI-T4-01保留为后续门槛。
+
+### 控件统一 T5（2026-09-12，implemented）
+
+`shared/components/ui/choice-types.ts` 定义应用侧选择API；`select-radix.tsx` 是待领域迁移的正式Select入口，旧 `select.tsx` 仍保留。`combobox.tsx` 提供严格选择与自由输入，大目录复用现有RAC Virtualizer；`scroll-area.tsx` 统一双轴轨道与实际viewport的ref/ARIA。`LabCombobox` 现仅为fixture适配器，替代上文T0探针的独立实现。ChoiceCases/ScrollCases/FormFocusCase提供状态与RHF验收，脚本当前输出到 `docs/design-system/verification/t5/`；G0专项脚本 `scripts/verify-choice-overlays.mjs`。详见 `docs/design-system/verification/choice-controls.md`。领域批量迁移、G1与跨平台最终验收未完成。

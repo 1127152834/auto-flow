@@ -1,0 +1,199 @@
+{
+  "durationMs": 9939.605,
+  "sampleCount": 6448,
+  "topSelfSamples": [
+    [
+      "exports.createElement @ deps/chunk-J7GCHS47.js",
+      794
+    ],
+    [
+      "(idle) @ ",
+      686
+    ],
+    [
+      "exports.jsxDEV @ deps/react_jsx-dev-runtime.js",
+      445
+    ],
+    [
+      "(program) @ ",
+      321
+    ],
+    [
+      "(garbage collector) @ ",
+      251
+    ],
+    [
+      "run @ ",
+      246
+    ],
+    [
+      "$7230ffa83bc0c2cf$var$DOMElement @ deps/react-aria-components.js",
+      244
+    ],
+    [
+      "ReactElement @ deps/chunk-J7GCHS47.js",
+      242
+    ],
+    [
+      "$954926fb6168ae2a$var$getContainingBlock @ deps/react-aria-components.js",
+      237
+    ],
+    [
+      "runWithFiberInDEV @ deps/react-dom_client.js",
+      152
+    ],
+    [
+      "jsxDEVImpl @ deps/react_jsx-dev-runtime.js",
+      144
+    ],
+    [
+      "$bbaa08b3cd72f041$export$9d1611c77c2fe928 @ deps/react-aria-components.js",
+      113
+    ],
+    [
+      "now @ ",
+      101
+    ],
+    [
+      "$d27d541f9569d26d$export$45712eceda6fad21 @ deps/react-aria-components.js",
+      98
+    ],
+    [
+      "validatePropertiesInDevelopment @ deps/react-dom_client.js",
+      92
+    ],
+    [
+      " @ deps/react-aria-components.js",
+      91
+    ],
+    [
+      "validateProperty @ deps/react-dom_client.js",
+      89
+    ],
+    [
+      "$dae966e193913d1b$export$497855f14858aa34 @ deps/react-aria-components.js",
+      74
+    ],
+    [
+      "$390e54f620492c70$export$f680877a34711e37 @ deps/react-aria-components.js",
+      72
+    ],
+    [
+      "updateEffectImpl @ deps/react-dom_client.js",
+      70
+    ],
+    [
+      "commitHookEffectListUnmount @ deps/react-dom_client.js",
+      66
+    ],
+    [
+      "addObjectDiffToProperties @ deps/react-dom_client.js",
+      65
+    ],
+    [
+      "ListBoxItem @ deps/react-aria-components.js",
+      63
+    ],
+    [
+      "logComponentRender @ deps/react-dom_client.js",
+      60
+    ],
+    [
+      "updateProperties @ deps/react-dom_client.js",
+      57
+    ],
+    [
+      "get @ deps/chunk-QKQ6FTX6.js",
+      56
+    ],
+    [
+      "setAttribute @ ",
+      56
+    ],
+    [
+      "$f6ba6936bfd098a0$export$ecf600387e221c37 @ deps/react-aria-components.js",
+      54
+    ],
+    [
+      "useCallback @ deps/react-dom_client.js",
+      47
+    ],
+    [
+      "commitHookEffectListMount @ deps/react-dom_client.js",
+      43
+    ],
+    [
+      "commitUpdate @ deps/react-dom_client.js",
+      41
+    ],
+    [
+      "updateForwardRef @ deps/react-dom_client.js",
+      39
+    ],
+    [
+      "$e969f22b6713ca4a$export$ae780daf29e6d456 @ deps/react-aria-components.js",
+      36
+    ],
+    [
+      "propagateParentContextChanges @ deps/react-dom_client.js",
+      35
+    ],
+    [
+      "completeWork @ deps/react-dom_client.js",
+      33
+    ]
+  ],
+  "performanceSamples": {
+    "methodology": "capturing pointerdown/input to requestAnimationFrame after expected option count; local DEV Electron, 20 warm samples, no IPC waiting included",
+    "openTimes": [
+      383.10000002384186,
+      379.69999998807907,
+      204.80000001192093,
+      204.39999997615814,
+      208.5,
+      205.5999999642372,
+      195.80000001192093,
+      197.19999998807907,
+      351.39999997615814,
+      198.69999998807907,
+      382.30000001192093,
+      202.80000001192093,
+      376.60000002384186,
+      196,
+      197.9000000357628,
+      205.79999995231628,
+      204.80000001192093,
+      385.30000001192093,
+      200.80000001192093,
+      354.69999998807907
+    ],
+    "filterTimes": [
+      98.10000002384186,
+      95.30000001192093,
+      95.19999998807907,
+      284.30000001192093,
+      95.59999996423721,
+      287.5,
+      94.5,
+      95.80000001192093,
+      94.29999995231628,
+      123.69999998807907,
+      98.69999998807907,
+      94.5,
+      92.70000004768372,
+      92.70000004768372,
+      288.4000000357628,
+      94.40000003576279,
+      97.80000001192093,
+      96.39999997615814,
+      98,
+      94.89999997615814
+    ],
+    "openP95": 383.10000002384186,
+    "filterP95": 287.5,
+    "targets": {
+      "open": 200,
+      "filter": 100
+    }
+  }
+}

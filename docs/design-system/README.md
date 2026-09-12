@@ -1,6 +1,6 @@
 # AutoFlow 控件统一专项
 
-2026-09-12。源码盘点为 confirmed；设计与计划已获用户确认。独立 worktree 已实施 T0–T4 代码，T5–T13 尚未实施。
+2026-09-12。源码盘点为 confirmed；设计与计划已获用户确认。独立 worktree 已实施 T0–T5 代码，T6–T13 尚未实施。
 
 1. [源码盘点与迁移决定](2026-09-12-ui-controls-audit.md)
 2. [全部 JSX 使用点](2026-09-12-ui-controls-usage.md)
@@ -14,6 +14,7 @@
 - [令牌验证](verification/tokens.md)
 - [G0 浮层兼容与阶段验收](verification/choice-overlay-gate.md)
 - [T3 控件、真实页面验证与浮层待查项](verification/text-controls.md)
+- [T5 选择控件、滚动容器、G0复核与性能](verification/choice-controls.md)
 - [T4 勾选/单选/开关/折叠与真实页面验证](verification/toggle-controls.md)
 
 展示页仅辅助验收；这次结果不能代表五个真实业务入口、Windows 或读屏流程通过。后续仍须完成共享组件状态库、真实页面迁移和 T13 平台矩阵。

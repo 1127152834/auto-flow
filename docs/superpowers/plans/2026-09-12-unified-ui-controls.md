@@ -10,7 +10,7 @@
 
 ---
 
-- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；T0–T4代码已实施，T5之后未实施；IME/平台及UI-G0-01、UI-T4-01待查**。
+- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；T0–T5代码已实施，T6之后未实施；IME/平台及UI-T4-01待验收，UI-G0-01复核见T5报告**。
 - 设计依据：[设计规格及A01–A15验收矩阵](../specs/2026-09-12-unified-ui-controls-design.md)。源码依据：[盘点](../../design-system/2026-09-12-ui-controls-audit.md)、[逐点清单](../../design-system/2026-09-12-ui-controls-usage.md)。
 - 当前文档分支 `codex/ui-controls-plan` 从 c7c3021 建立；实施必须先核对/接入最新已提交主线（盘点截止15cf2e8）。严禁把旧 checkout 中语言/时区硬编码、旧代理协议默认值覆盖主线。
 - 所有文件名以下均为仓库根相对精确路径；命令在**任务独立 worktree 根**执行。不是在 `/Users/zhangtiancheng/Documents/projects/autoflow` 主目录执行。
@@ -179,7 +179,7 @@ it('loading blocks duplicate actions and retains an accessible name', async () =
 T3执行补充（2026-09-12）：[实现与验收](../../design-system/verification/text-controls.md)。共享组件行为、真实Electron和真实配置表单读取/取消验证已执行；未修改领域代码/接口。新增 danger-strong token，并将全局字体归一放入Tailwind基础层，避免覆盖控件字号。
 
 - [ ] 中文IME与平台人工检查：T13矩阵继续保留未执行状态。
-- [ ] UI-G0-01偶发浮层关闭待查：后续两轮/三轮复验通过但根因未知，T5前必须排查并重新确认G0，不以一次成功覆盖失败记录。
+- [x] UI-G0-01在T5前复核：重现自动点击前滚动导致popup提前关闭，修正测试预置条件后24轮通过；未改Dialog。原T3事件不完整，不认定唯一根因；详见choice-controls.md。
 
 ## T4：Checkbox、RadioGroup、Switch、Disclosure
 
@@ -217,7 +217,7 @@ T3执行补充（2026-09-12）：[实现与验收](../../design-system/verificat
 - 修改 `apps/desktop/src/renderer/shared/ui-lab/ChoiceOverlayCase.tsx`、`FormFocusCase.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/ChoiceCases.tsx`、`ScrollCases.tsx`。
 
-- [ ] 先加空串/null、同label不同value、当前失效值、disabled、错误重试、500项搜索、IME自由输入与RHF setFocus测试。空值必须使用碰撞安全映射：
+- [x] 先加空串/null、同label不同value、当前失效值、disabled、错误重试、500项搜索、IME自由输入与RHF setFocus测试。空值必须使用碰撞安全映射：
 
 ```ts
 const encodeValue = (value: string | null): string => value === null ? '' : `v:${value}`
@@ -225,11 +225,13 @@ const decodeValue = (value: string): string | null => value === '' ? null : valu
 // 单测必须覆盖 null、''、'v:x'、'__custom__'、中文与带冒号资源键。
 ```
 
-- [ ] 执行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/select.test.tsx src/renderer/shared/components/ui/combobox.test.tsx src/renderer/shared/components/ui/scroll-area.test.tsx` 得到红灯。
-- [ ] 完成Radix Select完整结构；将设计ChoiceProps落为应用侧类型，不暴露第三方collection类型到domains。ComboBox严格模式仅选项提交回传值，Autocomplete允许自由字符串且选项回调独立；两个导出共享底层，不复制一套焦点算法。
-- [ ] 加ScrollArea viewport/双轴scrollbar/thumb/corner，采用12/6px常显溢出策略；所有popup接OverlayHost；aria-labelledby/describedby/ref落在input/trigger。
-- [ ] 添加真实RHF submit→错误页签→setFocus的集成案例；测试reset回显、清空、blur、dirty等，不把第三方onBlur事件格式直接塞进领域state。
-- [ ] 运行共享测试/typecheck/lint；Electron展示页检查长文、500项、嵌套浮层、滚轮/拖动、Escape。记录过滤/打开耗时，达不到设计目标先profile；不预装虚拟化库。提交 `feat(ui): add accessible custom choices and scroll areas`。对应A04/A07。
+- [x] 执行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/select.test.tsx src/renderer/shared/components/ui/combobox.test.tsx src/renderer/shared/components/ui/scroll-area.test.tsx` 得到红灯。
+- [x] 完成Radix Select完整结构；将设计ChoiceProps落为应用侧类型，不暴露第三方collection类型到domains。ComboBox严格模式仅选项提交回传值，Autocomplete允许自由字符串且选项回调独立；两个导出共享底层，不复制一套焦点算法。
+- [x] 加ScrollArea viewport/双轴scrollbar/thumb/corner，采用12/6px常显溢出策略；所有popup接OverlayHost；aria-labelledby/describedby/ref落在input/trigger。
+- [x] 添加真实RHF submit→错误页签→setFocus的集成案例；测试reset回显、清空、blur、dirty等，不把第三方onBlur事件格式直接塞进领域state。
+- [x] 运行共享测试/typecheck/lint；Electron展示页检查长文、500项、嵌套浮层、滚轮/拖动、Escape。记录过滤/打开耗时，达不到设计目标先profile；不预装虚拟化库。提交 `feat(ui): add accessible custom choices and scroll areas`。对应A04/A07。
+
+- 实施与证据：`docs/design-system/verification/choice-controls.md`。Windows/读屏/实体IME仍在T13；G1尚未完成。
 
 ## T6：统一浮层外框、菜单、Tooltip、Tabs
 
