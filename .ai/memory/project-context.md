@@ -2,7 +2,7 @@
 
 - 项目：AutoFlow
 - 目标平台：Windows、macOS
-- 目标：在新架构中迁移 browser-automation 的功能；项目管理现处于完整设计与计划阶段，之后分批实现。
+- 目标：在新架构中迁移 browser-automation 的功能；项目管理已形成完整设计，PM1项目入口在独立实施分支交付；之后按用户验收逐阶段实施。
 - WebRPA：仅作为能力和实现思路参考，重写能力，不做运行时集成或兼容层。
 - 前端视觉方向：保留第三个原型的暖灰画布、黏土棕强调色；2026-09-12 用户明确浏览器配置采用单主内容区，无模块侧栏，内核管理从配置表单以弹窗进入。早期该模块“分栏工作台”的描述已 superseded。
 - 前端技术约束：React、shadcn/ui、Tailwind CSS，组件先于页面。
@@ -21,3 +21,5 @@
 - 2026-09-12（confirmed，来源：授权实网、脱敏 fixture 和 CUA）：ProxyPanel 列表/凭据/到期字段已接通；SOCKS5 检测通过，HTTP CONNECT 实网超时。数据面密码按需取用且不落库，API Key 保留系统存储。旧“列表一律拒绝”的限制 superseded；远程管理写操作仍未实现。见 docs/migration/proxypanel-live-verification.md。
 
 - 2026-09-13（confirmed，来源：用户明确实施PM0计划）：整体里程碑及PM0执行已授权，旧“当前只规划”的阶段描述 superseded。先在codex/project-management-design完成契约、传输、FX-01–07及覆盖账本，逐里程碑用户验收；PM1才交付页面/API。主目录Studio M1在交付前提交为b2e95b3，包含工作流文档CRUD和0005迁移；旧“只有about:blank/全为WIP”的当前事实 superseded，Run仍不可执行。见 `.ai/decisions/2026-09-13-project-management-pm0-authorized.md`。
+
+- 2026-09-13（confirmed，来源：用户PM1实施授权、真实源码与自动/本机Electron验证）：`codex/project-management-pm1`从1f80f97+PM0构建，已实现项目目录/表单/上下文和10项HTTP；pm01_projects从0005派生，两张表原子保存项目与幂等快照。其余业务能力明确notImplemented。统一控件选择性接入1fb58e1，保留最新基线Studio M1与会话桥；没有第二执行器。见PM1执行卡和机器核验。PM1等待用户验收，旧“项目尚无业务实现”的当前描述superseded，PM2+未开始。

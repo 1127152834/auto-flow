@@ -1,0 +1,315 @@
+{
+  "date": "2026-09-13",
+  "checkedAt": "2026-09-12T20:41:36.321803+00:00",
+  "status": "passed-awaiting-user-acceptance",
+  "userAcceptance": "pending",
+  "milestone": "PM1",
+  "branch": "codex/project-management-pm1",
+  "workspace": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm1",
+  "sourceRevision": "4006acc4d481097c1b77ffd9db8c6fee5cfb2a4e",
+  "mainBase": "1f80f977aac427d137bbd5a1a3afeac52f42a82c",
+  "pm0Baseline": "9c361f4c1ac46bec4e3cd8883c6c2821e65f7b04",
+  "uiSource": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "macOS": "26.4.1"
+  },
+  "readOnlyReferences": [
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "head": "efb73de81101633e7d2a03a3ececd9b8a79fe1e7",
+      "statusEntries": 21,
+      "access": "read-only in this task"
+    },
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "head": "9c361f4c1ac46bec4e3cd8883c6c2821e65f7b04",
+      "statusEntries": 0,
+      "access": "read-only in this task"
+    },
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+      "head": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+      "statusEntries": 0,
+      "access": "read-only in this task"
+    }
+  ],
+  "commands": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/pytest.log",
+      "sha256": "7a83dba7a05b50a6b21c02bd05a8094661c9e4ec1b19ca2b52fc14e3945b956b",
+      "logUpdatedAt": "2026-09-12T20:25:31.148921+00:00",
+      "passed": 461,
+      "warnings": 2,
+      "warningScope": "existing Starlette/httpx/anyio deprecations"
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check .",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "logUpdatedAt": "2026-09-12T20:24:35.584262+00:00"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/mypy.log",
+      "sha256": "7da4513cbed0a524ae5fea19bd9fff2b20cba43c825ac5e99b18ba49b082e355",
+      "logUpdatedAt": "2026-09-12T20:24:35.777040+00:00"
+    },
+    {
+      "command": "npm run openapi:generate",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/openapi-generate.log",
+      "sha256": "834c5f8bbdac8c837051e7dffb91672ccfa96dd3b0a867ea20553518d46dd65e",
+      "logUpdatedAt": "2026-09-12T20:24:35.681808+00:00"
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/openapi-check.log",
+      "sha256": "d25c78dea5394a532a586bbed5977202df5ac777779205e6b0af7a9c010114cf",
+      "logUpdatedAt": "2026-09-12T20:25:18.708918+00:00"
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/vitest.log",
+      "sha256": "f82ecbcc19849fab5c94f20f33281ae208d82e12cb407e69612f9c3ce06a7a4c",
+      "logUpdatedAt": "2026-09-12T20:34:35.847503+00:00",
+      "passed": 439
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/typecheck.log",
+      "sha256": "a6ee7570145f5275bd9c692883cf53675fb7c99389233ba651dd32d5ef1751f1",
+      "logUpdatedAt": "2026-09-12T20:34:12.139256+00:00"
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/lint.log",
+      "sha256": "6061943cc08dcd9ce667c10ee586f1b9c665fdc85c50d0b2b1429968bf5b7caa",
+      "logUpdatedAt": "2026-09-12T20:34:12.129503+00:00"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/build.log",
+      "sha256": "f794da85856604d43915f058b18cdef8a36f3914bb3504f4ed3ae7062d17f473",
+      "logUpdatedAt": "2026-09-12T20:33:13.072417+00:00",
+      "warnings": "existing zod Rollup comment annotations; build exit 0"
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/scripts.log",
+      "sha256": "184c93177da9dceee65643204fe1f5bf1efe97dcead0c145047d0f7f01fd2daf",
+      "logUpdatedAt": "2026-09-12T20:28:30.226601+00:00",
+      "passed": 12
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/structure.log",
+      "sha256": "460a5f3f0fddda4f3b17ee74016f34ec7a1d92cb0e694ff425e240267ff22d18",
+      "logUpdatedAt": "2026-09-12T20:28:30.205463+00:00",
+      "passed": 3
+    },
+    {
+      "command": "node scripts/smoke-project-management.mjs",
+      "exitCode": 0,
+      "result": "passed",
+      "log": "docs/migration/project-management-pm1-qa/logs/electron.log",
+      "sha256": "3daadecc8da4415051df3925bcb610be1d37700b3d7950d0dfdd4f9c9f9f6bb7",
+      "logUpdatedAt": "2026-09-12T20:35:44.793660+00:00",
+      "passed": 9
+    },
+    {
+      "command": "python3 docs/project-management/implementation/verify-pm1.py",
+      "exitCode": 0,
+      "result": "passed",
+      "report": "docs/project-management/implementation/pm1-static-verification.json"
+    },
+    {
+      "command": "git diff dbb01f5 --check",
+      "exitCode": 0,
+      "result": "passed"
+    }
+  ],
+  "independentReviews": [
+    {
+      "scope": "backend",
+      "report": "docs/project-management/implementation/pm1-review-backend.md",
+      "specification": "passed",
+      "engineeringQuality": "passed"
+    },
+    {
+      "scope": "project frontend",
+      "report": "docs/project-management/implementation/pm1-review-frontend.md",
+      "specification": "passed",
+      "engineeringQuality": "passed"
+    },
+    {
+      "scope": "controls and navigation",
+      "report": "docs/project-management/implementation/pm1-review-controls-navigation.md",
+      "specification": "passed",
+      "engineeringQuality": "passed"
+    }
+  ],
+  "runtimeEvidence": "docs/migration/project-management-pm1-qa/built-html.json",
+  "staticEvidence": "docs/project-management/implementation/pm1-static-verification.json",
+  "coverage": {
+    "fullyVerified": [
+      "PM-02"
+    ],
+    "partiallyVerified": [
+      "PM-01",
+      "PM-03",
+      "OV-01"
+    ],
+    "allOtherBusinessEvidence": "empty"
+  },
+  "notExecuted": [
+    "Windows",
+    "macOS x64",
+    "release/install packages",
+    "user milestone acceptance",
+    "PM2-PM9 business workflows",
+    "core Run execution contracts"
+  ],
+  "sourceFileHashes": {
+    "apps/backend/src/autoflow/adapters/http/errors.py": "a3be5720a2e06a39ae2a910b6c65301cb72cbbdf19fb4b997c94e0a4502acced",
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "cb5a001120b254b7000586e60bb1de183bad030557e598b7ca56612d1a5ef3b0",
+    "apps/backend/src/autoflow/adapters/http/projects.py": "753c298cfd87a31d204a86a9615a1ef78af39b1efd83fd95cd2337b00439df53",
+    "apps/backend/src/autoflow/application/projects/__init__.py": "08513794e5f89c3097d7db5c2e7b0e402c8b34d4959ee67ab4ed768ebaa78e2b",
+    "apps/backend/src/autoflow/application/projects/service.py": "fd1c119443cf16e210c6b7cb9609a967a89778ead9c6f1925078016a943d710e",
+    "apps/backend/src/autoflow/bootstrap/app.py": "65cd9964adc5d6e36b072cb7a0291144a9f8690092bdc92df5a9f56ee3e0bbf0",
+    "apps/backend/src/autoflow/domain/projects/__init__.py": "b89e2917833c0f0e96e9c461ca71ec8c49c03dfbc033e78b5588405d961dadf8",
+    "apps/backend/src/autoflow/domain/projects/models.py": "e5451dc9595f878ede7e66301c6419ab4805c2befe92b4b3eda4d9280dd7d6a0",
+    "apps/backend/src/autoflow/domain/projects/ports.py": "4c27f27433741418def9e617bfc20b8339968412e8bab39ee905e910e0ad896d",
+    "apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm01_projects.py": "c95f837ba8aa416ad2e6c5ab82d62b62182c4b93c4f100673553cd61d4c960e1",
+    "apps/backend/src/autoflow/infrastructure/database/models.py": "84cc75c35bf6e80b9784cc09f591c6bcb5e2851fbdf9c056294b2873ac3cb29f",
+    "apps/backend/src/autoflow/infrastructure/database/projects.py": "f778394fb8452229db8ff89b88a4ab4c3069525448ff26fc7ffb1cd35dfb49fd",
+    "apps/backend/tests/contract/test_projects.py": "0b639ef850e1b514aaa5ac3e3352eec382dad5a3986bcdca251092c442b4fdc3",
+    "apps/backend/tests/integration/test_merged_model_migrations.py": "bf2f1fb28a2864a6ef788ef1d7af8d679ff3214158436ab955f337ef04822d86",
+    "apps/backend/tests/integration/test_project_migration.py": "de636516647082a6ca1c54d75b366b21aeeb2035f6837f2d1bc6e55fc1b072b7",
+    "apps/backend/tests/integration/test_project_repository.py": "9377b53c414840ad6eddd27252426348cb33e6ed1fe00478ea3ccd682863ad13",
+    "apps/backend/tests/unit/test_project_service.py": "7b33e259e322457c5b3580fdc58c99a33d2057e399c41e68ea5e08db72bca7f6",
+    "apps/desktop/package.json": "c29aadbe2a854dfcb42ae5e4ffdd67559a95960e0fb8c18eb7d2326753c48cfc",
+    "apps/desktop/src/renderer/app/App.projects.test.tsx": "81326ae136500c9039c2610480b0ee999635c1724bf60b880e54bee54bd7e516",
+    "apps/desktop/src/renderer/app/App.tsx": "8778b0fdf35f7f7d4f74777cae5fee9587c1da3a280482d8c2d0728b47227eb4",
+    "apps/desktop/src/renderer/app/ApplicationHeader.tsx": "1b384f3fc38ee650e260903143de0171d07ebfd65055c2db49984cd506833adc",
+    "apps/desktop/src/renderer/app/navigation.test.tsx": "07701bf501caa8e631328ac5f5a568fcd1b0a8c247e858abc74004f5b42474db",
+    "apps/desktop/src/renderer/app/navigation.ts": "9ade5198c2410d293ab744e57a9afc50abf4539397f9a504fbfda448ffd32947",
+    "apps/desktop/src/renderer/domains/models/components/ProviderConnectionStep.tsx": "fc4a92ab296c1d4631abaee057c016521728559aca52814aa09178bb3b7df24a",
+    "apps/desktop/src/renderer/domains/profiles/components/EnvironmentFields.test.tsx": "853486b93eeea108419a7c062c218a2f410519ba91b06badf568443cc02c14a3",
+    "apps/desktop/src/renderer/domains/profiles/components/EnvironmentFields.tsx": "b3d399ef90541f8085efc8d4852525c154713696969c439152f6e70cac81c3c5",
+    "apps/desktop/src/renderer/domains/profiles/components/EnvironmentOptionField.tsx": "9f16a0fb9b7d140c68398effb7bee4a20cac8de4f5a3b17ab2ef10088324fd6e",
+    "apps/desktop/src/renderer/domains/profiles/components/KernelProxyFields.test.tsx": "ed07b3b7f5f890801910dc473254098052b9c10ac0ccaf973d3b0184b0a474c4",
+    "apps/desktop/src/renderer/domains/profiles/components/KernelProxyFields.tsx": "1fdcf767972b9bc497cfad8199baeb8780a9b6d0e126db92d4112a4558b3dd30",
+    "apps/desktop/src/renderer/domains/profiles/components/ProfileFormDialog.test.tsx": "518924d54b78face620b23ff422a8b236087535a1837ed124541af36f91d78c2",
+    "apps/desktop/src/renderer/domains/profiles/components/ProfileFormDialog.tsx": "de067d8f524a8a06939aa42a9afb0ad1668730d127a1222c9bff7c1604213594",
+    "apps/desktop/src/renderer/domains/profiles/pages/BrowserManagementPage.test.tsx": "e7153597d65ee280e9ef2a68843439248765f5d1872e5ec66c0d817b5ac2ddd3",
+    "apps/desktop/src/renderer/domains/profiles/pages/BrowserManagementPage.tsx": "493683dccd7815c61e6e8fbfae99559c36dd5068e2d6fca45af6d54a7e40aa5e",
+    "apps/desktop/src/renderer/domains/projects/api.test.ts": "52389a22fc26056e3fd251dd872d9ee706b98462f7ac6562e9879613cb50577e",
+    "apps/desktop/src/renderer/domains/projects/api.ts": "0a66fd6b19f4efc580a0ce48eba3d4542f9dc312e8407a10cde81b41d789e4d7",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectCapabilityState.tsx": "93e54bfc5091abd3157e68ce118deb54cff6a5bf042ac54ceac284dcfdaf8b94",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.test.tsx": "83cd1e1b3ef8930dd543ad67a9136c4f0bc5e39bb498f9dc82dfe1892b19067b",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.tsx": "234d42c94b917825ca7ee3d54c22fa7fac83a6fc75e90da4a845326126ddab3f",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectFormDialog.test.tsx": "eb4ae3ef16c8b6aa37fdf14c8942181c27a0966eff9dc38c46c1f1e773f2bbf2",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectFormDialog.tsx": "d98e3460f52bafc9e501a0d2011288a97be3927ac3b16bddc12c16b4d7a3695b",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx": "73dfd4b1a573bb8db89ae4d6676670bb63de74ca5543ced33c5396be54d22c3c",
+    "apps/desktop/src/renderer/domains/projects/components/ProjectTabs.tsx": "6f7211acf7795bb1d65ab660248fe6fb746de6ea59dd96423e4f2d4d61ca8083",
+    "apps/desktop/src/renderer/domains/projects/form-schema.test.ts": "30dd0a19f9bbfbacb747a656740ef03d3964b8e4ab2d5d3115a2e8b6a0e4e260",
+    "apps/desktop/src/renderer/domains/projects/form-schema.ts": "9a9e51e79488bbe6e109d3be41bb4a959ba934fa287c5419a6078adb52dd5a62",
+    "apps/desktop/src/renderer/domains/projects/hooks.test.ts": "2267febf1b9331881c49bb892919baa20165a6e5334590b0d952b7914e4d080e",
+    "apps/desktop/src/renderer/domains/projects/hooks.ts": "8ffed6895645d9cddde221c74f8217920517ba99111242fa41ef4fa80dd8b90a",
+    "apps/desktop/src/renderer/domains/projects/index.ts": "e4a5127a95d2446246e80f380c9b1c29e9f72e3ffd0862a806e101852215f702",
+    "apps/desktop/src/renderer/domains/projects/pages/ProjectDirectoryPage.tsx": "7f3ced29889314d0d46bc5b513006851df6e3335f05b934873ca2a55f016877a",
+    "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx": "80d029d818e0eab5c93f49eee1e471a850179531b68a6b9e3ceb677f07856bee",
+    "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.test.tsx": "3e8a3edd60e47e44536b1159c8348822297db30546fca9d5b483f81f64685133",
+    "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx": "d1d57e12bd38650c98bc6027229f15319d199077eda6a7507d35c4a5a67d9dd9",
+    "apps/desktop/src/renderer/domains/projects/types.ts": "82fbec33d40c8f3ec8f9bcb437591f2fe3ee601cbe94edb78ed0e8aa373fbbe6",
+    "apps/desktop/src/renderer/domains/proxies/components/LocalProxyGroups.tsx": "ce124da17ec9794b02921baf5f23a13bc6c6e36c2918e71b88e7d3b4b0902432",
+    "apps/desktop/src/renderer/domains/proxies/components/LocationPicker.tsx": "322e1926e9e0b8a7fb3c46c273510183b7d20a98c94e371c123dc190810f8754",
+    "apps/desktop/src/renderer/domains/proxies/components/ProxyDetailDrawer.tsx": "6b8522edd72bff060dbe5d257f2136a123043f1bec0d8492daa0bad385f30184",
+    "apps/desktop/src/renderer/domains/proxies/components/ProxyFleet.tsx": "a325f854b296b998b84c246214aa1607cb708e140a7e9b7b08f767b6cb938481",
+    "apps/desktop/src/renderer/domains/proxies/components/RotationScheduleForm.tsx": "d06e9bf7cccaa581f7b85838123cd222f56dd3abe78d66e106e498db2b45db10",
+    "apps/desktop/src/renderer/domains/proxies/tests/ProxyManagementPage.test.tsx": "a1c39ab9a569fe2cf33f02edb5be580c3cc40fe40d0321f98acc25c6a962838c",
+    "apps/desktop/src/renderer/domains/proxies/tests/ProxyRemoteControls.test.tsx": "bcc4d87ffe259fa67f75c50fab6b18b44ffe2652436a6f3f44fd49cb2b18ff23",
+    "apps/desktop/src/renderer/domains/settings/pages/SettingsPage.tsx": "bde17312576c3644aa01eff3652e428edfd81e828e01264bf1c255343863a721",
+    "apps/desktop/src/renderer/domains/settings/tests/SettingsPage.test.tsx": "3aea65dc8a29853e485267539ff2f35bc21d0856d1e51bc81c73857e69422de1",
+    "apps/desktop/src/renderer/domains/workflows/components/NodeInspector.tsx": "5328c96c0e5dbff9fb01dc954cfbd3455476e944ef8e50303519201159069fb5",
+    "apps/desktop/src/renderer/domains/workflows/components/VariablePanel.tsx": "9419087059d965f3e53054caacdeb31c899d07e38f069e413a985a356053d6c6",
+    "apps/desktop/src/renderer/domains/workflows/tests/NodeInspector.test.tsx": "bbbd66ef176a92e1755ef42873ce69270fc3fae054620697ebdad50a7a2d76e6",
+    "apps/desktop/src/renderer/domains/workflows/tests/StudioPage.test.tsx": "0fc40d00d143d07eea2ab468c4475bf1a2017ca805a61f66838780369f638a80",
+    "apps/desktop/src/renderer/domains/workflows/tests/VariablePanel.test.tsx": "911565e9b91cefd6ee0f8b2f2a33b7e89233a826f467c409c116acde4d7a76b0",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "71f2c54bfcb99007e55edd82d76c2b5ebdcbc764e0d28542a0604ef938cfd208",
+    "apps/desktop/src/renderer/shared/components/Modal.tsx": "ce9d0b6a8e95e19ceffbb991cf475cd93f83cdf7d55ba5f93c513f76b7e630fa",
+    "apps/desktop/src/renderer/shared/components/ui/alert-dialog.tsx": "b349b502042af00ef0fdaee8f296f3cbac719cd224620127e44cf88e551ba918",
+    "apps/desktop/src/renderer/shared/components/ui/button.test.tsx": "fe6ebe8f8b2dad4108f03b89407085b236aab0dc84409fef5c814496cd2b9035",
+    "apps/desktop/src/renderer/shared/components/ui/button.tsx": "5477bd65980754a994b56f701924d00533154234c3afd1070806d6e954d91296",
+    "apps/desktop/src/renderer/shared/components/ui/choice-types.ts": "2e6542cfcd885dff693845f91f012b7a63368e191ae3884655e34ad7854709c6",
+    "apps/desktop/src/renderer/shared/components/ui/dialog.tsx": "0aaeceaf92b3f779a83275f74401cc44f46114e85b4eee55210cbbc6a436d012",
+    "apps/desktop/src/renderer/shared/components/ui/icon-button.tsx": "be71f0dbfc2ba7731973e1d65bae434a4514161c7c838d260f4e095b4918141d",
+    "apps/desktop/src/renderer/shared/components/ui/input.test.tsx": "d4b72baebbfe0f86c0825da93614024f547982fe7a498996d36c9b38aad9aefd",
+    "apps/desktop/src/renderer/shared/components/ui/input.tsx": "dc5f14699bfde86f1e15075f14c3cc8b89597cb13d33cf32908351e5e546208a",
+    "apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx": "bbd2edb4743e081a3cfe5684ce0d225c0cd573bc018322a0e8c565f8fe394fe9",
+    "apps/desktop/src/renderer/shared/components/ui/pagination.test.tsx": "46220be7208927f256f91bd186829d0f5d15f68ff997dccc0bf083d64329d850",
+    "apps/desktop/src/renderer/shared/components/ui/pagination.tsx": "36f44a64e9dbe2e5bf6500bb579e850f2c19925f3e0f6284fafe5c5776e0470a",
+    "apps/desktop/src/renderer/shared/components/ui/scroll-area.test.tsx": "5553d4468c7eb538759c28722424a8292275491fee58537d19fbf9614a3476f7",
+    "apps/desktop/src/renderer/shared/components/ui/scroll-area.tsx": "09a75ca530d555163e76693c09cd2983d51f77d8cd9b3b5990f56492050e2162",
+    "apps/desktop/src/renderer/shared/components/ui/search-input.test.tsx": "1e89fc3c35717a1f61ed0e6f621a18d53ab180d40feca3cc5406deedd7389a1a",
+    "apps/desktop/src/renderer/shared/components/ui/search-input.tsx": "3c7ac9f90eecc36adb3e47439108cf1a048533b0fd5664c5f3489da144f76aab",
+    "apps/desktop/src/renderer/shared/components/ui/select.test.tsx": "21da035034db99a341f0634ffd85603972ae94677fa06ded8e5eee8b189f0b8d",
+    "apps/desktop/src/renderer/shared/components/ui/select.tsx": "b319c4310df4ee66f2a4e7bac45352a1c8a3e6969f0a51b2350d33f253c3cb83",
+    "apps/desktop/src/renderer/shared/components/ui/skeleton.tsx": "75dd5001ea109956c636138ee34c452879f53361a06ebee64fe4250f3252e968",
+    "apps/desktop/src/renderer/shared/components/ui/spinner.test.tsx": "a198bb034fbcb09c6338daffbf1fdf6cc81df4e90949c46b7964dff67b075d96",
+    "apps/desktop/src/renderer/shared/components/ui/spinner.tsx": "7c677ba775c8b9da646fa71b12a7fa6a4f83e06b08e6b24b1679196ac8b29611",
+    "apps/desktop/src/renderer/shared/components/ui/table.tsx": "08803a242f8a9e36cce59c72f90301a9ef199f883582a0679716c3e948158a75",
+    "apps/desktop/src/renderer/shared/components/ui/textarea.tsx": "47e58312661da15a1444903b7d515ac834098e8fb00d33430994dcea32c059ab",
+    "apps/desktop/src/renderer/shared/testing/choice-user.ts": "1daa96ce9f56a429789442a21df1b395e465dc000c4145d2568a95765543305b",
+    "apps/desktop/src/renderer/styles/controls.css": "afd8742a04632d598259087e8b3491d77aef2ff089535a30b0a636ded12be655",
+    "apps/desktop/src/renderer/styles/index.css": "57818bbf6a8a68ec87172b536c034fa43e225d013fcd3b97e1a47d0e7f60e3ad",
+    "apps/desktop/src/renderer/styles/tokens.css": "72df08c255fcc08b9cb104d16166ad3bf9631406622d02a19f6a6450af2c5152",
+    "scripts/smoke-project-management.mjs": "3dedb3358e182b269574fb10345005032c74d8822fe9755db03c0df3e6075d83"
+  },
+  "staticChecks": {
+    "status": "passed",
+    "kind": "pm1-static-coverage-and-documents",
+    "counts": {
+      "features": 48,
+      "acceptance_scenarios": 178,
+      "execution_contracts_and_gates": 25,
+      "execution_contracts": 18,
+      "capability_gates": 7,
+      "delivery_packages": 30,
+      "local_links": 108,
+      "json_files": 5
+    },
+    "errors": [],
+    "not_proven": [
+      "business behavior",
+      "Electron runtime",
+      "Windows",
+      "release packages"
+    ]
+  },
+  "logFormatting": "Captured output with trailing whitespace normalized; command contents/results retained."
+}

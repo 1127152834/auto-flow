@@ -1,0 +1,3 @@
+
+> openapi:generate
+> node scripts/generate-api.mjs

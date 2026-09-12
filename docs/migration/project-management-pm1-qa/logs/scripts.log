@@ -1,0 +1,24 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ browser management smoke accepts an explicit packaged sidecar (1.196916ms)
+✔ browser management smoke creates the platform kernel layout (0.171ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.865583ms)
+✔ profile test browser smoke validates a public kernel directory (7.720542ms)
+✔ profile test browser smoke finds a session below the manager root (1.7495ms)
+✔ packaged smoke cannot silently select external health mode (1.508208ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.882ms)
+✔ cleanup observes close without requiring exit (0.248417ms)
+✔ cleanup rejects a child process error (0.175083ms)
+✔ required path exists: apps/desktop/package.json (0.513125ms)
+✔ required path exists: apps/backend/pyproject.toml (0.080833ms)
+✔ root scripts expose the foundation checks (0.17125ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.4255

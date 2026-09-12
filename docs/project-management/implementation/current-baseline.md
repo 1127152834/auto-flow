@@ -54,3 +54,17 @@
 PM0的契约是后续实现必须达到的规范，核心所有者尚未提交对应Run实现；本阶段的独立审查不冒充另一任务签收。PM1无须等Run，PM3按能力门槛验收。
 
 最终核对以plan-verification.json时间/哈希为准：主目录已从f3fe376推进至b2e95b3，状态条目由初始61、途中70到最终37；这是其他任务的提交/变更，本任务仅记录且不回滚。静态AST迁移图唯一head为0005_workflow_documents；未执行数据库升级。
+
+## PM1 实际实施基线（2026-09-13，confirmed）
+
+前文保留 PM0 时点的核验事实。关于“尚无 projects、未执行业务测试、UI 待接入”的当前描述由本节取代，不改写历史报告。
+
+- 实施工作区：`autoflow-project-management-pm1`，分支 `codex/project-management-pm1`。起点为正式主线 `1f80f977aac427d137bbd5a1a3afeac52f42a82c`，合入设计/PM0 `9c361f4`，文档基线提交 `dbb01f5`。未复制主目录未提交文件。
+- UI 源 `1fb58e1` 仅选择实际使用的控件及测试/样式/依赖；保留主线 Studio M1、useDesktopSession 和 FormField 的现有消费者 API。Select 由系统面板改为 Radix 自有面板，保留 body 自动宽度修复，并补 disabled fieldset 对 portal 选项的保护。
+- 已有项目领域、10 项 HTTP、两个持久表、真实生成 DTO、项目组件与页面。真实接口范围与错误约定见 PM1 执行卡；后续模块没有增加空 API。
+- 唯一迁移 head：`pm01_projects`，父为 `0005_workflow_documents`。空库和已写入旧领域数据的 0005 数据库升级由 `test_project_migration.py` 验证；旧表行内容和外键完整性受检查。
+- Studio 在本分支仍为 M1 文档编辑能力。PM1 没有实现 Run，也没有接管执行器。主目录在本轮期间推进到 `c3d6727`，这是其他任务的工作；本次没有覆盖或回滚。未来合并前需要按届时主线检查迁移和共享文件。
+- 主目录、设计和 UI 目录保持只读参考。2026-09-12T20:28:52Z 的只读观测：主目录 c3d6727 / 21 个状态条目，设计 9c361f4 干净，UI 1fb58e1 干净。状态条目变化不能被解释成本任务写入。
+- PM3 的核心执行与资源选择、PM8 生命周期操作仍是后续依赖。PM1 已有只读准入和全局 QuiesceGate 集成，不为未来任务预造执行框架。
+
+实际自动测试、本机 Electron 与未运行平台分别记录于 PM1 核验报告，不以 PM0 静态结果代替。

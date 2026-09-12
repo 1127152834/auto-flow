@@ -1,6 +1,6 @@
 # 项目管理执行账本
 
-- 日期：2026-09-13；状态：PM0 delivered，用户阶段验收 pending；PM1–PM9 planned。
+- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered，用户阶段验收 pending；PM2–PM9 planned。
 - 规格：[完整设计](../design/README.md)；[总里程碑](../../superpowers/plans/2026-09-13-project-management-milestones.md)；[PM0执行卡](../../superpowers/plans/2026-09-13-project-management-pm0.md)。
 - 机器映射：[coverage.json](coverage.json)；领域/传输：[contracts.md](contracts.md)、[api-contracts.md](api-contracts.md)；合成样例：[fixtures.json](fixtures.json)。
 
@@ -80,12 +80,12 @@ F0–F9具体目录以总计划第2节为准；本表责任包含该包前后端
 | 基线、18契约、传输、样例、覆盖 | delivered | 本目录资产，正式结果见plan-verification.json |
 | 规格符合性审查 | passed | pm0_spec_review 独立逐项核对906deda；前轮问题修复后复核通过 |
 | 工程可实施性审查 | passed | pm0_quality_review 独立审查后修复并复核；结果见本节与核验报告 |
-| 用户PM0验收 | pending | 尚未收到本阶段交付后的验收结论 |
+| 用户PM0验收 | accepted | 用户明确授权下一阶段并给出PM1实施计划 |
 | PM1–PM9业务行为 | planned / 未执行 | evidence保持空 |
 
 每次实际验收必须追加：交付包、提交、执行者、日期、OS/架构、命令及退出码、场景编号、测试方式、实际结果和证据路径。真实应用另记操作步骤与脱敏Task/Run/Operation定位；失败、未运行和阻塞分别写清，禁止以自动测试抵扣实网/安装包。
 
-当前只执行静态核验。无pytest/Vitest业务测试、真实应用、浏览器工作流、Sheets实网、Windows或macOS安装包运行。PM0提交后停在用户验收点，不自动启动PM1。
+PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用、浏览器工作流、Sheets实网、Windows或macOS安装包运行。PM0当时停在用户验收点；后续用户明确授权PM1，当前记录见第6节。
 
 ## 5. 独立审查问题与收口
 
@@ -107,3 +107,17 @@ F0–F9具体目录以总计划第2节为准；本表责任包含该包前后端
 | 工程 | 账本把WIP0005写成PM1等待条件 | 改为实际已接入head；未接入从0004开始，集成者汇合 |
 
 复核的结果只适用于文档和静态契约，不能证明后续代码正确，也不能代替用户里程碑验收。主目录在本轮只读核对期间状态条目61→70→37，HEAD f3fe376→b2e95b3，属于其他任务继续工作并提交Studio M1的观察；本任务没有修改、撤销或提交主目录变更。
+
+## 6. PM1 实际交付与验收
+
+| 包 | 实际负责人 | 交付与提交 | 当前结果 |
+|---|---|---|---|
+| PM1-A | pm1_backend_implementation、pm1_frontend_implementation；主协调集成 | 真实10接口、两表、管理表单、目录；b3b1574/d694093 | 自动与本机运行验证通过 |
+| PM1-B | 前端智能体、主协调 | 组件、六页签、导航与草稿；f1411d0/d694093/4006acc | 组件/既有消费者及真实页面回归通过 |
+| PM1-C | 后端智能体、主协调 | 幂等查询、归属、CAS、生命周期与QuiesceGate准入 | 后端并发及只读反例通过；不提供归档/删除 |
+| 独立审查 | review_project_data_env、milestone_product_coverage、review_project_product | 三份pm1-review文档，先规格后质量，问题修复后复核 | passed |
+| 用户PM1验收 | 用户 | 本阶段交付后的验收 | pending |
+
+验收日期2026-09-13，北京时间；机器UTC时间另记。完整命令、退出码、代码版本、日志与限制见 [PM1机器核验](pm1-verification.json)；实际截图见 [本机QA](../../migration/project-management-pm1-qa/README.md)。PM0历史plan-verification.json仍为静态核验，不回写旧结果。
+
+本机自动测试461项后端、439项前端；脚本12项、结构3项。Electron构建HTML使用独立临时工作区，未触及真实业务数据。PM-02完整验证，PM-01/PM-03/OV-01仅本阶段子范围。Windows、macOS x64、发行包及PM2+未执行。核心Run依赖仍由Studio里程碑提供，PM1不把其标为已实现。

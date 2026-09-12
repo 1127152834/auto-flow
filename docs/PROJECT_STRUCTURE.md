@@ -1,6 +1,6 @@
 # AutoFlow 项目目录结构
 
-- 日期：2026-09-12
+- 日期：2026-09-13
 - 状态：目录骨架与已实现领域的职责索引；空占位目录不代表功能已经实现。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
@@ -21,8 +21,8 @@ apps/
 ├── backend/
 │   ├── src/autoflow/
 │   │   ├── bootstrap/
-│   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows}/
-│   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
+│   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows,projects}/
+│   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard,workflows,projects}/
 │   │   ├── adapters/{http,events}/
 │   │   ├── infrastructure/{database,filesystem,credentials,process,events}/
 │   │   └── providers/{browser,proxy,kernel,model,platform}/
@@ -34,7 +34,7 @@ apps/
     │   ├── shared/                     # main/preload/renderer 的桌面 IPC 契约
     │   └── renderer/
     │       ├── app/
-    │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
+    │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard,workflows,projects}/
     │       │   └── 每个领域：components/、hooks/、pages/、tests/
     │       ├── shared/{api,components,hooks,lib}/
     │       └── styles/
@@ -264,3 +264,25 @@ reference/
 - 主目录b2e95b3已提交workflows文档CRUD和Studio窗口，PM0没有复制或修改。核心Run、事件补读、检查点按所需能力门槛接入，不从Profile测试浏览器扩展第二引擎。
 
 [PM0执行卡](superpowers/plans/2026-09-13-project-management-pm0.md)和[实际基线](project-management/implementation/current-baseline.md)是后续开工入口。
+
+## 项目管理 PM1 实施落点（2026-09-13）
+
+本段是 PM0 之后的已实现补充。早期“项目管理只有设计”的现状描述已 superseded；后续数据表、批次、环境和生命周期操作仍未实现。
+
+| 实际路径 | 当前职责 |
+|---|---|
+| `apps/backend/src/autoflow/domain/projects/` | 项目身份、状态、资源默认值、码点校验和仓储端口。 |
+| `apps/backend/src/autoflow/application/projects/service.py` | 项目目录、管理命令、打开和操作查询用例。 |
+| `apps/backend/src/autoflow/infrastructure/database/projects.py` | SQLite 短事务、唯一名称、CAS 与幂等结果快照；不建立执行器。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm01_projects.py` | 从 `0005_workflow_documents` 派生，新增 projects/project_operations；不修改历史迁移。 |
+| `apps/backend/src/autoflow/adapters/http/projects.py`、`project_schemas.py` | 10 项真实 HTTP 操作与 camelCase DTO；bootstrap/app.py 装配。 |
+| `apps/desktop/src/renderer/domains/projects/` | api.ts 命令核验、hooks.ts 查询隔离、form-schema.ts 表单值校验。 |
+| `apps/desktop/src/renderer/domains/projects/components/` | ProjectFormDialog、ProjectDirectory、ProjectHeader、ProjectTabs、ProjectCapabilityState。 |
+| `apps/desktop/src/renderer/domains/projects/pages/` | Directory/Overview 页面组合与 ProjectsWorkspace 草稿、命令、目录位置协调。 |
+| `apps/desktop/src/renderer/app/navigation.ts` | 唯一 hash 导航所有者，协调离开确认及前进/后退真实历史位置。 |
+| `apps/desktop/src/renderer/shared/components/ui/` | 选择性接入统一 Select、ScrollArea、Table、Pagination、SearchInput 等当前消费者所需控件。 |
+| `apps/desktop/src/renderer/styles/tokens.css`、`controls.css` | 暖灰/黏土棕令牌、控件状态和滚动条；index.css 引入，body 不固定 100% 宽度。 |
+| `scripts/smoke-project-management.mjs` | 用隔离临时工作区驱动实际 Electron 和 FastAPI，保留构建产物验收截图与事实。 |
+| `docs/migration/project-management-pm1-qa/` | 本机截图、运行记录；不是设计原型或其他平台通过证明。 |
+
+PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工作区会话复用现有实现。`packages/ui` 继续是骨架，不建立第二套 UI 包。详见 [PM1 执行卡](superpowers/plans/2026-09-13-project-management-pm1.md)。

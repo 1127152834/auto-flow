@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "kind": "pm1-static-coverage-and-documents",
+  "counts": {
+    "features": 48,
+    "acceptance_scenarios": 178,
+    "execution_contracts_and_gates": 25,
+    "execution_contracts": 18,
+    "capability_gates": 7,
+    "delivery_packages": 30,
+    "local_links": 108,
+    "json_files": 5
+  },
+  "errors": [],
+  "not_proven": [
+    "business behavior",
+    "Electron runtime",
+    "Windows",
+    "release packages"
+  ]
+}
