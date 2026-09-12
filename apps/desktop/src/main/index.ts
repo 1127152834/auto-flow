@@ -4,6 +4,7 @@ import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
+import { createOpenAutomationStudioHandler } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
 import { SettingsController } from './settings/controller'
@@ -20,6 +21,8 @@ function applyPreferences(preferences: UiPreferences): void {
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  ipcMain.removeHandler('autoflow:open-automation-studio')
+  ipcMain.handle('autoflow:open-automation-studio', createOpenAutomationStudioHandler(mainWindow.webContents.id))
   ipcMain.removeHandler('autoflow:copy-proxy-credentials')
   ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
     allowedSenderId: mainWindow.webContents.id,
@@ -96,7 +99,7 @@ app.whenReady().then(async () => {
   await createWindow()
 }).catch(() => { dialog.showErrorBox('AutoFlow 无法启动', '无法读取本机应用目录或设置，请检查目录权限后重新启动。现有数据未删除。'); app.quit() })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) void createWindow() })
+app.on('activate', () => { if (!mainWindow || mainWindow.isDestroyed()) void createWindow() })
 let isQuitting = false
 let stoppedForQuit = false
 app.on('before-quit', event => {

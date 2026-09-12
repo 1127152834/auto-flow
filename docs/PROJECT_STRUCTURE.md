@@ -98,10 +98,12 @@ reference/
 | `apps/backend/tests/integration/` | 真实临时数据库、迁移和仓储测试。 |
 | `apps/backend/tests/unit/` | 纯规则、用例和隔离适配测试。 |
 | `apps/desktop/src/main/ipc/` | 有明确输入输出的 IPC handler；禁止任意文件或进程命令。 |
+| `apps/desktop/src/main/ipc/automation-studio.ts` | 工作流工作台的受控开窗入口及单窗口生命周期；当前加载空白页。 |
 | `apps/desktop/src/main/platform/macos/` | 必要的 macOS 桌面适配。 |
 | `apps/desktop/src/main/platform/windows/` | 必要的 Windows 桌面适配。 |
 | `apps/desktop/src/main/sidecar/` | 本地后端启动、就绪、恢复和退出监管。 |
 | `apps/desktop/src/preload/` | 受控桌面能力桥接。 |
+| `apps/desktop/src/shared/automation-studio.ts` | 主应用打开工作流工作台的固定桌面 IPC 类型契约。 |
 | `apps/desktop/src/renderer/app/` | 应用入口、路由、装配、全局错误和服务恢复。 |
 | `apps/desktop/src/renderer/domains/` | 正式业务组件和页面；按已批准架构使用 domains。 |
 | `apps/desktop/src/renderer/domains/dashboard/` | 总览前端模块；请求封装 api.ts 和必要 model.ts 在实际实现时添加。 |

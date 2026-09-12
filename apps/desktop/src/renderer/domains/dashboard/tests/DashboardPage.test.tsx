@@ -5,8 +5,11 @@ import { afterEach, expect, it, vi } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 import type { ApiClient } from '../../../shared/api/client'
 import { DashboardPage } from '../pages/DashboardPage'
+import { notify } from '../../../shared/components/Toaster'
 
-afterEach(cleanup)
+vi.mock('../../../shared/components/Toaster', () => ({ notify: vi.fn() }))
+
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.clearAllMocks() })
 function renderPage(handler: () => Promise<unknown>, onNavigate = vi.fn()) {
   const client: ApiClient = { request: <T,>() => handler() as Promise<T>, health: vi.fn(async () => ({ status: 'ok' as const, apiVersion: 'v1', instanceId: 'test' })) }
   const query = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -42,4 +45,27 @@ it('keeps entrances usable on load failure and retries', async () => {
   expect(navigate).toHaveBeenCalledWith('settings')
   await user.click(screen.getByRole('button', { name: '重试' }))
   expect(await screen.findAllByText('未接入')).toHaveLength(2)
+})
+
+it('opens the Studio through desktop IPC without changing the main page, even offline', async () => {
+  const openAutomationStudio = vi.fn(async () => {})
+  vi.stubGlobal('autoflow', { openAutomationStudio })
+  const navigate = renderPage(vi.fn(async () => { throw new Error('服务离线') }))
+  const user = userEvent.setup()
+  await screen.findByRole('alert')
+  await user.click(screen.getByRole('button', { name: /工作流工作台/ }))
+  expect(openAutomationStudio).toHaveBeenCalledOnce()
+  expect(navigate).not.toHaveBeenCalled()
+  expect(screen.getByRole('heading', { name: '总览' })).toBeInTheDocument()
+})
+
+it('reports opening failures and keeps the entry available for retry', async () => {
+  const openAutomationStudio = vi.fn().mockRejectedValueOnce(new Error('failed')).mockResolvedValueOnce(undefined)
+  vi.stubGlobal('autoflow', { openAutomationStudio })
+  renderPage(() => new Promise(() => {}))
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('button', { name: /工作流工作台/ }))
+  expect(notify).toHaveBeenCalledWith({ title: '无法打开工作流工作台，请重试', tone: 'error' })
+  await user.click(screen.getByRole('button', { name: /工作流工作台/ }))
+  expect(openAutomationStudio).toHaveBeenCalledTimes(2)
 })

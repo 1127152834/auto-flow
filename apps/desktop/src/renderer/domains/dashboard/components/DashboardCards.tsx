@@ -1,4 +1,4 @@
-import { ArrowRight, Browser, Cube, GearSix, Globe, Stack } from '@phosphor-icons/react'
+import { ArrowRight, Browser, Cube, FlowArrow, GearSix, Globe, Stack } from '@phosphor-icons/react'
 import type { DashboardSnapshot } from '../api'
 
 const resourceCards = [
@@ -16,12 +16,15 @@ export function ResourceOverview({ data }: { data: DashboardSnapshot }) {
 }
 
 const links = [
+  { target: 'automationStudio', title: '工作流工作台', hint: '在独立窗口中打开工作流编排工作台', icon: FlowArrow },
   { target: 'profiles', title: '管理浏览器配置', hint: '维护浏览器身份、内核与代理绑定', icon: Browser },
   { target: 'proxies', title: '管理代理出口', hint: '维护代理连接与本地代理组', icon: Globe },
   { target: 'models', title: '管理模型资源', hint: '连接供应商并维护模型目录', icon: Cube },
   { target: 'settings', title: '查看本地设置', hint: '管理工作区、应用偏好与诊断', icon: GearSix },
 ] as const
 
-export function WorkEntrances({ onNavigate }: { onNavigate(target: typeof links[number]['target']): void }) {
+export type WorkEntranceTarget = typeof links[number]['target']
+
+export function WorkEntrances({ onNavigate }: { onNavigate(target: WorkEntranceTarget): void }) {
   return <section aria-labelledby="work-heading"><h2 id="work-heading" className="mb-4 text-xl font-semibold">工作入口</h2><div className="grid gap-3 sm:grid-cols-2">{links.map(({ target, title, hint, icon: Icon }) => <button key={target} type="button" onClick={() => onNavigate(target)} className="flex items-center gap-4 rounded-card border border-line bg-surface p-5 text-left shadow-[0_7px_22px_rgba(69,62,52,0.04)] transition hover:-translate-y-px hover:border-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-control bg-surface-subtle text-clay"><Icon size={23} /></span><span className="min-w-0 flex-1"><strong className="block">{title}</strong><small className="mt-1 block text-muted">{hint}</small></span><ArrowRight className="shrink-0 text-muted" /></button>)}</div></section>
 }

@@ -4,6 +4,11 @@ import type { SidecarStatus } from '../main/sidecar/supervisor'
 import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
+import type { AutomationStudioBridge } from '../shared/automation-studio'
+
+const automationStudioBridge: AutomationStudioBridge = {
+  openAutomationStudio: () => ipcRenderer.invoke('autoflow:open-automation-studio'),
+}
 
 const settingsBridge: SettingsBridge = {
   getSettings: () => ipcRenderer.invoke('autoflow:settings:get'),
@@ -20,6 +25,7 @@ ipcRenderer.on('autoflow:preferences-changed', (_event, preferences: UiPreferenc
 })
 
 contextBridge.exposeInMainWorld('autoflow', {
+  ...automationStudioBridge,
   ...settingsBridge,
   getSidecarStatus: (): Promise<SidecarStatus> => ipcRenderer.invoke('autoflow:sidecar-status'),
   restartSidecar: (): Promise<SidecarStatus> => ipcRenderer.invoke('autoflow:sidecar-restart'),
