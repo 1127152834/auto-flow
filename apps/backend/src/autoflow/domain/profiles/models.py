@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 from urllib.parse import urlparse
@@ -190,3 +190,18 @@ class Profile:
     fingerprint_seed: int
     created_at: datetime
     updated_at: datetime
+
+
+@dataclass(frozen=True)
+class ProfileTestBrowserSession:
+    id: str
+    profile_id: str
+    fingerprint_seed: int
+    warning: str | None = None
+
+
+@dataclass(frozen=True)
+class ProfileBrowserProxy:
+    server: str
+    username: str = field(repr=False)
+    password: str = field(repr=False)

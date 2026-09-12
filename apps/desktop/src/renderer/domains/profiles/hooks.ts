@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useApi } from '../../app/ApiProvider'
-import type { ProfileDuplicate, ProfileWrite } from '../../shared/api/types'
+import type { ProfileDuplicate, ProfileList, ProfileWrite } from '../../shared/api/types'
 
 export const profileKeys = {
   all: (instanceId: string) => [instanceId, 'profiles'] as const,
@@ -66,7 +66,23 @@ export function useDuplicateProfile() {
 }
 
 export function useRegenerateProfile() {
+  const { profiles, instanceId } = useApi()
+  const queryClient = useQueryClient()
+  const key = profileKeys.all(instanceId)
+  return useMutation({
+    mutationFn: profiles.regenerate,
+    retry: false,
+    onSuccess: async (updated) => {
+      await queryClient.cancelQueries({ queryKey: key })
+      queryClient.setQueryData<ProfileList>(key, (current) => current && ({
+        ...current, items: current.items.map((profile) => profile.id === updated.id ? updated : profile),
+      }))
+      void queryClient.invalidateQueries({ queryKey: key })
+    },
+  })
+}
+
+export function useOpenTestBrowser() {
   const { profiles } = useApi()
-  const invalidate = useInvalidateProfiles()
-  return useMutation({ mutationFn: profiles.regenerate, retry: false, onSuccess: invalidate })
+  return useMutation({ mutationFn: profiles.openTestBrowser, retry: false })
 }

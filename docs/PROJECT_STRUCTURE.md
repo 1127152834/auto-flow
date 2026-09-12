@@ -219,6 +219,15 @@ reference/
 - `scripts/smoke-browser-management.mjs` 验证 source/frozen worker 和真实 HTTP 配置闭环；冻结时区检查显式禁用系统 zoneinfo，以验证随包 tzdata。
 - 实施与平台证据以 [浏览器管理验收记录](migration/browser-management-validation.md) 为准；其未运行项目不得视为已验收。
 
+## 配置临时测试浏览器（2026-09-12，confirmed）
+
+- 浏览器配置只保存可复用参数和指纹种子；项目环境中的持久化实例属于后续模块，本功能不创建实例表或保存登录状态。
+- `application/profiles/test_browser.py` 协调读取已保存配置、选择已安装内核、解析代理凭据并调用启动端口；HTTP 仍由 `adapters/http/profiles.py` 提供，类型通过 OpenAPI 生成。
+- `infrastructure/process/test_browser_worker.py` 管理临时测试工作进程及回收；`bootstrap/test_browser_worker.py` 提供源代码/冻结共用入口；`providers/browser/worker.py` 适配 CloakBrowser 非持久化上下文。平台路径、环境和进程行为不进入 React 或 domain。
+- `providers/browser/proxy_relay.py` 为单个测试会话转发 HTTP/SOCKS5 认证代理；浏览器只接收无凭据的本地地址，认证信息留在 worker 内存与上游认证握手中。Windows Job Object 和 POSIX 进程组回收集中在进程适配器。
+- `renderer/domains/profiles/components/ProfileCard.tsx` 是配置卡片领域组件，`ProfileList.tsx` 负责双列布局，页面只组合查询和操作。测试启动按卡片记录等待和错误，重置结果直接更新 seed 缓存。
+- 决策及验证边界见 `.ai/decisions/2026-09-12-profile-test-browser.md` 和对应会话记录。
+
 ## 代理位置与轮换实现（2026-09-12，confirmed）
 
 - `domain/proxies/remote.py`：远程状态、目标地点、轮换计划、命令记录及 Provider/仓储端口。

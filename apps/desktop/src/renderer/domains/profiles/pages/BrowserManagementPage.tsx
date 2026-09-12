@@ -9,7 +9,7 @@ import { KernelManagerDialog } from '../../kernels/components/KernelManagerDialo
 import { ProfileActionDialog, type ProfileAction } from '../components/ProfileActionDialog'
 import { ProfileFormDialog } from '../components/ProfileFormDialog'
 import { ProfileList } from '../components/ProfileList'
-import { useProfiles, useRegenerateProfile } from '../hooks'
+import { useOpenTestBrowser, useProfiles, useRegenerateProfile } from '../hooks'
 
 export type BrowserManagementPageProps = {
   disabled?: boolean
@@ -23,6 +23,10 @@ const errorMessage = (error: unknown) => error instanceof Error ? error.message 
 export function BrowserManagementPage({ disabled = false, onReconnect }: BrowserManagementPageProps) {
   const profiles = useProfiles()
   const regenerate = useRegenerateProfile()
+  const openTestBrowser = useOpenTestBrowser()
+  const pendingLaunches = useRef(new Set<string>())
+  const [launchingIds, setLaunchingIds] = useState<ReadonlySet<string>>(new Set())
+  const [launchErrors, setLaunchErrors] = useState<Record<string, string>>({})
   const [query, setQuery] = useState('')
   const [proxyFilter, setProxyFilter] = useState<ProxyFilter>('all')
   const [page, setPage] = useState(1)
@@ -33,6 +37,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
   const [selectedKernel, setSelectedKernel] = useState<KernelRef | null>(null)
   const kernelTrigger = useRef<HTMLButtonElement | null>(null)
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null)
+  const regenerationPending = useRef(false)
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase()
@@ -52,15 +57,34 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
   }
 
   async function regenerateFingerprint(profile: ProfileRead) {
-    if (disabled || regeneratingId) return
+    if (disabled || regenerationPending.current || pendingLaunches.current.has(profile.id)) return
+    regenerationPending.current = true
     setRegeneratingId(profile.id)
     try {
-      await regenerate.mutateAsync(profile.id)
-      notify({ title: '指纹已重新生成', tone: 'success' })
+      const updated = await regenerate.mutateAsync(profile.id)
+      notify({ title: `指纹已重新生成：${profile.fingerprintSeed} → ${updated.fingerprintSeed}，下次打开测试浏览器时生效`, tone: 'success' })
     } catch (error) {
       notify({ title: errorMessage(error), tone: 'error' })
     } finally {
+      regenerationPending.current = false
       setRegeneratingId(null)
+    }
+  }
+
+  async function launchTestBrowser(profile: ProfileRead) {
+    if (disabled || pendingLaunches.current.has(profile.id) || regeneratingId === profile.id) return
+    pendingLaunches.current.add(profile.id)
+    setLaunchingIds(new Set(pendingLaunches.current))
+    setLaunchErrors((current) => ({ ...current, [profile.id]: '' }))
+    try {
+      const result = await openTestBrowser.mutateAsync(profile.id)
+      notify({ title: `${profile.name} 的测试浏览器已打开 · 指纹 ${result.fingerprintSeed}`, tone: 'success' })
+      if (result.warning) setLaunchErrors((current) => ({ ...current, [profile.id]: `测试浏览器已打开，但${result.warning}` }))
+    } catch (error) {
+      setLaunchErrors((current) => ({ ...current, [profile.id]: errorMessage(error) }))
+    } finally {
+      pendingLaunches.current.delete(profile.id)
+      setLaunchingIds(new Set(pendingLaunches.current))
     }
   }
 
@@ -72,7 +96,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="m-0 text-2xl font-semibold tracking-tight text-ink">浏览器配置</h1>
-          <p className="mb-0 mt-1 text-sm text-muted">管理固定指纹环境，组合 CloakBrowser 内核和代理资源。</p>
+          <p className="mb-0 mt-1 text-sm text-muted">管理可复用的指纹、内核和代理配置；测试窗口独立临时运行。</p>
         </div>
         <Button type="button" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} weight="bold" />新建配置</Button>
       </header>
@@ -94,12 +118,12 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
       {profiles.isFetching && profiles.data ? <p role="status" className="m-0 text-xs text-muted">正在同步本地数据…</p> : null}
       {profiles.isError && profiles.data ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>{errorMessage(profiles.error)}。已加载的数据会继续保留。</span><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></div> : null}
 
-      {profiles.isPending ? <div className="grid animate-pulse gap-3" role="status" aria-label="正在加载浏览器配置">{[1, 2, 3].map((item) => <div key={item} className="h-36 rounded-card bg-surface-subtle" />)}<span className="sr-only">正在同步本地数据，请稍候…</span></div>
+      {profiles.isPending ? <div className="grid grid-cols-1 gap-5 motion-safe:animate-pulse md:grid-cols-2" role="status" aria-label="正在加载浏览器配置">{[1, 2, 3, 4].map((item) => <div key={item} className="h-80 rounded-card bg-surface-subtle" />)}<span className="sr-only">正在同步本地数据，请稍候…</span></div>
         : initialError ? <section role="alert" className="rounded-card border border-red-200 bg-red-50 p-6"><h2 className="m-0 text-lg">浏览器配置加载失败</h2><p className="text-sm text-red-800">{errorMessage(profiles.error)}</p><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></section>
-        : !hasProfiles ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-10 text-center"><h2 className="m-0 text-lg font-semibold">还没有浏览器配置</h2><p className="mb-0 mt-2 text-sm text-muted">创建第一个固定指纹环境。</p><Button type="button" className="mt-5" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} />新建配置</Button></section>
+        : !hasProfiles ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-10 text-center"><h2 className="m-0 text-lg font-semibold">还没有浏览器配置</h2><p className="mb-0 mt-2 text-sm text-muted">创建第一份浏览器配置，再打开临时窗口验证效果。</p><Button type="button" className="mt-5" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} />新建配置</Button></section>
         : !filtered.length ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-8 text-center"><h2 className="m-0 text-base font-semibold">没有匹配的配置</h2><p className="mb-0 mt-2 text-sm text-muted">调整搜索内容或代理模式筛选。</p></section>
         : <>
-          <ProfileList profiles={visibleProfiles} disabled={disabled} regeneratingId={regeneratingId} onEdit={(profile) => openForm(profile)} onDuplicate={(profile) => setAction({ kind: 'duplicate', id: profile.id, name: profile.name })} onRegenerate={(profile) => void regenerateFingerprint(profile)} onDelete={(profile) => setAction({ kind: 'delete', id: profile.id, name: profile.name })} />
+          <ProfileList profiles={visibleProfiles} disabled={disabled} regeneratingId={regeneratingId} launchingIds={launchingIds} launchErrors={launchErrors} onOpen={(profile) => void launchTestBrowser(profile)} onEdit={(profile) => openForm(profile)} onDuplicate={(profile) => setAction({ kind: 'duplicate', id: profile.id, name: profile.name })} onRegenerate={(profile) => void regenerateFingerprint(profile)} onDelete={(profile) => setAction({ kind: 'delete', id: profile.id, name: profile.name })} />
           <footer className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
             <span>共 {filtered.length} 个配置</span>
             <div className="flex items-center gap-3">

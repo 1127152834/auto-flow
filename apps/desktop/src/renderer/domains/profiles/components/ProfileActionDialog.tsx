@@ -76,7 +76,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
             setNameError('')
             setOperationError('')
           }} />
-        </FormField> : <p className="m-0 text-sm text-ink">配置及其浏览器数据将被删除，此操作不可撤销。</p>}
+        </FormField> : <p className="m-0 text-sm text-ink">此浏览器配置将被永久删除，无法恢复。</p>}
         {operationError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
       </form>
       <div className="flex justify-end gap-2">

@@ -1,7 +1,10 @@
 from typing import Any
+from unittest.mock import AsyncMock
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from autoflow.domain.profiles.models import ProfileTestBrowserSession
 from autoflow.infrastructure.database.models import ProxyPoolRow, ProxyRow
 
 
@@ -65,6 +68,39 @@ def test_profile_crud_and_fingerprint_lifecycle(
     assert deleted.content == b""
     assert not profile_data.exists()
     assert client.get(f"/api/v1/profiles/{created['id']}").status_code == 404
+
+
+def test_profile_test_browser_contract_returns_only_ready_session(
+    client: TestClient, profile_payload: dict[str, Any], monkeypatch
+) -> None:
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    session_id = str(uuid4())
+    start = AsyncMock(
+        return_value=ProfileTestBrowserSession(
+            session_id,
+            profile["id"],
+            profile["fingerprintSeed"],
+            "起始网址加载失败，浏览器已保留，可手动重试",
+        )
+    )
+    monkeypatch.setattr(client.app.state.profile_test_browser, "start", start)
+
+    response = client.post(f"/api/v1/profiles/{profile['id']}/test-browser")
+
+    assert response.status_code == 201
+    assert response.json() == {
+        "sessionId": session_id,
+        "profileId": profile["id"],
+        "fingerprintSeed": profile["fingerprintSeed"],
+        "warning": "起始网址加载失败，浏览器已保留，可手动重试",
+    }
+    start.assert_awaited_once_with(profile["id"])
+    schema = client.get("/openapi.json").json()["components"]["schemas"]
+    assert set(schema["ProfileTestBrowserRead"]["required"]) == {
+        "sessionId",
+        "profileId",
+        "fingerprintSeed",
+    }
 
 
 def test_profile_errors_use_stable_envelope_and_camel_case_fields(

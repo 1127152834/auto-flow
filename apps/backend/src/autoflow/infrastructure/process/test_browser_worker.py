@@ -1,0 +1,310 @@
+from __future__ import annotations
+
+import asyncio
+import json
+import os
+import shutil
+import signal
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
+
+from autoflow.domain.profiles.errors import (
+    ProfileTestBrowserBusy,
+    ProfileTestBrowserUnavailable,
+)
+from autoflow.domain.profiles.models import (
+    Profile,
+    ProfileBrowserProxy,
+    ProfileTestBrowserSession,
+)
+
+__test__ = False
+
+DEFAULT_START_TIMEOUT = 90.0
+DEFAULT_TERMINATION_TIMEOUT = 3.0
+
+
+def test_browser_worker_command() -> tuple[str, ...]:
+    if getattr(sys, "frozen", False):
+        return (sys.executable, "--test-browser-worker")
+    return (sys.executable, "-m", "autoflow", "--test-browser-worker")
+
+
+@dataclass
+class _RunningBrowser:
+    profile_id: str
+    process: asyncio.subprocess.Process
+    directory: Path
+    monitor: asyncio.Task[None]
+
+
+class TestBrowserWorkerManager:
+    def __init__(
+        self,
+        temp_dir: Path,
+        *,
+        command: tuple[str, ...] | None = None,
+        worker_env: dict[str, str] | None = None,
+        start_timeout: float = DEFAULT_START_TIMEOUT,
+        termination_timeout: float = DEFAULT_TERMINATION_TIMEOUT,
+    ) -> None:
+        self._base = (temp_dir / "test-browser").resolve()
+        self._root = self._base / uuid4().hex
+        self._command = command or test_browser_worker_command()
+        self._worker_env = worker_env or {}
+        self._start_timeout = start_timeout
+        self._termination_timeout = termination_timeout
+        self._starting: dict[str, asyncio.subprocess.Process | None] = {}
+        self._sessions: dict[str, _RunningBrowser] = {}
+        self._shutting_down = False
+        self._lock = asyncio.Lock()
+        self._start_tasks: set[asyncio.Task[Any]] = set()
+
+    async def start(
+        self,
+        session_id: str,
+        profile: Profile,
+        executable: Path,
+        proxy: ProfileBrowserProxy | None,
+        license_key: str | None,
+    ) -> ProfileTestBrowserSession:
+        directory = self._root / session_id
+        process: asyncio.subprocess.Process | None = None
+        current = asyncio.current_task()
+        assert current is not None
+        async with self._lock:
+            if self._shutting_down:
+                raise ProfileTestBrowserUnavailable
+            if profile.id in self._starting:
+                raise ProfileTestBrowserBusy
+            self._starting[profile.id] = None
+            self._start_tasks.add(current)
+        try:
+            directory.mkdir(parents=True, exist_ok=False)
+            env = os.environ.copy()
+            env.update(self._worker_env)
+            env.pop("CLOAKBROWSER_LICENSE_KEY", None)
+            env["CLOAKBROWSER_BINARY_PATH"] = str(executable.resolve(strict=True))
+            env["CLOAKBROWSER_CACHE_DIR"] = str(directory)
+            env.update(
+                {"TMPDIR": str(directory), "TMP": str(directory), "TEMP": str(directory)}
+            )
+            spawn = asyncio.create_task(
+                asyncio.create_subprocess_exec(
+                    *self._command,
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                    env=env,
+                    **_process_group_options(),
+                )
+            )
+            try:
+                process = await asyncio.shield(spawn)
+            except asyncio.CancelledError:
+                try:
+                    process = await _wait_for_spawn(spawn)
+                except BaseException:  # noqa: BLE001 -- preserve cancellation.
+                    process = None
+                raise
+            async with self._lock:
+                if self._shutting_down:
+                    raise ProfileTestBrowserUnavailable
+                self._starting[profile.id] = process
+            assert process.stdin is not None and process.stdout is not None
+            payload = _worker_payload(session_id, profile, proxy, license_key)
+            process.stdin.write((json.dumps(payload) + "\n").encode())
+            await process.stdin.drain()
+            raw = await asyncio.wait_for(
+                process.stdout.readline(), timeout=self._start_timeout
+            )
+            message = json.loads(raw)
+            if (
+                process.returncode is not None
+                or not isinstance(message, dict)
+                or message.get("type") != "ready"
+                or message.get("sessionId") != session_id
+                or message.get("profileId") != profile.id
+                or message.get("fingerprintSeed") != profile.fingerprint_seed
+            ):
+                raise ProfileTestBrowserUnavailable
+            warning = message.get("warning")
+            if warning is not None and not isinstance(warning, str):
+                raise ProfileTestBrowserUnavailable
+            monitor = asyncio.create_task(
+                self._monitor(session_id, profile.id, process, directory)
+            )
+            async with self._lock:
+                if self._shutting_down:
+                    monitor.cancel()
+                    raise ProfileTestBrowserUnavailable
+                self._starting.pop(profile.id, None)
+                self._start_tasks.discard(current)
+                self._sessions[session_id] = _RunningBrowser(
+                    profile.id, process, directory, monitor
+                )
+            return ProfileTestBrowserSession(
+                session_id, profile.id, profile.fingerprint_seed, warning
+            )
+        except ProfileTestBrowserBusy:
+            raise
+        except BaseException as error:
+            if process is not None:
+                await self._stop_process_tree(process)
+            shutil.rmtree(directory, ignore_errors=True)
+            async with self._lock:
+                self._starting.pop(profile.id, None)
+            if isinstance(error, asyncio.CancelledError):
+                raise
+            raise ProfileTestBrowserUnavailable from None
+        finally:
+            async with self._lock:
+                self._start_tasks.discard(current)
+
+    def active_processes(self) -> list[int]:
+        processes = [process for process in self._starting.values() if process]
+        processes.extend(item.process for item in self._sessions.values())
+        return [process.pid for process in processes if process.returncode is None]
+
+    def busy(self) -> bool:
+        return bool(self._starting or self.active_processes())
+
+    async def shutdown(self) -> None:
+        async with self._lock:
+            self._shutting_down = True
+            start_tasks = tuple(
+                task for task in self._start_tasks if task is not asyncio.current_task()
+            )
+            sessions = tuple(self._sessions.values())
+        for task in start_tasks:
+            task.cancel()
+        await asyncio.gather(
+            *start_tasks,
+            *(self._stop_process_tree(item.process) for item in sessions),
+            return_exceptions=True,
+        )
+        await asyncio.gather(
+            *(item.monitor for item in sessions), return_exceptions=True
+        )
+        shutil.rmtree(self._root, ignore_errors=True)
+        try:
+            self._base.rmdir()
+        except OSError:
+            pass
+
+    async def _monitor(
+        self,
+        session_id: str,
+        profile_id: str,
+        process: asyncio.subprocess.Process,
+        directory: Path,
+    ) -> None:
+        try:
+            await process.wait()
+            # A clean worker exit does not prove that Chromium descendants exited.
+            await self._force_process_tree(process)
+        finally:
+            shutil.rmtree(directory, ignore_errors=True)
+            async with self._lock:
+                self._sessions.pop(session_id, None)
+
+    async def _stop_process_tree(self, process: asyncio.subprocess.Process) -> None:
+        if process.stdin is not None:
+            process.stdin.close()
+        if process.returncode is None:
+            try:
+                await asyncio.wait_for(
+                    asyncio.shield(process.wait()), self._termination_timeout
+                )
+            except TimeoutError:
+                pass
+        await self._force_process_tree(process)
+
+    async def _force_process_tree(self, process: asyncio.subprocess.Process) -> None:
+        if sys.platform == "win32":
+            killer = await asyncio.create_subprocess_exec(
+                "taskkill",
+                "/pid",
+                str(process.pid),
+                "/t",
+                "/f",
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await killer.wait()
+            if process.returncode is None:
+                process.kill()
+                await process.wait()
+            return
+        try:
+            os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            return
+        if process.returncode is None:
+            try:
+                await asyncio.wait_for(
+                    asyncio.shield(process.wait()), self._termination_timeout
+                )
+            except TimeoutError:
+                pass
+        # A dead group leader says nothing about descendants that ignored TERM.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        if process.returncode is None:
+            await process.wait()
+
+
+def _worker_payload(
+    session_id: str,
+    profile: Profile,
+    proxy: ProfileBrowserProxy | None,
+    license_key: str | None,
+) -> dict[str, Any]:
+    spec = profile.spec
+    return {
+        "sessionId": session_id,
+        "profileId": profile.id,
+        "fingerprintSeed": profile.fingerprint_seed,
+        "startUrl": spec.start_url,
+        "locale": spec.locale,
+        "timezone": spec.timezone,
+        "geoip": spec.geoip,
+        "humanize": spec.humanize,
+        "humanPreset": spec.human_preset,
+        "userAgent": spec.user_agent,
+        "viewport": spec.viewport,
+        "colorScheme": spec.color_scheme,
+        "extensionPaths": spec.extension_paths,
+        "expertArgs": spec.expert_args,
+        "browserVersion": spec.browser_version,
+        "releaseChannel": spec.release_channel,
+        "proxy": (
+            {"server": proxy.server, "username": proxy.username, "password": proxy.password}
+            if proxy
+            else None
+        ),
+        "licenseKey": license_key,
+    }
+
+
+def _process_group_options() -> dict[str, Any]:
+    if sys.platform == "win32":
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+async def _wait_for_spawn(
+    task: asyncio.Task[asyncio.subprocess.Process],
+) -> asyncio.subprocess.Process:
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError:
+            continue
+    return task.result()

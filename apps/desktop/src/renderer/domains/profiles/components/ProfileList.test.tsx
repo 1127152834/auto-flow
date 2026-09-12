@@ -17,7 +17,7 @@ const profile: ProfileRead = {
 afterEach(cleanup)
 
 it('shows the original profile fields and routes every action', async () => {
-  const actions = { onEdit: vi.fn(), onDuplicate: vi.fn(), onRegenerate: vi.fn(), onDelete: vi.fn() }
+  const actions = { onOpen: vi.fn(), onEdit: vi.fn(), onDuplicate: vi.fn(), onRegenerate: vi.fn(), onDelete: vi.fn() }
   const user = userEvent.setup()
   render(<ProfileList profiles={[profile]} {...actions} />)
   const item = screen.getByRole('listitem')
@@ -28,7 +28,7 @@ it('shows the original profile fields and routes every action', async () => {
   expect(item).toHaveTextContent('zh-CN / Asia/Shanghai')
   expect(item).toHaveTextContent('代理池')
   for (const [name, callback] of [
-    ['编辑 工作环境', actions.onEdit], ['复制 工作环境', actions.onDuplicate],
+    ['打开 工作环境 的测试浏览器', actions.onOpen], ['编辑 工作环境', actions.onEdit], ['复制 工作环境', actions.onDuplicate],
     ['重新生成 工作环境 的指纹', actions.onRegenerate], ['删除 工作环境', actions.onDelete],
   ] as const) {
     await user.click(within(item).getByRole('button', { name }))
@@ -37,8 +37,8 @@ it('shows the original profile fields and routes every action', async () => {
 })
 
 it('blocks writes and exposes the active fingerprint state while disabled', () => {
-  render(<ProfileList profiles={[profile]} disabled regeneratingId={profile.id} onEdit={vi.fn()} onDuplicate={vi.fn()} onRegenerate={vi.fn()} onDelete={vi.fn()} />)
-  expect(screen.getAllByRole('button')).toHaveLength(4)
+  render(<ProfileList profiles={[profile]} disabled regeneratingId={profile.id} onOpen={vi.fn()} onEdit={vi.fn()} onDuplicate={vi.fn()} onRegenerate={vi.fn()} onDelete={vi.fn()} />)
+  expect(screen.getAllByRole('button')).toHaveLength(5)
   expect(screen.getAllByRole('button').every((button) => button.hasAttribute('disabled'))).toBe(true)
   expect(screen.getByText('生成中…')).toBeInTheDocument()
 })

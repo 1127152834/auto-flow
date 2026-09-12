@@ -24,3 +24,11 @@ class KernelNotInstalled(Exception):
 
 class ProxyUnavailable(Exception):
     """Raised when a profile references an unavailable proxy resource."""
+
+
+class ProfileTestBrowserBusy(Exception):
+    """Raised while the same profile already has a test browser starting."""
+
+
+class ProfileTestBrowserUnavailable(Exception):
+    """Raised when a temporary test browser cannot be started."""

@@ -10,6 +10,7 @@ from autoflow.bootstrap.app import create_app
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--kernel-worker", action="store_true")
+    parser.add_argument("--test-browser-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--instance-id")
@@ -20,6 +21,10 @@ def main() -> None:
         from autoflow.bootstrap.kernel_worker import kernel_worker_main
 
         raise SystemExit(kernel_worker_main())
+    if args.test_browser_worker:
+        from autoflow.bootstrap.test_browser_worker import test_browser_worker_main
+
+        raise SystemExit(test_browser_worker_main())
     if args.instance_id is None:
         parser.error("the following arguments are required: --instance-id")
     if args.data_dir is None:

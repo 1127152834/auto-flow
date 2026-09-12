@@ -18,6 +18,7 @@ from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
+from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.proxies import (
@@ -63,6 +64,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
+from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
@@ -120,6 +122,7 @@ def create_app(
         usage_guard,
         data_store,
     )
+    test_browser_workers = TestBrowserWorkerManager(paths.temp)
 
     model_service = ModelService(
         partial(model_repository_transaction, session_factory),
@@ -128,7 +131,19 @@ def create_app(
     )
     model_service.recover_credentials()
 
+    app = FastAPI()
+    configure_openapi(app, api_version=settings.api_version)
+    install_error_handlers(app)
     quiesce_gate = QuiesceGate()
+    proxy_runtime = configure_proxy_management(app, paths.database)
+    profile_test_browser = ProfileTestBrowserService(
+        profile_service,
+        catalog_provider.installed,
+        proxy_runtime.resolve_profile,
+        license_store.read,
+        test_browser_workers,
+    )
+
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
         {
@@ -140,29 +155,35 @@ def create_app(
         },
         settings.api_version,
         lambda: len(catalog_provider.installed()),
-        lambda: ["kernel_process_active"] if kernel_worker_manager.active_processes() else [],
+        lambda: [
+            *(["kernel_process_active"] if kernel_worker_manager.active_processes() else []),
+            *(["test_browser_process_active"] if test_browser_workers.busy() else []),
+        ],
         quiesce_gate,
     )
 
-    app = FastAPI()
-    configure_openapi(app, api_version=settings.api_version)
-    install_error_handlers(app)
     app.state.paths = paths
     app.state.session_factory = session_factory
     app.state.profile_service = profile_service
+    app.state.profile_test_browser = profile_test_browser
+    app.state.test_browser_worker_manager = test_browser_workers
     app.state.model_service = model_service
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
-    close_proxies = configure_proxy_management(app, paths.database)
 
     async def shutdown() -> None:
         try:
-            await kernel_worker_manager.shutdown()
+            import asyncio
+
+            await asyncio.gather(
+                test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
+            )
         finally:
             try:
                 from inspect import isawaitable
-                closing = close_proxies()
+
+                closing = proxy_runtime.close()
                 if isawaitable(closing):
                     await closing
             finally:
@@ -170,7 +191,11 @@ def create_app(
 
     app.router.add_event_handler("shutdown", shutdown)
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
-    app.include_router(profiles_router(profile_service, read_profile_environment_options))
+    app.include_router(
+        profiles_router(
+            profile_service, read_profile_environment_options, profile_test_browser
+        )
+    )
     app.include_router(proxy_options_router(proxy_options))
     app.include_router(models_router(model_service))
     app.include_router(kernels_router(kernel_service))

@@ -1,9 +1,10 @@
 from collections.abc import Callable
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Protocol
 
-from .models import Profile
+from .models import Profile, ProfileBrowserProxy, ProfileTestBrowserSession
 
 
 class ProfileRepository(Protocol):
@@ -47,6 +48,17 @@ class ProfileDataStore(Protocol):
 
 class ProfileUsageGuard(Protocol):
     def guard(self, profile_id: str) -> AbstractContextManager[None]: ...
+
+
+class ProfileTestBrowserLauncher(Protocol):
+    async def start(
+        self,
+        session_id: str,
+        profile: Profile,
+        executable: Path,
+        proxy: ProfileBrowserProxy | None,
+        license_key: str | None,
+    ) -> ProfileTestBrowserSession: ...
 
 
 @dataclass(frozen=True)

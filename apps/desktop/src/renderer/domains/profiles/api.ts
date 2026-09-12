@@ -4,6 +4,7 @@ import type {
   ProfileEnvironmentOptions,
   ProfileList,
   ProfileRead,
+  ProfileTestBrowser,
   ProfileWrite,
   ProxyOptionsRead,
 } from '../../shared/api/types'
@@ -29,6 +30,10 @@ export function createProfilesApi(client: ApiClient) {
     duplicate: (profileId: string, body: ProfileDuplicate) => client.request<ProfileRead>(
       apiPath(`/profiles/${segment(profileId)}/duplicate`),
       { method: 'POST', body },
+    ),
+    openTestBrowser: (profileId: string) => client.request<ProfileTestBrowser>(
+      apiPath(`/profiles/${segment(profileId)}/test-browser`),
+      { method: 'POST', timeoutMs: 120_000 },
     ),
     regenerate: (profileId: string) => client.request<ProfileRead>(
       apiPath(`/profiles/${segment(profileId)}/regenerate-fingerprint`),

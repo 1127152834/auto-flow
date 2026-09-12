@@ -8,13 +8,17 @@ datas = [
     ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
     ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
     *collect_data_files('tzdata'),
+    *collect_data_files('playwright'),
     *copy_metadata('tzdata'),
     *copy_metadata('cloakbrowser'),
     *copy_metadata('keyring'),
+    *copy_metadata('playwright'),
 ]
 hiddenimports = [
     'autoflow.bootstrap.kernel_worker',
+    'autoflow.bootstrap.test_browser_worker',
     'autoflow.providers.kernel.worker',
+    'autoflow.providers.browser.worker',
     'sqlalchemy.dialects.sqlite.pysqlite',
     'keyring.backends.macOS',
     'keyring.backends.macOS.api',

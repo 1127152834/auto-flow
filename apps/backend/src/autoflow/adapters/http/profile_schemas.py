@@ -4,7 +4,11 @@ from uuid import UUID
 
 from pydantic import Field, field_validator, model_validator
 
-from autoflow.domain.profiles.models import Profile, ProfileSpec
+from autoflow.domain.profiles.models import (
+    Profile,
+    ProfileSpec,
+    ProfileTestBrowserSession,
+)
 
 from .schemas import ApiModel
 
@@ -125,6 +129,24 @@ class ProfileRead(ProfileWrite):
 class ProfileList(ApiModel):
     items: list[ProfileRead]
     total: int
+
+
+class ProfileTestBrowserRead(ApiModel):
+    session_id: UUID
+    profile_id: UUID
+    fingerprint_seed: int
+    warning: str | None = None
+
+    @classmethod
+    def from_session(
+        cls, session: ProfileTestBrowserSession
+    ) -> "ProfileTestBrowserRead":
+        return cls(
+            session_id=UUID(session.id),
+            profile_id=UUID(session.profile_id),
+            fingerprint_seed=session.fingerprint_seed,
+            warning=session.warning,
+        )
 
 
 class EnvironmentOptionRead(ApiModel):

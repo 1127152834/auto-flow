@@ -55,13 +55,13 @@ try {
   await waitFor(cdp, `document.body?.innerText.includes('CloakBrowser 内核管理')`, 'kernel manager dialog')
   await setViewport(cdp, 1280, 900)
   await assertNoHorizontalOverflow(cdp, '1280px kernel manager', 'CloakBrowser 内核管理')
-  await assertKernelColumns(cdp, 2)
+  await assertCardColumns(cdp, '内核版本卡片', 2)
   await setViewport(cdp, 1024, 800)
   await assertNoHorizontalOverflow(cdp, '1024px kernel manager', 'CloakBrowser 内核管理')
-  await assertKernelColumns(cdp, 2)
+  await assertCardColumns(cdp, '内核版本卡片', 2)
   await setViewport(cdp, 640, 800)
   await assertNoHorizontalOverflow(cdp, '640px kernel manager', 'CloakBrowser 内核管理')
-  await assertKernelColumns(cdp, 1)
+  await assertCardColumns(cdp, '内核版本卡片', 1)
   await setViewport(cdp, 1024, 800)
   await clickAria(cdp, '关闭内核管理')
   await waitFor(cdp, `![...document.querySelectorAll('[role=dialog]')].some(node => node.getClientRects().length && node.textContent?.includes('CloakBrowser 内核管理'))`, 'kernel manager close')
@@ -80,6 +80,12 @@ try {
   assert.equal(saved.items[0].browserVersion, version)
   assert.equal(saved.items[0].timezone, 'Asia/Shanghai')
   const firstSeed = saved.items[0].fingerprintSeed
+
+  // The local fixture is deliberately not executable browser code: verify the
+  // real button/API path reports the startup failure on its own card.
+  await activateAria(cdp, `打开 ${originalName} 的测试浏览器`)
+  await waitFor(cdp, `document.querySelector('[aria-label="浏览器配置列表"] [role="alert"]')?.textContent.includes('测试浏览器启动失败')`, 'test browser startup failure', 30_000)
+  assert.ok(await cdp.evaluate(`![...document.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === ${JSON.stringify(`打开 ${originalName} 的测试浏览器`)})?.disabled`))
 
   await cdp.command('Page.reload', { ignoreCache: true })
   await waitFor(cdp, `document.querySelector('[aria-label="浏览器配置列表"]')?.innerText.includes(${JSON.stringify(originalName)})`, 'profile after full reload', 30_000)
@@ -113,6 +119,16 @@ try {
   const copied = saved.items.find(profile => profile.name === copyName)
   assert.equal(original?.fingerprintSeed, regeneratedSeed)
   assert.notEqual(copied?.fingerprintSeed, regeneratedSeed)
+  await setViewport(cdp, 1280, 900)
+  await assertCardColumns(cdp, '浏览器配置列表', 2)
+  await assertNoHorizontalOverflow(cdp, '1280px profile cards')
+  await setViewport(cdp, 1024, 800)
+  await assertCardColumns(cdp, '浏览器配置列表', 2)
+  await assertNoHorizontalOverflow(cdp, '1024px profile cards')
+  await setViewport(cdp, 640, 800)
+  await assertCardColumns(cdp, '浏览器配置列表', 1)
+  await assertNoHorizontalOverflow(cdp, '640px profile cards')
+  await setViewport(cdp, 1280, 900)
 
   await activateAria(cdp, `删除 ${copyName}`)
   await clickText(cdp, '确认删除')
@@ -203,7 +219,12 @@ async function valueOf(cdp, selector) {
 
 async function setViewport(cdp, width, height) {
   await cdp.command('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false })
-  await wait(150)
+  await cdp.evaluate(`(async () => {
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    await Promise.all(document.getAnimations()
+      .filter(animation => animation instanceof CSSTransition)
+      .map(animation => animation.finished.catch(() => undefined)))
+  })()`)
 }
 
 async function assertNoHorizontalOverflow(cdp, description, dialogTitle) {
@@ -237,16 +258,16 @@ async function assertNoHorizontalOverflow(cdp, description, dialogTitle) {
   assert.deepEqual(result.outside, [], `${description}: controls outside viewport`)
 }
 
-async function assertKernelColumns(cdp, count) {
+async function assertCardColumns(cdp, label, count) {
   const result = await waitFor(cdp, `(() => {
-    const grid = document.querySelector('[aria-label="内核版本卡片"]')
+    const grid = document.querySelector(${JSON.stringify(`[aria-label="${label}"]`)})
     if (!grid || grid.children.length < 2) return null
     const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').length
     const [first, second] = [...grid.children].map(card => card.getBoundingClientRect())
     return { columns, sameRow: Math.abs(first.top - second.top) < 1 }
-  })()`, 'installed kernel cards')
-  assert.equal(result.columns, count, 'kernel card column count')
-  assert.equal(result.sameRow, count === 2, 'kernel cards flow into expected rows')
+  })()`, `${label} ready`)
+  assert.equal(result.columns, count, `${label} column count`)
+  assert.equal(result.sameRow, count === 2, `${label} cards flow into expected rows`)
 }
 
 async function profileList(sidecar) {

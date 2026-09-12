@@ -22,6 +22,7 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
   let values = [...initialProfiles]
   let profileError = initialProfileError
   let regenerateResponse: Promise<Response> | undefined
+  const launchResponses = new Map<string, Promise<Response>>()
   const calls: Array<{ path: string; method: string; body?: Record<string, unknown> }> = []
   const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const path = new URL(String(input)).pathname
@@ -34,8 +35,18 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
     if (path === '/api/v1/profiles' && method === 'GET') return profileError
       ? json({ error: { code: 'SERVICE_UNAVAILABLE', message: '配置服务暂不可用', details: {}, requestId: 'request-list' } }, 503)
       : json({ items: values, total: values.length })
+    if (path.endsWith('/test-browser') && method === 'POST') {
+      const id = decodeURIComponent(path.split('/').at(-2)!)
+      return launchResponses.get(id) ?? json({ sessionId: crypto.randomUUID(), profileId: id, fingerprintSeed: values.find((profile) => profile.id === id)!.fingerprintSeed, warning: null }, 201)
+    }
     if (path.endsWith('/regenerate-fingerprint') && method === 'POST') {
-      if (regenerateResponse) return regenerateResponse
+      if (regenerateResponse) return regenerateResponse.then(async (response) => {
+        if (response.ok) {
+          const updated = await response.clone().json() as ProfileRead
+          values = values.map((profile) => profile.id === updated.id ? updated : profile)
+        }
+        return response
+      })
       const id = decodeURIComponent(path.split('/').at(-2)!)
       const current = values.find((profile) => profile.id === id)!
       const updated = { ...current, fingerprintSeed: current.fingerprintSeed + 1 }
@@ -69,6 +80,7 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
   return {
     fetch,
     calls,
+    setLaunchResponse(profileId: string, response: Promise<Response>) { launchResponses.set(profileId, response) },
     setProfileError(value: boolean) { profileError = value },
     setRegenerateResponse(response: Promise<Response>) { regenerateResponse = response },
   }
@@ -137,7 +149,8 @@ it('locks fingerprint regeneration until completion and reports success', async 
   expect(screen.getByText('生成中…')).toBeInTheDocument()
   expect(button).toBeDisabled()
   resolve(json({ ...workProfile, fingerprintSeed: 54321 }))
-  expect(await screen.findByText('指纹已重新生成')).toBeInTheDocument()
+  expect(await screen.findByText(/指纹已重新生成：12345 → 54321/)).toBeInTheDocument()
+  expect(screen.getByLabelText(`${workProfile.name} 的指纹种子`)).toHaveTextContent('54321')
 })
 
 it('renders a structured initial error and retries into the empty state', async () => {
@@ -159,6 +172,7 @@ it('keeps stale profiles visible when a background refresh fails', async () => {
   const stale = await screen.findByRole('alert', {}, { timeout: 5000 })
   expect(stale).toHaveTextContent('已加载的数据会继续保留')
   expect(screen.getByText(workProfile.name)).toBeInTheDocument()
+  expect(screen.getByLabelText(`${workProfile.name} 的指纹种子`)).toHaveTextContent('12346')
 })
 
 it('keeps the form draft mounted while the nested kernel manager opens and restores focus', async () => {
@@ -233,4 +247,50 @@ it('blocks an already-open kernel or delete action while offline but still allow
   await user.click(within(confirmation).getByRole('button', { name: '重新连接' }))
   expect(onReconnect).toHaveBeenCalledTimes(2)
   expect(view.server.calls.filter((call) => call.method === 'DELETE')).toHaveLength(0)
+})
+
+
+it('opens fresh test browsers, deduplicates pending clicks, and keeps different cards independent', async () => {
+  let resolve!: (response: Response) => void
+  const pending = new Promise<Response>((done) => { resolve = done })
+  const user = userEvent.setup()
+  const { server } = renderBrowserPage()
+  server.setLaunchResponse(workProfile.id, pending)
+  const first = await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` })
+  const second = screen.getByRole('button', { name: `打开 ${testProfile.name} 的测试浏览器` })
+  await user.dblClick(first)
+  expect(server.calls.filter((call) => call.path.endsWith('/test-browser'))).toHaveLength(1)
+  expect(first).toBeDisabled()
+  expect(second).toBeEnabled()
+  await user.click(second)
+  expect(await screen.findByText(/测试环境 的测试浏览器已打开/)).toBeInTheDocument()
+  expect(first).toBeDisabled()
+  resolve(json({ sessionId: 'session-1', profileId: workProfile.id, fingerprintSeed: workProfile.fingerprintSeed, warning: null }, 201))
+  await waitFor(() => expect(first).toBeEnabled())
+  await user.click(first)
+  expect(server.calls.filter((call) => call.path.endsWith('/test-browser'))).toHaveLength(3)
+  expect(server.calls.filter((call) => call.path.endsWith('/test-browser')).every((call) => call.body === undefined)).toBe(true)
+})
+
+it('shows launch failure on its own card, does not retry automatically, and blocks offline launches', async () => {
+  const user = userEvent.setup()
+  const view = renderBrowserPage()
+  view.server.setLaunchResponse(workProfile.id, Promise.resolve(json({ error: { code: 'PROFILE_TEST_BROWSER_FAILED', message: '所选内核无法启动', details: {}, requestId: '' } }, 500)))
+  await user.click(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }))
+  const card = screen.getByText(workProfile.name).closest('li')!
+  expect(await within(card).findByRole('alert')).toHaveTextContent('所选内核无法启动')
+  await user.click(screen.getByRole('button', { name: `打开 ${testProfile.name} 的测试浏览器` }))
+  expect(within(card).getByRole('alert')).toHaveTextContent('所选内核无法启动')
+  expect(view.server.calls.filter((call) => call.path.endsWith('/test-browser'))).toHaveLength(2)
+  view.rerenderDisabled(true)
+  expect(screen.getByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` })).toBeDisabled()
+})
+
+it('reports a navigation warning without claiming that the browser failed to open', async () => {
+  const user = userEvent.setup()
+  const { server } = renderBrowserPage({ profiles: [workProfile] })
+  server.setLaunchResponse(workProfile.id, Promise.resolve(json({ sessionId: 'session-1', profileId: workProfile.id, fingerprintSeed: 12345, warning: '起始页面加载失败，请在窗口中重试。' }, 201)))
+  await user.click(await screen.findByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('测试浏览器已打开，但起始页面加载失败')
+  expect(screen.getByRole('button', { name: `打开 ${workProfile.name} 的测试浏览器` })).toBeEnabled()
 })
