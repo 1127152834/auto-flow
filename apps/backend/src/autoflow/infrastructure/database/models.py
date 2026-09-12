@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -156,6 +157,7 @@ class ProjectRow(Base):
 
 class ProjectOperationRow(Base):
     __tablename__ = "project_operations"
+    __table_args__ = (Index("uq_project_operations_scope", "project_id", "id", unique=True),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("projects.id", ondelete="RESTRICT"))
     idempotency_key: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
