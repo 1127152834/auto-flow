@@ -199,3 +199,19 @@ ScalarValueEditor props固定为id/label/type/draft/onChange、disabled/readOnly
 新增 `records-api.ts`及测试，直接使用真实生成DataRecordCreate/Patch/StatusWrite/Page/View。完整project/table/generation作用域；记录键按UTF8规范base64url编码且区分type，查询filter/orderBy只编码一次；读请求可取消。create/update/status原key与不可变body，恢复校验kind、完整RecordRef及操作project/key/status；只有明确OPERATION_NOT_FOUND才原身份重发一次。客户端不直接修改缓存/Toast，页面稍后承担实例和会话隔离。定向Vitest、typecheck/lint并独立审查，后续正式页面调用真实API。
 
 A3c复用补充：将已验证的目录命令恢复机制收敛到`data-command.ts`，供catalog和records两个真实消费者使用；DataCommandUncertain从原api.ts保持兼容再导出。表资料API行为保持现状。新增helper不是第二操作框架，只负责固定请求快照、原key查询、匹配结果或一次确认后重发；原catalog17项回归必须通过。
+
+## C1e 记录编辑执行卡（2026-09-13）
+
+前置为C1c标量编辑、真实DataRecordView/Create/Patch与A3c客户端；不开放未实现删除。主协调负责`record-draft.ts`及相邻测试，独立智能体负责`components/RecordEditorDialog.tsx`及相邻测试；父页面随后C2装配。
+
+1. draft以fieldId定位，复用scalarDraft/parseScalarDraft，保留missing/null/空串/空白/日期原精度。`createRecordDraft(fields,record?)`和`recordValues(fields,drafts,record?,identityFieldId?)`返回真实DataCellWrite[]；编辑只提交真实改变值，原missing选择missing不写入。字段公式/只读、不可读单元格与编辑态身份字段禁止写，创建身份值由正常业务字段输入。
+2. 先RED测试创建必填缺项/null/空串、码点长度和数字范围、只发改变的字段、显式null、身份/公式/不可读字段、日期保真和非法数值。通过`RecordDraftError.fieldId`定位字段错误，不在前端重实现Python正则，服务端仍执行权威格式规则。记录草稿不包含业务状态、关联、修订或source/readable属性，父级绑定冻结RecordRef与contentRevision。
+3. 组件props为open/mode/sessionKey/fields/initialRecord?/identityFieldId?/saving/readonly/error/onOpenChange/onSubmit(values)/onDirtyChange。同workspace/project/table/generation/record/session保持脏草稿，后台刷新只更新无改动表单；提交冻结本次values和身份，由父级命令管理原key及实例隔离。关闭/换会话/卸载撤销迟到界面结果；本地验证错误聚焦对应输入，失败保留输入。保存中禁止重复及关闭，成功不自动关闭；编辑无变化禁提交。
+4. 记录信息区展示真实typed身份和不可编辑原因；大尺寸Modal内单主滚动区，四种类型使用ScalarValueEditor，长文本不撑宽；不会给无字段表造虚假业务列，空结构仍可创建系统身份记录。
+5. 组件失败测试→实现→Vitest/typecheck/lint→独立规格→工程→修复复核→提交。仅组件完成不登记正式数据页已验收。
+
+## C1f 记录表格执行卡（2026-09-13）
+
+主协调限定新增`components/DataRecordsTable.tsx`及相邻测试。真实DataRecordPage/FieldView/StatusView作为受控props；分页回调只请求父层服务端页，不做本地过滤分页。复用Table/Pagination/Button/Badge/Skeleton，容器水平滚动，长值单元格截断但保留可访问文本，详情通过onOpen(record)查看。visibleFieldIds控制业务列，身份/状态/操作固定；初始全量列由父级选择，不伪造未实现的同步或占用状态。
+
+先RED覆盖text001/text1/integer1显示身份与回调、missing/null/空串/false/日期原精度、不可读不泄漏、状态空值/目录失效、分页、加载/空/无匹配/刷新失败保留旧页、readonly禁止写。onCreate/onStatusChange可选，仅接通真实消费者时显示；onOpen保持真实RecordRef。完成定向Vitest/typecheck/lint及独立规格→工程审查，C2真实页面挂载后再做应用验收。
