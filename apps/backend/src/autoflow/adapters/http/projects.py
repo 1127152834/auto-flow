@@ -130,10 +130,10 @@ def projects_router(service: ProjectService) -> APIRouter:
         projectId: UUID,
         page: int = Query(1, ge=1, le=2_147_483_647),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
-        kind: Literal["createProject", "updateProject"] | None = None,
+        kind: Literal["createProject", "updateProject", "createTable", "updateTable"] | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
         | None = None,
-        resource_type: Literal["project"] | None = Query(None, alias="resourceType"),
+        resource_type: Literal["project", "table"] | None = Query(None, alias="resourceType"),
     ):
         items, total = service.operations(
             str(projectId),

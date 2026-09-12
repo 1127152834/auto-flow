@@ -27,6 +27,7 @@ def upgrade():
         ),
         sa.Column("name", sa.Text(), nullable=False),
         sa.Column("name_key", sa.Text(), nullable=False),
+        sa.Column("search_text", sa.Text(), nullable=False),
         sa.Column("description", sa.Text(), nullable=False),
         sa.Column("source_kind", sa.String(20), nullable=False),
         sa.Column("current_generation", sa.String(36), nullable=False),

@@ -43,6 +43,7 @@ class DataTableRow(Base):
     )
     name: Mapped[str] = mapped_column(sa.Text(), nullable=False)
     name_key: Mapped[str] = mapped_column(sa.Text(), nullable=False)
+    search_text: Mapped[str] = mapped_column(sa.Text(), nullable=False)
     description: Mapped[str] = mapped_column(sa.Text(), nullable=False)
     source_kind: Mapped[str] = mapped_column(sa.String(20), nullable=False)
     current_generation: Mapped[str] = mapped_column(sa.String(36), nullable=False)

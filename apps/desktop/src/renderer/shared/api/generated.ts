@@ -1178,6 +1178,42 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tables */
+        get: operations["list_tables_api_v1_projects__projectId__tables_get"];
+        put?: never;
+        /** Create Table */
+        post: operations["create_table_api_v1_projects__projectId__tables_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Table */
+        get: operations["get_table_api_v1_projects__projectId__tables__tableId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Table */
+        patch: operations["update_table_api_v1_projects__projectId__tables__tableId__patch"];
+        trace?: never;
+    };
     "/api/v1/kernels/events": {
         parameters: {
             query?: never;
@@ -1422,6 +1458,81 @@ export type components = {
              */
             generatedAt: string;
         };
+        /** DataTableCreate */
+        DataTableCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Sourcekind
+             * @default local
+             * @constant
+             */
+            sourceKind: "local";
+        };
+        /** DataTablePage */
+        DataTablePage: {
+            /** Items */
+            items: components["schemas"]["DataTableView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** DataTablePatch */
+        DataTablePatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+        };
+        /** DataTableView */
+        DataTableView: {
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Sourcekind
+             * @enum {string}
+             */
+            sourceKind: "local" | "excel" | "sheets" | "unconfigured";
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Tablerevision */
+            tableRevision: number;
+            /** Identity */
+            identity: components["schemas"]["SystemTableIdentity"] | components["schemas"]["FieldTableIdentity"];
+            /** Slotdefinitions */
+            slotDefinitions: components["schemas"]["TableSlotDefinition"][];
+            /** Recordcount */
+            recordCount: number;
+            syncSummary: components["schemas"]["TableSyncSummary"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
         /** DefaultKernelRead */
         DefaultKernelRead: {
             /** Revision */
@@ -1458,6 +1569,16 @@ export type components = {
         ExpectedRevision: {
             /** Expected Revision */
             expected_revision: number;
+        };
+        /** FieldTableIdentity */
+        FieldTableIdentity: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "field";
+            /** Fieldid */
+            fieldId: string;
         };
         /** FixedProxy */
         FixedProxy: {
@@ -2397,7 +2518,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject";
+            kind: "createProject" | "updateProject" | "createTable" | "updateTable";
             /**
              * Status
              * @constant
@@ -2405,8 +2526,10 @@ export type components = {
             status: "succeeded";
             /** Statusrevision */
             statusRevision: number;
-            resource: components["schemas"]["ProjectResourceLocator"];
-            result: components["schemas"]["ProjectView"] | null;
+            /** Resource */
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"];
+            /** Result */
+            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -2467,8 +2590,8 @@ export type components = {
         /** ProjectResourceLocator */
         ProjectResourceLocator: {
             /**
-             * Type
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             type: "project";
             /** Projectid */
@@ -2743,6 +2866,51 @@ export type components = {
             /** Remote Missing Count */
             remote_missing_count: number;
             last_error?: components["schemas"]["ApiError"] | null;
+        };
+        /** SystemTableIdentity */
+        SystemTableIdentity: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "system";
+        };
+        /** TableResourceLocator */
+        TableResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "table";
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+        };
+        /** TableSlotDefinition */
+        TableSlotDefinition: {
+            /** Slotid */
+            slotId: string;
+            /** Name */
+            name: string;
+            /** Targettableid */
+            targetTableId: string;
+            /** Required */
+            required: boolean;
+        };
+        /** TableSyncSummary */
+        TableSyncSummary: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "notApplicable" | "idle" | "pending" | "sending" | "verifying" | "confirmed" | "failed" | "unknown" | "paused";
+            /** Pendingcount */
+            pendingCount: number;
+            /** Unknowncount */
+            unknownCount: number;
+            /** Lastconfirmedat */
+            lastConfirmedAt?: string | null;
         };
         /** UsagePoint */
         UsagePoint: {
@@ -7237,9 +7405,9 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject") | null;
+                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
-                resourceType?: "project" | null;
+                resourceType?: ("project" | "table") | null;
             };
             header?: never;
             path: {
@@ -7427,6 +7595,276 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_tables_api_v1_projects__projectId__tables_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                sourceKind?: ("local" | "excel" | "sheets" | "unconfigured") | null;
+                page?: number;
+                pageSize?: number;
+                sort?: "name" | "-name" | "updatedAt" | "-updatedAt";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTablePage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_table_api_v1_projects__projectId__tables_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataTableCreate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTableView"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTableView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_table_api_v1_projects__projectId__tables__tableId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTableView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_table_api_v1_projects__projectId__tables__tableId__patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataTablePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataTableView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -74,7 +74,7 @@ it('locks changes during an unknown create and reconciles its retained key witho
     if (path.includes('/workspace/operations/')) {
       workspaceLookups += 1
       if (workspaceLookups === 1) return Promise.reject(new TypeError('连接中断'))
-      return Promise.resolve({ status: 'succeeded', result: { ...a, name: '原始草稿' } })
+      return Promise.resolve({ status: 'succeeded', kind: 'createProject', resource: { type: 'project', projectId: a.projectId }, result: { ...a, name: '原始草稿' } })
     }
     if (init?.method === 'POST') return Promise.reject(new TypeError('连接中断'))
     return Promise.resolve({ items: [], page: 1, pageSize: 50, total: 0, sort: '-lastOpenedAt' })

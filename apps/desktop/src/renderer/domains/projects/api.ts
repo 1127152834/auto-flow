@@ -22,7 +22,11 @@ function outcomeUnknown(error: unknown): boolean {
 }
 
 function operationResult(operation: ProjectOperationView): ProjectView {
-  if (operation.status !== 'succeeded' || !operation.result) throw new Error('项目操作尚无成功结果')
+  if (operation.status !== 'succeeded' || operation.resource.type !== 'project'
+    || !['createProject', 'updateProject'].includes(operation.kind)
+    || !operation.result || !('managementRevision' in operation.result)) {
+    throw new Error('未找到匹配的项目保存结果')
+  }
   return operation.result
 }
 

@@ -3,6 +3,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
+from .project_data_schemas import DataTableView, TableResourceLocator
 from .schemas import ApiModel
 
 
@@ -85,11 +86,11 @@ class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
     idempotency_key: str
-    kind: Literal["createProject", "updateProject"]
+    kind: Literal["createProject", "updateProject", "createTable", "updateTable"]
     status: Literal["succeeded"]
     status_revision: int
-    resource: ProjectResourceLocator
-    result: ProjectView | None
+    resource: Annotated[ProjectResourceLocator | TableResourceLocator, Field(discriminator="type")]
+    result: ProjectView | DataTableView | None
     error: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime

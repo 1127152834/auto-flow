@@ -39,10 +39,10 @@ def seed_project(connection, project="p"):
 def seed_table(connection, table="t", generation="g", project="p"):
     connection.execute(
         """INSERT INTO project_data_tables
-        (id,project_id,name,name_key,description,source_kind,current_generation,table_revision,
+        (id,project_id,name,name_key,search_text,description,source_kind,current_generation,table_revision,
         identity,slot_definitions,created_at,updated_at)
-        VALUES (?,?,?,?,?,'local',?,1,'{"mode":"system"}','[]',?,?)""",
-        (table, project, table, table, "", generation, "2026-09-13", "2026-09-13"),
+        VALUES (?,?,?,?,?,?,'local',?,1,'{"mode":"system"}','[]',?,?)""",
+        (table, project, table, table, table.casefold(), "", generation, "2026-09-13", "2026-09-13"),
     )
     connection.execute(
         """INSERT INTO project_data_generations

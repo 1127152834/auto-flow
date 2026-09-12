@@ -29,3 +29,11 @@ Excel原七项规格问题复核通过，工程审查新发现字符串32768截�
 ## Excel B1 最终复核
 
 原七项规格问题、五项工程问题全部闭合；最后修复公共迭代边界的数值解析异常（表头和数据），避免仅流读取处理而inspect泄漏。定向30测试、Ruff/mypy通过，独立工程复核通过。接口read_sheet返回可关闭的ExcelRowStream/ExcelRow，inspection保留有限sample及全量公式来源统计。这里只是文件适配，文件IPC、持久inspection、原子发布和实际导入页面尚未交付。
+
+## A2a 表资料与目录 API 最终复核
+
+规格闭合：原始UUID先验证后转换；name/description孤立surrogate、q控制字符统一422；Unicode casefold搜索维护持久search_text（本阶段未发布pm02结构同步补齐）。工程闭合：CAS冲突在回滚前捕获currentRevision，避免释放锁后ORM刷新混入另一次写入。35项仓储/HTTP测试、17项命令恢复测试通过，独立工程复核通过。
+
+四个真实HTTP操作为表目录GET/POST和详情GET/PATCH；项目Operation查询扩展真实createTable/updateTable结果。数据记录、字段、状态和文件IPC仍未交付，因此没有启用数据页能力或冒充完整PM2。
+
+前端纯组件原规格问题（session、父级关闭、busy确认、fixture）已闭合；工程最后render阶段ref副作用正在修复，尚未提交组件。

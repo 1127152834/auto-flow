@@ -7,7 +7,7 @@ function client(request: StreamingApiClient['request']): StreamingApiClient {
 }
 
 describe('createProjectsApi', () => {
-  const operation = (result: object) => ({ status: 'succeeded', result })
+  const operation = (result: object) => ({ status: 'succeeded', kind: 'createProject', resource: { type: 'project' }, result })
   it('passes AbortSignal and encoded list conditions', async () => {
     const request = vi.fn().mockResolvedValue({ items: [], total: 0, offset: 50, limit: 50 })
     const api = createProjectsApi(client(request))
@@ -17,7 +17,7 @@ describe('createProjectsApi', () => {
   })
 
   it('creates with one idempotency key and recovers an unknown response by key', async () => {
-    const created = { projectId: 'p1', name: '项目' }
+    const created = { projectId: 'p1', name: '项目', managementRevision: 1 }
     const request = vi.fn()
       .mockRejectedValueOnce(new ApiClientError('结果未知', 503, { code: 'UNKNOWN', message: '结果未知', request_id: 'r', field_errors: {}, retry_after_seconds: null, outcome_unknown: true }))
       .mockResolvedValueOnce(operation(created))
@@ -29,7 +29,7 @@ describe('createProjectsApi', () => {
   })
 
   it('retries the original create once only when key lookup returns 404', async () => {
-    const created = { projectId: 'p1', name: '项目' }
+    const created = { projectId: 'p1', name: '项目', managementRevision: 1 }
     const unknown = new ApiClientError('结果未知', 503, { code: 'UNKNOWN', message: '结果未知', request_id: 'r', field_errors: {}, retry_after_seconds: null, outcome_unknown: true })
     const request = vi.fn().mockRejectedValueOnce(unknown).mockRejectedValueOnce(new ApiClientError('missing', 404, 'OPERATION_NOT_FOUND')).mockResolvedValueOnce(created)
     const api = createProjectsApi(client(request), () => 'fixed-key')
@@ -38,7 +38,7 @@ describe('createProjectsApi', () => {
   })
 
   it('keeps the command key when both submission and lookup lose their connections', async () => {
-    const created = { projectId: 'p1', name: '项目' }
+    const created = { projectId: 'p1', name: '项目', managementRevision: 1 }
     const request = vi.fn().mockRejectedValueOnce(new TypeError('network')).mockRejectedValueOnce(new TypeError('network')).mockResolvedValueOnce(operation(created))
     const api = createProjectsApi(client(request), () => 'fixed-key')
     await expect(api.create({ name: '项目', description: '' }, 'fixed-key')).rejects.toBeInstanceOf(ProjectCommandUncertain)
@@ -84,4 +84,15 @@ describe('createProjectsApi', () => {
     await expect(api.create({ name: '项目', description: '' })).rejects.toBeInstanceOf(ProjectCommandUncertain)
     expect(request).toHaveBeenCalledTimes(2)
   })
+})
+
+
+it('does not treat a recovered data table operation as a saved project', async () => {
+  const request = vi.fn().mockResolvedValue({
+    status: 'succeeded', kind: 'createTable', resource: { type: 'table', projectId: 'p1', tableId: 't1' },
+    result: { projectId: 'p1', tableId: 't1', name: 'table', tableRevision: 1 },
+  })
+  const api = createProjectsApi(client(request))
+  await expect(api.resumeCreate({ name: 'project', description: '' }, 'key')).rejects.toBeInstanceOf(ProjectCommandUncertain)
+  expect(request).toHaveBeenCalledTimes(1)
 })

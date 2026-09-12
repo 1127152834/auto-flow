@@ -13,6 +13,7 @@ from autoflow.adapters.http.kernels import internal_kernel_paths_router, kernels
 from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
+from autoflow.adapters.http.project_data import project_data_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
@@ -21,6 +22,7 @@ from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.service import WorkflowService
@@ -47,6 +49,7 @@ from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
+from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
@@ -209,6 +212,7 @@ def create_app(
     app.include_router(settings_dashboard_router(settings_runtime))
     app.include_router(workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory))))
     app.include_router(projects_router(ProjectService(SqlAlchemyProjects(session_factory))))
+    app.include_router(project_data_router(DataTableService(SqlAlchemyProjectData(session_factory))))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )
