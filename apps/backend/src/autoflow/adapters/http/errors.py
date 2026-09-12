@@ -2,6 +2,7 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,6 +33,7 @@ from autoflow.domain.profiles.errors import (
     ProfileValidationError,
     ProxyUnavailable,
 )
+from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.models import WorkflowError
 
 _MODEL_ERROR_MESSAGES = {
@@ -75,7 +77,9 @@ class BrowserErrorEnvelope(BaseModel):
 
 
 def browser_error_responses(*status_codes: int) -> dict[int | str, dict[str, Any]]:
-    return {status_code: {"model": BrowserErrorEnvelope} for status_code in status_codes}
+    return {
+        status_code: {"model": BrowserErrorEnvelope} for status_code in status_codes
+    }
 
 
 def error_response(
@@ -85,7 +89,14 @@ def error_response(
     details: dict[str, Any] | None = None,
 ) -> JSONResponse:
     return JSONResponse(
-        {"error": {"code": code, "message": message, "details": details or {}, "requestId": str(uuid4())}},
+        {
+            "error": {
+                "code": code,
+                "message": message,
+                "details": details or {},
+                "requestId": str(uuid4()),
+            }
+        },
         status_code=status_code,
     )
 
@@ -105,39 +116,95 @@ def _safe_model_details(details: dict[str, Any]) -> dict[str, Any]:
     if isinstance(fields, dict):
         safe["fields"] = {str(field): "Invalid value" for field in fields}
     model_keys = details.get("modelKeys")
-    if isinstance(model_keys, list) and all(isinstance(value, str) for value in model_keys):
+    if isinstance(model_keys, list) and all(
+        isinstance(value, str) for value in model_keys
+    ):
         safe["modelKeys"] = model_keys
     retry_after = details.get("retryAfterSeconds")
-    if isinstance(retry_after, int) and not isinstance(retry_after, bool) and retry_after >= 0:
+    if (
+        isinstance(retry_after, int)
+        and not isinstance(retry_after, bool)
+        and retry_after >= 0
+    ):
         safe["retryAfterSeconds"] = retry_after
     status = details.get("status")
-    if isinstance(status, int) and not isinstance(status, bool) and 100 <= status <= 599:
+    if (
+        isinstance(status, int)
+        and not isinstance(status, bool)
+        and 100 <= status <= 599
+    ):
         safe["status"] = status
     return safe
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(ProjectError)
+    async def project_error(_request: Request, error: ProjectError) -> JSONResponse:
+        details = dict(error.details)
+        details.setdefault("domainCode", error.code.lower())
+        details.setdefault("retryable", False)
+        return error_response(
+            error.status, error.code, error.message, jsonable_encoder(details)
+        )
+
     @app.exception_handler(RequestValidationError)
     async def request_validation_error(
         _request: Request, error: RequestValidationError
     ) -> JSONResponse:
+        if _request.url.path.startswith(
+            "/api/v1/projects"
+        ) or _request.url.path.startswith("/api/v1/workspace/operations"):
+            project_fields = {}
+            for issue in error.errors():
+                location = issue["loc"]
+                project_fields[str(location[-1]) if location else "form"] = str(
+                    issue["msg"]
+                )
+            return error_response(
+                422,
+                "VALIDATION_ERROR",
+                "Request validation failed",
+                {
+                    "fields": project_fields,
+                    "domainCode": "validation_error",
+                    "retryable": False,
+                },
+            )
         if _request.url.path.startswith("/api/v1/workflows"):
             issues = []
             body = error.body if isinstance(error.body, dict) else {}
-            nodes = body.get("document", {}).get("nodes", []) if isinstance(body.get("document"), dict) else []
+            nodes = (
+                body.get("document", {}).get("nodes", [])
+                if isinstance(body.get("document"), dict)
+                else []
+            )
             for problem in error.errors():
                 location = problem["loc"]
                 if location[:1] == ("body",):
                     location = location[1:]
                 path = [str(part) for part in location]
                 node_id = None
-                if len(path) > 2 and path[:2] == ["document", "nodes"] and path[2].isdigit() and isinstance(nodes, list):
+                if (
+                    len(path) > 2
+                    and path[:2] == ["document", "nodes"]
+                    and path[2].isdigit()
+                    and isinstance(nodes, list)
+                ):
                     index = int(path[2])
                     if index < len(nodes) and isinstance(nodes[index], dict):
                         candidate = nodes[index].get("id")
                         node_id = candidate if isinstance(candidate, str) else None
-                issues.append({"nodeId": node_id, "path": path, "code": "INVALID_STRUCTURE", "message": str(problem["msg"])})
-            return error_response(422, "WORKFLOW_STRUCTURE_INVALID", "工作流结构无效", {"issues": issues})
+                issues.append(
+                    {
+                        "nodeId": node_id,
+                        "path": path,
+                        "code": "INVALID_STRUCTURE",
+                        "message": str(problem["msg"]),
+                    }
+                )
+            return error_response(
+                422, "WORKFLOW_STRUCTURE_INVALID", "工作流结构无效", {"issues": issues}
+            )
         fields: dict[str, str] = {}
         api_key_required = False
         for issue in error.errors():
@@ -152,7 +219,9 @@ def install_error_handlers(app: FastAPI) -> None:
             else:
                 field = "form"
             fields[field] = message
-            api_key_required = api_key_required or issue["type"] == "model_provider_api_key_required"
+            api_key_required = (
+                api_key_required or issue["type"] == "model_provider_api_key_required"
+            )
         if api_key_required:
             return error_response(
                 422,
@@ -160,14 +229,28 @@ def install_error_handlers(app: FastAPI) -> None:
                 "Model provider API key is required",
                 {"fields": {"apiKey": "API key is required"}},
             )
-        return error_response(422, "VALIDATION_ERROR", "Request validation failed", {"fields": fields})
+        return error_response(
+            422, "VALIDATION_ERROR", "Request validation failed", {"fields": fields}
+        )
 
     @app.exception_handler(WorkflowError)
     async def workflow_error(_request: Request, error: WorkflowError) -> JSONResponse:
-        return error_response(error.status, error.code, error.message, {"issues": [
-            {"nodeId": issue.node_id, "path": issue.path, "code": issue.code, "message": issue.message}
-            for issue in error.issues
-        ]})
+        return error_response(
+            error.status,
+            error.code,
+            error.message,
+            {
+                "issues": [
+                    {
+                        "nodeId": issue.node_id,
+                        "path": issue.path,
+                        "code": issue.code,
+                        "message": issue.message,
+                    }
+                    for issue in error.issues
+                ]
+            },
+        )
 
     @app.exception_handler(ProfileValidationError)
     async def profile_validation_error(
@@ -175,12 +258,20 @@ def install_error_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         message = str(error)
         field = _domain_validation_field(message)
-        return error_response(422, "VALIDATION_ERROR", "Request validation failed", {"fields": {field: message}})
+        return error_response(
+            422,
+            "VALIDATION_ERROR",
+            "Request validation failed",
+            {"fields": {field: message}},
+        )
 
     @app.exception_handler(ModelError)
     async def model_error(_request: Request, error: ModelError) -> JSONResponse:
         message = _MODEL_ERROR_MESSAGES.get(error.code, "模型操作失败")
-        if error.code == "MODEL_PROVIDER_REQUEST_FAILED" and error.details.get("status") == 402:
+        if (
+            error.code == "MODEL_PROVIDER_REQUEST_FAILED"
+            and error.details.get("status") == 402
+        ):
             message = "供应商余额或额度不足，请充值或调整额度后重试"
         return error_response(
             error.status,
@@ -190,32 +281,112 @@ def install_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(ProfileNameConflict)
-    async def profile_name_conflict(_request: Request, _error: ProfileNameConflict) -> JSONResponse:
+    async def profile_name_conflict(
+        _request: Request, _error: ProfileNameConflict
+    ) -> JSONResponse:
         message = "Profile name is already in use"
-        return error_response(409, "PROFILE_NAME_CONFLICT", message, {"fields": {"name": message}})
+        return error_response(
+            409, "PROFILE_NAME_CONFLICT", message, {"fields": {"name": message}}
+        )
 
     mappings: list[tuple[type[Exception], int, str, str]] = [
         (ProfileNotFound, 404, "PROFILE_NOT_FOUND", "Browser profile was not found"),
-        (ProfileDirectoryBusy, 409, "PROFILE_DIRECTORY_BUSY", "Profile data directory is busy"),
-        (KernelNotInstalled, 409, "KERNEL_NOT_INSTALLED", "Selected browser kernel is not installed"),
-        (ProxyUnavailable, 409, "PROXY_UNAVAILABLE", "Selected proxy resource is unavailable"),
-        (ProfileTestBrowserBusy, 409, "PROFILE_TEST_BROWSER_BUSY", "此配置的测试浏览器正在运行或切换状态"),
-        (ProfileTestBrowserUnavailable, 503, "PROFILE_TEST_BROWSER_UNAVAILABLE", "测试浏览器启动失败，请检查内核与配置后重试"),
-        (ProfileDataPathInvalid, 500, "PROFILE_DATA_PATH_INVALID", "Managed profile data path is invalid"),
+        (
+            ProfileDirectoryBusy,
+            409,
+            "PROFILE_DIRECTORY_BUSY",
+            "Profile data directory is busy",
+        ),
+        (
+            KernelNotInstalled,
+            409,
+            "KERNEL_NOT_INSTALLED",
+            "Selected browser kernel is not installed",
+        ),
+        (
+            ProxyUnavailable,
+            409,
+            "PROXY_UNAVAILABLE",
+            "Selected proxy resource is unavailable",
+        ),
+        (
+            ProfileTestBrowserBusy,
+            409,
+            "PROFILE_TEST_BROWSER_BUSY",
+            "此配置的测试浏览器正在运行或切换状态",
+        ),
+        (
+            ProfileTestBrowserUnavailable,
+            503,
+            "PROFILE_TEST_BROWSER_UNAVAILABLE",
+            "测试浏览器启动失败，请检查内核与配置后重试",
+        ),
+        (
+            ProfileDataPathInvalid,
+            500,
+            "PROFILE_DATA_PATH_INVALID",
+            "Managed profile data path is invalid",
+        ),
         (KernelNotFound, 404, "KERNEL_NOT_FOUND", "Installed kernel was not found"),
-        (KernelOperationNotFound, 404, "KERNEL_OPERATION_NOT_FOUND", "Kernel operation was not found"),
-        (KernelDefaultConflict, 409, "KERNEL_DEFAULT_CONFLICT", "Default kernel revision is stale"),
+        (
+            KernelOperationNotFound,
+            404,
+            "KERNEL_OPERATION_NOT_FOUND",
+            "Kernel operation was not found",
+        ),
+        (
+            KernelDefaultConflict,
+            409,
+            "KERNEL_DEFAULT_CONFLICT",
+            "Default kernel revision is stale",
+        ),
         (KernelBusy, 409, "KERNEL_BUSY", "A kernel installation is already active"),
         (LicenseInUse, 409, "LICENSE_IN_USE", "CloakBrowser license is in use"),
-        (KernelVersionInvalid, 422, "KERNEL_VERSION_INVALID", "CloakBrowser version is invalid"),
-        (LicenseInvalid, 422, "LICENSE_INVALID", "CloakBrowser license is invalid or expired"),
-        (KernelPlatformUnsupported, 422, "KERNEL_PLATFORM_UNSUPPORTED", "CloakBrowser is unavailable on this platform"),
-        (KernelCredentialStoreUnavailable, 503, "CREDENTIAL_STORE_UNAVAILABLE", "System credential storage is unavailable"),
-        (LicenseValidationUnavailable, 503, "LICENSE_VALIDATION_UNAVAILABLE", "CloakBrowser license validation is unavailable"),
-        (KernelWorkerUnavailable, 503, "KERNEL_WORKER_ERROR", "Kernel worker is unavailable"),
-        (KernelPathInvalid, 500, "KERNEL_PATH_INVALID", "Managed kernel path is invalid"),
+        (
+            KernelVersionInvalid,
+            422,
+            "KERNEL_VERSION_INVALID",
+            "CloakBrowser version is invalid",
+        ),
+        (
+            LicenseInvalid,
+            422,
+            "LICENSE_INVALID",
+            "CloakBrowser license is invalid or expired",
+        ),
+        (
+            KernelPlatformUnsupported,
+            422,
+            "KERNEL_PLATFORM_UNSUPPORTED",
+            "CloakBrowser is unavailable on this platform",
+        ),
+        (
+            KernelCredentialStoreUnavailable,
+            503,
+            "CREDENTIAL_STORE_UNAVAILABLE",
+            "System credential storage is unavailable",
+        ),
+        (
+            LicenseValidationUnavailable,
+            503,
+            "LICENSE_VALIDATION_UNAVAILABLE",
+            "CloakBrowser license validation is unavailable",
+        ),
+        (
+            KernelWorkerUnavailable,
+            503,
+            "KERNEL_WORKER_ERROR",
+            "Kernel worker is unavailable",
+        ),
+        (
+            KernelPathInvalid,
+            500,
+            "KERNEL_PATH_INVALID",
+            "Managed kernel path is invalid",
+        ),
     ]
     for exception_type, status, code, message in mappings:
+
         def handler(
             _request: Request,
             _error: Exception,
