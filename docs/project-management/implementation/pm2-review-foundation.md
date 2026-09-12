@@ -36,4 +36,4 @@ Excel原七项规格问题复核通过，工程审查新发现字符串32768截�
 
 四个真实HTTP操作为表目录GET/POST和详情GET/PATCH；项目Operation查询扩展真实createTable/updateTable结果。数据记录、字段、状态和文件IPC仍未交付，因此没有启用数据页能力或冒充完整PM2。
 
-前端纯组件原规格问题（session、父级关闭、busy确认、fixture）已闭合；工程最后render阶段ref副作用正在修复，尚未提交组件。
+前端纯组件规格问题（session、父级关闭、busy确认、fixture）及工程问题（render阶段ref副作用）全部闭合。session/epoch变更改在useLayoutEffect提交生命周期；startTransition + Suspense回归证明被丢弃的B渲染不污染已提交A的请求。独立工程复审通过，13项组件测试、TypeScript和ESLint通过；稳定代码全量前端461项通过。组件尚未装配正式数据页，不能作为PM2页面验收。
