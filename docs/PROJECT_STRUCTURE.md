@@ -187,7 +187,7 @@ reference/
 - `domain/models` 定义值对象/实体/端口/URL规则；`application/models/service.py` 协調接入、更新、测试和凭据清理。
 - `infrastructure/database/model_providers.py` 实现仓储与原子条件写；迁移 `0002_model_management.py` 增加供应商、模型和cleanup intent三表。
 - `providers/model/http.py` 使用httpx实现协议请求；不依赖ORM或GUI。
-- `renderer/domains/models/assets/` 保留旧品牌资源；components先于pages，hooks管理查询和选择状态。
+- `renderer/domains/models/assets/brands/` 保存核验后的供应商品牌原始 SVG/PNG、来源与许可；`provider-icons.ts` 以静态 URL 随应用打包，不再使用旧 Base64 图标或通用占位冒充品牌。components先于pages，hooks管理查询和选择状态。
 - 缓存入口已统一为 `renderer/app/ApiProvider.tsx`（此前 `query-provider.tsx` 入口描述 superseded）；握手更新 API 与查询缓存，同一工作区重连不卸载编辑组件，实际切换工作区才重置。共享 Modal/Menu 仍位于 desktop shared，packages/ui 尚非独立 workspace。
 - `scripts/electron-cdp.mjs` 是桌面冒烟的调试连接助手；`smoke-model-management.mjs` 用临时目录与本地fixture执行完整UI闭环。
 - 实现及平台证据见 [模型管理验收](migration/model-management-verification.md)。
