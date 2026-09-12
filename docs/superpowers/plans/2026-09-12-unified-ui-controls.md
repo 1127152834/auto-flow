@@ -10,7 +10,7 @@
 
 ---
 
-- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；当前执行T0–T2，T3之后未实施**。
+- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；T0–T3代码已实施，T4之后未实施；IME/平台及UI-G0-01待查**。
 - 设计依据：[设计规格及A01–A15验收矩阵](../specs/2026-09-12-unified-ui-controls-design.md)。源码依据：[盘点](../../design-system/2026-09-12-ui-controls-audit.md)、[逐点清单](../../design-system/2026-09-12-ui-controls-usage.md)。
 - 当前文档分支 `codex/ui-controls-plan` 从 c7c3021 建立；实施必须先核对/接入最新已提交主线（盘点截止15cf2e8）。严禁把旧 checkout 中语言/时区硬编码、旧代理协议默认值覆盖主线。
 - 所有文件名以下均为仓库根相对精确路径；命令在**任务独立 worktree 根**执行。不是在 `/Users/zhangtiancheng/Documents/projects/autoflow` 主目录执行。
@@ -151,7 +151,7 @@ if (import.meta.env.DEV && location.hash === '#/__ui') {
 - 新建 `apps/desktop/src/renderer/shared/components/FieldGroup.tsx`、`FieldGroup.test.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/TextControlCases.tsx`，修改UiLabPage接入。
 
-- [ ] 写关键行为测试并运行红灯：loading按钮不重复触发、不隐去名称；Search清除回传一次且焦点留input；Password显隐不提交表单且保留值；readOnly可focus/select；FormField与Controller组合把描述传到input。示例测试完整最小用例：
+- [x] 写关键行为测试并运行红灯：loading按钮不重复触发、不隐去名称；Search清除回传一次且焦点留input；Password显隐不提交表单且保留值；readOnly可focus/select；FormField与Controller组合把描述传到input。示例测试完整最小用例：
 
 ```tsx
 import { afterEach, expect, it, vi } from 'vitest'
@@ -171,10 +171,15 @@ it('loading blocks duplicate actions and retains an accessible name', async () =
 })
 ```
 
-- [ ] 按设计§5加入size/ref/loading API；Button默认type=button，IconButton要求aria-label。先实现供Button使用的Spinner（Phosphor CircleNotch、装饰aria-hidden、reduce时静态），不依赖T7。输入继续传标准事件和ref；Search/Password用输入组合，不重写文字编辑。所有现有提交Button在各切片显式保留type=submit。
-- [ ] FormField支持children渲染函数，传实际控制元素a11y属性；迁移期间旧ReactNode路径保留兼容，最终T12移除clone。FieldGroup用fieldset/legend，不把组id分发给每个选项。
-- [ ] 补text/search/password/numeric/textarea的全部适用状态、长文本与真实RHF例子到展示页，测试ref/setFocus与错误消失恢复hint。
-- [ ] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components`、`npm run typecheck`、`npm run lint`。人工检查键盘、中文IME、placeholder/readOnly区分与40/32密度。提交 `feat(ui): standardize text controls and field bindings`。对应A03。
+- [x] 按设计§5加入size/ref/loading API；Button默认type=button，IconButton要求aria-label。先实现供Button使用的Spinner（Phosphor CircleNotch、装饰aria-hidden、reduce时静态），不依赖T7。输入继续传标准事件和ref；Search/Password用输入组合，不重写文字编辑。所有现有提交Button在各切片显式保留type=submit。
+- [x] FormField支持children渲染函数，传实际控制元素a11y属性；迁移期间旧ReactNode路径保留兼容，最终T12移除clone。FieldGroup用fieldset/legend，不把组id分发给每个选项。
+- [x] 补text/search/password/numeric/textarea的全部适用状态、长文本与真实RHF例子到展示页，测试ref/setFocus与错误消失恢复hint。
+- [x] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components`、`npm run typecheck`、`npm run lint`。本机自动检查焦点/键盘路径、placeholder/readOnly与40/32密度；中文IME未执行。提交 `feat(ui): standardize text controls and field bindings`。对应A03。
+
+T3执行补充（2026-09-12）：[实现与验收](../../design-system/verification/text-controls.md)。共享组件行为、真实Electron和真实配置表单读取/取消验证已执行；未修改领域代码/接口。新增 danger-strong token，并将全局字体归一放入Tailwind基础层，避免覆盖控件字号。
+
+- [ ] 中文IME与平台人工检查：T13矩阵继续保留未执行状态。
+- [ ] UI-G0-01偶发浮层关闭待查：后续两轮/三轮复验通过但根因未知，T5前必须排查并重新确认G0，不以一次成功覆盖失败记录。
 
 ## T4：Checkbox、RadioGroup、Switch、Disclosure
 
@@ -201,7 +206,7 @@ it('loading blocks duplicate actions and retains an accessible name', async () =
 
 ## T5：Select、Combobox、Autocomplete与滚动容器
 
-**依赖：T2 G0、T3、T4。**
+**依赖：T2 G0（含UI-G0-01复核）、T3、T4。**
 
 **文件**
 - 修改 `apps/desktop/src/renderer/shared/components/ui/select-radix.tsx`（迁移暂存入口）。

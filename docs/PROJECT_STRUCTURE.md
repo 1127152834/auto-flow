@@ -139,7 +139,7 @@ reference/
 | `apps/desktop/src/renderer/shared/hooks/` | 不含领域查询语义的共享 React hooks。 |
 | `apps/desktop/src/renderer/shared/lib/` | 有明确职责的共享函数；不作为杂物目录。 |
 | `apps/desktop/src/renderer/styles/` | index.css 为入口；tokens.css 定义暖灰/黏土棕令牌，controls.css 为定向控件基础样式与全局 Chromium 滚动条。 |
-| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。T2 仅含令牌、RHF 和浮层案例；fixture 不进入生产 JS，不访问业务 API。 |
+| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。当前含令牌、RHF、浮层及T3文字控件状态案例；fixture 不进入生产 JS，不访问业务 API。 |
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
@@ -226,3 +226,7 @@ reference/
 - `shared/components/ui/overlay-host.tsx` 只提供 Dialog 层级和本层弹出内容宿主；Dialog/AlertDialog 复用原 Radix 行为。`ui-lab/LabCombobox.tsx` 是 React Aria 集成验证探针，尚非领域组件的正式 API。
 - `scripts/smoke-ui-controls.mjs` 使用独立 Vite 服务与 Electron 临时 userData，保存实际窗口截图与结果；通过 `npm run smoke:ui-controls` 调用，先运行构建。
 - 验收与限制见 `docs/design-system/verification/choice-overlay-gate.md`。共享控件替换、领域接入和全系统跨平台回归仍属于 T3–T13。
+
+### 控件统一 T3（2026-09-12，implemented）
+
+`shared/components/ui` 新增 IconButton/SearchInput/PasswordInput/Spinner，并统一现有 Button/Input/Textarea；FormField 新增显式render-prop，FieldGroup使用原生fieldset/legend。`shared/ui-lab/TextControlCases.tsx` 提供状态矩阵，`scripts/smoke-ui-controls.mjs` 当前输出到 `docs/design-system/verification/t3/` 并验证真实配置表单。详见 `docs/design-system/verification/text-controls.md`；T4及领域迁移未执行，UI-G0-01须在T5前复核。

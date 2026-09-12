@@ -1,6 +1,7 @@
-import type { InputHTMLAttributes } from 'react'
+import type { ComponentPropsWithRef } from 'react'
 import { cn } from '../../lib/utils'
 
-export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn('h-10 w-full rounded-control border border-line bg-surface px-3 text-sm text-ink outline-none transition-shadow placeholder:text-muted focus:border-clay focus:ring-2 focus:ring-clay/15 disabled:cursor-not-allowed disabled:opacity-50', className)} {...props} />
+export type InputProps = Omit<ComponentPropsWithRef<'input'>, 'size'> & { size?: 'sm' | 'md' }
+export function Input({ className, size = 'md', ...props }: InputProps) {
+  return <input {...props} data-af-control className={cn('w-full min-w-0 px-3', size === 'sm' ? 'h-[var(--control-sm)] text-xs' : 'h-[var(--control-md)] text-sm', className)} />
 }

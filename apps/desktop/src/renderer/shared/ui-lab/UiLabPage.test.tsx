@@ -1,5 +1,5 @@
 import { afterEach, expect, it } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 import { UiLabPage } from './UiLabPage'
@@ -18,12 +18,13 @@ it('RHF submits an empty choice as an error and focuses the real combobox input'
   const user = userEvent.setup()
   render(<UiLabPage />)
   await user.click(screen.getByRole('button', { name: '验证保存' }))
-  const error = await screen.findByRole('alert')
+  const formCase = within(screen.getByRole('region', { name: '表单绑定与错误聚焦' }))
+  const error = await formCase.findByRole('alert')
   expect(error).toHaveTextContent('请选择浏览器内核')
   expect(error.id).not.toBe('')
   expect(screen.getByRole('combobox', { name: '验证内核' }).getAttribute('aria-describedby')).toContain(error.id)
   expect(screen.getByRole('combobox', { name: '验证内核' })).toHaveFocus()
   expect(screen.getByRole('combobox', { name: '验证内核' })).toHaveAttribute('aria-invalid', 'true')
   await user.click(screen.getByRole('button', { name: '重置表单' }))
-  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(formCase.queryByRole('alert')).not.toBeInTheDocument()
 })

@@ -1,0 +1,11 @@
+- log: "有 501 个选项可用。 CloakBrowser 146 · #0001, 已选择 有 501 个选项可用。 CloakBrowser 146 · #0001, 已选择"
+- log
+- dialog "浏览器配置 · 验证":
+  - heading "浏览器配置 · 验证" [level=2]
+  - paragraph: 本地案例，不创建配置、不下载内核。
+  - text: 外层内核
+  - combobox "外层内核": "CloakBrowser 146 · #0001"
+  - button "展开 外层内核"
+  - paragraph: 内核窗口关闭后，焦点应回到管理内核按钮。
+  - button "管理内核 · 验证"
+  - button "关闭配置验证"

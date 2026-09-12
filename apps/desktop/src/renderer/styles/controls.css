@@ -57,3 +57,16 @@ textarea[data-af-control] { resize: vertical; }
   ::-webkit-scrollbar-thumb { background-color: ButtonText; }
   ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: Canvas; }
 }
+
+.af-button:disabled:not([aria-busy="true"]) {
+  background: var(--color-disabled-surface);
+  color: var(--color-disabled-ink);
+  border-color: var(--color-control-border);
+  box-shadow: none;
+}
+@keyframes af-spin { to { transform: rotate(360deg); } }
+.af-spinner { animation: af-spin var(--motion-spinner) linear infinite; }
+:root[data-motion="reduce"] .af-spinner { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="full"]) .af-spinner { animation: none !important; }
+}

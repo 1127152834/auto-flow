@@ -155,6 +155,8 @@ type ChoiceProps = {
 
 `channelOptions` 来自既有领域 stable/preview 常量。RHF shouldFocusError/setFocus 必须能聚焦实际交互节点；页签内第一个错误先切换到对应页签再聚焦/滚入视口；不更改 schema、校验触发时机和 API payload。错误播报不重复、error 消失时恢复 hint 与 describedby。
 
+T3 已实现的组合输入约定：SearchInput 使用受控 value:string、标准 onChange 和可选 onClear；清除后聚焦真实 input，不构造事件对象。PasswordInput 的 allowReveal 默认为 false，仅在领域原有能力允许时开启。Button 的 loadingText 使用布局占位保留宽度、原 label 保持为可访问名称；IconButton 必须提供 aria-label。标准输入 ref 可供 RHF register/Controller/setFocus 使用。
+
 ## 6. 下拉与大量选项
 
 - 少量枚举 Select；资源/目录选择 Combobox；自由文本+建议 Autocomplete；多选保留可搜索 checklist。选项 label 与业务 value 分离，搜索匹配 label/value/keywords，保持原顺序，不引入远程搜索 API。
@@ -195,6 +197,8 @@ Dialog frame 内提供位于滚动 body 外的 popup host；Radix与React Aria�
 - `forced-colors: active` 允许系统高对比色替代品牌色与thumb，保留边框/焦点/勾号；这是辅助功能适配，不是回退系统 select 面板。
 
 ### G0 实施补充（2026-09-12，confirmed）
+
+T3续验新增 UI-G0-01 偶发关闭待查项，后续重复通过不代表根因已修复；详见 `docs/design-system/verification/text-controls.md`。T5前必须重新评估G0。
 
 - Dialog/AlertDialog 的模态 Portal 继续由 Radix 挂在 body；每层 Content 内提供 `data-overlay-host`，位于可滚动主体外。React Aria 的选项弹层挂到当前 host，保证属于该层可访问子树。未来 Radix 选择/菜单弹层接入同一 host 属于 T5/T6，不把当前所有 Portal 都描述为已迁移。
 - `data-af-popup` 标识本层 React Aria 活跃弹层。Radix document capture 的 Escape 会先于组合框键盘处理器；父 Dialog 在发现活跃弹层时 preventDefault，组合框继续执行自己的 Escape/revert。退出中的弹层不阻塞父层。组合框未展开时保留原 busy 和关闭回调。
