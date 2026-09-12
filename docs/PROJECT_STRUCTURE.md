@@ -154,7 +154,7 @@ reference/
 | `packages/ui/src/layouts/` | 跨领域工作台布局基元；不包含业务导航配置。 |
 | `packages/ui/src/styles/` | 计划中的 Tailwind 主题、设计令牌和组件样式。 |
 | `packages/ui/tests/` | 组件交互、可访问性和状态测试。 |
-| `reference/` | 上游源码保持只读，不作为运行时依赖；2026-09-13 用户授权在 `redroid-demo/` 放独立 Python + React Demo，当前只有待确认计划，自有 Demo 源码后续由主仓库跟踪。 |
+| `reference/` | 上游源码保持只读，不作为运行时依赖；`redroid-demo/` 是用户授权的独立 Python + React 管理 Demo，自有源码由主仓库跟踪；Android / Windows / root 实机验收状态见其 `VERIFICATION.md`。 |
 | `scripts/` | 现有构建、类型生成、冒烟和仓库验证脚本。 |
 
 ## 依赖与维护规则

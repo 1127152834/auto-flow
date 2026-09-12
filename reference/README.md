@@ -1,11 +1,11 @@
 # Reference projects
 
-## redroid management demo (planned)
+## redroid management demo
 
-- Plan: [`redroid-demo/PLAN.md`](./redroid-demo/PLAN.md)
-- Date: 2026-09-13; status: proposed, awaiting plan confirmation.
+- Start: [`redroid-demo/README.md`](./redroid-demo/README.md); [verification](./redroid-demo/VERIFICATION.md); [approved plan](./redroid-demo/PLAN.md).
+- Date: 2026-09-13; status: implemented; actual Android, Windows/WSL and Magisk validation remains pending.
 - Scope: independent Python + React demos for lifecycle management, screen/input/APK operations, small batch tasks and Magisk image checks; Windows via WSL2 + Docker Engine.
-- This user-requested demo is separate from the read-only upstream repositories. Its own source will be tracked by AutoFlow Git and will not be an AutoFlow runtime dependency. Only the plan exists at this stage.
+- This user-requested demo is separate from the read-only upstream repositories. Its source is tracked by AutoFlow Git and is not an AutoFlow runtime dependency. The manager was built and exercised locally; unsupported Android hosts show diagnostics.
 
 ## WebRPA
 

@@ -1,10 +1,10 @@
 # redroid Python + React Demo 计划
 
 - 日期：2026-09-13。
-- 状态：**proposed，等待用户确认后实施**。
+- 状态：**confirmed，用户已确认实施；Demo 源码与管理服务已交付，Android / Windows / root 实机验收待验证**。
 - 输入：`reference/RedroidManager`、`reference/redroid-script` 的固定版本源码；用户要求直接复用、Python + React、Windows 可用、Demo 放在 `reference`。
 - 目标：做一个可运行的小型管理 Demo，通过几个场景演示真实 Android 容器的创建、操作、批量任务和 root 镜像验证。
-- 本轮输出：计划和参考索引。尚未复制业务代码、安装依赖、构建镜像或启动容器。
+- 实施输出：Python 后端、React 界面、部署脚本、批量示例、root 构建包装器和测试。实际验证范围见 [VERIFICATION.md](VERIFICATION.md)，启动方式见 [README.md](README.md)。以下保留已确认的设计和验收标准，不将尚未执行的实机验收改为通过。
 
 ## 1. 实现选择
 
@@ -172,4 +172,4 @@ reference/redroid-demo/
 
 本批 Demo 聚焦管理、基础操作、批量和 root。实时摄像头、定位/网络/厂商属性配置、完整环境伪装，后续分别做专项 Demo；先验证管理链路，避免将尚未证明的设备能力混入基础演示。视频级投屏、真实快照、多节点调度、正式工作流引擎和桌面打包也在需要时另行扩展。
 
-没有修改 AutoFlow 正式架构。本计划经用户确认后，才能开始 Demo 业务代码实施。
+没有修改 AutoFlow 正式架构。用户已确认本计划并授权实施；Demo 保持独立，实机测试结果单列登记。
