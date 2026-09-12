@@ -1,5 +1,7 @@
 # WebRPA 能力盘点与 AutoFlow 迁移决策
 
+> 2026-09-13 范围更新：用户要求编排、执行、日志、录制、Debug 等工作台核心完整对齐，排除企业、Windows 控制、发布/版本等管理能力。参见 [核心对齐里程碑](../superpowers/plans/2026-09-13-automation-studio-core-parity-milestones.md)；本文 P0/P1/P2 是早期阶段划分，核心范围内的“暂缓”不能作为最终排除依据。
+
 ## 1. 目的与边界
 
 本文以 `reference/WebRPA` 固定快照 `5ccb900e8dcf1530aae66f676d87593c416c7ebb` 为基线，回答三个问题：
