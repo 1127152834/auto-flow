@@ -8,6 +8,7 @@
 - 前端技术约束：React、shadcn/ui、Tailwind CSS，组件先于页面。
 - 协作要求：先规格和实施计划，经确认后再开始功能实现；前后端按垂直功能切片一起开发。
 - 2026-09-12（confirmed，来源：用户在项目管理审查后的明确纠正）：项目管理先形成相对完整的功能规格、跨模块业务规则、交互和总体实施计划，再小步开发。最小执行链仅是实施验收步骤；关键业务设计不留到各切片开发时临时决定。详见 `.ai/decisions/2026-09-12-project-management-complete-design-first.md`。
+- 2026-09-12（confirmed，来源：用户对数据流与环境保留的明确说明）：每表系统维护业务状态；记录再次使用由当前状态和工作流条件决定，不能加消费类型或本批历史排除。工作流可读写多表、增删记录与字段/列，显式决定业务状态变化。结束节点“保留当前环境”包含保存登录上下文并关联相关数据行，不要求额外 Bind 节点。具体关联范围、冲突和恢复为设计推荐；见 `.ai/decisions/2026-09-12-project-data-workflow-semantics.md` 和 `docs/project-management/design/README.md`。此前冲突建议已 superseded。
 - 2026-09-12（confirmed，来源：用户明确实施指令）：代理模块已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线；全局导航和浏览器启动到代理组的调用仍由后续浏览器任务完成。详见 `docs/migration/proxy-management-status.md`。
 
 - 2026-09-12（confirmed，来源：本轮用户授权及隔离worktree验收）：模型管理在 `codex/model-management` / `../autoflow-model-management` 实现，已通过baseline合并验收；保留旧供应商左栏、三步接入与split编辑，凭据仅写系统存储。验收边界见 `docs/migration/model-management-verification.md`。
