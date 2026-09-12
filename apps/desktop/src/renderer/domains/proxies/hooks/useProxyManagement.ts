@@ -188,6 +188,7 @@ export function useProxyManagement(api: ProxyApi) {
       setConnection(nextConnection)
       setProxies(nextProxies)
       setGroupCandidates(nextCandidates)
+      setLoadError(undefined)
       if (!automatic) notify({ title: '代理已同步', tone: 'success' })
     } catch (error) {
       rememberRetryAfter(error)
@@ -209,9 +210,9 @@ export function useProxyManagement(api: ProxyApi) {
     void sync(true)
   }, [connection, connectionBusy, sync])
 
-  const probe = useCallback(async (proxy: ProxyView) => {
+  const probe = useCallback(async (proxy: ProxyView, selectedProtocol?: 'http' | 'socks5') => {
     if (checkingId) return
-    const protocol = proxy.http_endpoint ? 'http' : proxy.socks5_endpoint ? 'socks5' : null
+    const protocol = selectedProtocol ?? (proxy.socks5_endpoint ? 'socks5' : proxy.http_endpoint ? 'http' : null)
     if (!protocol) return
     setCheckingId(proxy.id)
     try {

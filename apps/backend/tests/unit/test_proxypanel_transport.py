@@ -25,7 +25,7 @@ async def test_verify_sends_key_only_to_fixed_origin_and_does_not_guess_schema()
     provider = ProxyPanelReadProvider(transport=httpx.MockTransport(respond))
     result = await provider.verify(b"synthetic-test-key")
     assert result.completeness == "unknown" and result.items == ()
-    with pytest.raises(ProviderSchemaError, match="字段尚未"):
+    with pytest.raises(ProviderSchemaError, match="响应格式"):
         await provider.list_proxies(b"synthetic-test-key")
     assert len(calls) == 2
 

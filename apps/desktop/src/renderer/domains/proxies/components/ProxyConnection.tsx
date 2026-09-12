@@ -67,7 +67,7 @@ export function ConnectionCard({ connection, syncing, retryAfterSeconds = 0, onC
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={onSync} disabled={syncing || retryAfterSeconds > 0 || connection.status !== 'connected'}>
+          <Button onClick={onSync} disabled={syncing || retryAfterSeconds > 0 || !connection.has_secret || connection.status === 'verifying'}>
             <ArrowsClockwise className={syncing ? 'animate-spin' : ''} />{syncing ? '同步中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '刷新代理'}
           </Button>
           <Button variant="primary" disabled={syncing} onClick={onConfigure}><GearSix />连接设置</Button>

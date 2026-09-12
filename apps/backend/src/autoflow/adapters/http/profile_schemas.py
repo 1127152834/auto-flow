@@ -125,3 +125,14 @@ class ProfileRead(ProfileWrite):
 class ProfileList(ApiModel):
     items: list[ProfileRead]
     total: int
+
+
+class EnvironmentOptionRead(ApiModel):
+    value: str
+    label: str
+
+
+class ProfileEnvironmentOptionsRead(ApiModel):
+    locales: list[EnvironmentOptionRead]
+    timezones: list[EnvironmentOptionRead]
+    user_agent_templates: list[EnvironmentOptionRead]

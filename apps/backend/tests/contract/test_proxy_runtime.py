@@ -1,14 +1,17 @@
 """Synthetic local runtime checks. These do not verify ProxyPanel's live schema."""
 
-import json
-
 import pytest
 from fastapi.testclient import TestClient
 
 from autoflow.bootstrap import proxies as composition
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
-from autoflow.domain.proxies.models import Endpoint, ProviderPage, ProviderProxy
+from autoflow.domain.proxies.models import (
+    Endpoint,
+    ProviderCredentials,
+    ProviderPage,
+    ProviderProxy,
+)
 
 
 class MemoryCredentials:
@@ -28,6 +31,9 @@ class MemoryCredentials:
 class SyntheticProvider:
     async def verify(self, _api_key):
         return ProviderPage((), "unknown")
+
+    async def get_credentials(self, _api_key, _provider_id):
+        return ProviderCredentials("user@example", "secret:/@?", Endpoint("8.8.8.8", 1080))
 
     async def list_proxies(self, _api_key):
         return ProviderPage((ProviderProxy(
@@ -84,9 +90,7 @@ def test_valid_host_only_copy_encodes_auth_without_renderer_secret(runtime):
     assert client.post(f"/api/v1/proxy-panel/connections/{identifier}/sync", json={}, headers=headers).status_code == 200
     page = client.get("/api/v1/proxies", headers=headers)
     proxy_id = page.json()["items"][0]["id"]
-    credentials.write(f"proxy-endpoint:{proxy_id}", json.dumps({
-        "username": "user@example", "password": "secret:/@?",
-    }).encode())
+    assert credentials.read(f"proxy-endpoint:{proxy_id}") is None
     response = client.post("/internal/proxy-credentials/resolve", json={
         "proxy_id": proxy_id, "protocol": "http", "format": "url",
     }, headers={"x-autoflow-host-token": "independent-host-token"})

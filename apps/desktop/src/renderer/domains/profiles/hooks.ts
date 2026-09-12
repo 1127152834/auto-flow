@@ -5,6 +5,7 @@ import type { ProfileDuplicate, ProfileWrite } from '../../shared/api/types'
 export const profileKeys = {
   all: (instanceId: string) => [instanceId, 'profiles'] as const,
   proxyOptions: (instanceId: string) => [instanceId, 'proxy-options'] as const,
+  environmentOptions: (instanceId: string) => [instanceId, 'profile-environment-options'] as const,
 }
 
 export function useProfiles() {
@@ -15,6 +16,15 @@ export function useProfiles() {
 export function useProxyOptions() {
   const { proxyOptions, instanceId } = useApi()
   return useQuery({ queryKey: profileKeys.proxyOptions(instanceId), queryFn: proxyOptions.list })
+}
+
+export function useProfileEnvironmentOptions(enabled: boolean) {
+  const { profiles, instanceId } = useApi()
+  return useQuery({
+    queryKey: profileKeys.environmentOptions(instanceId),
+    queryFn: profiles.environmentOptions,
+    enabled,
+  })
 }
 
 function useInvalidateProfiles() {

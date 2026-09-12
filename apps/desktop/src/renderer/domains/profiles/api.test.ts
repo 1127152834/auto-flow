@@ -12,6 +12,7 @@ it('exposes the fixed profile and proxy-option requests', () => {
   const duplicate = { name: '副本' } as ProfileDuplicate
 
   profiles.list()
+  profiles.environmentOptions()
   profiles.create(write)
   profiles.update('profile/id', write)
   profiles.remove('profile/id')
@@ -19,9 +20,10 @@ it('exposes the fixed profile and proxy-option requests', () => {
   profiles.regenerate('profile/id')
   proxyOptions.list()
 
-  expect(Object.keys(profiles)).toEqual(['list', 'create', 'update', 'remove', 'duplicate', 'regenerate'])
+  expect(Object.keys(profiles)).toEqual(['list', 'environmentOptions', 'create', 'update', 'remove', 'duplicate', 'regenerate'])
   expect(request.mock.calls).toEqual([
     ['/api/v1/profiles'],
+    ['/api/v1/profiles/environment-options'],
     ['/api/v1/profiles', { method: 'POST', body: write }],
     ['/api/v1/profiles/profile%2Fid', { method: 'PUT', body: write }],
     ['/api/v1/profiles/profile%2Fid', { method: 'DELETE' }],

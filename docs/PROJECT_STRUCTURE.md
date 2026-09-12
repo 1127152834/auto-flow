@@ -164,7 +164,8 @@ reference/
 - `application/proxies/facade.py`：事务边界与代理用例入口；HTTP adapter 不直接构造仓储。
 - `infrastructure/database/proxy_models.py`：代理扩展 ORM；复用现有 `proxies` / `proxy_pools` 的主键，不改写 `models.py` 中浏览器资源模型。
 - `infrastructure/database/proxies.py`：代理 SQLAlchemy 仓储与 Unit of Work。
-- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输；真实返回字段未核验时拒绝创建投影。
+- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输，验证真实列表/分协议端点/到期字段/按需凭据；未知列表包装拒绝更新投影。
+- `application/proxies/credential_loader.py`：按授权操作读取数据面凭据，检查连接/投影版本与端点一致性，只返回内存值，供探测和 host-only 复制复用。
 - `providers/proxy/probe.py`：经过指定代理的固定 HTTPS 健康探针。
 - `domain/credentials.py` 与 `infrastructure/credentials/system.py`：原生系统凭据端口和适配器，供内核模块复用。
 - `bootstrap/proxies.py`：代理服务、数据库、Provider、凭据与 HTTP 装配。
@@ -187,7 +188,7 @@ reference/
 - `domain/models` 定义值对象/实体/端口/URL规则；`application/models/service.py` 协調接入、更新、测试和凭据清理。
 - `infrastructure/database/model_providers.py` 实现仓储与原子条件写；迁移 `0002_model_management.py` 增加供应商、模型和cleanup intent三表。
 - `providers/model/http.py` 使用httpx实现协议请求；不依赖ORM或GUI。
-- `renderer/domains/models/assets/` 保留旧品牌资源；components先于pages，hooks管理查询和选择状态。
+- `renderer/domains/models/assets/brands/` 保存核验后的供应商品牌原始 SVG/PNG、来源与许可；`provider-icons.ts` 以静态 URL 随应用打包，不再使用旧 Base64 图标或通用占位冒充品牌。components先于pages，hooks管理查询和选择状态。
 - 缓存入口已统一为 `renderer/app/ApiProvider.tsx`（此前 `query-provider.tsx` 入口描述 superseded）；握手更新 API 与查询缓存，同一工作区重连不卸载编辑组件，实际切换工作区才重置。共享 Modal/Menu 仍位于 desktop shared，packages/ui 尚非独立 workspace。
 - `scripts/electron-cdp.mjs` 是桌面冒烟的调试连接助手；`smoke-model-management.mjs` 用临时目录与本地fixture执行完整UI闭环。
 - 实现及平台证据见 [模型管理验收](migration/model-management-verification.md)。
@@ -211,6 +212,7 @@ reference/
 ## 浏览器配置与内核实现边界（2026-09-12，confirmed）
 
 - `domain/profiles`、`application/profiles`、`adapters/http/profiles.py` 与数据库仓储分别负责规则、用例、HTTP 契约及持久化；配置目录删除具有占用检查、隔离删除和恢复策略。
+- `infrastructure/filesystem/profile_environment.json` 维护浏览器语言/时区目录及 UA 模板，`profile_environment.py` 读取并检查结构；bootstrap 注入 profiles HTTP 查询，前端 `EnvironmentOptionField` 展示全量候选和自定义输入，UA 模板按所选内核主版本展开。维护方式见 `docs/migration/profile-environment-options.md`。
 - `providers/kernel` 适配锁定的 CloakBrowser wrapper；`infrastructure/process/kernel_worker.py` 监管隔离 worker、下载取消、原子安装和恢复，`adapters/events/kernels.py` 提供带鉴权的状态快照。
 - `renderer/domains/profiles/components` 包含共享字段区块与配置弹窗；`domains/kernels/components` 提供从配置表单进入的内核管理弹窗，无独立内核导航。
 - 列表与表单使用生成的 API 类型、TanStack Query、React Hook Form 和 Zod；内核任务缓存同时处理 HTTP/SSE 乱序，页面不直接访问 SQL、凭据或文件系统。

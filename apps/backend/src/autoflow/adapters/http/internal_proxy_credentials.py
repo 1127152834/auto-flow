@@ -1,4 +1,5 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+from inspect import isawaitable
 from typing import Literal
 from uuid import UUID, uuid4
 
@@ -17,13 +18,16 @@ class CopyCredentialRequest(BaseModel):
     format: Literal["username", "password", "url"]
 
 
-def internal_proxy_credentials_router(resolve: Callable[[CopyCredentialRequest], str]) -> APIRouter:
+def internal_proxy_credentials_router(resolve: Callable[[CopyCredentialRequest], str | Awaitable[str]]) -> APIRouter:
     router = APIRouter(prefix="/internal/proxy-credentials", include_in_schema=False)
 
     @router.post("/resolve")
-    def resolve_credential(body: CopyCredentialRequest):
+    async def resolve_credential(body: CopyCredentialRequest):
         try:
-            return JSONResponse({"value": resolve(body)}, headers={"Cache-Control": "no-store"})
+            value = resolve(body)
+            if isawaitable(value):
+                value = await value
+            return JSONResponse({"value": value}, headers={"Cache-Control": "no-store"})
         except ProxyError as exc:
             error = ApiError(code=exc.code, message=str(exc), request_id=str(uuid4()))
             return JSONResponse(

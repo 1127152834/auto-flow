@@ -44,6 +44,11 @@ function renderEditor(options: FakeOptions = {}) {
     if (path === '/api/v1/kernels/installed') return json({ items: [installedKernel, otherKernel] })
     if (path === '/api/v1/kernels/default') return json({ revision: 1, kernel: options.defaultKernel === undefined ? installedKernel : options.defaultKernel })
     if (path === '/api/v1/proxy-options') return json({ proxies: [], pools: [] })
+    if (path === '/api/v1/profiles/environment-options') return json({
+      locales: [{ value: 'ja-JP', label: '日语（后端目录）' }],
+      timezones: [{ value: 'Asia/Tokyo', label: '东京（后端目录）' }],
+      userAgentTemplates: [{ value: 'Catalog UA Chrome/{major}.0.0.0', label: '服务端 UA · Chromium {major}' }],
+    })
     if (path === '/api/v1/profiles' || path.startsWith('/api/v1/profiles/')) {
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>
       writes.push({ method, body })
@@ -67,6 +72,22 @@ class ResizeObserverStub {
 }
 beforeEach(() => vi.stubGlobal('ResizeObserver', ResizeObserverStub))
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+
+it('fetches environment choices from the API and submits selected values', async () => {
+  const user = userEvent.setup()
+  const { writes, fetchMock } = renderEditor()
+  await user.type(screen.getByLabelText('名称'), '日本环境')
+  await user.click(screen.getByRole('tab', { name: '浏览器环境' }))
+  expect(await screen.findByRole('option', { name: '日语（后端目录）' })).toBeInTheDocument()
+  await user.selectOptions(screen.getByLabelText('浏览器语言'), 'ja-JP')
+  await user.selectOptions(screen.getByLabelText('浏览器时区'), 'Asia/Tokyo')
+  await user.selectOptions(screen.getByLabelText('User Agent'), 'Catalog UA Chrome/146.0.0.0')
+  await user.click(screen.getByRole('button', { name: '创建配置' }))
+  await waitFor(() => expect(writes).toHaveLength(1))
+  expect(writes[0]?.body).toMatchObject({ locale: 'ja-JP', timezone: 'Asia/Tokyo', userAgent: 'Catalog UA Chrome/146.0.0.0' })
+  const request = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/profiles/environment-options'))
+  expect(new Headers(request?.[1]?.headers).get('x-autoflow-token')).toBe('fixture-token')
+})
 
 it('does not lose the draft when dismissing discard confirmation', async () => {
   const user = userEvent.setup()
@@ -100,7 +121,7 @@ it('maps a 422 field error to its tab and keeps the draft', async () => {
   await user.type(screen.getByLabelText('名称'), '工作环境')
   await user.click(screen.getByRole('button', { name: '创建配置' }))
   await waitFor(() => expect(screen.getByRole('tab', { name: '浏览器环境' })).toHaveAttribute('data-state', 'active'))
-  expect(screen.getByLabelText('浏览器时区')).toHaveFocus()
+  await waitFor(() => expect(screen.getByLabelText('浏览器时区')).toHaveFocus())
   await user.click(screen.getByRole('tab', { name: '基础信息' }))
   expect(screen.getByLabelText('名称')).toHaveValue('工作环境')
 })

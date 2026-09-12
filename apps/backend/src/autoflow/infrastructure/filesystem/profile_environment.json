@@ -1,0 +1,320 @@
+{
+  "locales": [
+    {
+      "value": "zh-CN",
+      "label": "简体中文 · zh-CN"
+    },
+    {
+      "value": "zh-TW",
+      "label": "繁体中文 · zh-TW"
+    },
+    {
+      "value": "en-US",
+      "label": "英语（美国）· en-US"
+    },
+    {
+      "value": "en-GB",
+      "label": "英语（英国）· en-GB"
+    },
+    {
+      "value": "ja-JP",
+      "label": "日语 · ja-JP"
+    },
+    {
+      "value": "ko-KR",
+      "label": "韩语 · ko-KR"
+    },
+    {
+      "value": "de-DE",
+      "label": "德语 · de-DE"
+    },
+    {
+      "value": "fr-FR",
+      "label": "法语 · fr-FR"
+    },
+    {
+      "value": "es-ES",
+      "label": "西班牙语 · es-ES"
+    },
+    {
+      "value": "pt-BR",
+      "label": "葡萄牙语（巴西）· pt-BR"
+    },
+    {
+      "value": "zh-HK",
+      "label": "中文（香港） · zh-HK"
+    },
+    {
+      "value": "en-CA",
+      "label": "英语（加拿大） · en-CA"
+    },
+    {
+      "value": "en-AU",
+      "label": "英语（澳大利亚） · en-AU"
+    },
+    {
+      "value": "en-IN",
+      "label": "英语（印度） · en-IN"
+    },
+    {
+      "value": "fr-CA",
+      "label": "法语（加拿大） · fr-CA"
+    },
+    {
+      "value": "es-MX",
+      "label": "西班牙语（墨西哥） · es-MX"
+    },
+    {
+      "value": "pt-PT",
+      "label": "葡萄牙语（葡萄牙） · pt-PT"
+    },
+    {
+      "value": "it-IT",
+      "label": "意大利语 · it-IT"
+    },
+    {
+      "value": "nl-NL",
+      "label": "荷兰语 · nl-NL"
+    },
+    {
+      "value": "ru-RU",
+      "label": "俄语 · ru-RU"
+    },
+    {
+      "value": "uk-UA",
+      "label": "乌克兰语 · uk-UA"
+    },
+    {
+      "value": "pl-PL",
+      "label": "波兰语 · pl-PL"
+    },
+    {
+      "value": "tr-TR",
+      "label": "土耳其语 · tr-TR"
+    },
+    {
+      "value": "ar-SA",
+      "label": "阿拉伯语（沙特阿拉伯） · ar-SA"
+    },
+    {
+      "value": "he-IL",
+      "label": "希伯来语 · he-IL"
+    },
+    {
+      "value": "hi-IN",
+      "label": "印地语 · hi-IN"
+    },
+    {
+      "value": "th-TH",
+      "label": "泰语 · th-TH"
+    },
+    {
+      "value": "vi-VN",
+      "label": "越南语 · vi-VN"
+    },
+    {
+      "value": "id-ID",
+      "label": "印度尼西亚语 · id-ID"
+    },
+    {
+      "value": "ms-MY",
+      "label": "马来语 · ms-MY"
+    },
+    {
+      "value": "sv-SE",
+      "label": "瑞典语 · sv-SE"
+    },
+    {
+      "value": "da-DK",
+      "label": "丹麦语 · da-DK"
+    },
+    {
+      "value": "fi-FI",
+      "label": "芬兰语 · fi-FI"
+    },
+    {
+      "value": "nb-NO",
+      "label": "挪威语（书面语） · nb-NO"
+    }
+  ],
+  "timezones": [
+    {
+      "value": "Asia/Shanghai",
+      "label": "中国标准时间 · 上海 · Asia/Shanghai"
+    },
+    {
+      "value": "Asia/Hong_Kong",
+      "label": "香港时间 · 香港 · Asia/Hong_Kong"
+    },
+    {
+      "value": "Asia/Tokyo",
+      "label": "日本标准时间 · 东京 · Asia/Tokyo"
+    },
+    {
+      "value": "Asia/Seoul",
+      "label": "韩国标准时间 · 首尔 · Asia/Seoul"
+    },
+    {
+      "value": "America/Los_Angeles",
+      "label": "太平洋时间 · 洛杉矶 · America/Los_Angeles"
+    },
+    {
+      "value": "America/New_York",
+      "label": "东部时间 · 纽约 · America/New_York"
+    },
+    {
+      "value": "Europe/London",
+      "label": "英国时间 · 伦敦 · Europe/London"
+    },
+    {
+      "value": "Europe/Berlin",
+      "label": "中欧时间 · 柏林 · Europe/Berlin"
+    },
+    {
+      "value": "Australia/Sydney",
+      "label": "澳大利亚东部时间 · 悉尼 · Australia/Sydney"
+    },
+    {
+      "value": "UTC",
+      "label": "协调世界时 · UTC"
+    },
+    {
+      "value": "Asia/Taipei",
+      "label": "台北 · Asia/Taipei"
+    },
+    {
+      "value": "Asia/Singapore",
+      "label": "新加坡 · Asia/Singapore"
+    },
+    {
+      "value": "Asia/Kuala_Lumpur",
+      "label": "吉隆坡 · Asia/Kuala_Lumpur"
+    },
+    {
+      "value": "Asia/Bangkok",
+      "label": "曼谷 · Asia/Bangkok"
+    },
+    {
+      "value": "Asia/Ho_Chi_Minh",
+      "label": "胡志明市 · Asia/Ho_Chi_Minh"
+    },
+    {
+      "value": "Asia/Jakarta",
+      "label": "雅加达 · Asia/Jakarta"
+    },
+    {
+      "value": "Asia/Manila",
+      "label": "马尼拉 · Asia/Manila"
+    },
+    {
+      "value": "Asia/Kolkata",
+      "label": "加尔各答 · Asia/Kolkata"
+    },
+    {
+      "value": "Asia/Dubai",
+      "label": "迪拜 · Asia/Dubai"
+    },
+    {
+      "value": "Asia/Riyadh",
+      "label": "利雅得 · Asia/Riyadh"
+    },
+    {
+      "value": "Asia/Jerusalem",
+      "label": "耶路撒冷 · Asia/Jerusalem"
+    },
+    {
+      "value": "America/Chicago",
+      "label": "芝加哥 · America/Chicago"
+    },
+    {
+      "value": "America/Denver",
+      "label": "丹佛 · America/Denver"
+    },
+    {
+      "value": "America/Phoenix",
+      "label": "凤凰城 · America/Phoenix"
+    },
+    {
+      "value": "America/Toronto",
+      "label": "多伦多 · America/Toronto"
+    },
+    {
+      "value": "America/Vancouver",
+      "label": "温哥华 · America/Vancouver"
+    },
+    {
+      "value": "America/Mexico_City",
+      "label": "墨西哥城 · America/Mexico_City"
+    },
+    {
+      "value": "America/Sao_Paulo",
+      "label": "圣保罗 · America/Sao_Paulo"
+    },
+    {
+      "value": "America/Argentina/Buenos_Aires",
+      "label": "布宜诺斯艾利斯 · America/Argentina/Buenos_Aires"
+    },
+    {
+      "value": "Europe/Paris",
+      "label": "巴黎 · Europe/Paris"
+    },
+    {
+      "value": "Europe/Madrid",
+      "label": "马德里 · Europe/Madrid"
+    },
+    {
+      "value": "Europe/Rome",
+      "label": "罗马 · Europe/Rome"
+    },
+    {
+      "value": "Europe/Amsterdam",
+      "label": "阿姆斯特丹 · Europe/Amsterdam"
+    },
+    {
+      "value": "Europe/Zurich",
+      "label": "苏黎世 · Europe/Zurich"
+    },
+    {
+      "value": "Europe/Moscow",
+      "label": "莫斯科 · Europe/Moscow"
+    },
+    {
+      "value": "Europe/Istanbul",
+      "label": "伊斯坦布尔 · Europe/Istanbul"
+    },
+    {
+      "value": "Africa/Cairo",
+      "label": "开罗 · Africa/Cairo"
+    },
+    {
+      "value": "Africa/Johannesburg",
+      "label": "约翰内斯堡 · Africa/Johannesburg"
+    },
+    {
+      "value": "Australia/Perth",
+      "label": "珀斯 · Australia/Perth"
+    },
+    {
+      "value": "Pacific/Auckland",
+      "label": "奥克兰 · Pacific/Auckland"
+    },
+    {
+      "value": "Pacific/Honolulu",
+      "label": "檀香山 · Pacific/Honolulu"
+    }
+  ],
+  "user_agent_templates": [
+    {
+      "label": "Windows 10 / 11（64 位） · Chromium {major}",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major}.0.0.0 Safari/537.36"
+    },
+    {
+      "label": "macOS 桌面 · Chromium {major}",
+      "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major}.0.0.0 Safari/537.36"
+    },
+    {
+      "label": "Linux 桌面 · Chromium {major}",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major}.0.0.0 Safari/537.36"
+    }
+  ]
+}

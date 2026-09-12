@@ -1,4 +1,4 @@
-import { MagnifyingGlass, PlugsConnected } from '@phosphor-icons/react'
+import { MagnifyingGlass } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { Input } from '../../../shared/components/ui/input'
 import { ProviderLogo } from './ProviderLogo'
@@ -15,6 +15,6 @@ export function ProviderCatalogStep({ selectedId, onSelect }: { selectedId: stri
       {common.map((preset) => <button type="button" key={preset.id} aria-pressed={preset.id === selectedId} onClick={() => onSelect(preset)} className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 text-left hover:bg-surface-hover aria-pressed:border-clay aria-pressed:ring-2 aria-pressed:ring-clay/15"><ProviderLogo presetId={preset.id} name={preset.displayName} /><span><strong className="block text-sm text-ink">{preset.displayName}</strong><small className="text-muted">{preset.category}</small></span></button>)}
     </div>
     {!common.length && <p className="rounded-xl bg-surface-subtle p-4 text-sm text-muted">没有匹配的常用供应商，可以使用自定义兼容接口。</p>}
-    <button type="button" aria-pressed={custom.id === selectedId} onClick={() => onSelect(custom)} className="flex items-center gap-3 rounded-xl border border-dashed border-clay/60 bg-clay/5 p-4 text-left"><span className="grid h-10 w-10 place-items-center rounded-xl bg-clay text-white"><PlugsConnected size={20} /></span><span><strong className="block text-sm text-ink">{custom.displayName}</strong><small className="text-muted">连接其他支持 OpenAI 协议的服务</small></span></button>
+    <button type="button" aria-pressed={custom.id === selectedId} onClick={() => onSelect(custom)} className="flex items-center gap-3 rounded-xl border border-dashed border-clay/60 bg-clay/5 p-4 text-left"><ProviderLogo presetId={custom.id} name={custom.displayName} /><span><strong className="block text-sm text-ink">{custom.displayName}</strong><small className="text-muted">连接其他支持 OpenAI 协议的服务</small></span></button>
   </section>
 }
