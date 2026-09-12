@@ -113,3 +113,12 @@ A1、B1、A2a表资料和C1表资料组件已分别通过独立规格/工程复�
 - [ ] A2c（主协调）：`infrastructure/database/project_data_impacts.py`负责已存字段修改的影响预检和同事务复验；测试`tests/integration/test_project_data_impacts.py`。预检通过完整FieldRef定位当前代次与字段；保存规范change摘要、table/field修订、当前有效记录的身份/内容修订/受影响值的事实摘要、10分钟过期时间。报告列出不兼容记录（限量明细加总量）及公式/身份字段阻断。`preview_field_update(project_id,ref,definition)`返回ImpactReport，不建Operation；`require_field_update(session,project_id,ref,definition,impact_revision)`由实际字段编辑仓储在BEGIN IMMEDIATE中调用，重新读取并比较，失败412、资源丢失404或代次410，阻断不允许提交。记录在其他字段上有更新也需重新确认，不隐藏事实变化。
 - [ ] A2c失败测试包括：预检不建Operation；错误项目/字段/代次；规范请求重现；改值/增行/删行/新tableRevision后旧确认失效；超过10分钟失效；不同变更不共享确认；不可转换值与公式/身份改型列出阻断；无外部动作；caller rollback不留副作用。执行定向pytest、Ruff、mypy后送独立规格和工程审查。
 - [ ] 主协调将A2b真实handler接入现有project_data router（GET/POST fields、GET/POST/PATCH statuses），扩展真实Operation结果；A2c进入字段PATCH时同时开放mutation-impact，生成唯一DTO；禁止仅添加无消费者的空接口。随后接记录与批量状态，最后数据五页签和文件IPC/导入页面。
+
+### A2d 记录写入和状态（2026-09-13，下一执行包）
+
+- 责任：pm2_data_rules_impl只写`application/project_data/records.py`、`domain/project_data/records.py`、`infrastructure/database/project_data_records.py`及`tests/integration/test_project_data_records.py`。主协调负责HTTP/生成类型/后续查询筛选与impact集成。
+- [ ] 失败测试后实现`DataRecordService.create(project_id,table_id,key,payload)`、`get(project_id,table_id,dataset_generation,encoded_record_key,record_key_type)`、`update(project_id,table_id,encoded_record_key,key,payload)`和`set_status`同update签名；命令返回(snapshot,Operation,replayed)，GET返回DataRecord。字段已由A2b真实目录提供，不依赖前端mock。
+- [ ] 请求严格使用冻结API：values为`{fieldId,value}[]`，不能传CellValue权限/来源属性；身份由table.identity决定。无默认业务状态，statusId与environment初始化null，3种修订初始1。新系统UUID只在第一次提交生效；同key找回原快照。
+- [ ] 先比幂等完整目标/摘要，再校验项目/当前代次/版本；全字段必填和标量规则、禁止公式/只读字段写、身份字段不可静默改变RecordRef。局部PATCH保留其他字段，无变化不推进contentRevision。状态明确null每次推进statusRevision，同非null不变不推进；前态条件与同表状态scope严格校验。
+- [ ] 验证typed001/1/integer1、原key响应恢复、不同target同key冲突、人工CAS、代次410、删除行404、跨表状态、生命周期只读、写入与Operation/完整RecordRef证据的故障原子回滚。执行`uv run --directory apps/backend pytest tests/integration/test_project_data_records.py -q`，随后定向Ruff/mypy，再独立规格/工程审查。
+- 依赖边界：本分支尚无可执行项目Task/lease，不能声称已验收占用条件；PM4接真实占用guard。来源只开放可靠local/excel，Sheets写入及外部同步仍在PM6。记录DELETE/影响确认和固定批量状态仍是当前PM2未完成工作，不因本包通过而省略。

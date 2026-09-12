@@ -1,13 +1,13 @@
 {
   "date": "2026-09-13",
-  "status": "confirmed-milestone-plan-pm1-delivered-awaiting-acceptance",
+  "status": "confirmed-continuous-implementation-pm2-in-progress",
   "design_baseline": "906deda",
   "plan": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
-  "note": "PM0历史静态证据保留；PM1只登记项目入口、管理表单和上下文的实际证据。PM-02本阶段完整验证，PM-01/PM-03/OV-01部分验证；用户验收另记，PM2–PM9仍planned，业务执行契约未通过。",
+  "note": "PM0历史静态证据保留；PM1只登记项目入口、管理表单和上下文的实际证据。PM-02本阶段完整验证，PM-01/PM-03/OV-01部分验证；用户已授权持续实施PM2–PM9；PM2基础包进行中，完整业务/真实应用验收未通过，PM3–PM9仍planned。",
   "milestones": [
     {"id": "PM0","exit_dependencies": [],"status": "delivered","start_dependencies": [],"external_capabilities": ["core_contract_specification"],"user_acceptance": "accepted","acceptance_source": "用户明确授权PM1实施计划"},
     {"id": "PM1","exit_dependencies": ["PM0"],"status": "delivered","start_dependencies": ["PM0"],"external_capabilities": [],"user_acceptance": "pending","evidence": ["docs/project-management/implementation/pm1-verification.json","docs/migration/project-management-pm1-qa/built-html.json"]},
-    {"id": "PM2","exit_dependencies": ["PM1"],"status": "planned","start_dependencies": ["PM1"],"external_capabilities": []},
+    {"id": "PM2","exit_dependencies": ["PM1"],"status": "inProgress","start_dependencies": ["PM1"],"external_capabilities": []},
     {"id": "PM3","exit_dependencies": ["PM1","PM2"],"status": "planned","start_dependencies": ["PM1"],"external_capabilities": ["XE-C01","XE-C02","XE-C05","XE-C06","XE-C07"]},
     {"id": "PM4","exit_dependencies": ["PM2","PM3"],"status": "planned","start_dependencies": ["PM2","PM3"],"external_capabilities": ["core_project_capabilities","core_variables_control_flow_subflows"]},
     {"id": "PM5","exit_dependencies": ["PM4"],"status": "planned","start_dependencies": ["PM4"],"external_capabilities": ["core_checkpoint_resume","core_end_finalization"]},

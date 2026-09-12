@@ -2,24 +2,36 @@ import assert from 'node:assert/strict'
 import { mkdtemp, mkdir, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { parseArgs } from 'node:util'
 import { launchElectron, connectCdp, wait, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
+import { assertOutsideHistory } from './project-smoke-output.mjs'
 
 // Only disposable workspaces are used. UI commands use the real local service.
 const root = resolve(import.meta.dirname, '..')
+const { values: options, tokens } = parseArgs({ options: { 'output-dir': { type: 'string' }, dev: { type: 'boolean' } }, tokens: true })
+assert.equal(new Set(tokens.map(token => token.name)).size, tokens.length, 'duplicate option')
+assert.ok(options['output-dir'] === undefined || options['output-dir'].trim(), '--output-dir requires a directory')
+const historicalQa = join(root, 'docs/migration/project-management-pm1-qa')
+const defaultParent = join(root, 'docs/migration/project-management-regression-qa')
+if (!options['output-dir']) {
+  await assertOutsideHistory(historicalQa, defaultParent)
+  await mkdir(defaultParent, { recursive: true })
+}
+const qa = options['output-dir'] ? resolve(options['output-dir']) : await mkdtemp(join(defaultParent, 'run-'))
+await assertOutsideHistory(historicalQa, qa)
+await mkdir(qa, { recursive: true })
 const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm1-qa-')))
 const otherWorkspace = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm1-other-')))
-const qa = join(root, 'docs/migration/project-management-pm1-qa')
-await mkdir(qa, { recursive: true })
 await writeFile(join(userData, '.autoflow-workspace.json'), JSON.stringify({ schemaVersion: 1, kind: 'autoflow-workspace' }))
 await writeFile(join(userData, 'desktop-settings.json'), JSON.stringify({ schemaVersion: 1, currentPath: userData, previousPath: otherWorkspace, preferences: { zoom: 100, motion: 'system' } }))
 let desktop, native, main, devServer
 const checks = []
 const measurements = {}
-const entry = process.argv.includes('--dev') ? 'development-url' : 'built-html'
+const entry = options.dev ? 'development-url' : 'built-html'
 
 try {
-  if (process.argv.includes('--dev')) {
+  if (options.dev) {
     const { resolveConfig } = await import('electron-vite')
     const { createServer } = await import('vite')
     const { config } = await resolveConfig({ root: join(root, 'apps/desktop') }, 'serve', 'development')
@@ -183,7 +195,7 @@ try {
   await visible('项目资料')
   await capture('restarted')
   checkpoint('full Electron restart retains projects and last-opened timestamps, then reopens A')
-  const result = { result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
+  const result = { scope: 'PM1 project entry and existing-module regression; PM2 data functionality not tested', result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
   await writeFile(join(qa, `${entry}.json`), JSON.stringify(result, null, 2) + '\n')
   console.log(JSON.stringify(result, null, 2))
 } catch (error) {

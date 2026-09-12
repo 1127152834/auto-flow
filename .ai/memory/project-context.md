@@ -25,3 +25,5 @@
 - 2026-09-13（confirmed，来源：用户PM1实施授权、真实源码与自动/本机Electron验证）：`codex/project-management-pm1`从1f80f97+PM0构建，已实现项目目录/表单/上下文和10项HTTP；pm01_projects从0005派生，两张表原子保存项目与幂等快照。其余业务能力明确notImplemented。统一控件选择性接入1fb58e1，保留最新基线Studio M1与会话桥；没有第二执行器。见PM1执行卡和机器核验。PM1等待用户验收，旧“项目尚无业务实现”的当前描述superseded，PM2+未开始。
 
 - 2026-09-13（confirmed，用户持续目标）：PM2–PM9已授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。
+
+- 2026-09-13（confirmed，实际源码与独立审查）：PM2基础包已交付typed身份、原子持久结构、XLSX流式适配、表资料API与组件，字段/状态目录进入真实HTTP集成，字段影响确认已有持久事实绑定。完整记录、五页签、文件IPC仍实施中。主线9490924现有正式Studio M2，旧“核心仍全部WIP”现状superseded；实施分支尚未接入，PM3须核对契约与0006/pm02迁移汇合。证据见pm2-review-foundation.md及current-baseline.md。

@@ -294,4 +294,5 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `infrastructure/database/project_data_models.py` 定义表、代次、字段、状态、记录、变更证据和影响确认。
 `pm02_project_data.py` 从 pm01_projects 派生；历史迁移不修改。
 `infrastructure/filesystem/project_excel.py` 仅为可信基础设施路径的 XLSX 适配器，不能直接暴露 renderer 路径。
-迁移和领域测试属于实现基础证据；尚未交付数据 HTTP、五页签或 IPC，不能据此标记 PM2 业务完成。
+表资料目录GET/POST、详情GET/PATCH已交付；字段目录GET/POST、状态目录GET/POST/PATCH通过仓储与真实HTTP验证。`application/project_data/catalog.py`协调目录命令，`infrastructure/database/project_data_catalog.py`保存字段、状态与默认回填原子事实，`project_data_impacts.py`保存字段变更确认并在写事务内复验。`adapters/http/project_data_catalog_schemas.py`声明当前目录DTO，统一Operation查询可恢复字段/状态的原始结果。
+`renderer/domains/project-data/components`当前包含已审查的数据表目录与表单组件；正式五页签、记录、文件IPC和实际导入发布仍未完成。迁移/领域/目录接口测试不能据此标记完整PM2验收。

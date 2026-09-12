@@ -1,6 +1,6 @@
 # 项目管理执行账本
 
-- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered，用户阶段验收 pending；PM2–PM9 planned。
+- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered；用户已授权持续实施，PM2 inProgress，PM3–PM9 planned。
 - 规格：[完整设计](../design/README.md)；[总里程碑](../../superpowers/plans/2026-09-13-project-management-milestones.md)；[PM0执行卡](../../superpowers/plans/2026-09-13-project-management-pm0.md)。
 - 机器映射：[coverage.json](coverage.json)；领域/传输：[contracts.md](contracts.md)、[api-contracts.md](api-contracts.md)；合成样例：[fixtures.json](fixtures.json)。
 
@@ -121,3 +121,14 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 验收日期2026-09-13，北京时间；机器UTC时间另记。完整命令、退出码、代码版本、日志与限制见 [PM1机器核验](pm1-verification.json)；实际截图见 [本机QA](../../migration/project-management-pm1-qa/README.md)。PM0历史plan-verification.json仍为静态核验，不回写旧结果。
 
 本机自动测试461项后端、439项前端；脚本12项、结构3项。Electron构建HTML使用独立临时工作区，未触及真实业务数据。PM-02完整验证，PM-01/PM-03/OV-01仅本阶段子范围。Windows、macOS x64、发行包及PM2+未执行。核心Run依赖仍由Studio里程碑提供，PM1不把其标为已实现。
+
+## PM2 当前交付包（2026-09-13，进行中）
+
+- integration：隔离工作区、执行卡、pm02迁移/ORM和中断升级恢复；规格/工程复核通过。
+- project-data：typed身份/标量63测试，表资料4项真实HTTP与原始操作恢复；已提交。字段/状态目录A2b：完整身份、JSON安全修订、原子默认回填、有界读取、CAS/幂等与历史快照均通过审查，HTTP投影独立复审。
+- data-source：流式XLSX解析/输出，7项规格和5项工程问题全部闭合；30项适配器测试通过，已提交。文件IPC与真实导入发布未交付。
+- 前端：DataTableDirectory、DataTableFormDialog、校验与13项组件测试已提交a872db2，最终并发会话问题闭合；尚未装配正式数据页。
+- A2c：字段更新影响确认d3f76af，18项测试与规格/工程复核通过；真正字段PATCH同事务调用仍需接通。
+- A2d：记录create/get/patch/显式状态正在实现；列表筛选、删除影响、批量状态、五页签、文件IPC和Electron数据场景仍待完成。
+- PM2-A/B/C尚未整体交付，不把基础包/目录API通过当作DT功能完整验收。PM1真实应用回归另存pm2-foundation-qa并明确scope，原PM0/PM1历史报告保留。
+- 主线已正式交付Studio M2 9490924，未来按PM3契约核对接入；此分支仍M1，未宣称项目执行已接通。
