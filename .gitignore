@@ -12,5 +12,7 @@ __pycache__/
 
 # External source retained locally for architecture and capability research.
 reference/WebRPA/
+reference/RedroidManager/
+reference/redroid-script/
 
 .superpowers/verification/
