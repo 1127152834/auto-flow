@@ -64,7 +64,7 @@ npm run build
 - 修改 `apps/desktop/src/renderer/styles/index.css`。
 - 新建 `scripts/ui-tokens.test.mjs`。
 
-- [ ] 先写并运行颜色对比/必需token测试，证明新文件不存在或边界对比不足时失败。测试对比公式如下，读取tokens中的真实色值，不另写一份会漂移的通过样本。
+- [x] 先写并运行颜色对比/必需token测试，证明新文件不存在或边界对比不足时失败。测试对比公式如下，读取tokens中的真实色值，不另写一份会漂移的通过样本。
 
 ```js
 function luminance(hex) {
@@ -80,7 +80,7 @@ function contrast(a, b) {
 
 Run `node --test scripts/ui-tokens.test.mjs`，红灯必须是缺token/对比失败，不是测试路径写错。
 
-- [ ] 将设计§3完整token表写入tokens，index引入顺序保持 Tailwind → tokens → controls；保留data-motion语义。只添加现有需求的变量，不创暗色主题。核心新增值：
+- [x] 将设计§3完整token表写入tokens，index引入顺序保持 Tailwind → tokens → controls；保留data-motion语义。只添加现有需求的变量，不创暗色主题。核心新增值：
 
 ```css
 @theme {
@@ -104,8 +104,8 @@ Run `node --test scripts/ui-tokens.test.mjs`，红灯必须是缺token/对比失
 }
 ```
 
-- [ ] 在controls添加 input/textarea自填充、selection、search系统清除按钮归一、数字spinner归一、原生scrollbar parts、textarea resize corner和forced-colors规则；不全局 `appearance:none` 到所有DOM，选择控件的外观由各封装负责。
-- [ ] 运行 token测试、`npm run typecheck`、`npm run build`；检查未改现有业务schema。提交 `feat(ui): centralize warm clay control tokens`。
+- [x] 在controls添加 input/textarea自填充、selection、search系统清除按钮归一、数字spinner归一、原生scrollbar parts、textarea resize corner和forced-colors规则；不全局 `appearance:none` 到所有DOM，选择控件的外观由各封装负责。
+- [x] 运行 token测试、`npm run typecheck`、`npm run build`；检查未改现有业务schema。提交 `feat(ui): centralize warm clay control tokens`。
 
 人工交付：第一张token色板在T2展示；明确现有line仅做分隔，所有字段边界使用control-border。对应A02。
 

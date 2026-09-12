@@ -1,28 +1,13 @@
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./controls.css";
 
-@theme {
-  --color-canvas: #f1eee7;
-  --color-surface: #fbfaf7;
-  --color-surface-subtle: #f6f3ee;
-  --color-surface-hover: #f5f1e9;
-  --color-line: #d8d3c9;
-  --color-line-strong: #c7c0b5;
-  --color-ink: #34322e;
-  --color-muted: #625e57;
-  --color-clay: #8d4e2f;
-  --color-clay-strong: #88492c;
-  --color-clay-soft: #f2e3d7;
-  --color-sage: #71866b;
-  --color-sage-strong: #4f694a;
-  --color-sage-soft: #e6ece2;
-  --radius-control: 8px;
-  --radius-card: 12px;
-}
 
-:root { font-family: Inter, "Segoe UI Variable", "Microsoft YaHei UI", system-ui, sans-serif; color: #34322e; background: #f1eee7; font-synthesis: none; text-rendering: optimizeLegibility; }
+
+:root { font-family: var(--font-body); color: var(--color-ink); background: var(--color-canvas); font-synthesis: none; text-rendering: optimizeLegibility; }
 * { box-sizing: border-box; }
 html, body, #root { width: 100%; min-width: 0; min-height: 100dvh; }
-body { margin: 0; background: #f1eee7; }
+body { margin: 0; background: var(--color-canvas); }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) *, :root:not([data-motion="full"]) *::before, :root:not([data-motion="full"]) *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
@@ -31,15 +16,15 @@ button { cursor: pointer; }
 @media (max-width: 800px) { .form-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
 @keyframes toast-enter { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
-.toast-enter { animation: toast-enter 150ms ease-out both; }
+.toast-enter { animation: toast-enter var(--motion-overlay) ease-out both; }
 @keyframes toast-exit { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(0.5rem); } }
-.toast-exit { animation: toast-exit 150ms ease-in both; }
+.toast-exit { animation: toast-exit var(--motion-overlay) ease-in both; }
 
 @keyframes dialog-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes dialog-exit { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
 @keyframes overlay-enter { from { opacity: 0; } to { opacity: 1; } }
 @keyframes overlay-exit { from { opacity: 1; } to { opacity: 0; } }
-.autoflow-dialog-content[data-state="open"] { animation: dialog-enter 150ms ease-out; }
-.autoflow-dialog-content[data-state="closed"] { animation: dialog-exit 150ms ease-in; }
-.autoflow-dialog-overlay[data-state="open"] { animation: overlay-enter 150ms ease-out; }
-.autoflow-dialog-overlay[data-state="closed"] { animation: overlay-exit 150ms ease-in; }
+.autoflow-dialog-content[data-state="open"] { animation: dialog-enter var(--motion-overlay) ease-out; }
+.autoflow-dialog-content[data-state="closed"] { animation: dialog-exit var(--motion-overlay) ease-in; }
+.autoflow-dialog-overlay[data-state="open"] { animation: overlay-enter var(--motion-overlay) ease-out; }
+.autoflow-dialog-overlay[data-state="closed"] { animation: overlay-exit var(--motion-overlay) ease-in; }
