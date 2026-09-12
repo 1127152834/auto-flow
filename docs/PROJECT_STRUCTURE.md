@@ -179,7 +179,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理和工作流执行模块；后续确认范围后再扩展。已有自动化研究文档仍保留。
+- 项目管理范围已获完整确认；PM0只创建契约和验收资产，业务目录按对应里程碑首次真实交付时建立，禁止整片空骨架。Studio维护唯一文档与执行核心。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -250,3 +250,17 @@ reference/
 - `shared/runtime.ts` 只给已登记窗口的主 frame 提供运行上下文；编辑、目录管理和凭据权限仍按各自 IPC 边界校验。
 - `scripts/smoke-workflow-studio.mjs` 使用真实 Electron/sidecar 与临时工作区验收；支持构建 HTML、`--dev` 开发 URL、`--executable` 打包入口。
 - M1 只提供编排编辑与保存，没有执行器、录制、Debug 或模拟运行。详细证据见 [M1 验收记录](migration/automation-studio-m1-validation.md)。
+
+## 项目管理 PM0（2026-09-13，confirmed 实施范围）
+
+- `docs/project-management/design/`：906deda完整设计与历史验证，保持不变；确认状态由`.ai/decisions/`说明。
+- `docs/project-management/implementation/contracts.md`：领域对象、版本、18项执行端口、事务和恢复规范；不是当前Python接口实现。
+- `docs/project-management/implementation/api-contracts.md`：HTTP投影、命令查询、核心事件及桌面IPC，真实handler与生成类型按阶段交付。
+- `docs/project-management/implementation/fixtures.json`：合成领域样例和描述性工作流，非可执行Studio IR。
+- `docs/project-management/implementation/{coverage.json,execution-ledger.md}`：全部功能/规则和30包的责任、依赖、计划测试及实际验收状态。
+- `docs/project-management/implementation/verify-pm0.py`：只读文档、引用、编号与样例核验；不导入业务模块、不运行数据库或平台验收。
+- 后端目标领域为projects/project_data/project_automations/project_runs/environments；前端目标为projects/project-data/project-automations/project-runs/environments；具体F0–F9与组件文件见[总里程碑文件职责](superpowers/plans/2026-09-13-project-management-milestones.md)。均在首次真实功能包创建，不代表本次存在。
+- `apps/desktop/src/renderer/shared/components/ui/`仍是统一控件正式落点；UI独立分支1fb58e1由PM1集成，不新建packages/ui workspace。
+- 主目录b2e95b3已提交workflows文档CRUD和Studio窗口，PM0没有复制或修改。核心Run、事件补读、检查点按所需能力门槛接入，不从Profile测试浏览器扩展第二引擎。
+
+[PM0执行卡](superpowers/plans/2026-09-13-project-management-pm0.md)和[实际基线](project-management/implementation/current-baseline.md)是后续开工入口。

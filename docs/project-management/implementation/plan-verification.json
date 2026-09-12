@@ -1,0 +1,331 @@
+{
+  "date": "2026-09-13",
+  "status": "pm0-delivered-awaiting-user-acceptance",
+  "checked_at": "2026-09-12T19:11:03.223441+00:00",
+  "design_revision": "906deda",
+  "start_commit": "349c4bec2ee1672783fc41df1ac70e441000b6f8",
+  "plan": "docs/superpowers/plans/2026-09-13-project-management-pm0.md",
+  "counts": {
+    "features": 48,
+    "acceptance_scenarios": 178,
+    "execution_contracts_and_gates": 25,
+    "execution_contracts": 18,
+    "capability_gates": 7,
+    "route_rows": 97,
+    "fixtures": 7,
+    "fixture_scenarios": 13,
+    "representative_workflows": 3,
+    "delivery_packages": 30,
+    "local_links_checked": 43
+  },
+  "checks": {
+    "static_validator": {
+      "status": "passed",
+      "kind": "pm0-static-document-validation",
+      "counts": {
+        "features": 48,
+        "acceptance_scenarios": 178,
+        "execution_contracts_and_gates": 25,
+        "execution_contracts": 18,
+        "capability_gates": 7,
+        "route_rows": 97,
+        "fixtures": 7,
+        "fixture_scenarios": 13,
+        "representative_workflows": 3,
+        "delivery_packages": 30,
+        "local_links_checked": 43
+      },
+      "errors": [],
+      "not_proven": [
+        "business behavior",
+        "runtime interfaces",
+        "UI",
+        "CloakBrowser",
+        "live Sheets",
+        "Windows/macOS acceptance"
+      ]
+    },
+    "typescript_document_examples": {
+      "kind": "documentation-typescript-examples-only",
+      "blocks": 15,
+      "diagnostics": []
+    },
+    "historical_design_unchanged": true,
+    "business_evidence_empty": true,
+    "changes_documents_only": true
+  },
+  "verification_commands": [
+    {
+      "command": "python3 docs/project-management/implementation/verify-pm0.py",
+      "exit_code": 0,
+      "scope": "document/fixture structure, not business behavior"
+    },
+    {
+      "command": "node /tmp/check_autoflow_pm0_types.cjs",
+      "exit_code": 0,
+      "scope": "all TypeScript fences extracted to temporary file; local TypeScript strict/noEmit; temporary artifact removed"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "scope": "whitespace"
+    }
+  ],
+  "source_snapshots": {
+    "checked_at": "2026-09-12T19:09:45.736290+00:00",
+    "repositories": {
+      "main": {
+        "path": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "start_head": "f3fe3760fd7637819e99b51844767860ad830c62",
+        "observed_head": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "start_dirty_entries": 61,
+        "observed_dirty_entries": 37,
+        "access_by_pm0": "read-only",
+        "note": "并行任务可继续改变该目录，起止差异不由PM0回滚或覆盖",
+        "previous_observed_head": "f3fe3760fd7637819e99b51844767860ad830c62",
+        "previous_dirty_entries": 70
+      },
+      "ui": {
+        "path": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+        "start_head": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "observed_head": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "start_dirty_entries": 0,
+        "observed_dirty_entries": 0,
+        "access_by_pm0": "read-only",
+        "note": "并行任务可继续改变该目录，起止差异不由PM0回滚或覆盖",
+        "previous_observed_head": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "previous_dirty_entries": 0
+      },
+      "legacy": {
+        "path": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+        "start_head": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+        "observed_head": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+        "start_dirty_entries": 1744,
+        "observed_dirty_entries": 1744,
+        "access_by_pm0": "read-only",
+        "note": "并行任务可继续改变该目录，起止差异不由PM0回滚或覆盖",
+        "previous_observed_head": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+        "previous_dirty_entries": 1744
+      }
+    },
+    "sources": [
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/adapters/http/errors.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "df5a162783bfcf9e90baf564507998e24b4f1df6ec6802ef7869df11ba41c9dc",
+        "start_sha256_if_observed": "d99f8bb185ec224301e8795474377770d434c54c83ac1b69aa39913de9af3735",
+        "previous_sha256": "df5a162783bfcf9e90baf564507998e24b4f1df6ec6802ef7869df11ba41c9dc"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/adapters/http/proxy_remote.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "e7b77e229be813dd8404eb5e64c1122d9569ac3503efee01444b4c8f74fc844d",
+        "start_sha256_if_observed": null,
+        "previous_sha256": "e7b77e229be813dd8404eb5e64c1122d9569ac3503efee01444b4c8f74fc844d"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/adapters/http/workflows.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "705e57d6cd9bf984c9552d15cd146c3105274f66261856d6c004e5842d160820",
+        "start_sha256_if_observed": "705e57d6cd9bf984c9552d15cd146c3105274f66261856d6c004e5842d160820",
+        "previous_sha256": "705e57d6cd9bf984c9552d15cd146c3105274f66261856d6c004e5842d160820"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/adapters/http/workflow_schemas.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "c76de718d867850802e0ded48b69bd26d36fa44fa70201d807f41fbc478cbfe0",
+        "start_sha256_if_observed": "c76de718d867850802e0ded48b69bd26d36fa44fa70201d807f41fbc478cbfe0",
+        "previous_sha256": "c76de718d867850802e0ded48b69bd26d36fa44fa70201d807f41fbc478cbfe0"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/infrastructure/database/session.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "aba843e392d88cbc3f00c8f4375566c340a3ede14a4604239ab1f9f3fdd2b584",
+        "start_sha256_if_observed": null,
+        "previous_sha256": "aba843e392d88cbc3f00c8f4375566c340a3ede14a4604239ab1f9f3fdd2b584"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0005_workflow_documents.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "e42f0e260ce980e7d404ff3185738fb5b7d9b2ae841b9196ace4badbb7eb10ff",
+        "start_sha256_if_observed": "e42f0e260ce980e7d404ff3185738fb5b7d9b2ae841b9196ace4badbb7eb10ff",
+        "previous_sha256": "e42f0e260ce980e7d404ff3185738fb5b7d9b2ae841b9196ace4badbb7eb10ff"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/backend/src/autoflow/adapters/events/kernels.py",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "fca50d476f77886622a7d1b128751c9158ef4fd5328c1484bdc6f1acdf32a97d",
+        "start_sha256_if_observed": null,
+        "previous_sha256": "fca50d476f77886622a7d1b128751c9158ef4fd5328c1484bdc6f1acdf32a97d"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/desktop/src/main/ipc/automation-studio.ts",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "fc799f79245bf66b583762e197f76fde51962766b5f4b378b38d8c382fc7362b",
+        "start_sha256_if_observed": "f32d036c99cb133843fbd0d899d9ddf9308dabfe21ad9cf8e97f2204f1de6f06",
+        "previous_sha256": "fc799f79245bf66b583762e197f76fde51962766b5f4b378b38d8c382fc7362b"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/desktop/src/shared/automation-studio.ts",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "3623c6bbccaeb219272b058127740b9785539c688d5451ac60b9ee10c8a1320d",
+        "start_sha256_if_observed": "3623c6bbccaeb219272b058127740b9785539c688d5451ac60b9ee10c8a1320d",
+        "previous_sha256": "3623c6bbccaeb219272b058127740b9785539c688d5451ac60b9ee10c8a1320d"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "apps/desktop/src/shared/settings.ts",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "229a8c49a9620ff567a58a991911f2b17507444b004b2e64803f0266eeb737e3",
+        "start_sha256_if_observed": null,
+        "previous_sha256": "229a8c49a9620ff567a58a991911f2b17507444b004b2e64803f0266eeb737e3"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow",
+        "path": "scripts/generate-api.mjs",
+        "head_at_read": "b2e95b3c70fcecb9787b133c83fba9e2cc9e9e18",
+        "kind": "git-object",
+        "sha256": "8fcbd41ecda4ac38472f8f18a49087cb2d99f0e73f5b06aadddb54e185d28eb8",
+        "start_sha256_if_observed": null,
+        "previous_sha256": "8fcbd41ecda4ac38472f8f18a49087cb2d99f0e73f5b06aadddb54e185d28eb8"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+        "path": "apps/desktop/src/renderer/shared/components/ui/combobox.tsx",
+        "head_at_read": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "kind": "git-object",
+        "sha256": "191d872d86b7d65fdbe6c509455274abc2fe920b85a473601892bb36f4cc13ca",
+        "previous_sha256": "191d872d86b7d65fdbe6c509455274abc2fe920b85a473601892bb36f4cc13ca"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+        "path": "apps/desktop/src/renderer/shared/components/ui/table.tsx",
+        "head_at_read": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "kind": "git-object",
+        "sha256": "08803a242f8a9e36cce59c72f90301a9ef199f883582a0679716c3e948158a75",
+        "previous_sha256": "08803a242f8a9e36cce59c72f90301a9ef199f883582a0679716c3e948158a75"
+      },
+      {
+        "repo": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan",
+        "path": "apps/desktop/src/renderer/shared/components/ui/scroll-area.tsx",
+        "head_at_read": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+        "kind": "git-object",
+        "sha256": "09a75ca530d555163e76693c09cd2983d51f77d8cd9b3b5990f56492050e2162",
+        "previous_sha256": "09a75ca530d555163e76693c09cd2983d51f77d8cd9b3b5990f56492050e2162"
+      }
+    ],
+    "previous_observed_at": "2026-09-12T18:48:32.863459+00:00",
+    "migration_heads": [
+      "0005_workflow_documents"
+    ],
+    "migration_check": "read-only AST of revision/down_revision; no database upgrade"
+  },
+  "review": {
+    "spec": {
+      "reviewer": "pm0_spec_review",
+      "result": "passed-after-fixes",
+      "method": "independent source and artifact inspection"
+    },
+    "quality": {
+      "reviewer": "pm0_quality_review",
+      "result": "passed-after-fixes",
+      "method": "independent engineering/read-only verification; closure in execution ledger"
+    },
+    "user_milestone_acceptance": "pending"
+  },
+  "not_run": [
+    "pytest/Vitest business behavior tests",
+    "real application UI",
+    "CloakBrowser workflows",
+    "Google Sheets live operations",
+    "Windows x64 package/acceptance",
+    "macOS Intel package/acceptance",
+    "macOS ARM package/acceptance"
+  ],
+  "errors": [],
+  "document_hashes": [
+    {
+      "path": ".ai/decisions/2026-09-13-project-management-pm0-authorized.md",
+      "sha256": "6c37c9f026fa97147762156d38bfc4bb47280e433fa62b66f3a24a0f66c699fc"
+    },
+    {
+      "path": ".ai/memory/project-context.md",
+      "sha256": "f1cd372385a4da735c9194f81f12da842b0053ef111ca8aa75b411d374cdf61d"
+    },
+    {
+      "path": ".ai/plans/2026-09-13-project-management-milestones.md",
+      "sha256": "c1930b7a185dc127274b096bd1bdaf2291597cb423c9edeeb94750c1b7b8d4d8"
+    },
+    {
+      "path": ".ai/plans/2026-09-13-project-management-pm0.md",
+      "sha256": "0575a714fbe83978ddfd5d6e0bc5b1d63095a49ee2d0bc240f0f6e6b7d67bd2b"
+    },
+    {
+      "path": ".ai/sessions/2026-09-13-project-management-pm0.md",
+      "sha256": "161414206ee879cc8e32c22d63029e9b2a41d6b0e48512514f4ac9987dc26bd4"
+    },
+    {
+      "path": "docs/PROJECT_STRUCTURE.md",
+      "sha256": "caa5780746240da959fb247399bebb060b07907c63f27168728b2c0e3e099b88"
+    },
+    {
+      "path": "docs/project-management/implementation/api-contracts.md",
+      "sha256": "9852c8adda9c18cbe2fe47a792a4ddf38e79c338f239735bf746b2670e28cebb"
+    },
+    {
+      "path": "docs/project-management/implementation/contracts.md",
+      "sha256": "d93e3e4a0321d655e354fbcaf508462b29f01ba430107eefaf84dc30ef9916e0"
+    },
+    {
+      "path": "docs/project-management/implementation/coverage.json",
+      "sha256": "9159321b2a6baee217d4400f532f966580cc88a304d4701e2f09c0f7327662bd"
+    },
+    {
+      "path": "docs/project-management/implementation/coverage.md",
+      "sha256": "2c96eb072256effd74a06c260dc3bea5f611968c9ef9b6de890c5145051d1e8e"
+    },
+    {
+      "path": "docs/project-management/implementation/current-baseline.md",
+      "sha256": "354af6ac43a21809bd19450df8142e759127191789a1099c48e99dbde55c679b"
+    },
+    {
+      "path": "docs/project-management/implementation/execution-ledger.md",
+      "sha256": "c4eaace3264107958a43450fc5f2d8b1c07038a2582693096650c9a9c5fe4a5d"
+    },
+    {
+      "path": "docs/project-management/implementation/fixtures.json",
+      "sha256": "12241e13a882849b33f721d2be5f62847aec744516dd97efe145e79027ac0645"
+    },
+    {
+      "path": "docs/project-management/implementation/verify-pm0.py",
+      "sha256": "bf0cb19e3003ed5bd56f4c8516857c5f22b17a14ffebd2e15fc5fe188a1eef52"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-milestones.md",
+      "sha256": "045bfc84bb7284b214cd9397260ec27c892ef7d36d96b0516c2e4c3c1b3f46cd"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-pm0.md",
+      "sha256": "2c281e887d65cbe948fa1732c5880fbc5dd992ff0c6f47b965f986e5e127e18f"
+    }
+  ]
+}

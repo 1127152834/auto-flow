@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-12",
+  "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "head": "2faf2a037f16555482f7213a13efcd89a009eedd",
+  "warning": "These are working-tree sources, not implemented capability or approved specification.",
+  "files": [
+    {
+      "path": "docs/automation-studio/PLAN.md",
+      "sha256": "72f88719f58f4d1e7c3cff222c33debae40df46c38344b4721a2d032a8f6bdca",
+      "status": "M docs/automation-studio/PLAN.md"
+    },
+    {
+      "path": "docs/automation-studio/MILESTONES.md",
+      "sha256": "053831b238ea34ccd4c6e8a39c9368c600025d3ab6df46ac378142612f34485e",
+      "status": "?? docs/automation-studio/MILESTONES.md"
+    },
+    {
+      "path": "docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md",
+      "sha256": "d303db6b1c7398ff708a17099607d679b083009b7880de3caf5fb5c7c555ff7b",
+      "status": "?? docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md"
+    },
+    {
+      "path": "docs/automation-studio/WEBRPA_ENTITY_INVENTORY.md",
+      "sha256": "aab6bb939717e685a793ded6a4bee155f762a0410b336f33e80bbfcfebad46ab",
+      "status": "?? docs/automation-studio/WEBRPA_ENTITY_INVENTORY.md"
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/automation/studio/pages/StudioPage.tsx",
+      "sha256": "986b4af7a300b68decc50d315351b3894f7731b0b553d3ce2e925fd2c35f3de7",
+      "status": "?? apps/desktop/src/renderer/domains/automation/studio/pages/StudioPage.tsx"
+    }
+  ]
+}

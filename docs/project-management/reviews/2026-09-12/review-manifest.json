@@ -1,0 +1,172 @@
+{
+  "date": "2026-09-12",
+  "captured_at_utc": "2026-09-12T10:00:08.146560+00:00",
+  "status": "review-complete-recommendations-proposed",
+  "review_branch": "codex/project-management-design",
+  "review_target_commit": "7e3a41ca4ca37220e44258392fbbb8cf76056770",
+  "main_head": "2faf2a037f16555482f7213a13efcd89a009eedd",
+  "main_working_tree_dirty": true,
+  "legacy_commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+  "sources": [
+    {
+      "id": "target-spec",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "path": "docs/superpowers/specs/2026-09-12-project-management-design.md",
+      "kind": "git",
+      "revision": "7e3a41ca4ca37220e44258392fbbb8cf76056770",
+      "sha256": "5bcc55ad2cf21a18bf9cadd340507c94253d674f3729aa360bb28dffb9a6f05b",
+      "line_count": 314
+    },
+    {
+      "id": "legacy-product",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Product-Definition-and-Information-Architecture.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "bbaafa8c21a4beb709f1320c82196df6e6a203cb27b71966a787a425f1ddddd0",
+      "line_count": 138
+    },
+    {
+      "id": "legacy-inputs",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Workflow-Data-and-Execution-Model.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "68be3080f42ea4cc43a819b84fbf7e6908975b01bc31a79d3c071db29f90eefa",
+      "line_count": 235
+    },
+    {
+      "id": "legacy-concurrency",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Concurrency-Contract.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "fae2772486752d6ef3f22af4a4725e2cb012ad5587d686269b65c608498b72f7",
+      "line_count": 135
+    },
+    {
+      "id": "legacy-environment",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Environment-and-Manual-Takeover.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8dd3d40502bf3a8886dd63b5fb8f35d38fc66e188f7724b0b46ce83be4908d31",
+      "line_count": 105
+    },
+    {
+      "id": "legacy-sheets",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Milestones/M5.1-Sheets-Local-Write-Contract.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6438444d74437e12bbf991c9fb4d27c1cde2c254d4e6cabe13d133ed3881263d",
+      "line_count": 71
+    },
+    {
+      "id": "legacy-identity",
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-Contract.md",
+      "kind": "git",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6474dddb347b65f073811bb64f097bc92bc8520832f3af7813d5c7710fccc512",
+      "line_count": 61
+    },
+    {
+      "id": "current-navigation",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/renderer/app/ApplicationHeader.tsx",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "9db6b42d5f4a2bfa4bc60bd0a93e3fc97b5558d61b56aa4cd7e9bed872ac3c0e",
+      "line_count": 15
+    },
+    {
+      "id": "current-settings-language",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/renderer/domains/settings/pages/SettingsPage.tsx",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "5e34b4f47680ad71c99a493cc0c53e3e9eb78a60f54cf01286a13143b977524b",
+      "line_count": 53
+    },
+    {
+      "id": "profile-boundary",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "path": ".ai/decisions/2026-09-12-profile-test-browser.md",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "106fec22631dd304a51a561687dd546a568f52786ff057c94f3e8120ac3a6e83",
+      "line_count": 29
+    },
+    {
+      "id": "studio-roadmap",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "d303db6b1c7398ff708a17099607d679b083009b7880de3caf5fb5c7c555ff7b",
+      "line_count": 312
+    },
+    {
+      "id": "studio-plan",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/automation-studio/PLAN.md",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "72f88719f58f4d1e7c3cff222c33debae40df46c38344b4721a2d032a8f6bdca",
+      "line_count": 494
+    },
+    {
+      "id": "root-scripts",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "path": "package.json",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "38b55fe8f9c9cbc7b2a9b9810474680b8b22895bf4aa4d058f8f5916f29b0c00",
+      "line_count": 25
+    },
+    {
+      "id": "desktop-scripts",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "path": "apps/desktop/package.json",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "5dee6d692c6c830176d23118dfd2df3dd169b73c29d3a4f2f65bf2295afb3813",
+      "line_count": 56
+    },
+    {
+      "id": "backend-checks",
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+      "path": "apps/backend/pyproject.toml",
+      "kind": "working-tree",
+      "revision": null,
+      "sha256": "b78c5b2e9c77ed90234cc4d0c877fbbe05ae1ae9e3a31840bb83121a92236daf",
+      "line_count": 39
+    }
+  ],
+  "review_skills": [
+    {
+      "path": "/Users/zhangtiancheng/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/requesting-code-review/SKILL.md",
+      "sha256": "a5ff68586ccf62d1803cedeb71d60fd96ec05591d29c8d123196117eefd34cd0"
+    },
+    {
+      "path": "/Users/zhangtiancheng/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/requesting-code-review/code-reviewer.md",
+      "sha256": "7f5328dca12cb200005ae9d4386f63a9b0acb735ece57f82db206b4a3189ccae"
+    },
+    {
+      "path": "/Users/zhangtiancheng/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/writing-plans/SKILL.md",
+      "sha256": "90056bad3d5f196fa7c9fec0ffe592e6d9c86bc983e406642a51d1a4198b7024"
+    },
+    {
+      "path": "/Users/zhangtiancheng/.codex/skills/ponytail-review/SKILL.md",
+      "sha256": "40df33b58fc6ef889b93585733feb9566b76e9586efa7f376785c1e995197ac0"
+    }
+  ],
+  "independent_agents": [
+    "review_project_product",
+    "review_project_execution",
+    "review_project_data_env"
+  ],
+  "application_exercised": false,
+  "cross_platform_tests_run": false
+}

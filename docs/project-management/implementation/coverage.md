@@ -1,0 +1,130 @@
+# 项目管理里程碑覆盖表
+
+- 日期：2026-09-13；状态：confirmed（计划已获实施授权），PM0交付完成、用户验收pending；所有业务实现与验收项仍为 planned。
+- 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
+- [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
+- “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
+
+## 功能逐项映射
+
+| 功能ID | 功能 | 首次可用 | 完整验收 |
+|---|---|---|---|
+| PM-01 | 项目目录与最近访问 | PM1 | PM8 |
+| PM-02 | 新建与编辑项目 | PM1 | PM1 |
+| PM-03 | 项目上下文与六页签 | PM1 | PM7 |
+| PM-04 | 归档与恢复 | PM8 | PM8 |
+| PM-05 | 永久删除与残留处置 | PM8 | PM8 |
+| OV-01 | 项目摘要与继续工作 | PM1 | PM7 |
+| OV-02 | 当前活动与需要关注 | PM3 | PM7 |
+| OV-03 | 最近活动与业务变化摘要 | PM2 | PM7 |
+| AU-01 | 自动化目录及基本生命周期 | PM3 | PM8 |
+| AU-02 | 基本信息页签与管理保存 | PM3 | PM4 |
+| AU-03 | 输入数据页签 | PM3 | PM4 |
+| AU-04 | 参数配置页签 | PM3 | PM3 |
+| AU-05 | 运行设置页签 | PM3 | PM5 |
+| AU-06 | 编辑工作流及返回 | PM3 | PM5 |
+| AU-07 | 启动确认与启动结果 | PM3 | PM5 |
+| AU-08 | 独立流程关联与删除影响（proposed 范围细化） | PM3 | PM8 |
+| RUN-01 | 批次、任务与等待人工列表 | PM3 | PM7 |
+| RUN-02 | 批次详情 | PM3 | PM7 |
+| RUN-03 | 任务详情与节点记录 | PM3 | PM7 |
+| RUN-04 | 停止与强制停止 | PM3 | PM8 |
+| RUN-05 | 失联、结果不明与核对 | PM3 | PM8 |
+| RUN-06 | 失败后的业务继续处理（基础目标 confirmed，快捷入口 proposed） | PM4 | PM7 |
+| ST-01 | 统计范围与刷新 | PM7 | PM7 |
+| ST-02 | 指标与趋势 | PM7 | PM7 |
+| ST-03 | 从统计查看对应运行 | PM7 | PM7 |
+| DT-01 | 数据表目录与创建 | PM2 | PM6 |
+| DT-02 | 数据记录查询与显示 | PM2 | PM6 |
+| DT-03 | 新增、编辑与删除记录 | PM2 | PM6 |
+| DT-04 | 单条记录业务状态维护 | PM2 | PM4 |
+| DT-05 | 字段与校验页签 | PM2 | PM6 |
+| DT-06 | 数据状态页签 | PM2 | PM4 |
+| DT-07 | Excel 来源检查、导入与重新导入 | PM2 | PM4 |
+| DT-08 | Sheets 连接、绑定与来源调整 | PM6 | PM6 |
+| DT-09 | 拉取、推送、核验与同步失败恢复 | PM6 | PM8 |
+| DT-10 | 数据表设置与表删除 | PM2 | PM8 |
+| DT-11 | 数据与自动化/运行的互查 | PM3 | PM7 |
+| DT-12 | 新建空白本地表（proposed 范围） | PM2 | PM2 |
+| DT-13 | 结果数据导出（proposed 范围） | PM2 | PM8 |
+| DT-14 | 工作流中的表、字段与记录操作（confirmed 目标） | PM4 | PM6 |
+| ENV-01 | 环境入口与分区 | PM5 | PM5 |
+| ENV-02 | 运行环境列表与详情 | PM3 | PM8 |
+| ENV-03 | 等待人工列表与共用处理详情 | PM5 | PM8 |
+| ENV-04 | 已保存环境目录与详情 | PM5 | PM8 |
+| ENV-05 | 环境来源选择与持续使用 | PM5 | PM5 |
+| ENV-06 | 人工打开与维护已保存环境 | PM5 | PM8 |
+| ENV-07 | 从任务保存环境与后续选择 | PM5 | PM8 |
+| ENV-08 | 项目默认资源 | PM3 | PM5 |
+| ENV-09 | 环境清理、删除与异常恢复 | PM3 | PM8 |
+
+PM3的自动化输入可保存/预览，实际数据型执行在PM4开放；ENV-02/09在PM3仅覆盖参数型任务临时实例的真实状态/清理，完整环境页面在PM5开放。DT-07在PM2完成Excel闭环，PM4补足运行占用影响；DT-14在PM4完成本地节点，PM6完成Sheets结构/来源行为。DT-13在PM2导出本地表，PM6加入公式来源，PM8验收归档只读导出。
+
+## 规则组归属
+
+| 规则组 | 数量 | 主要实现阶段 | 完整验收阶段 |
+|---|---:|---|---|
+| DATA-OBJ | 2 | PM2 | PM3 |
+| DATA-ID | 6 | PM2/PM6 | PM2/PM6 |
+| DATA-VER | 2 | PM2 | PM4 |
+| DATA-STATE | 13 | PM2/PM4/PM6 | PM2/PM4/PM5/PM6/PM7/PM8 |
+| DATA-TABLE | 8 | PM2 | PM2/PM6/PM8 |
+| DATA-XLS | 7 | PM2 | PM4 |
+| DATA-IN | 12 | PM3 | PM4 |
+| DATA-CLAIM | 17 | PM4 | PM4/PM6 |
+| DATA-WRITE | 13 | PM2/PM4/PM5 | PM4/PM5/PM6/PM8 |
+| DATA-SCHEMA | 9 | PM4/PM6 | PM6 |
+| DATA-LINK | 6 | PM5 | PM5 |
+| DATA-SH | 14 | PM6 | PM6 |
+| DATA-SYNC | 10 | PM6 | PM6 |
+| DATA-LIFE | 12 | PM6/PM8 | PM6/PM8 |
+| DATA-E2E | 6 | PM9 | PM9 |
+| FLOW-A | 16 | PM3/PM4/PM5/PM6/PM7 | PM3/PM4/PM5/PM6/PM7 |
+| XE-A | 25 | PM3/PM4/PM5/PM7/PM8 | PM3/PM4/PM5/PM7/PM8 |
+
+## 契约与能力门槛
+
+| ID | 首次实现 | 完整验收 |
+|---|---|---|
+| XE-C01 | PM3 | PM3 |
+| XE-C02 | PM3 | PM4 |
+| XE-C03 | PM3 | PM5 |
+| XE-C04 | PM4 | PM6 |
+| XE-C05 | PM3 | PM4 |
+| XE-C06 | PM3 | PM8 |
+| XE-C07 | PM3 | PM7 |
+| XE-C08 | PM4 | PM4 |
+| XE-C09 | PM4 | PM6 |
+| XE-C10 | PM5 | PM5 |
+| XE-C11 | PM3 | PM5 |
+| XE-C12 | PM5 | PM5 |
+| XE-C13 | PM5 | PM5 |
+| XE-C14 | PM5 | PM5 |
+| XE-C15 | PM5 | PM8 |
+| XE-C16 | PM3 | PM8 |
+| XE-C17 | PM3 | PM8 |
+| XE-C18 | PM5 | PM5 |
+| XE-G01 | PM3 | PM3 |
+| XE-G02 | PM3 | PM3 |
+| XE-G03 | PM6 | PM6 |
+| XE-G04 | PM5 | PM5 |
+| XE-G05 | PM5 | PM5 |
+| XE-G06 | PM8 | PM8 |
+| XE-G07 | PM9 | PM9 |
+
+XE-G03包含全部数据来源、项目写入及关联契约，因此完整门槛在PM6关闭；PM4的本地数据型闭环不被误称为全部来源已验收。XE-G07检查项目实际消费的双窗口/平台能力；完整Studio其他核心能力仍由其独立计划验收。
+
+## 证据填写规则
+
+- 实施者在 `execution-ledger.md` 记录提交、OS/架构、测试命令/退出码、真实页面步骤、Task/Run/Operation与脱敏结果；本文件映射和JSON的planned状态不自动转绿。
+- 自动测试、模拟Provider、真实浏览器、真实Sheets及安装包证据分别标记，不能互相抵扣。
+- 一条ID涉及多个阶段，早期已通过的局部测试须保留；完整验收阶段补来源/竞争/恢复场景，PM9做最终回归。
+- 增加或修改规则必须同步规格、映射和测试；删除范围需有用户依据，不能通过删ID制造100%覆盖。
+
+## PM0 补充：执行责任与开始条件
+
+逐条映射现在包含primary_package、owner、planned_test_file、acceptance_methods、dependencies及completion_packages；[执行账本](execution-ledger.md)定义责任角色和30包的文件/集成边界。第一次出现的能力、完整阶段验收、PM9发行回归保持独立。
+
+PM3参数型链可在PM2完成前开始，完整退出依赖仍包括PM2；PM7查询可在PM4后开始，完整退出等待PM5/PM6。所有future测试目标是计划路径，不能当作现存测试；PM0静态检查结果不填入业务evidence。
+
+[合成样例](fixtures.json)提供7组固定数据、13个分支场景及3条代表流程。样例只做结构/引用核验；每条场景ID的业务含义经过规格审查，实际行为仍由对应阶段测试证明。
