@@ -534,3 +534,7 @@ main 进程校验调用窗口/主 frame、projectId、扩展名和对话框结�
 ## PM1已批准勘误（2026-09-13）
 
 用户批准PM1：Summary数量可省略，Overview/Summary共用六键能力状态，未知不补零。POST省略defaultResources由服务端建立profileId=null/proxy.mode=sourceDefault/modelProviderId=null，显式提供仍完整验证保存；PATCH省略保留。PM1实际仅createProject/updateProject及查询，不开放归档/恢复/删除，组件归属按PM1执行卡细化。上述修订不改数据、运行或环境规则；PM0报告仍为当时事实。
+
+## PM2 实施勘误（2026-09-13）
+
+PM0历史报告不回写。PM2新增表身份策略、写入值形状、Excel创建/替换路由分离、显式映射目标、inspect操作结果及受控文件授权的实施补充，以[PM2执行卡](../../superpowers/plans/2026-09-13-project-management-pm2.md)的“实施契约补充”为准；原正文相冲突的请求形状为superseded。未改变数据复用、独立修订、原子发布和结果未知查询的业务规则。真实OpenAPI随handler交付生成。

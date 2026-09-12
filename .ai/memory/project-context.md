@@ -23,3 +23,5 @@
 - 2026-09-13（confirmed，来源：用户明确实施PM0计划）：整体里程碑及PM0执行已授权，旧“当前只规划”的阶段描述 superseded。先在codex/project-management-design完成契约、传输、FX-01–07及覆盖账本，逐里程碑用户验收；PM1才交付页面/API。主目录Studio M1在交付前提交为b2e95b3，包含工作流文档CRUD和0005迁移；旧“只有about:blank/全为WIP”的当前事实 superseded，Run仍不可执行。见 `.ai/decisions/2026-09-13-project-management-pm0-authorized.md`。
 
 - 2026-09-13（confirmed，来源：用户PM1实施授权、真实源码与自动/本机Electron验证）：`codex/project-management-pm1`从1f80f97+PM0构建，已实现项目目录/表单/上下文和10项HTTP；pm01_projects从0005派生，两张表原子保存项目与幂等快照。其余业务能力明确notImplemented。统一控件选择性接入1fb58e1，保留最新基线Studio M1与会话桥；没有第二执行器。见PM1执行卡和机器核验。PM1等待用户验收，旧“项目尚无业务实现”的当前描述superseded，PM2+未开始。
+
+- 2026-09-13（confirmed，用户持续目标）：PM2–PM9已授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。

@@ -1,0 +1,8 @@
+# 项目管理持续实施授权
+
+- 日期：2026-09-13。
+- 状态：confirmed。
+- 来源：用户当前持续目标明确授权 PM2–PM9，不做画布编辑器但接通项目所需单一 Studio 核心。
+- 逐里程碑停止等待用户验收的旧要求 superseded；内部审查与真实验收后继续。外部授权/无法推导的重大业务冲突才询问，其他工作继续。
+- 写入仅在 autoflow-project-management-implementation，基线 ef3178a；主目录及其他工作区只读。
+- PM0/PM1历史证据保留。PM2执行契约澄清与文件责任见 docs/superpowers/plans/2026-09-13-project-management-pm2.md。

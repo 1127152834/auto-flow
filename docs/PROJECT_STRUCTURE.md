@@ -286,3 +286,12 @@ reference/
 | `docs/migration/project-management-pm1-qa/` | 本机截图、运行记录；不是设计原型或其他平台通过证明。 |
 
 PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工作区会话复用现有实现。`packages/ui` 继续是骨架，不建立第二套 UI 包。详见 [PM1 执行卡](superpowers/plans/2026-09-13-project-management-pm1.md)。
+
+## PM2 持久结构（2026-09-13，实施中）
+
+独立分支 codex/project-management-implementation 从 PM1 ef3178a 继续。
+`domain/project_data/identity.py` 与 `rules.py` 负责稳定记录身份和标量/字段规则；
+`infrastructure/database/project_data_models.py` 定义表、代次、字段、状态、记录、变更证据和影响确认。
+`pm02_project_data.py` 从 pm01_projects 派生；历史迁移不修改。
+`infrastructure/filesystem/project_excel.py` 仅为可信基础设施路径的 XLSX 适配器，不能直接暴露 renderer 路径。
+迁移和领域测试属于实现基础证据；尚未交付数据 HTTP、五页签或 IPC，不能据此标记 PM2 业务完成。
