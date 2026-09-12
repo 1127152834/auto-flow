@@ -1,3 +1,4 @@
+import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -78,10 +79,12 @@ it('fetches environment choices from the API and submits selected values', async
   const { writes, fetchMock } = renderEditor()
   await user.type(screen.getByLabelText('名称'), '日本环境')
   await user.click(screen.getByRole('tab', { name: '浏览器环境' }))
+  screen.getByLabelText('浏览器语言').focus(); await user.keyboard('{ArrowDown}')
   expect(await screen.findByRole('option', { name: '日语（后端目录）' })).toBeInTheDocument()
-  await user.selectOptions(screen.getByLabelText('浏览器语言'), 'ja-JP')
-  await user.selectOptions(screen.getByLabelText('浏览器时区'), 'Asia/Tokyo')
-  await user.selectOptions(screen.getByLabelText('User Agent'), 'Catalog UA Chrome/146.0.0.0')
+  await user.keyboard('{Escape}')
+  await chooseOption(user, screen.getByLabelText('浏览器语言'), 'ja-JP')
+  await chooseOption(user, screen.getByLabelText('浏览器时区'), 'Asia/Tokyo')
+  await chooseOption(user, screen.getByLabelText('User Agent'), 'Catalog UA Chrome/146.0.0.0')
   await user.click(screen.getByRole('button', { name: '创建配置' }))
   await waitFor(() => expect(writes).toHaveLength(1))
   expect(writes[0]?.body).toMatchObject({ locale: 'ja-JP', timezone: 'Asia/Tokyo', userAgent: 'Catalog UA Chrome/146.0.0.0' })
@@ -98,7 +101,7 @@ it('does not lose the draft when dismissing discard confirmation', async () => {
   expect(overlays).toHaveLength(2)
   expect([...overlays].every((overlay) => overlay.classList.contains('z-[50]'))).toBe(true)
   await user.click(await screen.findByRole('button', { name: '继续编辑' }))
-  expect(screen.getByLabelText('名称')).toHaveValue('工作环境')
+  expect(choiceValue(screen.getByLabelText('名称'))).toBe('工作环境')
 })
 
 it('switches tabs and focuses the first local validation error', async () => {
@@ -123,7 +126,7 @@ it('maps a 422 field error to its tab and keeps the draft', async () => {
   await waitFor(() => expect(screen.getByRole('tab', { name: '浏览器环境' })).toHaveAttribute('data-state', 'active'))
   await waitFor(() => expect(screen.getByLabelText('浏览器时区')).toHaveFocus())
   await user.click(screen.getByRole('tab', { name: '基础信息' }))
-  expect(screen.getByLabelText('名称')).toHaveValue('工作环境')
+  expect(choiceValue(screen.getByLabelText('名称'))).toBe('工作环境')
 })
 
 it.each([
@@ -148,7 +151,7 @@ it('applies the default once for create and passes the selected kernel with its 
   const user = userEvent.setup()
   const { onManageKernel } = renderEditor()
   await user.click(screen.getByRole('tab', { name: '内核与代理' }))
-  await waitFor(() => expect(screen.getByLabelText('浏览器内核')).toHaveValue('public|146.0.1.1'))
+  await waitFor(() => expect(choiceValue(screen.getByLabelText('浏览器内核'))).toBe('public|146.0.1.1'))
   const trigger = screen.getByRole('button', { name: '管理内核' })
   await user.click(trigger)
   expect(onManageKernel).toHaveBeenCalledWith({ edition: 'public', version: '146.0.1.1' }, trigger)
@@ -188,7 +191,7 @@ it('keeps the name after a 409 conflict', async () => {
   await user.type(screen.getByLabelText('名称'), '重复名称')
   await user.click(screen.getByRole('button', { name: '创建配置' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('配置名称已存在')
-  expect(screen.getByLabelText('名称')).toHaveValue('重复名称')
+  expect(choiceValue(screen.getByLabelText('名称'))).toBe('重复名称')
 })
 
 it('closes and announces a successful create', async () => {
@@ -199,3 +202,5 @@ it('closes and announces a successful create', async () => {
   expect(await screen.findByText('配置已创建')).toBeInTheDocument()
   expect(onOpenChange).toHaveBeenCalledWith(false)
 })
+
+choiceTestEnvironment()

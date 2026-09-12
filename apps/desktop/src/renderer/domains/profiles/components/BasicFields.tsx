@@ -11,15 +11,15 @@ export function BasicFields() {
       <p className="mb-0 mt-1 text-sm text-muted">名称用于识别配置；指纹种子由 AutoFlow 维护。</p>
     </div>
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField label="名称" htmlFor="profile-name" error={errors.name?.message}>
-        <Input {...register('name')} autoComplete="off" />
-      </FormField>
-      <FormField label="描述" htmlFor="profile-description">
-        <Input {...register('description')} placeholder="可选，例如长期登录环境" />
-      </FormField>
+      <FormField label="名称" htmlFor="profile-name" error={errors.name?.message}>{(a11y) => <>
+        <Input {...a11y} {...register('name')} autoComplete="off" />
+      </>}</FormField>
+      <FormField label="描述" htmlFor="profile-description">{(a11y) => <>
+        <Input {...a11y} {...register('description')} placeholder="可选，例如长期登录环境" />
+      </>}</FormField>
     </div>
-    <FormField label="起始网址" htmlFor="profile-start-url" error={errors.startUrl?.message} hint="支持 HTTP、HTTPS 或 about:blank。">
-      <Input {...register('startUrl')} inputMode="url" />
-    </FormField>
+    <FormField label="起始网址" htmlFor="profile-start-url" error={errors.startUrl?.message} hint="支持 HTTP、HTTPS 或 about:blank。">{(a11y) => <>
+      <Input {...a11y} {...register('startUrl')} inputMode="url" />
+    </>}</FormField>
   </section>
 }

@@ -110,8 +110,9 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
   useEffect(() => {
     if (!pendingFocus) return
     const frame = window.requestAnimationFrame(() => {
-      const selector = focusSelectors[pendingFocus] ?? `[name="${pendingFocus}"]`
-      document.querySelector<HTMLElement>(`.autoflow-dialog-content ${selector}`)?.focus()
+      const selector = focusSelectors[pendingFocus]
+      if (selector) document.querySelector<HTMLElement>(`.autoflow-dialog-content ${selector}`)?.focus()
+      else form.setFocus(pendingFocus)
       setPendingFocus(null)
     })
     return () => window.cancelAnimationFrame(frame)

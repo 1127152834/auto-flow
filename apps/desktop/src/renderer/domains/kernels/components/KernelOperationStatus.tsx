@@ -1,3 +1,4 @@
+import { Progress } from '../../../shared/components/ui/progress'
 import type { KernelOperation } from '../../../shared/api/types'
 import { Button } from '../../../shared/components/ui/button'
 
@@ -34,9 +35,7 @@ export function KernelOperationStatus({ operation, cancelling = false, disabled 
       <span className="font-medium text-ink">{labels[operation.state]}</span>
       {knownProgress ? <span>{operation.progress}%</span> : active ? <span>进度未知</span> : null}
     </div>
-    {active ? <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line" role="progressbar" aria-label="内核安装进度" {...(knownProgress ? { 'aria-valuenow': operation.progress as number, 'aria-valuemin': 0, 'aria-valuemax': 100 } : { 'aria-valuetext': '进度未知' })}>
-      <div className={knownProgress ? 'h-full rounded-full bg-clay transition-[width] duration-300' : 'h-full w-1/3 animate-pulse rounded-full bg-clay'} style={knownProgress ? { width: `${operation.progress}%` } : undefined} />
-    </div> : null}
+    {active ? <Progress className="mt-2" aria-label="内核安装进度" aria-valuetext={knownProgress ? undefined : '进度未知'} value={operation.progress} /> : null}
     {operation.message ? <p className="mb-0 mt-2 text-xs text-muted">{operation.message}</p> : null}
     {operation.error ? <p role="alert" className="mb-0 mt-2 text-xs text-red-700">{operation.error}</p> : null}
     {active && operation.state !== 'cancelling' && onCancel ? <Button type="button" variant="ghost" className="mt-2 h-8 px-2" disabled={disabled || cancelling} onClick={() => void onCancel()}>{cancelling ? '正在取消…' : '取消下载'}</Button> : null}

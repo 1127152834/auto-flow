@@ -1,3 +1,4 @@
+import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -101,7 +102,7 @@ it('filters profiles by name and proxy mode without another write request', asyn
   expect(screen.getByText(workProfile.name)).toBeVisible()
   expect(screen.queryByText(testProfile.name)).not.toBeInTheDocument()
   await user.clear(screen.getByRole('searchbox'))
-  await user.selectOptions(screen.getByLabelText('代理模式筛选'), 'proxy')
+  await chooseOption(user, screen.getByLabelText('代理模式筛选'), 'proxy')
   expect(screen.getByText(testProfile.name)).toBeVisible()
   expect(screen.queryByText(workProfile.name)).not.toBeInTheDocument()
   expect(server.calls.filter((call) => call.method !== 'GET')).toHaveLength(0)
@@ -176,7 +177,7 @@ it('keeps the form draft mounted while the nested kernel manager opens and resto
   await user.click(screen.getByRole('button', { name: '关闭内核管理' }))
   await waitFor(() => expect(trigger).toHaveFocus())
   await user.click(screen.getByRole('tab', { name: '基础信息' }))
-  expect(screen.getByLabelText('名称')).toHaveValue('未保存草稿')
+  expect(choiceValue(screen.getByLabelText('名称'))).toBe('未保存草稿')
 })
 
 it('preserves portal drafts, blocks offline writes, and reconnects from the active dialog', async () => {
@@ -201,7 +202,7 @@ it('keeps an offline form draft without saving it automatically', async () => {
   await user.click(await screen.findByRole('button', { name: '新建配置' }))
   await user.type(screen.getByLabelText('名称'), '断线草稿')
   view.rerenderDisabled(true)
-  expect(screen.getByLabelText('名称')).toHaveValue('断线草稿')
+  expect(choiceValue(screen.getByLabelText('名称'))).toBe('断线草稿')
   expect(screen.getByRole('button', { name: '创建配置' })).toBeDisabled()
   await user.click(screen.getByRole('button', { name: '重新连接' }))
   expect(onReconnect).toHaveBeenCalledOnce()
@@ -234,3 +235,5 @@ it('blocks an already-open kernel or delete action while offline but still allow
   expect(onReconnect).toHaveBeenCalledTimes(2)
   expect(view.server.calls.filter((call) => call.method === 'DELETE')).toHaveLength(0)
 })
+
+choiceTestEnvironment()

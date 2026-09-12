@@ -4,7 +4,7 @@ import type { KernelRef, ProfileRead } from '../../../shared/api/types'
 import { notify, Toaster } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select'
+import { Select } from '../../../shared/components/ui/select-radix'
 import { KernelManagerDialog } from '../../kernels/components/KernelManagerDialog'
 import { ProfileActionDialog, type ProfileAction } from '../components/ProfileActionDialog'
 import { ProfileFormDialog } from '../components/ProfileFormDialog'
@@ -83,12 +83,7 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
           <MagnifyingGlass aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
           <Input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="搜索配置名称或描述" className="w-full pl-10" />
         </label>
-        <Select aria-label="代理模式筛选" value={proxyFilter} onChange={(event) => { setProxyFilter(event.target.value as ProxyFilter); setPage(1) }} className="w-full">
-          <option value="all">全部代理模式</option>
-          <option value="none">不使用代理</option>
-          <option value="proxy">固定代理</option>
-          <option value="pool">代理池</option>
-        </Select>
+        <Select aria-label="代理模式筛选" value={proxyFilter} className="w-full" onValueChange={(value) => { setProxyFilter((value ?? '') as ProxyFilter); setPage(1) }} options={[...[{ value: "all", label: "全部代理模式" }], ...[{ value: "none", label: "不使用代理" }], ...[{ value: "proxy", label: "固定代理" }], ...[{ value: "pool", label: "代理池" }]]} />
       </section>
 
       {profiles.isFetching && profiles.data ? <p role="status" className="m-0 text-xs text-muted">正在同步本地数据…</p> : null}

@@ -1,3 +1,4 @@
+import { chooseOption, choiceTestEnvironment, choiceValue } from '../../../shared/testing/choice-user'
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -30,22 +31,22 @@ function Harness(props: Partial<KernelProxyFieldsProps> = {}) {
 it('normalizes Preview to Stable when switching to a public kernel', async () => {
   const user = userEvent.setup()
   render(<Harness />)
-  await user.selectOptions(screen.getByLabelText('发布通道'), 'preview')
-  await user.selectOptions(screen.getByLabelText('浏览器内核'), 'public|146.0.1.0')
-  expect(screen.getByLabelText('发布通道')).toHaveValue('stable')
+  await chooseOption(user, screen.getByLabelText('发布通道'), 'preview')
+  await chooseOption(user, screen.getByLabelText('浏览器内核'), 'public|146.0.1.0')
+  expect(choiceValue(screen.getByLabelText('发布通道'))).toBe('stable')
   expect(screen.getByLabelText('发布通道')).toBeDisabled()
 })
 
 it('clears mutually exclusive proxy references as the mode changes', async () => {
   const user = userEvent.setup()
   render(<Harness />)
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'proxy')
-  await user.selectOptions(screen.getByLabelText('固定代理'), 'proxy-1')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'proxy')
+  await chooseOption(user, screen.getByLabelText('固定代理'), 'proxy-1')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyId":"proxy-1"')
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'pool')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'pool')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyId":""')
-  await user.selectOptions(screen.getByLabelText('代理池'), 'pool-1')
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'none')
+  await chooseOption(user, screen.getByLabelText('代理池'), 'pool-1')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'none')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyPoolId":""')
 })
 
@@ -65,7 +66,9 @@ it('keeps kernel management available when resources are empty or failed', async
   let trigger: HTMLButtonElement | null = null
   const onManageKernel = vi.fn<NonNullable<KernelProxyFieldsProps['onManageKernel']>>((event) => { trigger = event.currentTarget })
   render(<Harness installedKernels={[]} proxyOptions={{ proxies: [], pools: [] }} kernelsError="读取内核失败" onManageKernel={onManageKernel} />)
+  screen.getByLabelText('浏览器内核').focus(); await user.keyboard('{ArrowDown}')
   expect(screen.getByRole('option', { name: '暂无已安装内核' })).toBeInTheDocument()
+  await user.keyboard('{Escape}')
   expect(screen.getByRole('alert')).toHaveTextContent('读取内核失败')
   await user.click(screen.getByRole('button', { name: '管理内核' }))
   expect(onManageKernel).toHaveBeenCalledTimes(1)
@@ -78,6 +81,8 @@ it('keeps an invalid saved resource visible so the schema can block it', () => {
     return <FormProvider {...form}><KernelProxyFields installedKernels={[]} proxyOptions={{ proxies: [], pools: [] }} onManageKernel={() => undefined} /></FormProvider>
   }
   render(<InvalidHarness />)
-  expect(screen.getByRole('option', { name: /public · removed.*已不可用/ })).toBeInTheDocument()
-  expect(screen.getByRole('option', { name: /removed-proxy.*已不可用/ })).toBeInTheDocument()
+  expect(screen.getByLabelText('浏览器内核')).toHaveTextContent(/public · removed.*已不可用/)
+  expect(screen.getByLabelText('固定代理')).toHaveTextContent(/removed-proxy.*已不可用/)
 })
+
+choiceTestEnvironment()
