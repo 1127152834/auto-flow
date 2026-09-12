@@ -7,12 +7,8 @@ export type TableCreate = Omit<Schema['DataTableCreate'], 'sourceKind'>
 export type TablePatch = Schema['DataTablePatch']
 export type DirectoryQuery = { query: string; page: number; pageSize: number; sort: 'name' | '-name' | 'updatedAt' | '-updatedAt'; sourceKind?: DataTable['sourceKind'] }
 
-export class DataCommandUncertain extends Error {
-  constructor(readonly cause: unknown) {
-    super('上次保存结果尚未确认，请先核对结果。')
-    this.name = 'DataCommandUncertain'
-  }
-}
+import { DataCommandUncertain } from './data-command'
+export { DataCommandUncertain } from './data-command'
 const encode = encodeURIComponent
 const definitive = (error: unknown) => error instanceof ApiClientError && error.status >= 400 && error.status < 500 && error.status !== 408
 

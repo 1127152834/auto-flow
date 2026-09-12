@@ -177,3 +177,25 @@ A2f规格审查发现既有记录_snapshot把缺fieldId投影为显式null，与
 - [x] A3b：beb6a3b字段/状态客户端原命令恢复；17项新测试通过。
 - [x] 最终自动回归：后端698、前端490；Ruff/mypy166、OpenAPI、typecheck/lint/build、scripts18/structure3通过。
 - [ ] PM2完整页面/文件IPC/实际应用仍待交付，下一步继续C1与B2、删除影响和固定目标批状态。B2只读接入依据见`.ai/knowledge/2026-09-13-project-files-baseline.md`。
+
+## C1c/C1d/A3c 本轮执行卡（2026-09-13）
+
+基线8556f81，上一目标轮已提交实际代码并验证，属于progress；本轮继续实现，无外部阻塞。共享组件先行，正式页面随后接入。
+
+### C1c 类型值编辑（pm2_data_rules_impl）
+
+新文件限定 `domains/project-data/scalar-draft.ts`、`scalar-draft.test.ts`、`components/ScalarValueEditor.tsx`及相邻测试。导出 `ScalarDraft={presence:'missing'|'null'|'value';text:string;boolean:boolean;precision:'date'|'datetime';offset:string}`、`scalarDraft(value)`、`parseScalarDraft(type,draft)`，值类型从生成DataCellWrite.value派生；缺项返回undefined，明确清空返回null。所有原始输入包括非法中间态都通过onChange回传draft，不能隐去dirty。
+
+ScalarValueEditor props固定为id/label/type/draft/onChange、disabled/readOnly/allowMissing可选。复用Input/Textarea/Select等统一控件，清晰区分不填写/清空/填写值；不使用系统select/date面板。字符串保留空白与空串；数字空输入/NaN/Infinity/不安全整数拒绝；布尔独立；日期保precision/value/offset，date不带offset，datetime强制完整秒、允许任意小数秒；无时区不得转电脑时区。仅做格式/类型校验，字段正则权威仍在服务端。先失败测试四类型、三种presence、闰日、时区、任意精度、只读、原始非法draft回传，再实现、定向验证、独立复核。
+
+### C1d 字段编辑（pm2_excel_adapter_impl）
+
+新文件限定 `field-form-schema.ts`、`components/FieldEditorDialog.tsx`及相邻测试。复用C1c稳定接口、现有Modal/Select/Checkbox/Input/RHF。新建/编辑名称、key、类型、必填；string的minLength/maxLength/pattern，number的minimum/maximum，其余无额外规则；不在前端解释Python正则。创建可显式填写existingRecordDefault，sourceColumnPolicy固定真实localOnly；不展示未实现的mapped成功按钮。编辑先调用onPreview(definition)，展示真实影响/blockers，只有无阻断的确认可调用onSubmit({definition,impactRevision})；草稿变化废弃旧确认，busy期间禁关闭。原字段formula/readonly/identity约束给出原因，禁止不允许的类型/规则编辑，服务端仍权威。
+
+组件用workspace/project/table/field/formSession的sessionKey（不含instance），脏输入在同会话后台刷新时保持，换会话/关闭/卸载使迟到preview/save失效。onSubmit成功不自行关闭；onDirtyChange在关闭/卸载清理；无变化编辑不发请求。先RED测创建默认值、规则切换、预检阻断/过期、dirty/异步/只读，再实现和独立审查。组件阶段不伪造正式页面。
+
+### A3c 记录客户端（主协调）
+
+新增 `records-api.ts`及测试，直接使用真实生成DataRecordCreate/Patch/StatusWrite/Page/View。完整project/table/generation作用域；记录键按UTF8规范base64url编码且区分type，查询filter/orderBy只编码一次；读请求可取消。create/update/status原key与不可变body，恢复校验kind、完整RecordRef及操作project/key/status；只有明确OPERATION_NOT_FOUND才原身份重发一次。客户端不直接修改缓存/Toast，页面稍后承担实例和会话隔离。定向Vitest、typecheck/lint并独立审查，后续正式页面调用真实API。
+
+A3c复用补充：将已验证的目录命令恢复机制收敛到`data-command.ts`，供catalog和records两个真实消费者使用；DataCommandUncertain从原api.ts保持兼容再导出。表资料API行为保持现状。新增helper不是第二操作框架，只负责固定请求快照、原key查询、匹配结果或一次确认后重发；原catalog17项回归必须通过。

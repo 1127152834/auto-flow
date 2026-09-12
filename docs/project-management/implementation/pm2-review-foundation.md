@@ -89,3 +89,9 @@ catalog-api提供真实字段/状态查询、字段影响预检和四项命令�
 38项查询/记录测试、Ruff及mypy通过；独立规格和工程最终通过。仓内新增pool复用与WAL并发回归：count后另一连接删除，本次total/items均4，后续查询3。独立扩展探针同时使用过滤/排序且复用同一DBAPI连接，两查询均成功；callback异常后下一查询可正常工作。
 
 HTTP由主协调接入GET records集合、真实DataRecordPage和bootstrap；独立审查2项契约测试/mypy通过，import排序问题修复后Ruff复核通过。最后完整后端698项、前端490项通过，查询与组件仍不能代替PM2正式页面验收。
+
+## A3c 记录客户端与命令恢复复用（2026-09-13）
+
+记录查询与create/update/status直接使用真实生成DTO； typed记录键UTF8编码，原key、请求快照、完整RecordRef和历史结果恢复均校验。目录和记录两个消费者复用data-command，不新增操作框架；表资料客户端保持既有行为。
+
+独立审查通过真实createApiClient/fetch发现NaN/Infinity在JSON序列化时变为null的P1问题，三个实际客户端失败测试复现后修复为发送或恢复前拒绝非有限值。合法null与有限数字不变，目录默认值同样覆盖。独立规格→工程最终通过；主协调重新运行41项API测试通过。组件与记录页面尚未完成，不据此提升PM2业务验收。

@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest'
-import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
+import { ApiClientError, createApiClient, type StreamingApiClient } from '../../shared/api/client'
 import { DataCommandUncertain } from './api'
 import { createDataCatalogApi } from './catalog-api'
 
@@ -84,4 +84,14 @@ it('passes cancellation to reads and uses a scoped pure impact request', async (
   expect(request.mock.calls[0]).toEqual(['/api/v1/projects/p/tables/t/fields', { signal }])
   expect(request.mock.calls[1]).toEqual(['/api/v1/projects/p/tables/t/statuses', { signal }])
   expect(request.mock.calls[2]).toEqual(['/api/v1/projects/p/mutation-impact', { method: 'POST', signal, body: { action: 'updateField', target: { type: 'field', fieldRef: ref }, change: definition } }])
+})
+
+it('rejects a non-finite backfill default before actual JSON serialization', async () => {
+  const fetcher = vi.fn()
+  vi.stubGlobal('fetch', fetcher)
+  try {
+    const client = createApiClient({ baseUrl: 'http://127.0.0.1:9999', token: 'test', timeoutMs: 0 })
+    await expect(createDataCatalogApi(client, scope).createField({ ...fieldBody, existingRecordDefault: NaN }, 'k')).rejects.toThrow('有限数字')
+    expect(fetcher).not.toHaveBeenCalled()
+  } finally { vi.unstubAllGlobals() }
 })
