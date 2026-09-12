@@ -56,6 +56,14 @@ class DataRecordView(ApiModel):
     updated_at: datetime
 
 
+class DataRecordPage(ApiModel):
+    items: list[DataRecordView]
+    total: int
+    page: int
+    page_size: int
+    sort: str
+
+
 class DataRecordCreate(ApiModel):
     dataset_generation: str
     values: list[DataCellWrite]

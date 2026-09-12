@@ -1185,7 +1185,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Records */
+        get: operations["list_records_api_v1_projects__projectId__tables__tableId__records_get"];
         put?: never;
         /** Create */
         post: operations["create_api_v1_projects__projectId__tables__tableId__records_post"];
@@ -1765,6 +1766,19 @@ export type components = {
             type: "text" | "integer" | "uuid";
             /** Value */
             value: string;
+        };
+        /** DataRecordPage */
+        DataRecordPage: {
+            /** Items */
+            items: components["schemas"]["DataRecordView"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Sort */
+            sort: string;
         };
         /** DataRecordPatch */
         DataRecordPatch: {
@@ -8099,6 +8113,71 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_records_api_v1_projects__projectId__tables__tableId__records_get: {
+        parameters: {
+            query: {
+                datasetGeneration: string;
+                filter?: string;
+                orderBy?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
