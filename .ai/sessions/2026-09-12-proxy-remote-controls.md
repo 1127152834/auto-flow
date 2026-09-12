@@ -8,3 +8,5 @@
 - 当前即时 rotate 阻塞是供应商 not_bound，不自动 start。地点与计划依据各自操作条件执行，不泛化 rotation_available。
 - 只有只读调用触及真实账号；未更换 IP、切地点或改计划。非空计划与写操作最终响应尚未实网验收。
 - 详细验证：docs/migration/proxy-remote-controls-verification.md。未记录凭据、实际用户代理标识或原始认证响应。
+
+- 接入验证：实现 54e9729 已合入 baseline；确认浏览器表单已保存后使用设置内入口重启服务。实际数据库迁移为 0004_proxy_remote_controls，原配置保留，服务恢复正常。
