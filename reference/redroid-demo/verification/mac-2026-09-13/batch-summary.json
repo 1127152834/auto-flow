@@ -1,0 +1,296 @@
+{
+  "run_name": "batch-1a5916342fe54b37ad8efbd0d38d24b5",
+  "status": "passed",
+  "jobs": [
+    {
+      "action": "create",
+      "done": 3,
+      "id": "cc9ba68a8d444721a9a15e0cdfb4a73c",
+      "results": [
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32770",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-5ae55c9596ed482f",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 1",
+            "width": 720
+          },
+          "instance_id": "afd-5ae55c9596ed482f",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 1",
+          "status": "success"
+        },
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32769",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-0d0fdc41d70741f0",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 2",
+            "width": 720
+          },
+          "instance_id": "afd-0d0fdc41d70741f0",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 2",
+          "status": "success"
+        },
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32771",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-0d03716330ae4846",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 3",
+            "width": 720
+          },
+          "instance_id": "afd-0d03716330ae4846",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 3",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 3
+    },
+    {
+      "action": "open_settings",
+      "done": 3,
+      "id": "867ce5c42d7b46ffaa9549f2ad18aeb4",
+      "results": [
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32769",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-0d0fdc41d70741f0",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 2",
+            "width": 720
+          },
+          "instance_id": "afd-0d0fdc41d70741f0",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 2",
+          "status": "success"
+        },
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32771",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-0d03716330ae4846",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 3",
+            "width": 720
+          },
+          "instance_id": "afd-0d03716330ae4846",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 3",
+          "status": "success"
+        },
+        {
+          "data": {
+            "adb_address": "127.0.0.1:32770",
+            "android_status": "ready",
+            "android_version": "13",
+            "busy": true,
+            "cpu": 2,
+            "docker_status": "running",
+            "dpi": 320,
+            "error": null,
+            "height": 1280,
+            "id": "afd-5ae55c9596ed482f",
+            "image": "redroid/redroid:13.0.0_64only-latest",
+            "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "memory_mb": 2048,
+            "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 1",
+            "width": 720
+          },
+          "instance_id": "afd-5ae55c9596ed482f",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 1",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 3
+    }
+  ],
+  "screenshots": [
+    {
+      "instance_id": "afd-0d03716330ae4846",
+      "file": "screen-1.png"
+    },
+    {
+      "instance_id": "afd-0d0fdc41d70741f0",
+      "file": "screen-2.png"
+    },
+    {
+      "instance_id": "afd-5ae55c9596ed482f",
+      "file": "screen-3.png"
+    }
+  ],
+  "errors": [],
+  "cleanup": [
+    {
+      "action": "delete",
+      "done": 1,
+      "id": "26beb561616242fc87b86275bea06a48",
+      "results": [
+        {
+          "data": {
+            "id": "afd-0d03716330ae4846",
+            "removed": true,
+            "volume": "afd-0d03716330ae4846-data"
+          },
+          "instance_id": "afd-0d03716330ae4846",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 3",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "delete",
+      "done": 1,
+      "id": "badaca1a1ca34f65a1eba51a6a6bce87",
+      "results": [
+        {
+          "data": {
+            "id": "afd-0d0fdc41d70741f0",
+            "removed": true,
+            "volume": "afd-0d0fdc41d70741f0-data"
+          },
+          "instance_id": "afd-0d0fdc41d70741f0",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 2",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "delete",
+      "done": 1,
+      "id": "6b51d230d23c458c8c83056b051b9a96",
+      "results": [
+        {
+          "data": {
+            "id": "afd-5ae55c9596ed482f",
+            "removed": true,
+            "volume": "afd-5ae55c9596ed482f-data"
+          },
+          "instance_id": "afd-5ae55c9596ed482f",
+          "message": "操作完成",
+          "name": "batch-1a5916342fe54b37ad8efbd0d38d24b5 1",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    }
+  ],
+  "environment": {
+    "checks": [
+      {
+        "message": "Linux arm64 Docker Engine",
+        "name": "docker_host",
+        "status": "pass"
+      },
+      {
+        "message": "实际 Engine 宿主挂载中发现 binder 能力",
+        "name": "binder",
+        "status": "pass"
+      },
+      {
+        "message": "已有与 Engine 架构匹配的缓存镜像；创建时再检查所选镜像",
+        "name": "images",
+        "status": "pass"
+      }
+    ],
+    "daemon": {
+      "Architecture": "aarch64",
+      "ID": "f0f56026-3a50-42b4-88f0-2a9c46f11b39",
+      "KernelVersion": "6.8.0-134-generic",
+      "Name": "lima-autoflow-redroid",
+      "OSType": "linux",
+      "OperatingSystem": "Ubuntu 24.04.4 LTS",
+      "ServerVersion": "29.1.3"
+    },
+    "docker_available": true,
+    "images": [
+      {
+        "architecture": "arm64",
+        "cached": true,
+        "compatible": true,
+        "digests": [
+          "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b"
+        ],
+        "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "ref": "redroid/redroid:13.0.0_64only-latest"
+      },
+      {
+        "architecture": "arm64",
+        "cached": true,
+        "compatible": true,
+        "digests": [
+          "autoflow/redroid@sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b"
+        ],
+        "id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "ref": "autoflow/redroid:13-magisk"
+      }
+    ],
+    "limits": {
+      "concurrency": 2,
+      "max_instances": 3
+    },
+    "ready": true
+  },
+  "remaining_instance_ids": []
+}

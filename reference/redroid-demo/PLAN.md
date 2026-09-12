@@ -1,10 +1,12 @@
 # redroid Python + React Demo 计划
 
 - 日期：2026-09-13。
-- 状态：**confirmed，用户已确认实施；Demo 源码与管理服务已交付，Android / Windows / root 实机验收待验证**。
+- 状态：**confirmed，已实施；用户随后要求本轮仅在 Mac 测试。Mac Android / 批量 / Magisk shell root 已验证，Windows 与应用内 root 待验证**。
 - 输入：`reference/RedroidManager`、`reference/redroid-script` 的固定版本源码；用户要求直接复用、Python + React、Windows 可用、Demo 放在 `reference`。
 - 目标：做一个可运行的小型管理 Demo，通过几个场景演示真实 Android 容器的创建、操作、批量任务和 root 镜像验证。
 - 实施输出：Python 后端、React 界面、部署脚本、批量示例、root 构建包装器和测试。实际验证范围见 [VERIFICATION.md](VERIFICATION.md)，启动方式见 [README.md](README.md)。以下保留已确认的设计和验收标准，不将尚未执行的实机验收改为通过。
+
+2026-09-13 范围补充（confirmed，来源：用户“现在只需要在 mac 上进行测试”）：本轮实际部署采用 Apple Silicon Mac → Lima VZ → Ubuntu 24.04 ARM64 → 原生 Docker Engine，Android 使用 `13.0.0_64only-latest` 与软件渲染。Windows 实施入口保留，Windows 验收延期；不等待远程节点。实测记录见 [MAC_TEST.md](MAC_TEST.md)。这是独立 Demo 的平台适配，不改变 AutoFlow 正式架构。
 
 ## 1. 实现选择
 

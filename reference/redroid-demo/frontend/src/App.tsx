@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { errorMessage, instancePath, post, request, type Apk, type BatchAction, type CreateConfig, type Environment, type Input, type Instance, type InstanceAction, type Job } from './api';
+import { errorMessage, instancePath, post, request, withBusyRetry, type Apk, type BatchAction, type CreateConfig, type Environment, type Input, type Instance, type InstanceAction, type Job } from './api';
 import { ApkPanel } from './components/ApkPanel';
 import { CreateForm } from './components/CreateForm';
 import { DevicePanel } from './components/DevicePanel';
@@ -68,7 +68,7 @@ export default function App() {
   const run = async (fn: () => Promise<unknown>, success: string) => {
     if (mutationRef.current) return;
     mutationRef.current = true; setPending(true); setActionError(''); setNotice('');
-    try { await fn(); setNotice(success); await refresh(); }
+    try { await withBusyRetry(fn); setNotice(success); await refresh(); }
     catch (reason) { setActionError(errorMessage(reason)); }
     finally { mutationRef.current = false; setPending(false); }
   };
@@ -99,6 +99,6 @@ export default function App() {
         {errors.apks && <p className="error" role="alert">无法读取 APK 列表：{errors.apks}</p>}
       </div><div>{selected ? <DevicePanel key={selected.id} instance={selected} pending={pending} capacityFull={instances.length >= maxInstances} onAction={action} onInput={input} /> : <section className="panel empty-device"><div className="device-outline" aria-hidden="true" /><h2>选择一台 Android</h2><p>实例创建后，可以在这里查看截图、操作设备、启动应用并检查 root。</p><p className="hint">这里展示真实设备状态，Docker 不可用时不会生成演示设备。</p></section>}</div></div>
       <JobsPanel jobs={jobs} restarted={restarted} error={errors.jobs} />
-    </main><footer>Demo 仅管理带自身归属标签的实例。Windows / WSL2、目标 APK 与应用级 root 的实测结果以验证记录为准。</footer>
+    </main><footer>Demo 仅管理带自身归属标签的实例。Mac / Linux 虚拟机、Windows / WSL2、目标 APK 与应用级 root 的实测结果以验证记录为准。</footer>
   </>;
 }

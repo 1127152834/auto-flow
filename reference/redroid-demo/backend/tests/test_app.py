@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import docker
+from requests import Response
 
 from backend.app import DEFAULT_IMAGE, LABEL_INSTANCE, LABEL_MANAGER, DemoError, create_app
 
@@ -28,6 +29,8 @@ class FakeSocket:
                              for kind, value in ((1, output), (2, error)) if value)
         self.hang = hang
         self.closed = False
+        self.sent_chunks = []
+        self.shutdown_how = None
 
     def settimeout(self, timeout):
         self.timeout = timeout
@@ -42,21 +45,31 @@ class FakeSocket:
     def close(self):
         self.closed = True
 
+    def sendall(self, chunk):
+        self.sent_chunks.append(chunk)
+
+    def shutdown(self, how):
+        self.shutdown_how = how
+
 
 class FakeExec:
     def __init__(self):
         self.calls = []
         self.created = {}
         self.outputs = {}
+        self.stdin_enabled = {}
+        self.sockets = {}
         self.boot = b"1\n"
+        self.boot_outputs = []
         self.gate = None
         self.entered = threading.Event()
 
     def exec_create(self, container, argv, **kwargs):
         self.calls.append((container, argv))
         exec_id = uuid.uuid4().hex
+        self.stdin_enabled[exec_id] = kwargs["stdin"]
         if argv == ["getprop", "sys.boot_completed"]:
-            default = (0, self.boot, b"", False)
+            default = self.boot_outputs.pop(0) if self.boot_outputs else (0, self.boot, b"", False)
         elif argv == ["getprop", "ro.build.version.release"]:
             default = (0, b"13\n", b"", False)
         elif argv == ["screencap", "-p"]:
@@ -65,9 +78,9 @@ class FakeExec:
             default = (0, b"Success\n", b"", False)
         elif argv == ["id"]:
             default = (0, b"uid=0(root) gid=0(root)\n", b"", False)
-        elif argv == ["/system/bin/sh", "-c", "magisk -v"]:
+        elif argv == ["/system/bin/sh", "-c", "/sbin/magisk -v"]:
             default = (127, b"", b"magisk: not found", False)
-        elif argv == ["/system/bin/sh", "-c", "su -c id"]:
+        elif argv == ["/system/bin/sh", "-c", "/sbin/su -c id"]:
             default = (127, b"", b"su: not found", False)
         else:
             default = (0, b"", b"", False)
@@ -79,7 +92,8 @@ class FakeExec:
         if self.gate is not None:
             self.gate.wait(5)
         code, output, error, hang = self.created[exec_id]
-        return FakeSocket(output, error, hang)
+        self.sockets[exec_id] = FakeSocket(output, error, hang)
+        return self.sockets[exec_id]
 
     def exec_inspect(self, exec_id):
         code, output, error, hang = self.created[exec_id]
@@ -178,7 +192,7 @@ class FakeContainers:
 
 class FakeImage:
     id = "sha256:verified-image"
-    attrs = {"Architecture": "amd64", "RepoDigests": ["redroid/redroid@sha256:verified"]}
+    attrs = {"Architecture": "amd64", "Os": "linux", "RepoDigests": ["redroid/redroid@sha256:verified"]}
 
 
 class FakeImages:
@@ -258,6 +272,44 @@ class BackendTests(unittest.TestCase):
         self.assertTrue(environment["docker_available"])
         self.assertEqual(self.http.post("/api/instances", json={}).status_code, 503)
         self.assertFalse(self.engine.containers.created)
+
+    def test_linux_architecture_aliases_must_match_the_selected_image(self):
+        for daemon_arch, image_arch in (("aarch64", "arm64"), ("arm64", "aarch64"),
+                                        ("x86_64", "amd64"), ("amd64", "x86_64")):
+            with self.subTest(daemon=daemon_arch, image=image_arch), \
+                    patch.object(FakeImage, "attrs", {"Architecture": image_arch, "Os": "linux"}):
+                self.engine.host["Architecture"] = daemon_arch
+                environment = self.http.get("/api/environment").get_json()
+                self.assertTrue(environment["ready"])
+                self.assertTrue(environment["images"][0]["compatible"])
+                self.assertEqual(environment["images"][0]["architecture"], image_arch)
+                self.assertEqual(self.runtime.preflight(DEFAULT_IMAGE), FakeImage.id)
+
+    def test_incompatible_images_and_unsupported_hosts_never_create(self):
+        for host_os, daemon_arch, image_os, image_arch, error in (
+                ("linux", "aarch64", "linux", "amd64", "image_architecture"),
+                ("linux", "amd64", "linux", "arm64", "image_architecture"),
+                ("linux", "amd64", "windows", "amd64", "image_architecture"),
+                ("linux", "riscv64", "linux", "riscv64", "host_unsupported"),
+                ("windows", "amd64", "linux", "amd64", "host_unsupported")):
+            with self.subTest(daemon=daemon_arch, image=image_arch, os=host_os), \
+                    patch.object(FakeImage, "attrs", {"Architecture": image_arch, "Os": image_os}):
+                self.engine.host.update(OSType=host_os, Architecture=daemon_arch)
+                self.assertFalse(self.http.get("/api/environment").get_json()["ready"])
+                response = self.http.post("/api/instances", json={})
+                self.assertEqual(response.get_json()["error"]["code"], error)
+                self.assertFalse(self.engine.containers.created)
+
+    def test_custom_arm_image_is_the_default_when_request_omits_image(self):
+        image_ref = "redroid/redroid:13.0.0_64only-latest"
+        self.app.config["IMAGES"] = [image_ref]
+        self.engine.host["Architecture"] = "aarch64"
+        with patch.object(FakeImage, "attrs", {"Architecture": "arm64", "Os": "linux"}), \
+                patch.object(self.engine.images, "get", return_value=FakeImage()) as get_image:
+            key = self.create()[0]
+            self.assertEqual(self.runtime.config({})["image"], image_ref)
+            self.assertEqual(self.runtime.info(self.engine.containers.items[key])["image"], image_ref)
+            get_image.assert_any_call(image_ref)
 
     def test_missing_host_mount_is_unknown_and_does_not_allow_create(self):
         self.app.config["HOST_PROC"] = "/nonexistent-redroid-test"
@@ -380,6 +432,34 @@ class BackendTests(unittest.TestCase):
         self.assertFalse(self.engine.containers.items[key].uploads)
         self.assertFalse(any(argv[:2] == ["pm", "install"] for _, argv in self.engine.api.calls))
 
+    def test_boot_retries_missing_getprop_and_readonly_timeout_without_stopping(self):
+        self.app.config["BOOT_TIMEOUT"] = 0.3
+        for first_probe in ((255, b"", b"exec /bin/getprop: no such file or directory", False),
+                            (None, b"", b"", True)):
+            with self.subTest(first_probe=first_probe), patch("backend.app.time.sleep"):
+                self.engine.api.boot_outputs = [first_probe]
+                key = "afd-" + uuid.uuid4().hex[:16]
+                self.runtime.create(key, {**self.runtime.config({}), "image_id": FakeImage.id})
+                ct = self.engine.containers.items[key]
+                self.assertEqual(ct.stop_count, 0)
+                self.assertEqual(self.runtime.info(ct)["android_status"], "ready")
+                self.assertEqual(self.engine.containers.created[-1]["environment"]["PATH"],
+                                 "/sbin:/system/bin:/system/xbin:/vendor/bin")
+                self.assertNotIn(key, self.runtime.quarantine)
+
+    def test_persistent_getprop_failure_times_out_and_cleans_created_resources(self):
+        self.engine.api.outputs[("getprop", "sys.boot_completed")] = (
+            255, b"", b"exec /bin/getprop: no such file or directory", False)
+        job = self.wait_job(self.http.post("/api/instances", json={}))
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("Android 启动超时", job["results"][0]["message"])
+        self.assertIn("getprop exit=255", job["results"][0]["message"])
+        self.assertIn("no such file", job["results"][0]["message"])
+        self.assertIn("本次资源已回收", job["results"][0]["message"])
+        self.assertFalse(self.engine.containers.items)
+        self.assertFalse(self.engine.volumes.items)
+        self.assertFalse(self.runtime.busy)
+
     def test_exec_timeout_stops_container_before_releasing_busy(self):
         key = self.create()[0]
         ct = self.engine.containers.items[key]
@@ -453,6 +533,73 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(job["status"], "failed")
         self.assertIn((key, ["rm", "-f", remote]), self.engine.api.calls)
 
+    @staticmethod
+    def archive_pivot_error(message="Error setting up pivot dir: mkdir /.pivot_root: read-only file system"):
+        response = Response()
+        response.status_code = 500
+        return docker.errors.APIError("archive failed", response=response, explanation=message)
+
+    def test_magisk_archive_pivot_failure_streams_exact_apk_and_half_closes_stdin(self):
+        key = self.create()[0]
+        content = io.BytesIO()
+        with zipfile.ZipFile(content, "w") as archive:
+            archive.writestr("AndroidManifest.xml", b"manifest")
+            archive.writestr("assets/binary", b"\x00\xff" * 70000)
+        apk = self.upload(content.getvalue()).get_json()["id"]
+        remote = "/data/local/tmp/" + apk + ".apk"
+        with patch.object(self.engine.containers.items[key], "put_archive", side_effect=self.archive_pivot_error()):
+            job = self.wait_job(self.http.post("/api/batches", json={"action": "install", "instance_ids": [key], "apk_id": apk}))
+        self.assertEqual(job["status"], "done", job)
+        self.assertEqual(job["results"][0]["data"]["transport"], "exec_stdin")
+        streams = [self.engine.api.sockets[exec_id] for exec_id, enabled in self.engine.api.stdin_enabled.items() if enabled]
+        self.assertEqual(len(streams), 1)
+        self.assertEqual(b"".join(streams[0].sent_chunks), content.getvalue())
+        self.assertGreater(len(streams[0].sent_chunks), 1)
+        self.assertLessEqual(max(map(len, streams[0].sent_chunks)), 65536)
+        self.assertEqual(streams[0].shutdown_how, socket.SHUT_WR)
+        self.assertTrue(streams[0].closed)
+        self.assertIn((key, ["rm", "-f", remote]), self.engine.api.calls)
+        self.assertEqual(self.engine.containers.items[key].stop_count, 0)
+
+    def test_other_archive_errors_do_not_enable_fallback(self):
+        key = self.create()[0]
+        apk = self.upload().get_json()["id"]
+        with patch.object(self.engine.containers.items[key], "put_archive", side_effect=self.archive_pivot_error("permission denied")):
+            job = self.wait_job(self.http.post("/api/batches", json={"action": "install", "instance_ids": [key], "apk_id": apk}))
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("permission denied", job["results"][0]["message"])
+        self.assertFalse(any(self.engine.api.stdin_enabled.values()))
+        self.assertFalse(any(argv[:2] == ["pm", "install"] for _, argv in self.engine.api.calls))
+        self.assertIn((key, ["rm", "-f", "/data/local/tmp/" + apk + ".apk"]), self.engine.api.calls)
+
+    def test_apk_stdin_command_failure_cleans_file_and_never_installs(self):
+        key = self.create()[0]
+        apk = self.upload().get_json()["id"]
+        remote = "/data/local/tmp/" + apk + ".apk"
+        argv = ["/system/bin/sh", "-c", 'cat > "$1"', "sh", remote]
+        self.engine.api.outputs[tuple(argv)] = (2, b"", b"No space left on device", False)
+        with patch.object(self.engine.containers.items[key], "put_archive", side_effect=self.archive_pivot_error()):
+            job = self.wait_job(self.http.post("/api/batches", json={"action": "install", "instance_ids": [key], "apk_id": apk}))
+        self.assertEqual(job["status"], "failed")
+        self.assertIn("No space left", job["results"][0]["message"])
+        self.assertFalse(any(command[:2] == ["pm", "install"] for _, command in self.engine.api.calls))
+        self.assertIn((key, ["rm", "-f", remote]), self.engine.api.calls)
+        self.assertEqual(self.engine.containers.items[key].stop_count, 0)
+
+    def test_uncertain_apk_stdin_transfer_stops_device_and_reports_cleanup_unconfirmed(self):
+        for failure in (BrokenPipeError("partial send lost"), socket.timeout("send deadline exceeded")):
+            with self.subTest(failure=failure):
+                key = self.create()[0]
+                apk = self.upload().get_json()["id"]
+                with patch.object(self.engine.containers.items[key], "put_archive", side_effect=self.archive_pivot_error()), \
+                        patch.object(FakeSocket, "sendall", side_effect=failure):
+                    job = self.wait_job(self.http.post("/api/batches", json={"action": "install", "instance_ids": [key], "apk_id": apk}))
+                self.assertEqual(job["status"], "failed")
+                self.assertIn("临时 APK 清理失败", job["results"][0]["message"])
+                self.assertIn("可能残留", job["results"][0]["message"])
+                self.assertEqual(self.engine.containers.items[key].status, "exited")
+                self.assertFalse(any(command[:2] == ["pm", "install"] for device, command in self.engine.api.calls if device == key))
+
     def test_root_diagnostics_never_infer_app_root_from_uid_zero(self):
         key = self.create()[0]
         job = self.action(key, "root_check")
@@ -465,7 +612,8 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(data["checks"]["shell_su"]["exit_code"], 127)
         self.assertEqual(self.engine.containers.items[key].stop_count, 0)
         self.assertEqual(self.engine.containers.items[key].status, "running")
-        self.assertEqual(data["checks"]["magisk_version"]["argv"], ["/system/bin/sh", "-c", "magisk -v"])
+        self.assertEqual(data["checks"]["magisk_version"]["argv"], ["/system/bin/sh", "-c", "/sbin/magisk -v"])
+        self.assertEqual(data["checks"]["shell_su"]["argv"], ["/system/bin/sh", "-c", "/sbin/su -c id"])
 
     def test_activity_error_on_stderr_is_not_reported_as_success(self):
         key = self.create()[0]

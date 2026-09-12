@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 import { DevicePanel } from './components/DevicePanel';
 import { JobsPanel } from './components/JobsPanel';
+import { CreateForm } from './components/CreateForm';
 import type { Environment, Instance } from './api';
 
 const environment: Environment = { docker_available: true, ready: true, checks: [{ name: '内核', status: 'pass', message: 'binder 可用' }], daemon: { OSType: 'linux' }, images: [{ ref: 'redroid/redroid:13.0.0-latest', cached: true, id: 'sha256:actual' }], limits: { max_instances: 3, concurrency: 2 } };
@@ -41,6 +42,23 @@ describe('real service states and interactions', () => {
     const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST');
     expect(JSON.parse(call?.[1]?.body as string)).toMatchObject({ count: 3, width: 720, height: 1280, image: environment.images[0].ref });
     expect(screen.queryByText(/创建任务已提交/)).not.toBeInTheDocument();
+  });
+  it('skips cached incompatible images and prevents creating when no compatible image remains', () => {
+    const onCreate = vi.fn().mockResolvedValue(undefined);
+    const images = [
+      { ref: 'redroid/amd64:13', cached: true, id: 'amd64-id', architecture: 'amd64', compatible: false },
+      { ref: 'redroid/arm64:13', cached: true, id: 'arm64-id', architecture: 'arm64', compatible: true },
+    ];
+    const view = render(<CreateForm environment={{ ...environment, images }} availableSlots={3} pending={false} onCreate={onCreate} />);
+    expect(screen.getByLabelText('Android 镜像')).toHaveValue('redroid/arm64:13');
+    expect(screen.getByRole('option', { name: /redroid\/amd64.*架构不匹配/ })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: '创建 1 台实例' }));
+    expect(onCreate).toHaveBeenCalledWith(expect.objectContaining({ image: 'redroid/arm64:13' }));
+    view.rerender(<CreateForm environment={{ ...environment, images: [images[0]] }} availableSlots={3} pending={false} onCreate={onCreate} />);
+    expect(screen.getByLabelText('Android 镜像')).toHaveValue('');
+    expect(screen.getByRole('button', { name: '创建 1 台实例' })).toBeDisabled();
+    fireEvent.submit(screen.getByRole('button', { name: '创建 1 台实例' }).closest('form')!);
+    expect(onCreate).toHaveBeenCalledTimes(1);
   });
   it('requires delete confirmation and does not call the API after cancelling', async () => {
     const fetchMock = vi.fn().mockImplementation((url: string) => {
@@ -81,6 +99,42 @@ describe('real service states and interactions', () => {
     expect(input).toHaveBeenCalledWith({ action: 'text', text: 'hello world' });
     fireEvent.click(screen.getByRole('button', { name: '设备按键 Home' }));
     expect(input).toHaveBeenCalledWith({ action: 'key', code: 3 });
+  });
+  it('retries a user action rejected busy before scheduling it', async () => {
+    let actions = 0;
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url === '/api/instances/demo-one/actions' && init?.method === 'POST') {
+        actions += 1;
+        return Promise.resolve(actions === 1 ? response({ error: { code: 'busy', message: '截图正在执行' } }, 409) : response({ job_id: 'started' }, 202));
+      }
+      if (url === '/api/environment') return Promise.resolve(response(environment));
+      if (url === '/api/instances') return Promise.resolve(response({ instances: [{ ...instance, android_status: 'stopped' }] }));
+      if (url === '/api/jobs') return Promise.resolve(response({ jobs: [], session_id: 'one' }));
+      return Promise.resolve(response({ apks: [] }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: '启动' }));
+    expect(await screen.findByText('设备任务已提交，请查看任务结果。')).toBeInTheDocument();
+    expect(actions).toBe(2);
+    expect(screen.queryByText(/操作失败/)).not.toBeInTheDocument();
+  });
+  it('waits out screenshot busy when the user reads third-party applications', async () => {
+    let reads = 0;
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url.endsWith('/packages')) {
+        reads += 1;
+        return Promise.resolve(reads === 1 ? response({ error: { code: 'busy', message: '截图正在执行' } }, 409) : response({ packages: ['org.example.app'] }));
+      }
+      return new Promise(() => {});
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(<DevicePanel instance={instance} pending={false} capacityFull={false} onAction={vi.fn()} onInput={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: '读取第三方应用' }));
+    expect(screen.getByRole('button', { name: '读取中…' })).toBeDisabled();
+    expect(await screen.findByRole('option', { name: 'org.example.app' })).toBeInTheDocument();
+    expect(reads).toBe(2);
+    expect(screen.queryByText(/读取应用失败/)).not.toBeInTheDocument();
   });
   it('keeps failed per-device results and raw root findings visible', () => {
     render(<JobsPanel restarted={false} error="" jobs={[{ id: 'job', action: 'root_check', status: 'failed', total: 2, done: 2, results: [

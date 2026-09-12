@@ -4,6 +4,50 @@ Python Flask + Docker SDK 后端，React + TypeScript 前端。直接复用并�
 
 这是 `reference` 下的独立工程。真实运行和测试结果见 [VERIFICATION.md](VERIFICATION.md)，接口见 [API.md](API.md)，复制来源和许可证见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
+## Mac 启动（Apple Silicon）
+
+本轮按用户要求在 Mac 本机实测：**macOS → Lima VZ → Ubuntu 24.04 ARM64 → Docker Engine → redroid 13**。使用 Apple 原生虚拟化；Android 使用 ARM64 的 `13.0.0_64only-latest` 镜像和软件渲染。独立 Linux VM 提供 binder 内核能力，管理页面仍在 Mac 浏览器中打开。
+
+```sh
+brew install lima
+cd reference/redroid-demo
+bash scripts/start-mac.sh
+```
+
+访问 **http://127.0.0.1:8081**。8081 转发到 VM 内管理服务的 8080，不与之前的 Docker Desktop 诊断页面冲突。首次下载 Ubuntu、内核模块、Android 和构建依赖需要网络；之后重复执行会更新 VM 内的 Demo 并保留设备数据。运行任务结束后再更新管理服务。整台 VM 停止后，重新启动管理服务会找回原设备；再在页面点击启动或批量启动，Android 不会自动启动。
+
+VM 名称为 `autoflow-redroid`，配置在 [lima-mac.yaml](scripts/lima-mac.yaml)：6 vCPU、8 GiB 内存、40 GiB 虚拟磁盘。这是本次测试配置，不是最低硬件要求。脚本复制 Demo 源码进入 VM；Android 数据放在 VM 内 named volume，不共享 Mac 主目录，不更改 Docker Desktop 的默认 context。
+
+```sh
+bash scripts/start-mac.sh check
+python3 examples/batch_demo.py --api http://127.0.0.1:8081
+# 停止这台 VM，保留磁盘和 Android 数据
+bash scripts/start-mac.sh stop
+```
+
+Mac 上构建 root 镜像时，在 Linux VM 内执行包装器：
+
+```sh
+limactl copy -r ../redroid-script autoflow-redroid:/tmp/
+limactl shell --workdir=/tmp autoflow-redroid bash -c '
+  cd "$HOME/redroid-demo"
+  sudo python3 scripts/build_root.py --source /tmp/redroid-script \
+    --base-image redroid/redroid:13.0.0_64only-latest --output .data/root-builds
+'
+```
+
+宿主 ADB 检查在 VM 内运行，输出写到当前用户可写的位置：
+
+```sh
+limactl shell --workdir=/tmp autoflow-redroid bash -c '
+  python3 "$HOME/redroid-demo/scripts/check_root.py" \
+    --instance-id "<页面中的实例 ID>" --api http://127.0.0.1:8080 \
+    --output /tmp/redroid-root-check.json
+'
+```
+
+Mac 的实际结果与复测边界见 [MAC_TEST.md](MAC_TEST.md)。Windows 路线保留，但不属于本轮实测。
+
 ## Windows 启动
 
 支持目标为 **Windows 11 x64 + WSL2 Ubuntu 24.04 + 安装在该发行版内的 Docker Engine/Compose**。Android 运行在 Linux 内核上，Windows 使用浏览器访问。Docker Desktop 不是本 Demo 验收基线。
@@ -67,13 +111,13 @@ bash scripts/start.sh
 
 基础文字输入支持可打印 ASCII，包括英文、数字、空格；暂不支持中文输入法、多点触摸或视频级串流。
 
-上传一个与 Android 13 和 x86_64 ABI 兼容的单文件 APK，选中目标设备后安装，查看每台设备的真实结果。单文件限制 256 MiB，不支持 XAPK/APKS/split APK 集合。设备包列表来自 Android 包管理器，可选中包名启动。未附带测试 APK。
+上传一个与 Android 13 及目标 ABI 兼容的单文件 APK（Mac 路线为 arm64-v8a，Windows 基线为 x86_64），选中目标设备后安装，查看每台设备的真实结果。单文件限制 256 MiB，不支持 XAPK/APKS/split APK 集合。设备包列表来自 Android 包管理器，可选中包名启动。未附带测试 APK。
 
 ## 演示 3：批量任务与 Python
 
 界面可一次创建三台设备，或对选中目标批量启停、重启和安装。操作并发最多二；同一设备忙碌时拒绝冲突操作，每台设备分别显示结果。服务内任务记录有限且不跨进程重启恢复；重启后重新查询实例状态。
 
-Python 示例只使用标准库，运行在能够访问管理 API 的 Windows、WSL 或 Linux 上：
+Python 示例只使用标准库，运行在能够访问管理 API 的 Mac、Windows、WSL 或 Linux 上（Mac API 端口改为 8081）：
 
 ```sh
 python3 examples/batch_demo.py --api http://127.0.0.1:8080 --output .data/batch-runs
@@ -83,7 +127,7 @@ Windows 原生 Python 可使用 `py -3` 替换 `python3`。流程为创建本次
 
 ## 演示 4：Magisk 镜像
 
-构建步骤在 Linux x86_64/WSL 中执行，需要 Docker、Python 3 和网络。先确保固定参考源码存在；如果单独复制了 Demo，也要准备它的相邻参考仓库：
+构建步骤在 Linux amd64/arm64 中执行，需要 Docker、Python 3 和网络；Mac 使用前述 Lima VM 命令。先确保固定参考源码存在；如果单独复制了 Demo，也要准备它的相邻参考仓库：
 
 ```sh
 git clone https://github.com/ayasa520/redroid-script.git ../redroid-script
@@ -105,7 +149,13 @@ python3 scripts/check_root.py --instance-id '<页面中的实例 ID>' --api http
 
 ## 停止与数据
 
-在页面删除不再需要的设备，确认任务完成后停止管理服务：
+Mac 使用以下命令停止专用 VM，保留 Android 数据；这不会停止其他 Docker Desktop 服务：
+
+```sh
+bash scripts/start-mac.sh stop
+```
+
+Linux / WSL：在页面删除不再需要的设备，确认任务完成后，在**实际 Docker 宿主内**停止管理服务：
 
 ```sh
 bash scripts/stop.sh
@@ -117,7 +167,7 @@ Windows：
 .\scripts\start-windows.ps1 -Distribution Ubuntu-24.04 -Action stop
 ```
 
-停止管理服务不会自动删除动态创建的 redroid 容器、Android 数据或上传卷；重新启动管理服务后，通过标签重新发现原实例。不要用全局 Docker prune 代替 Demo 清理。任务执行过程中停止管理服务会丢失进程内任务记录；再次启动时先核查设备状态。
+仅停止管理服务不会自动删除或停止动态创建的 redroid 容器、Android 数据或上传卷；重新启动管理服务后，通过标签重新发现原实例。停止整台 Mac VM 则会停止其中的所有实例，重新打开后需在页面启动设备。不要用全局 Docker prune 代替 Demo 清理。任务执行过程中停止管理服务会丢失进程内任务记录；再次启动时先核查设备状态。
 
 ## 本地开发与检查
 

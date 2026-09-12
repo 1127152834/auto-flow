@@ -1,0 +1,110 @@
+{
+  "instance_id": "afd-ef3857a550924052",
+  "image": "redroid/redroid:13.0.0_64only-latest",
+  "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "adb_address": "127.0.0.1:32774",
+  "timestamp": "2026-09-13T03:44:31+0800",
+  "application_root": {
+    "status": "unverified",
+    "reason": "Requires a separate APK requesting root; shell UID is not app permission"
+  },
+  "checks": {
+    "connect": {
+      "command": [
+        "adb",
+        "connect",
+        "127.0.0.1:32774"
+      ],
+      "exit_code": 0,
+      "stdout": "connected to 127.0.0.1:32774",
+      "stderr": ""
+    },
+    "shell_before": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "shell",
+        "id"
+      ],
+      "exit_code": 0,
+      "stdout": "uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),1078(ext_data_rw),1079(ext_obb_rw),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid),3012(readtracefs)",
+      "stderr": ""
+    },
+    "adb_root": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "root"
+      ],
+      "exit_code": 0,
+      "stdout": "adbd is already running as root",
+      "stderr": ""
+    },
+    "wait_after_root": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "wait-for-device"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "shell_after": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "shell",
+        "id"
+      ],
+      "exit_code": 0,
+      "stdout": "uid=0(root) gid=0(root) groups=0(root),1004(input),1007(log),1011(adb),1015(sdcard_rw),1028(sdcard_r),1078(ext_data_rw),1079(ext_obb_rw),3001(net_bt_admin),3002(net_bt),3003(inet),3006(net_bw_stats),3009(readproc),3011(uhid),3012(readtracefs)",
+      "stderr": ""
+    },
+    "magisk_version": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "shell",
+        "/sbin/magisk",
+        "-v"
+      ],
+      "exit_code": 127,
+      "stdout": "",
+      "stderr": "/system/bin/sh: /sbin/magisk: inaccessible or not found"
+    },
+    "shell_su": {
+      "command": [
+        "adb",
+        "-s",
+        "127.0.0.1:32774",
+        "shell",
+        "/sbin/su",
+        "-c",
+        "id"
+      ],
+      "exit_code": 127,
+      "stdout": "",
+      "stderr": "/system/bin/sh: /sbin/su: inaccessible or not found"
+    },
+    "disconnect": {
+      "command": [
+        "adb",
+        "disconnect",
+        "127.0.0.1:32774"
+      ],
+      "exit_code": 0,
+      "stdout": "disconnected 127.0.0.1:32774",
+      "stderr": ""
+    }
+  },
+  "transport_ok": true,
+  "adb_shell_root": {
+    "status": "pass"
+  }
+}

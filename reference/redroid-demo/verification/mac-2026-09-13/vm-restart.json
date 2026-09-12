@@ -1,0 +1,258 @@
+{
+  "environment": {
+    "checks": [
+      {
+        "message": "Linux arm64 Docker Engine",
+        "name": "docker_host",
+        "status": "pass"
+      },
+      {
+        "message": "实际 Engine 宿主挂载中发现 binder 能力",
+        "name": "binder",
+        "status": "pass"
+      },
+      {
+        "message": "已有与 Engine 架构匹配的缓存镜像；创建时再检查所选镜像",
+        "name": "images",
+        "status": "pass"
+      }
+    ],
+    "daemon": {
+      "Architecture": "aarch64",
+      "ID": "f0f56026-3a50-42b4-88f0-2a9c46f11b39",
+      "KernelVersion": "6.8.0-134-generic",
+      "Name": "lima-autoflow-redroid",
+      "OSType": "linux",
+      "OperatingSystem": "Ubuntu 24.04.4 LTS",
+      "ServerVersion": "29.1.3"
+    },
+    "docker_available": true,
+    "images": [
+      {
+        "architecture": "arm64",
+        "cached": true,
+        "compatible": true,
+        "digests": [
+          "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b"
+        ],
+        "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "ref": "redroid/redroid:13.0.0_64only-latest"
+      },
+      {
+        "architecture": "arm64",
+        "cached": true,
+        "compatible": true,
+        "digests": [
+          "autoflow/redroid@sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b"
+        ],
+        "id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "ref": "autoflow/redroid:13-magisk"
+      }
+    ],
+    "limits": {
+      "concurrency": 2,
+      "max_instances": 3
+    },
+    "ready": true
+  },
+  "before_start": {
+    "instances": [
+      {
+        "adb_address": null,
+        "android_status": "stopped",
+        "android_version": null,
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "exited",
+        "dpi": 240,
+        "error": null,
+        "height": 960,
+        "id": "afd-635e8a215e194178",
+        "image": "autoflow/redroid:13-magisk",
+        "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "memory_mb": 2048,
+        "name": "Mac Magisk 对照",
+        "width": 540
+      },
+      {
+        "adb_address": null,
+        "android_status": "stopped",
+        "android_version": null,
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "exited",
+        "dpi": 320,
+        "error": null,
+        "height": 1280,
+        "id": "afd-ef3857a550924052",
+        "image": "redroid/redroid:13.0.0_64only-latest",
+        "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memory_mb": 2048,
+        "name": "Mac 日常测试",
+        "width": 720
+      }
+    ]
+  },
+  "start": {
+    "action": "start",
+    "done": 2,
+    "id": "921487c97ddf453db02d3932763ca511",
+    "results": [
+      {
+        "data": {
+          "adb_address": "127.0.0.1:32769",
+          "android_status": "ready",
+          "android_version": "13",
+          "busy": true,
+          "cpu": 2,
+          "docker_status": "running",
+          "dpi": 240,
+          "error": null,
+          "height": 960,
+          "id": "afd-635e8a215e194178",
+          "image": "autoflow/redroid:13-magisk",
+          "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+          "memory_mb": 2048,
+          "name": "Mac Magisk 对照",
+          "width": 540
+        },
+        "instance_id": "afd-635e8a215e194178",
+        "message": "操作完成",
+        "name": "Mac Magisk 对照",
+        "status": "success"
+      },
+      {
+        "data": {
+          "adb_address": "127.0.0.1:32768",
+          "android_status": "ready",
+          "android_version": "13",
+          "busy": true,
+          "cpu": 2,
+          "docker_status": "running",
+          "dpi": 320,
+          "error": null,
+          "height": 1280,
+          "id": "afd-ef3857a550924052",
+          "image": "redroid/redroid:13.0.0_64only-latest",
+          "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "memory_mb": 2048,
+          "name": "Mac 日常测试",
+          "width": 720
+        },
+        "instance_id": "afd-ef3857a550924052",
+        "message": "操作完成",
+        "name": "Mac 日常测试",
+        "status": "success"
+      }
+    ],
+    "status": "done",
+    "total": 2
+  },
+  "after_start": {
+    "instances": [
+      {
+        "adb_address": "127.0.0.1:32769",
+        "android_status": "ready",
+        "android_version": "13",
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "running",
+        "dpi": 240,
+        "error": null,
+        "height": 960,
+        "id": "afd-635e8a215e194178",
+        "image": "autoflow/redroid:13-magisk",
+        "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "memory_mb": 2048,
+        "name": "Mac Magisk 对照",
+        "width": 540
+      },
+      {
+        "adb_address": "127.0.0.1:32768",
+        "android_status": "ready",
+        "android_version": "13",
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "running",
+        "dpi": 320,
+        "error": null,
+        "height": 1280,
+        "id": "afd-ef3857a550924052",
+        "image": "redroid/redroid:13.0.0_64only-latest",
+        "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memory_mb": 2048,
+        "name": "Mac 日常测试",
+        "width": 720
+      }
+    ]
+  },
+  "markers": {
+    "afd-ef3857a550924052": "afd-ef3857a550924052",
+    "afd-635e8a215e194178": "afd-635e8a215e194178"
+  },
+  "root_check": {
+    "action": "root_check",
+    "done": 1,
+    "id": "cb1800c7930b4aa0947b007ef0f08d8f",
+    "results": [
+      {
+        "data": {
+          "app_root": "unverified",
+          "checks": {
+            "container_exec_uid": {
+              "argv": [
+                "id"
+              ],
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+            },
+            "magisk_version": {
+              "argv": [
+                "/system/bin/sh",
+                "-c",
+                "/sbin/magisk -v"
+              ],
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "30.6:MAGISK:R"
+            },
+            "shell_su": {
+              "argv": [
+                "/system/bin/sh",
+                "-c",
+                "/sbin/su -c id"
+              ],
+              "exit_code": 0,
+              "stderr": "",
+              "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+            }
+          },
+          "host_adb_root": "unverified",
+          "id": "afd-635e8a215e194178",
+          "note": "容器 exec UID / shell su 不能证明应用级 root；宿主 ADB 与独立 APK 需另行验证"
+        },
+        "instance_id": "afd-635e8a215e194178",
+        "message": "操作完成",
+        "name": "Mac Magisk 对照",
+        "status": "success"
+      }
+    ],
+    "status": "done",
+    "total": 1
+  },
+  "packages": {
+    "afd-ef3857a550924052": {
+      "packages": [
+        "org.fossify.notes"
+      ]
+    },
+    "afd-635e8a215e194178": {
+      "packages": [
+        "com.topjohnwu.magisk",
+        "org.fossify.notes"
+      ]
+    }
+  },
+  "status": "passed"
+}

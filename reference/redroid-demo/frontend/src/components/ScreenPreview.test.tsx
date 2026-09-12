@@ -60,7 +60,19 @@ describe('single-frame lifecycle', () => {
     view.rerender(<ScreenPreview id="one" enabled={false} onInput={vi.fn()} />);
     await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('img')).toHaveAttribute('src', 'blob:second');
+    expect(screen.getByText(/保留上一帧/)).toBeInTheDocument();
+    expect(URL.revokeObjectURL).not.toHaveBeenCalledWith('blob:second');
+    view.unmount();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:second');
+  });
+  it('releases a retained frame when changing devices', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => Promise.resolve(png())));
+    const view = render(<ScreenPreview id="one" enabled onInput={vi.fn()} />);
+    await act(async () => {});
+    view.rerender(<ScreenPreview id="two" enabled={false} onInput={vi.fn()} />);
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:first');
   });
   it('aborts an in-flight request when switching the selected device', async () => {
     const fetchMock = vi.fn().mockImplementation(() => new Promise(() => {}));

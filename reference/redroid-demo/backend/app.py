@@ -47,6 +47,10 @@ KEYS = {3, 4, 187, 66, 67, 19, 20, 21, 22, 62}
 DOCKER_ERRORS = (docker.errors.DockerException, RequestException, OSError)
 
 
+def architecture(value):
+    return {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}.get(value)
+
+
 class DemoError(Exception):
     def __init__(self, message, status=400, code="invalid_request"):
         super().__init__(message)
@@ -114,19 +118,23 @@ class Runtime:
             available = True
             daemon = {key: info.get(key) for key in
                       ("ID", "Name", "OperatingSystem", "OSType", "Architecture", "KernelVersion", "ServerVersion")}
-            architecture = str(info.get("Architecture", ""))
-            supported = info.get("OSType") == "linux" and architecture in ("x86_64", "amd64")
+            daemon_arch = architecture(info.get("Architecture"))
+            supported = info.get("OSType") == "linux" and daemon_arch is not None
             desktop = "docker desktop" in str(info.get("OperatingSystem", "")).lower() or "docker-desktop" in str(info.get("Name", "")).lower()
             checks.append({"name": "docker_host", "status": "pass" if supported and not desktop else "fail",
-                           "message": "Linux amd64 Docker Engine" if supported and not desktop else
-                           "此 Demo 基线需要 Linux amd64 原生 Engine；Docker Desktop/ARM 宿主不受支持"})
+                           "message": f"Linux {daemon_arch} Docker Engine" if supported and not desktop else
+                           "此 Demo 需要 Linux amd64/arm64 原生 Engine；Docker Desktop 不受支持"})
             for ref in self.app.config["IMAGES"]:
                 try:
                     img = self.client.images.get(ref)
                     images.append({"ref": ref, "cached": True, "id": img.id,
-                                   "digests": img.attrs.get("RepoDigests", [])})
+                                   "digests": img.attrs.get("RepoDigests", []),
+                                   "architecture": img.attrs.get("Architecture"),
+                                   "compatible": supported and img.attrs.get("Os") == "linux"
+                                   and architecture(img.attrs.get("Architecture")) == daemon_arch})
                 except docker.errors.ImageNotFound:
-                    images.append({"ref": ref, "cached": False, "id": None, "digests": []})
+                    images.append({"ref": ref, "cached": False, "id": None, "digests": [],
+                                   "architecture": None, "compatible": False})
         except (DemoError, *DOCKER_ERRORS) as exc:
             available = False
             daemon = None
@@ -145,32 +153,36 @@ class Runtime:
             checks.append({"name": "binder", "status": "unknown",
                            "message": "未读取到 Engine 宿主 /proc；请用 Compose 挂载 /host/proc、/host/dev"})
         if not images:
-            images = [{"ref": ref, "cached": False, "id": None, "digests": []} for ref in self.app.config["IMAGES"]]
-        cached = any(item["cached"] for item in images)
+            images = [{"ref": ref, "cached": False, "id": None, "digests": [],
+                       "architecture": None, "compatible": False} for ref in self.app.config["IMAGES"]]
+        cached = any(item["cached"] and item["compatible"] for item in images)
         checks.append({"name": "images", "status": "pass" if cached else "fail",
-                       "message": "已有可选缓存镜像；创建时再检查所选镜像" if cached else "请先在同一 Engine 拉取基础镜像"})
+                       "message": "已有与 Engine 架构匹配的缓存镜像；创建时再检查所选镜像" if cached else
+                       "请先在同一 Engine 拉取与宿主架构匹配的 Linux 基础镜像"})
         return {"docker_available": available, "ready": available and all(c["status"] == "pass" for c in checks),
                 "checks": checks, "daemon": daemon, "images": images,
                 "limits": {"max_instances": MAX_INSTANCES, "concurrency": CONCURRENCY}}
 
     def preflight(self, image):
         environment = self.environment()
-        if not environment["ready"]:
-            errors = "; ".join(c["message"] for c in environment["checks"] if c["status"] != "pass")
+        failures = [c["message"] for c in environment["checks"] if c["name"] != "images" and c["status"] != "pass"]
+        if failures:
+            errors = "; ".join(failures)
             raise DemoError(errors, 503, "host_unsupported")
         img = next((item for item in environment["images"] if item["ref"] == image), None)
         if not img or not img["cached"]:
             raise DemoError(f"镜像 {image} 未缓存，请先在同一 Engine 构建/拉取", 400, "image_missing")
         actual = self.client.images.get(img["id"])
-        if actual.attrs.get("Architecture") not in ("amd64", "x86_64"):
-            raise DemoError("所选镜像必须为 amd64", 400, "image_architecture")
+        expected = architecture(environment["daemon"].get("Architecture"))
+        if actual.attrs.get("Os") != "linux" or architecture(actual.attrs.get("Architecture")) != expected:
+            raise DemoError(f"所选镜像必须为 Linux {expected}，与实际 Engine 宿主一致", 400, "image_architecture")
         return img["id"]
 
     def config(self, data):
         name = data.get("name", "Android demo")
         if not isinstance(name, str) or not 1 <= len(name.strip()) <= 64 or any(ord(c) < 32 for c in name):
             raise DemoError("name 必须是 1–64 字符的名称")
-        image = data.get("image", DEFAULT_IMAGE)
+        image = data.get("image", self.app.config["IMAGES"][0])
         if not isinstance(image, str) or image not in self.app.config["IMAGES"]:
             raise DemoError("image 不在 Demo 允许的镜像列表")
         cpu = data.get("cpu", 2)
@@ -202,18 +214,31 @@ class Runtime:
             self._set_state(ct, "failed", f"{reason}；停止未确认：{exc}，保留 busy，请从 Engine 停止实例")
             return f"停止未确认：{exc}；保留 busy，请从 Engine 停止实例"
 
-    def exec(self, ct, argv, timeout=None, check=True, readonly=False):
+    def exec(self, ct, argv, timeout=None, check=True, readonly=False, stdin_path=None):
         """Docker multiplexed socket, bounded read; no runaway future/thread."""
         if readonly and argv != ["getprop", "sys.boot_completed"]:
             raise ValueError("Only the boot property probe may use readonly timeout handling")
+        if stdin_path is not None and (readonly or len(argv) != 5 or
+                argv[:4] != ["/system/bin/sh", "-c", 'cat > "$1"', "sh"] or
+                not re.fullmatch(r"/data/local/tmp/[0-9a-f]{32}\.apk", argv[4])):
+            raise ValueError("stdin transfer is only allowed for the fixed APK upload command")
         deadline = time.monotonic() + (timeout or self.app.config["EXEC_TIMEOUT"])
         connection = None
         started = False
         try:
-            result = self.client.api.exec_create(ct.id, argv, stdout=True, stderr=True, stdin=False, tty=False)
+            result = self.client.api.exec_create(ct.id, argv, stdout=True, stderr=True, stdin=stdin_path is not None, tty=False)
             started = True  # A failed start response can still mean Docker accepted it.
             connection = self.client.api.exec_start(result["Id"], socket=True, tty=False)
             sock = getattr(connection, "_sock", connection)
+            if stdin_path is not None:
+                with Path(stdin_path).open("rb") as source:
+                    while chunk := source.read(65536):
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            raise TimeoutError("APK 传输超时")
+                        sock.settimeout(remaining)
+                        sock.sendall(chunk)  # Never retry an ambiguous partial send.
+                sock.shutdown(socket.SHUT_WR)
             pending = bytearray()
             stdout, stderr = bytearray(), bytearray()
             while True:
@@ -271,13 +296,22 @@ class Runtime:
     def wait_ready(self, ct):
         deadline = time.monotonic() + self.app.config["BOOT_TIMEOUT"]
         self._set_state(ct, "starting")
+        last_probe = "尚未读取到 sys.boot_completed=1"
         while time.monotonic() < deadline:
             ct.reload()
             if ct.status != "running":
                 raise DemoError(f"Android 启动失败，容器状态 {ct.status}", 400, "boot_failed")
-            _, output, _ = self.exec(ct, ["getprop", "sys.boot_completed"],
-                                     timeout=min(self.app.config["EXEC_TIMEOUT"], max(0.05, deadline - time.monotonic())))
-            if output.strip() == b"1":
+            ready = False
+            try:
+                code, output, error = self.exec(ct, ["getprop", "sys.boot_completed"], check=False, readonly=True,
+                                               timeout=min(self.app.config["EXEC_TIMEOUT"], max(0.001, deadline - time.monotonic())))
+                ready = code == 0 and output.strip() == b"1"
+                last_probe = f"getprop exit={code}: " + (error or output).decode(errors="replace").strip()[-1500:]
+            except (DemoError, *DOCKER_ERRORS) as exc:
+                # init may not have mounted /system yet. Only this fixed read-only
+                # probe is retried; mutating exec still stops/quarantines on timeout.
+                last_probe = str(exc)
+            if ready:
                 started = ct.attrs.get("State", {}).get("StartedAt")
                 if self.versions.get(ct.name, (None,))[0] != started:
                     _, version, _ = self.exec(ct, ["getprop", "ro.build.version.release"])
@@ -285,8 +319,9 @@ class Runtime:
                 self._set_state(ct, "ready")
                 return
             time.sleep(min(1, max(0, deadline - time.monotonic())))
-        self._set_state(ct, "failed", "Android 启动超时；未执行后续操作")
-        raise DemoError("Android 启动超时；未执行后续操作", 504, "boot_timeout")
+        message = f"Android 启动超时；未执行后续操作；最后检查：{last_probe}"
+        self._set_state(ct, "failed", message)
+        raise DemoError(message, 504, "boot_timeout")
 
     def info(self, ct, probe=False):
         ct.reload()
@@ -395,6 +430,7 @@ class Runtime:
             # RedroidManager create_instance command and volume setup, corrected.
             ct = self.client.containers.create(
                 image=config["image_id"], name=key, privileged=True,
+                environment={"PATH": "/sbin:/system/bin:/system/xbin:/vendor/bin"},
                 ports={"5555/tcp": ("127.0.0.1", None)},
                 volumes={volume_name: {"bind": "/data", "mode": "rw"}},
                 command=["androidboot.use_memfd=true", f"androidboot.redroid_width={config['width']}",
@@ -501,8 +537,8 @@ class Runtime:
                 # Fixed shell literals only: missing optional tools must return
                 # 127, not an OCI exec-start error that looks like lost control.
                 for name, argv in (("container_exec_uid", ["id"]),
-                                   ("magisk_version", ["/system/bin/sh", "-c", "magisk -v"]),
-                                   ("shell_su", ["/system/bin/sh", "-c", "su -c id"])):
+                                   ("magisk_version", ["/system/bin/sh", "-c", "/sbin/magisk -v"]),
+                                   ("shell_su", ["/system/bin/sh", "-c", "/sbin/su -c id"])):
                     code, output, error = self.exec(ct, argv, check=False)
                     checks[name] = {"argv": argv, "exit_code": code, "stdout": output.decode(errors="replace").strip(),
                                     "stderr": error.decode(errors="replace").strip()}
@@ -589,17 +625,28 @@ class Runtime:
         remote_path = "/data/local/tmp/" + name
         # Adapted from upstream _do_install_one: tar.add + put_archive + pm.
         error = None
+        transport = "archive"
         try:
             with tempfile.TemporaryFile() as stream:
                 with tarfile.open(fileobj=stream, mode="w") as archive:
                     archive.add(path, arcname=name)
                 stream.seek(0)
-                if not ct.put_archive("/data/local/tmp", stream):
-                    raise DemoError("APK 传输失败", 400, "install_failed")
+                try:
+                    if not ct.put_archive("/data/local/tmp", stream):
+                        raise DemoError("APK 传输失败", 400, "install_failed")
+                except docker.errors.APIError as exc:
+                    detail = str(exc).lower()
+                    if exc.status_code != 500 or "error setting up pivot dir" not in detail or "read-only file system" not in detail:
+                        raise
+                    # Magisk can remount the rootfs read-only, breaking Docker's
+                    # archive pivot. Stream to the writable /data via fixed argv.
+                    self.exec(ct, ["/system/bin/sh", "-c", 'cat > "$1"', "sh", remote_path],
+                              stdin_path=path, timeout=120)
+                    transport = "exec_stdin"
             code, output, stderr = self.exec(ct, ["pm", "install", "-r", remote_path], timeout=120, check=False)
             if code != 0 or not re.search(rb"^Success\s*$", output, re.M):
                 raise DemoError(f"APK 安装失败（{code}）：{(output + stderr).decode(errors='replace').strip()}", 400, "install_failed")
-            return {"id": ct.name, "apk_id": apk_id, "output": output.decode().strip()}
+            return {"id": ct.name, "apk_id": apk_id, "output": output.decode().strip(), "transport": transport}
         except Exception as exc:
             error = exc
             raise
@@ -626,6 +673,8 @@ def create_app(client=None, config=None):
     )
     if config:
         app.config.update(config)
+    if not app.config["IMAGES"]:
+        raise ValueError("REDROID_IMAGES 必须包含至少一个镜像")
     runtime = Runtime(app, client)
     app.extensions["redroid"] = runtime
 

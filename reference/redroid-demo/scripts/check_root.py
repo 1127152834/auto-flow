@@ -45,8 +45,10 @@ def inspect_root(api, instance_id):
         report["checks"]["adb_root"] = execute(adb + ["root"])
         report["checks"]["wait_after_root"] = execute(adb + ["wait-for-device"], timeout=30)
         report["checks"]["shell_after"] = execute(adb + ["shell", "id"])
-        report["checks"]["magisk_version"] = execute(adb + ["shell", "magisk", "-v"])
-        report["checks"]["shell_su"] = execute(adb + ["shell", "su", "-c", "id"])
+        # The pinned Magisk build installs in /sbin. AOSP /system/bin/su uses
+        # different arguments, so PATH lookup would test the wrong executable.
+        report["checks"]["magisk_version"] = execute(adb + ["shell", "/sbin/magisk", "-v"])
+        report["checks"]["shell_su"] = execute(adb + ["shell", "/sbin/su", "-c", "id"])
         after = report["checks"]["shell_after"]
         report["transport_ok"] = after["exit_code"] == 0 and "uid=" in after["stdout"]
         report["adb_shell_root"] = {"status": "pass" if after["exit_code"] == 0 and "uid=0(" in after["stdout"] else "not_observed"}

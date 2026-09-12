@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the fixed redroid-script Magisk-only Android 13 image on Linux amd64.
+"""Build the fixed redroid-script Magisk-only Android 13 image on Linux amd64/arm64.
 
 Downloads and Docker builds happen only when this command is explicitly run.
 The reference checkout is archived at the pinned commit and never modified.
@@ -24,6 +24,10 @@ from pathlib import Path
 SOURCE_SHA = "a4951b782fc8e06c845d9553bf07bb643fd8c158"
 BASE_IMAGE = "redroid/redroid:13.0.0-latest"
 OUTPUT_IMAGE = "autoflow/redroid:13-magisk"
+
+
+def architecture(value):
+    return {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}.get(value)
 
 
 def command(argv, **kwargs):
@@ -53,6 +57,8 @@ def patch_source(source, work, base_ref, unique_tag):
     replace_once(source / "stuff/magisk.py", 'extract_to = "/tmp/magisk_unpack"',
                  'extract_to = ' + repr(str(work / "magisk-unpack")))
     helper = source / "tools/helper.py"
+    replace_once(helper, '"aarch64": ("arm64", 64),',
+                 '"aarch64": ("arm64", 64),\n        "arm64": ("arm64", 64),\n        "amd64": ("x86_64", 64),')
     replace_once(helper, 'if result.stderr:', 'if result.returncode != 0:')
     replace_once(helper, 'response = requests.get(url, stream=True)',
                  'response = requests.get(url, stream=True, timeout=(15, 60))\n    response.raise_for_status()')
@@ -63,7 +69,8 @@ def patch_source(source, work, base_ref, unique_tag):
                  'loc_md5 = download_file(self.dl_link, self.dl_file_name)\n        if loc_md5 != self.act_md5:\n            raise ValueError("Magisk download MD5 mismatch after at most three attempts")')
     return ["Docker build check=True", "Unique temporary image tag", "Base FROM uses immutable digest or a unique local tag for the inspected image ID",
             "Magisk extraction directory isolated", "Helper subprocess failures use returncode",
-            "HTTP status checked and connect/read timeouts set", "Download checksum retries limited to three"]
+            "HTTP status checked and connect/read timeouts set", "Download checksum retries limited to three",
+            "Native amd64/arm64 aliases map to the upstream Magisk ABI branch"]
 
 
 def run_logged(argv, cwd, env, log, timeout):
@@ -86,16 +93,18 @@ def run_logged(argv, cwd, env, log, timeout):
         raise
 
 
-def build(source, output):
-    if platform.system() != "Linux" or platform.machine() != "x86_64":
-        raise RuntimeError("Root image build requires Linux x86_64 (WSL2 Ubuntu x64 is supported for validation)")
+def build(source, output, base_image=None):
+    base_image = base_image or os.getenv("REDROID_BASE_IMAGE", BASE_IMAGE)
+    native_arch = architecture(platform.machine())
+    if platform.system() != "Linux" or native_arch is None:
+        raise RuntimeError("Root image build requires native Linux amd64/arm64 (run inside the Linux VM or WSL)")
     for executable in ("docker", "git"):
         if not shutil.which(executable):
             raise RuntimeError(f"Missing command: {executable}")
     info = json.loads(command(["docker", "info", "--format", "{{json .}}"] ))
-    if info.get("OSType") != "linux" or info.get("Architecture") not in ("amd64", "x86_64"):
-        raise RuntimeError("Docker daemon must be Linux amd64")
-    if "docker desktop" in info.get("OperatingSystem", "").lower():
+    if info.get("OSType") != "linux" or architecture(info.get("Architecture")) != native_arch:
+        raise RuntimeError("Docker daemon must match the native Linux amd64/arm64 host")
+    if "docker desktop" in info.get("OperatingSystem", "").lower() or "docker-desktop" in info.get("Name", "").lower():
         raise RuntimeError("Use the WSL/Linux Docker Engine; Docker Desktop is outside the supported baseline")
     if os.environ.get("DOCKER_HOST", "unix:///var/run/docker.sock") != "unix:///var/run/docker.sock":
         raise RuntimeError("Use the local WSL/Linux Docker Engine socket")
@@ -104,9 +113,9 @@ def build(source, output):
         endpoint = command(["docker", "context", "inspect", context, "--format", "{{.Endpoints.docker.Host}}"])
         if endpoint != "unix:///var/run/docker.sock":
             raise RuntimeError("Select the local WSL/Linux Docker Engine context explicitly")
-    base = inspect_image(BASE_IMAGE)
-    if base.get("Architecture") != "amd64" or base.get("Os") != "linux":
-        raise RuntimeError("Cached Android 13 base image must be Linux amd64")
+    base = inspect_image(base_image)
+    if architecture(base.get("Architecture")) != native_arch or base.get("Os") != "linux":
+        raise RuntimeError(f"Cached Android 13 base image must be Linux {native_arch}, matching this Engine")
     resolved = command(["git", "-C", str(source), "rev-parse", SOURCE_SHA + "^{commit}"])
     if resolved != SOURCE_SHA:
         raise RuntimeError("Pinned redroid-script commit is unavailable")
@@ -120,8 +129,10 @@ def build(source, output):
             raise RuntimeError("Another Demo Magisk build is running") from error
         output.mkdir(parents=True, exist_ok=False)
         report = {"status": "failed", "source": {"repository": "https://github.com/ayasa520/redroid-script", "sha": SOURCE_SHA},
-                  "base_image": {"ref": BASE_IMAGE, "id": base["Id"], "digests": base.get("RepoDigests", [])},
-                  "target": OUTPUT_IMAGE, "app_root": "unverified", "android_boot": "unverified"}
+                  "base_image": {"ref": base_image, "id": base["Id"], "digests": base.get("RepoDigests", []),
+                                 "architecture": base.get("Architecture")},
+                  "target": OUTPUT_IMAGE, "platform": "linux/" + native_arch,
+                  "app_root": "unverified", "android_boot": "unverified"}
         unique_tag = "autoflow/redroid-build:" + uuid.uuid4().hex
         temporary_base = None
         try:
@@ -151,7 +162,7 @@ def build(source, output):
                                       "integrity_note": "MD5 follows upstream; recorded SHA-256 is not an independent signature"}
                 env = dict(os.environ, XDG_CACHE_HOME=str(work / "cache"), TMPDIR=str(work / "tmp"),
                            PIP_CACHE_DIR=str(work / "pip-cache"), PIP_DISABLE_PIP_VERSION_CHECK="1",
-                           DOCKER_DEFAULT_PLATFORM="linux/amd64")
+                           DOCKER_DEFAULT_PLATFORM="linux/" + native_arch)
                 (work / "tmp").mkdir()
                 apk = work / "cache/redroid/downloads/magisk.apk"
                 try:
@@ -171,8 +182,8 @@ def build(source, output):
                     raise RuntimeError("Build finished without a verified Magisk APK")
                 shutil.copy2(checkout / "Dockerfile", output / "Dockerfile.generated")
                 image = inspect_image(unique_tag)
-                if image["Id"] == base["Id"] or image.get("Architecture") != "amd64":
-                    raise RuntimeError("Build did not produce a distinct amd64 image")
+                if image["Id"] == base["Id"] or architecture(image.get("Architecture")) != native_arch or image.get("Os") != "linux":
+                    raise RuntimeError(f"Build did not produce a distinct Linux {native_arch} image")
                 if not (checkout / "magisk/system/etc/init/magisk/magisk.apk").is_file():
                     raise RuntimeError("Expected Magisk build content is missing")
                 command(["docker", "tag", image["Id"], OUTPUT_IMAGE])
@@ -180,7 +191,7 @@ def build(source, output):
                 if tagged["Id"] != image["Id"]:
                     raise RuntimeError("Final image tag does not match the verified build")
                 report["image"] = {"ref": OUTPUT_IMAGE, "id": tagged["Id"], "digests": tagged.get("RepoDigests", []),
-                                   "created": tagged.get("Created")}
+                                   "created": tagged.get("Created"), "architecture": tagged.get("Architecture")}
                 report["status"] = "built_not_boot_verified"
         except BaseException as error:
             report["error"] = str(error)
@@ -207,10 +218,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[2] / "redroid-script")
     parser.add_argument("--output", type=Path, default=Path(".data/root-builds"))
+    parser.add_argument("--base-image", default=os.getenv("REDROID_BASE_IMAGE", BASE_IMAGE),
+                        help="Cached Android 13 image matching the native daemon architecture (or REDROID_BASE_IMAGE)")
     args = parser.parse_args()
     output = args.output.resolve() / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
     try:
-        result = build(args.source.resolve(), output)
+        result = build(args.source.resolve(), output, args.base_image)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
     except Exception as error:

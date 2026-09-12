@@ -10,7 +10,7 @@ export interface Environment {
   docker_available: boolean; ready: boolean;
   checks: { name: string; status: 'pass' | 'fail' | 'unknown'; message: string }[];
   daemon: Record<string, unknown> | null;
-  images: { ref: string; cached: boolean; id: string | null }[];
+  images: { ref: string; cached: boolean; id: string | null; architecture?: string | null; compatible?: boolean }[];
   limits: { max_instances: number; concurrency: number };
 }
 export interface Job {
@@ -41,3 +41,17 @@ export function post<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 }
 export function instancePath(id: string): string { return `/instances/${encodeURIComponent(id)}`; }
+
+/** User operations only: retry a busy rejection that guarantees no execution. */
+export async function withBusyRetry<T>(operation: () => Promise<T>): Promise<T> {
+  const deadline = Date.now() + 2_000;
+  let retries = 0;
+  while (true) {
+    try { return await operation(); }
+    catch (error) {
+      if (!(error instanceof ApiError) || error.status !== 409 || error.code !== 'busy' || retries >= 10 || Date.now() + 200 > deadline) throw error;
+      retries += 1;
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
+}

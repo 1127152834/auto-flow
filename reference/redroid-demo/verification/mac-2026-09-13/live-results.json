@@ -1,0 +1,484 @@
+{
+  "status": "passed",
+  "base": "afd-ef3857a550924052",
+  "root": "afd-635e8a215e194178",
+  "checks": [
+    {
+      "name": "data survives stop/start/restart",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "clone has empty independent data",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "three distinct ADB ports",
+      "passed": true,
+      "detail": [
+        "127.0.0.1:32774",
+        "127.0.0.1:32775",
+        "127.0.0.1:32776"
+      ]
+    },
+    {
+      "name": "three data volumes isolated",
+      "passed": true,
+      "detail": {
+        "afd-ef3857a550924052": "afd-ef3857a550924052",
+        "afd-aa9d86a6da8c469b": "afd-aa9d86a6da8c469b",
+        "afd-635e8a215e194178": "afd-635e8a215e194178"
+      }
+    },
+    {
+      "name": "conflicting operation blocked",
+      "passed": true,
+      "detail": "{\"error\":{\"code\":\"busy\",\"message\":\"\\u76ee\\u6807\\u4e2d\\u6709\\u8bbe\\u5907\\u6b63\\u5fd9\\uff0c\\u672a\\u63d0\\u4ea4\\u4efb\\u4f55\\u64cd\\u4f5c\"}}\n"
+    },
+    {
+      "name": "one failed target does not hide two successes",
+      "passed": true,
+      "detail": [
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-aa9d86a6da8c469b",
+            "output": "Success"
+          },
+          "instance_id": "afd-aa9d86a6da8c469b",
+          "message": "操作完成",
+          "name": "Mac 日常测试 副本",
+          "status": "success"
+        },
+        {
+          "instance_id": "afd-635e8a215e194178",
+          "message": "Android 启动失败，容器状态 exited",
+          "name": "Mac Magisk 对照",
+          "status": "error"
+        },
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-ef3857a550924052",
+            "output": "Success"
+          },
+          "instance_id": "afd-ef3857a550924052",
+          "message": "操作完成",
+          "name": "Mac 日常测试",
+          "status": "success"
+        }
+      ]
+    },
+    {
+      "name": "Magisk read-only archive fallback",
+      "passed": true,
+      "detail": {
+        "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+        "id": "afd-635e8a215e194178",
+        "output": "Success",
+        "transport": "exec_stdin"
+      }
+    },
+    {
+      "name": "temporary APK removed after install",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Magisk read-only archive fallback",
+      "passed": true,
+      "detail": {
+        "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+        "id": "afd-635e8a215e194178",
+        "output": "Success",
+        "transport": "exec_stdin"
+      }
+    },
+    {
+      "name": "temporary APK removed after install",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Magisk read-only archive fallback",
+      "passed": true,
+      "detail": {
+        "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+        "id": "afd-635e8a215e194178",
+        "output": "Success",
+        "transport": "exec_stdin"
+      }
+    },
+    {
+      "name": "temporary APK removed after install",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "installed Notes on afd-ef3857a550924052",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual PNG size afd-ef3857a550924052",
+      "passed": true,
+      "detail": [
+        720,
+        1280
+      ]
+    },
+    {
+      "name": "installed Notes on afd-635e8a215e194178",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual PNG size afd-635e8a215e194178",
+      "passed": true,
+      "detail": [
+        540,
+        960
+      ]
+    },
+    {
+      "name": "real invalid APK installation rejected",
+      "passed": true,
+      "detail": "APK 安装失败（255）：Exception occurred while executing 'install':\njava.lang.IllegalArgumentException: Error: Failed to parse APK file: /data/local/tmp/e986ba37e15847d5b76e8a45fdc41150.apk: Failed to parse /data/local/tmp/e986ba37e15847d5b76e8a45fdc41150.apk\n\tat com.android.server.pm.PackageManagerShellCommand.setParamsSize(PackageManagerShellCommand.java:617)\n\tat com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1442)\n\tat com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1408)\n\tat com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:221)\n\tat com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)\n\tat android.os.ShellCommand.exec(ShellCommand.java:38)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:5996)\n\tat android.os.Binder.shellCommand(Binder.java:1049)\n\tat android.os.Binder.onTransact(Binder.java:877)\n\tat android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4313)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:5980)\n\tat android.os.Binder.execTransactInternal(Binder.java:1285)\n\tat android.os.Binder.execTransact(Binder.java:1244)\nCaused by: java.io.FileNotFoundException: Corrupt XML binary file\n\tat android.content.res.ApkAssets.nativeOpenXml(Native Method)\n\tat android.content.res.ApkAssets.openXml(ApkAssets.java:380)\n\tat android.content.pm.parsing.ApkLiteParseUtils.parseApkLiteInner(ApkLiteParseUtils.java:362)\n\tat android.content.pm.parsing.ApkLiteParseUtils.parseApkLite(ApkLiteParseUtils.java:343)\n\tat com.android.server.pm.PackageManagerShellCommand.setParamsSize(PackageManagerShellCommand.java:611)\n\t... 12 more"
+    },
+    {
+      "name": "clone cleanup completed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "only two review devices remain",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "remaining": [
+    {
+      "adb_address": "127.0.0.1:32778",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 240,
+      "error": null,
+      "height": 960,
+      "id": "afd-635e8a215e194178",
+      "image": "autoflow/redroid:13-magisk",
+      "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+      "memory_mb": 2048,
+      "name": "Mac Magisk 对照",
+      "width": 540
+    },
+    {
+      "adb_address": "127.0.0.1:32774",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 320,
+      "error": null,
+      "height": 1280,
+      "id": "afd-ef3857a550924052",
+      "image": "redroid/redroid:13.0.0_64only-latest",
+      "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memory_mb": 2048,
+      "name": "Mac 日常测试",
+      "width": 720
+    }
+  ],
+  "root_api_checks": [
+    {
+      "action": "root_check",
+      "done": 1,
+      "id": "5249d2a86bb84751b0aa6fcbaaf35b66",
+      "results": [
+        {
+          "data": {
+            "app_root": "unverified",
+            "checks": {
+              "container_exec_uid": {
+                "argv": [
+                  "id"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+              },
+              "magisk_version": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/magisk -v"
+                ],
+                "exit_code": 127,
+                "stderr": "/system/bin/sh: /sbin/magisk: inaccessible or not found",
+                "stdout": ""
+              },
+              "shell_su": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/su -c id"
+                ],
+                "exit_code": 127,
+                "stderr": "/system/bin/sh: /sbin/su: inaccessible or not found",
+                "stdout": ""
+              }
+            },
+            "host_adb_root": "unverified",
+            "id": "afd-ef3857a550924052",
+            "note": "容器 exec UID / shell su 不能证明应用级 root；宿主 ADB 与独立 APK 需另行验证"
+          },
+          "instance_id": "afd-ef3857a550924052",
+          "message": "操作完成",
+          "name": "Mac 日常测试",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "root_check",
+      "done": 1,
+      "id": "71162052218c4ba4afda96a9abca5af8",
+      "results": [
+        {
+          "data": {
+            "app_root": "unverified",
+            "checks": {
+              "container_exec_uid": {
+                "argv": [
+                  "id"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+              },
+              "magisk_version": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/magisk -v"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "30.6:MAGISK:R"
+              },
+              "shell_su": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/su -c id"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+              }
+            },
+            "host_adb_root": "unverified",
+            "id": "afd-635e8a215e194178",
+            "note": "容器 exec UID / shell su 不能证明应用级 root；宿主 ADB 与独立 APK 需另行验证"
+          },
+          "instance_id": "afd-635e8a215e194178",
+          "message": "操作完成",
+          "name": "Mac Magisk 对照",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "root_check",
+      "done": 1,
+      "id": "7027ca5dfca34a15a81a2b971c49380c",
+      "results": [
+        {
+          "data": {
+            "app_root": "unverified",
+            "checks": {
+              "container_exec_uid": {
+                "argv": [
+                  "id"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+              },
+              "magisk_version": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/magisk -v"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "30.6:MAGISK:R"
+              },
+              "shell_su": {
+                "argv": [
+                  "/system/bin/sh",
+                  "-c",
+                  "/sbin/su -c id"
+                ],
+                "exit_code": 0,
+                "stderr": "",
+                "stdout": "uid=0(root) gid=0(root) groups=0(root)"
+              }
+            },
+            "host_adb_root": "unverified",
+            "id": "afd-635e8a215e194178",
+            "note": "容器 exec UID / shell su 不能证明应用级 root；宿主 ADB 与独立 APK 需另行验证"
+          },
+          "instance_id": "afd-635e8a215e194178",
+          "message": "操作完成",
+          "name": "Mac Magisk 对照",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    }
+  ],
+  "install_results": [
+    {
+      "action": "install",
+      "done": 3,
+      "id": "60aa7995efe84124b2f4d454aed10a79",
+      "results": [
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-aa9d86a6da8c469b",
+            "output": "Success"
+          },
+          "instance_id": "afd-aa9d86a6da8c469b",
+          "message": "操作完成",
+          "name": "Mac 日常测试 副本",
+          "status": "success"
+        },
+        {
+          "instance_id": "afd-635e8a215e194178",
+          "message": "Android 启动失败，容器状态 exited",
+          "name": "Mac Magisk 对照",
+          "status": "error"
+        },
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-ef3857a550924052",
+            "output": "Success"
+          },
+          "instance_id": "afd-ef3857a550924052",
+          "message": "操作完成",
+          "name": "Mac 日常测试",
+          "status": "success"
+        }
+      ],
+      "status": "failed",
+      "total": 3
+    },
+    {
+      "action": "install",
+      "done": 1,
+      "id": "8395068afc34488fa28a093c3497067e",
+      "results": [
+        {
+          "instance_id": "afd-635e8a215e194178",
+          "message": "500 Server Error for http+docker://localhost/v1.52/containers/37a74f8c3ec782d13eea9f8389c052e288933a8c25f508c3b9a11450cbe26de1/archive?path=%2Fdata%2Flocal%2Ftmp: Internal Server Error (\"Error setting up pivot dir: mkdir /var/lib/docker/rootfs/overlayfs/37a74f8c3ec782d13eea9f8389c052e288933a8c25f508c3b9a11450cbe26de1/.pivot_root1755594127: read-only file system\")",
+          "name": "Mac Magisk 对照",
+          "status": "error"
+        }
+      ],
+      "status": "failed",
+      "total": 1
+    },
+    {
+      "action": "install",
+      "done": 1,
+      "id": "61ca61de2bf54dd5a9bf97fb11246c33",
+      "results": [
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-635e8a215e194178",
+            "output": "Success",
+            "transport": "exec_stdin"
+          },
+          "instance_id": "afd-635e8a215e194178",
+          "message": "操作完成",
+          "name": "Mac Magisk 对照",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "install",
+      "done": 1,
+      "id": "7e5e200c4351478d987a1da7cd84e59c",
+      "results": [
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-635e8a215e194178",
+            "output": "Success",
+            "transport": "exec_stdin"
+          },
+          "instance_id": "afd-635e8a215e194178",
+          "message": "操作完成",
+          "name": "Mac Magisk 对照",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "install",
+      "done": 1,
+      "id": "3618cc40ea8848058a8adf8b9b1d9a18",
+      "results": [
+        {
+          "data": {
+            "apk_id": "8b173f7d0d8d49dfa8bc7d9c9fd8254d",
+            "id": "afd-635e8a215e194178",
+            "output": "Success",
+            "transport": "exec_stdin"
+          },
+          "instance_id": "afd-635e8a215e194178",
+          "message": "操作完成",
+          "name": "Mac Magisk 对照",
+          "status": "success"
+        }
+      ],
+      "status": "done",
+      "total": 1
+    },
+    {
+      "action": "install",
+      "done": 1,
+      "id": "c851b2af3df94ceb81aff2ad2426ed79",
+      "results": [
+        {
+          "instance_id": "afd-aa9d86a6da8c469b",
+          "message": "APK 安装失败（255）：Exception occurred while executing 'install':\njava.lang.IllegalArgumentException: Error: Failed to parse APK file: /data/local/tmp/e986ba37e15847d5b76e8a45fdc41150.apk: Failed to parse /data/local/tmp/e986ba37e15847d5b76e8a45fdc41150.apk\n\tat com.android.server.pm.PackageManagerShellCommand.setParamsSize(PackageManagerShellCommand.java:617)\n\tat com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1442)\n\tat com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1408)\n\tat com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:221)\n\tat com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)\n\tat android.os.ShellCommand.exec(ShellCommand.java:38)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:5996)\n\tat android.os.Binder.shellCommand(Binder.java:1049)\n\tat android.os.Binder.onTransact(Binder.java:877)\n\tat android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4313)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:5980)\n\tat android.os.Binder.execTransactInternal(Binder.java:1285)\n\tat android.os.Binder.execTransact(Binder.java:1244)\nCaused by: java.io.FileNotFoundException: Corrupt XML binary file\n\tat android.content.res.ApkAssets.nativeOpenXml(Native Method)\n\tat android.content.res.ApkAssets.openXml(ApkAssets.java:380)\n\tat android.content.pm.parsing.ApkLiteParseUtils.parseApkLiteInner(ApkLiteParseUtils.java:362)\n\tat android.content.pm.parsing.ApkLiteParseUtils.parseApkLite(ApkLiteParseUtils.java:343)\n\tat com.android.server.pm.PackageManagerShellCommand.setParamsSize(PackageManagerShellCommand.java:611)\n\t... 12 more",
+          "name": "Mac 日常测试 副本",
+          "status": "error"
+        }
+      ],
+      "status": "failed",
+      "total": 1
+    }
+  ],
+  "note": "Includes intentionally failed targets and the pre-fix Magisk archive failure; final scenario status follows successful retest. Browser/ADB evidence is recorded separately."
+}

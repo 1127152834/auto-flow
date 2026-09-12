@@ -1,0 +1,44 @@
+{
+  "instances": [
+    {
+      "adb_address": "127.0.0.1:32769",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 240,
+      "error": null,
+      "height": 960,
+      "id": "afd-635e8a215e194178",
+      "image": "autoflow/redroid:13-magisk",
+      "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+      "memory_mb": 2048,
+      "name": "Mac Magisk 对照",
+      "width": 540
+    },
+    {
+      "adb_address": "127.0.0.1:32768",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 320,
+      "error": null,
+      "height": 1280,
+      "id": "afd-ef3857a550924052",
+      "image": "redroid/redroid:13.0.0_64only-latest",
+      "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memory_mb": 2048,
+      "name": "Mac 日常测试",
+      "width": 720
+    }
+  ],
+  "volumes": [
+    "afd-635e8a215e194178-data",
+    "afd-ef3857a550924052-data",
+    "autoflow-redroid-demo_uploads"
+  ],
+  "status": "passed"
+}

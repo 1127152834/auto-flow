@@ -3,6 +3,7 @@
 ## redroid management demo
 
 - Start: [`redroid-demo/README.md`](./redroid-demo/README.md); [verification](./redroid-demo/VERIFICATION.md); [approved plan](./redroid-demo/PLAN.md).
+- Mac: native ARM64 Android in a dedicated Lima Ubuntu VM; [actual Mac validation](./redroid-demo/MAC_TEST.md), browser entry `http://127.0.0.1:8081`. Windows and application-level root are not yet verified.
 - Date: 2026-09-13; status: implemented; actual Android, Windows/WSL and Magisk validation remains pending.
 - Scope: independent Python + React demos for lifecycle management, screen/input/APK operations, small batch tasks and Magisk image checks; Windows via WSL2 + Docker Engine.
 - This user-requested demo is separate from the read-only upstream repositories. Its source is tracked by AutoFlow Git and is not an AutoFlow runtime dependency. The manager was built and exercised locally; unsupported Android hosts show diagnostics.

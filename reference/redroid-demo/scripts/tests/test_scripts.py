@@ -208,6 +208,13 @@ class ScriptTests(unittest.TestCase):
             namespace = {"subprocess": SimpleNamespace(run=lambda **kwargs: SimpleNamespace(returncode=0, stderr=b"progress"), PIPE=-1)}
             exec(compile(ast.Module(body=[helper_run], type_ignores=[]), "patched_helper", "exec"), namespace)
             self.assertEqual(namespace["run"](["unused"]).returncode, 0)
+            # Execute only the pure host mapping, not imports/download setup.
+            helper_host = next(node for node in helper_tree.body if isinstance(node, ast.FunctionDef) and node.name == "host")
+            for native, expected in (("aarch64", ("arm64", 64)), ("arm64", ("arm64", 64)),
+                                     ("x86_64", ("x86_64", 64)), ("amd64", ("x86_64", 64))):
+                namespace = {"platform": SimpleNamespace(machine=lambda: native)}
+                exec(compile(ast.Module(body=[helper_host], type_ignores=[]), "patched_host", "exec"), namespace)
+                self.assertEqual(namespace["host"](), expected)
             with self.assertRaises(RuntimeError):
                 builder.patch_source(checkout, work, base_ref, "again")
 
@@ -222,6 +229,10 @@ class ScriptTests(unittest.TestCase):
             report = root_check.inspect_root("http://localhost:8080", "ours")
         self.assertEqual(report["adb_shell_root"]["status"], "pass")
         self.assertEqual(report["application_root"]["status"], "unverified")
+        self.assertEqual(report["checks"]["magisk_version"]["command"],
+                         ["adb", "-s", "127.0.0.1:5555", "shell", "/sbin/magisk", "-v"])
+        self.assertEqual(report["checks"]["shell_su"]["command"],
+                         ["adb", "-s", "127.0.0.1:5555", "shell", "/sbin/su", "-c", "id"])
 
     def test_build_failure_cleanup_timeout_still_writes_original_error(self):
         import io
@@ -235,28 +246,58 @@ class ScriptTests(unittest.TestCase):
             if argv[0] == "git":
                 return SimpleNamespace(stdout=archive.getvalue())
             raise subprocess.TimeoutExpired(argv, 60)
+        native, daemon_arch, base_arch = "x86_64", "amd64", "amd64"
         def fake_command(argv, **kwargs):
             if argv[:2] == ["docker", "info"]:
-                return json.dumps({"OSType": "linux", "Architecture": "amd64", "OperatingSystem": "Ubuntu"})
+                return json.dumps({"OSType": "linux", "Architecture": daemon_arch, "OperatingSystem": "Ubuntu"})
             return builder.SOURCE_SHA
-        base = {"Id": "sha256:" + "b" * 64, "Architecture": "amd64", "Os": "linux",
-                "RepoDigests": ["redroid/redroid@sha256:" + "a" * 64]}
-        with tempfile.TemporaryDirectory() as folder, \
+        for native, daemon_arch, base_arch in (("x86_64", "amd64", "amd64"), ("aarch64", "aarch64", "arm64")):
+            base = {"Id": "sha256:" + "b" * 64, "Architecture": base_arch, "Os": "linux",
+                    "RepoDigests": ["redroid/redroid@sha256:" + "a" * 64]}
+            with self.subTest(native=native), tempfile.TemporaryDirectory() as folder, \
                 patch.object(builder.platform, "system", return_value="Linux"), \
-                patch.object(builder.platform, "machine", return_value="x86_64"), \
+                patch.object(builder.platform, "machine", return_value=native), \
                 patch.object(builder.shutil, "which", return_value="/usr/bin/tool"), \
                 patch.dict(builder.os.environ, {"DOCKER_HOST": "unix:///var/run/docker.sock"}), \
                 patch.object(builder, "command", side_effect=fake_command), \
-                patch.object(builder, "inspect_image", return_value=base), \
+                patch.object(builder, "inspect_image", return_value=base) as inspect, \
                 patch.object(builder.subprocess, "run", side_effect=fake_run), \
-                patch.object(builder, "run_logged", side_effect=RuntimeError("Original build failure")):
-            output = Path(folder) / "result"
-            with self.assertRaisesRegex(RuntimeError, "Original build failure"):
-                builder.build(source, output)
-            report = json.loads((output / "result.json").read_text())
-            self.assertEqual(report["error"], "Original build failure")
-            self.assertIn("error", report["temporary_tag_cleanup"][0])
-            self.assertTrue(report["base_image"]["build_ref"].startswith("redroid/redroid@sha256:"))
+                patch.object(builder, "run_logged", side_effect=RuntimeError("Original build failure")) as logged:
+                output = Path(folder) / "result"
+                image_ref = "redroid/redroid:13.0.0_64only-latest"
+                with self.assertRaisesRegex(RuntimeError, "Original build failure"):
+                    builder.build(source, output, image_ref)
+                inspect.assert_called_once_with(image_ref)
+                report = json.loads((output / "result.json").read_text())
+                self.assertEqual(report["error"], "Original build failure")
+                self.assertEqual(report["platform"], "linux/" + base_arch)
+                self.assertEqual(logged.call_args.args[2]["DOCKER_DEFAULT_PLATFORM"], "linux/" + base_arch)
+                self.assertIn("error", report["temporary_tag_cleanup"][0])
+                self.assertTrue(report["base_image"]["build_ref"].startswith("redroid/redroid@sha256:"))
+
+    def test_root_build_rejects_unsupported_or_cross_architecture_hosts_and_images(self):
+        for system, native, daemon_arch, image_arch, daemon_os, distribution, error in (
+                ("Darwin", "arm64", "arm64", "arm64", "linux", "Ubuntu", "requires native Linux"),
+                ("Linux", "riscv64", "riscv64", "riscv64", "linux", "Ubuntu", "requires native Linux"),
+                ("Linux", "aarch64", "amd64", "arm64", "linux", "Ubuntu", "daemon must match"),
+                ("Linux", "aarch64", "arm64", "amd64", "linux", "Ubuntu", "base image must be Linux arm64"),
+                ("Linux", "x86_64", "amd64", "amd64", "windows", "Ubuntu", "daemon must match"),
+                ("Linux", "aarch64", "arm64", "arm64", "linux", "Docker Desktop", "Docker Desktop")):
+            info = {"OSType": daemon_os, "Architecture": daemon_arch, "OperatingSystem": distribution}
+            with self.subTest(system=system, native=native, daemon=daemon_arch, image=image_arch), \
+                    tempfile.TemporaryDirectory() as folder, \
+                    patch.object(builder.platform, "system", return_value=system), \
+                    patch.object(builder.platform, "machine", return_value=native), \
+                    patch.object(builder.shutil, "which", return_value="/usr/bin/tool"), \
+                    patch.dict(builder.os.environ, {"DOCKER_HOST": "unix:///var/run/docker.sock"}), \
+                    patch.object(builder, "command", return_value=json.dumps(info)), \
+                    patch.object(builder, "inspect_image", return_value={"Architecture": image_arch, "Os": "linux"}), \
+                    patch.object(builder, "run_logged") as logged:
+                output = Path(folder) / "result"
+                with self.assertRaisesRegex(RuntimeError, error):
+                    builder.build(ROOT.parent / "redroid-script", output)
+                logged.assert_not_called()
+                self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

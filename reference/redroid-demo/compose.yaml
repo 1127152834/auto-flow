@@ -11,6 +11,7 @@ services:
       REDROID_HOST_PROC: /host/proc
       REDROID_HOST_DEV: /host/dev
       REDROID_BIND_HOST: 0.0.0.0
+      REDROID_IMAGES: ${REDROID_IMAGES:-redroid/redroid:13.0.0-latest,autoflow/redroid:13-magisk}
       PORT: "8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

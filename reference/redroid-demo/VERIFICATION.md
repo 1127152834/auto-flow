@@ -1,10 +1,18 @@
 # redroid Demo 验证记录
 
 - 日期：2026-09-13（Asia/Shanghai）。
-- 状态：**confirmed：源码、打包及管理服务通过；Android / Windows / Magisk 实机结果未知，待验证**。
+- 当前状态：**confirmed：Mac 上真实 Android、三实例批量管理、Magisk 构建与 shell root 已通过；Windows 与应用内 root 授权未验证**。本轮用户明确仅在 Mac 测试。
 - 范围：已确认的 [PLAN.md](PLAN.md)；独立 Flask + React Demo，不改 AutoFlow 正式运行架构。
 
-## 已执行的检查
+## 当前 Mac 验证
+
+详细环境、镜像摘要、真实 APK、失败修复、root 对照与证据见 [MAC_TEST.md](MAC_TEST.md)。入口为 `http://127.0.0.1:8081`，使用独立 Lima Ubuntu ARM64 VM；原 Docker Desktop 的 8080 诊断页面属于前一阶段。
+
+当前自动测试为 **68 项：34 后端 + 26 前端 + 8 脚本**；类型检查、构建、Shell/Compose/Lima 配置检查通过。真实 Android 实验另外记录，不混入自动测试计数。
+
+以下保留初次交付记录作为历史。其“Android/Magisk 未执行”和“零 Android 实例”结论已被本轮 Mac 实测 **superseded**；Windows 未验证、应用内 root 未验证仍然有效。
+
+## 历史：初次交付时的检查
 
 | 检查 | 结果与证据 | 能证明的范围 |
 |---|---|---|
@@ -23,7 +31,7 @@
 
 以上合计 **49 项自动测试**（25 后端 + 17 前端 + 7 脚本），重复在另一架构运行后端测试不重复计数。自动测试中的 Android 使用替身；截图坐标测试使用受控图片尺寸，不能替代真实 APK 和设备实验。
 
-## 本次实际宿主
+## 历史：初次交付的 Docker Desktop 宿主
 
 - macOS arm64；本地 Node 26.7.0，Python 3.11.13 用于后端兼容检查。
 - Docker Desktop 4.83.0；Docker Engine 29.6.2，daemon Linux arm64，内核 `6.12.76-linuxkit`；Compose 5.3.1。
@@ -32,7 +40,7 @@
 - 环境诊断实际结果：`docker_host=fail`、`binder=fail`、`images=fail`。没有拉取 redroid 镜像，没有启动 Android，也没有执行 Magisk 下载/构建。
 - 本次只保留管理服务、其 Compose 网络/上传卷与构建镜像，供继续查看；跨架构测试容器用 `--rm` 回收。没有 Android 容器或 Android 数据卷。停止方式见 README。
 
-## 真实设备待验收项
+## 历史：初次交付时的待验收清单
 
 | 场景 | 状态 | 下一次执行及记录内容 |
 |---|---|---|
@@ -56,6 +64,6 @@ ruff check --select E9,F63,F7,F82 backend scripts examples
 python3 -m compileall -q backend scripts examples
 ```
 
-## 交付判断
+## 历史：初次交付判断（Mac 结论已 superseded）
 
 源码与管理界面交付完成（置信度：高）；Windows、真实 Android 和具体 Magisk 组合兼容性（置信度：未知）。摄像头、环境伪装、视频串流和集群调度仍按计划留给后续专项 Demo。
