@@ -1,5 +1,9 @@
 import base64
 
+import pytest
+from sqlalchemy import select
+
+from autoflow.infrastructure.database.models import ProjectOperationRow
 from tests.contract.test_project_data_catalog import (
     catalog as catalog,  # noqa: PLC0414 -- explicit pytest fixture re-export
 )
@@ -13,6 +17,95 @@ def record_url(base, record):
     return (
         base + "/records/" + base64.urlsafe_b64encode(raw.encode()).decode().rstrip("=")
     )
+
+
+@pytest.mark.parametrize("explicit_null", [False, True])
+def test_record_http_preserves_missing_cells_and_historical_nulls(
+    catalog, explicit_null
+):
+    client, project, table, base = catalog
+    generation = table["datasetGeneration"]
+
+    def add_optional(name, revision):
+        response = client.post(
+            base + "/fields",
+            headers=key(),
+            json={
+                "definition": {
+                    "key": name,
+                    "name": name,
+                    "type": "string",
+                    "required": False,
+                    "validation": {},
+                },
+                "sourceColumnPolicy": "localOnly",
+                "expectedTableRevision": revision,
+            },
+        )
+        assert response.status_code == 200, response.text
+        return response.json()["field"]["ref"]["fieldId"]
+
+    field_id = add_optional("optional", 1)
+    values = [{"fieldId": field_id, "value": None}] if explicit_null else []
+    payload = {"datasetGeneration": generation, "values": values}
+    identity = key()
+    response = client.post(base + "/records", headers=identity, json=payload)
+    assert response.status_code == 201, response.text
+    created = response.json()
+    assert [
+        {"fieldId": c["fieldId"], "value": c["value"]} for c in created["values"]
+    ] == values
+    added_id = add_optional("later", 2)
+    url = record_url(base, created)
+    params = {"datasetGeneration": generation, "recordKeyType": "uuid"}
+    assert client.get(url, params=params).json() == created
+    changed = client.patch(
+        url,
+        headers=key(),
+        json={
+            **params,
+            "expectedContentRevision": 1,
+            "values": [{"fieldId": added_id, "value": None}],
+        },
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["contentRevision"] == 2
+    assert {c["fieldId"]: c["value"] for c in changed.json()["values"]} == {
+        **{c["fieldId"]: c["value"] for c in values},
+        added_id: None,
+    }
+    operation_url = f"/api/v1/projects/{project}/operations/by-idempotency-key/{identity['Idempotency-Key']}"
+    assert client.get(operation_url).json()["result"] == created
+    assert (
+        client.post(base + "/records", headers=identity, json=payload).json() == created
+    )
+
+    # Simulate a pre-fix persisted result, which filled an absent cell with null.
+    legacy = {
+        **created,
+        "values": [
+            {"fieldId": field_id, "value": None, "source": "local", "readable": True}
+        ],
+    }
+    with client.app.state.session_factory() as session:
+        operation = session.scalar(
+            select(ProjectOperationRow).where(
+                ProjectOperationRow.idempotency_key == identity["Idempotency-Key"]
+            )
+        )
+        operation.result = legacy
+        session.commit()
+    assert client.get(operation_url).json()["result"] == legacy
+    replay = client.post(base + "/records", headers=identity, json=payload)
+    assert replay.status_code == 200 and replay.json() == legacy
+    assert client.get(url, params=params).json() == changed.json()
+    with client.app.state.session_factory() as session:
+        operation = session.scalar(
+            select(ProjectOperationRow).where(
+                ProjectOperationRow.idempotency_key == identity["Idempotency-Key"]
+            )
+        )
+        assert operation.result == legacy
 
 
 def test_record_http_persists_typed_values_nulls_and_original_operation(catalog):

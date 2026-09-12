@@ -74,6 +74,76 @@ def ctx(tmp_path):
     factory.dispose()
 
 
+@pytest.mark.parametrize("explicit_null", [False, True])
+def test_record_snapshots_preserve_missing_cells_and_operation_history(
+    ctx, explicit_null
+):
+    service, catalog, factory, project, table, required = ctx
+    tid, generation = table["tableId"], table["datasetGeneration"]
+    required_id = required["ref"]["fieldId"]
+
+    def add_optional(name, revision):
+        return catalog.create_field(
+            project,
+            tid,
+            uid(),
+            {
+                "definition": {
+                    "key": name,
+                    "name": name,
+                    "type": "string",
+                    "required": False,
+                    "validation": {},
+                },
+                "expectedTableRevision": revision,
+                "sourceColumnPolicy": "localOnly",
+            },
+        )[0]["field"]["ref"]["fieldId"]
+
+    optional_id = add_optional("optional", 2)
+    values = [{"fieldId": required_id, "value": "one"}]
+    if explicit_null:
+        values.append({"fieldId": optional_id, "value": None})
+    payload = {"datasetGeneration": generation, "values": values}
+    idem = uid()
+    created, operation, _ = service.create(project, tid, idem, payload)
+    assert {cell["fieldId"]: cell["value"] for cell in created["values"]} == {
+        cell["fieldId"]: cell["value"] for cell in values
+    }
+    encoded = encode_record_key(RecordKey("uuid", created["ref"]["recordKey"]["value"]))
+    added_id = add_optional("later", 3)
+    assert service.get(project, tid, generation, encoded, "uuid") == created
+    changed, _, _ = service.update(
+        project,
+        tid,
+        encoded,
+        uid(),
+        {
+            "datasetGeneration": generation,
+            "recordKeyType": "uuid",
+            "expectedContentRevision": 1,
+            "values": [{"fieldId": added_id, "value": None}],
+        },
+    )
+    assert changed["contentRevision"] == 2
+    assert {cell["fieldId"]: cell["value"] for cell in changed["values"]} == {
+        **{cell["fieldId"]: cell["value"] for cell in values},
+        added_id: None,
+    }
+    replayed, old_operation, replay = service.create(project, tid, idem, payload)
+    assert replay and replayed == created and old_operation == operation
+    with factory() as session:
+        assert (
+            session.get(ProjectOperationRow, operation.operation_id).result == created
+        )
+        evidence = session.scalar(
+            select(DataChangeRow).where(
+                DataChangeRow.operation_id == operation.operation_id
+            )
+        )
+        assert evidence.after == created
+
+
 def test_create_get_update_replay_and_independent_revisions(ctx):
     service, _, _, project, table, field = ctx
     field_id = field["ref"]["fieldId"]

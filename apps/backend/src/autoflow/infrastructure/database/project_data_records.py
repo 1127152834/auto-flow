@@ -331,11 +331,12 @@ class SqlAlchemyProjectDataRecords:
             "values": [
                 {
                     "fieldId": field.id,
-                    "value": row.values_json.get(field.id),
+                    "value": row.values_json[field.id],
                     "source": "formula" if field.formula else "local",
                     "readable": True,
                 }
                 for field in fields
+                if field.id in row.values_json
             ],
             "recordSlots": row.record_slots,
             "statusId": row.status_id,

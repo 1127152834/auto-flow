@@ -65,3 +65,11 @@ HTTP独立复审发现可省略状态PATCH字段在OpenAPI中错误声明可null
 真实字段更新在同一BEGIN IMMEDIATE中执行幂等查询、生命周期、表/字段CAS、影响事实重验和字段/Operation/change提交。旧影响确认在记录被修改、新增或删除后返回412；新确认不得越过公式、身份类型、已有值兼容性和唯一键约束。无变化编辑不推进修订；记录原值及三类记录修订保持不变。14项实际消费者测试覆盖两线程竞争、提交中途失败全回滚、旧代次和历史重放。独立规格审查后补充消费者异常测试，最终工程复核通过。
 
 A2d/A2e真实HTTP分别由不同于实现者的智能体审查，规格及工程最终通过；GET/POST/PATCH记录、PUT状态、POST mutation-impact 和 PATCH字段连通真实SQLite。生成类型仅覆盖已实现handler，null/date/bool投影与操作结果查询通过5项新HTTP测试。列表查询与正式页面不在这些接口验收范围。
+
+## A2d 缺项与null投影修复（2026-09-13）
+
+A2f设计复审发现先前记录测试未覆盖的缺陷：共享_snapshot对未存储字段调用get，输出伪造null，违反冻结contracts.md RecordSnapshot规则。修复只输出实际存在fieldId；显式null保留，PATCH missing→null仍推进contentRevision。四个新增参数化用例先RED再GREEN，涵盖新增无回填字段、GET/create、原Operation/change不改写及模拟旧格式历史结果原样查询/重放。21项记录集成/HTTP测试通过；扩大相关107项通过。独立规格与工程复核通过。原通过报告保留为当时范围证据，不作为该此前遗漏边界的证明。
+
+## A3b 目录客户端恢复（2026-09-13）
+
+catalog-api提供真实字段/状态查询、字段影响预检和四项命令；恢复时核对project、key、kind、action及完整资源身份，只有明确OPERATION_NOT_FOUND才能原key/原请求快照重发一次。请求体复制防止草稿在等待期间改变重发载荷。17项新客户端测试，连同原表API共25项通过；TypeScript/ESLint通过，独立规格及工程审查通过。接口不直接写缓存/Toast，正式页面仍负责服务实例和会话隔离。
