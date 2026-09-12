@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 未来 Alembic 版本脚本；此时仅保留目录，尚未初始化 Alembic。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已有0001–0004增量迁移及0003汇合；旧“尚未初始化”描述 superseded。Studio的0005已在主目录b2e95b3提交；本设计checkout尚未合入，PM0只读记录。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -177,7 +177,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理和工作流执行模块；后续确认范围后再扩展。已有自动化研究文档仍保留。
+- 项目管理范围已获完整确认；PM0只创建契约和验收资产，业务目录按对应里程碑首次真实交付时建立，禁止整片空骨架。Studio维护唯一文档与执行核心。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -237,3 +237,17 @@ reference/
 - `adapters/http/proxy_remote.py`：位置与轮换 HTTP 路由和安全操作摘要；旧 placeholders 已移除。
 - `renderer/domains/proxies/components/{LocationPicker,RotationScheduleForm,ProxyOperationStatus,ProxyRemoteControls}.tsx`：独立领域组件，由现有详情抽屉组合；`hooks/useProxyRemoteControls.ts` 处理读取、命令状态、限流和恢复。
 - 验证证据及尚未执行的实网写入项目见 [远程控制验收](migration/proxy-remote-controls-verification.md)。
+
+## 项目管理 PM0（2026-09-13，confirmed 实施范围）
+
+- `docs/project-management/design/`：906deda完整设计与历史验证，保持不变；确认状态由`.ai/decisions/`说明。
+- `docs/project-management/implementation/contracts.md`：领域对象、版本、18项执行端口、事务和恢复规范；不是当前Python接口实现。
+- `docs/project-management/implementation/api-contracts.md`：HTTP投影、命令查询、核心事件及桌面IPC，真实handler与生成类型按阶段交付。
+- `docs/project-management/implementation/fixtures.json`：合成领域样例和描述性工作流，非可执行Studio IR。
+- `docs/project-management/implementation/{coverage.json,execution-ledger.md}`：全部功能/规则和30包的责任、依赖、计划测试及实际验收状态。
+- `docs/project-management/implementation/verify-pm0.py`：只读文档、引用、编号与样例核验；不导入业务模块、不运行数据库或平台验收。
+- 后端目标领域为projects/project_data/project_automations/project_runs/environments；前端目标为projects/project-data/project-automations/project-runs/environments；具体F0–F9与组件文件见[总里程碑文件职责](superpowers/plans/2026-09-13-project-management-milestones.md)。均在首次真实功能包创建，不代表本次存在。
+- `apps/desktop/src/renderer/shared/components/ui/`仍是统一控件正式落点；UI独立分支1fb58e1由PM1集成，不新建packages/ui workspace。
+- 主目录b2e95b3已提交workflows文档CRUD和Studio窗口，PM0没有复制或修改。核心Run、事件补读、检查点按所需能力门槛接入，不从Profile测试浏览器扩展第二引擎。
+
+[PM0执行卡](superpowers/plans/2026-09-13-project-management-pm0.md)和[实际基线](project-management/implementation/current-baseline.md)是后续开工入口。

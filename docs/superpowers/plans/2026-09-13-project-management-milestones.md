@@ -11,7 +11,7 @@
 **规格：** [完整设计入口](../../project-management/design/README.md)、[功能结构](../../project-management/design/functional-structure.md)、[数据规则](../../project-management/design/data-and-state-rules.md)、[传递契约](../../project-management/design/data-flow-and-contracts.md)、[执行与环境](../../project-management/design/execution-and-environment.md)。用户于 2026-09-13 整体确认；[确认记录](../../../.ai/decisions/2026-09-13-project-management-design-approved.md)明确本计划使用的推荐默认。
 
 - 日期：2026-09-13。
-- 状态：**里程碑计划 proposed；设计已确认；业务实施尚未开始。**
+- 状态：**里程碑计划 confirmed；用户已授权PM0实施；业务代码尚未开始。**
 - 粒度：本文件确定全部里程碑、交付包、文件归属、依赖和验收；每个交付包开工时按 `writing-plans` 展开带实际测试代码和逐步命令的执行卡。执行卡不得改变本计划的业务规则或删掉完整范围。
 - 索引：[48 项功能与规则覆盖表](../../project-management/implementation/coverage.md)、[机器可核验映射](../../project-management/implementation/coverage.json)、[代码与依赖基线](../../project-management/implementation/current-baseline.md)。
 
@@ -119,9 +119,9 @@ Studio 端口、节点配置、结束节点组件与编辑器窗口由 Studio �
 
 **文件：** F0；更新 `docs/PROJECT_STRUCTURE.md` 与本覆盖表；在实施卡中登记 F9 迁移归属。此阶段不创建无消费者的业务骨架。
 
-- [ ] **PM0-A 基线与接口卡**：记录主线、UI、Studio 实际提交；统一 Project/Automation/RecordRef/FieldRef、独立 revision、TaskInputSnapshot、Batch/CoreRun/Operation、EnvironmentRef 和 capability 绑定。XE-C01–C18 写清输入、输出、错误、事务参与、查询身份和所有者。
-- [ ] **PM0-B 传输与集成卡**：在 `api-contracts.md` 明确 `/api/v1/projects` 及其表、自动化、批次、环境子资源的路由表，核心 Run 继续引用 Studio 路由。确定命令查询与 SSE 的序号/重连规则、文件授权 IPC、Alembic 顺序、生成类型的集成人。OpenAPI 与真实 handler 同交付，不发布空端点。
-- [ ] **PM0-C 验收卡与并行边界**：将本覆盖表全部 ID 对应到交付包及测试文件；把 FX-01–07 和代表工作流的数据写成可复用 fixture 定义；登记哪个组件、数据 schema 或核心接口只能由一个负责人修改。
+- [x] **PM0-A 基线与接口卡**：记录主线、UI、Studio 实际提交；统一 Project/Automation/RecordRef/FieldRef、独立 revision、TaskInputSnapshot、Batch/CoreRun/Operation、EnvironmentRef 和 capability 绑定。XE-C01–C18 写清输入、输出、错误、事务参与、查询身份和所有者。
+- [x] **PM0-B 传输与集成卡**：在 `api-contracts.md` 明确 `/api/v1/projects` 及其表、自动化、批次、环境子资源的路由表，核心 Run 继续引用 Studio 路由。确定命令查询与 SSE 的序号/重连规则、文件授权 IPC、Alembic 顺序、生成类型的集成人。OpenAPI 与真实 handler 同交付，不发布空端点。
+- [x] **PM0-C 验收卡与并行边界**：将本覆盖表全部 ID 对应到交付包及测试文件；把 FX-01–07 和代表工作流的数据写成可复用 fixture 定义；登记哪个组件、数据 schema 或核心接口只能由一个负责人修改。
 
 **验收：** 引用、核心状态和对象命名无冲突；业务规则没有开放空项；18 项执行契约及全部功能/规则都有里程碑。文档示例中的类型均有定义，拟新增文件与现有文件区分清楚。PM0 不计算任何业务测试“通过”。
 
@@ -351,4 +351,4 @@ PM9 还需在安装包内运行项目冒烟；沿现有CI逐平台查找sidecar�
 
 不预设未经验证的日历工期。先完成PM0登记依赖，再用PM2真实数据切片与PM3核心接入的实际速度估算余下排期。外部核心或测试资源阻塞时，登记“阻塞对象＋所需能力＋责任人＋可并行工作”；不能把阻塞的功能从最终范围中删除。
 
-本轮交付止于里程碑计划。实施建议继续采用子智能体驱动和阶段验收；如改为单会话执行，使用 `executing-plans`，保持相同交付包和验收门。
+2026-09-13状态更新：本总计划已获实施授权，当前按[PM0执行卡](2026-09-13-project-management-pm0.md)落地契约与实施基线；用户PM0验收后再进入PM1。原规划阶段的核验记录保留历史来源，不作为业务通过证据。
