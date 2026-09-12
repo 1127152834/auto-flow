@@ -164,7 +164,8 @@ reference/
 - `application/proxies/facade.py`：事务边界与代理用例入口；HTTP adapter 不直接构造仓储。
 - `infrastructure/database/proxy_models.py`：代理扩展 ORM；复用现有 `proxies` / `proxy_pools` 的主键，不改写 `models.py` 中浏览器资源模型。
 - `infrastructure/database/proxies.py`：代理 SQLAlchemy 仓储与 Unit of Work。
-- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输；真实返回字段未核验时拒绝创建投影。
+- `providers/proxy/proxypanel.py`：固定官方地址的只读 HTTP 传输，验证真实列表/分协议端点/到期字段/按需凭据；未知列表包装拒绝更新投影。
+- `application/proxies/credential_loader.py`：按授权操作读取数据面凭据，检查连接/投影版本与端点一致性，只返回内存值，供探测和 host-only 复制复用。
 - `providers/proxy/probe.py`：经过指定代理的固定 HTTPS 健康探针。
 - `domain/credentials.py` 与 `infrastructure/credentials/system.py`：原生系统凭据端口和适配器，供内核模块复用。
 - `bootstrap/proxies.py`：代理服务、数据库、Provider、凭据与 HTTP 装配。

@@ -14,3 +14,5 @@
 - 2026-09-12（confirmed，来源：用户合并指令与隔离合并测试）：模型与代理迁移通过0003_merge_proxy_models汇合；不得改写两边已存在的0002版本。接入浏览器客户端06153ca及代理预算修复4a91407后，304个后端、128个前端测试通过，合并边界见docs/migration/model-management-baseline-merge.md。
 
 - 2026-09-12（confirmed，来源：浏览器计划 Task1–10 独立复审及源代码）：浏览器 UI 使用 desktop shared shadcn/Radix + Tailwind、领域组件、RHF/Zod；查询上下文统一 ApiProvider。同一工作区重连保留编辑树，实际换目录才重置。CloakBrowser wrapper 固定0.5.9，只有其内核能力；后端 worker 处理下载与取消，License 使用共享系统凭据存储。最终页面/平台状态见 docs/migration/browser-management-validation.md。
+
+- 2026-09-12（confirmed，来源：授权实网、脱敏 fixture 和 CUA）：ProxyPanel 列表/凭据/到期字段已接通；SOCKS5 检测通过，HTTP CONNECT 实网超时。数据面密码按需取用且不落库，API Key 保留系统存储。旧“列表一律拒绝”的限制 superseded；远程管理写操作仍未实现。见 docs/migration/proxypanel-live-verification.md。

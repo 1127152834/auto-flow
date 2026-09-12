@@ -56,7 +56,7 @@ class SyncService:
                 stale=False,
                 revision=current.revision + 1 if current else 0,
                 generation=generation,
-                capabilities=current.capabilities if current else unavailable_capabilities(),
+                capabilities=item.capabilities or (current.capabilities if current else unavailable_capabilities()),
                 created_at=current.created_at if current else now,
                 updated_at=now,
                 reference_count=current.reference_count if current else 0,

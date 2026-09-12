@@ -1,13 +1,24 @@
 # ProxyPanel API 与开发契约
 
 - 日期：2026-09-12
-- 状态：proposed；供规格审查，不代表接口已实现
+- 状态：部分 confirmed；下方实时契约已验证，其余接口清单仍为 proposed，不代表已实现
 - 关联：[设计方案](../superpowers/specs/2026-09-12-proxy-management-design.md)、[实施计划](../superpowers/plans/2026-09-12-proxy-management-implementation.md)
 - 来源：[Developers](https://proxypanel.io/developers)、[登录后使用指南](https://proxypanel.io/docs)、[产品页](https://proxypanel.io/)、[旧版文档](https://proxypanel.io/documentation)
 
 ## 1. 证据与当前可交付程度
 
-已通过官方页面确认能力及新 API 路径；**没有真实 API Key 调用记录或 live response fixture**。下表的外部路径是文档依据，不是已经联调通过的契约。外部 JSON 字段、状态枚举、分页、配额、错误结构和异步完成语义，必须由真实响应确认。
+2026-09-12 更新：旧“没有真实调用/fixture”结论已 superseded。列表、凭据、到期字段已完成真实响应核验；SOCKS5 数据面通过实网，HTTP CONNECT 超时。范围和实测见 [验收记录](../migration/proxypanel-live-verification.md)。下方尚未列为实时契约的接口仍只是设计清单。
+
+### 当前实时契约（fixture-verified）
+
+- GET /proxies：HTTP 200，根对象仅有 proxies 数组。已观察账户返回 6 条，与网页一致，无分页信息；未知包装、分页扩展、重复 ID 或非法字段会拒绝更新本地投影，不能把不完整数据当成删除依据。
+- id 为稳定字符串；label 是远程名称；state 已观察 active/expired。未知状态保留展示但不开放凭据使用。
+- location.city/state_code/carrier 映射位置；last_ip 映射出口 IP；connection.protocols/http_port/socks5_port/host 映射分协议端点，不能把通用 port 套到两种协议。expires_at 是带时区的订阅截止时间，缺失留空。
+- GET /proxies/{id}/credentials：HTTP 200，username/password/host/http_port/socks5_port。只按已授权复制/检测需求读取；不跟随响应 URL。数据面认证值只在内存使用，renderer 读取接口仅返回可用性。
+- 成功同步开启 remote_status、subscription_expiry，以及 active 且有端点的 credentials capability；其余远程 capability 不随列表成功自动开启。
+- 前端默认探测 SOCKS5（若存在），可显式选择 HTTP；现有 API 请求仍接受 protocol 枚举，省略字段的 HTTP 默认值保持向后兼容。
+
+脱敏样本及 synthetic 边界见 `apps/backend/tests/fixtures/proxypanel/README.md`。
 
 证据分开记录，不能混用：
 
@@ -183,4 +194,4 @@ B0 普通只读采样限列表/详情已有的 credential_available 等元信息
 
 必须覆盖：空/非空列表、两页列表（若支持）、详情缺可选字段、未知状态、到期字段缺失/有效/无效、地点、轮换、白名单、用量/余额缺失、凭据轮换的一次性结果、401/403/404/409/422/429/5xx、网络超时、写入结果不明。缺少真实场景时 synthetic 样例单独标识，不伪称现场验证。
 
-当前交付是文字契约与样本要求。实际 OpenAPI/Pydantic、生成的 TypeScript 类型、Provider adapter、夹具与测试代码统一在用户批准实施后编写。
+上文为最初样本验收清单；并非每种外部场景均已实测。实际 OpenAPI、生成客户端、列表/凭据 Provider、脱敏夹具和回归测试现已交付；远程写入与高级读取依然按各自能力单独核验。

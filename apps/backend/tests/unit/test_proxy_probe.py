@@ -143,7 +143,7 @@ async def test_probe_timeout_returns_a_fixed_error_without_credentials():
     assert result.exit_ip is None
     assert result.error == {
         "code": "PROXY_PROBE_FAILED",
-        "message": "通过代理的 HTTPS 检测失败，请检查端点与凭据",
+        "message": "HTTP 代理 HTTPS 检测超时，请检查网络或尝试另一协议",
     }
     assert "proxy-user" not in str(result)
     assert "proxy-secret" not in str(result)

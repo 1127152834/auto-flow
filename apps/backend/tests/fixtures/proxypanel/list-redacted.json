@@ -1,0 +1,38 @@
+{
+  "proxies": [
+    {
+      "object": "proxy",
+      "id": "pp-test-1",
+      "label": "Test proxy",
+      "state": "active",
+      "last_ip": "8.8.8.8",
+      "last_ip_at": "2030-01-01T00:00:00Z",
+      "location": {
+        "country_code": "US",
+        "state_code": "FL",
+        "city": "Test City",
+        "carrier": "Verizon",
+        "timezone": "America/New_York"
+      },
+      "location_generation": 340,
+      "location_updated_at": "2030-01-01T00:00:00Z",
+      "connection": {
+        "host": "proxy.example.test",
+        "port": 9093,
+        "protocols": [
+          "socks5",
+          "http"
+        ],
+        "username": "test-user",
+        "credentials_url": "/api/v1/proxies/pp-test-1/credentials",
+        "socks5_port": 9093,
+        "http_port": 8083
+      },
+      "credential_generation": 2,
+      "started": true,
+      "pending_minutes": null,
+      "expires_at": "2030-01-01T00:00:00Z",
+      "auto_renew": false
+    }
+  ]
+}

@@ -233,8 +233,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Unavailable Credentials */
-        get: operations["unavailable_credentials_api_v1_proxies__projection_id__credentials_get"];
+        /** Get Credentials Metadata */
+        get: operations["get_credentials_metadata_api_v1_proxies__projection_id__credentials_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3147,7 +3147,7 @@ export interface operations {
             };
         };
     };
-    unavailable_credentials_api_v1_proxies__projection_id__credentials_get: {
+    get_credentials_metadata_api_v1_proxies__projection_id__credentials_get: {
         parameters: {
             query?: never;
             header?: never;

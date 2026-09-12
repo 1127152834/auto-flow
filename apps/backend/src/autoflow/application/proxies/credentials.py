@@ -9,6 +9,7 @@ from autoflow.domain.proxies.errors import (
     CredentialStoreError,
     ProxyNotFoundError,
 )
+from autoflow.domain.proxies.models import Projection
 from autoflow.domain.proxies.ports import ProxyRepository
 
 
@@ -39,6 +40,20 @@ def resolve_proxy_credential(
             raise TypeError
     except (CredentialStoreUnavailableError, ValueError, TypeError, UnicodeError):
         raise CredentialStoreError("无法读取代理凭据") from None
+    return format_proxy_credential(projection, username, password, protocol=protocol, format=format)
+
+
+def format_proxy_credential(
+    projection: Projection,
+    username: str,
+    password: str,
+    *,
+    protocol: Literal["http", "socks5"],
+    format: Literal["username", "password", "url"],
+) -> str:
+    endpoint = projection.http_endpoint if protocol == "http" else projection.socks5_endpoint
+    if endpoint is None or not projection.credential_available:
+        raise CapabilityUnavailableError("此代理的凭据尚不可用")
     if format == "username":
         return username
     if format == "password":

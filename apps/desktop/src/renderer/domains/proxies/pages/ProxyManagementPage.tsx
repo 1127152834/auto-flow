@@ -89,7 +89,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         canCopyCredentials={state.canCopyCredentials}
         copying={state.copying}
         onOpenChange={(open) => { if (!open) state.closeProxy() }}
-        onProbe={(proxy) => void state.probe(proxy)}
+        onProbe={(proxy, protocol) => void state.probe(proxy, protocol)}
         onUpdateMetadata={state.updateProxy}
         onCopyCredentials={(proxy, protocol, format) => void state.copyCredentials(proxy, protocol, format)}
       />

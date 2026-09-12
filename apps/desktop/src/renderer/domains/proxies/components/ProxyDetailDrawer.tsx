@@ -28,7 +28,7 @@ type ProxyDetailDrawerProps = {
   canCopyCredentials?: boolean
   copying?: string
   onOpenChange: (open: boolean) => void
-  onProbe: (proxy: ProxyView) => void
+  onProbe: (proxy: ProxyView, protocol?: 'http' | 'socks5') => void
   onUpdateMetadata: (proxy: ProxyView, draft: ProxyMetadataDraft) => Promise<void>
   onCopyCredentials: (proxy: ProxyView, protocol: 'http' | 'socks5', format: 'username' | 'password' | 'url') => void
   onChangeIp?: (proxy: ProxyView) => void
@@ -42,13 +42,14 @@ function verifiedWrite(item?: Capability): boolean {
 export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy = false, retryAfterSeconds = 0, canCopyCredentials = false, copying, onOpenChange, onProbe, onUpdateMetadata, onCopyCredentials, onChangeIp, onOpenLocations }: ProxyDetailDrawerProps) {
   const [nameOverride, setNameOverride] = useState(proxy?.name_override ?? '')
   const [enabled, setEnabled] = useState(proxy?.enabled ?? false)
-  const [protocol, setProtocol] = useState<'http' | 'socks5'>(proxy?.http_endpoint ? 'http' : 'socks5')
+  const [protocol, setProtocol] = useState<'http' | 'socks5'>(proxy?.socks5_endpoint ? 'socks5' : 'http')
   useEffect(() => {
     if (!proxy) return
     setNameOverride(proxy.name_override ?? '')
     setEnabled(proxy.enabled)
-    setProtocol(proxy.http_endpoint ? 'http' : 'socks5')
   }, [proxy])
+  const hasSocks5 = Boolean(proxy?.socks5_endpoint)
+  useEffect(() => { setProtocol(hasSocks5 ? 'socks5' : 'http') }, [proxy?.id, hasSocks5])
   if (!proxy) return null
   const capabilities = proxy.capabilities ?? []
   const changeIp = capability(capabilities, 'change_ip')
@@ -78,7 +79,11 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="overview" className="grid gap-4">
             <section className="flex flex-col gap-4 rounded-card border border-line p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2"><HealthPill health={proxy.health} /><StatusPill>{proxy.remote_status || '远程状态未知'}</StatusPill></div>
-              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
+              <Select aria-label="检测协议" value={protocol} disabled={probing} onChange={event => setProtocol(event.target.value as 'http' | 'socks5')}>
+                {proxy.socks5_endpoint && <option value="socks5">SOCKS5</option>}
+                {proxy.http_endpoint && <option value="http">HTTP</option>}
+              </Select>
+              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
             <DetailSection title="本地设置">
               <label className="grid gap-2 text-sm text-ink">显示名称<Input value={nameOverride} maxLength={120} placeholder={proxy.name} onChange={(event) => setNameOverride(event.target.value)} /></label>
@@ -93,9 +98,11 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
               <EndpointRow label="SOCKS5 代理" endpoint={proxy.socks5_endpoint} />
             </DetailSection>
             <DetailSection title="健康状态">
+              <p className="text-xs text-muted">显示最近一次所选协议的 HTTPS 检测结果，不代表所有协议同时可用。</p>
               <DetailRow label="探测来源" value={proxy.health.source === 'local_probe' ? 'AutoFlow 本地 HTTPS 探测' : proxy.health.source === 'provider_probe' ? 'Provider 探测' : '未检测'} />
               <DetailRow label="请求耗时" value={proxy.health.latency_ms == null ? '—' : `${Math.round(proxy.health.latency_ms)} ms`} />
               <DetailRow label="上次检测" value={formatTime(proxy.health.checked_at)} />
+              <DetailRow label="到期时间" value={formatTime(proxy.subscription_expires_at)} />
               <DetailRow label="上次同步" value={formatTime(proxy.last_synced_at)} />
               {proxy.health.error ? <p className="rounded-control bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{proxy.health.error.message}</p> : null}
             </DetailSection>
@@ -126,7 +133,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           </TabsContent>
           <TabsContent value="credentials" className="grid gap-4">
             <DetailSection title="代理凭据">
-              <DetailRow label="凭据状态" value={proxy.credential_available ? '已保存' : '不可用'} />
+              <DetailRow label="凭据状态" value={proxy.credential_available ? '可用，操作时从 ProxyPanel 获取' : '不可用'} />
               <Select aria-label="凭据协议" value={protocol} onChange={(event) => setProtocol(event.target.value as 'http' | 'socks5')}>
                 {proxy.http_endpoint ? <option value="http">HTTP</option> : null}
                 {proxy.socks5_endpoint ? <option value="socks5">SOCKS5</option> : null}
