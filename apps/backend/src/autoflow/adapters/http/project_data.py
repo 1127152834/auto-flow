@@ -14,6 +14,7 @@ from .project_data_catalog_schemas import (
     DataFieldCreate,
     DataFieldDirectory,
     DataFieldMutationView,
+    DataFieldPatch,
     DataStatusCreate,
     DataStatusDirectory,
     DataStatusPatch,
@@ -207,5 +208,26 @@ def project_data_router(
             body.model_dump(by_alias=True, exclude_unset=True),
         )
         return result["status"]
+
+    @router.patch(
+        "/{tableId}/fields/{fieldId}",
+        response_model=DataFieldMutationView,
+        responses=browser_error_responses(401, 404, 409, 410, 412, 422, 423),
+    )
+    def update_field(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        fieldId: CanonicalId,
+        body: DataFieldPatch,
+        idempotency_key: Key,
+    ):
+        result, _, _ = catalog.update_field(
+            str(projectId),
+            str(tableId),
+            str(fieldId),
+            str(idempotency_key),
+            body.model_dump(by_alias=True),
+        )
+        return {"field": result["field"], "tableRevision": result["tableRevision"]}
 
     return router

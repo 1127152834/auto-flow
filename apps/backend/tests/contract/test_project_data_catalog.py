@@ -163,21 +163,46 @@ def test_catalog_http_input_security_and_quiesce(catalog):
 
 def test_status_patch_optional_properties_are_not_nullable(catalog):
     client, _, _, base = catalog
-    created = client.post(base + "/statuses", headers=key(), json={
-        "name": "Ready", "color": "#abcdef", "order": 0, "expectedTableRevision": 1,
-    }).json()
+    created = client.post(
+        base + "/statuses",
+        headers=key(),
+        json={
+            "name": "Ready",
+            "color": "#abcdef",
+            "order": 0,
+            "expectedTableRevision": 1,
+        },
+    ).json()
     for field in ("name", "color", "order"):
-        invalid = client.patch(base + "/statuses/" + created["statusId"], headers=key(), json={
-            field: None, "expectedTableRevision": 2, "expectedStatusRevision": 1,
-        })
+        invalid = client.patch(
+            base + "/statuses/" + created["statusId"],
+            headers=key(),
+            json={
+                field: None,
+                "expectedTableRevision": 2,
+                "expectedStatusRevision": 1,
+            },
+        )
         assert invalid.status_code == 422
-    schema = client.get("/openapi.json").json()["components"]["schemas"]["DataStatusPatch"]
-    for field, expected_type in (("name", "string"), ("color", "string"), ("order", "integer")):
+    schema = client.get("/openapi.json").json()["components"]["schemas"][
+        "DataStatusPatch"
+    ]
+    for field, expected_type in (
+        ("name", "string"),
+        ("color", "string"),
+        ("order", "integer"),
+    ):
         assert field not in schema["required"]
         assert schema["properties"][field]["type"] == expected_type
         assert "default" not in schema["properties"][field]
-    updated = client.patch(base + "/statuses/" + created["statusId"], headers=key(), json={
-        "name": "Done", "expectedTableRevision": 2, "expectedStatusRevision": 1,
-    })
+    updated = client.patch(
+        base + "/statuses/" + created["statusId"],
+        headers=key(),
+        json={
+            "name": "Done",
+            "expectedTableRevision": 2,
+            "expectedStatusRevision": 1,
+        },
+    )
     assert updated.status_code == 200 and updated.json()["name"] == "Done"
     assert updated.json()["color"] == "#abcdef" and updated.json()["order"] == 0

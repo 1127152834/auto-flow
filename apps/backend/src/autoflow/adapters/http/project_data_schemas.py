@@ -35,7 +35,9 @@ class TableSyncSummary(ApiModel):
     ]
     pending_count: int = Field(ge=0)
     unknown_count: int = Field(ge=0)
-    last_confirmed_at: datetime | None = Field(default=None, exclude_if=lambda value: value is None)
+    last_confirmed_at: datetime | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
 
 class TableSlotDefinition(ApiModel):

@@ -1178,6 +1178,58 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables/{tableId}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_projects__projectId__tables__tableId__records_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/records/{recordKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_api_v1_projects__projectId__tables__tableId__records__recordKey__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update */
+        patch: operations["update_api_v1_projects__projectId__tables__tableId__records__recordKey__patch"];
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/records/{recordKey}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Status */
+        put: operations["status_api_v1_projects__projectId__tables__tableId__records__recordKey__status_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tables": {
         parameters: {
             query?: never;
@@ -1265,6 +1317,40 @@ export type paths = {
         head?: never;
         /** Update Status */
         patch: operations["update_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__patch"];
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/fields/{fieldId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Field */
+        patch: operations["update_field_api_v1_projects__projectId__tables__tableId__fields__fieldId__patch"];
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/mutation-impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_projects__projectId__mutation_impact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/kernels/events": {
@@ -1511,6 +1597,29 @@ export type components = {
              */
             generatedAt: string;
         };
+        /** DataCellView */
+        DataCellView: {
+            /** Fieldid */
+            fieldId: string;
+            /** Value */
+            value: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "local" | "remote" | "formula";
+            /** Readable */
+            readable: boolean;
+            /** Error */
+            error?: string;
+        };
+        /** DataCellWrite */
+        DataCellWrite: {
+            /** Fieldid */
+            fieldId: string;
+            /** Value */
+            value: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+        };
         /** DataDateScalar */
         DataDateScalar: {
             /**
@@ -1553,6 +1662,16 @@ export type components = {
             field: components["schemas"]["DataFieldView"];
             /** Tablerevision */
             tableRevision: number;
+        };
+        /** DataFieldPatch */
+        DataFieldPatch: {
+            definition: components["schemas"]["DataFieldWrite"];
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Expectedfieldrevision */
+            expectedFieldRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
         };
         /** DataFieldRef */
         DataFieldRef: {
@@ -1607,6 +1726,121 @@ export type components = {
             validation: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+        };
+        /** DataMutationBlocker */
+        DataMutationBlocker: {
+            /** Code */
+            code: string;
+            /** Resource */
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            /** State */
+            state: string;
+            /** Message */
+            message: string;
+        };
+        /** DataMutationImpact */
+        DataMutationImpact: {
+            /** Code */
+            code: string;
+            /** Resource */
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            /** Message */
+            message: string;
+            /** Blocking */
+            blocking: boolean;
+        };
+        /** DataRecordCreate */
+        DataRecordCreate: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Values */
+            values: components["schemas"]["DataCellWrite"][];
+        };
+        /** DataRecordKey */
+        DataRecordKey: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "text" | "integer" | "uuid";
+            /** Value */
+            value: string;
+        };
+        /** DataRecordPatch */
+        DataRecordPatch: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Values */
+            values: components["schemas"]["DataCellWrite"][];
+            /**
+             * Recordkeytype
+             * @enum {string}
+             */
+            recordKeyType: "text" | "integer" | "uuid";
+            /** Expectedcontentrevision */
+            expectedContentRevision: number;
+        };
+        /** DataRecordRef */
+        DataRecordRef: {
+            /** Projectid */
+            projectId: string;
+            /** Tableid */
+            tableId: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            recordKey: components["schemas"]["DataRecordKey"];
+        };
+        /** DataRecordSlot */
+        DataRecordSlot: {
+            /** Slotid */
+            slotId: string;
+            target: components["schemas"]["DataRecordRef"] | null;
+        };
+        /** DataRecordStatusWrite */
+        DataRecordStatusWrite: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /**
+             * Recordkeytype
+             * @enum {string}
+             */
+            recordKeyType: "text" | "integer" | "uuid";
+            /** Statusid */
+            statusId: string | null;
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+            /** Expectedfromstatusid */
+            expectedFromStatusId?: string | null;
+        };
+        /** DataRecordView */
+        DataRecordView: {
+            ref: components["schemas"]["DataRecordRef"];
+            /** Values */
+            values: components["schemas"]["DataCellView"][];
+            /** Recordslots */
+            recordSlots: components["schemas"]["DataRecordSlot"][];
+            /** Statusid */
+            statusId: string | null;
+            /** Currentenvironmentid */
+            currentEnvironmentId: string | null;
+            /** Contentrevision */
+            contentRevision: number;
+            /** Statusrevision */
+            statusRevision: number;
+            /** Linkrevision */
+            linkRevision: number;
+            /** Deleted */
+            deleted: boolean;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
         };
         /** DataStatusCreate */
         DataStatusCreate: {
@@ -1764,6 +1998,37 @@ export type components = {
             /** Expected Revision */
             expected_revision: number;
         };
+        /** FieldImpactReport */
+        FieldImpactReport: {
+            /** Impactrevision */
+            impactRevision: number;
+            target: components["schemas"]["FieldResourceLocator"];
+            /** Changedigest */
+            changeDigest: string;
+            /** Expectedrevisions */
+            expectedRevisions: {
+                [key: string]: number;
+            };
+            /** Impacts */
+            impacts: components["schemas"]["DataMutationImpact"][];
+            /** Blockers */
+            blockers: components["schemas"]["DataMutationBlocker"][];
+            /**
+             * Calculatedat
+             * Format: date-time
+             */
+            calculatedAt: string;
+        };
+        /** FieldImpactRequest */
+        FieldImpactRequest: {
+            /**
+             * Action
+             * @constant
+             */
+            action: "updateField";
+            target: components["schemas"]["FieldResourceLocator"];
+            change: components["schemas"]["DataFieldWrite"];
+        };
         /** FieldMutationResult */
         FieldMutationResult: {
             field: components["schemas"]["DataFieldView"];
@@ -1771,9 +2036,9 @@ export type components = {
             tableRevision: number;
             /**
              * Action
-             * @constant
+             * @enum {string}
              */
-            action: "create";
+            action: "create" | "update";
         };
         /** FieldResourceLocator */
         FieldResourceLocator: {
@@ -2732,7 +2997,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus";
+            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus";
             /**
              * Status
              * @constant
@@ -2741,9 +3006,9 @@ export type components = {
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
-            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"];
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["DataRecordView"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -2954,6 +3219,15 @@ export type components = {
             reference_count: number;
             /** Capabilities */
             capabilities?: components["schemas"]["Capability"][];
+        };
+        /** RecordResourceLocator */
+        RecordResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "record";
+            recordRef: components["schemas"]["DataRecordRef"];
         };
         /** RelocateRequest */
         RelocateRequest: {
@@ -7644,9 +7918,9 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus") | null;
+                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
-                resourceType?: ("project" | "table" | "field" | "status") | null;
+                resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
             };
             header?: never;
             path: {
@@ -7834,6 +8108,356 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_api_v1_projects__projectId__tables__tableId__records_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataRecordCreate"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordView"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_api_v1_projects__projectId__tables__tableId__records__recordKey__get: {
+        parameters: {
+            query: {
+                datasetGeneration: string;
+                recordKeyType: "text" | "integer" | "uuid";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_api_v1_projects__projectId__tables__tableId__records__recordKey__patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataRecordPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    status_api_v1_projects__projectId__tables__tableId__records__recordKey__status_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataRecordStatusWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRecordView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8445,6 +9069,170 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_field_api_v1_projects__projectId__tables__tableId__fields__fieldId__patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                fieldId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataFieldPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataFieldMutationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_api_v1_projects__projectId__mutation_impact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FieldImpactRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FieldImpactReport"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

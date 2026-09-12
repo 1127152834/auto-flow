@@ -71,7 +71,14 @@ class DataFieldMutationView(ApiModel):
 
 
 class FieldMutationResult(DataFieldMutationView):
-    action: Literal["create"]
+    action: Literal["create", "update"]
+
+
+class DataFieldPatch(ApiModel):
+    definition: DataFieldWrite
+    expected_table_revision: Revision
+    expected_field_revision: Revision
+    impact_revision: Revision
 
 
 class DataStatusView(ApiModel):

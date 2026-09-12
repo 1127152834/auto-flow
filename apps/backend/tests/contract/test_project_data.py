@@ -157,13 +157,27 @@ def test_table_http_cas_scope_and_openapi_are_real(tmp_path):
 
 def test_table_http_rejects_noncanonical_identity_strings(tmp_path):
     with TestClient(_app(tmp_path)) as client:
-        client.headers['x-autoflow-token'] = 'renderer'
-        p = client.post('/api/v1/projects', headers={'Idempotency-Key':str(uuid4())}, json={'name':'One'}).json()['projectId']
+        client.headers["x-autoflow-token"] = "renderer"
+        p = client.post(
+            "/api/v1/projects",
+            headers={"Idempotency-Key": str(uuid4())},
+            json={"name": "One"},
+        ).json()["projectId"]
         key = str(uuid4())
-        for raw_key in (key.upper(), key.replace('-', '')):
-            response = client.post(f'/api/v1/projects/{p}/tables', headers={'Idempotency-Key':raw_key}, json={'name':'Data'})
+        for raw_key in (key.upper(), key.replace("-", "")):
+            response = client.post(
+                f"/api/v1/projects/{p}/tables",
+                headers={"Idempotency-Key": raw_key},
+                json={"name": "Data"},
+            )
             assert response.status_code == 422
-        for raw_project in (p.upper(), p.replace('-', '')):
-            assert client.get(f'/api/v1/projects/{raw_project}/tables').status_code == 422
-        t = client.post(f'/api/v1/projects/{p}/tables', headers={'Idempotency-Key':key}, json={'name':'Data'}).json()['tableId']
-        assert client.get(f'/api/v1/projects/{p}/tables/{t.upper()}').status_code == 422
+        for raw_project in (p.upper(), p.replace("-", "")):
+            assert (
+                client.get(f"/api/v1/projects/{raw_project}/tables").status_code == 422
+            )
+        t = client.post(
+            f"/api/v1/projects/{p}/tables",
+            headers={"Idempotency-Key": key},
+            json={"name": "Data"},
+        ).json()["tableId"]
+        assert client.get(f"/api/v1/projects/{p}/tables/{t.upper()}").status_code == 422
