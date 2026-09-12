@@ -95,3 +95,9 @@ HTTP由主协调接入GET records集合、真实DataRecordPage和bootstrap；独
 记录查询与create/update/status直接使用真实生成DTO； typed记录键UTF8编码，原key、请求快照、完整RecordRef和历史结果恢复均校验。目录和记录两个消费者复用data-command，不新增操作框架；表资料客户端保持既有行为。
 
 独立审查通过真实createApiClient/fetch发现NaN/Infinity在JSON序列化时变为null的P1问题，三个实际客户端失败测试复现后修复为发送或恢复前拒绝非有限值。合法null与有限数字不变，目录默认值同样覆盖。独立规格→工程最终通过；主协调重新运行41项API测试通过。组件与记录页面尚未完成，不据此提升PM2业务验收。
+
+## C1c 标量编辑与C1e记录草稿（2026-09-13）
+
+C1c独立规格及工程闭合：四种类型与missing/null/空串分离，严格数字和日期格式，任意小数秒及显式offset保真，原始非法输入不隐藏dirty。新增真实label点击/Select打开/Escape焦点恢复验收；FormField自动注入id，原“缺少id”推断经实测否定，未重复添加无意义属性。9项测试通过。
+
+C1e纯record-draft经独立规格→工程审查通过，8项测试覆盖必填、码点、数字边界、原日期、仅变化字段、公式/身份/不可读字段、missing与null。额外探针验证required的0/false、受保护必填字段新增拒绝及100位小数秒。组件尚在独立实现，草稿测试不能代替记录页面。
