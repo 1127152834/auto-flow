@@ -1,3 +1,4 @@
+import { EmptyState } from './ui/empty-state'
 import type { ReactNode } from 'react'
 
 type StateProps = {
@@ -7,11 +8,5 @@ type StateProps = {
 }
 
 export function State({ title, description, action }: StateProps) {
-  return (
-    <section className="state" role="status" aria-live="polite">
-      <h1>{title}</h1>
-      {description ? <p>{description}</p> : null}
-      {action ? <div className="state__action">{action}</div> : null}
-    </section>
-  )
+  return <EmptyState title={title} description={description} action={action} />
 }

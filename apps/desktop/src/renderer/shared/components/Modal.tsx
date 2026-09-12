@@ -1,10 +1,11 @@
 import { X } from '@phosphor-icons/react/X'
 import { useId, useRef, type PropsWithChildren, type ReactNode } from 'react'
-import { Button } from './ui/button'
+import { IconButton } from './ui/icon-button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from './ui/dialog'
 import { cn } from '../lib/utils'
 
-type ModalProps = PropsWithChildren<{
+export type ModalProps = PropsWithChildren<{
+  placement?: 'dialog' | 'drawer'
   open: boolean
   onOpenChange(open: boolean): void
   title: string
@@ -22,7 +23,7 @@ const sizes = {
   large: 'max-w-5xl',
 }
 
-export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, placement = 'dialog' }: ModalProps) {
   const descriptionId = useId()
   const focusReturn = useRef<{ opener: HTMLElement | null; container: HTMLElement | null; content: HTMLElement | null }>({ opener: null, container: null, content: null })
 
@@ -36,8 +37,9 @@ export function Modal({ open, onOpenChange, title, description, children, footer
   return <Dialog open={open} onOpenChange={onOpenChange} busy={closeDisabled}>
     <DialogContent
       busy={closeDisabled}
+      data-placement={placement}
       aria-describedby={description ? descriptionId : undefined}
-      className={cn('max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0', sizes[size])}
+      className={cn('max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0', sizes[size], placement === 'drawer' && 'left-auto right-0 top-0 h-dvh max-h-dvh w-[min(94vw,44rem)] translate-x-0 translate-y-0 rounded-r-none')}
       onFocusCapture={(event) => captureReturnTarget(event.relatedTarget, event.currentTarget)}
       onOpenAutoFocus={(event) => {
         if (event.target instanceof HTMLElement) captureReturnTarget(document.activeElement, event.target)
@@ -66,9 +68,9 @@ export function Modal({ open, onOpenChange, title, description, children, footer
           {description ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </div>
         <DialogClose asChild>
-          <Button type="button" variant="ghost" disabled={closeDisabled} aria-label={closeDisabled ? '正在处理，请稍候' : '关闭'} title={closeDisabled ? '正在处理，请稍候' : '关闭'} className="h-9 w-9 shrink-0 p-0">
+          <IconButton type="button" variant="ghost" disabled={closeDisabled} aria-label={closeDisabled ? '正在处理，请稍候' : '关闭'} title={closeDisabled ? '正在处理，请稍候' : '关闭'} className="h-9 w-9 shrink-0 p-0">
             <X size={18} />
-          </Button>
+          </IconButton>
         </DialogClose>
       </header>
       <div role="region" aria-label={`${title}内容`} tabIndex={0} className={cn('min-h-0 overflow-y-auto px-6 py-5', variant === 'form' && 'bg-surface-subtle', variant === 'split' && 'grid gap-6 md:grid-cols-2', bodyClassName)}>

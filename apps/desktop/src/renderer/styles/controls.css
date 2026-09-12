@@ -159,3 +159,11 @@ textarea[data-af-control] { resize: vertical; }
   .af-scroll-thumb { background: ButtonText; }
   .af-scrollbar { background: Canvas; }
 }
+@keyframes af-overlay-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes af-overlay-out { to { opacity: 0; } }
+.af-popup-motion[data-state="open"], .af-tooltip-motion[data-state="delayed-open"], .af-tooltip-motion[data-state="instant-open"] { animation: af-overlay-in 150ms ease-out; }
+.af-popup-motion[data-state="closed"], .af-tooltip-motion[data-state="closed"] { animation: af-overlay-out 100ms ease-in; }
+:root[data-motion="reduce"] .af-popup-motion, :root[data-motion="reduce"] .af-tooltip-motion { animation: none; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .af-popup-motion, :root:not([data-motion="full"]) .af-tooltip-motion { animation: none; } }
+[data-tone="error"].toast-enter, [data-tone="error"].toast-exit { border-color: var(--color-danger); }
+[data-tone="success"].toast-enter, [data-tone="success"].toast-exit { border-color: var(--color-success); }

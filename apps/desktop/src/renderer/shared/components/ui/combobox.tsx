@@ -30,7 +30,7 @@ function ChoiceInput(props: Props) {
   const restore = () => { setMenuTrigger('manual'); if (mode === 'strict') setQuery(label) }
   const listbox = (
         <ListBox<ChoiceOption> className="min-h-0 max-h-80 overflow-auto overscroll-contain outline-none" renderEmptyState={() => <p className="p-3 text-sm text-muted">{loading ? '正在加载选项…' : '没有匹配项'}</p>}>
-          {option => <ListBoxItem id={encodeValue(option.value)} textValue={mode === 'free' ? option.value : option.label} isDisabled={option.disabled} className="af-choice-option">
+          {option => <ListBoxItem data-choice-value={option.value} id={encodeValue(option.value)} textValue={mode === 'free' ? option.value : option.label} isDisabled={option.disabled} className="af-choice-option">
             {({ isSelected }) => <><span className="min-w-0 flex-1 break-words">{option.label}{option.description ? <span className="block text-xs text-muted">{option.description}</span> : null}</span><Check aria-hidden size={16} className={isSelected ? 'shrink-0 text-clay' : 'invisible shrink-0'} /></>}
           </ListBoxItem>}
         </ListBox>
@@ -50,7 +50,7 @@ function ChoiceInput(props: Props) {
       allowsCustomValue={mode === 'free'} allowsEmptyCollection isDisabled={disabled} isReadOnly={readOnly} isInvalid={props['aria-invalid'] || Boolean(errorMessage)} validationBehavior="aria"
       onOpenChange={(next, trigger) => { setShowAll(next && trigger === 'manual'); if (!next) restore() }} className="min-w-0">
       <div className="flex min-w-0 items-center gap-1">
-        <Input ref={localRef} id={id} aria-describedby={description} aria-busy={loading || undefined} data-af-control placeholder={placeholder}
+        <Input data-choice-value={value ?? undefined} ref={localRef} id={id} aria-describedby={description} aria-busy={loading || undefined} data-af-control placeholder={placeholder}
           onBlur={() => { restore(); onBlur?.() }} onCompositionStart={() => { composing.current = true }} onCompositionEnd={() => { composing.current = false }}
           onKeyDownCapture={event => { if (event.key === 'Enter' && (composing.current || event.nativeEvent.isComposing)) { event.preventDefault(); event.stopPropagation() } }}
           className={cn('min-w-0 flex-1 px-3', size === 'sm' ? 'h-[var(--control-sm)] text-xs' : 'h-[var(--control-md)] text-sm')} />

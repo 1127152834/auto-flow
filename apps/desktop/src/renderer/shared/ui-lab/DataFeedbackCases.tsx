@@ -1,0 +1,11 @@
+import { useState } from 'react'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
+import { Alert } from '../components/ui/alert'
+import { EmptyState } from '../components/ui/empty-state'
+import { Progress } from '../components/ui/progress'
+import { Skeleton } from '../components/ui/skeleton'
+import { Pagination } from '../components/ui/pagination'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table'
+import { notify, Toaster } from '../components/Toaster'
+export function DataFeedbackCases(){const [offset,setOffset]=useState(0);return <section aria-labelledby="feedback-title" className="grid gap-4 rounded-card border border-line bg-surface p-6"><h2 id="feedback-title" className="font-semibold">数据与反馈</h2><Alert tone="error" title="刷新失败">已保留缓存记录，稍后可重试。</Alert><Table><TableHeader><TableRow><TableHead>资源</TableHead><TableHead>状态</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>资源 {offset+1}</TableCell><TableCell><Badge tone="success">可用</Badge></TableCell></TableRow></TableBody></Table><Pagination offset={offset} limit={1} count={1} total={3} onOffsetChange={setOffset}/><EmptyState title="没有匹配项" description="尝试修改搜索条件" action={<Button onClick={()=>notify({title:'搜索条件已清除',tone:'info'})}>重置查询样本</Button>}/><Skeleton className="h-10"/><Progress aria-label="已知进度" value={62}/><Progress aria-label="未知进度" value={null}/><Button onClick={()=>notify({title:'组件验收操作成功',tone:'success'})}>显示成功通知</Button><Toaster/></section>}

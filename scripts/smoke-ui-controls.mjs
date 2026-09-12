@@ -9,7 +9,7 @@ import tailwind from '@tailwindcss/vite'
 import { _electron, expect } from '@playwright/test'
 
 const root = resolve(import.meta.dirname, '..')
-const evidence = join(root, 'docs/design-system/verification/t5')
+const evidence = join(root, 'docs/design-system/verification/g1')
 await mkdir(evidence, { recursive: true })
 const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-ui-g0-')))
 let electron
@@ -447,6 +447,25 @@ try {
   if (!profiler) assert.ok(performanceSamples.filterP95 <= 100, `500-option filter p95 ${performanceSamples.filterP95}ms > 100ms`)
   checks.push(profiler ? 'T5 profiling only; performance thresholds not enforced' : 'T5 20-sample 500-option event-to-render performance within open 200ms / filter 100ms targets')
 
+  await page.getByRole('button', { name: '打开抽屉验收' }).click()
+  const drawer = page.getByRole('dialog', { name: '抽屉验收' })
+  await expect(drawer).toHaveAttribute('data-placement', 'drawer')
+  await page.getByRole('button', { name: '抽屉中的操作' }).click()
+  assert.equal(await page.getByRole('menu').evaluate(el => el.closest('[data-overlay-depth]')?.getAttribute('data-overlay-depth')), '0')
+  await page.getByRole('menuitem', { name: '编辑详情' }).click()
+  await expect(page.getByRole('dialog', { name: '菜单打开的弹窗' })).toBeVisible()
+  await page.getByRole('button', { name: '返回抽屉' }).click()
+  await expect(drawer).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: '打开抽屉验收' })).toBeFocused()
+  await page.getByRole('button', { name: '字段帮助' }).focus()
+  await expect(page.getByRole('tooltip')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+  await page.getByRole('button', { name: '显示成功通知' }).click()
+  await expect(page.getByText('组件验收操作成功')).toBeVisible()
+  await page.getByRole('button', { name: '关闭通知' }).click()
+  checks.push('G1 Drawer/menu-to-modal ownership, tooltip focus/Escape and feedback notification dismissal')
   await page.goto(`http://127.0.0.1:${address.port}/#/profiles`)
   // The DEV lab is chosen at module bootstrap, so a hash change alone cannot leave it.
   await page.reload()
