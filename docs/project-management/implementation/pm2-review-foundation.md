@@ -115,3 +115,11 @@ C1e纯record-draft经独立规格→工程审查通过，8项测试覆盖必填�
 ## A3d 表资料客户端复用恢复（2026-09-13）
 
 C2前复查发现旧表客户端请求体没有冻结、恢复没有核验Operation自身projectId。新增测试先RED两失败，随后复用目录/记录已验证的createDataCommand，删除重复恢复分支；表资源和结果guard及公开签名保持。表11+目录18+记录15共44项API测试通过，TypeScript及定向ESLint通过，独立规格→工程审查通过。后续页面仍必须管理原key、冻结版本与服务实例迟到响应。
+
+## C1e 记录编辑组件最终闭合（2026-09-13）
+
+独立探针发现并以RED修复：脏草稿后台刷新后扩大写入字段、排队提交跨会话/关闭仍执行、同步重复提交、合法数字等值仍显示可保存、关闭后确认层残留。最后补充排队时外部readonly/saving变化guard和精确错误焦点/ARIA；必填missing/null定位presence，已填写空串与非法数字定位value，非法offset定位offset。
+
+实现冻结草稿原始record/fields/identity比较基线，未修改字段不写回；命令在微任务执行前复验提交时期的会话和外部保护状态，自己的submitting不阻止合法提交。ScalarDraftError/RecordDraftError通过结构化control定位，错误交已有FormField生成ARIA，不匹配错误文案或手工改DOM属性。
+
+独立最终规格→工程通过：原11探针及5个真实焦点/ARIA探针全部通过，仓内标量/编辑/草稿共30项通过。主协调在最终稳定源码运行完整前端564项/86文件、typecheck、lint、build全部通过。组件尚未挂载正式数据页面；只有后续真实页面和Electron操作才能作为完整PM2验收。

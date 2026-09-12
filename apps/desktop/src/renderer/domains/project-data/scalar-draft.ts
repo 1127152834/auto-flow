@@ -9,6 +9,10 @@ export type ScalarDraft = {
   precision: 'date' | 'datetime'
   offset: string
 }
+export type ScalarDraftControl = 'presence' | 'value' | 'offset'
+export class ScalarDraftError extends Error {
+  constructor(readonly control: ScalarDraftControl, message: string) { super(message); this.name = 'ScalarDraftError' }
+}
 
 const blank = (): ScalarDraft => ({ presence: 'missing', text: '', boolean: false, precision: 'date', offset: '' })
 
@@ -51,22 +55,22 @@ export function parseScalarDraft(type: 'string' | 'number' | 'boolean' | 'date',
   if (draft.presence === 'missing') return undefined
   if (draft.presence === 'null') return null
   if (type === 'string') {
-    if (!unicodeIsValid(draft.text)) throw new Error('文本包含无效 Unicode 字符')
+    if (!unicodeIsValid(draft.text)) throw new ScalarDraftError('value', '文本包含无效 Unicode 字符')
     return draft.text
   }
   if (type === 'boolean') return draft.boolean
   if (type === 'number') {
-    if (!/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(draft.text)) throw new Error('请输入有效数字')
+    if (!/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(draft.text)) throw new ScalarDraftError('value', '请输入有效数字')
     const value = Number(draft.text)
-    if (!Number.isFinite(value) || (Number.isInteger(value) && !Number.isSafeInteger(value))) throw new Error('数字超出安全范围')
+    if (!Number.isFinite(value) || (Number.isInteger(value) && !Number.isSafeInteger(value))) throw new ScalarDraftError('value', '数字超出安全范围')
     return value
   }
   if (draft.precision === 'date') {
-    if (!validDate(draft.text)) throw new Error('请输入有效日期')
+    if (!validDate(draft.text)) throw new ScalarDraftError('value', '请输入有效日期')
     return { kind: 'date', precision: 'date', value: draft.text, offset: null }
   }
   const match = DATETIME.exec(draft.text)
-  if (!match || !validDate(match[1])) throw new Error('请输入有效日期时间')
-  if (draft.offset && !OFFSET.test(draft.offset)) throw new Error('请输入有效时区偏移')
+  if (!match || !validDate(match[1])) throw new ScalarDraftError('value', '请输入有效日期时间')
+  if (draft.offset && !OFFSET.test(draft.offset)) throw new ScalarDraftError('offset', '请输入有效时区偏移')
   return { kind: 'date', precision: 'datetime', value: draft.text, offset: draft.offset || null }
 }

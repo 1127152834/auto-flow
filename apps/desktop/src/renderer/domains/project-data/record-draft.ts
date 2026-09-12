@@ -1,12 +1,12 @@
 import type { components } from '../../shared/api/generated'
-import { parseScalarDraft, scalarDraft, type Scalar, type ScalarDraft } from './scalar-draft'
+import { parseScalarDraft, scalarDraft, ScalarDraftError, type Scalar, type ScalarDraft, type ScalarDraftControl } from './scalar-draft'
 
 type Field = components['schemas']['DataFieldView']
 type RecordView = components['schemas']['DataRecordView']
 export type RecordDraft = Record<string, ScalarDraft>
 
 export class RecordDraftError extends Error {
-  constructor(readonly fieldId: string, message: string) { super(message); this.name = 'RecordDraftError' }
+  constructor(readonly fieldId: string, message: string, readonly control: ScalarDraftControl = 'value') { super(message); this.name = 'RecordDraftError' }
 }
 
 export function createRecordDraft(fields: Field[], record?: RecordView): RecordDraft {
@@ -18,7 +18,6 @@ export function createRecordDraft(fields: Field[], record?: RecordView): RecordD
 }
 
 function checkValue(field: Field, value: Scalar | undefined): void {
-  if (field.required && (value === undefined || value === null || value === '')) throw new Error('请填写必填字段')
   if (value === undefined || value === null) return
   const rules = field.validation
   if (typeof value === 'string') {
@@ -44,18 +43,20 @@ export function recordValues(fields: Field[], drafts: RecordDraft, record?: Reco
   for (const field of fields) {
     const fieldId = field.ref.fieldId, cell = cells.get(fieldId)
     if (field.formula || !field.writable || cell?.readable === false || (record && fieldId === identityFieldId)) {
-      if (!record && field.required) throw new RecordDraftError(fieldId, '此必填字段不可填写，当前表结构无法新增记录')
+      if (!record && field.required) throw new RecordDraftError(fieldId, '此必填字段不可填写，当前表结构无法新增记录', 'presence')
       continue
     }
-    try {
-      const value = parseScalarDraft(field.type, drafts[fieldId] ?? scalarDraft(undefined))
-      // A PATCH omission leaves the existing value untouched; only explicit null clears it.
-      if (record && (value === undefined || sameValue(value, cell?.value))) continue
-      checkValue(field, value)
-      if (value !== undefined) values.push({ fieldId, value })
-    } catch (error) {
-      throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效')
+    let value: Scalar | undefined
+    try { value = parseScalarDraft(field.type, drafts[fieldId] ?? scalarDraft(undefined)) } catch (error) {
+      throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效', error instanceof ScalarDraftError ? error.control : 'value')
     }
+    // A PATCH omission leaves the existing value untouched; only explicit null clears it.
+    if (record && (value === undefined || sameValue(value, cell?.value))) continue
+    if (field.required && (value === undefined || value === null || value === '')) throw new RecordDraftError(fieldId, '请填写必填字段', value === '' ? 'value' : 'presence')
+    try { checkValue(field, value) } catch (error) {
+      throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效', 'value')
+    }
+    if (value !== undefined) values.push({ fieldId, value })
   }
   return values
 }
