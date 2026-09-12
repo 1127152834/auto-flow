@@ -1,3 +1,4 @@
+import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { useMemo, useState } from 'react'
 import type { ApiClient } from '../../../shared/api/client'
 import { Button } from '../../../shared/components/ui/button'
@@ -42,7 +43,7 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
         {state.loading ? <ProxyPageSkeleton /> : null}
 
         {!state.loading && state.loadError ? (
-          <div className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
+          <div className="flex flex-col gap-3 rounded-control border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning sm:flex-row sm:items-center sm:justify-between" role="alert">
             <span>{state.loadError}。已加载的数据会继续保留。</span>
             <Button className="shrink-0" disabled={state.retryAfterSeconds > 0} onClick={() => void state.reload()}>{state.retryAfterSeconds > 0 ? `${state.retryAfterSeconds} 秒后可重试` : '重新加载'}</Button>
           </div>
@@ -114,5 +115,5 @@ export function ProxyManagementPage({ api }: { api: ApiClient }) {
 }
 
 function ProxyPageSkeleton() {
-  return <div className="grid animate-pulse gap-4" role="status" aria-label="正在加载代理管理"><div className="grid gap-3 sm:grid-cols-3">{[1, 2, 3].map((item) => <div className="h-28 rounded-card bg-surface-subtle" key={item} />)}</div><div className="h-72 rounded-card bg-surface-subtle" /><span className="sr-only">正在加载…</span></div>
+  return <div className="grid gap-4" role="status" aria-label="正在加载代理管理"><div className="grid gap-3 sm:grid-cols-3">{[1, 2, 3].map((item) => <Skeleton className="h-28 rounded-card bg-surface-subtle" key={item} />)}</div><Skeleton className="h-72 rounded-card bg-surface-subtle" /><span className="sr-only">正在加载…</span></div>
 }

@@ -1,0 +1,17 @@
+
+> test
+> npm --workspace @autoflow/desktop test
+
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan/apps/desktop
+
+
+ Test Files  70 passed (70)
+      Tests  325 passed (325)
+   Start at  16:04:24
+   Duration  20.67s (transform 3.40s, setup 0ms, import 109.89s, tests 64.21s, environment 38.11s)
+

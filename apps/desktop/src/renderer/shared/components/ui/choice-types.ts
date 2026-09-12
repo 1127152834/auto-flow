@@ -3,7 +3,7 @@ export type ChoiceOption = { value: string; label: string; description?: string;
 export type ChoiceProps = {
   id?: string; name?: string; value: string | null; onValueChange(value: string | null): void; onBlur?: () => void
   options: readonly ChoiceOption[]; placeholder?: string; size?: 'sm' | 'md'; disabled?: boolean; readOnly?: boolean
-  loading?: boolean; errorMessage?: string; onRetry?: () => void; className?: string
+  clearable?: boolean; loading?: boolean; errorMessage?: string; onRetry?: () => void; className?: string
   'aria-label'?: string; 'aria-labelledby'?: string; 'aria-describedby'?: string; 'aria-invalid'?: boolean
 }
 export type ComboboxProps = ChoiceProps & { ref?: Ref<HTMLInputElement> }

@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "package:dir": "electron-builder --config electron-builder.yml --dir",
     "openapi:generate": "node ../../scripts/generate-api.mjs",
-    "openapi:check": "node ../../scripts/generate-api.mjs --check"
+    "openapi:check": "node ../../scripts/generate-api.mjs --check",
+    "test:ui": "playwright test --config playwright.ui.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -39,6 +40,7 @@
     "zod": "^4.6.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

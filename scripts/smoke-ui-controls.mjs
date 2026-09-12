@@ -9,7 +9,7 @@ import tailwind from '@tailwindcss/vite'
 import { _electron, expect } from '@playwright/test'
 
 const root = resolve(import.meta.dirname, '..')
-const evidence = join(root, 'docs/design-system/verification/g1')
+const evidence = join(root, 'docs/design-system/verification/final-controls')
 await mkdir(evidence, { recursive: true })
 const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-ui-g0-')))
 let electron

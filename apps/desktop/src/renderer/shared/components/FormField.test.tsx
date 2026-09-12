@@ -9,7 +9,7 @@ import { Input } from './ui/input'
 afterEach(cleanup)
 
 it('associates label and error with its control', () => {
-  render(<FormField label="浏览器内核" error="请选择浏览器内核" htmlFor="kernel"><Input id="kernel" /></FormField>)
+  render(<FormField label="浏览器内核" error="请选择浏览器内核" htmlFor="kernel">{a11y => <Input {...a11y} />}</FormField>)
   expect(screen.getByLabelText('浏览器内核')).toHaveAttribute('id', 'kernel')
   expect(screen.getByRole('alert')).toHaveAttribute('id', 'kernel-error')
   expect(screen.getByLabelText('浏览器内核')).toHaveAttribute('aria-describedby', 'kernel-error')

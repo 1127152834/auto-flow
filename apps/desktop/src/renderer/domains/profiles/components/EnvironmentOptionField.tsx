@@ -42,7 +42,7 @@ export function EnvironmentOptionField({ name, label, hint, options }: Props) {
       {manual ? <Input {...a11y} {...field} {...accessibility} className="min-w-0 w-full" /> : <Combobox {...a11y} {...field} {...accessibility} className="min-w-0 w-full" onValueChange={(value) => {
           if ((value ?? '') === '__custom__') switchMode(true)
           else field.onChange(value ?? '')
-        }} options={[...[{ value: "", label: String(name === 'userAgent' ? '跟随浏览器（推荐）' : '跟随浏览器（未指定）') }], ...(unlisted ? [{ value: field.value, label: String(name === 'userAgent' ? '当前 User Agent（自定义或其他版本）' : `${field.value}（当前值）`) }] : []), ...options.map((option) => ({ value: option.value, label: String(option.label) })), ...[{ value: "__custom__", label: "自定义…" }]]} />}
+        }} options={[{ value: "", label: String(name === 'userAgent' ? '跟随浏览器（推荐）' : '跟随浏览器（未指定）') }, ...(unlisted ? [{ value: field.value, label: String(name === 'userAgent' ? '当前 User Agent（自定义或其他版本）' : `${field.value}（当前值）`) }] : []), ...options.map((option) => ({ value: option.value, label: String(option.label) })), { value: "__custom__", label: "自定义…" }]} />}
     </>}</FormField>
     {manual ? <Button type="button" variant="ghost" onClick={() => switchMode(false)} aria-label={`选择${label}预设`}>选择预设</Button> : null}
   </div>

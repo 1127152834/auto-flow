@@ -1,16 +1,31 @@
-import { useState } from 'react'
 import type { ModelDiscoveryRead } from '../model'
-import { Input } from '../../../shared/components/ui/input'
+import { Autocomplete } from '../../../shared/components/ui/combobox'
+import type { FieldA11y } from '../../../shared/components/FormField'
 
 type RemoteModel = ModelDiscoveryRead['items'][number]
+type Props = Partial<FieldA11y> & {
+  value: string
+  options: RemoteModel[]
+  onChange(value: string, option?: RemoteModel): void
+}
 
-export function ModelIdInput({ id, value, options, onChange }: { id?: string; value: string; options: RemoteModel[]; onChange(value: string, option?: RemoteModel): void }) {
-  const [query, setQuery] = useState(value)
-  const visible = options.filter((option) => `${option.displayName} ${option.modelKey}`.toLowerCase().includes(query.toLowerCase()))
-  return <div className="grid gap-2">
-    <Input id={id} aria-label="模型标识" value={query} placeholder="搜索或输入模型标识" onChange={(event) => { setQuery(event.target.value); onChange(event.target.value) }} onKeyDown={(event) => { if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); onChange(query.trim()) } }} />
-    {visible.length ? <div className="grid max-h-40 gap-1 overflow-y-auto" role="listbox" aria-label="模型目录">
-      {visible.map((option) => <button className="rounded-control px-3 py-2 text-left text-sm hover:bg-surface-hover" key={option.modelKey} role="option" aria-selected={option.modelKey === value} onClick={() => { setQuery(option.modelKey); onChange(option.modelKey, option) }}>{option.displayName === option.modelKey ? option.modelKey : `${option.displayName} · ${option.modelKey}`}</button>)}
-    </div> : null}
+export function ModelIdInput({ value, options, onChange, ...a11y }: Props) {
+  return <div onKeyDownCapture={event => {
+    // Let an open suggestion list commit its option, including its metadata.
+    // A free ID can be confirmed without submitting the surrounding form.
+    if (event.key === 'Enter' && !event.nativeEvent.isComposing &&
+      (event.target as HTMLElement).getAttribute('aria-expanded') !== 'true') {
+      event.preventDefault()
+      onChange(value.trim())
+    }
+  }}>
+    <Autocomplete {...a11y} aria-label="模型标识" value={value}
+      onValueChange={next => onChange(next)}
+      onOptionSelect={option => onChange(option.value, options.find(item => item.modelKey === option.value))}
+      options={options.map(option => ({
+        value: option.modelKey,
+        label: option.displayName === option.modelKey ? option.modelKey : `${option.displayName} · ${option.modelKey}`,
+      }))}
+      placeholder="搜索或输入模型标识" />
   </div>
 }

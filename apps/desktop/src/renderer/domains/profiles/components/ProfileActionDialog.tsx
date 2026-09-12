@@ -68,7 +68,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
     <DialogContent className="w-[min(92vw,30rem)]">
       <DialogTitle>{copying ? '复制浏览器配置' : '删除浏览器配置'}</DialogTitle>
       <DialogDescription>{copying ? `复制自「${action.name}」` : `确认删除「${action.name}」？`}</DialogDescription>
-      {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，操作结果可能未确认。恢复连接后请核对列表再重试。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
+      {disabled ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-warning/30 bg-warning-soft p-3 text-sm text-warning sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，操作结果可能未确认。恢复连接后请核对列表再重试。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
       <form ref={form} id={formId} className="grid gap-4" onSubmit={(event) => void submit(event)}>
         {copying ? <FormField label="新配置名称" htmlFor="profile-copy-name" error={nameError}>{(a11y) => <>
           <Input {...a11y} id="profile-copy-name" autoFocus disabled={busy || disabled} value={name} placeholder="输入新配置名称" onChange={(event) => {
@@ -77,7 +77,7 @@ export function ProfileActionDialog({ action, onClose, disabled = false, onRecon
             setOperationError('')
           }} />
         </>}</FormField> : <p className="m-0 text-sm text-ink">配置及其浏览器数据将被删除，此操作不可撤销。</p>}
-        {operationError ? <p role="alert" className="m-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
+        {operationError ? <p role="alert" className="m-0 rounded-control border border-danger/30 bg-danger-soft p-3 text-sm text-danger">{operationError}</p> : null}
       </form>
       <div className="flex justify-end gap-2">
         <Button type="button" autoFocus={!copying} disabled={busy} onClick={close}>取消</Button>

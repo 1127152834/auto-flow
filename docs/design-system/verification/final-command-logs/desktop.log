@@ -1,0 +1,6 @@
+
+> smoke:desktop
+> node scripts/smoke-desktop.mjs
+
+desktop connected (development, darwin/arm64)
+sidecar exited after desktop termination

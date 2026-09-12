@@ -1,3 +1,5 @@
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
 import { OverlayCases } from './OverlayCases'
 import { DataFeedbackCases } from './DataFeedbackCases'
 import { ChoiceCases } from './ChoiceCases'
@@ -21,9 +23,9 @@ export function UiLabPage() {
     <p className="max-w-3xl text-sm leading-6 text-muted">先验证设计令牌、表单焦点和嵌套浮层。这里使用本地样本，不连接业务账户。完整组件展示与真实页面迁移在后续阶段进行。</p>
     <section className="grid gap-5 rounded-card border border-line bg-surface p-6" aria-labelledby="tokens-title">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="tokens-title" className="font-semibold">颜色与密度</h2><p className="mt-1 text-xs text-muted">A02 · 暖灰背景，黏土棕强调，清晰控件边界</p></div>
-        <button type="button" aria-pressed={compact} onClick={() => setCompact(!compact)} className="rounded-control border border-control-border px-3 py-2 text-sm hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay">{compact ? '紧凑 32px' : '默认 40px'}</button></div>
+        <Button type="button" aria-pressed={compact} onClick={() => setCompact(!compact)} className="rounded-control border border-control-border px-3 py-2 text-sm hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-clay">{compact ? '紧凑 32px' : '默认 40px'}</Button></div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">{palette.map(name => <div key={name} className="overflow-hidden rounded-control border border-line"><div data-token-swatch={name} className="h-12" style={{ backgroundColor: `var(--color-${name})` }} /><p className="px-2 py-2 font-mono text-xs">{name}</p></div>)}</div>
-      <div className="grid gap-4 sm:grid-cols-3">{[{ title: '常规输入', props: { placeholder: '中文 / English' } }, { title: '只读输入', props: { readOnly: true, defaultValue: '可选择和复制' } }, { title: '禁用输入', props: { disabled: true, defaultValue: '操作暂不可用' } }].map(({ title, props }) => <label key={title} className="grid gap-2 text-sm">{title}<input data-af-control className="min-w-0 px-3 text-sm" style={{ height: `var(--control-${compact ? 'sm' : 'md'})` }} {...props} /></label>)}</div>
+      <div className="grid gap-4 sm:grid-cols-3">{[{ title: '常规输入', props: { placeholder: '中文 / English' } }, { title: '只读输入', props: { readOnly: true, defaultValue: '可选择和复制' } }, { title: '禁用输入', props: { disabled: true, defaultValue: '操作暂不可用' } }].map(({ title, props }) => <label key={title} className="grid gap-2 text-sm">{title}<Input className="min-w-0 px-3 text-sm" size={compact ? 'sm' : 'md'} {...props} /></label>)}</div>
     </section>
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <section className="grid gap-4 rounded-card border border-line bg-surface p-6" aria-labelledby="focus-title"><div><h2 id="focus-title" className="font-semibold">表单绑定与错误聚焦</h2><p className="mt-1 text-xs text-muted">A03 / A04 · RHF、500项选择、reset与dirty</p></div><FormFocusCase /></section>

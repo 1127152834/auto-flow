@@ -23,7 +23,9 @@ function ChoiceInput(props: Props) {
   const inputValue = mode === 'free' ? value : query
   const items = useMemo(() => (mode === 'strict' ? withCurrentOption(options, value) : options).filter(option => optionMatches(option, inputValue ?? '')), [options, value, inputValue, mode])
   const [showAll, setShowAll] = useState(false)
-  const selected = mode === 'free' ? options.find(option => option.value === value)?.value ?? null : value
+  // Typing an exact ID is still a draft; selection metadata is applied only by an explicit commit.
+  const [freeSelection, setFreeSelection] = useState<string | null>(null)
+  const selected = mode === 'free' ? (freeSelection === value ? freeSelection : null) : value
   const unavailable = mode === 'strict' && value !== null && !options.some(option => option.value === value)
   const unavailableId = useId()
   const description = [props['aria-describedby'], errorMessage ? errorId : undefined, unavailable ? unavailableId : undefined].filter(Boolean).join(' ') || undefined
@@ -38,13 +40,13 @@ function ChoiceInput(props: Props) {
   return <div className={cn('grid min-w-0 gap-2', className)}>
     <ComboBox<ChoiceOption> menuTrigger={menuTrigger} aria-label={props['aria-label']} aria-labelledby={props['aria-labelledby']}
       value={selected === null ? null : encodeValue(selected)} inputValue={inputValue ?? ''} items={showAll ? (mode === 'strict' ? withCurrentOption(options, value) : options) : items}
-      onInputChange={text => { setMenuTrigger('input'); setShowAll(false); if (props.mode === 'free') props.onValueChange(text); else setQuery(text) }}
+      onInputChange={text => { setMenuTrigger('input'); setShowAll(false); if (props.mode === 'free') { setFreeSelection(null); props.onValueChange(text) } else setQuery(text) }}
       onChange={key => {
         if (key === null) return
         const option = options.find(item => item.value === decodeValue(String(key)))
         if (!option || option.disabled) return
         setMenuTrigger('manual')
-        if (props.mode === 'free') { props.onValueChange(option.value); props.onOptionSelect?.(option) }
+        if (props.mode === 'free') { setFreeSelection(option.value); props.onValueChange(option.value); props.onOptionSelect?.(option) }
         else { setQuery(option.label); if (option.value !== value) props.onValueChange(option.value) }
       }}
       allowsCustomValue={mode === 'free'} allowsEmptyCollection isDisabled={disabled} isReadOnly={readOnly} isInvalid={props['aria-invalid'] || Boolean(errorMessage)} validationBehavior="aria"
@@ -57,7 +59,7 @@ function ChoiceInput(props: Props) {
         <AriaButton aria-label={`展开 ${props['aria-label'] ?? ''}`.trim()} className={cn('af-choice-trigger grid shrink-0 place-items-center rounded-control border border-control-border bg-surface text-ink', size === 'sm' ? 'h-8 w-8' : 'h-10 w-10')}>
           {loading ? <Spinner size={16} /> : <CaretDown size={16} aria-hidden />}
         </AriaButton>
-        {(mode === 'strict' ? value !== null : value !== '') && !disabled && !readOnly ? <IconButton aria-label="清除选择" variant="ghost" size={size} onMouseDown={event => event.preventDefault()} onClick={() => { setMenuTrigger('manual'); if (props.mode === 'free') props.onValueChange(''); else props.onValueChange(null); setQuery(''); localRef.current?.focus() }}><X size={14} /></IconButton> : null}
+        {props.clearable !== false && (mode === 'strict' ? value !== null : value !== '') && !disabled && !readOnly ? <IconButton aria-label="清除选择" variant="ghost" size={size} onMouseDown={event => event.preventDefault()} onClick={() => { setMenuTrigger('manual'); if (props.mode === 'free') props.onValueChange(''); else props.onValueChange(null); setQuery(''); localRef.current?.focus() }}><X size={14} /></IconButton> : null}
       </div>
       <Popover data-af-popup UNSTABLE_portalContainer={host.container} style={host.style} offset={6} maxHeight={320}
         className="af-choice-popup max-w-[min(36rem,90vw)] min-w-[min(20rem,80vw)] w-[var(--trigger-width)] flex flex-col overflow-hidden p-1">

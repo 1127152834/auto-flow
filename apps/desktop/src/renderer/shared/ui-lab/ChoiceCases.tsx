@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Select } from '../components/ui/select-radix'
+import { Select } from '../components/ui/select'
 import { Autocomplete, Combobox } from '../components/ui/combobox'
 import type { ChoiceOption } from '../components/ui/choice-types'
 const options: ChoiceOption[] = [{ value: '', label: '跟随系统' }, { value: 'stable', label: 'Stable', description: '公开版稳定通道', keywords: ['稳定'] }, { value: 'preview', label: 'Preview', description: '正式版预览通道' }, { value: 'disabled', label: '不可选择', disabled: true }, { value: 'v:x', label: '同名资源', description: '标识 v:x' }, { value: '__custom__', label: '同名资源', description: '标识 __custom__' }, { value: 'long', label: '长名称 · ' + '中文 English 资源说明 '.repeat(15) }]

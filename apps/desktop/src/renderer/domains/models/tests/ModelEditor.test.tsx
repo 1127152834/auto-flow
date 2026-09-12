@@ -1,4 +1,6 @@
 import '@testing-library/jest-dom/vitest'
+import {chooseOption,choiceTestEnvironment} from '../../../shared/testing/choice-user'
+choiceTestEnvironment()
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { ModelApi } from '../api'
@@ -37,11 +39,11 @@ describe('ModelEditor', () => {
   it('selects or manually enters an ID and preserves context when a candidate has none', async () => {
     const modelApi = api()
     const { user } = renderModelUi(<ModelEditor open provider={provider} api={modelApi} instanceId="one" onOpenChange={vi.fn()} onSaved={vi.fn()} onRemoved={vi.fn()} />)
-    await screen.findByText('Known · known')
-    await user.click(screen.getByRole('option', { name: 'Known · known' }))
+    await screen.findByText('已发现 2 个模型')
+    await chooseOption(user, screen.getByRole('combobox', {name:'模型标识'}), 'known')
     expect(screen.getByLabelText('上下文窗口')).toHaveValue('8192')
     expect(screen.getByLabelText('显示名称')).toHaveValue('Known')
-    await user.click(screen.getByRole('option', { name: 'Unknown · unknown' }))
+    await chooseOption(user, screen.getByRole('combobox', {name:'模型标识'}), 'unknown')
     expect(screen.getByLabelText('上下文窗口')).toHaveValue('8192')
     expect(screen.getByLabelText('显示名称')).toHaveValue('Unknown')
     await user.clear(screen.getByLabelText('模型标识')); await user.type(screen.getByLabelText('模型标识'), 'custom{Enter}')
@@ -133,7 +135,7 @@ describe('ModelEditor', () => {
     const modelApi = api({ testModel: vi.fn(() => pending.promise) })
     const { user } = renderModelUi(<ModelEditor open provider={provider} api={modelApi} instanceId="generation" onOpenChange={vi.fn()} onSaved={vi.fn()} onRemoved={vi.fn()} />)
     const id = screen.getByLabelText('模型标识')
-    await user.type(id, 'A'); await user.click(screen.getByRole('button', { name: '测试模型' }))
+    await user.type(id, 'A'); await user.keyboard('{Escape}'); await user.click(screen.getByRole('button', { name: '测试模型' }))
     await user.clear(id); await user.type(id, 'B'); await user.clear(id); await user.type(id, 'A')
     pending.resolve({ ok: true, modelKey: 'A', latencyMs: 1, outputPreview: '过期结果', reasoningPreview: '', message: '' })
     await waitFor(() => expect(screen.queryByText('过期结果')).not.toBeInTheDocument())
@@ -168,11 +170,12 @@ describe('ModelEditor', () => {
     expect(invalidate).not.toHaveBeenCalledWith(expect.objectContaining({ queryKey: expect.arrayContaining(['other-instance']) }))
   })
 
-  it('associates the model ID label and leaves composing Enter unconsumed', () => {
+  it('associates the model ID label and prevents composing Enter from submitting', () => {
     renderModelUi(<ModelEditor open provider={provider} api={api()} instanceId="ime-id" onOpenChange={vi.fn()} onSaved={vi.fn()} onRemoved={vi.fn()} />)
     const input = screen.getByLabelText('模型标识')
     expect(input).toHaveAttribute('id', 'model-id')
-    expect(fireEvent.keyDown(input, { key: 'Enter', isComposing: true })).toBe(true)
+    expect(fireEvent.keyDown(input, { key: 'Enter', isComposing: true })).toBe(false)
+    expect(input).toHaveValue('')
   })
 
   it('closes both layers and notifies the parent after removing an edited model', async () => {

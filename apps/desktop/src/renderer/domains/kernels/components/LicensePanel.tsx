@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { License } from '../../../shared/api/types'
 import { Button } from '../../../shared/components/ui/button'
-import { Input } from '../../../shared/components/ui/input'
+import { PasswordInput } from '../../../shared/components/ui/password-input'
 
 export type LicensePanelProps = {
   status?: License | null
@@ -44,10 +44,10 @@ export function LicensePanel({ status, busy, disabled = false, error, onConnect,
     </div>
     {!licensed ? <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={(event) => void submit(event)}>
       <label className="sr-only" htmlFor="cloakbrowser-license-key">License Key</label>
-      <Input id="cloakbrowser-license-key" type="password" autoComplete="off" value={licenseKey} disabled={disabled || busy} placeholder="License Key" onChange={(event) => setLicenseKey(event.target.value)} />
+      <PasswordInput id="cloakbrowser-license-key" autoComplete="off" value={licenseKey} disabled={disabled || busy} placeholder="License Key" onChange={(event) => setLicenseKey(event.target.value)} />
       <Button type="submit" variant="primary" className="shrink-0 whitespace-nowrap" disabled={disabled || busy || !licenseKey.trim()}>{busy ? '正在验证…' : '验证并登录'}</Button>
     </form> : null}
-    {status?.configured && !status.valid ? <p role="alert" className="mb-0 mt-3 text-sm text-red-700">已保存的 License 当前无效，请重新登录。</p> : null}
-    {error ? <p role="alert" className="mb-0 mt-3 text-sm text-red-700">{error}</p> : null}
+    {status?.configured && !status.valid ? <p role="alert" className="mb-0 mt-3 text-sm text-danger">已保存的 License 当前无效，请重新登录。</p> : null}
+    {error ? <p role="alert" className="mb-0 mt-3 text-sm text-danger">{error}</p> : null}
   </section>
 }

@@ -955,3 +955,7 @@
 | shared/components/ui/textarea.tsx:5 | textarea | shared-runtime |  |
 | shared/components/ui/tooltip.tsx:7 | TooltipPrimitive.Portal | not-main-entry |  |
 | shared/components/ui/tooltip.tsx:7 | TooltipPrimitive.Content | not-main-entry |  |
+
+## 实施后附录（2026-09-12，confirmed）
+
+上方是设计时快照。当前用量与实际行号以 `verification/ui-controls-audit.json` 的 controls 数组为准，范围/复用决定见 `verification/domain-controls.md`；以此覆盖快照中的 native Select、FormField clone、ResourceState 和未迁移状态。脚本同时记录 reachable、development、unconnected，不能把代理 prototype 或声明文件计入真实页面。

@@ -1,3 +1,4 @@
+import { PasswordInput } from '../../../shared/components/ui/password-input'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowsClockwise, GearSix, PlugsConnected } from '@phosphor-icons/react'
 import type { ConnectionView } from '../api'
@@ -68,7 +69,7 @@ export function ConnectionCard({ connection, syncing, retryAfterSeconds = 0, onC
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={onSync} disabled={syncing || retryAfterSeconds > 0 || !connection.has_secret || connection.status === 'verifying'}>
-            <ArrowsClockwise className={syncing ? 'animate-spin' : ''} />{syncing ? '同步中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '刷新代理'}
+            <ArrowsClockwise className={syncing ? 'af-spinner' : ''} />{syncing ? '同步中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '刷新代理'}
           </Button>
           <Button variant="primary" disabled={syncing} onClick={onConfigure}><GearSix />连接设置</Button>
           <AlertDialog>
@@ -84,7 +85,7 @@ export function ConnectionCard({ connection, syncing, retryAfterSeconds = 0, onC
           </AlertDialog>
         </div>
       </div>
-      {connection.last_error ? <p className="mt-4 rounded-control bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{connection.last_error.message}</p> : null}
+      {connection.last_error ? <p className="mt-4 rounded-control bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{connection.last_error.message}</p> : null}
     </section>
   )
 }
@@ -102,13 +103,11 @@ type ConnectionDialogProps = {
 export function ConnectionDialog({ open, connection, busy, retryAfterSeconds = 0, error, onOpenChange, onSubmit }: ConnectionDialogProps) {
   const [name, setName] = useState('ProxyPanel')
   const [apiKey, setApiKey] = useState('')
-  const [showKey, setShowKey] = useState(false)
 
   useEffect(() => {
     if (open) setName(connection?.name ?? 'ProxyPanel')
     if (!open) {
       setApiKey('')
-      setShowKey(false)
     }
   }, [connection?.name, open])
 
@@ -130,14 +129,13 @@ export function ConnectionDialog({ open, connection, busy, retryAfterSeconds = 0
         <DialogTitle>{connection ? '更新 ProxyPanel 连接' : '连接 ProxyPanel'}</DialogTitle>
         <DialogDescription id="proxy-connection-description">Key 只在本次提交期间保留，不会在页面中回显。</DialogDescription>
         <form className="grid gap-4" onSubmit={(event) => void submit(event)}>
-          <FormField label="连接名称" htmlFor="proxy-connection-name">
-            <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoComplete="off" />
-          </FormField>
+          <FormField label="连接名称" htmlFor="proxy-connection-name">{(a11y) => <>
+            <Input {...a11y} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoComplete="off" />
+          </>}</FormField>
           <div className="grid gap-2">
             <label className="text-sm font-medium text-ink" htmlFor="proxy-api-key">API Key</label>
             <div className="flex min-w-0 gap-2">
-              <Input className="min-w-0" id="proxy-api-key" type={showKey ? 'text' : 'password'} value={apiKey} onChange={(event) => setApiKey(event.target.value)} autoComplete="off" spellCheck={false} aria-invalid={error ? true : undefined} aria-describedby={error ? 'proxy-api-key-error' : connection?.has_secret ? 'proxy-api-key-hint' : undefined} />
-              <Button className="shrink-0 whitespace-nowrap" type="button" onClick={() => setShowKey((value) => !value)}>{showKey ? '隐藏' : '显示'}</Button>
+              <PasswordInput allowReveal className="min-w-0" id="proxy-api-key" value={apiKey} onChange={(event) => setApiKey(event.target.value)} autoComplete="off" spellCheck={false} aria-invalid={error ? true : undefined} aria-describedby={error ? 'proxy-api-key-error' : connection?.has_secret ? 'proxy-api-key-hint' : undefined} />
             </div>
             {connection?.has_secret && !error ? <p className="text-xs text-muted" id="proxy-api-key-hint">已保存现有 Key；输入新 Key 后会先验证再替换。</p> : null}
             {error ? <p className="text-xs text-clay" id="proxy-api-key-error" role="alert">{error}</p> : null}

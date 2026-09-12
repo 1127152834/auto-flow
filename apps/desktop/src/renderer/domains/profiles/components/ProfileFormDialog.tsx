@@ -173,11 +173,11 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
           <DialogTitle>{initialProfile ? '编辑浏览器配置' : '新建浏览器配置'}</DialogTitle>
           <DialogDescription className="mt-1">固定指纹种子由系统维护；选择资源后才能保存。</DialogDescription>
         </header>
-        {disabled ? <div role="alert" className="mx-6 flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，草稿已保留。重新连接后请手动保存。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
+        {disabled ? <div role="alert" className="mx-6 flex flex-col gap-3 rounded-control border border-warning/30 bg-warning-soft p-3 text-sm text-warning sm:flex-row sm:items-center sm:justify-between"><span>本地服务离线，草稿已保留。重新连接后请手动保存。</span>{onReconnect ? <Button type="button" onClick={onReconnect}>重新连接</Button> : null}</div> : null}
         <FormProvider {...form}>
           <form id={formId} className="min-h-0 overflow-y-auto px-6" onSubmit={submit}>
             <fieldset disabled={disabled} className="m-0 min-w-0 border-0 p-0">
-              {operationError ? <p role="alert" className="mb-0 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-800">{operationError}</p> : null}
+              {operationError ? <p role="alert" className="mb-0 rounded-control border border-danger/30 bg-danger-soft p-3 text-sm text-danger">{operationError}</p> : null}
               <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
                 <TabsList className="sticky top-0 z-10 grid w-full grid-cols-4 bg-surface pt-2">
                   <TabsTrigger value="basic">基础信息</TabsTrigger>

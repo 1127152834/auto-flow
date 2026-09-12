@@ -36,8 +36,8 @@ export function ProfileList({ profiles, disabled = false, regeneratingId, onEdit
           <div className="flex flex-wrap gap-1 xl:justify-end">
             <Button className="h-8 px-2.5" type="button" disabled={disabled} aria-label={`编辑 ${profile.name}`} onClick={() => onEdit(profile)}><PencilSimple size={16} />编辑</Button>
             <Button className="h-8 px-2.5" type="button" disabled={disabled} aria-label={`复制 ${profile.name}`} onClick={() => onDuplicate(profile)}><Copy size={16} />复制</Button>
-            <Button className="h-8 px-2.5" type="button" disabled={disabled || Boolean(regeneratingId)} aria-label={`重新生成 ${profile.name} 的指纹`} onClick={() => onRegenerate(profile)}><ArrowClockwise className={regenerating ? 'motion-safe:animate-spin motion-safe:[animation-duration:300ms]' : undefined} size={16} />{regenerating ? '生成中…' : '重新生成指纹'}</Button>
-            <Button className="h-8 px-2.5 text-red-700" variant="ghost" type="button" disabled={disabled} aria-label={`删除 ${profile.name}`} onClick={() => onDelete(profile)}><Trash size={16} />删除</Button>
+            <Button className="h-8 px-2.5" type="button" disabled={disabled || Boolean(regeneratingId)} aria-label={`重新生成 ${profile.name} 的指纹`} onClick={() => onRegenerate(profile)}><ArrowClockwise className={regenerating ? 'af-spinner' : undefined} size={16} />{regenerating ? '生成中…' : '重新生成指纹'}</Button>
+            <Button className="h-8 px-2.5 text-danger" variant="ghost" type="button" disabled={disabled} aria-label={`删除 ${profile.name}`} onClick={() => onDelete(profile)}><Trash size={16} />删除</Button>
           </div>
         </div>
         <dl className="mb-0 mt-4 grid gap-3 border-t border-line pt-4 text-xs sm:grid-cols-2 lg:grid-cols-4">

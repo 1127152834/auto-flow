@@ -1,3 +1,4 @@
+import { Button } from '../shared/components/ui/button'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { initialAppState, type AppState } from './app-state'
 import { ApiClientError, createApiClient, type ApiRequestInit } from '../shared/api/client'
@@ -140,7 +141,7 @@ export function App() {
       ? <SettingsPage bridge={window.autoflow as SettingsBridge} restartService={() => window.autoflow.restartSidecar()} onServiceChanged={() => void connect(false)} />
       : <State title="桌面设置不可用" description="请使用 AutoFlow 桌面应用打开设置。" />
     : <>
-      {state.status === 'loading' ? <div role="status" className="border-b border-line bg-surface-subtle px-8 py-3 text-sm">正在连接服务…</div> : state.status === 'offline' ? <div role="alert" className="flex items-center justify-between gap-4 border-b border-red-200 bg-red-50 px-8 py-3 text-sm text-red-900"><span>{state.message}</span><button type="button" onClick={() => void connect(true)}>重新连接</button></div> : null}
+      {state.status === 'loading' ? <div role="status" className="border-b border-line bg-surface-subtle px-8 py-3 text-sm">正在连接服务…</div> : state.status === 'offline' ? <div role="alert" className="flex items-center justify-between gap-4 border-b border-danger/30 bg-danger-soft px-8 py-3 text-sm text-danger"><span>{state.message}</span><Button type="button" onClick={() => void connect(true)}>重新连接</Button></div> : null}
       {session ? <ApiProvider key={session.workspaceKey} baseUrl={session.baseUrl} token={session.token} instanceId={session.instanceId} client={session.client}>
         <div inert={state.status !== 'connected'} aria-busy={state.status !== 'connected'} className={state.status !== 'connected' ? 'opacity-60' : undefined}>
           {route === 'dashboard' ? <DashboardPage client={session.client} onNavigate={navigate} />

@@ -139,7 +139,7 @@ reference/
 | `apps/desktop/src/renderer/shared/hooks/` | 不含领域查询语义的共享 React hooks。 |
 | `apps/desktop/src/renderer/shared/lib/` | 有明确职责的共享函数；不作为杂物目录。 |
 | `apps/desktop/src/renderer/styles/` | index.css 为入口；tokens.css 定义暖灰/黏土棕令牌，controls.css 为定向控件基础样式与全局 Chromium 滚动条。 |
-| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。当前含令牌、RHF、浮层、T3文字及T4勾选/单选/开关/折叠状态案例；fixture 不进入生产 JS，不访问业务 API。 |
+| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。当前含令牌、RHF、浮层、文字、勾选/单选/开关、选择/搜索、滚动条和数据反馈状态案例；fixture 不进入生产 JS，不访问业务 API。 |
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
@@ -238,3 +238,7 @@ reference/
 ### 控件统一 T5（2026-09-12，implemented）
 
 `shared/components/ui/choice-types.ts` 定义应用侧选择API；`select-radix.tsx` 是待领域迁移的正式Select入口，旧 `select.tsx` 仍保留。`combobox.tsx` 提供严格选择与自由输入，大目录复用现有RAC Virtualizer；`scroll-area.tsx` 统一双轴轨道与实际viewport的ref/ARIA。`LabCombobox` 现仅为fixture适配器，替代上文T0探针的独立实现。ChoiceCases/ScrollCases/FormFocusCase提供状态与RHF验收，脚本当前输出到 `docs/design-system/verification/t5/`；G0专项脚本 `scripts/verify-choice-overlays.mjs`。详见 `docs/design-system/verification/choice-controls.md`。领域批量迁移、G1与跨平台最终验收未完成。
+
+### 控件统一最终落点（2026-09-12，confirmed）
+
+全部实际页面已接入 desktop shared 控件。Select 只有 `shared/components/ui/select.tsx` 一个入口，FormField 只接受 render-prop；Drawer 复用 Modal；未使用 ResourceState 已删除。模型 TagInput 留在 models 领域。AST 审计位于 `scripts/audit-ui-controls.mjs`，精确例外为 `scripts/ui-controls-allowlist.json`；Playwright/axe 在 `apps/desktop/tests/ui/`，与 Vitest 隔离。`npm run audit:ui` 检查全部 renderer/主入口与生产实验室泄漏，`npm --workspace @autoflow/desktop run test:ui` 验证隔离 Electron 真页面和独立 fixture。历史 T0–T5 未迁移描述已 superseded，最新证据为 `docs/design-system/verification/ui-controls-results.md`。Windows/人工验收仍 pending。

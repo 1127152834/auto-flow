@@ -37,7 +37,7 @@ export function KernelOperationStatus({ operation, cancelling = false, disabled 
     </div>
     {active ? <Progress className="mt-2" aria-label="内核安装进度" aria-valuetext={knownProgress ? undefined : '进度未知'} value={operation.progress} /> : null}
     {operation.message ? <p className="mb-0 mt-2 text-xs text-muted">{operation.message}</p> : null}
-    {operation.error ? <p role="alert" className="mb-0 mt-2 text-xs text-red-700">{operation.error}</p> : null}
+    {operation.error ? <p role="alert" className="mb-0 mt-2 text-xs text-danger">{operation.error}</p> : null}
     {active && operation.state !== 'cancelling' && onCancel ? <Button type="button" variant="ghost" className="mt-2 h-8 px-2" disabled={disabled || cancelling} onClick={() => void onCancel()}>{cancelling ? '正在取消…' : '取消下载'}</Button> : null}
     {operation.state === 'failed' && onRetry ? <Button type="button" className="mt-2 h-8 px-3" disabled={disabled} onClick={() => void onRetry()}>重试下载</Button> : null}
   </div>

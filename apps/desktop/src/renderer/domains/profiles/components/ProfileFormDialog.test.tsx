@@ -99,7 +99,7 @@ it('does not lose the draft when dismissing discard confirmation', async () => {
   await user.keyboard('{Escape}')
   const overlays = document.querySelectorAll('[data-slot="modal-overlay"]')
   expect(overlays).toHaveLength(2)
-  expect([...overlays].every((overlay) => overlay.classList.contains('z-[50]'))).toBe(true)
+  expect([...overlays].every((overlay) => (overlay as HTMLElement).style.zIndex.includes('var(--layer-modal)'))).toBe(true)
   await user.click(await screen.findByRole('button', { name: '继续编辑' }))
   expect(choiceValue(screen.getByLabelText('名称'))).toBe('工作环境')
 })

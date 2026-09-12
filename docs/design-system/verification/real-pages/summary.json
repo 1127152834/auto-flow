@@ -1,0 +1,176 @@
+{
+  "date": "2026-09-12T08:05:24.156Z",
+  "stats": {
+    "startTime": "2026-09-12T08:05:24.156Z",
+    "duration": 40831.737,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "axe: actual navigation pages and real nested forms",
+      "status": "passed",
+      "durationMs": 9608,
+      "evidence": [
+        "1-window.png"
+      ],
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "electron": "41.10.3",
+        "chromium": "146.0.7680.216"
+      },
+      "总览": [],
+      "浏览器配置": [],
+      "代理管理": [],
+      "模型管理": [],
+      "设置": [],
+      "浏览器表单-基础信息": [],
+      "浏览器表单-浏览器环境": [],
+      "浏览器表单-内核与代理": [],
+      "浏览器表单-高级选项": [],
+      "嵌套内核弹窗": []
+    },
+    {
+      "title": "page fixture: proxy table, SOCKS5, ordered searchable group membership",
+      "status": "passed",
+      "durationMs": 5275,
+      "evidence": [
+        "2-fixture-proxy-group.png",
+        "2-window.png"
+      ],
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "electron": "41.10.3",
+        "chromium": "146.0.7680.216"
+      }
+    },
+    {
+      "title": "page fixture: model suggestions apply metadata, free IDs and tags preserve save payload",
+      "status": "passed",
+      "durationMs": 4760,
+      "evidence": [
+        "3-fixture-model-editor.png",
+        "3-window.png"
+      ],
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "electron": "41.10.3",
+        "chromium": "146.0.7680.216"
+      }
+    },
+    {
+      "title": "real sidecar: browser, nested kernels, proxy connection, model connection and settings",
+      "status": "passed",
+      "durationMs": 7331,
+      "evidence": [
+        "4-window.png"
+      ],
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "electron": "41.10.3",
+        "chromium": "146.0.7680.216"
+      }
+    },
+    {
+      "title": "real browser form: all prescribed window/zoom combinations keep footer and nested dialog reachable",
+      "status": "passed",
+      "durationMs": 13073,
+      "evidence": [
+        "5-1280x800-200-percent.png",
+        "5-1440x900-200-percent.png",
+        "5-1024x768-200-percent.png",
+        "5-low-window-总览.png",
+        "5-low-window-代理管理.png",
+        "5-low-window-模型管理.png",
+        "5-low-window-设置.png",
+        "5-window.png"
+      ],
+      "runtime": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "electron": "41.10.3",
+        "chromium": "146.0.7680.216"
+      },
+      "zoom-matrix": [
+        {
+          "width": 1280,
+          "height": 800,
+          "zoom": 1,
+          "result": "passed"
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "zoom": 1.25,
+          "result": "passed"
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "zoom": 1.5,
+          "result": "passed"
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "zoom": 2,
+          "result": "passed"
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "zoom": 1,
+          "result": "passed"
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "zoom": 1.25,
+          "result": "passed"
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "zoom": 1.5,
+          "result": "passed"
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "zoom": 2,
+          "result": "passed"
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "zoom": 1,
+          "result": "passed"
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "zoom": 1.25,
+          "result": "passed"
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "zoom": 1.5,
+          "result": "passed"
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "zoom": 2,
+          "result": "passed"
+        }
+      ]
+    }
+  ]
+}

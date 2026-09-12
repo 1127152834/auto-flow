@@ -1,10 +1,14 @@
-import { MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { Pagination } from '../../../shared/components/ui/pagination'
+import { Alert } from '../../../shared/components/ui/alert'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
+import { Skeleton } from '../../../shared/components/ui/skeleton'
+import { SearchInput } from '../../../shared/components/ui/search-input'
+import { Plus } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KernelRef, ProfileRead } from '../../../shared/api/types'
 import { notify, Toaster } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
-import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select-radix'
+import { Select } from '../../../shared/components/ui/select'
 import { KernelManagerDialog } from '../../kernels/components/KernelManagerDialog'
 import { ProfileActionDialog, type ProfileAction } from '../components/ProfileActionDialog'
 import { ProfileFormDialog } from '../components/ProfileFormDialog'
@@ -80,29 +84,22 @@ export function BrowserManagementPage({ disabled = false, onReconnect }: Browser
       <section aria-label="配置筛选" className="grid gap-3 rounded-card border border-line bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_13rem]">
         <label className="relative min-w-0">
           <span className="sr-only">搜索配置</span>
-          <MagnifyingGlass aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
-          <Input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="搜索配置名称或描述" className="w-full pl-10" />
+
+          <SearchInput onClear={() => { setQuery(''); setPage(1) }} value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="搜索配置名称或描述" className="w-full" />
         </label>
-        <Select aria-label="代理模式筛选" value={proxyFilter} className="w-full" onValueChange={(value) => { setProxyFilter((value ?? '') as ProxyFilter); setPage(1) }} options={[...[{ value: "all", label: "全部代理模式" }], ...[{ value: "none", label: "不使用代理" }], ...[{ value: "proxy", label: "固定代理" }], ...[{ value: "pool", label: "代理池" }]]} />
+        <Select clearable={false} aria-label="代理模式筛选" value={proxyFilter} className="w-full" onValueChange={(value) => { setProxyFilter((value ?? '') as ProxyFilter); setPage(1) }} options={[{ value: "all", label: "全部代理模式" }, { value: "none", label: "不使用代理" }, { value: "proxy", label: "固定代理" }, { value: "pool", label: "代理池" }]} />
       </section>
 
       {profiles.isFetching && profiles.data ? <p role="status" className="m-0 text-xs text-muted">正在同步本地数据…</p> : null}
-      {profiles.isError && profiles.data ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"><span>{errorMessage(profiles.error)}。已加载的数据会继续保留。</span><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></div> : null}
+      {profiles.isError && profiles.data ? <div role="alert" className="flex flex-col gap-3 rounded-control border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-warning sm:flex-row sm:items-center sm:justify-between"><span>{errorMessage(profiles.error)}。已加载的数据会继续保留。</span><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></div> : null}
 
-      {profiles.isPending ? <div className="grid animate-pulse gap-3" role="status" aria-label="正在加载浏览器配置">{[1, 2, 3].map((item) => <div key={item} className="h-36 rounded-card bg-surface-subtle" />)}<span className="sr-only">正在同步本地数据，请稍候…</span></div>
-        : initialError ? <section role="alert" className="rounded-card border border-red-200 bg-red-50 p-6"><h2 className="m-0 text-lg">浏览器配置加载失败</h2><p className="text-sm text-red-800">{errorMessage(profiles.error)}</p><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></section>
-        : !hasProfiles ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-10 text-center"><h2 className="m-0 text-lg font-semibold">还没有浏览器配置</h2><p className="mb-0 mt-2 text-sm text-muted">创建第一个固定指纹环境。</p><Button type="button" className="mt-5" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} />新建配置</Button></section>
-        : !filtered.length ? <section role="status" className="rounded-card border border-dashed border-line-strong bg-surface p-8 text-center"><h2 className="m-0 text-base font-semibold">没有匹配的配置</h2><p className="mb-0 mt-2 text-sm text-muted">调整搜索内容或代理模式筛选。</p></section>
+      {profiles.isPending ? <div className="grid gap-3" role="status" aria-label="正在加载浏览器配置">{[1, 2, 3].map((item) => <Skeleton key={item} className="h-36 rounded-card bg-surface-subtle" />)}<span className="sr-only">正在同步本地数据，请稍候…</span></div>
+        : initialError ? <Alert tone="error"><h2 className="m-0 text-lg">浏览器配置加载失败</h2><p className="text-sm text-danger">{errorMessage(profiles.error)}</p><Button type="button" onClick={() => void profiles.refetch()}>重试</Button></Alert>
+        : !hasProfiles ? <EmptyState title="还没有浏览器配置" description="创建第一个固定指纹环境。" action={<Button type="button" className="mt-5" variant="primary" disabled={disabled} onClick={() => openForm(null)}><Plus size={18} />新建配置</Button>} />
+        : !filtered.length ? <EmptyState title="没有匹配的配置" description="调整搜索内容或代理模式筛选。" />
         : <>
           <ProfileList profiles={visibleProfiles} disabled={disabled} regeneratingId={regeneratingId} onEdit={(profile) => openForm(profile)} onDuplicate={(profile) => setAction({ kind: 'duplicate', id: profile.id, name: profile.name })} onRegenerate={(profile) => void regenerateFingerprint(profile)} onDelete={(profile) => setAction({ kind: 'delete', id: profile.id, name: profile.name })} />
-          <footer className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-            <span>共 {filtered.length} 个配置</span>
-            <div className="flex items-center gap-3">
-              <Button type="button" className="h-8 px-3" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>上一页</Button>
-              <span aria-live="polite">第 {page} / {pageCount} 页</span>
-              <Button type="button" className="h-8 px-3" disabled={page >= pageCount} onClick={() => setPage((current) => current + 1)}>下一页</Button>
-            </div>
-          </footer>
+          <div className="grid gap-2"><span className="text-sm text-muted">第 {page} / {pageCount} 页</span><Pagination offset={(page - 1) * PAGE_SIZE} limit={PAGE_SIZE} total={filtered.length} count={visibleProfiles.length} onOffsetChange={offset => setPage(Math.floor(offset / PAGE_SIZE) + 1)} /></div>
         </>}
     </div>
 

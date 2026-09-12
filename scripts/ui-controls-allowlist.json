@@ -1,0 +1,43 @@
+[
+  {
+    "file": "shared/components/ui/input.tsx",
+    "element": "input",
+    "reason": "Input 是统一文字/数字/密码语义输入基础，data-af-control 使用自有视觉。"
+  },
+  {
+    "file": "shared/components/ui/textarea.tsx",
+    "element": "textarea",
+    "reason": "Textarea 保留原生编辑语义，data-af-control 统一视觉。"
+  },
+  {
+    "file": "shared/components/ui/button.tsx",
+    "element": "button",
+    "reason": "Button 是统一操作和 IconButton 的语义基础。"
+  },
+  {
+    "file": "shared/components/ui/select.tsx",
+    "element": "input",
+    "reason": "仅 hidden 表单值，不可见，不提供原生下拉面板。",
+    "attributes": {
+      "type": "hidden"
+    }
+  },
+  {
+    "file": "shared/components/ui/combobox.tsx",
+    "element": "input",
+    "reason": "仅 hidden 表单值；可见输入及列表由 React Aria 管理。",
+    "attributes": {
+      "type": "hidden"
+    }
+  },
+  {
+    "file": "shared/components/ui/disclosure.tsx",
+    "element": "details",
+    "reason": "Disclosure 保留原生可访问展开语义，统一边框、间距及动效。"
+  },
+  {
+    "file": "shared/components/ui/disclosure.tsx",
+    "element": "summary",
+    "reason": "仅 Disclosure 的键盘触发器，使用自有图标与焦点环。"
+  }
+]

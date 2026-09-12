@@ -14,3 +14,7 @@ __pycache__/
 reference/WebRPA/
 
 .superpowers/verification/
+
+# Isolated UI test artifacts (curated evidence is stored in docs).
+apps/desktop/test-results/
+apps/desktop/playwright-report/

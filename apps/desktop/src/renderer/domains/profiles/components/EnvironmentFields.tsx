@@ -3,7 +3,7 @@ import type { ProfileEnvironmentOptions } from '../../../shared/api/types'
 import { FormField } from '../../../shared/components/FormField'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select-radix'
+import { Select } from '../../../shared/components/ui/select'
 import { Switch } from '../../../shared/components/ui/switch'
 import { parseKernelKey, type ProfileFormValues } from '../form-schema'
 import {
@@ -90,15 +90,15 @@ export function EnvironmentFields({ options, optionsLoading, optionsError, onRet
         <FormField label="视口高" htmlFor="profile-viewport-height" error={errors.viewportHeight?.message}>{(a11y) => <>
           <Controller control={control} name="viewportHeight" render={({ field }) => <Input {...a11y} {...field} id="profile-viewport-height" inputMode="numeric" aria-invalid={Boolean(errors.viewportHeight)} aria-describedby={errors.viewportHeight ? 'profile-viewport-height-error' : undefined} />} />
         </>}</FormField>
-      </div> : <Select data-profile-viewport-focus aria-label="视口预设" aria-invalid={Boolean(errors.viewportMode)} aria-describedby={errors.viewportMode ? 'profile-viewport-error' : undefined} value={viewportMode === 'browser' ? '' : viewportPreset || VIEWPORT_PRESETS[0]!.value} className="w-full" onValueChange={(value) => selectViewport((value ?? ''))} options={[...[{ value: "", label: "跟随浏览器（未指定）" }], ...VIEWPORT_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />}
+      </div> : <Select clearable={false} data-profile-viewport-focus aria-label="视口预设" aria-invalid={Boolean(errors.viewportMode)} aria-describedby={errors.viewportMode ? 'profile-viewport-error' : undefined} value={viewportMode === 'browser' ? '' : viewportPreset || VIEWPORT_PRESETS[0]!.value} className="w-full" onValueChange={(value) => selectViewport((value ?? ''))} options={[{ value: "", label: "跟随浏览器（未指定）" }, ...VIEWPORT_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />}
       {!customViewport && errors.viewportMode?.message ? <p id="profile-viewport-error" role="alert" className="m-0 text-xs text-clay">{errors.viewportMode.message}</p> : null}
     </div>
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField label="色彩模式" htmlFor="profile-color-scheme" hint="留空时跟随系统偏好。">{(a11y) => <>
-        <Controller control={control} name="colorScheme" render={({ field }) => <Select {...a11y} {...field} id="profile-color-scheme" aria-describedby="profile-color-scheme-hint" className="w-full" onValueChange={value => field.onChange(value ?? '')} options={[...COLOR_SCHEME_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />} />
+        <Controller control={control} name="colorScheme" render={({ field }) => <Select clearable={false} {...a11y} {...field} id="profile-color-scheme" aria-describedby="profile-color-scheme-hint" className="w-full" onValueChange={value => field.onChange(value ?? '')} options={[...COLOR_SCHEME_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />} />
       </>}</FormField>
       <FormField label="人类行为预设" htmlFor="profile-human-preset" hint="CloakBrowser 支持标准与谨慎两种节奏。">{(a11y) => <>
-        <Controller control={control} name="humanPreset" render={({ field }) => <Select {...a11y} {...field} id="profile-human-preset" aria-describedby="profile-human-preset-hint" className="w-full" onValueChange={value => field.onChange(value ?? '')} options={[...HUMAN_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />} />
+        <Controller control={control} name="humanPreset" render={({ field }) => <Select clearable={false} {...a11y} {...field} id="profile-human-preset" aria-describedby="profile-human-preset-hint" className="w-full" onValueChange={value => field.onChange(value ?? '')} options={[...HUMAN_PRESETS.map((preset) => ({ value: preset.value, label: String(preset.label) }))]} />} />
       </>}</FormField>
     </div>
     <div className="grid gap-2">

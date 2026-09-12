@@ -11,7 +11,7 @@ export function ProviderLogo({ presetId, size = 'medium' }: { presetId?: string 
   const inset = preset?.id === 'openai' || preset?.id === 'siliconflow'
     ? 'p-0'
     : size === 'large' ? 'p-2.5' : size === 'small' ? 'p-1.5' : 'p-2'
-  return <span aria-hidden className={`${dimensions} ${inset} inline-flex shrink-0 items-center justify-center rounded-xl border border-line bg-white text-muted`}>
+  return <span aria-hidden className={`${dimensions} ${inset} inline-flex shrink-0 items-center justify-center rounded-card border border-line bg-white text-muted`}>
     {source && failedSource !== source
       ? <img key={source} src={source} alt="" className="h-full w-full object-contain" onError={() => setFailedSource(source)} />
       : <PlugsConnected className="h-full w-full" />}

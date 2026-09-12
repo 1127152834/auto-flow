@@ -1,0 +1,34 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ follows aliases, reexports and dynamic imports; reports dormant sources separately (8.901916ms)
+✔ catches string aliases and style hints, with precise native and CSS exceptions (1.294542ms)
+✔ a hidden form-value exception never permits a visible input (0.33975ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.130125ms)
+✔ browser management smoke creates the platform kernel layout (0.169708ms)
+✔ packaged smoke cannot silently select external health mode (1.243ms)
+✔ cleanup rejects after the final deadline if the child never exits (12.566584ms)
+✔ cleanup observes close without requiring exit (0.247458ms)
+✔ cleanup rejects a child process error (0.167667ms)
+✔ required path exists: apps/desktop/package.json (0.521083ms)
+✔ required path exists: apps/backend/pyproject.toml (0.081542ms)
+✔ root scripts expose the foundation checks (0.161667ms)
+✔ ink against surface meets 4.5:1 (1.220125ms)
+✔ muted against surface meets 4.5:1 (0.101708ms)
+✔ on-accent against clay meets 4.5:1 (0.116125ms)
+✔ danger against danger-soft meets 4.5:1 (0.162167ms)
+✔ success against success-soft meets 4.5:1 (0.096209ms)
+✔ warning against warning-soft meets 4.5:1 (0.071209ms)
+✔ control-border against surface meets 3:1 (0.060916ms)
+✔ control-border against canvas meets 3:1 (0.066ms)
+✔ focus against surface meets 3:1 (0.081292ms)
+✔ tokens define shared density, focus, scrolling and overlay motion (0.23525ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 241.901209

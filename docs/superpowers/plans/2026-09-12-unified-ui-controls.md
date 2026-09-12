@@ -242,10 +242,10 @@ const decodeValue = (value: string): string | null => value === '' ? null : valu
 - 新建 `apps/desktop/src/renderer/shared/components/ui/tooltip.test.tsx`、`tabs.test.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/OverlayCases.tsx`。
 
-- [ ] 扩展已有测试：菜单转弹窗后焦点正确；Tooltip不替代按钮label；Tabs焦点/选中独立；危险确认取消初焦；忙时Escape/遮罩/关闭按钮都不能关闭；触发器消失后的focus fallback。
-- [ ] 执行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components` 验证新增断言先失败。
-- [ ] 统一DialogContent frame边界、OverlayHost和size；Modal固定header/footer、body单一滚动；Drawer仅改变同一frame为右侧布局。不要在各domain继续增加z-index或再写焦点return。
-- [ ] Tooltip延迟400ms、退出100ms；键盘focus即能显示，Escape关闭；Dropdown项统一危险/禁用/highlight，使用`asChild`给IconButton避免button嵌套。Tabs/Disclosure动作保持原语控制。
+- [x] 扩展已有测试：菜单转弹窗后焦点正确；Tooltip不替代按钮label；Tabs焦点/选中独立；危险确认取消初焦；忙时Escape/遮罩/关闭按钮都不能关闭；触发器消失后的focus fallback。
+- [x] 执行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components` 验证新增断言先失败。
+- [x] 统一DialogContent frame边界、OverlayHost和size；Modal固定header/footer、body单一滚动；Drawer仅改变同一frame为右侧布局。不要在各domain继续增加z-index或再写焦点return。
+- [x] Tooltip延迟400ms、退出100ms；键盘focus即能显示，Escape关闭；Dropdown项统一危险/禁用/highlight，使用`asChild`给IconButton避免button嵌套。Tabs/Disclosure动作保持原语控制。
 - [ ] 绿灯后在展示页验证三级浮层、滚动体菜单、窄窗口与reduced motion；提交 `feat(ui): standardize overlays menus and tabs`。对应A06。
 
 ## T7：表格、分页与反馈组合
@@ -257,9 +257,9 @@ const decodeValue = (value: string): string | null => value === '' ? null : valu
 - 修改 `apps/desktop/src/renderer/shared/components/Toaster.tsx`、`Toaster.test.tsx`、`State.tsx`；`ResourceState.tsx` 仅在迁移实有复用后保留，否则T12删除未用包装。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/DataFeedbackCases.tsx`。
 
-- [ ] 写分页首/尾/空数据边界与aria-label测试、未知进度无valuenow、spinner装饰不重复播报、Toast tone与定时退场测试。
-- [ ] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/pagination.test.tsx src/renderer/shared/components/ui/feedback.test.tsx src/renderer/shared/components/Toaster.test.tsx` 得到红灯。
-- [ ] Table仅暴露语义table/thead/tbody/tr/th/td样式封装；不加排序、列管理、远程状态。Pagination接收offset/limit/total/count/onOffsetChange，计算保持现有ProxyFleet行为：
+- [x] 写分页首/尾/空数据边界与aria-label测试、未知进度无valuenow、spinner装饰不重复播报、Toast tone与定时退场测试。
+- [x] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/pagination.test.tsx src/renderer/shared/components/ui/feedback.test.tsx src/renderer/shared/components/Toaster.test.tsx` 得到红灯。
+- [x] Table仅暴露语义table/thead/tbody/tr/th/td样式封装；不加排序、列管理、远程状态。Pagination接收offset/limit/total/count/onOffsetChange，计算保持现有ProxyFleet行为：
 
 ```ts
 const start = total === 0 ? 0 : offset + 1
@@ -270,7 +270,7 @@ const canPrevious = offset > 0
 const canNext = offset + count < total
 ```
 
-- [ ] Alert/EmptyState只表达渲染状态；ResourceState不得把“有缓存+刷新错误”隐藏掉。Progress `value:number|null`，null无伪百分比；复用T3已实现且减少动效时变静态的Spinner。Toaster保持notify函数与挂载流程，仅统一呈现与关闭控件；State使用可见样式替代无定义类。
+- [x] Alert/EmptyState只表达渲染状态；ResourceState不得把“有缓存+刷新错误”隐藏掉。Progress `value:number|null`，null无伪百分比；复用T3已实现且减少动效时变静态的Spinner。Toaster保持notify函数与挂载流程，仅统一呈现与关闭控件；State使用可见样式替代无定义类。
 - [ ] 运行shared tests/typecheck/build；展示页覆盖正常/空搜索/初始空/加载/缓存失败/未知进度/retry/toast。提交 `feat(ui): standardize data and feedback patterns`。完成G1。
 
 ## T8：浏览器配置与内核切片
@@ -281,8 +281,8 @@ const canNext = offset + count < total
 - `apps/desktop/src/renderer/domains/kernels/components/LicensePanel.tsx`、`KernelManagerDialog.tsx`、`KernelReleaseList.tsx`、`KernelOperationStatus.tsx`、`DeleteKernelDialog.tsx`。
 - 修改上述已有同名`.test.tsx`；新增 `domains/profiles/components/EnvironmentOptionField.test.tsx`、`domains/kernels/components/DeleteKernelDialog.test.tsx`（前缀同renderer）。
 
-- [ ] 更新测试使用用户点击/键盘选择自有面板，不能继续用`user.selectOptions`掩盖原生select残留。先加失效内核、public→stable、切换代理模式清空id、locale/timezone手动与失败fallback、UA自由输入、嵌套确认的断言并运行红灯。
-- [ ] 逐个表单Field接入render-prop与ref；按审计22处账本迁移本模块select。保留领域value变换，例如：
+- [x] 更新测试使用用户点击/键盘选择自有面板，不能继续用`user.selectOptions`掩盖原生select残留。先加失效内核、public→stable、切换代理模式清空id、locale/timezone手动与失败fallback、UA自由输入、嵌套确认的断言并运行红灯。
+- [x] 逐个表单Field接入render-prop与ref；按审计22处账本迁移本模块select。保留领域value变换，例如：
 
 ```tsx
 onValueChange={(value) => {
@@ -294,9 +294,9 @@ onValueChange={(value) => {
 }}
 ```
 
-- [ ] EnvironmentOptionField保留最新options props与manual状态/焦点行为，预设用Combobox；不触碰profiles/api.ts、hooks.ts、presets.ts或后端JSON。UA若仍为datalist则改Autocomplete；若T0确认已走EnvironmentOptionField，则复用该字段的Combobox+手动模式并保留后端目录，不拆回旧实现。Numeric仍交schema校验；AdvancedFields改Disclosure。
-- [ ] 列表搜索/按钮/空态，内核License、版本按钮、Progress、取消/失败、删除确认使用统一控件；原有事件流与请求重试不变。Manager仍只由“管理内核”进入。
-- [ ] Run `npm --workspace @autoflow/desktop test -- src/renderer/domains/profiles src/renderer/domains/kernels`、typecheck/lint。真实任务实例验证A10全流程与A06三级浮层、A07滚动。真实License/远程下载若无测试条件，记录未执行，不调用用户账户做虚构验收。
+- [x] EnvironmentOptionField保留最新options props与manual状态/焦点行为，预设用Combobox；不触碰profiles/api.ts、hooks.ts、presets.ts或后端JSON。UA若仍为datalist则改Autocomplete；若T0确认已走EnvironmentOptionField，则复用该字段的Combobox+手动模式并保留后端目录，不拆回旧实现。Numeric仍交schema校验；AdvancedFields改Disclosure。
+- [x] 列表搜索/按钮/空态，内核License、版本按钮、Progress、取消/失败、删除确认使用统一控件；原有事件流与请求重试不变。Manager仍只由“管理内核”进入。
+- [x] Run `npm --workspace @autoflow/desktop test -- src/renderer/domains/profiles src/renderer/domains/kernels`、typecheck/lint。真实任务实例验证A10全流程与A06三级浮层、A07滚动。真实License/远程下载若无测试条件，记录未执行，不调用用户账户做虚构验收。
 - [ ] 提交 `refactor(ui): migrate browser and kernel controls`，附真实截图和未执行项到verification文档；只通过本切片才继续。
 
 ## T9：代理、代理池与抽屉切片
@@ -307,9 +307,9 @@ onValueChange={(value) => {
 - 修改 `apps/desktop/src/renderer/domains/proxies/tests/ProxyManagementPage.test.tsx`。
 - 新建 `apps/desktop/src/renderer/domains/proxies/tests/ProxyControls.test.tsx`。
 
-- [ ] 加协议保持、radio disabled/箭头、过滤不丢成员、分页上下界、password显示、busy锁与异常恢复用例；运行新用例得到红灯。
-- [ ] 原生radio替换RadioGroup；原生checkbox替换Checkbox；fieldset/legend关联组。检测与凭据协议保留新主线默认/回调，不能将SOCKS5优先改回HTTP。
-- [ ] 成员编辑用SearchInput + Checkbox + ScrollArea；代理表格Table+Pagination；运营商/城市Combobox；健康/轮换协议Select；抽屉接Drawer。capability、库存、outcome_unknown与retryAfter行为保持领域原值。
+- [x] 加协议保持、radio disabled/箭头、过滤不丢成员、分页上下界、password显示、busy锁与异常恢复用例；运行新用例得到红灯。
+- [x] 原生radio替换RadioGroup；原生checkbox替换Checkbox；fieldset/legend关联组。检测与凭据协议保留新主线默认/回调，不能将SOCKS5优先改回HTTP。
+- [x] 成员编辑用SearchInput + Checkbox + ScrollArea；代理表格Table+Pagination；运营商/城市Combobox；健康/轮换协议Select；抽屉接Drawer。capability、库存、outcome_unknown与retryAfter行为保持领域原值。
 
 ```tsx
 // 成员选择仍由领域管理，不让搜索结果替代已选集合。
@@ -333,8 +333,8 @@ onValueChange={(value) => {
 - 修改 `apps/desktop/src/renderer/domains/models/tests/ModelManagementPage.test.tsx`、`ProviderWizard.test.tsx`、`ModelEditor.test.tsx`；新增 `TagInput.test.tsx`、`ModelIdInput.test.tsx`。
 
 - [ ] 写手动modelKey、建议附加数据回调、IME Enter、只读ID、标签去重/中文逗号/失焦提交、完整发现集合全选、菜单转弹窗焦点测试；红灯必须能显示旧手写建议的行为缺口。
-- [ ] ModelDirectory直接原生select改Select；目录Table、SearchInput、IconButton/Menu；ModelIdInput改Autocomplete但仍回传领域option补充元数据。TagInput只抽现有字符串行为，不变成建议多选控件。
-- [ ] 三步向导checklist滚动/搜索、连接password、文本域、Disclosure、provider选择按钮的selected/aria语义接入共同视觉。供应商编辑仍在ProviderWizard的editing分支，没有独立ProviderEditDialog文件。保留最新ProviderLogo与品牌资源；保留供应商侧栏、split编辑、原有表单关闭行为；不得给模型新增未保存确认或Toast流程。
+- [x] ModelDirectory直接原生select改Select；目录Table、SearchInput、IconButton/Menu；ModelIdInput改Autocomplete但仍回传领域option补充元数据。TagInput只抽现有字符串行为，不变成建议多选控件。
+- [x] 三步向导checklist滚动/搜索、连接password、文本域、Disclosure、provider选择按钮的selected/aria语义接入共同视觉。供应商编辑仍在ProviderWizard的editing分支，没有独立ProviderEditDialog文件。保留最新ProviderLogo与品牌资源；保留供应商侧栏、split编辑、原有表单关闭行为；不得给模型新增未保存确认或Toast流程。
 
 ```tsx
 // 键盘标签提交继续避开输入法确认事件。
@@ -361,9 +361,9 @@ onKeyDown={(event) => {
 - 修改 `domains/settings/tests/SettingsPage.test.tsx`、`domains/dashboard/tests/DashboardPage.test.tsx`、`app/App.test.tsx`（前缀均为renderer）。
 - 新建 `apps/desktop/src/renderer/app/ApplicationHeader.test.tsx`。
 
-- [ ] 增加设置两Select值映射、临时请求busy、诊断checkbox、导航aria-current、断线重连按钮及空/失败状态测试并运行红灯。
-- [ ] 设置zoom options用string映射后还原原数字枚举90/100/110/125，不新增150/200持久化值；动效system/reduce/full不变。详情与运行环境按钮改Disclosure；诊断code/pre可选中复制和滚动。
-- [ ] 资源卡/导航使用统一action视觉和显式button语义；不要改变页面路由或新增侧栏。总览/服务状态组合共享反馈组件，仍显示现有真实数据。
+- [x] 增加设置两Select值映射、临时请求busy、诊断checkbox、导航aria-current、断线重连按钮及空/失败状态测试并运行红灯。
+- [x] 设置zoom options用string映射后还原原数字枚举90/100/110/125，不新增150/200持久化值；动效system/reduce/full不变。详情与运行环境按钮改Disclosure；诊断code/pre可选中复制和滚动。
+- [x] 资源卡/导航使用统一action视觉和显式button语义；不要改变页面路由或新增侧栏。总览/服务状态组合共享反馈组件，仍显示现有真实数据。
 - [ ] Run `npm --workspace @autoflow/desktop test -- src/renderer/domains/settings src/renderer/domains/dashboard src/renderer/app`、typecheck/lint；人工A13真实应用回归。150/200%是验收运行时缩放，不修改设置API枚举。
 - [ ] 提交 `refactor(ui): finish settings dashboard and shell controls`，完成G2。
 
@@ -376,8 +376,8 @@ onKeyDown={(event) => {
 - 修改根 `package.json` 增加 `audit:ui` 命令；必要时修改 `apps/desktop/src/renderer/proxy-preview.tsx` 仅适配新API。
 - 更新 `docs/design-system/2026-09-12-ui-controls-usage.md` 的实施后附录、`docs/PROJECT_STRUCTURE.md`、`.ai/memory/project-context.md`（只有已确认且已实现的事实）。
 
-- [ ] 先为扫描器添加测试fixture：import alias、路径导出、动态import、Fragment、map、原始input/select/datalist、违规className、未接入preview/草稿；验证不会把Primitive内部input算作领域绕过。
-- [ ] AST遍历入口和生产全部renderer两条链：实际入口用于覆盖率，所有production源用于防潜在回归；未接入草稿单列。允许名单精确到文件+元素+用途，不能全局允许domains或整个shared。
+- [x] 先为扫描器添加测试fixture：import alias、路径导出、动态import、Fragment、map、原始input/select/datalist、违规className、未接入preview/草稿；验证不会把Primitive内部input算作领域绕过。
+- [x] AST遍历入口和生产全部renderer两条链：实际入口用于覆盖率，所有production源用于防潜在回归；未接入草稿单列。允许名单精确到文件+元素+用途，不能全局允许domains或整个shared。
 - [ ] 最终规则与人工辅助扫描：
 
 ```bash
@@ -389,8 +389,8 @@ AST要求：domains/app无裸select/datalist/input/textarea；rawbutton只可在
 
 样式扫描排除token定义和明确领域品牌标识色；图标/状态色应token化。系统日期/文件等控件如未来出现必须新增用途评审，不一刀切把语义DOM全部禁掉。CSS扫描只是线索，实际computed style/截图才证明没有系统外观。
 
-- [ ] 完成唯一Select入口和FormField调用迁移；运行`node --test scripts/audit-ui-controls.test.mjs`、`npm run audit:ui`、全套前端test/typecheck/lint/build。
-- [ ] build后扫描 `apps/desktop/out/renderer`：不得包含 `autoflow-ui-controls-lab`、UiLab fixture专用长样本标识；测试DEV入口可达且prod hash不能启用演示页。不要把“全局不存在select DOM”当通过条件，Radix表单隐藏节点可能合法。
+- [x] 完成唯一Select入口和FormField调用迁移；运行`node --test scripts/audit-ui-controls.test.mjs`、`npm run audit:ui`、全套前端test/typecheck/lint/build。
+- [x] build后扫描 `apps/desktop/out/renderer`：不得包含 `autoflow-ui-controls-lab`、UiLab fixture专用长样本标识；测试DEV入口可达且prod hash不能启用演示页。不要把“全局不存在select DOM”当通过条件，Radix表单隐藏节点可能合法。
 - [ ] `git diff --name-only <T0记录的基线>`检查保护路径为空；提交 `refactor(ui): remove native control bypasses and enforce audit`。对应A01/A09与扫描门。
 
 ## T13：真实应用、平台和辅助技术验收 G3
@@ -448,3 +448,18 @@ npm run smoke:desktop
 | 原生控件残留扫描、真实页面和双平台验收 | T12、T13 |
 
 设计已确认，本批T0–T2已实施；G0的本机验证与未执行项见验收报告。后续按T3–T13推进，G1后再决定领域并行，不自动扩派子智能体。
+
+## 2026-09-12 连续实施收口（当前状态，supersedes 早期“待迁移”描述）
+
+用户授权直接完成全部控件/组件；T0–T12 的代码、展示页和领域接入已完成。T13 的 runner/隔离 fixture/自动验收及证据已完成，G3 人工平台项仍 pending，不能将整个计划标为 completed。
+
+| 任务 | 当前结果 | 证据 |
+|---|---|---|
+| T6–T7 | 完成共享浮层/菜单/Tooltip/Tabs、表格/分页/反馈及展示 | verification/shared-patterns.md |
+| T8 | 完成浏览器与内核字段接入 | verification/browser-controls.md、domain-controls.md |
+| T9–T11 | 完成代理/模型/设置/总览/应用壳，未改业务 API | verification/domain-controls.md |
+| T12 | 唯一 Select、无 clone、原生残留审计/生产隔离通过 | verification/ui-controls-audit.json |
+| T13 自动部分 | 70 个文件 325 项单测、5 项 Electron E2E、12 组窗口缩放、axe、16 组控件 smoke | verification/ui-controls-results.md |
+| T13 人工部分 | Windows/读屏/实体 IME/系统滚动条设置、账户条件未执行 | verification/ui-controls-platform-matrix.md |
+
+表内证据位于 `docs/design-system/`。执行收尾使用 requesting-code-review 清单自审；按本计划不自动扩派子智能体，不将自审写成独立第三方复审。T9–T13 合并为一次连续实施提交，避免中间 Select 文件退出造成不可用提交。

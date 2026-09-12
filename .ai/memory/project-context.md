@@ -16,3 +16,5 @@
 - 2026-09-12（confirmed，来源：浏览器计划 Task1–10 独立复审及源代码）：浏览器 UI 使用 desktop shared shadcn/Radix + Tailwind、领域组件、RHF/Zod；查询上下文统一 ApiProvider。同一工作区重连保留编辑树，实际换目录才重置。CloakBrowser wrapper 固定0.5.9，只有其内核能力；后端 worker 处理下载与取消，License 使用共享系统凭据存储。最终页面/平台状态见 docs/migration/browser-management-validation.md。
 
 - 2026-09-12（confirmed，来源：授权实网、脱敏 fixture 和 CUA）：ProxyPanel 列表/凭据/到期字段已接通；SOCKS5 检测通过，HTTP CONNECT 实网超时。数据面密码按需取用且不落库，API Key 保留系统存储。旧“列表一律拒绝”的限制 superseded；远程管理写操作仍未实现。见 docs/migration/proxypanel-live-verification.md。
+
+- 2026-09-12（confirmed，来源：codex/ui-controls-plan 源码、AST 审计与 Electron/单测）：全系统控件在 desktop shared 原地统一，Select 唯一入口、FormField 显式绑定、Radix/React Aria 浮层、统一滚动条和领域接入已完成；packages/ui 未扩建。主目录未修改，业务保护文件按 SHA256 复核。G3 Windows/读屏/实体 IME 未执行，见 docs/design-system/verification/ui-controls-results.md。此事实限定该隔离分支，未合入主线。

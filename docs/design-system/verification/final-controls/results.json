@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-12T08:01:37.165Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "osVersion": "26.4.1",
+  "runtime": {
+    "electron": "41.10.3",
+    "chromium": "146.0.7680.216"
+  },
+  "codeBaseCommit": "5b7245784c2b1e3c2bcd64f746dba1edc038e297",
+  "sourceIncludesWorkingChanges": true,
+  "zoomSamples": [
+    {
+      "factor": 1,
+      "viewport": [
+        1280,
+        768
+      ],
+      "devicePixelRatio": 2
+    },
+    {
+      "factor": 1.25,
+      "viewport": [
+        1024,
+        614
+      ],
+      "devicePixelRatio": 2.5
+    },
+    {
+      "factor": 1.5,
+      "viewport": [
+        853,
+        512
+      ],
+      "devicePixelRatio": 3
+    },
+    {
+      "factor": 2,
+      "viewport": [
+        640,
+        384
+      ],
+      "devicePixelRatio": 4
+    },
+    {
+      "factor": 1,
+      "viewport": [
+        1280,
+        768
+      ],
+      "devicePixelRatio": 2
+    },
+    {
+      "factor": 1.25,
+      "viewport": [
+        1024,
+        614
+      ],
+      "devicePixelRatio": 2.5
+    },
+    {
+      "factor": 1.5,
+      "viewport": [
+        853,
+        512
+      ],
+      "devicePixelRatio": 3
+    },
+    {
+      "factor": 2,
+      "viewport": [
+        640,
+        384
+      ],
+      "devicePixelRatio": 4
+    }
+  ],
+  "checks": [
+    "isolated userData, development lab entry, runtime colors, read-only/disabled surfaces and 32/40 density",
+    "RHF error focus/setFocus, 500-item search/select, dirty, submit and reset",
+    "nested popup and Tab/Shift+Tab stay inside focus scope; first Escape only closes popup",
+    "busy guard, third-layer cancel focus and sequential return focus",
+    "1280x800 at 100/125/150/200%; first mouse and keyboard popup opening, visible actions and keyboard scrolling",
+    "reduced-motion and no renderer exceptions",
+    "T3 loading width/name, static reduced spinner, search clear, reveal and 32/40 typography",
+    "T3 RHF error/ref/reset, Unicode fill and 200% focused field visibility; IME not claimed",
+    "T4 tri-state visible glyphs, 18px mark/32px target, focus ring, disabled controls, Radio arrows and native Disclosure Enter/Space/Tab",
+    "T4 RHF error focus/submit/reset, selected error border, reduced motion, emulated forced colors and 200% long label without horizontal overflow",
+    "T5 Select custom listbox/null versus empty, key-safe selection, strict draft restore, free input/value callback, retry and long-label layout",
+    "T5 ScrollArea 12/6px rails/thumbs, overflow-only visibility, wheel, horizontal thumb drag and keyboard End",
+    "T5 20-sample 500-option event-to-render performance within open 200ms / filter 100ms targets",
+    "G1 Drawer/menu-to-modal ownership, tooltip focus/Escape and feedback notification dismissal",
+    "real browser configuration form opens against isolated sidecar, shared input focus/style and cancel; no saved data",
+    "T4 real browser Switch toggles/restores; real settings diagnostic Checkbox updates preview and cancels without export"
+  ],
+  "errors": []
+}

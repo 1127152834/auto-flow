@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 import { createRef } from 'react'
-import { Select } from './select-radix'
+import { Select } from './select'
 import { decodeValue, encodeValue } from './choice-types'
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} })
@@ -45,4 +45,8 @@ it('does not change read-only values through Radix typeahead', async () => {
   await user.tab(); await user.keyboard('b')
   expect(change).not.toHaveBeenCalled()
   expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+})
+it('does not offer null clearing for a required enum',()=>{
+ render(<Select aria-label="协议" value="socks5" clearable={false} options={[{value:'socks5',label:'SOCKS5'}]} onValueChange={vi.fn()}/>)
+ expect(screen.queryByRole('button',{name:'清除选择'})).not.toBeInTheDocument()
 })

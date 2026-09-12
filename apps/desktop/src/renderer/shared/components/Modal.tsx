@@ -5,6 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } fr
 import { cn } from '../lib/utils'
 
 export type ModalProps = PropsWithChildren<{
+  closeLabel?: string
   placement?: 'dialog' | 'drawer'
   open: boolean
   onOpenChange(open: boolean): void
@@ -23,7 +24,7 @@ const sizes = {
   large: 'max-w-5xl',
 }
 
-export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, placement = 'dialog' }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, placement = 'dialog', closeLabel = '关闭' }: ModalProps) {
   const descriptionId = useId()
   const focusReturn = useRef<{ opener: HTMLElement | null; container: HTMLElement | null; content: HTMLElement | null }>({ opener: null, container: null, content: null })
 
@@ -68,7 +69,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
           {description ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </div>
         <DialogClose asChild>
-          <IconButton type="button" variant="ghost" disabled={closeDisabled} aria-label={closeDisabled ? '正在处理，请稍候' : '关闭'} title={closeDisabled ? '正在处理，请稍候' : '关闭'} className="h-9 w-9 shrink-0 p-0">
+          <IconButton type="button" variant="ghost" disabled={closeDisabled} aria-label={closeDisabled ? '正在处理，请稍候' : closeLabel} title={closeDisabled ? '正在处理，请稍候' : closeLabel} className="h-9 w-9 shrink-0 p-0">
             <X size={18} />
           </IconButton>
         </DialogClose>

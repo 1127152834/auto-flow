@@ -1,0 +1,20 @@
+
+> audit:ui
+> node scripts/audit-ui-controls.mjs
+
+{
+  "reachable": 106,
+  "development": 11,
+  "unconnected": [
+    "app/query-provider.tsx",
+    "domains/proxies/index.ts",
+    "proxy-preview.tsx",
+    "vite-env.d.ts"
+  ],
+  "violations": [],
+  "styleHints": 23,
+  "production": {
+    "checked": true,
+    "leaks": []
+  }
+}

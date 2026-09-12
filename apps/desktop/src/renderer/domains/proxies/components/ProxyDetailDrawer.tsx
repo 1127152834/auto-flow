@@ -1,5 +1,10 @@
+import { Spinner } from '../../../shared/components/ui/spinner'
+import { SearchInput } from '../../../shared/components/ui/search-input'
+import { Drawer } from '../../../shared/components/Drawer'
+import { RadioGroup, RadioGroupItem } from '../../../shared/components/ui/radio-group'
+import { Combobox } from '../../../shared/components/ui/combobox'
 import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowsClockwise, CircleNotch, Copy, MapPin, Pulse, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, Copy, MapPin, Pulse } from '@phosphor-icons/react'
 import { capability, type Capability, type IpAllowlist, type LocationList, type ProxyMetadataDraft, type ProxyReferences, type ProxyView, type RotationSchedule } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
@@ -60,15 +65,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
   const usage = capability(capabilities, 'usage')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} busy={actionBusy}>
-      <DialogContent className="left-auto right-0 top-0 h-dvh w-[min(100vw,43rem)] max-w-none translate-x-0 translate-y-0 content-start overflow-y-auto rounded-none border-y-0 border-r-0 p-0 motion-safe:data-[state=open]:animate-in motion-safe:data-[state=open]:slide-in-from-right-2" aria-describedby="proxy-detail-description">
-        <header className="sticky top-0 z-10 flex items-start justify-between border-b border-line bg-surface/95 px-6 py-5 backdrop-blur">
-          <div className="min-w-0">
-            <DialogTitle className="break-words">{proxy.name_override || proxy.name}</DialogTitle>
-            <DialogDescription id="proxy-detail-description" className="mt-1">ProxyPanel 投影详情</DialogDescription>
-          </div>
-          <Button className="h-9 w-9 shrink-0 px-0" variant="ghost" aria-label="关闭代理详情" onClick={() => onOpenChange(false)} disabled={actionBusy}><X size={18} /></Button>
-        </header>
+    <Drawer open={open} onOpenChange={onOpenChange} closeDisabled={actionBusy} title={proxy.name_override || proxy.name} description="ProxyPanel 投影详情" closeLabel="关闭代理详情" bodyClassName="p-0">
         <Tabs defaultValue="overview" className="p-6">
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">概览</TabsTrigger>
@@ -79,11 +76,8 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="overview" className="grid gap-4">
             <section className="flex flex-col gap-4 rounded-card border border-line p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2"><HealthPill health={proxy.health} /><StatusPill>{proxy.remote_status || '远程状态未知'}</StatusPill></div>
-              <Select aria-label="检测协议" value={protocol} disabled={probing} onChange={event => setProtocol(event.target.value as 'http' | 'socks5')}>
-                {proxy.socks5_endpoint && <option value="socks5">SOCKS5</option>}
-                {proxy.http_endpoint && <option value="http">HTTP</option>}
-              </Select>
-              <Button aria-busy={probing} disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}>{probing ? <CircleNotch className="animate-spin" aria-hidden="true" /> : <Pulse aria-hidden="true" />}{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
+              <Select clearable={false} aria-label="检测协议" value={protocol} disabled={probing} onValueChange={value => setProtocol((value ?? '') as 'http' | 'socks5')} options={[...(proxy.socks5_endpoint ? [{ value: "socks5", label: "SOCKS5" }] : []), ...(proxy.http_endpoint ? [{ value: "http", label: "HTTP" }] : [])]} />
+              <Button aria-busy={probing} disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}>{probing ? <Spinner  aria-hidden="true" /> : <Pulse aria-hidden="true" />}{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
             <DetailSection title="本地设置">
               <label className="grid gap-2 text-sm text-ink">显示名称<Input value={nameOverride} maxLength={120} placeholder={proxy.name} onChange={(event) => setNameOverride(event.target.value)} /></label>
@@ -104,7 +98,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
               <DetailRow label="上次检测" value={formatTime(proxy.health.checked_at)} />
               <DetailRow label="到期时间" value={formatTime(proxy.subscription_expires_at)} />
               <DetailRow label="上次同步" value={formatTime(proxy.last_synced_at)} />
-              {proxy.health.error ? <p className="rounded-control bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{proxy.health.error.message}</p> : null}
+              {proxy.health.error ? <p className="rounded-control bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{proxy.health.error.message}</p> : null}
             </DetailSection>
             <DetailSection title="关联资源">
               <DetailRow label="浏览器配置" value={references ? names(references.profiles) : `${proxy.reference_count} 个引用`} />
@@ -134,10 +128,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
           <TabsContent value="credentials" className="grid gap-4">
             <DetailSection title="代理凭据">
               <DetailRow label="凭据状态" value={proxy.credential_available ? '可用，操作时从 ProxyPanel 获取' : '不可用'} />
-              <Select aria-label="凭据协议" value={protocol} onChange={(event) => setProtocol(event.target.value as 'http' | 'socks5')}>
-                {proxy.http_endpoint ? <option value="http">HTTP</option> : null}
-                {proxy.socks5_endpoint ? <option value="socks5">SOCKS5</option> : null}
-              </Select>
+              <Select clearable={false} aria-label="凭据协议" value={protocol} onValueChange={(value) => setProtocol((value ?? '') as 'http' | 'socks5')} options={[...(proxy.http_endpoint ? [{ value: "http", label: "HTTP" }] : []), ...(proxy.socks5_endpoint ? [{ value: "socks5", label: "SOCKS5" }] : [])]} />
               <div className="flex flex-wrap gap-2">
                 {(['username', 'password', 'url'] as const).map((format) => {
                   const key = `${protocol}:${format}`
@@ -158,8 +149,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
             </DetailSection>
           </TabsContent>
         </Tabs>
-      </DialogContent>
-    </Dialog>
+    </Drawer>
   )
 }
 
@@ -168,7 +158,7 @@ function DetailSection({ title, children }: { title: string; children: ReactNode
 }
 
 function DetailRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
-  return <div className="grid gap-1 sm:grid-cols-[9rem_1fr]"><dt className="text-sm text-muted">{label}</dt><dd className={`m-0 break-all text-sm text-ink ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd></div>
+  return <dl className="grid gap-1 sm:grid-cols-[9rem_1fr]"><dt className="text-sm text-muted">{label}</dt><dd className={`m-0 break-all text-sm text-ink ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd></dl>
 }
 
 function EndpointRow({ label, endpoint }: { label: string; endpoint: ProxyView['http_endpoint'] }) {
@@ -200,11 +190,11 @@ export function LocationPicker({ open, locations, selectedId, busy, onOpenChange
       <DialogContent>
         <DialogTitle>改变地点</DialogTitle>
         <DialogDescription>选择 API 返回的稳定地点；列表不显示未经测量的地点延迟。</DialogDescription>
-        <div className="grid gap-3 sm:grid-cols-2"><Input aria-label="搜索地点" placeholder="搜索城市" value={query} onChange={(event) => setQuery(event.target.value)} /><Select aria-label="地点运营商" value={carrier} onChange={(event) => setCarrier(event.target.value)}><option value="">全部运营商</option>{carriers.map((item) => <option key={item}>{item}</option>)}</Select></div>
-        <div className="max-h-72 overflow-y-auto rounded-control border border-line">
-          {items.map((item) => <label className="flex cursor-pointer items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-surface-hover" key={item.id}><input type="radio" name="proxy-location" value={item.id} checked={value === item.id} disabled={item.availability === 'unavailable'} onChange={() => setValue(item.id)} /><span className="flex-1 text-sm text-ink">{item.city}{item.region ? `, ${item.region}` : ''}</span><span className="text-xs text-muted">{item.carrier || '运营商未知'} · {item.availability === 'available' ? '可用' : item.availability === 'unavailable' ? '不可用' : '可用性未知'}</span></label>)}
+        <div className="grid gap-3 sm:grid-cols-2"><SearchInput onClear={() => setQuery('')} aria-label="搜索地点" placeholder="搜索城市" value={query} onChange={(event) => setQuery(event.target.value)} /><Combobox aria-label="地点运营商" value={carrier} onValueChange={(value) => setCarrier((value ?? ''))} options={[{ value: "", label: "全部运营商" }, ...carriers.map((item) => ({ value: String(item), label: String(item) }))]} /></div>
+        <RadioGroup aria-label="可用地点" name="proxy-location" value={value} onValueChange={setValue} className="max-h-72 overflow-y-auto rounded-control border border-line">
+          {items.map((item) => <label className="flex cursor-pointer items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-surface-hover" key={item.id}><RadioGroupItem value={item.id} disabled={item.availability === 'unavailable'} /><span className="flex-1 text-sm text-ink">{item.city}{item.region ? `, ${item.region}` : ''}</span><span className="text-xs text-muted">{item.carrier || '运营商未知'} · {item.availability === 'available' ? '可用' : item.availability === 'unavailable' ? '不可用' : '可用性未知'}</span></label>)}
           {!items.length ? <p className="p-5 text-center text-sm text-muted">没有匹配地点</p> : null}
-        </div>
+        </RadioGroup>
         <div className="flex justify-end gap-2"><Button onClick={() => onOpenChange(false)}>取消</Button><Button variant="primary" disabled={!value || busy} onClick={() => onSubmit(value)}>{busy ? '正在切换…' : '切换地点'}</Button></div>
       </DialogContent>
     </Dialog>
@@ -212,7 +202,7 @@ export function LocationPicker({ open, locations, selectedId, busy, onOpenChange
 }
 
 export function RotationForm({ value, disabled, onSave }: { value: RotationSchedule; disabled?: string; onSave: (value: RotationSchedule) => void }) {
-  return <fieldset className="grid gap-3" disabled={Boolean(disabled)}><Select aria-label="轮换模式" value={value.mode ?? ''} onChange={(event) => onSave({ ...value, mode: event.target.value as RotationSchedule['mode'] })}><option value="">不轮换</option><option value="same_city">同城轮换</option><option value="random_city">随机城市</option><option value="same_carrier">保持运营商</option></Select>{disabled ? <p className="text-sm text-muted">{disabled}</p> : null}</fieldset>
+  return <fieldset className="grid gap-3" disabled={Boolean(disabled)}><Select clearable={false} aria-label="轮换模式" value={value.mode ?? ''} onValueChange={(nextValue) => onSave({ ...value, mode: (nextValue ?? '') as RotationSchedule['mode'] })} options={[{ value: "", label: "不轮换" }, { value: "same_city", label: "同城轮换" }, { value: "random_city", label: "随机城市" }, { value: "same_carrier", label: "保持运营商" }]} />{disabled ? <p className="text-sm text-muted">{disabled}</p> : null}</fieldset>
 }
 
 export function AllowlistEditor({ value, disabled, onChange }: { value: IpAllowlist; disabled?: string; onChange: (value: IpAllowlist) => void }) {

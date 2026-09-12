@@ -51,7 +51,7 @@ export function KernelReleaseList({ releases, defaultKernel, licensed, operation
               <Badge>{release.edition === 'licensed' ? '正式版' : '公开版'}</Badge>
               <Badge className="bg-surface-subtle text-muted">{release.releaseChannel === 'preview' ? 'Preview' : release.releaseChannel === 'stable' ? 'Stable' : '通道未知'}</Badge>
               {release.installed ? <Badge className="bg-sage-soft text-sage-strong">已安装</Badge> : null}
-              {isDefault ? <Badge className="bg-blue-50 text-blue-800">默认</Badge> : null}
+              {isDefault ? <Badge className="bg-clay-soft text-clay">默认</Badge> : null}
             </div>
             <dl className="mb-0 mt-3 grid grid-cols-2 gap-x-5 gap-y-1 text-xs text-muted sm:grid-cols-4">
               <div><dt>Chromium</dt><dd className="m-0 text-ink">{release.chromiumVersion ?? '未知'}</dd></div>
@@ -65,7 +65,7 @@ export function KernelReleaseList({ releases, defaultKernel, licensed, operation
             {release.installed ? <>
               <Button type="button" className="h-8 px-3" disabled={disabled || busy} onClick={() => void onSetDefault(isDefault ? null : kernel)}>{isDefault ? '取消默认' : '设为默认'}</Button>
               <Button type="button" className="h-8 px-3" disabled={disabled || busy || !canReveal} onClick={() => void onReveal(kernel)}>打开目录</Button>
-              <Button type="button" variant="ghost" className="h-8 px-3 text-red-700" disabled={disabled || busy} onClick={(event) => onDelete(kernel, event.currentTarget)}>删除</Button>
+              <Button type="button" variant="ghost" className="h-8 px-3 text-danger" disabled={disabled || busy} onClick={(event) => onDelete(kernel, event.currentTarget)}>删除</Button>
             </> : operationActive ? null : <Button type="button" variant="primary" className="h-8 px-3" disabled={disabled || busy || locked} onClick={() => void onDownload(release)}>{locked ? '需要 License' : '下载安装'}</Button>}
           </div>
         </div>

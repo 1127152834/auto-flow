@@ -1,4 +1,4 @@
-import { Select } from '../components/ui/select-radix'
+import { Select } from '../components/ui/select'
 import { ScrollArea } from '../components/ui/scroll-area'
 import { useState } from 'react'
 import { Button } from '../components/ui/button'

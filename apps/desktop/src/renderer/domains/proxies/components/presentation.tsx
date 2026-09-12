@@ -1,3 +1,4 @@
+import { Badge } from '../../../shared/components/ui/badge'
 import type { ReactNode } from 'react'
 import type { Capability, HealthSnapshot } from '../api'
 
@@ -11,13 +12,7 @@ export function StatusPill({ tone = 'neutral', children }: {
   tone?: 'success' | 'warning' | 'danger' | 'neutral'
   children: ReactNode
 }) {
-  const colors = {
-    success: 'bg-sage-soft text-sage-strong',
-    warning: 'bg-amber-50 text-amber-800',
-    danger: 'bg-red-50 text-red-700',
-    neutral: 'bg-surface-subtle text-muted',
-  }
-  return <span className={`inline-flex w-fit shrink-0 items-center whitespace-nowrap gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${colors[tone]}`}>{children}</span>
+  return <Badge tone={tone === 'danger' ? 'error' : tone} className="w-fit shrink-0 whitespace-nowrap gap-1">{children}</Badge>
 }
 
 export function HealthPill({ health }: { health: HealthSnapshot }) {

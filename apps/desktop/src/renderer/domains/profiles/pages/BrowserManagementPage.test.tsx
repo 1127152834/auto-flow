@@ -173,7 +173,7 @@ it('keeps the form draft mounted while the nested kernel manager opens and resto
   expect(await screen.findByRole('heading', { name: 'CloakBrowser 内核管理' })).toBeInTheDocument()
   const overlays = document.querySelectorAll('[data-slot="modal-overlay"]')
   expect(overlays).toHaveLength(2)
-  expect([...overlays].every((overlay) => overlay.classList.contains('z-[50]'))).toBe(true)
+  expect([...overlays].every((overlay) => (overlay as HTMLElement).style.zIndex.includes('var(--layer-modal)'))).toBe(true)
   await user.click(screen.getByRole('button', { name: '关闭内核管理' }))
   await waitFor(() => expect(trigger).toHaveFocus())
   await user.click(screen.getByRole('tab', { name: '基础信息' }))

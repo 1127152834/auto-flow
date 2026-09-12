@@ -1,0 +1,26 @@
+
+> @autoflow/desktop@0.1.0 test:ui
+> playwright test --config playwright.ui.config.ts
+
+
+Running 5 tests using 1 worker
+
+(node:49448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Port 5173 is in use, trying another one...
+[BABEL] Note: The code generator has deoptimised the styling of /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-controls-e2e-fcH8xn/.vite/deps/react-dom_client.js?v=e3511333 as it exceeds the max of 500KB.
+  ✓  1 tests/ui/controls.accessibility.spec.ts:9:1 › axe: actual navigation pages and real nested forms (9.6s)
+Port 5173 is in use, trying another one...
+[BABEL] Note: The code generator has deoptimised the styling of /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-controls-e2e-eDePg0/.vite/deps/react-dom_client.js?v=cbb7b0f3 as it exceeds the max of 500KB.
+  ✓  2 tests/ui/controls.page-fixtures.spec.ts:6:1 › page fixture: proxy table, SOCKS5, ordered searchable group membership (5.3s)
+Port 5173 is in use, trying another one...
+[BABEL] Note: The code generator has deoptimised the styling of /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-controls-e2e-yHw0Ul/.vite/deps/react-dom_client.js?v=d1d177ee as it exceeds the max of 500KB.
+  ✓  3 tests/ui/controls.page-fixtures.spec.ts:32:1 › page fixture: model suggestions apply metadata, free IDs and tags preserve save payload (4.8s)
+Port 5173 is in use, trying another one...
+[BABEL] Note: The code generator has deoptimised the styling of /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-controls-e2e-maHS0t/.vite/deps/react-dom_client.js?v=0ed00839 as it exceeds the max of 500KB.
+  ✓  4 tests/ui/controls.real-pages.spec.ts:3:1 › real sidecar: browser, nested kernels, proxy connection, model connection and settings (7.3s)
+Port 5173 is in use, trying another one...
+[BABEL] Note: The code generator has deoptimised the styling of /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-controls-e2e-5xhedA/.vite/deps/react-dom_client.js?v=640bfff0 as it exceeds the max of 500KB.
+  ✓  5 tests/ui/controls.real-pages.spec.ts:38:1 › real browser form: all prescribed window/zoom combinations keep footer and nested dialog reachable (13.1s)
+
+  5 passed (40.8s)

@@ -3,7 +3,7 @@
 - 日期：2026-09-12；状态：**approved，用户2026-09-12确认；实现与平台验收分别记录**。
 - 来源：[实际源码盘点](../../design-system/2026-09-12-ui-controls-audit.md)、用户本轮明确要求、既有暖灰/黏土棕视觉和领域 ADR。
 - 使用技能：Superpowers `using-superpowers`、`brainstorming`、`using-git-worktrees`；实现任务由 `writing-plans` 细化；以 `ponytail` 的复用原则限制范围。
-- 设计阶段仅产出文档；用户确认后已完成T0–T2。本机G0与尚未执行的领域/平台验收分开记录。
+- 当前：T0–T12 已实施，T13 本机自动检查与跨平台人工检查分别记录；最终状态见 `../../design-system/verification/ui-controls-results.md`。
 
 ## 1. 目标、边界与推荐方案
 
@@ -254,3 +254,7 @@ T3续验新增 UI-G0-01 偶发关闭待查项，后续重复通过不代表根�
 Disclosure 使用 `summary: ReactNode` 和原生 details props（包括 ref/open/onToggle）；summary必须是描述性内容，不在其中放第二个交互按钮。需要受控时由调用方在 onToggle 读取 currentTarget.open。隐藏系统 marker 并绘制 Phosphor chevron，不自造 aria-expanded、键盘处理或不可靠的高度动画。
 
 RadioGroup 的 Root 提供组名/值与方向，错误绑定到组；需要 RHF setFocus 时将 ref 连接首个可用 Item。零间隔合成 keydown/keyup 可命中 Radix 异步焦点竞态，已登记 UI-T4-01；正常顺序的自动验证不能替代实体键盘/读屏验收。详见 `docs/design-system/verification/toggle-controls.md`。
+
+## 2026-09-12 实施补充（confirmed）
+
+共享 ChoiceProps 补 `clearable?: boolean`；保持已有可空用例默认可清除，领域固定枚举明确传 false，避免出现接口不接受的空值。PasswordInput 仅代理原有显隐入口传 allowReveal。Autocomplete 的输入草稿与显式候选选择分开，保证元数据仅随候选提交。API/后端/数据不变。
