@@ -104,3 +104,12 @@ assert decode_record_key(encode_record_key(record_key('a/b%中文')), 'text') ==
 - [x] 隔离工作区与 PM1 基线验证。
 - [x] 旧项目和冻结契约只读审计；旧 Sheets 留 PM6，旧项目未发现 XLSX 导出实现。
 - [ ] PM2 业务实现及验收（尚未执行，不能用以上审计代替）。
+
+## A2b/A2c 当前执行细化（2026-09-13）
+
+A1、B1、A2a表资料和C1表资料组件已分别通过独立规格/工程复核并提交；完整PM2仍在实施中。前端组件13项、全量前端461项、后端602项为本次基础包证据，不是数据页面验收。
+
+- [ ] A2b（pm2_data_rules_impl）：`application/project_data/catalog.py`负责字段/状态命令规范化，`domain/project_data/catalog.py`负责目录端口及验证，`infrastructure/database/project_data_catalog.py`负责列表、字段创建、状态创建/编辑和短事务。共享已验证事务辅助仅在出现第二实际消费者后提取到`project_data_commands.py`，现有表测试不得回退。运行`uv run --directory apps/backend pytest tests/integration/test_project_data_catalog.py tests/integration/test_project_data_repository.py -q`，先保存缺实现失败，再实现并重复验证。字段默认填充必须全量验证、只推进有实际写入的contentRevision，逐行保存变更；状态目录不改记录当前状态。实际Sheets映射前，mapped策略明确412。
+- [ ] A2c（主协调）：`infrastructure/database/project_data_impacts.py`负责已存字段修改的影响预检和同事务复验；测试`tests/integration/test_project_data_impacts.py`。预检通过完整FieldRef定位当前代次与字段；保存规范change摘要、table/field修订、当前有效记录的身份/内容修订/受影响值的事实摘要、10分钟过期时间。报告列出不兼容记录（限量明细加总量）及公式/身份字段阻断。`preview_field_update(project_id,ref,definition)`返回ImpactReport，不建Operation；`require_field_update(session,project_id,ref,definition,impact_revision)`由实际字段编辑仓储在BEGIN IMMEDIATE中调用，重新读取并比较，失败412、资源丢失404或代次410，阻断不允许提交。记录在其他字段上有更新也需重新确认，不隐藏事实变化。
+- [ ] A2c失败测试包括：预检不建Operation；错误项目/字段/代次；规范请求重现；改值/增行/删行/新tableRevision后旧确认失效；超过10分钟失效；不同变更不共享确认；不可转换值与公式/身份改型列出阻断；无外部动作；caller rollback不留副作用。执行定向pytest、Ruff、mypy后送独立规格和工程审查。
+- [ ] 主协调将A2b真实handler接入现有project_data router（GET/POST fields、GET/POST/PATCH statuses），扩展真实Operation结果；A2c进入字段PATCH时同时开放mutation-impact，生成唯一DTO；禁止仅添加无消费者的空接口。随后接记录与批量状态，最后数据五页签和文件IPC/导入页面。

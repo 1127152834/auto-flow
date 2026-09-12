@@ -37,3 +37,13 @@ Excel原七项规格问题复核通过，工程审查新发现字符串32768截�
 四个真实HTTP操作为表目录GET/POST和详情GET/PATCH；项目Operation查询扩展真实createTable/updateTable结果。数据记录、字段、状态和文件IPC仍未交付，因此没有启用数据页能力或冒充完整PM2。
 
 前端纯组件规格问题（session、父级关闭、busy确认、fixture）及工程问题（render阶段ref副作用）全部闭合。session/epoch变更改在useLayoutEffect提交生命周期；startTransition + Suspense回归证明被丢弃的B渲染不污染已提交A的请求。独立工程复审通过，13项组件测试、TypeScript和ESLint通过；稳定代码全量前端461项通过。组件尚未装配正式数据页，不能作为PM2页面验收。
+
+## A2c 字段修改影响确认基础
+
+完整FieldRef/RecordRef、规范change、table/fieldRevision和全量当前记录事实绑定持久确认，10分钟有效；预检不创建Operation。最初实现把逐值规则验证放在数据库事务内，真实并发写反例复现SQLite锁失败后，改为只读快照提取单值投影到2MiB spool，释放读事务后运行规则。最终写入前由调用方同一短事务重新计算事实摘要；旧确认必须412。18项集成测试、Ruff/mypy通过，独立规格与工程审查均通过。
+
+当前只有预检/复验适配器，字段PATCH尚未接入。后续必须在同一BEGIN IMMEDIATE中复验后立即修改并提交操作事实；没有该真实调用链时不能标记字段编辑交付。
+
+## A2b 字段与状态目录审查（进行中）
+
+原P1状态更新幂等摘要遗漏statusId、P1字段/记录变更缺数据代次、P2修订超出JSON安全整数均已修复，规格复核通过。43项目录/原表回归通过，包含默认回填中途失败整体回滚。工程发现无默认值的可选字段仍加载全表记录，正在改为按需查询和有界回填；未经最终复核不提交本包。
