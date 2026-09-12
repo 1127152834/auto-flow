@@ -306,3 +306,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `domain/project_data/query.py`负责严格查询表达式和保真类型比较；`application/project_data/queries.py`校验查询身份/分页，`infrastructure/database/project_data_queries.py`在同一SQLite读快照完成过滤、稳定排序和分页，退出前清理连接临时函数。record HTTP集合GET返回真实DataRecordPage；不改变数据库结构。
 
 `renderer/domains/project-data/catalog-api.ts`负责字段/状态真实命令与原操作恢复，`components/StatusEditorDialog.tsx`及status-form-schema维护状态草稿/校验/差异提交。共享记录投影已纠正缺项与null区别。字段/记录编辑器、五页签与文件IPC尚未装配；最新范围核验见pm2-query-editor-verification.json。
+
+### PM2 数据编辑组件与客户端（2026-09-13）
+
+`renderer/domains/project-data/data-command.ts`是表/目录/记录客户端复用的原身份恢复函数；`records-api.ts`连接真实记录查询与命令，完整typed记录身份、固定请求快照和操作结果校验在领域客户端完成。
+
+`scalar-draft.ts`与`components/ScalarValueEditor.tsx`负责保真值和错误控件定位；`field-form-schema.ts`/FieldEditorDialog维护字段规则和影响确认；`record-draft.ts`/RecordEditorDialog冻结原数据比较基线并仅提交实际修改；DataRecordsTable展示真实记录页、状态与服务端分页回调。正式五页签、筛选组件、删除/批状态和受控文件流程仍待接入。最新范围报告为pm2-editors-verification.json，不替代PM2真实应用验收。

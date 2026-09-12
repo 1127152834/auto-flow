@@ -146,3 +146,11 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - C1b：pm2_data_rules_impl实现，主协调规格/工程复核修复，5a90c55；12组件测试。
 - A3b：主协调客户端，pm2_data_rules_impl独立复核，beb6a3b；17新API测试。
 - 最新完整自动回归698后端/490前端；PM2实际应用未执行，完整DT编号证据不提升。后续字段/记录组件、删除/批状态、受控Excel和五页签继续实施。
+
+### C1c–C1f/A3c–A3d（2026-09-13）
+
+- C1c、C1e组件：pm2_data_rules_impl实现，主协调与pm2_rules_spec_review独立审查；8c25641、737ce3e。record-draft由主协调实现、pm2_rules_spec_review审查，113f0c7。
+- C1d：pm2_excel_adapter_impl实现，pm2_rules_spec_review独立两阶段及修复复核；ad8a5d7。
+- C1f：主协调实现，pm2_data_rules_impl规格/工程与列宽修复复核；d37cb1c。
+- A3c：主协调实现，pm2_rules_spec_review审查；bc3aa24。A3d主协调实现，pm2_excel_adapter_impl审查；dc9ddf2。
+- 最终564前端测试及工程检查通过，报告pm2-editors-verification.json。未提升任何完整DT验收条目，未运行PM2真实应用；C2页面、筛选、删除/批状态、Excel文件流程继续实施。

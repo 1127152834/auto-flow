@@ -1,0 +1,111 @@
+{
+  "checkedAt": "2026-09-12T23:38:38.182128+00:00",
+  "status": "passed-for-data-editors-and-client-scope",
+  "milestoneStatus": "PM2-inProgress",
+  "codeCommits": [
+    "bc3aa24",
+    "8c25641",
+    "113f0c7",
+    "d37cb1c",
+    "ad8a5d7",
+    "dc9ddf2",
+    "737ce3e"
+  ],
+  "scope": [
+    "真实记录客户端及表/字段/状态原操作恢复",
+    "四类型值编辑、字段影响确认编辑、冻结记录草稿编辑",
+    "受控记录表格与服务端分页回调"
+  ],
+  "checks": [
+    {
+      "command": "npm --workspace @autoflow/desktop test",
+      "exitCode": 0,
+      "passed": 564,
+      "files": 86,
+      "log": "/tmp/autoflow-pm2-editors-frontend-final.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Existing Zod PURE annotations stripped by Rollup"
+      ]
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "passed": 3
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "backend": {
+    "changedSince": "8556f81",
+    "changedFiles": [],
+    "rerunThisScope": false,
+    "previousVerifiedReport": "pm2-query-editor-verification.json",
+    "note": "本轮只改前端和文档；原后端698项证据保留，不伪称本轮重新运行pytest/Ruff/mypy。"
+  },
+  "reviews": {
+    "allCurrentPackages": "independent specification and engineering approved after fixes",
+    "recordClientAndScalar": "pm2_rules_spec_review",
+    "fieldEditor": "pm2_rules_spec_review",
+    "recordDraftAndEditor": "pm2_rules_spec_review",
+    "recordTable": "pm2_data_rules_impl",
+    "tableRecovery": "pm2_excel_adapter_impl",
+    "record": "docs/project-management/implementation/pm2-review-foundation.md"
+  },
+  "coverage": {
+    "features": 48,
+    "acceptanceScenarios": 178,
+    "executionContracts": 18,
+    "capabilityGates": 7,
+    "featureAndAcceptanceEntriesUnchangedFrom": "ef3178a",
+    "completePm2FeaturesNotPromoted": true
+  },
+  "actualApp": {
+    "pm2DataAcceptance": "not-executed",
+    "note": "组件尚未装配正式数据页面；DOM样式/交互测试不替代真实Electron、200%缩放或平台验收。"
+  },
+  "notVerified": [
+    "正式数据五页签及导航/工作区/实例联调",
+    "记录/状态删除与固定目标批状态",
+    "受控Excel IPC/导入/重新导入/导出",
+    "Google Sheets实网",
+    "Studio项目运行/End环境保留",
+    "Windows",
+    "macOS x64",
+    "发行包"
+  ],
+  "next": [
+    "C1筛选与C2真实数据页面接入",
+    "A2g状态软删除/记录删除影响和固定批状态耐久块",
+    "B2受控文件授权与Excel操作发布",
+    "完整PM2真实验收后持续PM3–PM9"
+  ],
+  "continuationAudit": {
+    "previousPromptReply": "no implementation progress; current worktree revalidated",
+    "currentTurn": "progress: seven code commits, independent fixes, full frontend verification",
+    "goal": "active; full scope not complete",
+    "externalBlocker": "none for remaining local PM2 work"
+  }
+}

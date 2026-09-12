@@ -103,7 +103,7 @@ assert decode_record_key(encode_record_key(record_key('a/b%中文')), 'text') ==
 
 - [x] 隔离工作区与 PM1 基线验证。
 - [x] 旧项目和冻结契约只读审计；旧 Sheets 留 PM6，旧项目未发现 XLSX 导出实现。
-- [ ] PM2 业务实现及验收（尚未执行，不能用以上审计代替）。
+- [ ] PM2 完整业务与真实应用验收（已有核心及组件分包交付，剩余页面、删除/批状态和受控文件流程不能用基础包验证代替）。
 
 ## A2b/A2c 当前执行细化（2026-09-13）
 
@@ -219,3 +219,11 @@ A3c复用补充：将已验证的目录命令恢复机制收敛到`data-command.
 ## A3d 表资料命令恢复收敛（2026-09-13）
 
 C2接入前代码复查发现旧表客户端未冻结body且未核验Operation自身projectId；目录/记录已通过createDataCommand解决相同问题。主协调仅改api.ts/api.test.ts复用该已验证helper，保留外部API签名和table资源/结果guard。先RED：异步失败期间调用方改name后原key重发仍应原值、Operation本身project不符时拒绝恢复；补update目标不匹配测试。通过后定向全API测试、类型/lint并由独立智能体规格→工程审查；无新端点/DTO。
+
+## C1c–C1f/A3c–A3d 实际完成记录（2026-09-13）
+
+- [x] 七项实际代码提交：bc3aa24、8c25641、113f0c7、d37cb1c、ad8a5d7、dc9ddf2、737ce3e；每包独立规格→工程→修复复核完成。
+- [x] 最终564前端测试/86文件；TypeScript、ESLint、build通过，OpenAPI check、scripts18/structure3通过。后端无本轮源码变化，未重复后端全量，不伪报新结果。
+- [x] 原命令快照、NaN保真、脏草稿原始数据基线、重复/迟到命令、错误焦点/ARIA及列宽计算问题闭合。
+- [ ] 正式数据页面、完整PM2 Electron验收仍未交付；继续筛选组件/C2与删除/固定批状态/B2。
+- [x] 下一删除包只读盘点已纠正历史FK问题：状态采用软删除保留旧引用，不暗清tombstone或旧代次；具体迁移/guard/块日志进入下一详细执行卡。

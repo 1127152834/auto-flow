@@ -31,3 +31,5 @@
 - 2026-09-13（confirmed，实际源码/独立审查/自动验证）：PM2记录create/get/update/显式状态与字段影响preview/PATCH已由cc86607、3630e78、7a2986f交付；670后端全量及最后类型增量33定向、461前端回归通过。仍无正式数据页面、文件IPC或运行闭环；详见pm2-records-fields-verification.json，不将基础命令等同完整PM2。
 
 - 2026-09-13（confirmed，提交及核验）：PM2服务端记录筛选/排序/分页和16项数据HTTP已交付，字段/状态客户端与状态组件已提交；最后查询连接池清理竞态修复后698后端/490前端全量通过。最新报告pm2-query-editor-verification.json；尚无正式数据页面/Excel IPC/批状态，不得宣布PM2完成。B2主进程/内部通道盘点完成，旧picker直接返path不能照搬。
+
+- 2026-09-13（confirmed，实际代码/独立审查/最终自动验证）：PM2记录客户端、共享命令恢复、四类型值编辑、字段影响编辑、冻结记录草稿与记录表格已提交至737ce3e；最终564前端/86文件通过，typecheck/lint/build及OpenAPI/scripts/structure通过。后端本轮无源码变化，698测试仍指上轮报告。正式数据五页签和文件IPC尚未挂载，PM2不完整；最新pm2-editors-verification.json，继续C2/删除与耐久批状态/B2。状态删除不能物理清除历史FK引用，下一包采用软删除保持历史事实。

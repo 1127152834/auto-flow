@@ -84,3 +84,9 @@ cc86607记录显式写入、3630e78字段编辑事务和7a2986f真实HTTP已交�
 5137c1b/068d9e3交付服务端记录查询及GET集合，实际数据HTTP共16项；c5e40e4纠正缺项/null投影，beb6a3b接入字段/状态客户端，5a90c55交付状态编辑组件。698项后端、490项前端及工程检查通过；同快照分页和连接池复用异常由真实并发回归覆盖。来源见pm2-query-editor-verification.json。
 
 前文“记录列表尚未交付”的当前描述由本节取代；删除/批状态、字段/记录编辑器与完整页面、文件IPC及Excel原子发布仍未交付。正式应用数据能力仍notImplemented，组件/接口不冒充完整PM2。下一文件接入只读盘点见.ai/knowledge/2026-09-13-project-files-baseline.md。
+
+### PM2 编辑与前端恢复基线（2026-09-13，confirmed）
+
+bc3aa24/8c25641/113f0c7/d37cb1c/ad8a5d7/dc9ddf2/737ce3e已交付记录客户端、共享原命令恢复、标量/字段/记录编辑和记录表格组件。独立审查修复了NaN序列化成null、表请求漂移、字段预检校验竞态、记录脏草稿扩大写回、重复/迟到提交、错误焦点与ARIA等问题。最终564前端测试/86文件、类型/lint/build通过；OpenAPI、scripts18/structure3通过。后端源码与8556f81一致，本轮未重新运行后端全量。
+
+主目录重新只读核对仍9490924且有其他任务WIP，未覆盖。PM0/PM1历史报告保留；coverage feature/acceptance/contract+gate entries与ef3178a一致，只有既有PM2进度元数据不同。组件未挂载正式页面，PM2整体仍在实施。删除状态的物理删除初步建议因旧行FK引用矛盾已撤回；软删除迁移与批状态持久块尚待实现，详见`.ai/knowledge/2026-09-13-project-data-deletion-batch-baseline.md`。
