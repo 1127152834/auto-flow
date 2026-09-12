@@ -28,9 +28,9 @@ export function Select({ ref, value, options, onValueChange, onBlur, id, name, s
           <SelectPrimitive.Icon>{loading ? <Spinner size={16} /> : <CaretDown size={16} aria-hidden />}</SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
         <SelectPrimitive.Portal container={host.container}>
-          <SelectPrimitive.Content data-af-popup style={host.style} position="popper" sideOffset={6} collisionPadding={12} className="af-choice-popup min-w-[var(--radix-select-trigger-width)] max-w-[min(36rem,90vw)] overflow-hidden">
+          <SelectPrimitive.Content data-af-popup style={host.style} position="popper" sideOffset={6} collisionPadding={12} className="af-choice-popup flex max-h-[var(--radix-select-content-available-height)] flex-col min-w-[var(--radix-select-trigger-width)] max-w-[min(36rem,90vw)] overflow-hidden">
             <SelectPrimitive.ScrollUpButton className="flex h-6 items-center justify-center"><CaretUp size={14} aria-hidden /></SelectPrimitive.ScrollUpButton>
-            <SelectPrimitive.Viewport className="af-select-viewport max-h-[min(20rem,var(--radix-select-content-available-height))] p-1">
+            <SelectPrimitive.Viewport className="af-select-viewport min-h-0 flex-1 max-h-[min(20rem,var(--radix-select-content-available-height))] p-1">
               {items.map(option => <SelectPrimitive.Item key={option.value} data-choice-value={option.value} value={encodeValue(option.value)} disabled={option.disabled} textValue={option.label} className="af-choice-option">
                 <span className="min-w-0 flex-1"><SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>{option.description ? <span className="block text-xs text-muted">{option.description}</span> : null}</span>
                 <SelectPrimitive.ItemIndicator><Check aria-hidden size={16} /></SelectPrimitive.ItemIndicator>
