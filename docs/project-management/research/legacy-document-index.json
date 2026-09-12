@@ -1,0 +1,966 @@
+{
+  "date": "2026-09-12",
+  "status": "indexed_not_all_individually_reviewed",
+  "source_repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+  "documents": [
+    {
+      "path": ".ai/01-Project-Management/Decisions-and-Rationale-2026-08-31.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "d971d1d6a2080540f9c99d8473e1342e6d732c1bd48595d5c61fb4263c7dbbe8",
+      "lines": 80,
+      "title": "Decisions and Rationale — 2026-08-31"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/ENTRYPOINTS-AND-NEXT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "c0f548da7945c26d1ef1d1ac2cdfdb93caf133ac89df8d4ac8dce855e718b7bc",
+      "lines": 58,
+      "title": "概览入口映射与后续面板"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "cd75fa53e410d189f4538c4181c8eb86f36a92fd096a7b5236152fb124e2a85d",
+      "lines": 72,
+      "title": "项目管理逐页优化：概览设计定稿"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/automation-v1/NEXT-PANEL.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a92daffb79ce0c5d86d15daf07cd18cb2e3063d0c06cf6e39e7a0dd46ac28cc4",
+      "lines": 36,
+      "title": "第三个面板：运行记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/automation-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "5c60f3bc073e81e120d0f6450c6e6c87c87f441455ef7ba6b1e9fe69fc9db38c",
+      "lines": 49,
+      "title": "自动化面板视觉定稿：舒展条目"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/automation-v1/interaction-states/CONTROLS.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "0ffdb19178e5ef11629bc3bba069709cedce37831361c59dfc3fce994dfd1917",
+      "lines": 104,
+      "title": "自动化列表控件与交互规范"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/automation-v1/interaction-states/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "1db31cc3b3fde13bc5b915a0af7e606bdb10de87fffaafb5517ede648f5ebc24",
+      "lines": 87,
+      "title": "自动化「舒展条目」配套状态图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/automation-v1/interaction-states/STATE-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6495efbe65e7804e2226c250477436499f49005fc941b1e81aa69135bfd29b28",
+      "lines": 149,
+      "title": "自动化列表交互状态契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/data-v1-approved/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b8d3a628fb8801d1c32308f4e960270b22ddf5bba52e23cf292acb85d43742f1",
+      "lines": 24,
+      "title": "数据主面板定稿：第 2 稿「舒展卡片」"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/data-v1-approved/secondary-pages-v1/CONTROLS.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2a9244206a8eaece687c7ceaca724462f158f828d6b72081d41df7e73a304161",
+      "lines": 191,
+      "title": "数据二级页面控件规范"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/data-v1-approved/secondary-pages-v1/PAGE-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6bb926fc1a66328c8a54f8225bccf07145d57cd128e0de49a04c91337d0b97d1",
+      "lines": 120,
+      "title": "数据面板二级页面契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/data-v1-approved/secondary-pages-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "949d82b098143d25c9e5841412c580a57011a82ed635a22c0b4d42a767085e7f",
+      "lines": 139,
+      "title": "数据面板 · 二级页面与组件 v1"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/data-v1-candidates/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a25997837d0d1e0d2664384a14d9a0430384ac43f5eead9011c76079a266b32e",
+      "lines": 21,
+      "title": "数据主面板三稿与选择记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/environment-v1-approved/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b9fa5d7dd607510cf6b5bcd65ff57d86f60098794dd802dfb1096887aa6cfa7e",
+      "lines": 12,
+      "title": "环境面板 · 已选主稿"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/environment-v1-approved/secondary-pages-v1/INTERACTION-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "13cd8a41e8845d55d1b3279bd08a8d9a653c19cd1acd1be8af3608ece99f742a",
+      "lines": 62,
+      "title": "环境二级页面交互契约（静态设计范围）"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/environment-v1-approved/secondary-pages-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "4d39b7039d200efd7340119cf18fbd54782001a8bbe8cc5d21b2dc98f322a614",
+      "lines": 50,
+      "title": "环境面板二级页面图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/environment-v1-candidates/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "41056b04d61d4e46e15f80692049f64aa4cf5611b11ce4ec3508147c103faacb",
+      "lines": 59,
+      "title": "环境面板 · 三稿候选"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/overview-interaction-states-v1/CONTROLS.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "51051d3c9db69a37e3a6bd613c5290505b664ec56a949ae3b421c3e5d63d656d",
+      "lines": 87,
+      "title": "概览控件与交互规范"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/overview-interaction-states-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8ee989d5e8bbea337e06457075f70e8426e09cda718d54c6785ab19facc03d57",
+      "lines": 89,
+      "title": "概览「活动优先」配套状态图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/overview-interaction-states-v1/STATE-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "cf354845d0a2667c93ae25b70422d2ac17df127458f97eab7dd4af52e0595da2",
+      "lines": 108,
+      "title": "概览「活动优先」交互状态契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/DESIGN-REGISTER.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "285bc93d4f63647d59c2a555741ae4c283f1030f43b07a8806655137f555beb9",
+      "lines": 21,
+      "title": "六面板设计清单"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "79666a5ea0965f2e50d588188c2a5b6633409179fbe202863065c4505ae8a935",
+      "lines": 49,
+      "title": "运行记录主面板：第 1 版「记录表」"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/extended-pages/NAVIGATION-AND-STATES.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2dd41d5e91afe76d48b60faa9f79e2237d91c10e269f125684244dd5e8c64b86",
+      "lines": 54,
+      "title": "页面关系与状态边界"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/extended-pages/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "e6a2406c9826fcfb2f6f26062000aa1119118bc162e6c67021dde6245b183650",
+      "lines": 67,
+      "title": "运行记录：其他页面与二级页面图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/interaction-states-v1/CONTROLS.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "fa70dd2c2d25ef5430aac95e6fa58a54667c41b4ff138f91d846314ef3d6b432",
+      "lines": 136,
+      "title": "运行记录控件与交互规范 V1"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/interaction-states-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "cb49867ecf27da5db8616dc503e971ab7e4a2d622cedcfd80cfb8833b7b4882e",
+      "lines": 115,
+      "title": "运行记录 · 关键状态与控件图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/interaction-states-v1/STATE-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "7dda9974d5d70d288e90e68b46c7bbee392b31fd3d91a2d69789601a924de7ce",
+      "lines": 168,
+      "title": "运行记录交互状态契约 V1"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/manual-detail-v2-approved/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "4613a5fd9d9cea482e257ec7ea2595498dfe61a707c08d865ca88c34ce1e6886",
+      "lines": 50,
+      "title": "人工事项详情已选定 · 运行记录当前视觉清单"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/manual-detail-v2-candidates-20260910/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "784bd54c9caa0399a0660793a8457bd2b973efc078034f4ade1d4f471e8c4508",
+      "lines": 31,
+      "title": "人工事项详情：第二轮三稿（待选）"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/run-records-v1/selection-v2-20260910/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "0ff83380b3401baa02aa839286c11e78e5c21f01e046d92988404016b6bf7f8b",
+      "lines": 30,
+      "title": "运行记录视觉选择存档 V2（2026-09-10）"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/statistics-v1-approved/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "181a54a8eaa1651345e5d797e806a55e0a1d594437b28ddbd3a66ec560b893a7",
+      "lines": 38,
+      "title": "统计面板已选定 · 当前六面板设计清单"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/statistics-v1-approved/interaction-states/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "0d400cfce55f9232a8ef78f6223284eab7f6de5037fe00d3127b4b63464de45d",
+      "lines": 82,
+      "title": "统计「轻量汇总」交互状态图册"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/statistics-v1-approved/interaction-states/STATE-CONTRACT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "75f380721f0575270f3b20b77e86bb4c242469f942c96f4ffec4e79426cbfdc1",
+      "lines": 115,
+      "title": "统计「轻量汇总」交互状态契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Archive-20260910/statistics-v1-candidates/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "166230042c3fa6e017293bc3150e77649acfa7e6c3db667d8e67c7658bba94a8",
+      "lines": 44,
+      "title": "统计面板三稿 · 待选"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/EVIDENCE.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "3e4441e5e0a55d214da3b284bc29538143ca6e3dad3c76caab48a9f9dec6a045",
+      "lines": 836,
+      "title": "全部77张当前原型：逐图审查证据"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "bd05d8f066f858f336f000e2dbb9632b0235bb4450f9ce56ff67d924b3f6931d",
+      "lines": 271,
+      "title": "项目管理六面板原型：全量审查与修正建议"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/data-review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "48fd1a4904062c03fe9a9c7d486592288b87aeb2443c5d042f64951e454b08dd",
+      "lines": 166,
+      "title": "数据面板原型全面审查"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/environment-review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "91b7d063adc72df2327f0f93fcb728ded3a0cbaa2f07787aa521397ecb83ab99",
+      "lines": 90,
+      "title": "环境与跨面板补充审查"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/overview-automation-review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "76582a15a5067e87ca59eb019e286aacb9d68ccbb7c54fff4a02022cf97189f8",
+      "lines": 56,
+      "title": "概览与自动化原型复核"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Audit-20260910/runs-statistics-review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "d22b822c636b974cd174fb2864ad4d58e28f0bfcb085db2ec406a431172af5cb",
+      "lines": 484,
+      "title": "运行记录与统计原型全面审查"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Exploration-20260910/CONTEXT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "814a2fa702d032be97ca2dfb872e1b139fd3cb43f43402ce91c20acdc59eb1c4",
+      "lines": 45,
+      "title": "AutoFlow 项目配套能力语言"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Exploration-20260910/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "f405ff7d16008ce8d9197fc4a888935db83628ba22c39c3676b84c4e10f8940c",
+      "lines": 265,
+      "title": "项目管理重设计：让工作流的配套能力简单、完整、可理解"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Exploration-20260910/REVIEW.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "078aadca0e01424814529baa7d354bc1fd8a31f91274995c5a63223f8be85d6a",
+      "lines": 31,
+      "title": "设计反例审查"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/data-rules-v2/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "9e27451a666f137f7694d7ba836719d1ae7047d4894e0c6e3e0d66dc333b2265",
+      "lines": 55,
+      "title": "数据面板第一批修订：占用、字段影响、Sheets方向"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/data-rules-v2/REVIEW.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "417f02ac10cb6fe7c8a622db47c994494b90a706c3079a373b78bf49377b7085",
+      "lines": 26,
+      "title": "本轮静态复核"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/data-rules-v2/RULES.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "93aeb21ea706573d97812ee8565db470bb1340dd23130c587a6dbf4dabdc6c12",
+      "lines": 144,
+      "title": "数据规则修订 v2：实现前契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/shared-controls-v1/CONTROLS.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "207b403b3f8322169357a01e8e78ee0e1196ff61db3373ffa4bd94656ee83111",
+      "lines": 68,
+      "title": "项目公共控件 v1 · 设计契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/shared-controls-v1/COVERAGE.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "f1d565392ce4c35432fc3072c0aff552bcd453aa1e73c2992464a6e2c5d95ff4",
+      "lines": 18,
+      "title": "本批覆盖与尚未覆盖"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/shared-controls-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "954e0aa1018c1352c870852a8bc9d2f87367457be79b3cdb3848224d8a01a302",
+      "lines": 46,
+      "title": "项目管理 · 公共控件修订 v1"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/shared-controls-v1/REVIEW.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "9d1db0539c19c1c9f090371b2015da8667bd293fc4cea28b71ef2bcae4d088a7",
+      "lines": 36,
+      "title": "视觉终审记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/statistics-rules-v2/COVERAGE.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "d78e400a55eec9d2daf2d462d6530c1a1ab3323b63b025ceed83369bf50db9a1",
+      "lines": 21,
+      "title": "统计本批覆盖清单"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/statistics-rules-v2/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "eea6ec6697c2569307f96aba5c460c493b5e27b1d6858401ded5e7d502a595d6",
+      "lines": 37,
+      "title": "统计面板 · 口径与快照修订 v2"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/statistics-rules-v2/REVIEW.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "42f4026563abfdd073e3ddf81ea15f8e71308621baced2a380fd641063f5b6bf",
+      "lines": 31,
+      "title": "复核记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260910/statistics-rules-v2/RULES.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "e6300412864fd5e44dc13cc3456496d2fc73d58ffa4e0b91b703709833c59dd4",
+      "lines": 93,
+      "title": "统计口径、刷新与下钻 · v2 候选契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-maintenance-v1/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "7e2b2302908ed5fd057269e679929b6f72a008569de872f60ddb5997bdf2cbec",
+      "lines": 11,
+      "title": "持久环境维护候选稿"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-maintenance-v1/RULES.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "9947271c9f10da655f988ebe6e6f14a6ba335079913fa641002b5d9e5d4f4113",
+      "lines": 18,
+      "title": "持久环境维护候选稿 v1"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-rules-v2/COVERAGE.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "56f91c70f2f62224f1a44b2765813fd1e9c1d845f44f572c9728c7375e33a5b8",
+      "lines": 12,
+      "title": "覆盖与继续项"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-rules-v2/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "004c5636a5b51bcafd6c520b10bc3ac126e3657f072f6a83ebc0da809c64bad8",
+      "lines": 36,
+      "title": "环境面板 · 资源与清理修订 v2"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-rules-v2/REVIEW.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "84daa819779fb51f2b4aa25e8a9a96d21f84550fbc76d58694458918b43252b3",
+      "lines": 25,
+      "title": "视觉与规则复核"
+    },
+    {
+      "path": ".ai/01-Project-Management/Design-Refinement-20260911/environment-rules-v2/RULES.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "291be2368588bc7ef6717ab6c681e0e85429eaf131a59a6047f9ce7852401526",
+      "lines": 96,
+      "title": "环境资源与清理 · v2候选规则"
+    },
+    {
+      "path": ".ai/01-Project-Management/Environment-and-Manual-Takeover.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8dd3d40502bf3a8886dd63b5fb8f35d38fc66e188f7724b0b46ce83be4908d31",
+      "lines": 105,
+      "title": "Environment and Manual Takeover"
+    },
+    {
+      "path": ".ai/01-Project-Management/HANDOFF-20260911.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "5c1ae47b8c33accbd31badd1429782e1a44a52baa87cc8cce6ff0d3187c19fc0",
+      "lines": 187,
+      "title": "AutoFlow 项目管理设计工作交接文档"
+    },
+    {
+      "path": ".ai/01-Project-Management/Implementation-Roadmap.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "01e3674ca54b78abb3d1393da8c7fdca3c5fd8e4185c8652969af943e4a6061d",
+      "lines": 96,
+      "title": "Project Management Milestones — M0–M11"
+    },
+    {
+      "path": ".ai/01-Project-Management/M5.1-E-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "db8d9fcea7df7dff22c1520e4bb20a979ac3bb57a30236b34830879a760eda73",
+      "lines": 108,
+      "title": "M5.1-E：同步界面收尾与联合验收"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/API.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "08f9a70db5bf549796535c003d91365f613c34c481497c71f902c8ca14825975",
+      "lines": 42,
+      "title": "API 契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Coverage.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "ec335f00862ad315ef19619ec73084d517932162709b8011d6c6ece5d29ffe98",
+      "lines": 26,
+      "title": "M8 页面与交互覆盖矩阵"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8881417c5b3a7882bac848d3544da291e138832bd9d3a54fae609c62f5756e24",
+      "lines": 76,
+      "title": "M8 自动化外围配置交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Domain.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "c1264ebb717aaee0da2877273285d608cb97ee92d0f9aa104ea13ade308375ef",
+      "lines": 43,
+      "title": "领域与持久化"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Product-UX-Audit-20260903.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "84e4b1333f5746ce95e48a68350f2de3b9065067e8f3033bb91cbc875d82a60f",
+      "lines": 243,
+      "title": "M8 自动化面板：普通用户产品体验审查"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2639f5bc0c7bcf0ff5aa5cb28e54c8277f4910fdf29147e0e3b2fcc8aad1f061",
+      "lines": 49,
+      "title": "M8 自动化外围配置"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Redesign-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "12de356c4481d2b12326e9598bd1eae3bfad387058a72a4850ed558608a08779",
+      "lines": 69,
+      "title": "自动化任务说明式重构 · 交付说明"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Redesign-V2.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b5f425927b32d4a0dee2eb7f6bde8de05c00f509eeea1fe4bdc184b107806898",
+      "lines": 108,
+      "title": "自动化配置版本二：任务说明式交互"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Redesign-Verification.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8b9ebd140aecf7e2fa897667de81e298504bbeee836877feb5eff1e0fa135e08",
+      "lines": 79,
+      "title": "自动化任务说明式重构 · 验证记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Review-1-Domain.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "bc0e906b0bb00db9f29478f6ddc6de362b075c2385d063f07b4298172ef8de57",
+      "lines": 56,
+      "title": "M8 第一轮审查：领域、事务与只读预览"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Review-3-Regression.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b5656789ca290f1e1aa043e7e2f46ba7230d05ddb61247e9cd4dfcbeb21b385d",
+      "lines": 92,
+      "title": "M8 第三轮审查：回归、迁移与交付边界"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/UI.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "1dcd0d06da5ad2a34e996dd505ed529080035defe15f44e52adb26426637ac46",
+      "lines": 43,
+      "title": "页面与交互"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Verification.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "ba5783f1782af338b2ddf2498ee1705e8565f7692c15ca5d05bc8ed3bf3f70e7",
+      "lines": 30,
+      "title": "验证与交付记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/Visual-References.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b6e3e3932feaa1dc2f7101b13b358235640c5892fb4111e4ef72b96804c047cf",
+      "lines": 18,
+      "title": "M8已确认视觉索引"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/design-qa.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "d10d22764477599c0e694856e7e69afbc0463ca98d0da21e83296316200c2ff4",
+      "lines": 62,
+      "title": "M8 Design QA：正式自动化外围配置"
+    },
+    {
+      "path": ".ai/01-Project-Management/M8-Automation/review-2-code.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "0c519e83a4803689ec92563924216472530b15d4e2eeca161d8706cb260a5c6b",
+      "lines": 88,
+      "title": "M8 第二轮代码审查与前端验证"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/API-and-Domain.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2a65e28a174c36b9dadfce88ff1b1de4574f9b835dea361bbc5a96712870c9f0",
+      "lines": 284,
+      "title": "M9 API 与领域契约（按当前实现）"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Acceptance-20260904.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "505fb4abd5ce0af38b10a29f2d4a8b27a1780a1172b48ba0f07629fa8ba0a249",
+      "lines": 108,
+      "title": "M9 独立验收（2026-09-04）"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Acceptance.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a5f10a0c107efc90d100d4fb5d800cdfdcf2444d3f42bad8e253e4bb8b023bff",
+      "lines": 56,
+      "title": "M9 联合验收记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/CONTEXT.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b6fa3929952ceef2834b38e027068ea6481b63a19be674efcfe273d0e4576ec0",
+      "lines": 32,
+      "title": "运行方案设计语境"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Concurrency-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "fae2772486752d6ef3f22af4a4725e2cb012ad5587d686269b65c608498b72f7",
+      "lines": 135,
+      "title": "M9-A 修订｜一套配置，并发处理不同资料"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "52dc4520f66561d01ad39f627c17382f9f1df59036e92fcaa1d6508c67b7342a",
+      "lines": 85,
+      "title": "M9 单一运行方案 · 正式交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Design.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6635c450c523c9876b482225afe51ada26a05d6299ace2032037e9ae032471bd",
+      "lines": 410,
+      "title": "M9-A｜运行方案：产品、交互与前后端设计"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Implementation.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2c5b15d6867c33497b7bd9205e0fbd41e2a14df6184fdcf13e5c527b0e7a60fa",
+      "lines": 89,
+      "title": "M9 单一运行方案：实施契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Operation-Flow-Designs.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "7f0afc3237c33af739b742ceb93a0ad4efae21711da327a38a09a0522b77901f",
+      "lines": 66,
+      "title": "M9 操作页面稿｜三步新建流程"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "c03465618f15ef68ebeb8611ec7666f1a62350f092bffb27049e573890dc33b5",
+      "lines": 45,
+      "title": "M9-A 设计草案审查记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Rollback.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2c74814ea779782c1981a1fa17bfaf9137d03f8636433cf53f21197232c8124d",
+      "lines": 25,
+      "title": "M9 恢复记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Selected-Visual.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b435f1afeec4d3214d77b1b9676c8f15c490a8e0f3f550c1840c29d90f88f7eb",
+      "lines": 64,
+      "title": "M9｜已选视觉基准"
+    },
+    {
+      "path": ".ai/01-Project-Management/M9-Run-Presets/design-qa.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "65a15d0b2d75d083802eb19a096fe0ec171b46a2dd6e15c3ce216555f8f26c54",
+      "lines": 34,
+      "title": "M9 Design QA"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Automation-Workspace-R3-Implementation.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8445177d772819e8feff7d571cd9d3d5a55fd6abd9e04eea49cbd90f12178402",
+      "lines": 92,
+      "title": "AutoFlow 自动化管理工作区 R3 实施记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Automation-Workspace-R5-Implementation.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "09675c11e5bdb52fe24c44d8cfc9212dec2505a6b59bf13c1bb013b9ada9b470",
+      "lines": 81,
+      "title": "AutoFlow 自动化管理 R5 实施记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Data-Panel-D1-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a4fbc4c101641a5b0d4a6685fba176700081b640664770adddcd154b1e0cf08a",
+      "lines": 44,
+      "title": "数据面板正式UI重构 D1 — 交付记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Full-Audit-Remediation-20260908.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "60a0d6a6c41a3d400ab408717f770b476de04bb0507323186323947d923f39f0",
+      "lines": 47,
+      "title": "全面产品审计整改契约 · 2026-09-08"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M0-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "dc5486cde04d2667ead60bfc7ba821fa80d29d81722f9b8d010a1231471d8083",
+      "lines": 111,
+      "title": "M0 交付：正式页面框架与桌面生命周期"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M1-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "614588821dbeaccce6b91805c4c5b699b1ae7f503933099b7a334a397aed6086",
+      "lines": 107,
+      "title": "M1 — 项目完整生命周期交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M10-C-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "2b5ae55e3b9cc2c946c146ed6480eca9710b176c317276f84ee7ebaf2dadfc99",
+      "lines": 45,
+      "title": "M10-C：运行方案资源整合"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M10-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "03ba9e3b7e38abe20ea85b2bfc615d4b4c2b52ccefeb1a98baa2811bc04ee6f7",
+      "lines": 53,
+      "title": "M10 工作入口优先：独立部分交付记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M11-A-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "f0ed33bb41a2cb49f9412d9a7ea04a8c5cba5c342f55d7087d7bbe9504a3f919",
+      "lines": 85,
+      "title": "M11-A：业务闭环与可靠性验收"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M11-B-Completion-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "f4feb0bfd6b379f20fa2271e4684159ca135a4c79901383ba9e626777b231e4e",
+      "lines": 87,
+      "title": "M11-B：稳定交互与特殊状态收尾"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M11-B-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "98262637bd1ae5261aaea1ef63874e3972c57b31a3940ef1181da6533fe38c6e",
+      "lines": 54,
+      "title": "M11-B：整体视觉与交互验收 — 候选交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M11-C-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "04c0b4e2bf95bf8408c24ab8750583fb74198c78349eee0bafe60ef25f7d4a8c",
+      "lines": 104,
+      "title": "M11-C：真实联调与最终回归检查点"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M11-Plan.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a171bfd4283976e9a7f3e9730f20a9f83d8b1ce66d8ec98f5098076791d1c4c2",
+      "lines": 89,
+      "title": "M11：项目模块联合验收与收尾计划"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M2-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "47b649685ce000a7b813a1c89f6764c7dc595aa314714704b5d51ebd920be0c9",
+      "lines": 76,
+      "title": "M2 — 数据模型与状态目录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M2-Dialog-and-Consistency-Audit.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "cb41dd02fde3aa998aecb20c4fa147ee085ecb7badd1907e6d13961267426649",
+      "lines": 60,
+      "title": "M2复查：弹窗、内部标识展示与读取一致性"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M2-Field-Validation.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a0bd1acec4930f0bbcc628785d8c82eb925979a2cfef4edc101d486b3976b3de",
+      "lines": 56,
+      "title": "M2增量：必填与系统预设校验规则"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M3-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "f9ac6eb83b683eec6103509b1dc9b0a9abebeea3174ad483371e250d6bb118fb",
+      "lines": 54,
+      "title": "M3 — SQLite真实接入交付记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M3-SQLite-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b723315429214a00d449d0121ab4afef4a29991b3901562c555a11a1ee14d85d",
+      "lines": 53,
+      "title": "M3 — SQLite实时来源与逐记录系统状态"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M4-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "ad669a755003ca2db8460d4a60b96060fa18f88fde3173fc10267404eb881c73",
+      "lines": 61,
+      "title": "M4交付记录 — Excel一次导入"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M4-Excel-Import-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "726d5361eec360b6d01518e369aff310407916aa59deaf5b44b5a78145ce493b",
+      "lines": 58,
+      "title": "M4 — Excel一次导入与本地SQLite"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M4-Flat-Sheet-Review.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "be4c627e7e529a1d0e5e331404f15bb29434a4df3370b8c03c41452f4629fe1b",
+      "lines": 36,
+      "title": "M4补充：单层Sheet与一表映射"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5-Closeout.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "ffb908ca4c920abb94009a1c7afd7f378a459982bc3e7448d9e2f767a7dbe795",
+      "lines": 69,
+      "title": "M5 收尾：凭据恢复、时区与打包"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5-Data-Table-Unification-and-Service-Account.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "d2a8bc6a0a448211090ac8a03da82bcf543344c151e332b2028db1f57a9cf1c2",
+      "lines": 68,
+      "title": "M5 扩展收尾：数据表统一界面与项目级双认证"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "fc8655bf9ddf3d7ce5c86c9dcdc56083ac692b0c9052c6d1e09e625a3f0ca13a",
+      "lines": 63,
+      "title": "M5 项目级 Google Sheets — 本地实现与待联调记录"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5-Sheets-Sync-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "823015b65646f1e468e059e73a5990c880b8596e03a220bffe56ec577e4bbd7a",
+      "lines": 73,
+      "title": "M5 Google Sheets 本地镜像契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5.1-B-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "7143c8a8a454f5f451aba39256982dba712acdcb6971b0b0bb5460330da8a158",
+      "lines": 65,
+      "title": "M5.1-B 交付：Sheets 写入授权与持久化底座"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5.1-C-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8e2149093cbfb35319552246b5bccadd68cd966297d71f5d7f1fdc95a09c7bc0",
+      "lines": 80,
+      "title": "M5.1-C 交付：记录本地增删改与人工即时推送"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5.1-D-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "90c7497f02eaa0b96d4b2954f374dd8fc64d99b221ae0240e4c446fe14aba169",
+      "lines": 94,
+      "title": "M5.1-D 交付：工作流延迟推送与完整同步协调"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/M5.1-Sheets-Local-Write-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6438444d74437e12bbf991c9fb4d27c1cde2c254d4e6cabe13d133ed3881263d",
+      "lines": 71,
+      "title": "M5.1 Google Sheets 本地可写与可靠强制推送"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Product-R1-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "a69de33ec43d6fab6dee8ca61d359aee8b20e9c6b82c39b3a2dc5a51f135aaa4",
+      "lines": 16,
+      "title": "产品化 R1 · 语言整改候选"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Product-R2-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8bca42acc82a6bc581369c68713aa80030e87965081ef8f44e9a4224db5acc44",
+      "lines": 30,
+      "title": "R2 自动化与运行方案整改交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Product-R3-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "8e1d2f2407bcacfc3b62a6afea1f8574d6438ff93fd3d285ad11921e87bc5176",
+      "lines": 26,
+      "title": "R3 数据与字段编辑整改交付"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Product-R4-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b4449799a94404ed41b18bc2d4105a79c45c5272da78ccd5b7ff07cdf1ccc292",
+      "lines": 25,
+      "title": "产品化 R4：可靠交互与同步确认"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-A-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "83b02d7c868b82718a61012eee14f27ed83a981953f229ea4f923ed2823ac099",
+      "lines": 74,
+      "title": "统一记录标识 A：公共选择逻辑与 Excel"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-B-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "150c1c51cec0b33906a8bda3f13a42187efc61f33823c0e878c2c7fc2adf7dd7",
+      "lines": 77,
+      "title": "统一记录标识 B：Google Sheets 系统标识"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-B-Live-Acceptance.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "cf5c11dce12e274dd7905137db298213562c05a62ce8663e11a3befd6ac2611d",
+      "lines": 94,
+      "title": "记录标识 B：真实 Google、精确双尺寸与托盘补验"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-C-Delivery.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "e5e4ebc4cd8bbeb6f2cb6c4dc0b0d7f6dd9d0bea0c0992102eb6ce142c0ae90a",
+      "lines": 70,
+      "title": "统一记录标识 C：SQLite 一次导入与三类来源回归"
+    },
+    {
+      "path": ".ai/01-Project-Management/Milestones/Record-Identity-Contract.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6474dddb347b65f073811bb64f097bc92bc8520832f3af7813d5c7710fccc512",
+      "lines": 61,
+      "title": "统一记录标识契约"
+    },
+    {
+      "path": ".ai/01-Project-Management/Product-Definition-and-Information-Architecture.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "bbaafa8c21a4beb709f1320c82196df6e6a203cb27b71966a787a425f1ddddd0",
+      "lines": 138,
+      "title": "Product Definition and Information Architecture"
+    },
+    {
+      "path": ".ai/01-Project-Management/README.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "44c21d142583c84af4720484272e859eb6c67ab1e19b32505d87b2815a714ce0",
+      "lines": 133,
+      "title": "Project Management Knowledge Pack"
+    },
+    {
+      "path": ".ai/01-Project-Management/UI-Interaction-and-Health.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "93fb14438533cd8ae55fc04f5b9494c243d3ff2fd48ce387ec9bb041e0f29d4c",
+      "lines": 210,
+      "title": "UI, Interaction, and Project Health"
+    },
+    {
+      "path": ".ai/01-Project-Management/Workflow-Data-and-Execution-Model.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "68be3080f42ea4cc43a819b84fbf7e6908975b01bc31a79d3c071db29f90eefa",
+      "lines": 235,
+      "title": "Workflow, Data, and Execution Model"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-11-project-data.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "ed9a7d7e9fc946407980e352f31f0855a23e6bd6e8179794e73b11a237a55d90",
+      "lines": 318,
+      "title": "项目数据管理模块实现计划"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-09-11-project-data-design.md",
+      "commit": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "36912fca117c5a5d7bc0d1cba601dedef88b80e4ccf0acf1fae68b03f147bbb1",
+      "lines": 86,
+      "title": "项目数据管理模块设计规格"
+    }
+  ]
+}

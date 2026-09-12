@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-12",
+  "status": "documentation_verified_product_proposed",
+  "markdown_links_checked": 31,
+  "missing_links": 0,
+  "legacy_document_hashes_verified": 137,
+  "prototype_file_hashes_verified": 198,
+  "prototype_unique_contents": 112,
+  "working_tree_sources_unchanged_since_read": true,
+  "document_fences_and_placeholder_scan": "passed",
+  "business_tests_run": false,
+  "cross_platform_tests_run": false,
+  "independent_review": "5 substantive findings addressed: batch resource freezing, task CAS, historical task read-only, statistics consistency, human resume core contract",
+  "files": {
+    "docs/project-management/research/prototype-index.md": "ce90ac281a021f60ac3d7b0bafd9dad3e67f6960520b761e47dd3df5ff6bff79",
+    "docs/project-management/research/legacy-core.md": "b599d8ec1dad1e5936bcd233b0e5e74434ebd08f1d5a43f47b37b3a134e38c53",
+    "docs/project-management/research/README.md": "1044ca454abf839a0ad8133d18f7890baf738d0807a7b395f500ff9f75768dbf",
+    "docs/project-management/research/legacy-decisions.md": "ff28d12fb9bba591c66b3d8bd9252909170f49e779257b2de0271963f3956b5a",
+    "docs/project-management/research/current-baseline.md": "700c65d65b20818f08226eb73e3adb9f5055550886b8a20e26070f517ec2e3ab",
+    "docs/project-management/research/legacy-data-environment.md": "19cfcc63bd3422bb6160313631e67e41217ef928668587b7feb2ac3643108ea8",
+    "docs/superpowers/specs/2026-09-12-project-management-design.md": "5bcc55ad2cf21a18bf9cadd340507c94253d674f3729aa360bb28dffb9a6f05b",
+    ".ai/sessions/2026-09-12-project-management-research.md": "780369fc7bfc0bc66f2dcdb02f8d65e2aa038b0a1f5369629b06d53f9296d01d"
+  }
+}
