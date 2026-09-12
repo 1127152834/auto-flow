@@ -1,6 +1,6 @@
 # AutoFlow 统一基础控件设计规格
 
-- 日期：2026-09-12；状态：**proposed，等待设计确认**。
+- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；实现与平台验收分别记录**。
 - 来源：[实际源码盘点](../../design-system/2026-09-12-ui-controls-audit.md)、用户本轮明确要求、既有暖灰/黏土棕视觉和领域 ADR。
 - 使用技能：Superpowers `using-superpowers`、`brainstorming`、`using-git-worktrees`；实现任务由 `writing-plans` 细化；以 `ponytail` 的复用原则限制范围。
 - 本轮只产出文档。行为库兼容、视觉效果和平台验收均未假定通过。

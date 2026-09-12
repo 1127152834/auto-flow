@@ -1,6 +1,6 @@
 # AutoFlow Unified UI Controls Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 统一全部已实现 AutoFlow 页面及弹窗的基础控件视觉、API、键盘与滚动体验，同时保留业务契约和行为。
 
@@ -10,11 +10,11 @@
 
 ---
 
-- 日期：2026-09-12；状态：**proposed，未执行，等待用户确认设计与计划**。
+- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；当前执行T0–T2，T3之后未实施**。
 - 设计依据：[设计规格及A01–A15验收矩阵](../specs/2026-09-12-unified-ui-controls-design.md)。源码依据：[盘点](../../design-system/2026-09-12-ui-controls-audit.md)、[逐点清单](../../design-system/2026-09-12-ui-controls-usage.md)。
 - 当前文档分支 `codex/ui-controls-plan` 从 c7c3021 建立；实施必须先核对/接入最新已提交主线（盘点截止15cf2e8）。严禁把旧 checkout 中语言/时区硬编码、旧代理协议默认值覆盖主线。
 - 所有文件名以下均为仓库根相对精确路径；命令在**任务独立 worktree 根**执行。不是在 `/Users/zhangtiancheng/Documents/projects/autoflow` 主目录执行。
-- 本轮不实现以下任何复选任务；计划确认后才进入执行技能。不自动派子智能体；若用户选择并行执行，先完成共享API/令牌与G0，再分派互不重叠领域，公共文件只由一个负责人修改。
+- 原设计阶段不实现复选任务；现已确认，按阶段执行。不自动派子智能体；若用户选择并行执行，先完成共享API/令牌与G0，再分派互不重叠领域，公共文件只由一个负责人修改。
 - 实施使用 `executing-plans` 或用户选择后的 `subagent-driven-development`；涉及控件行为用 `test-driven-development`，失败定位用 `systematic-debugging`，提交前用 `verification-before-completion`，最终评审用 `requesting-code-review`；均在阶段开始时读对应本机技能并明确告知。
 
 ## 执行约束与阶段门
@@ -36,9 +36,9 @@
 - 只读：`AGENTS.md`、`.ai/README.md`、`.ai/memory/project-context.md`、`.ai/decisions/`、`docs/PROJECT_STRUCTURE.md`、本规格与盘点JSON。
 - 不修改：`apps/backend/`、`apps/desktop/src/main/`、`apps/desktop/src/preload/`、`apps/desktop/src/shared/`、`renderer/shared/api/`、各领域api/hooks/model/form-schema/presets及数据目录；真实路径扫描见T12。语言/时区 JSON 目录即使已提交也不属于本任务。
 
-- [ ] 记录 pwd、分支、HEAD、git status、worktree list，确认工作树由本任务拥有。
-- [ ] 只读比较主目录HEAD与状态；在任务分支接入最新**已提交**代码，逐项核对盘点增量；不复制主目录未提交文件。记录 EnvironmentOptionField 与代理检测协议是否存在及其提交；主目录最终复核已有未提交UA目录扩展，必须等其已提交稳定版本或避开该文件的领域迁移，不能移走/覆盖并行修改。T1–T7共享工作可独立推进。
-- [ ] 在任务目录安装锁定依赖，记录原有类型、lint、测试、构建结果；任何旧失败分开记录，不通过删除测试解决。
+- [x] 记录 pwd、分支、HEAD、git status、worktree list，确认工作树由本任务拥有。
+- [x] 只读比较主目录HEAD与状态；在任务分支接入最新**已提交**代码，逐项核对盘点增量；不复制主目录未提交文件。记录 EnvironmentOptionField 与代理检测协议是否存在及其提交；主目录最终复核已有未提交UA目录扩展，必须等其已提交稳定版本或避开该文件的领域迁移，不能移走/覆盖并行修改。T1–T7共享工作可独立推进。
+- [x] 在任务目录安装锁定依赖，记录原有类型、lint、测试、构建结果；任何旧失败分开记录，不通过删除测试解决。
 
 ```bash
 git status --short
@@ -55,7 +55,7 @@ npm run build
 
 预期：无本任务未解释变动；验证命令返回0，或记录可复现的原有失败并在影响范围内先解决。不得以工作区旧测试数量当当前正确数量。
 
-- [ ] 记录保护路径的基线SHA，保存baseline文档；提交仅包含该文档，提交说明 `docs(ui): record isolated controls implementation baseline`。
+- [x] 记录保护路径的基线SHA，保存baseline文档；提交仅包含该文档，提交说明 `docs(ui): record isolated controls implementation baseline`。
 
 ## T1：设计令牌与跨控件样式
 
