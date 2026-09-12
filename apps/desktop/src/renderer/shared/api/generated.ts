@@ -1738,6 +1738,8 @@ export type components = {
             locales: components["schemas"]["EnvironmentOptionRead"][];
             /** Timezones */
             timezones: components["schemas"]["EnvironmentOptionRead"][];
+            /** Useragenttemplates */
+            userAgentTemplates: components["schemas"]["EnvironmentOptionRead"][];
         };
         /** ProfileList */
         ProfileList: {

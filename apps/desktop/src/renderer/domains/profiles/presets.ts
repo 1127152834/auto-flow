@@ -26,25 +26,11 @@ export function getViewportPreset(width: string, height: string): string {
   return VIEWPORT_PRESETS.some((preset) => preset.value === value) ? value : ''
 }
 
-export function buildChromiumUserAgentPresets(browserVersion: string): ProfilePreset[] {
-  const major = browserVersion.match(/^\d+/)?.[0]
-  const followingBrowser = [{ value: '', label: '跟随浏览器（推荐）' }]
-  if (!major) return followingBrowser
-
-  const chrome = `Chrome/${major}.0.0.0 Safari/537.36`
-  return [
-    ...followingBrowser,
-    {
-      value: `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ${chrome}`,
-      label: `Windows 桌面 · Chromium ${major}`,
-    },
-    {
-      value: `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ${chrome}`,
-      label: `macOS 桌面 · Chromium ${major}`,
-    },
-    {
-      value: `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ${chrome}`,
-      label: `Linux 桌面 · Chromium ${major}`,
-    },
-  ]
+export function buildChromiumUserAgentPresets(browserVersion: string, templates: readonly ProfilePreset[]): ProfilePreset[] {
+  const major = browserVersion.match(/^([1-9]\d*)(?:\.\d+){0,3}$/)?.[1]
+  if (!major) return []
+  return templates.map(({ value, label }) => ({
+    value: value.replaceAll('{major}', major),
+    label: label.replaceAll('{major}', major),
+  }))
 }

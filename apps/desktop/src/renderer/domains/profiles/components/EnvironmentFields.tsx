@@ -1,4 +1,3 @@
-import { useId } from 'react'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import type { ProfileEnvironmentOptions } from '../../../shared/api/types'
 import { FormField } from '../../../shared/components/FormField'
@@ -25,13 +24,16 @@ type Props = {
 
 export function EnvironmentFields({ options, optionsLoading, optionsError, onRetryOptions }: Props) {
   const { clearErrors, control, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
-  const userAgentList = useId()
   const browserKernel = useWatch({ control, name: 'browserKernel' })
   const viewportMode = useWatch({ control, name: 'viewportMode' })
   const viewportWidth = useWatch({ control, name: 'viewportWidth' })
   const viewportHeight = useWatch({ control, name: 'viewportHeight' })
   const customViewport = viewportMode === 'custom'
-  const userAgentPresets = buildChromiumUserAgentPresets(parseKernelKey(browserKernel)?.version ?? '')
+  const browserVersion = parseKernelKey(browserKernel)?.version ?? ''
+  const userAgent = useWatch({ control, name: 'userAgent' })
+  const userAgentPresets = buildChromiumUserAgentPresets(browserVersion, options?.userAgentTemplates ?? [])
+  const userAgentMajor = userAgent.match(/Chrome\/(\d+)\./)?.[1]
+  const userAgentVersionMismatch = userAgentMajor && browserVersion && userAgentMajor !== browserVersion.split('.')[0]
 
   const selectViewport = (value: string) => {
     clearErrors('viewportMode')
@@ -52,9 +54,9 @@ export function EnvironmentFields({ options, optionsLoading, optionsError, onRet
       <h2 id="profile-environment-fields" className="m-0 text-lg font-semibold text-ink">浏览器环境</h2>
       <p className="mb-0 mt-1 text-sm text-muted">预设可以直接选择，语言、时区和 User Agent 也可以手动输入。</p>
     </div>
-    {optionsLoading ? <p role="status" className="m-0 text-sm text-muted">正在加载语言和时区选项…</p> : null}
+    {optionsLoading ? <p role="status" className="m-0 text-sm text-muted">正在加载浏览器环境选项…</p> : null}
     {optionsError ? <div role="alert" className="flex items-center justify-between gap-3 text-sm text-clay">
-      <span>语言和时区选项加载失败：{optionsError}。可重试或选择自定义输入。</span>
+      <span>浏览器环境选项加载失败：{optionsError}。可重试或选择自定义输入。</span>
       <Button type="button" onClick={onRetryOptions}>重新加载选项</Button>
     </div> : null}
     <div className="grid gap-4 sm:grid-cols-2">
@@ -102,8 +104,12 @@ export function EnvironmentFields({ options, optionsLoading, optionsError, onRet
         <Controller control={control} name="humanPreset" render={({ field }) => <Select {...field} id="profile-human-preset" aria-describedby="profile-human-preset-hint" className="w-full">{HUMAN_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}</Select>} />
       </FormField>
     </div>
-    <FormField label="User Agent" htmlFor="profile-user-agent" hint={browserKernel ? `预设匹配内核版本 ${parseKernelKey(browserKernel)?.version ?? ''}；留空时跟随浏览器。` : '选择内核后提供匹配主版本的桌面预设。'}>
-      <Controller control={control} name="userAgent" render={({ field }) => <><Input {...field} id="profile-user-agent" aria-describedby="profile-user-agent-hint" list={userAgentList} placeholder="留空时跟随浏览器，或直接粘贴 User Agent" /><datalist id={userAgentList}>{userAgentPresets.map((preset) => <option key={preset.label} value={preset.value}>{preset.label}</option>)}</datalist></>} />
-    </FormField>
+    <div className="grid gap-2">
+      <EnvironmentOptionField name="userAgent" label="User Agent" options={userAgentPresets} hint={browserVersion
+        ? `预设匹配内核版本 ${browserVersion}；跟随浏览器可使用内核默认值。`
+        : '选择内核后提供桌面预设，也可跟随浏览器或自定义输入。'} />
+      {userAgent ? <p aria-label="当前 User Agent" className="m-0 break-all rounded-control border border-line bg-surface-subtle p-3 font-mono text-xs text-muted">{userAgent}</p> : null}
+      {userAgentVersionMismatch ? <p role="status" className="m-0 text-xs text-clay">当前 User Agent 的 Chromium {userAgentMajor} 与所选内核不一致，请重新选择预设或跟随浏览器。</p> : null}
+    </div>
   </section>
 }

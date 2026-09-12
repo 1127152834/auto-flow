@@ -135,3 +135,4 @@ class EnvironmentOptionRead(ApiModel):
 class ProfileEnvironmentOptionsRead(ApiModel):
     locales: list[EnvironmentOptionRead]
     timezones: list[EnvironmentOptionRead]
+    user_agent_templates: list[EnvironmentOptionRead]

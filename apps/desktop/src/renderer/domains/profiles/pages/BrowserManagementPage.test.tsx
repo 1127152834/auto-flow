@@ -58,6 +58,7 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
     if (path === '/api/v1/profiles/environment-options') return json({
       locales: [{ value: 'zh-CN', label: '中文' }],
       timezones: [{ value: 'Asia/Shanghai', label: '上海' }],
+      userAgentTemplates: [{ value: 'Catalog UA Chrome/{major}.0.0.0', label: '服务端 UA' }],
     })
     if (path === '/api/v1/kernels/default') return json({ revision: 1, kernel })
     if (path === '/api/v1/proxy-options') return json({ proxies: [{ id: 'proxy-1', name: '测试代理', enabled: true }], pools: [] })

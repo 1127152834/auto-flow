@@ -59,3 +59,4 @@ class EnvironmentOption:
 class ProfileEnvironmentOptions:
     locales: list[EnvironmentOption]
     timezones: list[EnvironmentOption]
+    user_agent_templates: list[EnvironmentOption]

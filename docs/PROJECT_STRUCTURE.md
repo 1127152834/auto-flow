@@ -212,7 +212,7 @@ reference/
 ## 浏览器配置与内核实现边界（2026-09-12，confirmed）
 
 - `domain/profiles`、`application/profiles`、`adapters/http/profiles.py` 与数据库仓储分别负责规则、用例、HTTP 契约及持久化；配置目录删除具有占用检查、隔离删除和恢复策略。
-- `infrastructure/filesystem/profile_environment.json` 维护浏览器语言/时区目录，`profile_environment.py` 读取并检查结构；bootstrap 注入 profiles HTTP 查询，前端 `EnvironmentOptionField` 通过生成 API 目录展示全量候选和自定义输入。维护方式见 `docs/migration/profile-environment-options.md`。
+- `infrastructure/filesystem/profile_environment.json` 维护浏览器语言/时区目录及 UA 模板，`profile_environment.py` 读取并检查结构；bootstrap 注入 profiles HTTP 查询，前端 `EnvironmentOptionField` 展示全量候选和自定义输入，UA 模板按所选内核主版本展开。维护方式见 `docs/migration/profile-environment-options.md`。
 - `providers/kernel` 适配锁定的 CloakBrowser wrapper；`infrastructure/process/kernel_worker.py` 监管隔离 worker、下载取消、原子安装和恢复，`adapters/events/kernels.py` 提供带鉴权的状态快照。
 - `renderer/domains/profiles/components` 包含共享字段区块与配置弹窗；`domains/kernels/components` 提供从配置表单进入的内核管理弹窗，无独立内核导航。
 - 列表与表单使用生成的 API 类型、TanStack Query、React Hook Form 和 Zod；内核任务缓存同时处理 HTTP/SSE 乱序，页面不直接访问 SQL、凭据或文件系统。

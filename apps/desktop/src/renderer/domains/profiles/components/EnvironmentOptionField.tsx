@@ -8,7 +8,7 @@ import { Select } from '../../../shared/components/ui/select'
 import type { ProfileFormValues } from '../form-schema'
 
 type Props = {
-  name: 'locale' | 'timezone'
+  name: 'locale' | 'timezone' | 'userAgent'
   label: string
   hint: string
   options: ProfileEnvironmentOptions['locales']
@@ -29,7 +29,7 @@ export function EnvironmentOptionField({ name, label, hint, options }: Props) {
       focusAfterSwitch.current = false
     }
   }, [manual, name, setFocus])
-  const id = `profile-${name}`
+  const id = `profile-${name === 'userAgent' ? 'user-agent' : name}`
   const accessibility = {
     id,
     'aria-invalid': Boolean(error),
@@ -48,8 +48,8 @@ export function EnvironmentOptionField({ name, label, hint, options }: Props) {
           else field.onChange(event)
         }}
       >
-        <option value="">跟随浏览器（未指定）</option>
-        {unlisted ? <option value={field.value}>{field.value}（当前值）</option> : null}
+        <option value="">{name === 'userAgent' ? '跟随浏览器（推荐）' : '跟随浏览器（未指定）'}</option>
+        {unlisted ? <option value={field.value}>{name === 'userAgent' ? '当前 User Agent（自定义或其他版本）' : `${field.value}（当前值）`}</option> : null}
         {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         <option value="__custom__">自定义…</option>
       </Select>}

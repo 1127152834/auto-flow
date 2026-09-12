@@ -47,6 +47,7 @@ function renderEditor(options: FakeOptions = {}) {
     if (path === '/api/v1/profiles/environment-options') return json({
       locales: [{ value: 'ja-JP', label: '日语（后端目录）' }],
       timezones: [{ value: 'Asia/Tokyo', label: '东京（后端目录）' }],
+      userAgentTemplates: [{ value: 'Catalog UA Chrome/{major}.0.0.0', label: '服务端 UA · Chromium {major}' }],
     })
     if (path === '/api/v1/profiles' || path.startsWith('/api/v1/profiles/')) {
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>
@@ -80,9 +81,10 @@ it('fetches environment choices from the API and submits selected values', async
   expect(await screen.findByRole('option', { name: '日语（后端目录）' })).toBeInTheDocument()
   await user.selectOptions(screen.getByLabelText('浏览器语言'), 'ja-JP')
   await user.selectOptions(screen.getByLabelText('浏览器时区'), 'Asia/Tokyo')
+  await user.selectOptions(screen.getByLabelText('User Agent'), 'Catalog UA Chrome/146.0.0.0')
   await user.click(screen.getByRole('button', { name: '创建配置' }))
   await waitFor(() => expect(writes).toHaveLength(1))
-  expect(writes[0]?.body).toMatchObject({ locale: 'ja-JP', timezone: 'Asia/Tokyo' })
+  expect(writes[0]?.body).toMatchObject({ locale: 'ja-JP', timezone: 'Asia/Tokyo', userAgent: 'Catalog UA Chrome/146.0.0.0' })
   const request = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/profiles/environment-options'))
   expect(new Headers(request?.[1]?.headers).get('x-autoflow-token')).toBe('fixture-token')
 })
