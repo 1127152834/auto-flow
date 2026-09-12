@@ -32,6 +32,7 @@ OpenRouter 网关沿用用户填写的 Base URL，不会把网关 Key 转发至�
 | `openai/gpt-4o-mini` 调用 | 返回 `OK`，桌面记录约 939 ms；[截图](01-generation-success.jpg) |
 | 手动添加、编辑模型 | 模型标识、名称、上下文、标签和说明保存后可读取；编辑时标识只读 |
 | 标签搜索、停用、状态筛选 | 标签搜索结果为 1/3；停用后“已启用”筛选为 0/3 |
+| 删除确认与取消 | 取消后临时模型保留；确认删除后仅剩原有两个 Aion 模型 |
 
 桌面测试过程中已有 `QA OpenRouter 0912` 及两个 Aion 模型被保存；供应商级删除验收在独立临时工作区执行，不删除当前桌面的这组记录。桌面截图中的“QA 免费模型”为换用 GPT-4o mini 前的临时显示名，后续已改为“QA GPT-4o mini”，不代表该模型免费。
 
@@ -66,7 +67,7 @@ uv run --directory apps/backend python ../../scripts/verify-openrouter-live.py \
 ## 自动化回归与构建
 
 - 修复前模型范围：后端 68 passed；前端 39 passed（5 files）。
-- 修复后后端全量：339 passed。新增覆盖 OpenRouter 鉴权顺序、错误 Key／错误结构不继续目录请求、非 OpenRouter 路径、元数据和 401／402／404／429 安全中文错误。
+- 修复后并与最新 baseline（含 User Agent 预设及代理加载态修复）集成：后端全量 **341 passed**，前端全量 **270 passed / 45 files**。新增覆盖 OpenRouter 鉴权顺序、错误 Key／错误结构不继续目录请求、非 OpenRouter 路径、元数据和 401／402／404／429 安全中文错误。
 - 实网脚本自身的合成故障测试：1 passed；验证系统凭据写入中途异常时，引用仍被跟踪并由 finally 清理。脚本继承真实系统存储，仅记录写入前的引用，不替换真实读写；报告仅保留引用数量。
 - Ruff、mypy、桌面 ESLint、TypeScript 检查通过；独立 worktree 的 `npm run build` 通过。
 - 现有非失败警告：Starlette 的 httpx／anyio 弃用提示；构建依赖 zod 中两处 PURE 注释被 Rollup 忽略。
@@ -76,6 +77,7 @@ uv run --directory apps/backend python ../../scripts/verify-openrouter-live.py \
 ```sh
 uv run --directory apps/backend pytest -q
 npm --workspace @autoflow/desktop exec -- vitest run src/renderer/domains/models
+npm --workspace @autoflow/desktop test
 npm --workspace @autoflow/desktop run typecheck
 npm --workspace @autoflow/desktop exec -- eslint src/renderer/domains/models
 npm run build
