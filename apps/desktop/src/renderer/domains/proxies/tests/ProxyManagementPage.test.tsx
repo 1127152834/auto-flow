@@ -294,7 +294,7 @@ it('ignores a late detail response, then updates metadata and copies through the
   await waitFor(() => expect(updateBody).toEqual({ expected_revision: 1, name_override: '工作代理', enabled: false }))
   await user.click(within(drawer).getByRole('tab', { name: '凭据与白名单' }))
   await user.click(within(drawer).getByRole('button', { name: '复制用户名' }))
-  expect(copy).toHaveBeenCalledWith({ proxyId: 'proxy-1', protocol: 'http', format: 'username' })
+  expect(copy).toHaveBeenCalledWith({ proxyId: 'proxy-1', protocol: 'socks5', format: 'username' })
 })
 
 it('probes SOCKS5 when it is the only available endpoint', async () => {
@@ -353,4 +353,57 @@ it('marks stale projections and attempts one background sync for an expired conn
   expect(screen.getByText('Dallas Verizon')).toBeInTheDocument()
   expect(await screen.findByText(/ProxyPanel 暂不可用。已加载的数据会继续保留/)).toBeInTheDocument()
   expect(syncCalls).toBe(1)
+})
+
+it('can retry a saved failed connection and clears its old sync error after recovery', async () => {
+  const user = userEvent.setup()
+  let recovered = false
+  let attempts = 0
+  const failure: ApiError = { code: 'PROXYPANEL_SCHEMA_UNSUPPORTED', message: '旧同步错误', request_id: 'old', field_errors: {}, retry_after_seconds: null, outcome_unknown: false }
+  render(<ProxyManagementPage api={client((path) => {
+    if (path === '/api/v1/proxy-panel/connections') return { items: [{ ...connection, status: recovered ? 'connected' : 'failed', last_synced_at: recovered ? new Date().toISOString() : null, last_error: recovered ? null : failure }] }
+    if (path === `/api/v1/proxy-panel/connections/${connection.id}/sync`) {
+      attempts += 1
+      if (attempts === 1) throw new ApiClientError(failure.message, 502, failure)
+      recovered = true
+      return { status: 'completed', resource: {} }
+    }
+    if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+    if (path.startsWith('/api/v1/proxies?')) return recovered ? proxies : { ...proxies, items: [], matched_count: 0 }
+    throw new Error(`Unexpected request: ${path}`)
+  })} />)
+  const retry = await screen.findByRole('button', { name: '刷新代理' })
+  expect(retry).toBeEnabled()
+  await user.click(retry)
+  await waitFor(() => expect(attempts).toBe(1))
+  await waitFor(() => expect(retry).toBeEnabled())
+  await user.click(retry)
+  expect(await screen.findByText('Dallas Verizon')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText(/已加载的数据会继续保留/)).not.toBeInTheDocument())
+  expect(attempts).toBe(2)
+})
+
+it('uses the explicitly selected probe protocol without falling back silently', async () => {
+  const user = userEvent.setup()
+  const protocols: string[] = []
+  render(<ProxyManagementPage api={client((path, init) => {
+    if (path === '/api/v1/proxy-panel/connections') return { items: [{ ...connection, last_synced_at: new Date().toISOString() }] }
+    if (path === '/api/v1/proxy-groups?offset=0&limit=100') return groups
+    if (path.startsWith('/api/v1/proxies?')) return proxies
+    if (path === '/api/v1/proxies/proxy-1') return proxies.items[0]
+    if (path === '/api/v1/proxies/proxy-1/references') return { profiles: [], groups: [] }
+    if (path === '/api/v1/proxies/proxy-1/probe') {
+      protocols.push(JSON.parse(String(init?.body)).protocol)
+      return { status: 'completed', resource: {} }
+    }
+    throw new Error(`Unexpected request: ${path}`)
+  })} />)
+  await user.click(await screen.findByRole('button', { name: '详情' }))
+  const drawer = await screen.findByRole('dialog', { name: 'Dallas Verizon' })
+  const select = within(drawer).getByRole('combobox', { name: '检测协议' })
+  expect(select).toHaveValue('socks5')
+  await user.selectOptions(select, 'http')
+  await user.click(within(drawer).getByRole('button', { name: '测试连接' }))
+  await waitFor(() => expect(protocols).toEqual(['http']))
+  expect(select).toHaveValue('http')
 })

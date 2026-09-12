@@ -100,6 +100,15 @@ class ProviderProxy:
     socks5_endpoint: Endpoint | None = None
     credential_available: bool = False
     subscription_expires_at: datetime | None = None
+    capabilities: tuple[Capability, ...] = ()
+
+
+@dataclass(frozen=True)
+class ProviderCredentials:
+    username: str = field(repr=False)
+    password: str = field(repr=False)
+    http_endpoint: Endpoint | None = None
+    socks5_endpoint: Endpoint | None = None
 
 
 @dataclass(frozen=True)

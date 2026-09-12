@@ -233,8 +233,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Unavailable Credentials */
-        get: operations["unavailable_credentials_api_v1_proxies__projection_id__credentials_get"];
+        /** Get Credentials Metadata */
+        get: operations["get_credentials_metadata_api_v1_proxies__projection_id__credentials_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -394,6 +394,23 @@ export type paths = {
         put?: never;
         /** Create Profile */
         post: operations["create_profile_api_v1_profiles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profiles/environment-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment Options */
+        get: operations["environment_options_api_v1_profiles_environment_options_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1126,6 +1143,13 @@ export type components = {
             /** Port */
             port: number;
         };
+        /** EnvironmentOptionRead */
+        EnvironmentOptionRead: {
+            /** Value */
+            value: string;
+            /** Label */
+            label: string;
+        };
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ApiError"];
@@ -1707,6 +1731,13 @@ export type components = {
         ProfileDuplicate: {
             /** Name */
             name: string;
+        };
+        /** ProfileEnvironmentOptionsRead */
+        ProfileEnvironmentOptionsRead: {
+            /** Locales */
+            locales: components["schemas"]["EnvironmentOptionRead"][];
+            /** Timezones */
+            timezones: components["schemas"]["EnvironmentOptionRead"][];
         };
         /** ProfileList */
         ProfileList: {
@@ -3116,7 +3147,7 @@ export interface operations {
             };
         };
     };
-    unavailable_credentials_api_v1_proxies__projection_id__credentials_get: {
+    get_credentials_metadata_api_v1_proxies__projection_id__credentials_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3723,6 +3754,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileRead"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    environment_options_api_v1_profiles_environment_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileEnvironmentOptionsRead"];
                 };
             };
             /** @description Not Found */

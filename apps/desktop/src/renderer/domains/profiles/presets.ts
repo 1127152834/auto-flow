@@ -1,30 +1,5 @@
 export type ProfilePreset = { value: string; label: string }
 
-export const LOCALE_PRESETS: ProfilePreset[] = [
-  { value: 'zh-CN', label: '简体中文 · zh-CN' },
-  { value: 'zh-TW', label: '繁体中文 · zh-TW' },
-  { value: 'en-US', label: '英语（美国）· en-US' },
-  { value: 'en-GB', label: '英语（英国）· en-GB' },
-  { value: 'ja-JP', label: '日语 · ja-JP' },
-  { value: 'ko-KR', label: '韩语 · ko-KR' },
-  { value: 'de-DE', label: '德语 · de-DE' },
-  { value: 'fr-FR', label: '法语 · fr-FR' },
-  { value: 'es-ES', label: '西班牙语 · es-ES' },
-  { value: 'pt-BR', label: '葡萄牙语（巴西）· pt-BR' },
-]
-
-export const TIMEZONE_PRESETS: ProfilePreset[] = [
-  { value: 'Asia/Shanghai', label: '中国标准时间 · 上海' },
-  { value: 'Asia/Hong_Kong', label: '香港时间 · 香港' },
-  { value: 'Asia/Tokyo', label: '日本标准时间 · 东京' },
-  { value: 'Asia/Seoul', label: '韩国标准时间 · 首尔' },
-  { value: 'America/Los_Angeles', label: '太平洋时间 · 洛杉矶' },
-  { value: 'America/New_York', label: '东部时间 · 纽约' },
-  { value: 'Europe/London', label: '英国时间 · 伦敦' },
-  { value: 'Europe/Berlin', label: '中欧时间 · 柏林' },
-  { value: 'Australia/Sydney', label: '澳大利亚东部时间 · 悉尼' },
-]
-
 export const VIEWPORT_PRESETS: ProfilePreset[] = [
   { value: '1280x800', label: '紧凑桌面 · 1280 × 800' },
   { value: '1366x768', label: '常见笔记本 · 1366 × 768' },

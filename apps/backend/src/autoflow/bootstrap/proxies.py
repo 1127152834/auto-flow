@@ -10,11 +10,11 @@ from autoflow.adapters.http.internal_proxy_credentials import (
 )
 from autoflow.adapters.http.proxies import proxy_router
 from autoflow.adapters.http.proxy_validation import configure_proxy_validation
-from autoflow.application.proxies.credentials import resolve_proxy_credential
+from autoflow.application.proxies.credential_loader import ProxyCredentialLoader
+from autoflow.application.proxies.credentials import format_proxy_credential
 from autoflow.application.proxies.facade import ProxyApplication
 from autoflow.infrastructure.credentials.system import SystemCredentialStore
 from autoflow.infrastructure.database.proxies import (
-    SqlAlchemyProxyRepository,
     SqlAlchemyProxyUnitOfWork,
 )
 from autoflow.infrastructure.database.session import create_session_factory
@@ -42,20 +42,24 @@ class LazySystemCredentialStore:
 def configure_proxy_management(app: FastAPI, database: Path) -> Callable[[], None]:
     session_factory = create_session_factory(database)
     credentials = LazySystemCredentialStore()
+    provider = ProxyPanelReadProvider()
+    loader = ProxyCredentialLoader(
+        lambda: SqlAlchemyProxyUnitOfWork(session_factory), credentials, provider
+    )
     application = ProxyApplication(
         uow_factory=lambda: SqlAlchemyProxyUnitOfWork(session_factory),
         credentials=credentials,
-        provider=ProxyPanelReadProvider(),
-        probe=HttpProxyProbe(credentials),
+        provider=provider,
+        probe=HttpProxyProbe(credentials, load_credentials=loader),
     )
     app.include_router(proxy_router(application=application))
 
-    def resolve(body: CopyCredentialRequest) -> str:
-        with session_factory() as session:
-            return resolve_proxy_credential(
-                SqlAlchemyProxyRepository(session), credentials,
-                proxy_id=str(body.proxy_id), protocol=body.protocol, format=body.format,
-            )
+    async def resolve(body: CopyCredentialRequest) -> str:
+        projection = application.get_projection(str(body.proxy_id))
+        value = await loader(projection)
+        return format_proxy_credential(
+            projection, value.username, value.password, protocol=body.protocol, format=body.format,
+        )
 
     app.include_router(internal_proxy_credentials_router(resolve))
     configure_proxy_validation(app)

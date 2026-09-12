@@ -55,6 +55,10 @@ function fakeServer(initialProfiles: ProfileRead[], initialProfileError = false)
       return new Response(null, { status: 204 })
     }
     if (path === '/api/v1/kernels/installed') return json({ items: [kernel] })
+    if (path === '/api/v1/profiles/environment-options') return json({
+      locales: [{ value: 'zh-CN', label: '中文' }],
+      timezones: [{ value: 'Asia/Shanghai', label: '上海' }],
+    })
     if (path === '/api/v1/kernels/default') return json({ revision: 1, kernel })
     if (path === '/api/v1/proxy-options') return json({ proxies: [{ id: 'proxy-1', name: '测试代理', enabled: true }], pools: [] })
     if (path === '/api/v1/kernels/catalog') return json({ wrapperVersion: '0.5.9', platform: 'darwin-arm64', catalogError: null, installed: [kernel], releases: [{ ...kernel, chromiumVersion: '145.0.1.1', releaseChannel: 'stable', publishedAt: null, archive: null, installed: true }] })

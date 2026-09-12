@@ -3,6 +3,7 @@
 import ipaddress
 import json
 import time
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
 import httpx
@@ -12,7 +13,7 @@ from autoflow.domain.proxies.errors import (
     CapabilityUnavailableError,
     CredentialStoreError,
 )
-from autoflow.domain.proxies.models import Health, Projection
+from autoflow.domain.proxies.models import Health, Projection, ProviderCredentials
 
 PROBE_URL = "https://api.ipify.org?format=json"
 
@@ -23,27 +24,33 @@ class HttpProxyProbe:
         credentials: CredentialStore,
         *,
         transport: httpx.AsyncBaseTransport | None = None,
+        load_credentials: Callable[[Projection], Awaitable[ProviderCredentials]] | None = None,
     ):
         self._credentials = credentials
         self._transport = transport
+        self._load_credentials = load_credentials
 
     async def probe(self, projection: Projection) -> Health:
-        endpoint = projection.http_endpoint or projection.socks5_endpoint
+        endpoint = projection.socks5_endpoint or projection.http_endpoint
         if endpoint is None or not projection.credential_available:
             raise CapabilityUnavailableError("代理端点或凭据尚未验证，无法检测连接")
         try:
-            value = self._credentials.read(f"proxy-endpoint:{projection.id}")
-            if value is None:
-                raise CredentialStoreError("代理凭据不可用，请重新同步连接信息")
-            credentials = json.loads(value)
-            username, password = credentials["username"], credentials["password"]
-            if not isinstance(username, str) or not isinstance(password, str):
-                raise TypeError("invalid credentials")
+            if self._load_credentials is not None:
+                value = await self._load_credentials(projection)
+                username, password = value.username, value.password
+            else:
+                raw = self._credentials.read(f"proxy-endpoint:{projection.id}")
+                if raw is None:
+                    raise CredentialStoreError("代理凭据不可用，请重新同步连接信息")
+                credentials = json.loads(raw)
+                username, password = credentials["username"], credentials["password"]
+                if not isinstance(username, str) or not isinstance(password, str):
+                    raise TypeError("invalid credentials")
         except CredentialStoreUnavailableError:
             raise CredentialStoreError("无法读取系统凭据库") from None
         except (ValueError, KeyError, TypeError):
             raise CredentialStoreError("代理凭据格式无效，请重新同步连接信息") from None
-        scheme = "http" if projection.http_endpoint else "socks5"
+        scheme = "socks5" if projection.socks5_endpoint else "http"
         host = endpoint.host
         # Ports and endpoints only originate in a reviewed Provider projection.
         if (
@@ -100,13 +107,18 @@ class HttpProxyProbe:
                 checked_at=checked_at,
                 source="local_probe",
             )
-        except (httpx.HTTPError, ValueError, KeyError, TypeError):
+        except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
+            message = (
+                f"{scheme.upper()} 代理 HTTPS 检测超时，请检查网络或尝试另一协议"
+                if isinstance(exc, httpx.TimeoutException)
+                else f"{scheme.upper()} 代理 HTTPS 检测失败，请检查端点与凭据"
+            )
             return Health(
                 state="unhealthy",
                 checked_at=checked_at,
                 source="local_probe",
                 error={
                     "code": "PROXY_PROBE_FAILED",
-                    "message": "通过代理的 HTTPS 检测失败，请检查端点与凭据",
+                    "message": message,
                 },
             )

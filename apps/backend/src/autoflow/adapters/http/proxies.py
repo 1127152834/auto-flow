@@ -288,8 +288,13 @@ def proxy_router(application: ProxyApplication) -> APIRouter:
         return _unavailable_projection(application, projection_id)
 
     @router.get("/proxies/{projection_id}/credentials", response_model=CredentialView, responses=_error_responses(404, 503))
-    def unavailable_credentials(projection_id: str):
-        return _unavailable_projection(application, projection_id)
+    def get_credentials_metadata(projection_id: str):
+        try:
+            projection = application.get_projection(projection_id)
+            available = projection.credential_available and not projection.remote_missing and not projection.stale
+            return CredentialView(credential_available=available, username=None, can_copy=available, can_rotate=False)
+        except ProxyError as exc:
+            return _error_response(exc)
 
     @router.post(
         "/proxies/{projection_id}/credentials/rotate",

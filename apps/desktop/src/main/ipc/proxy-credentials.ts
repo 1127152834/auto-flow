@@ -93,7 +93,7 @@ export function createCopyProxyCredentialsHandler(dependencies: ProxyCredentialD
         method: 'POST',
         cache: 'no-store',
         redirect: 'error',
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(60_000),
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',

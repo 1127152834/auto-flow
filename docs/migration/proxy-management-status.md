@@ -1,7 +1,7 @@
 # ProxyPanel 代理模块实施状态与合并指引
 
 - 日期：2026-09-12
-- 状态：confirmed；代理模块已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线并通过本机全量验收，真实 Provider 与浏览器启动集成仍待验证
+- 状态：confirmed；代理模块已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线并通过本机全量验收，同日真实 Provider 列表/凭据/SOCKS5 链路已补齐，浏览器启动集成仍未验收
 - 批准来源：用户“好的 开始实施吧，不要和浏览器管理冲突哦，另一个 agent 在开发浏览器管理模块”
 - 规格：[设计方案](../superpowers/specs/2026-09-12-proxy-management-design.md)
 - 计划：[实施计划](../superpowers/plans/2026-09-12-proxy-management-implementation.md)
@@ -12,7 +12,11 @@
 
 独占文件为后端 `domain/proxies`、`application/proxies`、`providers/proxy`、独立代理 HTTP / ORM / migration 文件，以及前端 `renderer/domains/proxies`。公共装配修改集中交付，由浏览器主线串行整合。共享 `.ai`、结构文档也应按段落合并，不能整文件覆盖主线的新记录。
 
-## 2. 已实现的内部流程
+## 当前更新：真实代理链路（2026-09-12，confirmed）
+
+列表、按需凭据、到期字段已按真实响应映射；6 条账户记录同步成功，其中 4 条有效、2 条过期。SOCKS5 实网与 CUA 检测通过，HTTP CONNECT 超时如实保留。完整证据及范围见 [真实链路验收](proxypanel-live-verification.md)。下方第 2、3、6 节记录首次迁移时的历史状态，其中“无真实账号、列表一律拒绝、无到期字段”的结论已 superseded；远程写操作未实现的边界继续有效。
+
+## 2. 首次迁移实现的内部流程（历史记录）
 
 | 范围 | 本地行为 | 验收边界 |
 | --- | --- | --- |
@@ -26,7 +30,7 @@
 
 普通 HTTP 请求和响应模型不返回 API Key 或数据面密码。校验错误不回显提交内容。到期时间默认 `null`；页面不生成“即将到期”、预测地点延迟或丢包率。
 
-## 3. 真实接入尚未完成的具体原因
+## 3. 早期真实接入未完成原因（superseded，保留排错背景）
 
 官方 Developers 页面证明了固定 base URL、Bearer 认证和端点路径，但没有提供可用于冻结映射的实际列表响应。当前没有真实 API Key / 脱敏 live fixture。
 
