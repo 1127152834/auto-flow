@@ -1,4 +1,16 @@
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
-import type { ComponentPropsWithoutRef } from 'react'
+import { Check, Minus } from '@phosphor-icons/react'
+import type { ComponentPropsWithRef } from 'react'
 import { cn } from '../../lib/utils'
-export function Checkbox({ className, ...props }: ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>) { return <CheckboxPrimitive.Root className={cn('h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay', className)} {...props} /> }
+
+export type CheckboxProps = ComponentPropsWithRef<typeof CheckboxPrimitive.Root>
+export function Checkbox({ className, ...props }: CheckboxProps) {
+  return <CheckboxPrimitive.Root {...props} data-af-choice="checkbox" className={cn('af-choice', className)}>
+    <span data-af-choice-mark aria-hidden="true">
+      <CheckboxPrimitive.Indicator>
+        <Check data-af-choice-glyph="checked" size={14} weight="bold" />
+        <Minus data-af-choice-glyph="mixed" size={14} weight="bold" />
+      </CheckboxPrimitive.Indicator>
+    </span>
+  </CheckboxPrimitive.Root>
+}

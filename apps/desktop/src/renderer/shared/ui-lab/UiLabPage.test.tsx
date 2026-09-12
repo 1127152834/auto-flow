@@ -1,10 +1,11 @@
-import { afterEach, expect, it } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 import { UiLabPage } from './UiLabPage'
 
-afterEach(cleanup)
+beforeEach(() => vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} }))
+afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 it('exposes the validation cases without loading a business API', async () => {
   const user = userEvent.setup()
   render(<UiLabPage />)

@@ -2,6 +2,7 @@ import { SquaresFour } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { ChoiceOverlayCase } from './ChoiceOverlayCase'
 import { FormFocusCase } from './FormFocusCase'
+import { ToggleCases } from './ToggleCases'
 import { TextControlCases } from './TextControlCases'
 
 const palette = ['canvas', 'surface', 'clay', 'clay-soft', 'control-border', 'ink', 'muted', 'danger', 'success', 'warning']
@@ -11,7 +12,7 @@ export function UiLabPage() {
     <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-6">
       <div className="flex gap-3"><span className="grid h-12 w-12 place-items-center rounded-card bg-clay text-on-accent"><SquaresFour size={28} /></span>
         <div><p className="text-xs font-semibold uppercase tracking-widest text-clay">Design system · G0</p><h1 className="text-2xl font-semibold">AutoFlow 控件实验室</h1></div></div>
-      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs text-muted">开发环境 · T0–T3 验证</span>
+      <span className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs text-muted">开发环境 · T0–T4 验证</span>
     </header>
     <p className="max-w-3xl text-sm leading-6 text-muted">先验证设计令牌、表单焦点和嵌套浮层。这里使用本地样本，不连接业务账户。完整组件展示与真实页面迁移在后续阶段进行。</p>
     <section className="grid gap-5 rounded-card border border-line bg-surface p-6" aria-labelledby="tokens-title">
@@ -25,6 +26,7 @@ export function UiLabPage() {
       <section className="grid gap-4 rounded-card border border-line bg-surface p-6" aria-labelledby="overlay-title"><div><h2 id="overlay-title" className="font-semibold">嵌套弹窗与滚动</h2><p className="mt-1 text-xs text-muted">A06 / A07 · 三层模态窗口与内部选项浮层</p></div><p className="text-sm leading-6 text-muted">依次打开配置、内核管理、删除确认。先展开下拉再按 Escape，应只收起下拉；忙状态中应阻止关闭窗口。</p><ChoiceOverlayCase /></section>
     </div>
     <TextControlCases size={compact ? 'sm' : 'md'} />
+    <ToggleCases />
     <footer className="text-xs leading-6 text-muted">本页仅辅助验收。后续仍须覆盖浏览器、代理、模型、设置与总览的真实应用流程；Windows 与读屏验收未执行。</footer>
   </main>
 }

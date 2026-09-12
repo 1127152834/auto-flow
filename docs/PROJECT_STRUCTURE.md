@@ -139,7 +139,7 @@ reference/
 | `apps/desktop/src/renderer/shared/hooks/` | 不含领域查询语义的共享 React hooks。 |
 | `apps/desktop/src/renderer/shared/lib/` | 有明确职责的共享函数；不作为杂物目录。 |
 | `apps/desktop/src/renderer/styles/` | index.css 为入口；tokens.css 定义暖灰/黏土棕令牌，controls.css 为定向控件基础样式与全局 Chromium 滚动条。 |
-| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。当前含令牌、RHF、浮层及T3文字控件状态案例；fixture 不进入生产 JS，不访问业务 API。 |
+| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。当前含令牌、RHF、浮层、T3文字及T4勾选/单选/开关/折叠状态案例；fixture 不进入生产 JS，不访问业务 API。 |
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
@@ -229,4 +229,8 @@ reference/
 
 ### 控件统一 T3（2026-09-12，implemented）
 
-`shared/components/ui` 新增 IconButton/SearchInput/PasswordInput/Spinner，并统一现有 Button/Input/Textarea；FormField 新增显式render-prop，FieldGroup使用原生fieldset/legend。`shared/ui-lab/TextControlCases.tsx` 提供状态矩阵，`scripts/smoke-ui-controls.mjs` 当前输出到 `docs/design-system/verification/t3/` 并验证真实配置表单。详见 `docs/design-system/verification/text-controls.md`；T4及领域迁移未执行，UI-G0-01须在T5前复核。
+`shared/components/ui` 新增 IconButton/SearchInput/PasswordInput/Spinner，并统一现有 Button/Input/Textarea；FormField 新增显式render-prop，FieldGroup使用原生fieldset/legend。`shared/ui-lab/TextControlCases.tsx` 提供状态矩阵，该阶段脚本输出到 `docs/design-system/verification/t3/` 并验证真实配置表单。T3历史报告见 `docs/design-system/verification/text-controls.md`，当前T4结果见下文；领域迁移尚未执行，UI-G0-01须在T5前复核。
+
+### 控件统一 T4（2026-09-12，implemented）
+
+`shared/components/ui` 补齐 Checkbox Indicator、RadioGroup Root/Item/Indicator、Switch Thumb 与原生 Disclosure；状态外观集中在 `styles/controls.css`。`shared/ui-lab/ToggleCases.tsx` 提供状态、组错误、RHF及折叠案例；脚本当前输出到 `docs/design-system/verification/t4/`，验证浏览器配置Switch与设置诊断Checkbox。未替换领域中的原生radio/details。详见 `docs/design-system/verification/toggle-controls.md`；UI-G0-01及UI-T4-01保留为后续门槛。

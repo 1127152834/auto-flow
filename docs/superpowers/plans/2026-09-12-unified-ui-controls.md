@@ -10,7 +10,7 @@
 
 ---
 
-- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；T0–T3代码已实施，T4之后未实施；IME/平台及UI-G0-01待查**。
+- 日期：2026-09-12；状态：**approved，用户2026-09-12确认；T0–T4代码已实施，T5之后未实施；IME/平台及UI-G0-01、UI-T4-01待查**。
 - 设计依据：[设计规格及A01–A15验收矩阵](../specs/2026-09-12-unified-ui-controls-design.md)。源码依据：[盘点](../../design-system/2026-09-12-ui-controls-audit.md)、[逐点清单](../../design-system/2026-09-12-ui-controls-usage.md)。
 - 当前文档分支 `codex/ui-controls-plan` 从 c7c3021 建立；实施必须先核对/接入最新已提交主线（盘点截止15cf2e8）。严禁把旧 checkout 中语言/时区硬编码、旧代理协议默认值覆盖主线。
 - 所有文件名以下均为仓库根相对精确路径；命令在**任务独立 worktree 根**执行。不是在 `/Users/zhangtiancheng/Documents/projects/autoflow` 主目录执行。
@@ -188,9 +188,9 @@ T3执行补充（2026-09-12）：[实现与验收](../../design-system/verificat
 - 新建同目录 `radio-group.tsx`、`disclosure.tsx`、`choice-toggle.test.tsx`、`disclosure.test.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/ToggleCases.tsx`，接入UiLabPage。
 
-- [ ] 写radio箭头跳过disabled、Space切换checkbox、indeterminate符号、Switch禁用、Disclosure Enter/Space展开收起测试。使用角色断言，不只快照class。
-- [ ] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/choice-toggle.test.tsx src/renderer/shared/components/ui/disclosure.test.tsx`，确认缺实现时红灯。
-- [ ] 复用Radix Root/Indicator/Thumb；RadioGroup完整Item/Indicator。Disclosure直接封装语义details/summary，隐藏系统marker加Phosphor chevron，不实现第二套键盘逻辑。受控需要时通过open/onToggle适配settings现有state。
+- [x] 写radio箭头跳过disabled、Space切换checkbox、indeterminate符号、Switch禁用、Disclosure Enter/Space展开收起测试。使用角色断言，不只快照class。
+- [x] Run `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/choice-toggle.test.tsx src/renderer/shared/components/ui/disclosure.test.tsx`，确认缺实现时红灯。
+- [x] 复用Radix Root/Indicator/Thumb；RadioGroup完整Item/Indicator。Disclosure直接封装语义details/summary，隐藏系统marker加Phosphor chevron，不实现第二套键盘逻辑。受控需要时通过open/onToggle适配settings现有state。
 
 ```tsx
 // Checkbox 的关键结构；实际props/ref透传沿用相应Radix Root类型。
@@ -201,8 +201,11 @@ T3执行补充（2026-09-12）：[实现与验收](../../design-system/verificat
 </CheckboxPrimitive.Root>
 ```
 
-- [ ] 为三态、组错误、长label、禁用原因添加展示场景；保证视觉18px且label命中区32px，forced-colors可见。
-- [ ] 同命令绿灯后运行shared tests/typecheck，提交 `feat(ui): unify choice toggles and disclosures`。对应A05。
+- [x] 为三态、组错误、长label、禁用原因添加展示场景；保证视觉18px且label命中区32px，forced-colors可见。
+- [x] 同命令绿灯后运行shared tests/typecheck，提交 `feat(ui): unify choice toggles and disclosures`。对应A05。
+
+- 实施记录：`docs/design-system/verification/toggle-controls.md`。T4代码已落地，56文件/296测试与12组Electron检查通过；展示页辅助之外，验证了真实浏览器Switch及设置Checkbox。
+- [ ] UI-T4-01：领域Radio迁移前复核Radix零间隔keyup/异步焦点竞态，并完成实体键盘快速/长按与读屏检查；不因正常事件顺序通过而关闭此项。UI-G0-01仍须T5前排查。
 
 ## T5：Select、Combobox、Autocomplete与滚动容器
 

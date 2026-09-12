@@ -70,3 +70,67 @@ textarea[data-af-control] { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   :root:not([data-motion="full"]) .af-spinner { animation: none !important; }
 }
+
+/* A 32px target surrounds the 18px choice mark; Radix owns state and keyboard behavior. */
+.af-choice {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 32px; height: 32px; padding: 0;
+  border: 0; border-radius: var(--radius-control); background: transparent;
+  vertical-align: middle;
+}
+.af-choice:focus-visible, .af-disclosure > summary:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset);
+}
+[data-af-choice-mark] {
+  display: grid; place-items: center; width: 18px; height: 18px;
+  border: 1px solid var(--color-control-border); border-radius: 4px;
+  background: var(--color-surface); color: var(--color-on-accent);
+  transition: background-color var(--motion-toggle), border-color var(--motion-toggle);
+}
+.af-choice:enabled:hover [data-af-choice-mark] { border-color: var(--color-clay); background: var(--color-clay-soft); }
+.af-choice[data-state="checked"] [data-af-choice-mark],
+.af-choice[data-state="indeterminate"] [data-af-choice-mark] { background: var(--color-clay); border-color: var(--color-clay); }
+.af-choice:enabled:active [data-af-choice-mark] { border-color: var(--color-clay-strong); }
+.af-choice:enabled[data-state="checked"]:hover [data-af-choice-mark],
+.af-choice:enabled[data-state="indeterminate"]:hover [data-af-choice-mark] { background: var(--color-clay-strong); }
+.af-choice:enabled[aria-invalid="true"] [data-af-choice-mark],
+[aria-invalid="true"] .af-choice:enabled [data-af-choice-mark] { border-color: var(--color-danger); }
+.af-choice:disabled { cursor: not-allowed; }
+.af-choice:disabled [data-af-choice-mark] {
+  background: var(--color-disabled-surface); border-color: var(--color-control-border); color: var(--color-disabled-ink);
+}
+[data-af-choice-glyph] { display: none; }
+[data-state="checked"] > [data-af-choice-glyph="checked"],
+[data-state="indeterminate"] > [data-af-choice-glyph="mixed"] { display: block; }
+[data-af-choice="radio"] [data-af-choice-mark] { border-radius: 50%; }
+[data-af-choice-dot] { display: block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+[data-af-choice="switch"] { width: 44px; border-radius: 999px; }
+[data-af-choice="switch"] [data-af-choice-mark] {
+  display: flex; align-items: center; width: 44px; height: 24px; border-radius: 999px;
+  background: var(--color-control-border);
+}
+[data-af-choice-thumb] {
+  display: block; width: 20px; height: 20px; border-radius: 50%; background: var(--color-on-accent);
+  transform: translateX(1px); transition: transform var(--motion-toggle);
+}
+[data-af-choice-thumb][data-state="checked"] { transform: translateX(21px); }
+.af-choice:disabled [data-af-choice-thumb] { background: var(--color-disabled-ink); }
+.af-disclosure > summary { list-style: none; }
+.af-disclosure > summary::-webkit-details-marker { display: none; }
+.af-disclosure > summary:hover { background: var(--color-surface-hover); }
+.af-disclosure-chevron { transition: transform var(--motion-toggle); }
+.af-disclosure[open] > summary > .af-disclosure-chevron { transform: rotate(90deg); }
+@media (forced-colors: active) {
+  [data-af-choice-mark] { forced-color-adjust: none; background: Canvas; border-color: ButtonText; color: HighlightText; }
+  .af-choice:enabled:hover [data-af-choice-mark] { background: Canvas; border-color: Highlight; }
+  .af-choice[data-state="checked"] [data-af-choice-mark], .af-choice[data-state="indeterminate"] [data-af-choice-mark],
+  .af-choice:enabled[data-state="checked"]:hover [data-af-choice-mark], .af-choice:enabled[data-state="indeterminate"]:hover [data-af-choice-mark] { background: Highlight; border-color: Highlight; }
+  .af-choice:enabled[aria-invalid="true"] [data-af-choice-mark],
+  [aria-invalid="true"] .af-choice:enabled [data-af-choice-mark] { border-color: ButtonText; outline: 1px dashed ButtonText; outline-offset: 2px; }
+  [data-af-choice="switch"] [data-af-choice-mark] { background: Canvas; }
+  [data-af-choice-thumb] { background: ButtonText; }
+  [data-af-choice-thumb][data-state="checked"] { background: HighlightText; }
+  .af-choice:disabled [data-af-choice-mark] { background: Canvas; border-color: GrayText; color: GrayText; }
+  .af-choice:disabled [data-af-choice-thumb] { background: GrayText; }
+  .af-choice:focus-visible, .af-disclosure > summary:focus-visible { outline-color: Highlight; }
+}

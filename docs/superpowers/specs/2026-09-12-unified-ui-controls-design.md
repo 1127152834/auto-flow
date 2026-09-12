@@ -245,3 +245,12 @@ T3续验新增 UI-G0-01 偶发关闭待查项，后续重复通过不代表根�
 ## 11. 已确认的设计决策
 
 用户已确认本规格整体方向：在 desktop shared 内补齐现有 Radix，组合框采用隔离封装的成熟行为基础；暖灰/黏土棕+32/40密度+更清晰控件边界；自有滚动条；不改变业务流程。G0 验证失败或后续实际数据要求新的交互能力时，单独提交变更依据。T0–T2 仅记录已验证事实，未执行的 G1/G2/G3 不标记完成。
+
+
+### T4 实现补充（2026-09-12）
+
+实现落点保持 desktop shared。Checkbox/RadioGroupItem 自身32×32px命中区包含18px图形；Switch自身44×32px包含44×24px轨道和20px滑块。调用方label可继续扩展命中区，不需要用伪元素越界制造点击区域。Checkbox图形按 Radix Indicator 的 data-state 切换，以兼容 checked 和 defaultChecked 的半选状态；不增加本地冗余 checked state。
+
+Disclosure 使用 `summary: ReactNode` 和原生 details props（包括 ref/open/onToggle）；summary必须是描述性内容，不在其中放第二个交互按钮。需要受控时由调用方在 onToggle 读取 currentTarget.open。隐藏系统 marker 并绘制 Phosphor chevron，不自造 aria-expanded、键盘处理或不可靠的高度动画。
+
+RadioGroup 的 Root 提供组名/值与方向，错误绑定到组；需要 RHF setFocus 时将 ref 连接首个可用 Item。零间隔合成 keydown/keyup 可命中 Radix 异步焦点竞态，已登记 UI-T4-01；正常顺序的自动验证不能替代实体键盘/读屏验收。详见 `docs/design-system/verification/toggle-controls.md`。
