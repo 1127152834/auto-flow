@@ -17,7 +17,8 @@
     "openapi:check": "node scripts/generate-api.mjs --check",
     "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
     "test:scripts": "node --test scripts/*.test.mjs",
-    "smoke:desktop": "node scripts/smoke-desktop.mjs"
+    "smoke:desktop": "node scripts/smoke-desktop.mjs",
+    "smoke:ui-controls": "node scripts/smoke-ui-controls.mjs"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0"

@@ -115,13 +115,14 @@ Run `node --test scripts/ui-tokens.test.mjs`，红灯必须是缺token/对比失
 - 修改 `apps/desktop/package.json`、根 `package-lock.json`、`apps/desktop/src/renderer/main.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/ui-lab/UiLabPage.tsx`、`ChoiceOverlayCase.tsx`、`FormFocusCase.tsx`、`fixtures.ts`、`UiLabPage.test.tsx`。
 - 新建 `apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx`、`overlay-integration.test.tsx`。
-- 修改 `apps/desktop/src/renderer/shared/components/ui/dialog.tsx`、`alert-dialog.tsx`（仅host/depth接入，保留busy与已有焦点逻辑）。
+- 修改 `apps/desktop/src/renderer/shared/components/ui/dialog.tsx`、`alert-dialog.tsx`（host/depth及活跃popup Escape顺序保护，保留busy与已有焦点逻辑）。
 - 新建 `docs/design-system/verification/choice-overlay-gate.md`。
+- 执行补充：新增 `ui-lab/LabCombobox.tsx` 验证探针、`renderer/vite-env.d.ts`、`scripts/smoke-ui-controls.mjs`；根package增加smoke命令。为了G0就能重复验证真实Electron，将T13所需Playwright工具依赖提前锁定为开发依赖，不提前执行领域迁移。
 
-- [ ] 核对要安装版本的 peer 依赖后，在workspace精确锁定 radio-group、scroll-area、react-aria-components；安装输出与lockfile记录版本。不要运行会覆盖现有组件的shadcn生成命令。
-- [ ] 在现有Dialog测试风格上增加三层Dialog及组合框案例：打开建议后第一次Escape只收建议；第二次收内核层并返回父触发器；busy时不能关闭。先运行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/overlay-integration.test.tsx` 得到失败。
-- [ ] 实现最小OverlayHost Context，只传递层级与popup容器。Frame host位于scroll body外，position/focus边界按设计§7；两个库的Portal显式使用同一host。组合框案例只有本地fixture，不调用业务接口。
-- [ ] 添加DEVELOPMENT入口，生产默认入口行为不变：
+- [x] 核对要安装版本的 peer 依赖后，在workspace精确锁定 radio-group、scroll-area、react-aria-components；安装输出与lockfile记录版本。不要运行会覆盖现有组件的shadcn生成命令。
+- [x] 在现有Dialog测试风格上增加三层Dialog及组合框案例：打开建议后第一次Escape只收建议；第二次收内核层并返回父触发器；busy时不能关闭。先运行 `npm --workspace @autoflow/desktop test -- src/renderer/shared/components/ui/overlay-integration.test.tsx` 得到失败。
+- [x] 实现最小OverlayHost Context，只传递层级与popup容器。Frame host位于scroll body外，position/focus边界按设计§7；选项浮层使用本层host；模态窗口Portal仍由Radix挂body以避开父层transform，后续Radix选择/菜单在T5/T6接host。组合框案例只有本地fixture，不调用业务接口。
+- [x] 添加DEVELOPMENT入口，生产默认入口行为不变：
 
 ```tsx
 const element = document.getElementById('root')
@@ -138,8 +139,8 @@ if (import.meta.env.DEV && location.hash === '#/__ui') {
 
 保留main.tsx已有import（StrictMode、createRoot、App及样式）；此片段替换原来的root挂载段，保留缺root时报错与StrictMode。UiLabPage输出 `data-ui-lab="autoflow-ui-controls-lab"` 作为生产泄漏扫描标识。
 
-- [ ] 测RHF setFocus/reset/dirty与ref、键盘进入选项和关闭后焦点、popup不被overflow裁剪。jsdom不能证明视觉裁剪，必须在任务实例Electron实际打开案例验证。
-- [ ] 记录G0成功/失败截图与步骤。成功才进入T5与领域迁移；失败时只保留复现，不扩大替换范围。运行shared tests、typecheck/build，提交 `feat(ui): add isolated control lab and overlay host`。对应A01/A06/A09。
+- [x] 测RHF setFocus/reset/dirty与ref、键盘进入选项和关闭后焦点、popup不被overflow裁剪。jsdom不能证明视觉裁剪，必须在任务实例Electron实际打开案例验证。
+- [x] 记录G0成功/失败截图与步骤。G0通过才允许后续进入T5与领域迁移；失败时只保留复现，不扩大替换范围。运行shared tests、typecheck/build，提交 `feat(ui): add isolated control lab and overlay host`。对应A01/A06/A09。
 
 ## T3：Button、输入、Field绑定
 
@@ -436,4 +437,4 @@ npm run smoke:desktop
 | 不扩大成全组件库、无用MultiSelect/NumberStepper | T4、T5、T7、T10范围约束 |
 | 原生控件残留扫描、真实页面和双平台验收 | T12、T13 |
 
-设计已具体化，实施仍待确认。推荐先以内联执行完成T0–T2/G0，减少公共组件API未稳时的并行冲突；是否并行领域迁移可以在G1后决定，不作为当前设计确认的额外阻塞问题。
+设计已确认，本批T0–T2已实施；G0的本机验证与未执行项见验收报告。后续按T3–T13推进，G1后再决定领域并行，不自动扩派子智能体。

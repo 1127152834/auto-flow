@@ -7,8 +7,11 @@ const root = document.getElementById('root')
 
 if (!root) throw new Error('renderer root element is missing')
 
-createRoot(root).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+const reactRoot = createRoot(root)
+if (import.meta.env.DEV && location.hash === '#/__ui') {
+  void import('./shared/ui-lab/UiLabPage').then(({ UiLabPage }) => {
+    reactRoot.render(<StrictMode><UiLabPage /></StrictMode>)
+  })
+} else {
+  reactRoot.render(<StrictMode><App /></StrictMode>)
+}

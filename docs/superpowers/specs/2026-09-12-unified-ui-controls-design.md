@@ -3,7 +3,7 @@
 - 日期：2026-09-12；状态：**approved，用户2026-09-12确认；实现与平台验收分别记录**。
 - 来源：[实际源码盘点](../../design-system/2026-09-12-ui-controls-audit.md)、用户本轮明确要求、既有暖灰/黏土棕视觉和领域 ADR。
 - 使用技能：Superpowers `using-superpowers`、`brainstorming`、`using-git-worktrees`；实现任务由 `writing-plans` 细化；以 `ponytail` 的复用原则限制范围。
-- 本轮只产出文档。行为库兼容、视觉效果和平台验收均未假定通过。
+- 设计阶段仅产出文档；用户确认后已完成T0–T2。本机G0与尚未执行的领域/平台验收分开记录。
 
 ## 1. 目标、边界与推荐方案
 
@@ -17,7 +17,7 @@
 
 B 的具体选择：保留所有已安装 Radix 原语，补 `@radix-ui/react-radio-group` 与 `@radix-ui/react-scroll-area`；组合框选用 `react-aria-components` 的 ComboBox 能力，分别封装严格单选 `Combobox` 和允许自由字符串的 `Autocomplete`。其官方文档明确区分选项值与输入值，并支持 `allowsCustomValue`；不自行实现 listbox 的方向键与焦点协议。[React Aria ComboBox](https://react-aria.adobe.com/ComboBox)
 
-这是**待批准技术选择**，不是兼容性已验证结论。G0 先在真实 Radix Dialog 内验证 ComboBox Portal、RHF ref、Escape 和滚动。如果不能通过，不迁移领域代码；提交失败证据和替代方案（Base UI 组合框/自动补全的定向替换）供确认，不静默重写所有 Radix。安装时核对 peer dependencies 并锁定实际验证版本，不用 CLI 覆盖现有 shadcn 文件。
+这是**已批准技术选择**；2026-09-12 已在任务 Electron 的 G0 案例验证 ComboBox Portal、RHF ref、Escape 和滚动，结果与平台边界见 `docs/design-system/verification/choice-overlay-gate.md`。这不代表领域接入或双平台验收完成。如果不能通过，不迁移领域代码；提交失败证据和替代方案（Base UI 组合框/自动补全的定向替换）供确认，不静默重写所有 Radix。安装时核对 peer dependencies 并锁定实际验证版本，不用 CLI 覆盖现有 shadcn 文件。
 
 ## 2. 架构落点
 
@@ -194,6 +194,13 @@ Dialog frame 内提供位于滚动 body 外的 popup host；Radix与React Aria�
 - 不拦截 wheel/trackpad；在嵌套列表边界使用 `overscroll-behavior:contain` 防止滚动泄漏到遮罩底页。可键盘滚动区域提供 label、按需求 tabIndex=0，PageUp/Down/Home/End 可达；聚焦表单字段时不被固定footer遮挡。
 - `forced-colors: active` 允许系统高对比色替代品牌色与thumb，保留边框/焦点/勾号；这是辅助功能适配，不是回退系统 select 面板。
 
+### G0 实施补充（2026-09-12，confirmed）
+
+- Dialog/AlertDialog 的模态 Portal 继续由 Radix 挂在 body；每层 Content 内提供 `data-overlay-host`，位于可滚动主体外。React Aria 的选项弹层挂到当前 host，保证属于该层可访问子树。未来 Radix 选择/菜单弹层接入同一 host 属于 T5/T6，不把当前所有 Portal 都描述为已迁移。
+- `data-af-popup` 标识本层 React Aria 活跃弹层。Radix document capture 的 Escape 会先于组合框键盘处理器；父 Dialog 在发现活跃弹层时 preventDefault，组合框继续执行自己的 Escape/revert。退出中的弹层不阻塞父层。组合框未展开时保留原 busy 和关闭回调。
+- G0 探针精确锁定 `react-aria-components@1.21.1`，局部使用其 `UNSTABLE_portalContainer`；该版本类型已标 deprecated。T5 应核对推荐的 PortalProvider 接口并复跑 G0，业务层不得依赖这个实现细节。
+- 该版本 Popover 不提供 `--available-height` CSS 变量。使用 `maxHeight={320}` 与弹层 `overflow-y:auto`，由定位引擎继续按视口收缩；不要根据不存在的变量定义滚动约束。
+
 ## 8. 动效与反馈
 
 - 普通 hover/focus 100ms，checkbox/switch选中120ms；弹窗/抽屉150ms opacity+最多8px位移，不滑满整屏。Toast150ms进出，正常成功提示2600ms后退场；下载width300ms linear；Spinner旋转700ms linear。Spinner随Button基础任务交付，反馈任务复用它，避免Button与反馈模块相互等待。
@@ -231,6 +238,6 @@ Dialog frame 内提供位于滚动 body 外的 popup host；Radix与React Aria�
 
 合入门槛：A01–A13自动检查通过且当前平台真实页面通过；另一平台未执行时只能标“平台验收未完成”，不能声称系统控件专项完成。A14/A15逐平台补齐后才关闭专项。纯静态色值、jsdom和组件展示截图均不能替代真实应用验收。
 
-## 11. 需要确认的设计决策
+## 11. 已确认的设计决策
 
-推荐一次确认本规格的整体方向：在 desktop shared 内补齐现有 Radix，组合框采用隔离封装的成熟行为基础；暖灰/黏土棕+32/40密度+更清晰控件边界；自有滚动条；不改变业务流程。G0 验证失败或后续实际数据要求新的交互能力时，单独提交变更依据。本轮不把 proposed 写入已确认 ADR。
+用户已确认本规格整体方向：在 desktop shared 内补齐现有 Radix，组合框采用隔离封装的成熟行为基础；暖灰/黏土棕+32/40密度+更清晰控件边界；自有滚动条；不改变业务流程。G0 验证失败或后续实际数据要求新的交互能力时，单独提交变更依据。T0–T2 仅记录已验证事实，未执行的 G1/G2/G3 不标记完成。

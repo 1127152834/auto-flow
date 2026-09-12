@@ -16,7 +16,7 @@
   outline-offset: var(--focus-offset);
 }
 [data-af-control][aria-invalid="true"] { border-color: var(--color-danger); }
-[data-af-control]:read-only { background-color: var(--color-surface-subtle); }
+input[data-af-control]:enabled:read-only, textarea[data-af-control]:enabled:read-only { background-color: var(--color-surface-subtle); }
 [data-af-control]:disabled {
   background-color: var(--color-disabled-surface);
   color: var(--color-disabled-ink);

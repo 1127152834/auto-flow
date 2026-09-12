@@ -1,14 +1,12 @@
 # 全系统基础控件统一
 
-- 日期：2026-09-12。
-- 状态：proposed；只有本轮静态盘点和计划文档已完成，尚未批准实施。
-- 来源：用户要求先实际盘点、设计与计划，不大规模替换；源码快照c7c3021与主目录15cf2e8。
-- 工作位置：`/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan`，分支`codex/ui-controls-plan`。
-- 正式盘点：`docs/design-system/2026-09-12-ui-controls-audit.md`及JSON/逐点明细。
-- 正式规格：`docs/superpowers/specs/2026-09-12-unified-ui-controls-design.md`。
-- 正式计划：`docs/superpowers/plans/2026-09-12-unified-ui-controls.md`，T0–T13，全部实施复选项未勾选。
-- 推荐：现有desktop shared内补齐Radix，自有tokens与滚动条，React Aria组合框定向封装；不扩建packages/ui、不改接口/后端/数据。
-- 顺序：确认→基线→tokens→展示/浮层G0→共享G1→浏览器/内核→代理/池→模型→设置/总览/壳→扫描与双平台G3。
-- 并行保护：主目录在固定快照后继续扩展UA后端目录及EnvironmentOptionField；T0再核对最终接线，禁止用本计划的旧datalist描述覆盖新实现。
-- 下个动作：用户确认设计和计划后，读取executing-plans，先核对主线最新提交并执行T0–T2；不把文档分支旧业务checkout覆盖主目录。
-- 尚未验证：新行为库与现有Dialog的运行兼容、全部控件视觉、性能、Windows/macOS/读屏验收。
+- 日期：2026-09-12；状态：approved，T0–T2 implemented；T3–T13 pending。
+- 来源：用户在设计和计划交付后回复“好的 开始吧”；本次按此前约定执行首批 T0–T2。
+- 原设计阶段 proposed / 全部未勾选状态已 superseded；源码静态盘点保留原快照，不伪装成当前运行清单。
+- 工作位置：`/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls-plan`，分支 `codex/ui-controls-plan`。
+- 基线：合入已提交 main a1f3925，形成 dff8860；保留语言/时区/UA 最新目录接线、代理协议、品牌资源。后续主线推进不在本批重复合入。
+- 正式计划：`docs/superpowers/plans/2026-09-12-unified-ui-controls.md`；规格同名位于 specs，盘点在 docs/design-system。
+- 本批：tokens、Chromium scrollbar、DEV lab、RHF 与嵌套 Radix/React Aria G0；报告 `docs/design-system/verification/choice-overlay-gate.md`。
+- 不扩建 packages/ui，不改业务接口/后端/数据，不操作主目录或共享 Electron；保护清单相对 T0 复核。
+- 下个动作：T3 输入/按钮/Field → T4 勾选/单选/开关 → T5 选择组件；G1 后再迁移领域。
+- 尚未完成：全套组件状态、真实页面迁移/回归、Windows、VoiceOver/NVDA、平台滚动条设置矩阵。G0 不能替代这些验收。

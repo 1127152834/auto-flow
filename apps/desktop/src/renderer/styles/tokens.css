@@ -1,4 +1,5 @@
-@theme {
+/* Tokens are a runtime API too (inline styles and future shared controls). */
+@theme static {
   --color-canvas: #f1eee7;
   --color-surface: #fbfaf7;
   --color-surface-subtle: #f6f3ee;

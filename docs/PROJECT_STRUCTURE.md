@@ -12,7 +12,7 @@
 
 正式前端领域使用 `renderer/domains`。`renderer/shared/components/ui` 已是经过交互测试的正式 shadcn/Radix 基础组件层；`renderer/features/profiles` 的旧 mock 草稿由浏览器页面接入任务替换，不再作为功能入口。此前把两者一并标为“未提交草稿”的描述已 superseded。
 
-`packages/ui` 仍只是目录骨架，尚未注册独立 workspace。当前实际使用的 shadcn/Radix 组件位于桌面端 `renderer/shared/components/ui`，Tailwind 主题位于 `renderer/styles/index.css`。OpenAPI 类型继续生成到 `renderer/shared/api/generated.ts`，不维护第二套 contracts 包。
+`packages/ui` 仍只是目录骨架，尚未注册独立 workspace。当前实际使用的 shadcn/Radix 组件位于桌面端 `renderer/shared/components/ui`，Tailwind 令牌位于 `renderer/styles/tokens.css`，`styles/index.css` 导入令牌与 `controls.css`。OpenAPI 类型继续生成到 `renderer/shared/api/generated.ts`，不维护第二套 contracts 包。
 
 ## 骨架概览
 
@@ -36,7 +36,7 @@ apps/
     │       ├── app/
     │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard}/
     │       │   └── 每个领域：components/、hooks/、pages/、tests/
-    │       ├── shared/{api,components,hooks,lib}/
+    │       ├── shared/{api,components,hooks,lib,ui-lab}/
     │       └── styles/
     └── tests/{e2e,fixtures}/
 packages/ui/
@@ -44,7 +44,7 @@ packages/ui/
 ├── tests/
 └── examples/
 .ai/{memory,knowledge,decisions,plans,sessions}/
-docs/{architecture,migration,automation-studio,references,superpowers}/
+docs/{architecture,migration,automation-studio,references,superpowers,design-system}/
 scripts/
 reference/
 .github/workflows/
@@ -138,7 +138,8 @@ reference/
 | `apps/desktop/src/renderer/shared/components/` | 应用专用、与领域无关的展示组件。 |
 | `apps/desktop/src/renderer/shared/hooks/` | 不含领域查询语义的共享 React hooks。 |
 | `apps/desktop/src/renderer/shared/lib/` | 有明确职责的共享函数；不作为杂物目录。 |
-| `apps/desktop/src/renderer/styles/` | 现有应用全局样式入口；组件库令牌未来由此引入。 |
+| `apps/desktop/src/renderer/styles/` | index.css 为入口；tokens.css 定义暖灰/黏土棕令牌，controls.css 为定向控件基础样式与全局 Chromium 滚动条。 |
+| `apps/desktop/src/renderer/shared/ui-lab/` | DEV 专用 `#/__ui` 验收页。T2 仅含令牌、RHF 和浮层案例；fixture 不进入生产 JS，不访问业务 API。 |
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
@@ -218,3 +219,10 @@ reference/
 - 列表与表单使用生成的 API 类型、TanStack Query、React Hook Form 和 Zod；内核任务缓存同时处理 HTTP/SSE 乱序，页面不直接访问 SQL、凭据或文件系统。
 - `scripts/smoke-browser-management.mjs` 验证 source/frozen worker 和真实 HTTP 配置闭环；冻结时区检查显式禁用系统 zoneinfo，以验证随包 tzdata。
 - 实施与平台证据以 [浏览器管理验收记录](migration/browser-management-validation.md) 为准；其未运行项目不得视为已验收。
+
+## 控件统一 T0–T2（2026-09-12，confirmed）
+
+- 在 desktop shared 原地补齐，`packages/ui` 仍是骨架，不迁移基础组件路径。
+- `shared/components/ui/overlay-host.tsx` 只提供 Dialog 层级和本层弹出内容宿主；Dialog/AlertDialog 复用原 Radix 行为。`ui-lab/LabCombobox.tsx` 是 React Aria 集成验证探针，尚非领域组件的正式 API。
+- `scripts/smoke-ui-controls.mjs` 使用独立 Vite 服务与 Electron 临时 userData，保存实际窗口截图与结果；通过 `npm run smoke:ui-controls` 调用，先运行构建。
+- 验收与限制见 `docs/design-system/verification/choice-overlay-gate.md`。共享控件替换、领域接入和全系统跨平台回归仍属于 T3–T13。
