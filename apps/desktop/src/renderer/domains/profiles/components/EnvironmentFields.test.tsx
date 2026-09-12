@@ -2,31 +2,63 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
-import { afterEach, expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { emptyProfileForm, type ProfileFormValues } from '../form-schema'
 import { EnvironmentFields } from './EnvironmentFields'
 
 afterEach(cleanup)
 
-function Harness({ initial = emptyProfileForm }: { initial?: ProfileFormValues }) {
-  const form = useForm<ProfileFormValues>({ defaultValues: { ...initial, browserKernel: 'licensed|146.0.1.1' } })
-  const values = useWatch({ control: form.control })
-  return <FormProvider {...form}><EnvironmentFields /><output data-testid="values">{JSON.stringify(values)}</output></FormProvider>
+const options = {
+  locales: [{ value: 'zh-CN', label: '中文' }, { value: 'ja-JP', label: '日语' }],
+  timezones: [{ value: 'Asia/Shanghai', label: '上海' }, { value: 'Asia/Tokyo', label: '东京' }],
 }
 
-it('keeps locale and timezone editable while offering presets', async () => {
+function Harness({ initial = emptyProfileForm, loading = false, error = null, retry = () => {} }: { initial?: ProfileFormValues; loading?: boolean; error?: string | null; retry?: () => void }) {
+  const form = useForm<ProfileFormValues>({ defaultValues: { ...initial, browserKernel: 'licensed|146.0.1.1' } })
+  const values = useWatch({ control: form.control })
+  return <FormProvider {...form}><EnvironmentFields options={loading || error ? undefined : options} optionsLoading={loading} optionsError={error} onRetryOptions={retry} /><output data-testid="values">{JSON.stringify(values)}</output></FormProvider>
+}
+
+it('offers all server options despite current defaults and supports custom input', async () => {
   const user = userEvent.setup()
   render(<Harness />)
+  expect(screen.getByLabelText('浏览器语言')).toHaveValue('zh-CN')
+  await user.selectOptions(screen.getByLabelText('浏览器语言'), 'ja-JP')
+  await user.selectOptions(screen.getByLabelText('浏览器时区'), 'Asia/Tokyo')
+  expect(screen.getByTestId('values')).toHaveTextContent('"locale":"ja-JP"')
+  expect(screen.getByTestId('values')).toHaveTextContent('"timezone":"Asia/Tokyo"')
+  await user.selectOptions(screen.getByLabelText('浏览器语言'), '__custom__')
+  await user.selectOptions(screen.getByLabelText('浏览器时区'), '__custom__')
   const locale = screen.getByLabelText('浏览器语言')
   const timezone = screen.getByLabelText('浏览器时区')
-  expect(locale).toHaveAttribute('list')
-  expect(timezone).toHaveAttribute('list')
   await user.clear(locale)
   await user.type(locale, 'de-CH-1901')
   await user.clear(timezone)
   await user.type(timezone, 'Europe/Zurich')
   expect(screen.getByTestId('values')).toHaveTextContent('"locale":"de-CH-1901"')
   expect(screen.getByTestId('values')).toHaveTextContent('"timezone":"Europe/Zurich"')
+  await user.click(screen.getByRole('button', { name: '选择浏览器语言预设' }))
+  expect(screen.getByLabelText('浏览器语言')).toHaveValue('de-CH-1901')
+  await user.selectOptions(screen.getByLabelText('浏览器语言'), '')
+  expect(screen.getByTestId('values')).toHaveTextContent('"locale":""')
+})
+
+it('keeps unlisted saved values while the catalog loads or fails, and offers retry', async () => {
+  const user = userEvent.setup()
+  const retry = vi.fn()
+  const initial = { ...emptyProfileForm, locale: 'de-CH-1901', timezone: 'Europe/Zurich' }
+  const { rerender } = render(<Harness initial={initial} loading />)
+  expect(screen.getByText('正在加载语言和时区选项…')).toHaveAttribute('role', 'status')
+  expect(screen.queryByRole('option', { name: '日语' })).not.toBeInTheDocument()
+  expect(screen.getByLabelText('浏览器语言')).toHaveValue(initial.locale)
+  rerender(<Harness initial={initial} error="连接失败" retry={retry} />)
+  expect(screen.getByRole('alert')).toHaveTextContent('连接失败')
+  expect(screen.getByLabelText('浏览器时区')).toHaveValue(initial.timezone)
+  await user.click(screen.getByRole('button', { name: '重新加载选项' }))
+  expect(retry).toHaveBeenCalledOnce()
+  rerender(<Harness initial={initial} />)
+  expect(screen.getByRole('option', { name: '日语' })).toBeInTheDocument()
+  expect(screen.getByLabelText('浏览器时区')).toHaveValue(initial.timezone)
 })
 
 it('applies viewport presets and supports custom integer dimensions', async () => {

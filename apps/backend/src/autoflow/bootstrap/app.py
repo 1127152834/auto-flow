@@ -59,6 +59,9 @@ from autoflow.infrastructure.filesystem.profile_data import (
     FilesystemProfileDataStore,
     FilesystemProfileUsageGuard,
 )
+from autoflow.infrastructure.filesystem.profile_environment import (
+    read_profile_environment_options,
+)
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
@@ -164,7 +167,7 @@ def create_app(
 
     app.router.add_event_handler("shutdown", shutdown)
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
-    app.include_router(profiles_router(profile_service))
+    app.include_router(profiles_router(profile_service, read_profile_environment_options))
     app.include_router(proxy_options_router(proxy_options))
     app.include_router(models_router(model_service))
     app.include_router(kernels_router(kernel_service))

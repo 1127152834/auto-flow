@@ -22,7 +22,7 @@ import {
   toWrite,
   type ProfileFormValues,
 } from '../form-schema'
-import { useCreateProfile, useProxyOptions, useUpdateProfile } from '../hooks'
+import { useCreateProfile, useProfileEnvironmentOptions, useProxyOptions, useUpdateProfile } from '../hooks'
 import { AdvancedFields } from './AdvancedFields'
 import { BasicFields } from './BasicFields'
 import { EnvironmentFields } from './EnvironmentFields'
@@ -66,6 +66,7 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
   const installed = useInstalledKernels()
   const defaultKernel = useDefaultKernel()
   const proxyOptions = useProxyOptions()
+  const environmentOptions = useProfileEnvironmentOptions(open && !disabled)
   const installedKernels = installed.data?.items ?? noKernels
   const proxies = proxyOptions.data ?? noProxyOptions
   const schema = useMemo(() => createProfileFormSchema({ installedKernels, proxyOptions: proxies }), [installedKernels, proxies])
@@ -184,7 +185,12 @@ export function ProfileFormDialog({ open, onOpenChange, initialProfile, onManage
                   <TabsTrigger value="advanced">高级选项</TabsTrigger>
                 </TabsList>
                 <TabsContent value="basic" className="pb-6"><BasicFields /></TabsContent>
-                <TabsContent value="environment" className="pb-6"><EnvironmentFields /></TabsContent>
+                <TabsContent value="environment" className="pb-6"><EnvironmentFields
+                  options={environmentOptions.data}
+                  optionsLoading={environmentOptions.isFetching}
+                  optionsError={environmentOptions.error ? errorMessage(environmentOptions.error) : null}
+                  onRetryOptions={() => { void environmentOptions.refetch() }}
+                /></TabsContent>
                 <TabsContent value="resources" className="pb-6"><KernelProxyFields
                   installedKernels={installedKernels}
                   proxyOptions={proxies}

@@ -111,6 +111,13 @@ async function api(baseUrl, token, path, options = {}) {
 }
 
 async function smokeBrowserManagement(baseUrl, token) {
+  const environment = await api(baseUrl, token, '/api/v1/profiles/environment-options')
+  assert.ok(environment.locales.some(option => option.value === 'ja-JP'))
+  assert.ok(environment.timezones.some(option => option.value === 'Asia/Tokyo'))
+  for (const options of [environment.locales, environment.timezones]) {
+    assert.ok(options.length > 1)
+    assert.equal(new Set(options.map(option => option.value)).size, options.length)
+  }
   const installed = await api(baseUrl, token, '/api/v1/kernels/installed')
   assert.equal(installed.items.length, 1)
   assert.equal(installed.items[0].edition, 'public')

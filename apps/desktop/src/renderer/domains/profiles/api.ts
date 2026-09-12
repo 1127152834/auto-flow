@@ -1,6 +1,7 @@
 import type { ApiClient } from '../../shared/api/client'
 import type {
   ProfileDuplicate,
+  ProfileEnvironmentOptions,
   ProfileList,
   ProfileRead,
   ProfileWrite,
@@ -13,6 +14,7 @@ const segment = (value: string) => encodeURIComponent(value)
 export function createProfilesApi(client: ApiClient) {
   return {
     list: () => client.request<ProfileList>(apiPath('/profiles')),
+    environmentOptions: () => client.request<ProfileEnvironmentOptions>(apiPath('/profiles/environment-options')),
     create: (body: ProfileWrite) => client.request<ProfileRead>(apiPath('/profiles'), {
       method: 'POST', body,
     }),

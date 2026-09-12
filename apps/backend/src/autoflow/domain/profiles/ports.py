@@ -47,3 +47,15 @@ class ProfileDataStore(Protocol):
 
 class ProfileUsageGuard(Protocol):
     def guard(self, profile_id: str) -> AbstractContextManager[None]: ...
+
+
+@dataclass(frozen=True)
+class EnvironmentOption:
+    value: str
+    label: str
+
+
+@dataclass(frozen=True)
+class ProfileEnvironmentOptions:
+    locales: list[EnvironmentOption]
+    timezones: list[EnvironmentOption]

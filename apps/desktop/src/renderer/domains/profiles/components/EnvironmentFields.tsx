@@ -1,6 +1,8 @@
 import { useId } from 'react'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
+import type { ProfileEnvironmentOptions } from '../../../shared/api/types'
 import { FormField } from '../../../shared/components/FormField'
+import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Select } from '../../../shared/components/ui/select'
 import { Switch } from '../../../shared/components/ui/switch'
@@ -10,15 +12,19 @@ import {
   COLOR_SCHEME_PRESETS,
   getViewportPreset,
   HUMAN_PRESETS,
-  LOCALE_PRESETS,
-  TIMEZONE_PRESETS,
   VIEWPORT_PRESETS,
 } from '../presets'
+import { EnvironmentOptionField } from './EnvironmentOptionField'
 
-export function EnvironmentFields() {
+type Props = {
+  options?: ProfileEnvironmentOptions
+  optionsLoading: boolean
+  optionsError: string | null
+  onRetryOptions(): void
+}
+
+export function EnvironmentFields({ options, optionsLoading, optionsError, onRetryOptions }: Props) {
   const { clearErrors, control, setValue, formState: { errors } } = useFormContext<ProfileFormValues>()
-  const localeList = useId()
-  const timezoneList = useId()
   const userAgentList = useId()
   const browserKernel = useWatch({ control, name: 'browserKernel' })
   const viewportMode = useWatch({ control, name: 'viewportMode' })
@@ -46,13 +52,14 @@ export function EnvironmentFields() {
       <h2 id="profile-environment-fields" className="m-0 text-lg font-semibold text-ink">浏览器环境</h2>
       <p className="mb-0 mt-1 text-sm text-muted">预设可以直接选择，语言、时区和 User Agent 也可以手动输入。</p>
     </div>
+    {optionsLoading ? <p role="status" className="m-0 text-sm text-muted">正在加载语言和时区选项…</p> : null}
+    {optionsError ? <div role="alert" className="flex items-center justify-between gap-3 text-sm text-clay">
+      <span>语言和时区选项加载失败：{optionsError}。可重试或选择自定义输入。</span>
+      <Button type="button" onClick={onRetryOptions}>重新加载选项</Button>
+    </div> : null}
     <div className="grid gap-4 sm:grid-cols-2">
-      <FormField label="浏览器语言" htmlFor="profile-locale" error={errors.locale?.message} hint="BCP 47 语言标记，例如 zh-CN。">
-        <Controller control={control} name="locale" render={({ field }) => <><Input {...field} id="profile-locale" aria-describedby={errors.locale ? 'profile-locale-error' : 'profile-locale-hint'} aria-invalid={Boolean(errors.locale)} list={localeList} placeholder="例如 zh-CN" /><datalist id={localeList}>{LOCALE_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}</datalist></>} />
-      </FormField>
-      <FormField label="浏览器时区" htmlFor="profile-timezone" error={errors.timezone?.message} hint="IANA 时区，例如 Asia/Shanghai。">
-        <Controller control={control} name="timezone" render={({ field }) => <><Input {...field} id="profile-timezone" aria-describedby={errors.timezone ? 'profile-timezone-error' : 'profile-timezone-hint'} aria-invalid={Boolean(errors.timezone)} list={timezoneList} placeholder="例如 Asia/Shanghai" /><datalist id={timezoneList}>{TIMEZONE_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}</datalist></>} />
-      </FormField>
+      <EnvironmentOptionField name="locale" label="浏览器语言" hint="选择常用语言，或自定义 BCP 47 语言标记。" options={options?.locales ?? []} />
+      <EnvironmentOptionField name="timezone" label="浏览器时区" hint="选择常用时区，或自定义 IANA 时区标识。" options={options?.timezones ?? []} />
     </div>
     <div className="grid gap-3 rounded-control border border-line bg-surface-subtle p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
