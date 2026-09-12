@@ -1,4 +1,4 @@
-import { MagnifyingGlass, Pulse } from '@phosphor-icons/react'
+import { CircleNotch, MagnifyingGlass, Pulse } from '@phosphor-icons/react'
 import type { ProxyFilters, ProxyPage, ProxyView } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
@@ -107,8 +107,8 @@ export function ProxyTable({ page, filters, checkingId, retryAfterSeconds = 0, o
                   <td className="w-40 whitespace-nowrap px-4 py-3">
                     <div className="flex gap-1">
                       <Button className="h-8 shrink-0 whitespace-nowrap px-3" variant="ghost" onClick={() => onOpen(proxy)}>详情</Button>
-                      <Button className="h-8 shrink-0 whitespace-nowrap px-3" variant="ghost" disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}>
-                        <Pulse className={checkingId === proxy.id ? 'animate-pulse' : ''} />检测
+                      <Button className="h-8 shrink-0 whitespace-nowrap px-3" variant="ghost" aria-busy={checkingId === proxy.id} disabled={retryAfterSeconds > 0 || checkingId === proxy.id || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy)}>
+                        {checkingId === proxy.id ? <CircleNotch className="animate-spin" aria-hidden="true" /> : <Pulse aria-hidden="true" />}检测
                       </Button>
                     </div>
                   </td>

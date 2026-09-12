@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ArrowsClockwise, Copy, MapPin, Pulse, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CircleNotch, Copy, MapPin, Pulse, X } from '@phosphor-icons/react'
 import { capability, type Capability, type IpAllowlist, type LocationList, type ProxyMetadataDraft, type ProxyReferences, type ProxyView, type RotationSchedule } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
@@ -83,7 +83,7 @@ export function ProxyDetailDrawer({ open, proxy, references, probing, actionBusy
                 {proxy.socks5_endpoint && <option value="socks5">SOCKS5</option>}
                 {proxy.http_endpoint && <option value="http">HTTP</option>}
               </Select>
-              <Button disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}><Pulse className={probing ? 'animate-pulse' : ''} />{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
+              <Button aria-busy={probing} disabled={probing || retryAfterSeconds > 0 || !proxy.credential_available || proxy.remote_missing || (!proxy.http_endpoint && !proxy.socks5_endpoint)} onClick={() => onProbe(proxy, protocol)}>{probing ? <CircleNotch className="animate-spin" aria-hidden="true" /> : <Pulse aria-hidden="true" />}{probing ? '检测中…' : retryAfterSeconds > 0 ? `${retryAfterSeconds} 秒后可重试` : '测试连接'}</Button>
             </section>
             <DetailSection title="本地设置">
               <label className="grid gap-2 text-sm text-ink">显示名称<Input value={nameOverride} maxLength={120} placeholder={proxy.name} onChange={(event) => setNameOverride(event.target.value)} /></label>
