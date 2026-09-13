@@ -1,0 +1,51 @@
+[
+  {
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+    "symbols": [
+      "DesktopAppConnectConfig",
+      "DesktopAppStartConfig",
+      "DesktopAppCloseConfig",
+      "DesktopWindowActivateConfig",
+      "DesktopWindowStateConfig",
+      "DesktopWindowMoveConfig",
+      "DesktopWindowResizeConfig",
+      "DesktopWindowTopmostConfig",
+      "DesktopWindowCaptureConfig",
+      "DesktopFindControlConfig",
+      "DesktopWaitControlConfig",
+      "DesktopClickControlConfig",
+      "DesktopInputControlConfig",
+      "DesktopGetTextConfig",
+      "DesktopSelectComboConfig",
+      "DesktopCheckboxConfig",
+      "DesktopRadioConfig",
+      "DesktopSendKeysConfig",
+      "DesktopScrollControlConfig",
+      "DesktopMenuClickConfig",
+      "DesktopGetControlInfoConfig",
+      "DesktopGetControlTreeConfig",
+      "DesktopAppGetInfoConfig",
+      "DesktopAppWaitReadyConfig",
+      "DesktopWindowListConfig",
+      "DesktopControlInfoConfig",
+      "DesktopControlTreeConfig",
+      "DesktopSetValueConfig",
+      "DesktopDragControlConfig",
+      "DesktopListOperateConfig",
+      "DesktopGetPropertyConfig",
+      "DesktopDialogHandleConfig"
+    ],
+    "beforeSha256": "291fecd249ac2cffbbf68b72cb1005f67a841ff782550fd5c132ce4ad5082f27",
+    "reason": "2026-09-13 F0: 已排除 Windows/手机自动化专属，无保留节点或其他调用方；共享文件其余声明保留"
+  },
+  {
+    "target": "apps/desktop/src/renderer/domains/workflows/api.ts",
+    "symbols": [
+      "phoneApi",
+      "desktopRecorderApi",
+      "desktopPickerApi"
+    ],
+    "beforeSha256": "9aca06c7aaf0f2f7e6d68691bc0fe7178f7ee9c8d6a6c66d0637b4a4693e3f84",
+    "reason": "2026-09-13 F0: 已排除 Windows/手机自动化专属，无保留节点或其他调用方；共享文件其余声明保留"
+  }
+]

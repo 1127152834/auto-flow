@@ -14471,7 +14471,7 @@
   {
     "component": "SelectDropdownConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 26,
+    "line": 25,
     "fields": [
       "selectBy",
       "value"
@@ -14484,37 +14484,37 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 42,
+        "line": 41,
         "attribute": "value",
         "expression": "{(data.selectBy as string) || 'value'}"
       },
       {
-        "line": 43,
+        "line": 42,
         "attribute": "onChange",
         "expression": "{(e) => onChange('selectBy', e.target.value)}"
       },
       {
-        "line": 45,
+        "line": 44,
         "attribute": "value",
         "expression": "\"value\""
       },
       {
-        "line": 46,
+        "line": 45,
         "attribute": "value",
         "expression": "\"label\""
       },
       {
-        "line": 47,
+        "line": 46,
         "attribute": "value",
         "expression": "\"index\""
       },
       {
-        "line": 53,
+        "line": 52,
         "attribute": "value",
         "expression": "{(data.value as string) || ''}"
       },
       {
-        "line": 54,
+        "line": 53,
         "attribute": "onChange",
         "expression": "{(v) => onChange('value', v)}"
       }
@@ -14523,7 +14523,7 @@
   {
     "component": "SetCheckboxConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 63,
+    "line": 62,
     "fields": [
       "checked"
     ],
@@ -14534,22 +14534,22 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 79,
+        "line": 78,
         "attribute": "value",
         "expression": "{String(data.checked ?? true)}"
       },
       {
-        "line": 80,
+        "line": 79,
         "attribute": "onChange",
         "expression": "{(e) => onChange('checked', e.target.value === 'true')}"
       },
       {
-        "line": 82,
+        "line": 81,
         "attribute": "value",
         "expression": "\"true\""
       },
       {
-        "line": 83,
+        "line": 82,
         "attribute": "value",
         "expression": "\"false\""
       }
@@ -14558,7 +14558,7 @@
   {
     "component": "DragElementConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 92,
+    "line": 91,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -14567,7 +14567,7 @@
   {
     "component": "ScrollPageConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 111,
+    "line": 110,
     "fields": [
       "direction",
       "distance",
@@ -14583,82 +14583,82 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 118,
+        "line": 117,
         "attribute": "value",
         "expression": "{(data.direction as string) || 'down'}"
       },
       {
-        "line": 119,
+        "line": 118,
         "attribute": "onChange",
         "expression": "{(e) => onChange('direction', e.target.value)}"
       },
       {
-        "line": 121,
+        "line": 120,
         "attribute": "value",
         "expression": "\"down\""
       },
       {
-        "line": 122,
+        "line": 121,
         "attribute": "value",
         "expression": "\"up\""
       },
       {
-        "line": 123,
+        "line": 122,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 124,
+        "line": 123,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 131,
+        "line": 130,
         "attribute": "value",
         "expression": "{(data.distance as number) ?? 500}"
       },
       {
-        "line": 132,
+        "line": 131,
         "attribute": "onChange",
         "expression": "{(v) => onChange('distance', v)}"
       },
       {
-        "line": 133,
+        "line": 132,
         "attribute": "defaultValue",
         "expression": "{500}"
       },
       {
-        "line": 140,
+        "line": 139,
         "attribute": "value",
         "expression": "{(data.selector as string) || ''}"
       },
       {
-        "line": 141,
+        "line": 140,
         "attribute": "onChange",
         "expression": "{(v) => onChange('selector', v)}"
       },
       {
-        "line": 149,
+        "line": 148,
         "attribute": "value",
         "expression": "{(data.scrollMode as string) || 'auto'}"
       },
       {
-        "line": 150,
+        "line": 149,
         "attribute": "onChange",
         "expression": "{(e) => onChange('scrollMode', e.target.value)}"
       },
       {
-        "line": 152,
+        "line": 151,
         "attribute": "value",
         "expression": "\"auto\""
       },
       {
-        "line": 153,
+        "line": 152,
         "attribute": "value",
         "expression": "\"wheel\""
       },
       {
-        "line": 154,
+        "line": 153,
         "attribute": "value",
         "expression": "\"script\""
       }
@@ -14667,7 +14667,7 @@
   {
     "component": "UploadFileConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 162,
+    "line": 161,
     "fields": [
       "filePath"
     ],
@@ -14678,12 +14678,12 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 177,
+        "line": 176,
         "attribute": "value",
         "expression": "{(data.filePath as string) || ''}"
       },
       {
-        "line": 178,
+        "line": 177,
         "attribute": "onChange",
         "expression": "{(v) => onChange('filePath', v)}"
       }
@@ -14692,7 +14692,7 @@
   {
     "component": "DownloadFileConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 188,
+    "line": 187,
     "fields": [
       "downloadMode",
       "downloadUrl",
@@ -14709,68 +14709,68 @@
     ],
     "conditions": [
       {
-        "line": 212,
+        "line": 211,
         "expression": "downloadMode === 'click'"
       }
     ],
     "bindings": [
       {
-        "line": 205,
+        "line": 204,
         "attribute": "value",
         "expression": "{downloadMode}"
       },
       {
-        "line": 206,
+        "line": 205,
         "attribute": "onChange",
         "expression": "{(e) => onChange('downloadMode', e.target.value)}"
       },
       {
-        "line": 208,
+        "line": 207,
         "attribute": "value",
         "expression": "\"click\""
       },
       {
-        "line": 209,
+        "line": 208,
         "attribute": "value",
         "expression": "\"url\""
       },
       {
-        "line": 218,
+        "line": 217,
         "attribute": "value",
         "expression": "{(data.downloadUrl as string) || ''}"
       },
       {
-        "line": 219,
+        "line": 218,
         "attribute": "onChange",
         "expression": "{(v) => onChange('downloadUrl', v)}"
       },
       {
-        "line": 227,
+        "line": 226,
         "attribute": "value",
         "expression": "{(data.savePath as string) || ''}"
       },
       {
-        "line": 228,
+        "line": 227,
         "attribute": "onChange",
         "expression": "{(v) => onChange('savePath', v)}"
       },
       {
-        "line": 236,
+        "line": 235,
         "attribute": "value",
         "expression": "{(data.fileName as string) || ''}"
       },
       {
-        "line": 237,
+        "line": 236,
         "attribute": "onChange",
         "expression": "{(v) => onChange('fileName', v)}"
       },
       {
-        "line": 244,
+        "line": 243,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 245,
+        "line": 244,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -14779,7 +14779,7 @@
   {
     "component": "SaveImageConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 256,
+    "line": 255,
     "fields": [
       "savePath",
       "variableName"
@@ -14792,22 +14792,22 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 271,
+        "line": 270,
         "attribute": "value",
         "expression": "{(data.savePath as string) || ''}"
       },
       {
-        "line": 272,
+        "line": 271,
         "attribute": "onChange",
         "expression": "{(v) => onChange('savePath', v)}"
       },
       {
-        "line": 280,
+        "line": 279,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 281,
+        "line": 280,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -14816,7 +14816,7 @@
   {
     "component": "GetChildElementsConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 291,
+    "line": 290,
     "fields": [
       "childSelector",
       "variableName"
@@ -14829,22 +14829,22 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 306,
+        "line": 305,
         "attribute": "value",
         "expression": "{(data.childSelector as string) || '*'}"
       },
       {
-        "line": 307,
+        "line": 306,
         "attribute": "onChange",
         "expression": "{(v) => onChange('childSelector', v || '*')}"
       },
       {
-        "line": 317,
+        "line": 316,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 318,
+        "line": 317,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -14853,7 +14853,7 @@
   {
     "component": "GetSiblingElementsConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 331,
+    "line": 330,
     "fields": [
       "includeSelf",
       "siblingType",
@@ -14868,47 +14868,47 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 347,
+        "line": 346,
         "attribute": "value",
         "expression": "{(data.siblingType as string) || 'all'}"
       },
       {
-        "line": 348,
+        "line": 347,
         "attribute": "onChange",
         "expression": "{(e) => onChange('siblingType', e.target.value)}"
       },
       {
-        "line": 350,
+        "line": 349,
         "attribute": "value",
         "expression": "\"all\""
       },
       {
-        "line": 351,
+        "line": 350,
         "attribute": "value",
         "expression": "\"previous\""
       },
       {
-        "line": 352,
+        "line": 351,
         "attribute": "value",
         "expression": "\"next\""
       },
       {
-        "line": 358,
+        "line": 357,
         "attribute": "checked",
         "expression": "{(data.includeSelf as boolean) ?? false}"
       },
       {
-        "line": 359,
+        "line": 358,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('includeSelf', checked)}"
       },
       {
-        "line": 366,
+        "line": 365,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 367,
+        "line": 366,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -14917,7 +14917,7 @@
   {
     "component": "ScreenshotConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 380,
+    "line": 379,
     "fields": [
       "savePath",
       "screenshotType",
@@ -14932,47 +14932,47 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 397,
+        "line": 396,
         "attribute": "value",
         "expression": "{screenshotType}"
       },
       {
-        "line": 398,
+        "line": 397,
         "attribute": "onChange",
         "expression": "{(e) => onChange('screenshotType', e.target.value)}"
       },
       {
-        "line": 400,
+        "line": 399,
         "attribute": "value",
         "expression": "\"fullpage\""
       },
       {
-        "line": 401,
+        "line": 400,
         "attribute": "value",
         "expression": "\"viewport\""
       },
       {
-        "line": 402,
+        "line": 401,
         "attribute": "value",
         "expression": "\"element\""
       },
       {
-        "line": 409,
+        "line": 408,
         "attribute": "value",
         "expression": "{(data.savePath as string) || ''}"
       },
       {
-        "line": 410,
+        "line": 409,
         "attribute": "onChange",
         "expression": "{(v) => onChange('savePath', v)}"
       },
       {
-        "line": 418,
+        "line": 417,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 419,
+        "line": 418,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -14981,7 +14981,7 @@
   {
     "component": "OCRCaptchaConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 429,
+    "line": 428,
     "fields": [
       "variableName"
     ],
@@ -14992,12 +14992,12 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 444,
+        "line": 443,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 445,
+        "line": 444,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -15006,7 +15006,7 @@
   {
     "component": "SliderCaptchaConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 458,
+    "line": 457,
     "fields": [
       "targetDistance"
     ],
@@ -15016,22 +15016,22 @@
     ],
     "conditions": [
       {
-        "line": 476,
+        "line": 475,
         "expression": "v === '' || v.includes('{')"
       },
       {
-        "line": 480,
+        "line": 479,
         "expression": "isNaN(num)"
       }
     ],
     "bindings": [
       {
-        "line": 474,
+        "line": 473,
         "attribute": "value",
         "expression": "{String(data.targetDistance ?? '')}"
       },
       {
-        "line": 475,
+        "line": 474,
         "attribute": "onChange",
         "expression": "{(v) => {\n            if (v === '' || v.includes('{')) {\n              onChange('targetDistance', v)\n            } else {\n              const num = parseInt(v)\n              onChange('targetDistance', isNaN(num) ? v : num)\n            }\n          }}"
       }
@@ -15040,7 +15040,7 @@
   {
     "component": "SendEmailConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 495,
+    "line": 494,
     "fields": [
       "authCode",
       "emailContent",
@@ -15055,52 +15055,52 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 501,
+        "line": 500,
         "attribute": "value",
         "expression": "{(data.senderEmail as string) || ''}"
       },
       {
-        "line": 502,
+        "line": 501,
         "attribute": "onChange",
         "expression": "{(v) => onChange('senderEmail', v)}"
       },
       {
-        "line": 509,
+        "line": 508,
         "attribute": "value",
         "expression": "{(data.authCode as string) || ''}"
       },
       {
-        "line": 510,
+        "line": 509,
         "attribute": "onChange",
         "expression": "{(v) => onChange('authCode', v)}"
       },
       {
-        "line": 517,
+        "line": 516,
         "attribute": "value",
         "expression": "{(data.recipientEmail as string) || ''}"
       },
       {
-        "line": 518,
+        "line": 517,
         "attribute": "onChange",
         "expression": "{(v) => onChange('recipientEmail', v)}"
       },
       {
-        "line": 525,
+        "line": 524,
         "attribute": "value",
         "expression": "{(data.emailSubject as string) || ''}"
       },
       {
-        "line": 526,
+        "line": 525,
         "attribute": "onChange",
         "expression": "{(v) => onChange('emailSubject', v)}"
       },
       {
-        "line": 533,
+        "line": 532,
         "attribute": "value",
         "expression": "{(data.emailContent as string) || ''}"
       },
       {
-        "line": 534,
+        "line": 533,
         "attribute": "onChange",
         "expression": "{(v) => onChange('emailContent', v)}"
       }
@@ -15109,7 +15109,7 @@
   {
     "component": "SetClipboardConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 548,
+    "line": 547,
     "fields": [
       "contentType",
       "imagePath",
@@ -15123,48 +15123,48 @@
     ],
     "conditions": [
       {
-        "line": 564,
+        "line": 563,
         "expression": "contentType === 'text'"
       }
     ],
     "bindings": [
       {
-        "line": 557,
+        "line": 556,
         "attribute": "value",
         "expression": "{contentType}"
       },
       {
-        "line": 558,
+        "line": 557,
         "attribute": "onChange",
         "expression": "{(e) => onChange('contentType', e.target.value)}"
       },
       {
-        "line": 560,
+        "line": 559,
         "attribute": "value",
         "expression": "\"text\""
       },
       {
-        "line": 561,
+        "line": 560,
         "attribute": "value",
         "expression": "\"image\""
       },
       {
-        "line": 568,
+        "line": 567,
         "attribute": "value",
         "expression": "{(data.textContent as string) || ''}"
       },
       {
-        "line": 569,
+        "line": 568,
         "attribute": "onChange",
         "expression": "{(v) => onChange('textContent', v)}"
       },
       {
-        "line": 579,
+        "line": 578,
         "attribute": "value",
         "expression": "{(data.imagePath as string) || ''}"
       },
       {
-        "line": 580,
+        "line": 579,
         "attribute": "onChange",
         "expression": "{(v) => onChange('imagePath', v)}"
       }
@@ -15173,7 +15173,7 @@
   {
     "component": "GetClipboardConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 589,
+    "line": 588,
     "fields": [
       "variableName"
     ],
@@ -15184,12 +15184,12 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 595,
+        "line": 594,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 596,
+        "line": 595,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -15198,7 +15198,7 @@
   {
     "component": "KeyboardActionConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 609,
+    "line": 608,
     "fields": [
       "delay",
       "holdDuration",
@@ -15215,82 +15215,82 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 627,
+        "line": 626,
         "attribute": "value",
         "expression": "{targetType}"
       },
       {
-        "line": 628,
+        "line": 627,
         "attribute": "onChange",
         "expression": "{(e) => onChange('targetType', e.target.value)}"
       },
       {
-        "line": 630,
+        "line": 629,
         "attribute": "value",
         "expression": "\"page\""
       },
       {
-        "line": 631,
+        "line": 630,
         "attribute": "value",
         "expression": "\"element\""
       },
       {
-        "line": 638,
+        "line": 637,
         "attribute": "value",
         "expression": "{(data.keySequence as string) || ''}"
       },
       {
-        "line": 639,
+        "line": 638,
         "attribute": "onChange",
         "expression": "{(v) => onChange('keySequence', v)}"
       },
       {
-        "line": 647,
+        "line": 646,
         "attribute": "value",
         "expression": "{pressMode}"
       },
       {
-        "line": 648,
+        "line": 647,
         "attribute": "onChange",
         "expression": "{(e) => onChange('pressMode', e.target.value)}"
       },
       {
-        "line": 650,
+        "line": 649,
         "attribute": "value",
         "expression": "\"click\""
       },
       {
-        "line": 651,
+        "line": 650,
         "attribute": "value",
         "expression": "\"hold\""
       },
       {
-        "line": 659,
+        "line": 658,
         "attribute": "value",
         "expression": "{(data.holdDuration as number) ?? 1}"
       },
       {
-        "line": 660,
+        "line": 659,
         "attribute": "onChange",
         "expression": "{(v) => onChange('holdDuration', v)}"
       },
       {
-        "line": 661,
+        "line": 660,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 671,
+        "line": 670,
         "attribute": "value",
         "expression": "{(data.delay as number) ?? 0}"
       },
       {
-        "line": 672,
+        "line": 671,
         "attribute": "onChange",
         "expression": "{(v) => onChange('delay', v)}"
       },
       {
-        "line": 673,
+        "line": 672,
         "attribute": "defaultValue",
         "expression": "{0}"
       }
@@ -15299,7 +15299,7 @@
   {
     "component": "RealMouseScrollConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 687,
+    "line": 686,
     "fields": [
       "direction",
       "scrollAmount",
@@ -15314,67 +15314,67 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 694,
+        "line": 693,
         "attribute": "value",
         "expression": "{(data.direction as string) || 'down'}"
       },
       {
-        "line": 695,
+        "line": 694,
         "attribute": "onChange",
         "expression": "{(e) => onChange('direction', e.target.value)}"
       },
       {
-        "line": 697,
+        "line": 696,
         "attribute": "value",
         "expression": "\"down\""
       },
       {
-        "line": 698,
+        "line": 697,
         "attribute": "value",
         "expression": "\"up\""
       },
       {
-        "line": 705,
+        "line": 704,
         "attribute": "value",
         "expression": "{(data.scrollAmount as number) ?? 3}"
       },
       {
-        "line": 706,
+        "line": 705,
         "attribute": "onChange",
         "expression": "{(v) => onChange('scrollAmount', v)}"
       },
       {
-        "line": 707,
+        "line": 706,
         "attribute": "defaultValue",
         "expression": "{3}"
       },
       {
-        "line": 716,
+        "line": 715,
         "attribute": "value",
         "expression": "{(data.scrollCount as number) ?? 1}"
       },
       {
-        "line": 717,
+        "line": 716,
         "attribute": "onChange",
         "expression": "{(v) => onChange('scrollCount', v)}"
       },
       {
-        "line": 718,
+        "line": 717,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 726,
+        "line": 725,
         "attribute": "value",
         "expression": "{(data.scrollInterval as number) ?? 0.1}"
       },
       {
-        "line": 727,
+        "line": 726,
         "attribute": "onChange",
         "expression": "{(v) => onChange('scrollInterval', v)}"
       },
       {
-        "line": 728,
+        "line": 727,
         "attribute": "defaultValue",
         "expression": "{0.1}"
       }
@@ -15383,7 +15383,7 @@
   {
     "component": "ShutdownSystemConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 741,
+    "line": 740,
     "fields": [
       "action",
       "delay",
@@ -15398,62 +15398,62 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 748,
+        "line": 747,
         "attribute": "value",
         "expression": "{(data.action as string) || 'shutdown'}"
       },
       {
-        "line": 749,
+        "line": 748,
         "attribute": "onChange",
         "expression": "{(e) => onChange('action', e.target.value)}"
       },
       {
-        "line": 751,
+        "line": 750,
         "attribute": "value",
         "expression": "\"shutdown\""
       },
       {
-        "line": 752,
+        "line": 751,
         "attribute": "value",
         "expression": "\"restart\""
       },
       {
-        "line": 753,
+        "line": 752,
         "attribute": "value",
         "expression": "\"logout\""
       },
       {
-        "line": 754,
+        "line": 753,
         "attribute": "value",
         "expression": "\"hibernate\""
       },
       {
-        "line": 755,
+        "line": 754,
         "attribute": "value",
         "expression": "\"sleep\""
       },
       {
-        "line": 762,
+        "line": 761,
         "attribute": "value",
         "expression": "{(data.delay as number) ?? 0}"
       },
       {
-        "line": 763,
+        "line": 762,
         "attribute": "onChange",
         "expression": "{(v) => onChange('delay', v)}"
       },
       {
-        "line": 764,
+        "line": 763,
         "attribute": "defaultValue",
         "expression": "{0}"
       },
       {
-        "line": 771,
+        "line": 770,
         "attribute": "checked",
         "expression": "{(data.force as boolean) ?? false}"
       },
       {
-        "line": 772,
+        "line": 771,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('force', c)}"
       }
@@ -15462,7 +15462,7 @@
   {
     "component": "LockScreenConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 786,
+    "line": 785,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -15471,7 +15471,7 @@
   {
     "component": "WindowFocusConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 795,
+    "line": 794,
     "fields": [
       "matchMode",
       "windowTitle"
@@ -15484,37 +15484,37 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 801,
+        "line": 800,
         "attribute": "value",
         "expression": "{(data.windowTitle as string) || ''}"
       },
       {
-        "line": 802,
+        "line": 801,
         "attribute": "onChange",
         "expression": "{(v) => onChange('windowTitle', v)}"
       },
       {
-        "line": 810,
+        "line": 809,
         "attribute": "value",
         "expression": "{(data.matchMode as string) || 'contains'}"
       },
       {
-        "line": 811,
+        "line": 810,
         "attribute": "onChange",
         "expression": "{(e) => onChange('matchMode', e.target.value)}"
       },
       {
-        "line": 813,
+        "line": 812,
         "attribute": "value",
         "expression": "\"contains\""
       },
       {
-        "line": 814,
+        "line": 813,
         "attribute": "value",
         "expression": "\"exact\""
       },
       {
-        "line": 815,
+        "line": 814,
         "attribute": "value",
         "expression": "\"startswith\""
       }
@@ -15523,7 +15523,7 @@
   {
     "component": "RealMouseClickConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 831,
+    "line": 830,
     "fields": [
       "button",
       "clickType",
@@ -15540,67 +15540,67 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 849,
+        "line": 848,
         "attribute": "value",
         "expression": "{(data.button as string) || 'left'}"
       },
       {
-        "line": 850,
+        "line": 849,
         "attribute": "onChange",
         "expression": "{(e) => onChange('button', e.target.value)}"
       },
       {
-        "line": 852,
+        "line": 851,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 853,
+        "line": 852,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 854,
+        "line": 853,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 861,
+        "line": 860,
         "attribute": "value",
         "expression": "{clickType}"
       },
       {
-        "line": 862,
+        "line": 861,
         "attribute": "onChange",
         "expression": "{(e) => onChange('clickType', e.target.value)}"
       },
       {
-        "line": 864,
+        "line": 863,
         "attribute": "value",
         "expression": "\"single\""
       },
       {
-        "line": 865,
+        "line": 864,
         "attribute": "value",
         "expression": "\"double\""
       },
       {
-        "line": 866,
+        "line": 865,
         "attribute": "value",
         "expression": "\"hold\""
       },
       {
-        "line": 874,
+        "line": 873,
         "attribute": "value",
         "expression": "{(data.holdDuration as number) ?? 1}"
       },
       {
-        "line": 875,
+        "line": 874,
         "attribute": "onChange",
         "expression": "{(v) => onChange('holdDuration', v)}"
       },
       {
-        "line": 876,
+        "line": 875,
         "attribute": "defaultValue",
         "expression": "{1}"
       }
@@ -15609,7 +15609,7 @@
   {
     "component": "RealMouseMoveConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 890,
+    "line": 889,
     "fields": [
       "duration",
       "x",
@@ -15623,17 +15623,17 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 906,
+        "line": 905,
         "attribute": "value",
         "expression": "{(data.duration as number) ?? 0}"
       },
       {
-        "line": 907,
+        "line": 906,
         "attribute": "onChange",
         "expression": "{(v) => onChange('duration', v)}"
       },
       {
-        "line": 908,
+        "line": 907,
         "attribute": "defaultValue",
         "expression": "{0}"
       }
@@ -15642,7 +15642,7 @@
   {
     "component": "RealMouseDragConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 921,
+    "line": 920,
     "fields": [
       "button",
       "duration",
@@ -15660,42 +15660,42 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 946,
+        "line": 945,
         "attribute": "value",
         "expression": "{(data.button as string) || 'left'}"
       },
       {
-        "line": 947,
+        "line": 946,
         "attribute": "onChange",
         "expression": "{(e) => onChange('button', e.target.value)}"
       },
       {
-        "line": 949,
+        "line": 948,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 950,
+        "line": 949,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 951,
+        "line": 950,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 958,
+        "line": 957,
         "attribute": "value",
         "expression": "{(data.duration as number) ?? 0.5}"
       },
       {
-        "line": 959,
+        "line": 958,
         "attribute": "onChange",
         "expression": "{(v) => onChange('duration', v)}"
       },
       {
-        "line": 960,
+        "line": 959,
         "attribute": "defaultValue",
         "expression": "{0.5}"
       }
@@ -15704,7 +15704,7 @@
   {
     "component": "RealKeyboardConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 977,
+    "line": 976,
     "fields": [
       "holdDuration",
       "hotkey",
@@ -15724,471 +15724,471 @@
     ],
     "conditions": [
       {
-        "line": 1029,
+        "line": 1028,
         "expression": "keyInputMode === 'preset'"
       },
       {
-        "line": 1036,
+        "line": 1035,
         "expression": "keyInputMode === 'custom'"
       },
       {
-        "line": 1043,
+        "line": 1042,
         "expression": "keyInputMode === 'preset'"
       }
     ],
     "bindings": [
       {
-        "line": 988,
+        "line": 987,
         "attribute": "value",
         "expression": "{inputType}"
       },
       {
-        "line": 989,
+        "line": 988,
         "attribute": "onChange",
         "expression": "{(e) => onChange('inputType', e.target.value)}"
       },
       {
-        "line": 991,
+        "line": 990,
         "attribute": "value",
         "expression": "\"text\""
       },
       {
-        "line": 992,
+        "line": 991,
         "attribute": "value",
         "expression": "\"key\""
       },
       {
-        "line": 993,
+        "line": 992,
         "attribute": "value",
         "expression": "\"hotkey\""
       },
       {
-        "line": 1002,
+        "line": 1001,
         "attribute": "value",
         "expression": "{(data.text as string) || ''}"
       },
       {
-        "line": 1003,
+        "line": 1002,
         "attribute": "onChange",
         "expression": "{(v) => onChange('text', v)}"
       },
       {
-        "line": 1013,
+        "line": 1012,
         "attribute": "value",
         "expression": "{(data.interval as number) ?? 0.05}"
       },
       {
-        "line": 1014,
+        "line": 1013,
         "attribute": "onChange",
         "expression": "{(v) => onChange('interval', v)}"
       },
       {
-        "line": 1015,
+        "line": 1014,
         "attribute": "defaultValue",
         "expression": "{0.05}"
       },
       {
-        "line": 1048,
+        "line": 1047,
         "attribute": "value",
         "expression": "{(data.key as string) || 'enter'}"
       },
       {
-        "line": 1049,
+        "line": 1048,
         "attribute": "onChange",
         "expression": "{(e) => onChange('key', e.target.value)}"
       },
       {
-        "line": 1052,
+        "line": 1051,
         "attribute": "value",
         "expression": "\"enter\""
       },
       {
-        "line": 1053,
+        "line": 1052,
         "attribute": "value",
         "expression": "\"tab\""
       },
       {
-        "line": 1054,
+        "line": 1053,
         "attribute": "value",
         "expression": "\"escape\""
       },
       {
-        "line": 1055,
+        "line": 1054,
         "attribute": "value",
         "expression": "\"backspace\""
       },
       {
-        "line": 1056,
+        "line": 1055,
         "attribute": "value",
         "expression": "\"delete\""
       },
       {
-        "line": 1057,
+        "line": 1056,
         "attribute": "value",
         "expression": "\"space\""
       },
       {
-        "line": 1060,
+        "line": 1059,
         "attribute": "value",
         "expression": "\"up\""
       },
       {
-        "line": 1061,
+        "line": 1060,
         "attribute": "value",
         "expression": "\"down\""
       },
       {
-        "line": 1062,
+        "line": 1061,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 1063,
+        "line": 1062,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 1064,
+        "line": 1063,
         "attribute": "value",
         "expression": "\"home\""
       },
       {
-        "line": 1065,
+        "line": 1064,
         "attribute": "value",
         "expression": "\"end\""
       },
       {
-        "line": 1066,
+        "line": 1065,
         "attribute": "value",
         "expression": "\"pageup\""
       },
       {
-        "line": 1067,
+        "line": 1066,
         "attribute": "value",
         "expression": "\"pagedown\""
       },
       {
-        "line": 1070,
+        "line": 1069,
         "attribute": "value",
         "expression": "\"f1\""
       },
       {
-        "line": 1071,
+        "line": 1070,
         "attribute": "value",
         "expression": "\"f2\""
       },
       {
-        "line": 1072,
+        "line": 1071,
         "attribute": "value",
         "expression": "\"f3\""
       },
       {
-        "line": 1073,
+        "line": 1072,
         "attribute": "value",
         "expression": "\"f4\""
       },
       {
-        "line": 1074,
+        "line": 1073,
         "attribute": "value",
         "expression": "\"f5\""
       },
       {
-        "line": 1075,
+        "line": 1074,
         "attribute": "value",
         "expression": "\"f6\""
       },
       {
-        "line": 1076,
+        "line": 1075,
         "attribute": "value",
         "expression": "\"f7\""
       },
       {
-        "line": 1077,
+        "line": 1076,
         "attribute": "value",
         "expression": "\"f8\""
       },
       {
-        "line": 1078,
+        "line": 1077,
         "attribute": "value",
         "expression": "\"f9\""
       },
       {
-        "line": 1079,
+        "line": 1078,
         "attribute": "value",
         "expression": "\"f10\""
       },
       {
-        "line": 1080,
+        "line": 1079,
         "attribute": "value",
         "expression": "\"f11\""
       },
       {
-        "line": 1081,
+        "line": 1080,
         "attribute": "value",
         "expression": "\"f12\""
       },
       {
-        "line": 1084,
+        "line": 1083,
         "attribute": "value",
         "expression": "\"ctrl\""
       },
       {
-        "line": 1085,
+        "line": 1084,
         "attribute": "value",
         "expression": "\"alt\""
       },
       {
-        "line": 1086,
+        "line": 1085,
         "attribute": "value",
         "expression": "\"shift\""
       },
       {
-        "line": 1087,
+        "line": 1086,
         "attribute": "value",
         "expression": "\"win\""
       },
       {
-        "line": 1090,
+        "line": 1089,
         "attribute": "value",
         "expression": "\"a\""
       },
       {
-        "line": 1091,
+        "line": 1090,
         "attribute": "value",
         "expression": "\"b\""
       },
       {
-        "line": 1092,
+        "line": 1091,
         "attribute": "value",
         "expression": "\"c\""
       },
       {
-        "line": 1093,
+        "line": 1092,
         "attribute": "value",
         "expression": "\"d\""
       },
       {
-        "line": 1094,
+        "line": 1093,
         "attribute": "value",
         "expression": "\"e\""
       },
       {
-        "line": 1095,
+        "line": 1094,
         "attribute": "value",
         "expression": "\"f\""
       },
       {
-        "line": 1096,
+        "line": 1095,
         "attribute": "value",
         "expression": "\"g\""
       },
       {
-        "line": 1097,
+        "line": 1096,
         "attribute": "value",
         "expression": "\"h\""
       },
       {
-        "line": 1098,
+        "line": 1097,
         "attribute": "value",
         "expression": "\"i\""
       },
       {
-        "line": 1099,
+        "line": 1098,
         "attribute": "value",
         "expression": "\"j\""
       },
       {
-        "line": 1100,
+        "line": 1099,
         "attribute": "value",
         "expression": "\"k\""
       },
       {
-        "line": 1101,
+        "line": 1100,
         "attribute": "value",
         "expression": "\"l\""
       },
       {
-        "line": 1102,
+        "line": 1101,
         "attribute": "value",
         "expression": "\"m\""
       },
       {
-        "line": 1103,
+        "line": 1102,
         "attribute": "value",
         "expression": "\"n\""
       },
       {
-        "line": 1104,
+        "line": 1103,
         "attribute": "value",
         "expression": "\"o\""
       },
       {
-        "line": 1105,
+        "line": 1104,
         "attribute": "value",
         "expression": "\"p\""
       },
       {
-        "line": 1106,
+        "line": 1105,
         "attribute": "value",
         "expression": "\"q\""
       },
       {
-        "line": 1107,
+        "line": 1106,
         "attribute": "value",
         "expression": "\"r\""
       },
       {
-        "line": 1108,
+        "line": 1107,
         "attribute": "value",
         "expression": "\"s\""
       },
       {
-        "line": 1109,
+        "line": 1108,
         "attribute": "value",
         "expression": "\"t\""
       },
       {
-        "line": 1110,
+        "line": 1109,
         "attribute": "value",
         "expression": "\"u\""
       },
       {
-        "line": 1111,
+        "line": 1110,
         "attribute": "value",
         "expression": "\"v\""
       },
       {
-        "line": 1112,
+        "line": 1111,
         "attribute": "value",
         "expression": "\"w\""
       },
       {
-        "line": 1113,
+        "line": 1112,
         "attribute": "value",
         "expression": "\"x\""
       },
       {
-        "line": 1114,
+        "line": 1113,
         "attribute": "value",
         "expression": "\"y\""
       },
       {
-        "line": 1115,
+        "line": 1114,
         "attribute": "value",
         "expression": "\"z\""
       },
       {
-        "line": 1118,
+        "line": 1117,
         "attribute": "value",
         "expression": "\"0\""
       },
       {
-        "line": 1119,
+        "line": 1118,
         "attribute": "value",
         "expression": "\"1\""
       },
       {
-        "line": 1120,
+        "line": 1119,
         "attribute": "value",
         "expression": "\"2\""
       },
       {
-        "line": 1121,
+        "line": 1120,
         "attribute": "value",
         "expression": "\"3\""
       },
       {
-        "line": 1122,
+        "line": 1121,
         "attribute": "value",
         "expression": "\"4\""
       },
       {
-        "line": 1123,
+        "line": 1122,
         "attribute": "value",
         "expression": "\"5\""
       },
       {
-        "line": 1124,
+        "line": 1123,
         "attribute": "value",
         "expression": "\"6\""
       },
       {
-        "line": 1125,
+        "line": 1124,
         "attribute": "value",
         "expression": "\"7\""
       },
       {
-        "line": 1126,
+        "line": 1125,
         "attribute": "value",
         "expression": "\"8\""
       },
       {
-        "line": 1127,
+        "line": 1126,
         "attribute": "value",
         "expression": "\"9\""
       },
       {
-        "line": 1135,
+        "line": 1134,
         "attribute": "value",
         "expression": "{(data.key as string) || ''}"
       },
       {
-        "line": 1136,
+        "line": 1135,
         "attribute": "onChange",
         "expression": "{(v) => onChange('key', v)}"
       },
       {
-        "line": 1150,
+        "line": 1149,
         "attribute": "value",
         "expression": "{(data.hotkey as string) || ''}"
       },
       {
-        "line": 1151,
+        "line": 1150,
         "attribute": "onChange",
         "expression": "{(v) => onChange('hotkey', v)}"
       },
       {
-        "line": 1165,
+        "line": 1164,
         "attribute": "value",
         "expression": "{pressMode}"
       },
       {
-        "line": 1166,
+        "line": 1165,
         "attribute": "onChange",
         "expression": "{(e) => onChange('pressMode', e.target.value)}"
       },
       {
-        "line": 1168,
+        "line": 1167,
         "attribute": "value",
         "expression": "\"click\""
       },
       {
-        "line": 1169,
+        "line": 1168,
         "attribute": "value",
         "expression": "\"hold\""
       },
       {
-        "line": 1177,
+        "line": 1176,
         "attribute": "value",
         "expression": "{(data.holdDuration as number) ?? 1}"
       },
       {
-        "line": 1178,
+        "line": 1177,
         "attribute": "onChange",
         "expression": "{(v) => onChange('holdDuration', v)}"
       },
       {
-        "line": 1179,
+        "line": 1178,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 1190,
+        "line": 1189,
         "attribute": "value",
         "expression": "{(data.windowTitle as string) || ''}"
       },
       {
-        "line": 1191,
+        "line": 1190,
         "attribute": "onChange",
         "expression": "{(v) => onChange('windowTitle', v)}"
       }
@@ -16197,7 +16197,7 @@
   {
     "component": "RunCommandConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1207,
+    "line": 1206,
     "fields": [
       "command",
       "shell",
@@ -16214,57 +16214,57 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 1213,
+        "line": 1212,
         "attribute": "value",
         "expression": "{(data.command as string) || ''}"
       },
       {
-        "line": 1214,
+        "line": 1213,
         "attribute": "onChange",
         "expression": "{(v) => onChange('command', v)}"
       },
       {
-        "line": 1224,
+        "line": 1223,
         "attribute": "value",
         "expression": "{(data.shell as string) || 'cmd'}"
       },
       {
-        "line": 1225,
+        "line": 1224,
         "attribute": "onChange",
         "expression": "{(e) => onChange('shell', e.target.value)}"
       },
       {
-        "line": 1227,
+        "line": 1226,
         "attribute": "value",
         "expression": "\"cmd\""
       },
       {
-        "line": 1228,
+        "line": 1227,
         "attribute": "value",
         "expression": "\"powershell\""
       },
       {
-        "line": 1235,
+        "line": 1234,
         "attribute": "value",
         "expression": "{(data.timeout as number) ?? 30}"
       },
       {
-        "line": 1236,
+        "line": 1235,
         "attribute": "onChange",
         "expression": "{(v) => onChange('timeout', v)}"
       },
       {
-        "line": 1237,
+        "line": 1236,
         "attribute": "defaultValue",
         "expression": "{30}"
       },
       {
-        "line": 1244,
+        "line": 1243,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 1245,
+        "line": 1244,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -16273,7 +16273,7 @@
   {
     "component": "ClickImageConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1256,
+    "line": 1255,
     "fields": [
       "button",
       "clickPosition",
@@ -16297,208 +16297,208 @@
     ],
     "conditions": [
       {
-        "line": 1296,
+        "line": 1295,
         "expression": "!checked"
       }
     ],
     "bindings": [
       {
-        "line": 1266,
+        "line": 1265,
         "attribute": "value",
         "expression": "{(data.imagePath as string) || ''}"
       },
       {
-        "line": 1267,
+        "line": 1266,
         "attribute": "onChange",
         "expression": "{(v) => onChange('imagePath', v)}"
       },
       {
-        "line": 1277,
+        "line": 1276,
         "attribute": "value",
         "expression": "{[(data.confidence as number) || 0.8]}"
       },
       {
-        "line": 1278,
+        "line": 1277,
         "attribute": "onValueChange",
         "expression": "{(vals) => onChange('confidence', vals[0])}"
       },
       {
-        "line": 1293,
+        "line": 1292,
         "attribute": "checked",
         "expression": "{useSearchRegion}"
       },
       {
-        "line": 1294,
+        "line": 1293,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       },
       {
-        "line": 1336,
+        "line": 1335,
         "attribute": "value",
         "expression": "{(data.clickPosition as string) || 'center'}"
       },
       {
-        "line": 1337,
+        "line": 1336,
         "attribute": "onChange",
         "expression": "{(e) => onChange('clickPosition', e.target.value)}"
       },
       {
-        "line": 1339,
+        "line": 1338,
         "attribute": "value",
         "expression": "\"center\""
       },
       {
-        "line": 1340,
+        "line": 1339,
         "attribute": "value",
         "expression": "\"top-left\""
       },
       {
-        "line": 1341,
+        "line": 1340,
         "attribute": "value",
         "expression": "\"top-right\""
       },
       {
-        "line": 1342,
+        "line": 1341,
         "attribute": "value",
         "expression": "\"bottom-left\""
       },
       {
-        "line": 1343,
+        "line": 1342,
         "attribute": "value",
         "expression": "\"bottom-right\""
       },
       {
-        "line": 1344,
+        "line": 1343,
         "attribute": "value",
         "expression": "\"top\""
       },
       {
-        "line": 1345,
+        "line": 1344,
         "attribute": "value",
         "expression": "\"bottom\""
       },
       {
-        "line": 1346,
+        "line": 1345,
         "attribute": "value",
         "expression": "\"left\""
+      },
+      {
+        "line": 1346,
+        "attribute": "value",
+        "expression": "\"right\""
       },
       {
         "line": 1347,
         "attribute": "value",
-        "expression": "\"right\""
-      },
-      {
-        "line": 1348,
-        "attribute": "value",
         "expression": "\"random\""
       },
       {
-        "line": 1358,
+        "line": 1357,
         "attribute": "value",
         "expression": "{(data.offsetX as number) ?? 0}"
       },
       {
-        "line": 1359,
+        "line": 1358,
         "attribute": "onChange",
         "expression": "{(v) => {\n              console.log('[ClickImageConfig] offsetX onChange called with:', v, 'type:', typeof v)\n              onChange('offsetX', v)\n            }}"
       },
       {
-        "line": 1363,
+        "line": 1362,
         "attribute": "defaultValue",
         "expression": "{0}"
       },
       {
-        "line": 1371,
+        "line": 1370,
         "attribute": "value",
         "expression": "{(data.offsetY as number) ?? 0}"
       },
       {
-        "line": 1372,
+        "line": 1371,
         "attribute": "onChange",
         "expression": "{(v) => {\n              console.log('[ClickImageConfig] offsetY onChange called with:', v, 'type:', typeof v)\n              onChange('offsetY', v)\n            }}"
       },
       {
-        "line": 1376,
+        "line": 1375,
         "attribute": "defaultValue",
         "expression": "{0}"
       },
       {
-        "line": 1385,
+        "line": 1384,
         "attribute": "value",
         "expression": "{(data.button as string) || 'left'}"
       },
       {
-        "line": 1386,
+        "line": 1385,
         "attribute": "onChange",
         "expression": "{(e) => onChange('button', e.target.value)}"
       },
       {
-        "line": 1388,
+        "line": 1387,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 1389,
+        "line": 1388,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 1390,
+        "line": 1389,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 1397,
+        "line": 1396,
         "attribute": "value",
         "expression": "{(data.clickType as string) || 'single'}"
       },
       {
-        "line": 1398,
+        "line": 1397,
         "attribute": "onChange",
         "expression": "{(e) => onChange('clickType', e.target.value)}"
       },
       {
-        "line": 1400,
+        "line": 1399,
         "attribute": "value",
         "expression": "\"single\""
       },
       {
-        "line": 1401,
+        "line": 1400,
         "attribute": "value",
         "expression": "\"double\""
       },
       {
-        "line": 1402,
+        "line": 1401,
         "attribute": "value",
         "expression": "\"hold\""
       },
       {
-        "line": 1410,
+        "line": 1409,
         "attribute": "value",
         "expression": "{(data.holdDuration as number) ?? 1}"
       },
       {
-        "line": 1411,
+        "line": 1410,
         "attribute": "onChange",
         "expression": "{(v) => onChange('holdDuration', v)}"
       },
       {
-        "line": 1412,
+        "line": 1411,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 1424,
+        "line": 1423,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) ?? 10}"
       },
       {
-        "line": 1425,
+        "line": 1424,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 1426,
+        "line": 1425,
         "attribute": "defaultValue",
         "expression": "{10}"
       }
@@ -16507,7 +16507,7 @@
   {
     "component": "GetMousePositionConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1435,
+    "line": 1434,
     "fields": [
       "variableNameX",
       "variableNameY"
@@ -16519,22 +16519,22 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 1441,
+        "line": 1440,
         "attribute": "value",
         "expression": "{(data.variableNameX as string) || ''}"
       },
       {
-        "line": 1442,
+        "line": 1441,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableNameX', v)}"
       },
       {
-        "line": 1450,
+        "line": 1449,
         "attribute": "value",
         "expression": "{(data.variableNameY as string) || ''}"
       },
       {
-        "line": 1451,
+        "line": 1450,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableNameY', v)}"
       }
@@ -16543,7 +16543,7 @@
   {
     "component": "ScreenshotScreenConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1464,
+    "line": 1463,
     "fields": [
       "fileName",
       "region",
@@ -16564,70 +16564,70 @@
     ],
     "conditions": [
       {
+        "line": 1486,
+        "expression": "v"
+      },
+      {
         "line": 1487,
         "expression": "v"
       },
       {
-        "line": 1488,
+        "line": 1495,
         "expression": "v"
       },
       {
         "line": 1496,
         "expression": "v"
-      },
-      {
-        "line": 1497,
-        "expression": "v"
       }
     ],
     "bindings": [
       {
-        "line": 1473,
+        "line": 1472,
         "attribute": "value",
         "expression": "{region}"
       },
       {
-        "line": 1474,
+        "line": 1473,
         "attribute": "onChange",
         "expression": "{(e) => onChange('region', e.target.value)}"
       },
       {
-        "line": 1476,
+        "line": 1475,
         "attribute": "value",
         "expression": "\"full\""
       },
       {
-        "line": 1477,
+        "line": 1476,
         "attribute": "value",
         "expression": "\"custom\""
       },
       {
-        "line": 1505,
+        "line": 1504,
         "attribute": "value",
         "expression": "{(data.savePath as string) || ''}"
       },
       {
-        "line": 1506,
+        "line": 1505,
         "attribute": "onChange",
         "expression": "{(v) => onChange('savePath', v)}"
       },
       {
-        "line": 1514,
+        "line": 1513,
         "attribute": "value",
         "expression": "{(data.fileName as string) || ''}"
       },
       {
-        "line": 1515,
+        "line": 1514,
         "attribute": "onChange",
         "expression": "{(v) => onChange('fileName', v)}"
       },
       {
-        "line": 1522,
+        "line": 1521,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 1523,
+        "line": 1522,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -16636,7 +16636,7 @@
   {
     "component": "RenameFileConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1533,
+    "line": 1532,
     "fields": [
       "newName",
       "sourcePath",
@@ -16651,32 +16651,32 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 1539,
+        "line": 1538,
         "attribute": "value",
         "expression": "{(data.sourcePath as string) || ''}"
       },
       {
-        "line": 1540,
+        "line": 1539,
         "attribute": "onChange",
         "expression": "{(v) => onChange('sourcePath', v)}"
       },
       {
-        "line": 1548,
+        "line": 1547,
         "attribute": "value",
         "expression": "{(data.newName as string) || ''}"
       },
       {
-        "line": 1549,
+        "line": 1548,
         "attribute": "onChange",
         "expression": "{(v) => onChange('newName', v)}"
       },
       {
-        "line": 1556,
+        "line": 1555,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 1557,
+        "line": 1556,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -16685,7 +16685,7 @@
   {
     "component": "NetworkCaptureConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1567,
+    "line": 1566,
     "fields": [
       "captureDuration",
       "captureMode",
@@ -16705,162 +16705,162 @@
     ],
     "conditions": [
       {
-        "line": 1686,
+        "line": 1685,
         "expression": "captureMode === 'browser'"
       },
       {
-        "line": 1687,
+        "line": 1686,
         "expression": "captureMode === 'proxy'"
       }
     ],
     "bindings": [
       {
-        "line": 1582,
+        "line": 1581,
         "attribute": "value",
         "expression": "{captureMode}"
       },
       {
-        "line": 1583,
+        "line": 1582,
         "attribute": "onChange",
         "expression": "{(e) => onChange('captureMode', e.target.value)}"
       },
       {
-        "line": 1585,
+        "line": 1584,
         "attribute": "value",
         "expression": "\"browser\""
       },
       {
-        "line": 1586,
+        "line": 1585,
         "attribute": "value",
         "expression": "\"system\""
       },
       {
-        "line": 1587,
+        "line": 1586,
         "attribute": "value",
         "expression": "\"proxy\""
       },
       {
-        "line": 1603,
+        "line": 1602,
         "attribute": "value",
         "expression": "{(data.proxyPort as number) ?? 8888}"
       },
       {
-        "line": 1604,
+        "line": 1603,
         "attribute": "onChange",
         "expression": "{(v) => onChange('proxyPort', v)}"
       },
       {
-        "line": 1605,
+        "line": 1604,
         "attribute": "defaultValue",
         "expression": "{8888}"
       },
       {
-        "line": 1614,
+        "line": 1613,
         "attribute": "value",
         "expression": "{(data.filterType as string) || 'all'}"
       },
       {
-        "line": 1615,
+        "line": 1614,
         "attribute": "onChange",
         "expression": "{(e) => onChange('filterType', e.target.value)}"
+      },
+      {
+        "line": 1616,
+        "attribute": "value",
+        "expression": "\"all\""
       },
       {
         "line": 1617,
         "attribute": "value",
-        "expression": "\"all\""
+        "expression": "\"m3u8\""
       },
       {
         "line": 1618,
         "attribute": "value",
-        "expression": "\"m3u8\""
+        "expression": "\"media\""
       },
       {
         "line": 1619,
         "attribute": "value",
-        "expression": "\"media\""
-      },
-      {
-        "line": 1620,
-        "attribute": "value",
         "expression": "\"img\""
       },
       {
-        "line": 1642,
+        "line": 1641,
         "attribute": "value",
         "expression": "{(data.filterType as string) || 'all'}"
       },
       {
-        "line": 1643,
+        "line": 1642,
         "attribute": "onChange",
         "expression": "{(e) => onChange('filterType', e.target.value)}"
       },
       {
-        "line": 1645,
+        "line": 1644,
         "attribute": "value",
         "expression": "\"all\""
       },
       {
-        "line": 1646,
+        "line": 1645,
         "attribute": "value",
         "expression": "\"img\""
       },
       {
-        "line": 1647,
+        "line": 1646,
         "attribute": "value",
         "expression": "\"media\""
       },
       {
-        "line": 1658,
+        "line": 1657,
         "attribute": "value",
         "expression": "{(data.targetProcess as string) || ''}"
       },
       {
-        "line": 1659,
+        "line": 1658,
         "attribute": "onChange",
         "expression": "{(v) => onChange('targetProcess', v)}"
       },
       {
-        "line": 1669,
+        "line": 1668,
         "attribute": "value",
         "expression": "{(data.targetPorts as string) || ''}"
       },
       {
-        "line": 1670,
+        "line": 1669,
         "attribute": "onChange",
         "expression": "{(v) => onChange('targetPorts', v)}"
       },
       {
-        "line": 1683,
+        "line": 1682,
         "attribute": "value",
         "expression": "{(data.searchKeyword as string) || ''}"
       },
       {
-        "line": 1684,
+        "line": 1683,
         "attribute": "onChange",
         "expression": "{(v) => onChange('searchKeyword', v)}"
       },
       {
-        "line": 1696,
+        "line": 1695,
         "attribute": "value",
         "expression": "{(data.captureDuration as number) ?? 5}"
       },
       {
-        "line": 1697,
+        "line": 1696,
         "attribute": "onChange",
         "expression": "{(v) => onChange('captureDuration', v)}"
       },
       {
-        "line": 1698,
+        "line": 1697,
         "attribute": "defaultValue",
         "expression": "{5}"
       },
       {
-        "line": 1706,
+        "line": 1705,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 1707,
+        "line": 1706,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
@@ -16869,7 +16869,7 @@
   {
     "component": "MacroRecorderConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1722,
+    "line": 1721,
     "fields": [
       "playKeyboard",
       "playMouseClick",
@@ -16890,132 +16890,132 @@
     ],
     "conditions": [
       {
-        "line": 1730,
+        "line": 1729,
         "expression": "savedData"
       },
       {
-        "line": 1752,
+        "line": 1751,
         "expression": "action.type === 'mouse_click' && action.pressed"
       },
       {
-        "line": 1755,
+        "line": 1754,
         "expression": "action.type === 'mouse_move' && isMouseDown"
       },
       {
-        "line": 1757,
+        "line": 1756,
         "expression": "action.type === 'mouse_click' && !action.pressed && isMouseDown"
       },
       {
-        "line": 1758,
+        "line": 1757,
         "expression": "hasMoved"
       },
       {
-        "line": 1766,
+        "line": 1765,
         "expression": "recordedActions.length > 0"
       },
       {
-        "line": 1784,
+        "line": 1783,
         "expression": "recordedActions.length > 0"
       }
     ],
     "bindings": [
       {
-        "line": 1836,
+        "line": 1835,
         "attribute": "value",
         "expression": "{String(data.playSpeed ?? 1)}"
       },
       {
-        "line": 1837,
+        "line": 1836,
         "attribute": "onChange",
         "expression": "{(e) => onChange('playSpeed', parseFloat(e.target.value))}"
       },
       {
-        "line": 1839,
+        "line": 1838,
         "attribute": "value",
         "expression": "\"0.25\""
       },
       {
-        "line": 1840,
+        "line": 1839,
         "attribute": "value",
         "expression": "\"0.5\""
       },
       {
-        "line": 1841,
+        "line": 1840,
         "attribute": "value",
         "expression": "\"1\""
       },
       {
-        "line": 1842,
+        "line": 1841,
         "attribute": "value",
         "expression": "\"1.5\""
       },
       {
-        "line": 1843,
+        "line": 1842,
         "attribute": "value",
         "expression": "\"2\""
       },
       {
-        "line": 1844,
+        "line": 1843,
         "attribute": "value",
         "expression": "\"3\""
       },
       {
-        "line": 1845,
+        "line": 1844,
         "attribute": "value",
         "expression": "\"5\""
       },
       {
-        "line": 1853,
+        "line": 1852,
         "attribute": "value",
         "expression": "{(data.repeatCount as number) ?? 1}"
       },
       {
-        "line": 1854,
+        "line": 1853,
         "attribute": "onChange",
         "expression": "{(v) => onChange('repeatCount', v)}"
       },
       {
-        "line": 1855,
+        "line": 1854,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 1867,
+        "line": 1866,
         "attribute": "checked",
         "expression": "{(data.playMouseMove as boolean) ?? true}"
       },
       {
-        "line": 1868,
+        "line": 1867,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('playMouseMove', c)}"
       },
       {
-        "line": 1874,
+        "line": 1873,
         "attribute": "checked",
         "expression": "{(data.playMouseClick as boolean) ?? true}"
       },
       {
-        "line": 1875,
+        "line": 1874,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('playMouseClick', c)}"
       },
       {
-        "line": 1881,
+        "line": 1880,
         "attribute": "checked",
         "expression": "{(data.playKeyboard as boolean) ?? true}"
       },
       {
-        "line": 1882,
+        "line": 1881,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('playKeyboard', c)}"
       },
       {
-        "line": 1888,
+        "line": 1887,
         "attribute": "checked",
         "expression": "{(data.useRelativePosition as boolean) ?? false}"
       },
       {
-        "line": 1889,
+        "line": 1888,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('useRelativePosition', c)}"
       }
@@ -17024,7 +17024,7 @@
   {
     "component": "MacroRecordDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 1944,
+    "line": 1943,
     "fields": [
       "actions",
       "pendingStart",
@@ -17041,116 +17041,116 @@
     ],
     "conditions": [
       {
-        "line": 1976,
+        "line": 1975,
         "expression": "!isRecordingRef.current"
       },
       {
-        "line": 1982,
+        "line": 1981,
         "expression": "isRecordingRef.current"
       },
       {
-        "line": 2006,
+        "line": 2005,
         "expression": "pollIntervalRef.current"
       },
       {
-        "line": 2018,
+        "line": 2017,
         "expression": "data.success"
       },
       {
-        "line": 2020,
+        "line": 2019,
         "expression": "data.pendingStart && !isRecordingRef.current"
       },
       {
-        "line": 2022,
+        "line": 2021,
         "expression": "data.pendingStop && isRecordingRef.current"
       },
       {
-        "line": 2026,
+        "line": 2025,
         "expression": "data.actions && isRecordingRef.current"
       },
       {
-        "line": 2039,
+        "line": 2038,
         "expression": "pollIntervalRef.current"
       },
       {
-        "line": 2056,
+        "line": 2055,
         "expression": "data.success"
       },
       {
-        "line": 2100,
+        "line": 2099,
         "expression": "data.success && data.actions"
       },
       {
-        "line": 2120,
+        "line": 2119,
         "expression": "action.type === 'mouse_click' && action.pressed"
       },
       {
-        "line": 2123,
+        "line": 2122,
         "expression": "action.type === 'mouse_move' && isMouseDown"
       },
       {
-        "line": 2125,
+        "line": 2124,
         "expression": "action.type === 'mouse_click' && !action.pressed && isMouseDown"
       },
       {
-        "line": 2126,
+        "line": 2125,
         "expression": "hasMoved"
       },
       {
-        "line": 2134,
+        "line": 2133,
         "expression": "actions.length > 0"
       },
       {
-        "line": 2198,
+        "line": 2197,
         "expression": "isRecording"
       },
       {
-        "line": 2210,
+        "line": 2209,
         "expression": "actions.length > 0"
       },
       {
-        "line": 2234,
+        "line": 2233,
         "expression": "isRecording"
       }
     ],
     "bindings": [
       {
-        "line": 2163,
+        "line": 2162,
         "attribute": "checked",
         "expression": "{recordOptions.recordMouseMove}"
       },
       {
-        "line": 2164,
+        "line": 2163,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setRecordOptions(prev => ({ ...prev, recordMouseMove: c }))}"
       },
       {
-        "line": 2171,
+        "line": 2170,
         "attribute": "checked",
         "expression": "{recordOptions.recordMouseClick}"
       },
       {
-        "line": 2172,
+        "line": 2171,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setRecordOptions(prev => ({ ...prev, recordMouseClick: c }))}"
       },
       {
-        "line": 2179,
+        "line": 2178,
         "attribute": "checked",
         "expression": "{recordOptions.recordKeyboard}"
       },
       {
-        "line": 2180,
+        "line": 2179,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setRecordOptions(prev => ({ ...prev, recordKeyboard: c }))}"
       },
       {
-        "line": 2187,
+        "line": 2186,
         "attribute": "checked",
         "expression": "{recordOptions.recordScroll}"
       },
       {
-        "line": 2188,
+        "line": 2187,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setRecordOptions(prev => ({ ...prev, recordScroll: c }))}"
       }
@@ -17159,7 +17159,7 @@
   {
     "component": "ActionIcon",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 2330,
+    "line": 2329,
     "fields": [],
     "tools": [
       "HelpCircle",
@@ -17175,7 +17175,7 @@
   {
     "component": "MacroEditDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 2343,
+    "line": 2342,
     "fields": [],
     "tools": [
       "ActionIcon",
@@ -17194,105 +17194,105 @@
     ],
     "conditions": [
       {
-        "line": 2360,
+        "line": 2359,
         "expression": "filter === 'all'"
       },
       {
-        "line": 2362,
+        "line": 2361,
         "expression": "filter === 'mouse'"
       },
       {
-        "line": 2363,
+        "line": 2362,
         "expression": "filter === 'keyboard'"
       },
       {
-        "line": 2371,
+        "line": 2370,
         "expression": "realIndex >= 0"
       },
       {
-        "line": 2382,
+        "line": 2381,
         "expression": "realIndex >= 0"
       },
       {
-        "line": 2393,
+        "line": 2392,
         "expression": "realIndex > 0"
       },
       {
-        "line": 2405,
+        "line": 2404,
         "expression": "realIndex < actions.length - 1"
       },
       {
-        "line": 2417,
+        "line": 2416,
         "expression": "realIndex >= 0"
       },
       {
-        "line": 2425,
+        "line": 2424,
         "expression": "selectedIndex !== null && editingAction"
       },
       {
-        "line": 2436,
+        "line": 2435,
         "expression": "actions.length > 0"
       },
       {
-        "line": 2444,
+        "line": 2443,
         "expression": "confirm('确定要删除所有鼠标移动操作吗？这将保留点击和其他操作。')"
       },
       {
-        "line": 2451,
+        "line": 2450,
         "expression": "actions.length < 2"
       },
       {
-        "line": 2513,
+        "line": 2512,
         "expression": "filteredActions.length === 0"
       },
       {
-        "line": 2523,
+        "line": 2522,
         "expression": "selectedIndex === actions.indexOf(action)"
       }
     ],
     "bindings": [
       {
-        "line": 2475,
+        "line": 2474,
         "attribute": "value",
         "expression": "{filter}"
       },
       {
-        "line": 2476,
+        "line": 2475,
         "attribute": "onChange",
         "expression": "{(e) => setFilter(e.target.value)}"
       },
       {
-        "line": 2478,
+        "line": 2477,
         "attribute": "value",
         "expression": "\"all\""
       },
       {
-        "line": 2479,
+        "line": 2478,
         "attribute": "value",
         "expression": "\"mouse\""
       },
       {
-        "line": 2480,
+        "line": 2479,
         "attribute": "value",
         "expression": "\"keyboard\""
       },
       {
-        "line": 2481,
+        "line": 2480,
         "attribute": "value",
         "expression": "\"mouse_move\""
       },
       {
-        "line": 2482,
+        "line": 2481,
         "attribute": "value",
         "expression": "\"mouse_click\""
       },
       {
-        "line": 2483,
+        "line": 2482,
         "attribute": "value",
         "expression": "\"mouse_scroll\""
       },
       {
-        "line": 2595,
+        "line": 2594,
         "attribute": "onChange",
         "expression": "{setEditingAction}"
       }
@@ -17301,7 +17301,7 @@
   {
     "component": "MacroActionEditDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 2614,
+    "line": 2613,
     "fields": [],
     "tools": [
       "Checkbox",
@@ -17310,137 +17310,137 @@
     ],
     "conditions": [
       {
-        "line": 2630,
+        "line": 2629,
         "expression": "isPicking"
       },
       {
-        "line": 2642,
+        "line": 2641,
         "expression": "result.success && result.x !== null && result.y !== null"
       },
       {
-        "line": 2646,
+        "line": 2645,
         "expression": "result.cancelled"
       },
       {
-        "line": 2707,
+        "line": 2706,
         "expression": "isPicking"
       },
       {
-        "line": 2712,
+        "line": 2711,
         "expression": "isPicking"
       },
       {
-        "line": 2720,
+        "line": 2719,
         "expression": "statusText.includes('已获取')"
       },
       {
-        "line": 2721,
+        "line": 2720,
         "expression": "statusText.includes('取消')"
       }
     ],
     "bindings": [
       {
-        "line": 2677,
+        "line": 2676,
         "attribute": "value",
         "expression": "{action.time}"
       },
       {
-        "line": 2678,
+        "line": 2677,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, time: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2690,
+        "line": 2689,
         "attribute": "value",
         "expression": "{action.x || 0}"
       },
       {
-        "line": 2691,
+        "line": 2690,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, x: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2699,
+        "line": 2698,
         "attribute": "value",
         "expression": "{action.y || 0}"
       },
       {
-        "line": 2700,
+        "line": 2699,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, y: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2734,
+        "line": 2733,
         "attribute": "value",
         "expression": "{action.button || 'left'}"
       },
       {
-        "line": 2735,
+        "line": 2734,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, button: e.target.value as 'left' | 'right' | 'middle' })}"
       },
       {
-        "line": 2737,
+        "line": 2736,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 2738,
+        "line": 2737,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 2739,
+        "line": 2738,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 2745,
+        "line": 2744,
         "attribute": "checked",
         "expression": "{action.pressed ?? true}"
       },
       {
-        "line": 2746,
+        "line": 2745,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange({ ...action, pressed: c })}"
       },
       {
-        "line": 2760,
+        "line": 2759,
         "attribute": "value",
         "expression": "{action.delta || 0}"
       },
       {
-        "line": 2761,
+        "line": 2760,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, delta: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2773,
+        "line": 2772,
         "attribute": "value",
         "expression": "{action.keyCode || 0}"
       },
       {
-        "line": 2774,
+        "line": 2773,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, keyCode: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2783,
+        "line": 2782,
         "attribute": "checked",
         "expression": "{action.pressed ?? true}"
       },
       {
-        "line": 2784,
+        "line": 2783,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange({ ...action, pressed: c })}"
       },
       {
-        "line": 2798,
+        "line": 2797,
         "attribute": "value",
         "expression": "{action.char || ''}"
       },
       {
-        "line": 2800,
+        "line": 2799,
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, char: e.target.value })}"
       }
@@ -17449,7 +17449,7 @@
   {
     "component": "MacroAddActionDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 2821,
+    "line": 2820,
     "fields": [],
     "tools": [
       "Checkbox",
@@ -17458,162 +17458,162 @@
     ],
     "conditions": [
       {
-        "line": 2863,
+        "line": 2862,
         "expression": "isPicking"
       },
       {
-        "line": 2875,
+        "line": 2874,
         "expression": "result.success && result.x !== null && result.y !== null"
       },
       {
-        "line": 2879,
+        "line": 2878,
         "expression": "result.cancelled"
       },
       {
-        "line": 2944,
+        "line": 2943,
         "expression": "isPicking"
       },
       {
-        "line": 2949,
+        "line": 2948,
         "expression": "isPicking"
       },
       {
-        "line": 2957,
+        "line": 2956,
         "expression": "statusText.includes('已获取')"
       },
       {
-        "line": 2958,
+        "line": 2957,
         "expression": "statusText.includes('取消')"
       }
     ],
     "bindings": [
       {
-        "line": 2908,
+        "line": 2907,
         "attribute": "value",
         "expression": "{actionType}"
       },
       {
-        "line": 2909,
+        "line": 2908,
         "attribute": "onChange",
         "expression": "{(e) => setActionType(e.target.value as MacroAction['type'])}"
       },
       {
-        "line": 2911,
+        "line": 2910,
         "attribute": "value",
         "expression": "\"mouse_move\""
       },
       {
-        "line": 2912,
+        "line": 2911,
         "attribute": "value",
         "expression": "\"mouse_click\""
       },
       {
-        "line": 2913,
+        "line": 2912,
         "attribute": "value",
         "expression": "\"mouse_scroll\""
       },
       {
-        "line": 2914,
+        "line": 2913,
         "attribute": "value",
         "expression": "\"key_press\""
       },
       {
-        "line": 2915,
+        "line": 2914,
         "attribute": "value",
         "expression": "\"key_char\""
       },
       {
-        "line": 2927,
+        "line": 2926,
         "attribute": "value",
         "expression": "{action.x || 0}"
       },
       {
-        "line": 2928,
+        "line": 2927,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, x: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2936,
+        "line": 2935,
         "attribute": "value",
         "expression": "{action.y || 0}"
       },
       {
-        "line": 2937,
+        "line": 2936,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, y: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 2971,
+        "line": 2970,
         "attribute": "value",
         "expression": "{action.button || 'left'}"
       },
       {
-        "line": 2972,
+        "line": 2971,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, button: e.target.value as 'left' | 'right' | 'middle' })}"
       },
       {
-        "line": 2974,
+        "line": 2973,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 2975,
+        "line": 2974,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 2976,
+        "line": 2975,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 2982,
+        "line": 2981,
         "attribute": "checked",
         "expression": "{action.pressed ?? true}"
       },
       {
-        "line": 2983,
+        "line": 2982,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setAction({ ...action, pressed: c })}"
       },
       {
-        "line": 2997,
+        "line": 2996,
         "attribute": "value",
         "expression": "{action.delta || 0}"
       },
       {
-        "line": 2998,
+        "line": 2997,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, delta: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 3010,
+        "line": 3009,
         "attribute": "value",
         "expression": "{action.keyCode || 0}"
       },
       {
-        "line": 3011,
+        "line": 3010,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, keyCode: parseInt(e.target.value) || 0 })}"
       },
       {
-        "line": 3020,
+        "line": 3019,
         "attribute": "checked",
         "expression": "{action.pressed ?? true}"
       },
       {
-        "line": 3021,
+        "line": 3020,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setAction({ ...action, pressed: c })}"
       },
       {
-        "line": 3035,
+        "line": 3034,
         "attribute": "value",
         "expression": "{action.char || ''}"
       },
       {
-        "line": 3037,
+        "line": 3036,
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, char: e.target.value })}"
       }
@@ -17622,7 +17622,7 @@
   {
     "component": "ExportLogConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3061,
+    "line": 3060,
     "fields": [
       "includeDuration",
       "includeLevel",
@@ -17641,77 +17641,77 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3067,
+        "line": 3066,
         "attribute": "value",
         "expression": "{(data.logFormat as string) || 'txt'}"
       },
       {
-        "line": 3068,
+        "line": 3067,
         "attribute": "onChange",
         "expression": "{(e) => onChange('logFormat', e.target.value)}"
       },
       {
-        "line": 3070,
+        "line": 3069,
         "attribute": "value",
         "expression": "\"txt\""
       },
       {
-        "line": 3071,
+        "line": 3070,
         "attribute": "value",
         "expression": "\"json\""
       },
       {
-        "line": 3072,
+        "line": 3071,
         "attribute": "value",
         "expression": "\"csv\""
       },
       {
-        "line": 3078,
+        "line": 3077,
         "attribute": "value",
         "expression": "{(data.outputPath as string) || ''}"
       },
       {
-        "line": 3079,
+        "line": 3078,
         "attribute": "onChange",
         "expression": "{(v) => onChange('outputPath', v)}"
       },
       {
-        "line": 3090,
+        "line": 3089,
         "attribute": "checked",
         "expression": "{(data.includeTimestamp as boolean) !== false}"
       },
       {
-        "line": 3091,
+        "line": 3090,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('includeTimestamp', c)}"
       },
       {
-        "line": 3097,
+        "line": 3096,
         "attribute": "checked",
         "expression": "{(data.includeLevel as boolean) !== false}"
       },
       {
-        "line": 3098,
+        "line": 3097,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('includeLevel', c)}"
       },
       {
-        "line": 3104,
+        "line": 3103,
         "attribute": "checked",
         "expression": "{(data.includeDuration as boolean) === true}"
       },
       {
-        "line": 3105,
+        "line": 3104,
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('includeDuration', c)}"
       },
       {
-        "line": 3114,
+        "line": 3113,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || ''}"
       },
       {
-        "line": 3115,
+        "line": 3114,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -17720,7 +17720,7 @@
   {
     "component": "ClickTextConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3125,
+    "line": 3124,
     "fields": [
       "clickButton",
       "clickType",
@@ -17740,128 +17740,128 @@
     ],
     "conditions": [
       {
-        "line": 3191,
+        "line": 3190,
         "expression": "!checked"
       }
     ],
     "bindings": [
       {
-        "line": 3135,
+        "line": 3134,
         "attribute": "value",
         "expression": "{(data.targetText as string) || ''}"
       },
       {
-        "line": 3136,
+        "line": 3135,
         "attribute": "onChange",
         "expression": "{(v) => onChange('targetText', v)}"
       },
       {
-        "line": 3143,
+        "line": 3142,
         "attribute": "value",
         "expression": "{(data.matchMode as string) || 'contains'}"
       },
       {
-        "line": 3144,
+        "line": 3143,
         "attribute": "onChange",
         "expression": "{(e) => onChange('matchMode', e.target.value)}"
       },
       {
-        "line": 3146,
+        "line": 3145,
         "attribute": "value",
         "expression": "\"exact\""
       },
       {
-        "line": 3147,
+        "line": 3146,
         "attribute": "value",
         "expression": "\"contains\""
       },
       {
-        "line": 3148,
+        "line": 3147,
         "attribute": "value",
         "expression": "\"regex\""
       },
       {
-        "line": 3154,
+        "line": 3153,
         "attribute": "value",
         "expression": "{(data.clickButton as string) || 'left'}"
       },
       {
-        "line": 3155,
+        "line": 3154,
         "attribute": "onChange",
         "expression": "{(e) => onChange('clickButton', e.target.value)}"
       },
       {
-        "line": 3157,
+        "line": 3156,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 3158,
+        "line": 3157,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 3159,
+        "line": 3158,
         "attribute": "value",
         "expression": "\"middle\""
       },
       {
-        "line": 3165,
+        "line": 3164,
         "attribute": "value",
         "expression": "{(data.clickType as string) || 'single'}"
       },
       {
-        "line": 3166,
+        "line": 3165,
         "attribute": "onChange",
         "expression": "{(e) => onChange('clickType', e.target.value)}"
       },
       {
-        "line": 3168,
+        "line": 3167,
         "attribute": "value",
         "expression": "\"single\""
       },
       {
-        "line": 3169,
+        "line": 3168,
         "attribute": "value",
         "expression": "\"double\""
       },
       {
-        "line": 3175,
+        "line": 3174,
         "attribute": "value",
         "expression": "{(data.occurrence as number) || 1}"
       },
       {
-        "line": 3176,
+        "line": 3175,
         "attribute": "onChange",
         "expression": "{(v) => onChange('occurrence', v)}"
       },
       {
-        "line": 3177,
+        "line": 3176,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 3188,
+        "line": 3187,
         "attribute": "checked",
         "expression": "{useSearchRegion}"
       },
       {
-        "line": 3189,
+        "line": 3188,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       },
       {
-        "line": 3230,
+        "line": 3229,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) || 10}"
       },
       {
-        "line": 3231,
+        "line": 3230,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 3232,
+        "line": 3231,
         "attribute": "defaultValue",
         "expression": "{10}"
       }
@@ -17870,7 +17870,7 @@
   {
     "component": "HoverImageConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3242,
+    "line": 3241,
     "fields": [
       "confidence",
       "hoverDuration",
@@ -17892,138 +17892,138 @@
     ],
     "conditions": [
       {
-        "line": 3279,
+        "line": 3278,
         "expression": "!checked"
       }
     ],
     "bindings": [
       {
-        "line": 3252,
+        "line": 3251,
         "attribute": "value",
         "expression": "{(data.imagePath as string) || ''}"
       },
       {
-        "line": 3253,
+        "line": 3252,
         "attribute": "onChange",
         "expression": "{(v) => onChange('imagePath', v)}"
       },
       {
-        "line": 3263,
+        "line": 3262,
         "attribute": "value",
         "expression": "{[(data.confidence as number) || 0.8]}"
       },
       {
-        "line": 3264,
+        "line": 3263,
         "attribute": "onValueChange",
         "expression": "{(vals) => onChange('confidence', vals[0])}"
       },
       {
-        "line": 3276,
+        "line": 3275,
         "attribute": "checked",
         "expression": "{useSearchRegion}"
       },
       {
-        "line": 3277,
+        "line": 3276,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       },
       {
-        "line": 3318,
+        "line": 3317,
         "attribute": "value",
         "expression": "{(data.hoverPosition as string) || 'center'}"
       },
       {
-        "line": 3319,
+        "line": 3318,
         "attribute": "onChange",
         "expression": "{(e) => onChange('hoverPosition', e.target.value)}"
       },
       {
-        "line": 3321,
+        "line": 3320,
         "attribute": "value",
         "expression": "\"center\""
       },
       {
-        "line": 3322,
+        "line": 3321,
         "attribute": "value",
         "expression": "\"top-left\""
       },
       {
-        "line": 3323,
+        "line": 3322,
         "attribute": "value",
         "expression": "\"top-right\""
       },
       {
-        "line": 3324,
+        "line": 3323,
         "attribute": "value",
         "expression": "\"bottom-left\""
       },
       {
-        "line": 3325,
+        "line": 3324,
         "attribute": "value",
         "expression": "\"bottom-right\""
       },
       {
-        "line": 3326,
+        "line": 3325,
         "attribute": "value",
         "expression": "\"top\""
       },
       {
-        "line": 3327,
+        "line": 3326,
         "attribute": "value",
         "expression": "\"bottom\""
       },
       {
-        "line": 3328,
+        "line": 3327,
         "attribute": "value",
         "expression": "\"left\""
       },
       {
-        "line": 3329,
+        "line": 3328,
         "attribute": "value",
         "expression": "\"right\""
       },
       {
-        "line": 3330,
+        "line": 3329,
         "attribute": "value",
         "expression": "\"random\""
       },
       {
-        "line": 3336,
+        "line": 3335,
         "attribute": "value",
         "expression": "{(data.hoverDuration as number) || 0.5}"
       },
       {
-        "line": 3337,
+        "line": 3336,
         "attribute": "onChange",
         "expression": "{(v) => onChange('hoverDuration', v)}"
       },
       {
-        "line": 3338,
+        "line": 3337,
         "attribute": "defaultValue",
         "expression": "{0.5}"
       },
       {
-        "line": 3347,
+        "line": 3346,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) || 10}"
       },
       {
-        "line": 3348,
+        "line": 3347,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 3349,
+        "line": 3348,
         "attribute": "defaultValue",
         "expression": "{10}"
       },
       {
-        "line": 3356,
+        "line": 3355,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || ''}"
       },
       {
-        "line": 3357,
+        "line": 3356,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -18032,7 +18032,7 @@
   {
     "component": "HoverTextConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3366,
+    "line": 3365,
     "fields": [
       "hoverDuration",
       "matchMode",
@@ -18053,108 +18053,108 @@
     ],
     "conditions": [
       {
-        "line": 3422,
+        "line": 3421,
         "expression": "!checked"
       }
     ],
     "bindings": [
       {
-        "line": 3376,
+        "line": 3375,
         "attribute": "value",
         "expression": "{(data.targetText as string) || ''}"
       },
       {
-        "line": 3377,
+        "line": 3376,
         "attribute": "onChange",
         "expression": "{(v) => onChange('targetText', v)}"
       },
       {
-        "line": 3384,
+        "line": 3383,
         "attribute": "value",
         "expression": "{(data.matchMode as string) || 'contains'}"
       },
       {
-        "line": 3385,
+        "line": 3384,
         "attribute": "onChange",
         "expression": "{(e) => onChange('matchMode', e.target.value)}"
       },
       {
-        "line": 3387,
+        "line": 3386,
         "attribute": "value",
         "expression": "\"exact\""
       },
       {
-        "line": 3388,
+        "line": 3387,
         "attribute": "value",
         "expression": "\"contains\""
       },
       {
-        "line": 3389,
+        "line": 3388,
         "attribute": "value",
         "expression": "\"regex\""
       },
       {
-        "line": 3395,
+        "line": 3394,
         "attribute": "value",
         "expression": "{(data.hoverDuration as number) || 0.5}"
       },
       {
-        "line": 3396,
+        "line": 3395,
         "attribute": "onChange",
         "expression": "{(v) => onChange('hoverDuration', v)}"
       },
       {
-        "line": 3397,
+        "line": 3396,
         "attribute": "defaultValue",
         "expression": "{0.5}"
       },
       {
-        "line": 3406,
+        "line": 3405,
         "attribute": "value",
         "expression": "{(data.occurrence as number) || 1}"
       },
       {
-        "line": 3407,
+        "line": 3406,
         "attribute": "onChange",
         "expression": "{(v) => onChange('occurrence', v)}"
       },
       {
-        "line": 3408,
+        "line": 3407,
         "attribute": "defaultValue",
         "expression": "{1}"
       },
       {
-        "line": 3419,
+        "line": 3418,
         "attribute": "checked",
         "expression": "{useSearchRegion}"
       },
       {
-        "line": 3420,
+        "line": 3419,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       },
       {
-        "line": 3461,
+        "line": 3460,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) || 10}"
       },
       {
-        "line": 3462,
+        "line": 3461,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 3463,
+        "line": 3462,
         "attribute": "defaultValue",
         "expression": "{10}"
       },
       {
-        "line": 3471,
+        "line": 3470,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || ''}"
       },
       {
-        "line": 3472,
+        "line": 3471,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -18163,7 +18163,7 @@
   {
     "component": "DragImageConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3481,
+    "line": 3480,
     "fields": [
       "confidence",
       "dragDuration",
@@ -18188,172 +18188,172 @@
     ],
     "conditions": [
       {
-        "line": 3528,
+        "line": 3527,
         "expression": "targetType === 'image'"
       },
       {
-        "line": 3614,
+        "line": 3613,
         "expression": "!checked"
       }
     ],
     "bindings": [
       {
-        "line": 3498,
+        "line": 3497,
         "attribute": "value",
         "expression": "{(data.sourceImagePath as string) || ''}"
       },
       {
-        "line": 3499,
+        "line": 3498,
         "attribute": "onChange",
         "expression": "{(v) => onChange('sourceImagePath', v)}"
       },
       {
-        "line": 3506,
+        "line": 3505,
         "attribute": "value",
         "expression": "{(data.sourcePosition as string) || 'center'}"
       },
       {
-        "line": 3507,
+        "line": 3506,
         "attribute": "onChange",
         "expression": "{(e) => onChange('sourcePosition', e.target.value)}"
       },
       {
-        "line": 3509,
+        "line": 3508,
         "attribute": "value",
         "expression": "\"center\""
+      },
+      {
+        "line": 3509,
+        "attribute": "value",
+        "expression": "\"top-left\""
       },
       {
         "line": 3510,
         "attribute": "value",
-        "expression": "\"top-left\""
+        "expression": "\"top-right\""
       },
       {
         "line": 3511,
         "attribute": "value",
-        "expression": "\"top-right\""
+        "expression": "\"bottom-left\""
       },
       {
         "line": 3512,
         "attribute": "value",
-        "expression": "\"bottom-left\""
-      },
-      {
-        "line": 3513,
-        "attribute": "value",
         "expression": "\"bottom-right\""
       },
       {
-        "line": 3520,
+        "line": 3519,
         "attribute": "value",
         "expression": "{targetType}"
       },
       {
-        "line": 3521,
+        "line": 3520,
         "attribute": "onChange",
         "expression": "{(e) => onChange('targetType', e.target.value)}"
       },
       {
-        "line": 3523,
+        "line": 3522,
         "attribute": "value",
         "expression": "\"image\""
       },
       {
-        "line": 3524,
+        "line": 3523,
         "attribute": "value",
         "expression": "\"coordinate\""
       },
       {
-        "line": 3533,
+        "line": 3532,
         "attribute": "value",
         "expression": "{(data.targetImagePath as string) || ''}"
       },
       {
-        "line": 3534,
+        "line": 3533,
         "attribute": "onChange",
         "expression": "{(v) => onChange('targetImagePath', v)}"
       },
       {
-        "line": 3540,
+        "line": 3539,
         "attribute": "value",
         "expression": "{(data.targetPosition as string) || 'center'}"
       },
       {
-        "line": 3541,
+        "line": 3540,
         "attribute": "onChange",
         "expression": "{(e) => onChange('targetPosition', e.target.value)}"
       },
       {
-        "line": 3543,
+        "line": 3542,
         "attribute": "value",
         "expression": "\"center\""
       },
       {
-        "line": 3544,
+        "line": 3543,
         "attribute": "value",
         "expression": "\"top-left\""
       },
       {
-        "line": 3545,
+        "line": 3544,
         "attribute": "value",
         "expression": "\"top-right\""
       },
       {
-        "line": 3546,
+        "line": 3545,
         "attribute": "value",
         "expression": "\"bottom-left\""
       },
       {
-        "line": 3547,
+        "line": 3546,
         "attribute": "value",
         "expression": "\"bottom-right\""
       },
       {
-        "line": 3574,
+        "line": 3573,
         "attribute": "value",
         "expression": "{[(data.confidence as number) || 0.8]}"
       },
       {
-        "line": 3575,
+        "line": 3574,
         "attribute": "onValueChange",
         "expression": "{(vals) => onChange('confidence', vals[0])}"
       },
       {
-        "line": 3585,
+        "line": 3584,
         "attribute": "value",
         "expression": "{(data.dragDuration as number) || 0.5}"
       },
       {
-        "line": 3586,
+        "line": 3585,
         "attribute": "onChange",
         "expression": "{(v) => onChange('dragDuration', v)}"
       },
       {
-        "line": 3587,
+        "line": 3586,
         "attribute": "defaultValue",
         "expression": "{0.5}"
       },
       {
-        "line": 3598,
+        "line": 3597,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) || 10}"
       },
       {
-        "line": 3599,
+        "line": 3598,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 3600,
+        "line": 3599,
         "attribute": "defaultValue",
         "expression": "{10}"
       },
       {
-        "line": 3611,
+        "line": 3610,
         "attribute": "checked",
         "expression": "{useSearchRegion}"
       },
       {
-        "line": 3612,
+        "line": 3611,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       }
@@ -18362,7 +18362,7 @@
   {
     "component": "ShareFolderConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3651,
+    "line": 3650,
     "fields": [
       "allowWrite",
       "folderPath",
@@ -18381,57 +18381,57 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3663,
+        "line": 3662,
         "attribute": "value",
         "expression": "{(data.folderPath as string) || ''}"
       },
       {
-        "line": 3664,
+        "line": 3663,
         "attribute": "onChange",
         "expression": "{(v) => onChange('folderPath', v)}"
       },
       {
-        "line": 3674,
+        "line": 3673,
         "attribute": "value",
         "expression": "{(data.shareName as string) || ''}"
       },
       {
-        "line": 3675,
+        "line": 3674,
         "attribute": "onChange",
         "expression": "{(v) => onChange('shareName', v)}"
       },
       {
-        "line": 3686,
+        "line": 3685,
         "attribute": "value",
         "expression": "{(data.port as number) || 8080}"
       },
       {
-        "line": 3687,
+        "line": 3686,
         "attribute": "onChange",
         "expression": "{(v) => onChange('port', v)}"
       },
       {
-        "line": 3688,
+        "line": 3687,
         "attribute": "defaultValue",
         "expression": "{8080}"
       },
       {
-        "line": 3700,
+        "line": 3699,
         "attribute": "checked",
         "expression": "{data.allowWrite !== false}"
       },
       {
-        "line": 3701,
+        "line": 3700,
         "attribute": "onCheckedChange",
         "expression": "{(v: boolean) => onChange('allowWrite', v)}"
       },
       {
-        "line": 3712,
+        "line": 3711,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || 'share_url'}"
       },
       {
-        "line": 3713,
+        "line": 3712,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -18440,7 +18440,7 @@
   {
     "component": "ShareFileConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3733,
+    "line": 3732,
     "fields": [
       "filePath",
       "port",
@@ -18455,37 +18455,37 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3745,
+        "line": 3744,
         "attribute": "value",
         "expression": "{(data.filePath as string) || ''}"
       },
       {
-        "line": 3746,
+        "line": 3745,
         "attribute": "onChange",
         "expression": "{(v) => onChange('filePath', v)}"
       },
       {
-        "line": 3756,
+        "line": 3755,
         "attribute": "value",
         "expression": "{(data.port as number) || 8080}"
       },
       {
-        "line": 3757,
+        "line": 3756,
         "attribute": "onChange",
         "expression": "{(v) => onChange('port', v)}"
       },
       {
-        "line": 3758,
+        "line": 3757,
         "attribute": "defaultValue",
         "expression": "{8080}"
       },
       {
-        "line": 3770,
+        "line": 3769,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || 'share_url'}"
       },
       {
-        "line": 3771,
+        "line": 3770,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -18494,7 +18494,7 @@
   {
     "component": "StopShareConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3791,
+    "line": 3790,
     "fields": [
       "port"
     ],
@@ -18505,17 +18505,17 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3803,
+        "line": 3802,
         "attribute": "value",
         "expression": "{(data.port as number) || 8080}"
       },
       {
-        "line": 3804,
+        "line": 3803,
         "attribute": "onChange",
         "expression": "{(v) => onChange('port', v)}"
       },
       {
-        "line": 3805,
+        "line": 3804,
         "attribute": "defaultValue",
         "expression": "{8080}"
       }
@@ -18524,7 +18524,7 @@
   {
     "component": "StartScreenShareConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3818,
+    "line": 3817,
     "fields": [
       "fps",
       "port",
@@ -18540,72 +18540,72 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3830,
+        "line": 3829,
         "attribute": "value",
         "expression": "{(data.port as number) || 9000}"
       },
       {
-        "line": 3831,
+        "line": 3830,
         "attribute": "onChange",
         "expression": "{(v) => onChange('port', v)}"
       },
       {
-        "line": 3832,
+        "line": 3831,
         "attribute": "defaultValue",
         "expression": "{9000}"
       },
       {
-        "line": 3844,
+        "line": 3843,
         "attribute": "value",
         "expression": "{(data.fps as number) || 30}"
       },
       {
-        "line": 3845,
+        "line": 3844,
         "attribute": "onChange",
         "expression": "{(v) => onChange('fps', v)}"
       },
       {
-        "line": 3846,
+        "line": 3845,
         "attribute": "defaultValue",
         "expression": "{30}"
       },
       {
-        "line": 3858,
+        "line": 3857,
         "attribute": "value",
         "expression": "{(data.quality as number) || 70}"
       },
       {
-        "line": 3859,
+        "line": 3858,
         "attribute": "onChange",
         "expression": "{(v) => onChange('quality', v)}"
       },
       {
-        "line": 3860,
+        "line": 3859,
         "attribute": "defaultValue",
         "expression": "{70}"
       },
       {
-        "line": 3872,
+        "line": 3871,
         "attribute": "value",
         "expression": "{Math.round((Number(data.scale) || 1.0) * 100)}"
       },
       {
-        "line": 3873,
+        "line": 3872,
         "attribute": "onChange",
         "expression": "{(v) => onChange('scale', Number(v) / 100)}"
       },
       {
-        "line": 3874,
+        "line": 3873,
         "attribute": "defaultValue",
         "expression": "{100}"
       },
       {
-        "line": 3886,
+        "line": 3885,
         "attribute": "value",
         "expression": "{(data.resultVariable as string) || 'screen_share_url'}"
       },
       {
-        "line": 3887,
+        "line": 3886,
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
@@ -18614,7 +18614,7 @@
   {
     "component": "StopScreenShareConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3907,
+    "line": 3906,
     "fields": [
       "port"
     ],
@@ -18625,17 +18625,17 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3919,
+        "line": 3918,
         "attribute": "value",
         "expression": "{(data.port as number) || 9000}"
       },
       {
-        "line": 3920,
+        "line": 3919,
         "attribute": "onChange",
         "expression": "{(v) => onChange('port', v)}"
       },
       {
-        "line": 3921,
+        "line": 3920,
         "attribute": "defaultValue",
         "expression": "{9000}"
       }
@@ -18644,7 +18644,7 @@
   {
     "component": "ImageExistsConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 3934,
+    "line": 3933,
     "fields": [
       "confidence",
       "imagePath",
@@ -18663,47 +18663,47 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 3945,
+        "line": 3944,
         "attribute": "value",
         "expression": "{(data.imagePath as string) || ''}"
       },
       {
-        "line": 3946,
+        "line": 3945,
         "attribute": "onChange",
         "expression": "{(v) => onChange('imagePath', v)}"
       },
       {
-        "line": 3957,
+        "line": 3956,
         "attribute": "value",
         "expression": "{[(data.confidence as number) || 0.8]}"
       },
       {
-        "line": 3958,
+        "line": 3957,
         "attribute": "onValueChange",
         "expression": "{(vals) => onChange('confidence', vals[0])}"
       },
       {
-        "line": 3975,
+        "line": 3974,
         "attribute": "checked",
         "expression": "{useFullScreen}"
       },
       {
-        "line": 3990,
+        "line": 3989,
         "attribute": "checked",
         "expression": "{!useFullScreen}"
       },
       {
-        "line": 4035,
+        "line": 4034,
         "attribute": "value",
         "expression": "{(data.waitTimeout as number) ?? 5}"
       },
       {
-        "line": 4036,
+        "line": 4035,
         "attribute": "onChange",
         "expression": "{(v) => onChange('waitTimeout', v)}"
       },
       {
-        "line": 4037,
+        "line": 4036,
         "attribute": "defaultValue",
         "expression": "{5}"
       }
@@ -18712,7 +18712,7 @@
   {
     "component": "ElementExistsConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4065,
+    "line": 4064,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -18721,7 +18721,7 @@
   {
     "component": "ElementVisibleConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4099,
+    "line": 4098,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -18730,7 +18730,7 @@
   {
     "component": "NetworkMonitorStartConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4134,
+    "line": 4133,
     "fields": [
       "filterType",
       "monitorId",
@@ -18744,57 +18744,57 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 4140,
+        "line": 4139,
         "attribute": "value",
         "expression": "{(data.monitorId as string) || 'default'}"
       },
       {
-        "line": 4141,
+        "line": 4140,
         "attribute": "onChange",
         "expression": "{(v) => onChange('monitorId', v)}"
       },
       {
-        "line": 4153,
+        "line": 4152,
         "attribute": "value",
         "expression": "{(data.filterType as string) || 'api'}"
       },
       {
-        "line": 4154,
+        "line": 4153,
         "attribute": "onChange",
         "expression": "{(e) => onChange('filterType', e.target.value)}"
       },
       {
-        "line": 4156,
+        "line": 4155,
         "attribute": "value",
         "expression": "\"all\""
       },
       {
-        "line": 4157,
+        "line": 4156,
         "attribute": "value",
         "expression": "\"api\""
       },
       {
-        "line": 4158,
+        "line": 4157,
         "attribute": "value",
         "expression": "\"img\""
       },
       {
-        "line": 4159,
+        "line": 4158,
         "attribute": "value",
         "expression": "\"media\""
       },
       {
-        "line": 4160,
+        "line": 4159,
         "attribute": "value",
         "expression": "\"m3u8\""
       },
       {
-        "line": 4170,
+        "line": 4169,
         "attribute": "value",
         "expression": "{(data.urlPattern as string) || ''}"
       },
       {
-        "line": 4171,
+        "line": 4170,
         "attribute": "onChange",
         "expression": "{(v) => onChange('urlPattern', v)}"
       }
@@ -18803,7 +18803,7 @@
   {
     "component": "NetworkMonitorWaitConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4192,
+    "line": 4191,
     "fields": [
       "captureMode",
       "monitorId",
@@ -18823,77 +18823,77 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 4198,
+        "line": 4197,
         "attribute": "value",
         "expression": "{(data.monitorId as string) || 'default'}"
       },
       {
-        "line": 4199,
+        "line": 4198,
         "attribute": "onChange",
         "expression": "{(v) => onChange('monitorId', v)}"
       },
       {
-        "line": 4210,
+        "line": 4209,
         "attribute": "value",
         "expression": "{(data.urlPattern as string) || ''}"
       },
       {
-        "line": 4211,
+        "line": 4210,
         "attribute": "onChange",
         "expression": "{(v) => onChange('urlPattern', v)}"
       },
       {
-        "line": 4223,
+        "line": 4222,
         "attribute": "value",
         "expression": "{(data.timeout as number) ?? 30000}"
       },
       {
-        "line": 4224,
+        "line": 4223,
         "attribute": "onChange",
         "expression": "{(v) => onChange('timeout', v)}"
       },
       {
-        "line": 4225,
+        "line": 4224,
         "attribute": "defaultValue",
         "expression": "{30000}"
       },
       {
-        "line": 4238,
+        "line": 4237,
         "attribute": "value",
         "expression": "{(data.captureMode as string) || 'first'}"
       },
       {
-        "line": 4239,
+        "line": 4238,
         "attribute": "onChange",
         "expression": "{(e) => onChange('captureMode', e.target.value)}"
       },
       {
-        "line": 4241,
+        "line": 4240,
         "attribute": "value",
         "expression": "\"first\""
       },
       {
-        "line": 4242,
+        "line": 4241,
         "attribute": "value",
         "expression": "\"all\""
       },
       {
-        "line": 4252,
+        "line": 4251,
         "attribute": "value",
         "expression": "{(data.variableName as string) || ''}"
       },
       {
-        "line": 4253,
+        "line": 4252,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       },
       {
-        "line": 4265,
+        "line": 4264,
         "attribute": "checked",
         "expression": "{(data.stopAfterCapture as boolean) ?? false}"
       },
       {
-        "line": 4266,
+        "line": 4265,
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('stopAfterCapture', checked)}"
       }
@@ -18902,7 +18902,7 @@
   {
     "component": "NetworkMonitorStopConfig",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4284,
+    "line": 4283,
     "fields": [
       "monitorId",
       "variableName"
@@ -18915,1440 +18915,26 @@
     "conditions": [],
     "bindings": [
       {
-        "line": 4290,
+        "line": 4289,
         "attribute": "value",
         "expression": "{(data.monitorId as string) || 'default'}"
       },
       {
-        "line": 4291,
+        "line": 4290,
         "attribute": "onChange",
         "expression": "{(v) => onChange('monitorId', v)}"
       },
       {
+        "line": 4301,
+        "attribute": "value",
+        "expression": "{(data.variableName as string) || ''}"
+      },
+      {
         "line": 4302,
-        "attribute": "value",
-        "expression": "{(data.variableName as string) || ''}"
-      },
-      {
-        "line": 4303,
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
     ]
-  },
-  {
-    "component": "DesktopAppConnectConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4324,
-    "fields": [
-      "connectType",
-      "connectionVariable",
-      "matchMode",
-      "searchValue",
-      "timeout"
-    ],
-    "tools": [
-      "Label",
-      "NumberInput",
-      "Select",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4331,
-        "attribute": "value",
-        "expression": "{(data.connectType as string) || 'title'}"
-      },
-      {
-        "line": 4332,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('connectType', e.target.value)}"
-      },
-      {
-        "line": 4334,
-        "attribute": "value",
-        "expression": "\"title\""
-      },
-      {
-        "line": 4335,
-        "attribute": "value",
-        "expression": "\"process\""
-      },
-      {
-        "line": 4342,
-        "attribute": "value",
-        "expression": "{(data.searchValue as string) || ''}"
-      },
-      {
-        "line": 4343,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('searchValue', v)}"
-      },
-      {
-        "line": 4352,
-        "attribute": "value",
-        "expression": "{(data.matchMode as string) || 'contains'}"
-      },
-      {
-        "line": 4353,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('matchMode', e.target.value)}"
-      },
-      {
-        "line": 4355,
-        "attribute": "value",
-        "expression": "\"contains\""
-      },
-      {
-        "line": 4356,
-        "attribute": "value",
-        "expression": "\"exact\""
-      },
-      {
-        "line": 4357,
-        "attribute": "value",
-        "expression": "\"regex\""
-      },
-      {
-        "line": 4365,
-        "attribute": "value",
-        "expression": "{(data.timeout as number) ?? 10}"
-      },
-      {
-        "line": 4366,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('timeout', v)}"
-      },
-      {
-        "line": 4367,
-        "attribute": "defaultValue",
-        "expression": "{10}"
-      },
-      {
-        "line": 4375,
-        "attribute": "value",
-        "expression": "{(data.connectionVariable as string) || ''}"
-      },
-      {
-        "line": 4376,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('connectionVariable', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopAppStartConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4386,
-    "fields": [
-      "appArgs",
-      "appPath",
-      "connectionVariable",
-      "waitReady",
-      "waitTimeout"
-    ],
-    "tools": [
-      "Checkbox",
-      "Label",
-      "NumberInput",
-      "PathInput",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4392,
-        "attribute": "value",
-        "expression": "{(data.appPath as string) || ''}"
-      },
-      {
-        "line": 4393,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('appPath', v)}"
-      },
-      {
-        "line": 4402,
-        "attribute": "value",
-        "expression": "{(data.appArgs as string) || ''}"
-      },
-      {
-        "line": 4403,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('appArgs', v)}"
-      },
-      {
-        "line": 4411,
-        "attribute": "checked",
-        "expression": "{(data.waitReady as boolean) ?? true}"
-      },
-      {
-        "line": 4412,
-        "attribute": "onCheckedChange",
-        "expression": "{(checked) => onChange('waitReady', checked)}"
-      },
-      {
-        "line": 4421,
-        "attribute": "value",
-        "expression": "{(data.waitTimeout as number) ?? 10}"
-      },
-      {
-        "line": 4422,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('waitTimeout', v)}"
-      },
-      {
-        "line": 4423,
-        "attribute": "defaultValue",
-        "expression": "{10}"
-      },
-      {
-        "line": 4431,
-        "attribute": "value",
-        "expression": "{(data.connectionVariable as string) || ''}"
-      },
-      {
-        "line": 4432,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('connectionVariable', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopAppCloseConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4442,
-    "fields": [
-      "closeMode",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4448,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4449,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4458,
-        "attribute": "value",
-        "expression": "{(data.closeMode as string) || 'normal'}"
-      },
-      {
-        "line": 4459,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('closeMode', e.target.value)}"
-      },
-      {
-        "line": 4461,
-        "attribute": "value",
-        "expression": "\"normal\""
-      },
-      {
-        "line": 4462,
-        "attribute": "value",
-        "expression": "\"force\""
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowActivateConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4470,
-    "fields": [
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4476,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4477,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowStateConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4486,
-    "fields": [
-      "state",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4492,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4493,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4502,
-        "attribute": "value",
-        "expression": "{(data.state as string) || 'maximize'}"
-      },
-      {
-        "line": 4503,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('state', e.target.value)}"
-      },
-      {
-        "line": 4505,
-        "attribute": "value",
-        "expression": "\"maximize\""
-      },
-      {
-        "line": 4506,
-        "attribute": "value",
-        "expression": "\"minimize\""
-      },
-      {
-        "line": 4507,
-        "attribute": "value",
-        "expression": "\"restore\""
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowMoveConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4515,
-    "fields": [
-      "windowHandle",
-      "x",
-      "y"
-    ],
-    "tools": [
-      "CoordinateInput",
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4521,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4522,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowResizeConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4541,
-    "fields": [
-      "height",
-      "width",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "NumberInput",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4547,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4548,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4557,
-        "attribute": "value",
-        "expression": "{(data.width as number) ?? 800}"
-      },
-      {
-        "line": 4558,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('width', v)}"
-      },
-      {
-        "line": 4559,
-        "attribute": "defaultValue",
-        "expression": "{800}"
-      },
-      {
-        "line": 4568,
-        "attribute": "value",
-        "expression": "{(data.height as number) ?? 600}"
-      },
-      {
-        "line": 4569,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('height', v)}"
-      },
-      {
-        "line": 4570,
-        "attribute": "defaultValue",
-        "expression": "{600}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowTopmostConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4579,
-    "fields": [
-      "topmost",
-      "windowHandle"
-    ],
-    "tools": [
-      "Checkbox",
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4585,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4586,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4594,
-        "attribute": "checked",
-        "expression": "{(data.topmost as boolean) ?? true}"
-      },
-      {
-        "line": 4595,
-        "attribute": "onCheckedChange",
-        "expression": "{(checked) => onChange('topmost', checked)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopWindowCaptureConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4604,
-    "fields": [
-      "savePath",
-      "variableName",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "PathInput",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4610,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4611,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4619,
-        "attribute": "value",
-        "expression": "{(data.savePath as string) || ''}"
-      },
-      {
-        "line": 4620,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('savePath', v)}"
-      },
-      {
-        "line": 4629,
-        "attribute": "value",
-        "expression": "{(data.variableName as string) || ''}"
-      },
-      {
-        "line": 4630,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('variableName', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopFindControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4641,
-    "fields": [
-      "automationId",
-      "className",
-      "controlType",
-      "controlVariable",
-      "name",
-      "searchDepth",
-      "timeout",
-      "windowHandle"
-    ],
-    "tools": [
-      "Button",
-      "Crosshair",
-      "Label",
-      "Loader2",
-      "NumberInput",
-      "Select",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [
-      {
-        "line": 4715,
-        "expression": "isPickerActive"
-      },
-      {
-        "line": 4716,
-        "expression": "isPickerActive"
-      },
-      {
-        "line": 4719,
-        "expression": "isPickerActive"
-      }
-    ],
-    "bindings": [
-      {
-        "line": 4668,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 4669,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 4678,
-        "attribute": "value",
-        "expression": "{(data.controlType as string) || ''}"
-      },
-      {
-        "line": 4679,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('controlType', e.target.value)}"
-      },
-      {
-        "line": 4681,
-        "attribute": "value",
-        "expression": "\"\""
-      },
-      {
-        "line": 4682,
-        "attribute": "value",
-        "expression": "\"Button\""
-      },
-      {
-        "line": 4683,
-        "attribute": "value",
-        "expression": "\"Edit\""
-      },
-      {
-        "line": 4684,
-        "attribute": "value",
-        "expression": "\"Text\""
-      },
-      {
-        "line": 4685,
-        "attribute": "value",
-        "expression": "\"ComboBox\""
-      },
-      {
-        "line": 4686,
-        "attribute": "value",
-        "expression": "\"ListItem\""
-      },
-      {
-        "line": 4687,
-        "attribute": "value",
-        "expression": "\"List\""
-      },
-      {
-        "line": 4688,
-        "attribute": "value",
-        "expression": "\"CheckBox\""
-      },
-      {
-        "line": 4689,
-        "attribute": "value",
-        "expression": "\"RadioButton\""
-      },
-      {
-        "line": 4690,
-        "attribute": "value",
-        "expression": "\"Tab\""
-      },
-      {
-        "line": 4691,
-        "attribute": "value",
-        "expression": "\"TabItem\""
-      },
-      {
-        "line": 4692,
-        "attribute": "value",
-        "expression": "\"Menu\""
-      },
-      {
-        "line": 4693,
-        "attribute": "value",
-        "expression": "\"MenuItem\""
-      },
-      {
-        "line": 4694,
-        "attribute": "value",
-        "expression": "\"Tree\""
-      },
-      {
-        "line": 4695,
-        "attribute": "value",
-        "expression": "\"TreeItem\""
-      },
-      {
-        "line": 4696,
-        "attribute": "value",
-        "expression": "\"DataGrid\""
-      },
-      {
-        "line": 4697,
-        "attribute": "value",
-        "expression": "\"Hyperlink\""
-      },
-      {
-        "line": 4698,
-        "attribute": "value",
-        "expression": "\"Image\""
-      },
-      {
-        "line": 4699,
-        "attribute": "value",
-        "expression": "\"Pane\""
-      },
-      {
-        "line": 4700,
-        "attribute": "value",
-        "expression": "\"ScrollBar\""
-      },
-      {
-        "line": 4701,
-        "attribute": "value",
-        "expression": "\"Slider\""
-      },
-      {
-        "line": 4702,
-        "attribute": "value",
-        "expression": "\"ToolBar\""
-      },
-      {
-        "line": 4703,
-        "attribute": "value",
-        "expression": "\"Window\""
-      },
-      {
-        "line": 4704,
-        "attribute": "value",
-        "expression": "\"Group\""
-      },
-      {
-        "line": 4705,
-        "attribute": "value",
-        "expression": "\"Custom\""
-      },
-      {
-        "line": 4733,
-        "attribute": "value",
-        "expression": "{(data.name as string) || ''}"
-      },
-      {
-        "line": 4734,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('name', v)}"
-      },
-      {
-        "line": 4742,
-        "attribute": "value",
-        "expression": "{(data.automationId as string) || ''}"
-      },
-      {
-        "line": 4743,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('automationId', v)}"
-      },
-      {
-        "line": 4751,
-        "attribute": "value",
-        "expression": "{(data.className as string) || ''}"
-      },
-      {
-        "line": 4752,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('className', v)}"
-      },
-      {
-        "line": 4761,
-        "attribute": "value",
-        "expression": "{(data.searchDepth as number) ?? 10}"
-      },
-      {
-        "line": 4762,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('searchDepth', v)}"
-      },
-      {
-        "line": 4763,
-        "attribute": "defaultValue",
-        "expression": "{10}"
-      },
-      {
-        "line": 4773,
-        "attribute": "value",
-        "expression": "{(data.timeout as number) ?? 5}"
-      },
-      {
-        "line": 4774,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('timeout', v)}"
-      },
-      {
-        "line": 4775,
-        "attribute": "defaultValue",
-        "expression": "{5}"
-      },
-      {
-        "line": 4783,
-        "attribute": "value",
-        "expression": "{(data.controlVariable as string) || ''}"
-      },
-      {
-        "line": 4784,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlVariable', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopWaitControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4802,
-    "fields": [
-      "controlInfo",
-      "timeout",
-      "waitType"
-    ],
-    "tools": [
-      "Label",
-      "NumberInput",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4808,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4809,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 4818,
-        "attribute": "value",
-        "expression": "{(data.waitType as string) || 'appear'}"
-      },
-      {
-        "line": 4819,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('waitType', e.target.value)}"
-      },
-      {
-        "line": 4821,
-        "attribute": "value",
-        "expression": "\"appear\""
-      },
-      {
-        "line": 4822,
-        "attribute": "value",
-        "expression": "\"disappear\""
-      },
-      {
-        "line": 4830,
-        "attribute": "value",
-        "expression": "{(data.timeout as number) ?? 10}"
-      },
-      {
-        "line": 4831,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('timeout', v)}"
-      },
-      {
-        "line": 4832,
-        "attribute": "defaultValue",
-        "expression": "{10}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopClickControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4841,
-    "fields": [
-      "clickType",
-      "controlInfo",
-      "simulate"
-    ],
-    "tools": [
-      "Checkbox",
-      "Label",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4847,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4848,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 4857,
-        "attribute": "value",
-        "expression": "{(data.clickType as string) || 'single'}"
-      },
-      {
-        "line": 4858,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('clickType', e.target.value)}"
-      },
-      {
-        "line": 4860,
-        "attribute": "value",
-        "expression": "\"single\""
-      },
-      {
-        "line": 4861,
-        "attribute": "value",
-        "expression": "\"double\""
-      },
-      {
-        "line": 4862,
-        "attribute": "value",
-        "expression": "\"right\""
-      },
-      {
-        "line": 4869,
-        "attribute": "checked",
-        "expression": "{(data.simulate as boolean) ?? true}"
-      },
-      {
-        "line": 4870,
-        "attribute": "onCheckedChange",
-        "expression": "{(checked) => onChange('simulate', checked)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopInputControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4879,
-    "fields": [
-      "clearBefore",
-      "controlInfo",
-      "inputMethod",
-      "text"
-    ],
-    "tools": [
-      "Checkbox",
-      "Label",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4885,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4886,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 4894,
-        "attribute": "value",
-        "expression": "{(data.text as string) || ''}"
-      },
-      {
-        "line": 4895,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('text', v)}"
-      },
-      {
-        "line": 4905,
-        "attribute": "checked",
-        "expression": "{(data.clearBefore as boolean) ?? true}"
-      },
-      {
-        "line": 4906,
-        "attribute": "onCheckedChange",
-        "expression": "{(checked) => onChange('clearBefore', checked)}"
-      },
-      {
-        "line": 4915,
-        "attribute": "value",
-        "expression": "{(data.inputMethod as string) || 'set'}"
-      },
-      {
-        "line": 4916,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('inputMethod', e.target.value)}"
-      },
-      {
-        "line": 4918,
-        "attribute": "value",
-        "expression": "\"set\""
-      },
-      {
-        "line": 4919,
-        "attribute": "value",
-        "expression": "\"send_keys\""
-      }
-    ]
-  },
-  {
-    "component": "DesktopGetTextConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4927,
-    "fields": [
-      "controlInfo",
-      "variableName"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4933,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4934,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 4942,
-        "attribute": "value",
-        "expression": "{(data.variableName as string) || ''}"
-      },
-      {
-        "line": 4943,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('variableName', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopSelectComboConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4953,
-    "fields": [
-      "controlInfo",
-      "selectBy",
-      "selectValue"
-    ],
-    "tools": [
-      "Label",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4959,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4960,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 4969,
-        "attribute": "value",
-        "expression": "{(data.selectBy as string) || 'name'}"
-      },
-      {
-        "line": 4970,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('selectBy', e.target.value)}"
-      },
-      {
-        "line": 4972,
-        "attribute": "value",
-        "expression": "\"name\""
-      },
-      {
-        "line": 4973,
-        "attribute": "value",
-        "expression": "\"index\""
-      },
-      {
-        "line": 4980,
-        "attribute": "value",
-        "expression": "{(data.selectValue as string) || ''}"
-      },
-      {
-        "line": 4981,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('selectValue', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopCheckboxConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 4990,
-    "fields": [
-      "checked",
-      "controlInfo"
-    ],
-    "tools": [
-      "Checkbox",
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 4996,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 4997,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 5005,
-        "attribute": "checked",
-        "expression": "{(data.checked as boolean) ?? true}"
-      },
-      {
-        "line": 5006,
-        "attribute": "onCheckedChange",
-        "expression": "{(checked) => onChange('checked', checked)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopRadioConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5015,
-    "fields": [
-      "controlInfo"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5021,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 5022,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopSendKeysConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5031,
-    "fields": [
-      "controlInfo",
-      "keys"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5037,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 5038,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 5046,
-        "attribute": "value",
-        "expression": "{(data.keys as string) || ''}"
-      },
-      {
-        "line": 5047,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('keys', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopScrollControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5059,
-    "fields": [
-      "amount",
-      "controlInfo",
-      "direction"
-    ],
-    "tools": [
-      "Label",
-      "NumberInput",
-      "Select",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5065,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 5066,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 5075,
-        "attribute": "value",
-        "expression": "{(data.direction as string) || 'down'}"
-      },
-      {
-        "line": 5076,
-        "attribute": "onChange",
-        "expression": "{(e) => onChange('direction', e.target.value)}"
-      },
-      {
-        "line": 5078,
-        "attribute": "value",
-        "expression": "\"down\""
-      },
-      {
-        "line": 5079,
-        "attribute": "value",
-        "expression": "\"up\""
-      },
-      {
-        "line": 5080,
-        "attribute": "value",
-        "expression": "\"left\""
-      },
-      {
-        "line": 5081,
-        "attribute": "value",
-        "expression": "\"right\""
-      },
-      {
-        "line": 5089,
-        "attribute": "value",
-        "expression": "{(data.amount as number) ?? 3}"
-      },
-      {
-        "line": 5090,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('amount', v)}"
-      },
-      {
-        "line": 5091,
-        "attribute": "defaultValue",
-        "expression": "{3}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopMenuClickConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5100,
-    "fields": [
-      "menuPath",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5106,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 5107,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 5115,
-        "attribute": "value",
-        "expression": "{(data.menuPath as string) || ''}"
-      },
-      {
-        "line": 5116,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('menuPath', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopGetControlInfoConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5128,
-    "fields": [
-      "controlInfo",
-      "variableName"
-    ],
-    "tools": [
-      "Label",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5134,
-        "attribute": "value",
-        "expression": "{(data.controlInfo as string) || ''}"
-      },
-      {
-        "line": 5135,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('controlInfo', v)}"
-      },
-      {
-        "line": 5143,
-        "attribute": "value",
-        "expression": "{(data.variableName as string) || ''}"
-      },
-      {
-        "line": 5144,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('variableName', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopGetControlTreeConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5154,
-    "fields": [
-      "maxDepth",
-      "variableName",
-      "windowHandle"
-    ],
-    "tools": [
-      "Label",
-      "NumberInput",
-      "VariableInput",
-      "VariableNameInput"
-    ],
-    "conditions": [],
-    "bindings": [
-      {
-        "line": 5160,
-        "attribute": "value",
-        "expression": "{(data.windowHandle as string) || ''}"
-      },
-      {
-        "line": 5161,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('windowHandle', v)}"
-      },
-      {
-        "line": 5170,
-        "attribute": "value",
-        "expression": "{(data.maxDepth as number) ?? 5}"
-      },
-      {
-        "line": 5171,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('maxDepth', v)}"
-      },
-      {
-        "line": 5172,
-        "attribute": "defaultValue",
-        "expression": "{5}"
-      },
-      {
-        "line": 5181,
-        "attribute": "value",
-        "expression": "{(data.variableName as string) || ''}"
-      },
-      {
-        "line": 5182,
-        "attribute": "onChange",
-        "expression": "{(v) => onChange('variableName', v)}"
-      }
-    ]
-  },
-  {
-    "component": "DesktopAppGetInfoConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5192,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopAppWaitReadyConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5196,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopWindowListConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5200,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopControlInfoConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5204,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopControlTreeConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5208,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopSetValueConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5212,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopDragControlConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5216,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopListOperateConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5220,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopGetPropertyConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5224,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
-  },
-  {
-    "component": "DesktopDialogHandleConfig",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
-    "line": 5228,
-    "fields": [],
-    "tools": [],
-    "conditions": [],
-    "bindings": []
   },
   {
     "component": "OpenPageConfig",
@@ -39564,116 +38150,6 @@
         "line": 78,
         "attribute": "onChange",
         "expression": "{onChange}"
-      }
-    ]
-  },
-  {
-    "component": "PhoneCoordinateInput",
-    "file": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
-    "line": 20,
-    "fields": [],
-    "tools": [
-      "Button",
-      "Crosshair",
-      "Loader2",
-      "Play",
-      "VariableInput",
-      "XIcon"
-    ],
-    "conditions": [
-      {
-        "line": 40,
-        "expression": "clearAfter > 0"
-      },
-      {
-        "line": 51,
-        "expression": "result.data?.devices && result.data.devices.length > 0"
-      },
-      {
-        "line": 62,
-        "expression": "!propDeviceId"
-      },
-      {
-        "line": 70,
-        "expression": "pollTimerRef.current !== null"
-      },
-      {
-        "line": 75,
-        "expression": "isPicking"
-      },
-      {
-        "line": 86,
-        "expression": "isNaN(x) || isNaN(y)"
-      },
-      {
-        "line": 92,
-        "expression": "!targetDeviceId"
-      },
-      {
-        "line": 102,
-        "expression": "result.data?.success"
-      },
-      {
-        "line": 118,
-        "expression": "!targetDeviceId"
-      },
-      {
-        "line": 126,
-        "expression": "!startRes.data?.success"
-      },
-      {
-        "line": 137,
-        "expression": "res.data?.picked && typeof res.data.x === 'number' && typeof res.data.y === 'number'"
-      },
-      {
-        "line": 139,
-        "expression": "pollTimerRef.current !== null"
-      },
-      {
-        "line": 163,
-        "expression": "pollTimerRef.current !== null"
-      },
-      {
-        "line": 197,
-        "expression": "!isPicking"
-      },
-      {
-        "line": 233,
-        "expression": "isTesting"
-      },
-      {
-        "line": 247,
-        "expression": "statusText"
-      },
-      {
-        "line": 250,
-        "expression": "statusKind === 'success'"
-      },
-      {
-        "line": 251,
-        "expression": "statusKind === 'error'"
-      }
-    ],
-    "bindings": [
-      {
-        "line": 181,
-        "attribute": "value",
-        "expression": "{xValue}"
-      },
-      {
-        "line": 182,
-        "attribute": "onChange",
-        "expression": "{onXChange}"
-      },
-      {
-        "line": 189,
-        "attribute": "value",
-        "expression": "{yValue}"
-      },
-      {
-        "line": 190,
-        "attribute": "onChange",
-        "expression": "{onYChange}"
       }
     ]
   },

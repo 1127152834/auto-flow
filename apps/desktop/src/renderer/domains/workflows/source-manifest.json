@@ -370,11 +370,6 @@
     "sha256": "2ca7af26b7b55440ec9c93c92a4451f069839ab2ac2e6b33aa2bb6fa38b5a48d"
   },
   {
-    "source": "frontend/src/components/ui/phone-coordinate-input.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
-    "sha256": "6995e18414e06c76d686d3e9a03a482f76836dff5467f61e29b9be115fb6043b"
-  },
-  {
     "source": "frontend/src/components/ui/path-input.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx",
     "sha256": "5731db19673ff1ef072e02e67e791c0ec8a0abab8d5edda5dc42ecbecb91f2dd"

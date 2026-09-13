@@ -154,5 +154,11 @@
     "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerContainer.tsx",
     "sha256": "4dc89660a66b90ae9ddf15d299877925c8722173adc3dca2680f7335ea7a559f",
     "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/ui/phone-coordinate-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
+    "sha256": "6995e18414e06c76d686d3e9a03a482f76836dff5467f61e29b9be115fb6043b",
+    "reason": "F0: 手机坐标拾取专属工具；已无调用入口，不影响网页元素定位"
   }
 ]

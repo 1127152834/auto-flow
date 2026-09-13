@@ -241,101 +241,6 @@ export const imageAssetApi = {
     apiRequest('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
 }
 
-// ==================== 手机自动化 API ====================
-export const phoneApi = {
-  listDevices: () => apiRequest('/phone/devices'),
-  // 兼容别名（部分组件用 getDevices）
-  getDevices: () => apiRequest('/phone/devices'),
-  screenshot: (deviceId: string) =>
-    apiRequest(`/phone/screenshot?device_id=${encodeURIComponent(deviceId)}`),
-  // 设备详细信息（GET /phone/device/info?device_id=...）
-  getInfo: (deviceId: string) =>
-    apiRequest(`/phone/device/info?device_id=${encodeURIComponent(deviceId)}`),
-  // 测试坐标 - 实际调用 /coordinate-picker/test
-  testCoordinate: (x: number, y: number, deviceId: string) =>
-    apiRequest(
-      `/phone/coordinate-picker/test?x=${x}&y=${y}&device_id=${encodeURIComponent(deviceId)}`,
-      { method: 'POST' }
-    ),
-  // 坐标拾取：启动 picker（默认允许在镜像窗口正常操作；按 Ctrl 才拾取）
-  startCoordinatePicker: (deviceId: string, allowControl: boolean = true) =>
-    apiRequest('/phone/coordinate-picker/start', {
-      method: 'POST',
-      body: JSON.stringify({
-        device_id: deviceId,
-        allow_control: allowControl,
-      }),
-    }),
-  // 停止 picker（会同时停掉镜像窗口）
-  stopCoordinatePicker: () =>
-    apiRequest('/phone/coordinate-picker/stop', { method: 'POST' }),
-  // 轮询当前已拾取的坐标
-  getPickedCoordinate: () =>
-    apiRequest<{ picked: boolean; x?: number; y?: number }>('/phone/coordinate-picker/coordinate'),
-  startMirror: (deviceId: string, maxSize?: number, bitRate?: string, enablePointerLocation?: boolean) =>
-    apiRequest('/phone/mirror/start', {
-      method: 'POST',
-      body: JSON.stringify({
-        device_id: deviceId,
-        max_size: maxSize,
-        bit_rate: bitRate,
-        enable_pointer_location: enablePointerLocation,
-      }),
-    }),
-  stopMirror: (deviceId: string) =>
-    apiRequest('/phone/mirror/stop', { method: 'POST', body: JSON.stringify({ device_id: deviceId }) }),
-  getMirrorStatus: () => apiRequest('/phone/mirror/status'),
-  captureTemplate: (deviceId: string, x: number, y: number, width: number, height: number, templateName?: string) =>
-    apiRequest('/phone/screenshot/capture-template', {
-      method: 'POST',
-      body: JSON.stringify({
-        device_id: deviceId,
-        x, y, width, height,
-        template_name: templateName,
-      }),
-    }),
-  // 注：tap/swipe/inputText 等模块级操作通过 workflow executor 实现，
-  // 不需要直接的 HTTP API。
-
-  // ===== 无线连接（WiFi 调试，无需数据线） =====
-  /** 连接已配对/已开启 tcpip 的设备 */
-  connectWifi: (ipAddress: string, port: number = 5555) =>
-    apiRequest<{ success: boolean; message?: string; error?: string }>(
-      '/phone/connect/wifi',
-      { method: 'POST', body: JSON.stringify({ ip_address: ipAddress, port }) }
-    ),
-  /** 断开 WiFi 连接 */
-  disconnectWifi: (ipAddress: string, port: number = 5555) =>
-    apiRequest('/phone/connect/disconnect-wifi', {
-      method: 'POST',
-      body: JSON.stringify({ ip_address: ipAddress, port }),
-    }),
-  /** Android 11+ 无线调试配对（完全无需数据线） */
-  pairWireless: (ipAddress: string, pairPort: number, pairingCode: string) =>
-    apiRequest<{ success: boolean; message?: string; error?: string }>(
-      '/phone/connect/pair-wireless',
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          ip_address: ipAddress,
-          pair_port: pairPort,
-          pairing_code: pairingCode,
-        }),
-      }
-    ),
-  /** 通过 USB 启用 TCP/IP 模式（仅首次需要数据线，适用 Android 10-） */
-  enableTcpip: (port: number = 5555, deviceId?: string) =>
-    apiRequest<{ success: boolean; message?: string; error?: string; device_ip?: string | null }>(
-      '/phone/connect/enable-tcpip',
-      { method: 'POST', body: JSON.stringify({ port, device_id: deviceId }) }
-    ),
-  /** 获取设备 WiFi IP */
-  getDeviceIp: (deviceId?: string) =>
-    apiRequest<{ success: boolean; ip?: string; error?: string }>(
-      `/phone/connect/device-ip${deviceId ? `?device_id=${encodeURIComponent(deviceId)}` : ''}`
-    ),
-}
-
 // ==================== 定时任务 API ====================
 export const scheduledTaskApi = {
   list: () => apiRequest('/scheduled-tasks/list'),
@@ -435,33 +340,6 @@ export const securityApi = {
     apiRequest<{ success: boolean; token?: string; error?: string }>(
       '/security/regenerate', { method: 'POST' }
     ),
-}
-
-// ==================== 桌面智能录制器 API ====================
-export const desktopRecorderApi = {
-  start: (excludeTitles?: string[], recordMove: boolean = true) => apiRequest('/desktop-recorder/start', { method: 'POST', body: JSON.stringify({ excludeTitles: excludeTitles || [], recordMove }) }),
-  stop: () => apiRequest('/desktop-recorder/stop', { method: 'POST' }),
-  pause: () => apiRequest('/desktop-recorder/pause', { method: 'POST' }),
-  resume: () => apiRequest('/desktop-recorder/resume', { method: 'POST' }),
-  events: () => apiRequest('/desktop-recorder/events'),
-  status: () => apiRequest('/desktop-recorder/status'),
-}
-
-// ==================== 桌面元素选择器 API ====================
-export const desktopPickerApi = {
-  start: (params?: any) =>
-    apiRequest('/desktop-picker/start', { method: 'POST', body: JSON.stringify(params || {}) }),
-  stop: () => apiRequest('/desktop-picker/stop', { method: 'POST' }),
-  // 兼容旧调用名称
-  startPicker: (params?: any) =>
-    apiRequest('/desktop-picker/start', { method: 'POST', body: JSON.stringify(params || {}) }),
-  stopPicker: () => apiRequest('/desktop-picker/stop', { method: 'POST' }),
-  getCaptured: () => apiRequest('/desktop-picker/captured'),
-  waitCapture: (timeout?: number) => apiRequest(`/desktop-picker/wait-capture${timeout ? `?timeout=${timeout}` : ''}`),
-  getResult: () => apiRequest('/desktop-picker/result'),
-  getStatus: () => apiRequest('/desktop-picker/status'),
-  getTree: (hwnd?: number) =>
-    apiRequest('/desktop-picker/tree', { method: 'POST', body: JSON.stringify({ hwnd }) }),
 }
 
 // ==================== 自定义模块 API ====================
