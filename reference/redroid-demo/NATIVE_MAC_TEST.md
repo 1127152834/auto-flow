@@ -4,6 +4,7 @@
 - 状态：**confirmed：小闭环及用户真实鼠标对照通过；自动化输入异常仍待定位**。
 - 用户范围：页面监控，点击后打开真实 Android 的原生操作窗口；只验证 Mac。没有接入正式 AutoFlow 安卓领域或工作流。
 - 当前入口：<http://127.0.0.1:8082/native>。原 Linux VM 管理 API 继续使用 Mac 8081；8080 的另一套诊断服务未改动。
+- 后续正式接入方案（proposed，尚未实施）：[安卓工作流与原生窗口交接设计](../../docs/superpowers/specs/2026-09-13-android-workflow-handoff-design.md)。
 
 ## 已验证行为
 
