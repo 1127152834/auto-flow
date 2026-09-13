@@ -100,3 +100,21 @@ it('ignores a similar-element response after the panel closes', async () => {
   expect(copy).not.toHaveBeenCalled()
   expect(log).not.toHaveBeenCalled()
 })
+it.each(['start','stop','navigate'] as const)('serializes %s with other browser commands and restores controls after rejection',async action=>{
+ vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:true,pickerActive:action==='stop'}})
+ const method=action==='start'?'startPicker':action==='stop'?'stopPicker':'navigate'
+ let release!:(value:{success:boolean;error?:string})=>void
+ const command=vi.spyOn(browserApi,method).mockImplementation(()=>new Promise<{success:boolean;error?:string}>(resolve=>{release=resolve}))
+ const close=vi.spyOn(browserApi,'close').mockResolvedValue({success:true})
+ render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
+ await screen.findByRole('button',{name:'关闭浏览器'})
+ if(action==='navigate')fireEvent.change(screen.getByPlaceholderText('https://example.com'),{target:{value:'https://example.test'}})
+ const button=screen.getByRole('button',{name:action==='start'?'启动选择器':action==='stop'?'停止选择':'跳转'})
+ fireEvent.click(button);fireEvent.click(button);fireEvent.click(screen.getByRole('button',{name:'关闭浏览器'}))
+ expect(command).toHaveBeenCalledTimes(1)
+ expect(close).not.toHaveBeenCalled()
+ expect((button as HTMLButtonElement).disabled).toBe(true)
+ await act(async()=>release({success:false,error:'命令被拒绝'}))
+ expect((button as HTMLButtonElement).disabled).toBe(false)
+ expect(log).toHaveBeenCalledWith('error',expect.stringContaining('命令被拒绝'))
+})

@@ -1,0 +1,65 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:28978) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx (12 tests | 3 failed) 484ms
+   × serializes start with other browser commands and restores controls after rejection 26ms
+   × serializes stop with other browser commands and restores controls after rejection 24ms
+   × serializes navigate with other browser commands and restores controls after rejection 30ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > serializes start with other browser commands and restores controls after rejection
+AssertionError: expected "startPicker" to be called 1 times, but got 2 times
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:114:18
+    112|  const button=screen.getByRole('button',{name:action==='start'?'启动选择器'…
+    113|  fireEvent.click(button);fireEvent.click(button);fireEvent.click(scree…
+    114|  expect(command).toHaveBeenCalledTimes(1)
+       |                  ^
+    115|  expect(close).not.toHaveBeenCalled()
+    116|  expect((button as HTMLButtonElement).disabled).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > serializes stop with other browser commands and restores controls after rejection
+AssertionError: expected "stopPicker" to be called 1 times, but got 2 times
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:114:18
+    112|  const button=screen.getByRole('button',{name:action==='start'?'启动选择器'…
+    113|  fireEvent.click(button);fireEvent.click(button);fireEvent.click(scree…
+    114|  expect(command).toHaveBeenCalledTimes(1)
+       |                  ^
+    115|  expect(close).not.toHaveBeenCalled()
+    116|  expect((button as HTMLButtonElement).disabled).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > serializes navigate with other browser commands and restores controls after rejection
+AssertionError: expected "navigate" to be called 1 times, but got 2 times
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:114:18
+    112|  const button=screen.getByRole('button',{name:action==='start'?'启动选择器'…
+    113|  fireEvent.click(button);fireEvent.click(button);fireEvent.click(scree…
+    114|  expect(command).toHaveBeenCalledTimes(1)
+       |                  ^
+    115|  expect(close).not.toHaveBeenCalled()
+    116|  expect((button as HTMLButtonElement).disabled).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 9 passed (12)
+   Start at  06:45:08
+   Duration  1.65s (transform 255ms, setup 92ms, import 427ms, tests 484ms, environment 540ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx

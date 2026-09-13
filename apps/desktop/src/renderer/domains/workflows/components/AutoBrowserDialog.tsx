@@ -23,6 +23,15 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [copied, setCopied] = useState(false)
   const [lastSelector, setLastSelector] = useState('')
   const statusRequest = useRef(0)
+  const commandPending = useRef(false)
+  const beginCommand = () => {
+    if (commandPending.current) return false
+    commandPending.current = true
+    statusRequest.current += 1
+    setLoading(true)
+    return true
+  }
+  const endCommand = () => { commandPending.current = false; setLoading(false) }
   const onLogRef = useRef(onLog)
   useEffect(() => { onLogRef.current = onLog }, [onLog])
   // 记录上一次已处理的选择器，避免轮询期间对同一结果重复复制/记日志
@@ -34,6 +43,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
 
   // Status failures preserve the last confirmed browser state; they do not prove closure.
   const checkStatus = async () => {
+    if (commandPending.current) return
     const request = ++statusRequest.current
     try {
       const result = await browserApi.getStatus()
@@ -173,7 +183,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   }
 
   const handleOpenBrowser = async () => {
-    setLoading(true)
+    if (!beginCommand()) return
     try {
       // 传递浏览器配置
       const browserConfig = config.browser ? {
@@ -204,12 +214,12 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       onLog('error', `打开浏览器异常: ${error}`)
       await maybePromptMissingPacks(String(error))
     } finally {
-      setLoading(false)
+      endCommand()
     }
   }
 
   const handleCloseBrowser = async () => {
-    setLoading(true)
+    if (!beginCommand()) return
     try {
       const result = await browserApi.close()
       if (result.error) { onLog('error', `关闭浏览器失败: ${result.error}`); return }
@@ -220,12 +230,12 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
     } catch (error) {
       onLog('error', `关闭浏览器失败: ${error}`)
     } finally {
-      setLoading(false)
+      endCommand()
     }
   }
 
   const handleNavigate = async () => {
-    if (!url) return
+    if (!url || !beginCommand()) return
     try {
       const result = await browserApi.navigate(url)
       if (result.error) {
@@ -235,12 +245,13 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       }
     } catch (error) {
       onLog('error', `导航异常: ${error}`)
-    }
+    } finally { endCommand() }
   }
 
 
 
   const handleStartPicker = async () => {
+    if (!beginCommand()) return
     try {
       const result = await browserApi.startPicker()
       if (result.error) {
@@ -252,10 +263,11 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       }
     } catch (error) {
       onLog('error', `启动选择器异常: ${error}`)
-    }
+    } finally { endCommand() }
   }
 
   const handleStopPicker = async () => {
+    if (!beginCommand()) return
     try {
       const result = await browserApi.stopPicker()
       if (result.error) { onLog('error', `停止选择器失败: ${result.error}`); return }
@@ -264,7 +276,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       onLog('info', '元素选择器已停止')
     } catch (error) {
       onLog('error', `停止选择器失败: ${error}`)
-    }
+    } finally { endCommand() }
   }
 
   if (!isOpen) return null
@@ -372,7 +384,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
                       placeholder="https://example.com"
                     />
                   </div>
-                  <Button variant="default" size="sm" onClick={handleNavigate} disabled={!url}>
+                  <Button variant="default" size="sm" onClick={handleNavigate} disabled={!url || loading}>
                     跳转
                   </Button>
                 </div>
@@ -400,7 +412,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
                   <X className="w-4 h-4" />
                   关闭浏览器
                 </Button>
-                <Button variant="tonal" onClick={checkStatus} size="lg" title="刷新状态">
+                <Button variant="tonal" onClick={checkStatus} disabled={loading} size="lg" title="刷新状态">
                   <RefreshCw className="w-4 h-4" />
                 </Button>
               </>
@@ -416,11 +428,11 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
                 </div>
                 <span className="flex-1">元素选择器</span>
                 {pickerActive ? (
-                  <Button variant="destructive" size="sm" onClick={handleStopPicker}>
+                  <Button variant="destructive" size="sm" onClick={handleStopPicker} disabled={loading}>
                     停止选择
                   </Button>
                 ) : (
-                  <Button variant="info" size="sm" onClick={handleStartPicker}>
+                  <Button variant="info" size="sm" onClick={handleStartPicker} disabled={loading}>
                     <MousePointer className="w-3.5 h-3.5" />
                     启动选择器
                   </Button>

@@ -24507,5 +24507,81 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-stop-protocol.test.ts"
+  },
+  {
+    "id": "F4.browser-command.start",
+    "capability": "browser-command-serialization",
+    "preconditions": {
+      "browser": "已打开",
+      "pendingAction": "start"
+    },
+    "steps": [
+      "点击操作并保持响应等待",
+      "重复点击和尝试关闭浏览器",
+      "拒绝或完成后检查恢复"
+    ],
+    "expectedUI": "等待期间禁用冲突按钮，失败后恢复并显示错误",
+    "expectedIO": "只发一次原命令；不插入close请求",
+    "stateAssertion": "状态由已确认响应更新，不受旧刷新覆盖",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx"
+  },
+  {
+    "id": "F4.browser-command.stop",
+    "capability": "browser-command-serialization",
+    "preconditions": {
+      "browser": "已打开",
+      "pendingAction": "stop"
+    },
+    "steps": [
+      "点击操作并保持响应等待",
+      "重复点击和尝试关闭浏览器",
+      "拒绝或完成后检查恢复"
+    ],
+    "expectedUI": "等待期间禁用冲突按钮，失败后恢复并显示错误",
+    "expectedIO": "只发一次原命令；不插入close请求",
+    "stateAssertion": "状态由已确认响应更新，不受旧刷新覆盖",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx"
+  },
+  {
+    "id": "F4.browser-command.navigate",
+    "capability": "browser-command-serialization",
+    "preconditions": {
+      "browser": "已打开",
+      "pendingAction": "navigate"
+    },
+    "steps": [
+      "点击操作并保持响应等待",
+      "重复点击和尝试关闭浏览器",
+      "拒绝或完成后检查恢复"
+    ],
+    "expectedUI": "等待期间禁用冲突按钮，失败后恢复并显示错误",
+    "expectedIO": "只发一次原命令；不插入close请求",
+    "stateAssertion": "状态由已确认响应更新，不受旧刷新覆盖",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx"
+  },
+  {
+    "id": "F4.browser-command.http",
+    "capability": "browser-command-serialization",
+    "preconditions": {
+      "browser": "已打开",
+      "pendingAction": "http"
+    },
+    "steps": [
+      "点击操作并保持响应等待",
+      "重复点击和尝试关闭浏览器",
+      "拒绝或完成后检查恢复"
+    ],
+    "expectedUI": "等待期间禁用冲突按钮，失败后恢复并显示错误",
+    "expectedIO": "只发一次原命令；不插入close请求",
+    "stateAssertion": "状态由已确认响应更新，不受旧刷新覆盖",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx"
   }
 ]
