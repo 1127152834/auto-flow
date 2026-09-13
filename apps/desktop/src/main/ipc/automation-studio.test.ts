@@ -32,7 +32,7 @@ beforeEach(async () => {
   vi.resetModules()
   FakeWindow.instances = []
   mainId = 7
-  vi.doMock('electron', () => ({ BrowserWindow: FakeWindow }))
+  vi.doMock('electron', () => ({ BrowserWindow: FakeWindow, dialog: { showMessageBoxSync: vi.fn(() => 1) } }))
   studio = new (await import('./automation-studio')).StudioWindowController({ mainSenderId: () => mainId, preferences: () => ({ zoom: 110, motion: 'reduce' }), preloadPath: '/preload/index.js', rendererFile: '/renderer/index.html', rendererUrl: 'http://localhost:5173/' })
 })
 
@@ -106,4 +106,17 @@ it('denies new windows and navigation away from the fixed renderer', async () =>
   const navigation = { preventDefault: vi.fn() }
   contents.emit('will-navigate', navigation)
   expect(navigation.preventDefault).toHaveBeenCalledOnce()
+})
+
+it('lets the renderer veto quit and accepts only an explicit discard', async()=>{
+  await studio.open(event())
+  const window=FakeWindow.instances[0]!
+  const veto={preventDefault:vi.fn()}
+  const {dialog}=await import('electron')
+  window.webContents.emit('will-prevent-unload',veto)
+  expect(veto.preventDefault).not.toHaveBeenCalled()
+  vi.mocked(dialog.showMessageBoxSync).mockReturnValue(0)
+  window.webContents.emit('will-prevent-unload',veto)
+  expect(veto.preventDefault).toHaveBeenCalledOnce()
+  expect(await studio.closeForQuit()).toBe(true)
 })

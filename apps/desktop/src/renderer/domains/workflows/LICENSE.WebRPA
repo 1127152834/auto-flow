@@ -1,0 +1,364 @@
+﻿GNU AFFERO GENERAL PUBLIC LICENSE Version 3 (AGPL-3.0)
+GNU Affero 通用公共许可证 第3版
+
+================================================================================
+
+WebRPA - 网页机器人流程自动化工具
+Copyright (C) 2025 青云制作_彭明航
+版权所有 (C) 2025 青云制作_彭明航
+
+================================================================================
+
+【双协议模式说明】
+
+本项目采用双协议授权模式：
+
+1. 开源版本：GNU AGPL-3.0 协议
+   - 个人学习、研究、非商业使用：完全免费
+   - 必须开源：任何修改和衍生作品必须以 AGPL-3.0 协议开源
+   - 网络服务开源：通过网络提供服务也必须开源完整代码
+   - 署名要求：必须保留原作者署名"青云制作_彭明航"
+
+2. 商业授权：私有商业许可证
+   - 商业使用需购买商业授权
+   - 可以闭源使用，不受 AGPL-3.0 限制
+   - 联系方式：QQ 2124691573
+
+================================================================================
+
+【AGPL-3.0 协议核心要点】
+
+本程序是自由软件：您可以根据自由软件基金会发布的 GNU Affero 通用公共许可证
+（第3版或更高版本）的条款重新分发和/或修改它。
+
+发布本程序的目的是希望它有用，但不提供任何保证；甚至不提供适销性或特定用途
+适用性的暗示保证。详情请参阅 GNU Affero 通用公共许可证。
+
+您应该已经收到了 GNU Affero 通用公共许可证的副本。如果没有，请访问：
+https://www.gnu.org/licenses/agpl-3.0.html
+
+================================================================================
+
+【AGPL-3.0 与 GPL-3.0 的关键区别】
+
+AGPL-3.0 在 GPL-3.0 的基础上增加了第13条（网络使用条款）：
+
+如果您修改本程序并通过网络向用户提供服务（例如 SaaS 服务），您必须：
+1. 向所有用户提供修改后的完整源代码
+2. 源代码必须以 AGPL-3.0 协议发布
+3. 必须保留原作者署名信息
+
+这意味着：
+- 即使不分发软件，只是通过网络提供服务，也必须开源
+- 防止商业公司免费使用但不回馈社区
+- 确保代码改进能够回馈开源社区
+
+================================================================================
+
+【您的权利和义务】
+
+ 您可以：
+- 自由使用、复制、修改本软件
+- 将本软件用于个人学习、研究
+- 将本软件用于非商业项目
+- 分发本软件的副本
+
+ 您必须：
+- 保留原作者署名"青云制作_彭明航"
+- 以 AGPL-3.0 协议开源您的修改和衍生作品
+- 提供完整的源代码（包括构建脚本、安装说明等）
+- 如果通过网络提供服务，必须向用户提供源代码下载方式
+- 在显著位置说明您做了哪些修改
+
+ 您不能：
+- 将本软件用于商业目的（除非购买商业授权）
+- 闭源使用本软件或其衍生作品
+- 移除或修改原作者署名信息
+- 使用更宽松的协议发布衍生作品
+
+================================================================================
+
+【商业授权说明】
+
+如果您需要将本软件用于商业目的，可以购买商业授权：
+
+商业授权的优势：
+ 可以闭源使用，无需公开源代码
+ 可以集成到商业产品中
+ 可以提供付费服务
+ 不受 AGPL-3.0 的开源限制
+ 获得商业技术支持
+
+商业授权定价：
+- 个人商业授权：80元/月 或 800元/年
+- 微型企业（10人以下）：140元/月 或 1400元/年
+- 小型企业（10-30人）：260元/月 或 2600元/年
+- 小型企业（30-50人）：340元/月 或 3400元/年
+- 中大型企业（50-100人）：480元/月 或 4800元/年
+- 中大型企业（100人以上）：720元/月 或 7200元/年
+
+永久授权：
+- 个人：4000元
+- 微型企业：8400元
+- 小型企业（10-30人）：15600元
+- 小型企业（30-50人）：20400元
+- 中大型企业（50-100人）：28800元
+- 中大型企业（100人以上）：43200元
+
+联系方式：QQ 2124691573
+
+================================================================================
+
+【特殊依赖库说明】
+
+本项目包含一些具有特殊许可证的第三方组件：
+
+1. NapCat 框架（非商业使用协议）
+   - 用途：QQ 机器人功能（8个模块）
+   - 协议：非商业使用协议
+   - 限制：仅供个人非商业使用
+   - 商业版本：购买商业授权后将移除 NapCat 及所有 QQ 相关功能
+
+2. pdf2docx 库（GPL v3 协议）
+   - 用途：PDF 转 Word 功能（1个模块）
+   - 协议：GPL v3
+   - 限制：仅供非商业使用，或需遵守 GPL v3 协议
+   - 商业版本：购买商业授权后将移除 PDF 转 Word 功能
+
+3. 其他 PDF 处理库（MIT/BSD 协议 - 商业友好）
+   - pypdf (MIT)：PDF 基础操作
+   - reportlab (BSD)：PDF 生成
+   - pdf2image (MIT)：PDF 转图片
+   - pdfplumber (MIT)：PDF 内容提取
+   - 这些库在商业版本中保留
+
+4. 外部工具（GPL 协议 - 作为独立程序调用）
+   - FFmpeg (GPL v2+)：媒体处理
+   - Pandoc (GPL v2+)：文档转换
+   - poppler (GPL v2+)：PDF 工具
+   - 说明：这些是作为独立程序调用，不是链接库，符合 GPL 使用规范
+
+商业版本说明：
+- 移除 NapCat 和所有 QQ 机器人功能（8个模块）
+- 移除 pdf2docx 和 PDF 转 Word 功能（1个模块）
+- 保留其他所有功能（258个模块）
+- 完全无许可证风险
+
+================================================================================
+
+【免责声明】
+
+本软件按"原样"提供，不提供任何明示或暗示的保证，包括但不限于对适销性、
+特定用途适用性和非侵权性的保证。在任何情况下，作者或版权持有人均不对任何
+索赔、损害或其他责任负责，无论是在合同诉讼、侵权诉讼或其他诉讼中，还是与
+本软件或本软件的使用或其他交易有关。
+
+================================================================================
+
+【完整的 GNU AGPL-3.0 协议文本】
+
+完整的 GNU Affero General Public License v3.0 协议文本请访问：
+https://www.gnu.org/licenses/agpl-3.0.html
+https://www.gnu.org/licenses/agpl-3.0.zh-cn.html （中文版）
+
+或参阅本项目根目录的 AGPL-3.0-LICENSE.txt 文件。
+
+================================================================================
+
+
+================================================================================
+================================================================================
+
+                            ENGLISH VERSION
+
+================================================================================
+================================================================================
+
+
+GNU AFFERO GENERAL PUBLIC LICENSE Version 3 (AGPL-3.0)
+
+================================================================================
+
+WebRPA - Web Robot Process Automation Tool
+Copyright (C) 2025 Qingyun Production_Peng Minghang
+Copyright (C) 2025 青云制作_彭明航
+
+================================================================================
+
+【DUAL LICENSING MODEL】
+
+This project is licensed under a dual licensing model:
+
+1. Open Source Version: GNU AGPL-3.0 License
+   - Personal learning, research, non-commercial use: Completely free
+   - Must be open source: Any modifications and derivative works must be 
+     open sourced under AGPL-3.0
+   - Network service open source: Services provided over the network must 
+     also open source the complete code
+   - Attribution requirement: Must retain the original author's attribution 
+     "Qingyun Production_Peng Minghang (青云制作_彭明航)"
+
+2. Commercial License: Private Commercial License
+   - Commercial use requires purchasing a commercial license
+   - Can be used closed-source, not restricted by AGPL-3.0
+   - Contact: QQ 2124691573
+
+================================================================================
+
+【AGPL-3.0 LICENSE KEY POINTS】
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU Affero General Public License as published by 
+the Free Software Foundation, either version 3 of the License, or (at your 
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT 
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License 
+for more details.
+
+You should have received a copy of the GNU Affero General Public License 
+along with this program. If not, see:
+https://www.gnu.org/licenses/agpl-3.0.html
+
+================================================================================
+
+【KEY DIFFERENCE BETWEEN AGPL-3.0 AND GPL-3.0】
+
+AGPL-3.0 adds Section 13 (Network Use Clause) on top of GPL-3.0:
+
+If you modify this program and provide services to users over a network 
+(e.g., SaaS services), you must:
+1. Provide all users with the complete modified source code
+2. The source code must be released under the AGPL-3.0 license
+3. Must retain the original author's attribution
+
+This means:
+- Even if you don't distribute the software, just provide services over 
+  the network, you must open source
+- Prevents commercial companies from using it for free without giving back 
+  to the community
+- Ensures code improvements are contributed back to the open source community
+
+================================================================================
+
+【YOUR RIGHTS AND OBLIGATIONS】
+
+ You can:
+- Freely use, copy, modify this software
+- Use this software for personal learning and research
+- Use this software for non-commercial projects
+- Distribute copies of this software
+
+ You must:
+- Retain the original author's attribution "Qingyun Production_Peng Minghang 
+  (青云制作_彭明航)"
+- Open source your modifications and derivative works under AGPL-3.0
+- Provide complete source code (including build scripts, installation 
+  instructions, etc.)
+- If providing services over the network, must provide users with source 
+  code download access
+- Clearly state what modifications you have made
+
+ You cannot:
+- Use this software for commercial purposes (unless you purchase a 
+  commercial license)
+- Use this software or its derivatives closed-source
+- Remove or modify the original author's attribution
+- Release derivative works under a more permissive license
+
+================================================================================
+
+【COMMERCIAL LICENSE INFORMATION】
+
+If you need to use this software for commercial purposes, you can purchase 
+a commercial license:
+
+Commercial License Benefits:
+ Can be used closed-source, no need to publish source code
+ Can be integrated into commercial products
+ Can provide paid services
+ Not restricted by AGPL-3.0 open source requirements
+ Receive commercial technical support
+
+Commercial License Pricing:
+- Individual: 80 CNY/month or 800 CNY/year
+- Micro Enterprise (<10 people): 140 CNY/month or 1400 CNY/year
+- Small Enterprise (10-30 people): 260 CNY/month or 2600 CNY/year
+- Small Enterprise (30-50 people): 340 CNY/month or 3400 CNY/year
+- Medium-Large Enterprise (50-100 people): 480 CNY/month or 4800 CNY/year
+- Medium-Large Enterprise (>100 people): 720 CNY/month or 7200 CNY/year
+
+Perpetual License:
+- Individual: 4000 CNY
+- Micro Enterprise: 8400 CNY
+- Small Enterprise (10-30 people): 15600 CNY
+- Small Enterprise (30-50 people): 20400 CNY
+- Medium-Large Enterprise (50-100 people): 28800 CNY
+- Medium-Large Enterprise (>100 people): 43200 CNY
+
+Contact: QQ 2124691573
+
+================================================================================
+
+【SPECIAL DEPENDENCY LIBRARIES】
+
+This project contains some third-party components with special licenses:
+
+1. NapCat Framework (Non-Commercial Use License)
+   - Purpose: QQ robot functionality (8 modules)
+   - License: Non-Commercial Use License
+   - Restriction: For personal non-commercial use only
+   - Commercial version: NapCat and all QQ-related features will be removed 
+     after purchasing commercial license
+
+2. pdf2docx Library (GPL v3 License)
+   - Purpose: PDF to Word conversion (1 module)
+   - License: GPL v3
+   - Restriction: For non-commercial use only, or must comply with GPL v3
+   - Commercial version: PDF to Word feature will be removed after 
+     purchasing commercial license
+
+3. Other PDF Processing Libraries (MIT/BSD License - Commercial Friendly)
+   - pypdf (MIT): Basic PDF operations
+   - reportlab (BSD): PDF generation
+   - pdf2image (MIT): PDF to image conversion
+   - pdfplumber (MIT): PDF content extraction
+   - These libraries are retained in the commercial version
+
+4. External Tools (GPL License - Called as Independent Programs)
+   - FFmpeg (GPL v2+): Media processing
+   - Pandoc (GPL v2+): Document conversion
+   - poppler (GPL v2+): PDF tools
+   - Note: These are called as independent programs, not linked libraries, 
+     complying with GPL usage specifications
+
+Commercial Version Description:
+- Removes NapCat and all QQ robot features (8 modules)
+- Removes pdf2docx and PDF to Word feature (1 module)
+- Retains all other features (258 modules)
+- Completely license-risk-free
+
+================================================================================
+
+【DISCLAIMER】
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+DEALINGS IN THE SOFTWARE.
+
+================================================================================
+
+【COMPLETE GNU AGPL-3.0 LICENSE TEXT】
+
+For the complete GNU Affero General Public License v3.0 text, please visit:
+https://www.gnu.org/licenses/agpl-3.0.html
+https://www.gnu.org/licenses/agpl-3.0.zh-cn.html (Chinese version)
+
+Or refer to the AGPL-3.0-LICENSE.txt file in the project root directory.
+
+================================================================================

@@ -1,0 +1,1377 @@
+[
+  {
+    "source": "frontend/src/index.css",
+    "target": "apps/desktop/src/renderer/domains/workflows/styles/webrpa.css",
+    "sha256": "4d64fef24ca7d2ad7e439021294bdbb4ca77fba3f077823ac2d99fd23c49c237"
+  },
+  {
+    "source": "frontend/src/types/workflow.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/types/workflow.ts",
+    "sha256": "f3c1759f975d3cc47fde6f03064d5a638ffd04e627a299931cd599ba8b82a5e0"
+  },
+  {
+    "source": "frontend/src/types/modules.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/types/modules.ts",
+    "sha256": "4724ae6a4c7cf6a92c22440df1c680cf085c0d8f93b8357634256f82304d3b67"
+  },
+  {
+    "source": "frontend/src/types/customModule.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/types/customModule.ts",
+    "sha256": "d5773b95e5d0cbeb3cf0e72913f54a85a51f901a650d44335eadd5846bf73930"
+  },
+  {
+    "source": "frontend/src/types/index.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/types/index.ts",
+    "sha256": "43cfd06b6d1f84450ba20f6b1ff84b1d46ab7fec0a98e71ce69b9d9ec368e714"
+  },
+  {
+    "source": "frontend/src/hooks/useClipboardImageMonitor.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/useClipboardImageMonitor.ts",
+    "sha256": "0d42709bd9c73db8c824980476c5ea3ea4330f07acf94bd748f07df3e5f94321"
+  },
+  {
+    "source": "frontend/src/hooks/useVirtualizer.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/useVirtualizer.ts",
+    "sha256": "3adc342788bbddbb6d0cec7e0e4c5888b9cd8d7f3e05db6a88c7e5cd5ce00185"
+  },
+  {
+    "source": "frontend/src/lib/agentWindow.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/agentWindow.ts",
+    "sha256": "b53139b2edfc5a9cf5f803ef933a30c373caef03461deb54e37d1ba4e7a60e1b"
+  },
+  {
+    "source": "frontend/src/lib/moduleDefaultVars.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/moduleDefaultVars.ts",
+    "sha256": "8f1f47fd25a5cba404a14173624eb71ae1000462b7d99f3a735e831948fc284d"
+  },
+  {
+    "source": "frontend/src/lib/requiredFields.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts",
+    "sha256": "e4eb16ee9d1188a178001aa6a360480d0957acebaea05c165814e9f943516b08"
+  },
+  {
+    "source": "frontend/src/lib/uiI18nDict.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/uiI18nDict.ts",
+    "sha256": "d7dd50c13af20b19076d775137f4513cb8bb7803b9d69f79d94c0801f64a4719"
+  },
+  {
+    "source": "frontend/src/lib/uiI18n.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/uiI18n.ts",
+    "sha256": "70764449bac6161d8c998197a0ae672ac749e1816bbb1c7fd202a0a0e32793f7"
+  },
+  {
+    "source": "frontend/src/lib/elkLayout.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/elkLayout.ts",
+    "sha256": "d51d48cb5f4915e32ebbcea05643c8e2e27829d8458b89ea4e49cd1c78a688cd"
+  },
+  {
+    "source": "frontend/src/lib/workflowCrypto.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/workflowCrypto.ts",
+    "sha256": "75653189ac4ca78ab01df25f68ecb3ea875ac62f23d9daa5c838c8095e16f23d"
+  },
+  {
+    "source": "frontend/src/lib/utils.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/utils.ts",
+    "sha256": "e46429536f43f5910f5b2b0c50bb2769b510a4558bb4b5d20a3b0a9091dbf7c3"
+  },
+  {
+    "source": "frontend/src/lib/customShortcuts.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts",
+    "sha256": "cd8fc309c084ee84186c73e672b8ac5e9f9d7e88caea607417b8d83f1e9c02b8"
+  },
+  {
+    "source": "frontend/src/lib/recorderLayout.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/recorderLayout.ts",
+    "sha256": "9a56cdf08a8c7cbb7632a238d1f70de94e57b8d7eef530261f382229c37296d7"
+  },
+  {
+    "source": "frontend/src/lib/safeMarkdown.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/safeMarkdown.ts",
+    "sha256": "eed13e657645fac94b2114e2f8e864dc141afaf68d8618b7708592b0336a9071"
+  },
+  {
+    "source": "frontend/src/lib/fieldLabels.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/fieldLabels.ts",
+    "sha256": "1e959454a34a3806663a2274269abcf38f1821880ec2fc7405d0b200f60e8896"
+  },
+  {
+    "source": "frontend/src/lib/pinyin.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/pinyin.ts",
+    "sha256": "7526d538a5251185010fdc313e38197f803bef386b6643c30e3c93b396481ce7"
+  },
+  {
+    "source": "frontend/src/services/socket.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/events.ts",
+    "sha256": "1187c5551b00135ca71e871599530b35eb5a20799ecaeb775df55dc8a4830f9d"
+  },
+  {
+    "source": "frontend/src/services/aiAssistantSkills.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
+    "sha256": "cd34021b6eacf3cfaaec09fdf9593e84c6ad287c2fcd1d160dac79450c3ca6cc"
+  },
+  {
+    "source": "frontend/src/services/api.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/api.ts",
+    "sha256": "d57ab059125a2edb151232eae7158b3ccd6dcc31365f4cf6e9d06c64e5933cad"
+  },
+  {
+    "source": "frontend/src/services/aiAssistantApi.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantApi.ts",
+    "sha256": "2ea62725ab9c833fc4d65c10c938ff5fa80a1a31d37a60d00d671a76bed82cbe"
+  },
+  {
+    "source": "frontend/src/services/remote.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/api/remote.ts",
+    "sha256": "69b6b7c78eba32b4f75078debf10456ea202612fd11f5142134fc021c856e925"
+  },
+  {
+    "source": "frontend/src/services/config.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/api/config.ts",
+    "sha256": "34a8c6523b2eeddfeb04959549d886aff3d1c2ae5365c9daaff8a4863ac89b4e"
+  },
+  {
+    "source": "frontend/src/store/aiActionLogStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiActionLogStore.ts",
+    "sha256": "12560baae7271a99702a027f4567cc88286ba4a824ba256981fa089a45a7cf59"
+  },
+  {
+    "source": "frontend/src/store/moduleStatsStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/moduleStatsStore.ts",
+    "sha256": "f660c86de2d6ed9e8f74cc9e9571b810e062dffca7f546bbaa995e1f9c19f3b9"
+  },
+  {
+    "source": "frontend/src/store/customModuleStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/customModuleStore.ts",
+    "sha256": "e47786d902f2dae654976e1fe906ec35c723f71668e93fe299c3208b40bfecc2"
+  },
+  {
+    "source": "frontend/src/store/workflowStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+    "sha256": "0e0088e166c5a872498d98a7785aca629f433863889993090edf1cf8862f656d"
+  },
+  {
+    "source": "frontend/src/store/globalConfigStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/globalConfigStore.ts",
+    "sha256": "a5bcf44994cfe8ff2c96fc26548850074a94cac5c8d1bc41fdf427d1ad3a92ce"
+  },
+  {
+    "source": "frontend/src/store/debugStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/debugStore.ts",
+    "sha256": "596a84973c5e778142c2b1ec827727d691d223ccaf83cae6dfa03347214188be"
+  },
+  {
+    "source": "frontend/src/store/aiAssistantStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiAssistantStore.ts",
+    "sha256": "4832642eb7dd2c4f154e010639933ae346813229191a3a1868349d5ca34fab22"
+  },
+  {
+    "source": "frontend/src/store/aiPermissionStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiPermissionStore.ts",
+    "sha256": "a47e27f9b8b1b757a6ec9b2e19ffa56237ad9abe8b3a096770b96a9f1fbde324"
+  },
+  {
+    "source": "frontend/src/store/dialogRegistry.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/dialogRegistry.ts",
+    "sha256": "aaa9dffc29a7db373da412dfb099642f08ebb6695581cc19fcdb39f437c32f61"
+  },
+  {
+    "source": "frontend/src/store/layoutStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/layoutStore.ts",
+    "sha256": "bb512a1afbc58a2396eacc2c2875d08286609cb9700503c7e9a64b26bd0f7f98"
+  },
+  {
+    "source": "frontend/src/store/nodeRunStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/nodeRunStore.ts",
+    "sha256": "fc5f57977cf889511f4e9d8e0e50902c17fd1b8af16a15296a6c83320b18976b"
+  },
+  {
+    "source": "frontend/src/store/__tests__/workflowStore.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/workflowStore.test.ts",
+    "sha256": "beeacd10fbbd1146e646c6671e98a163160f106e4efb88d983f155a3af146783"
+  },
+  {
+    "source": "frontend/src/store/__tests__/customModuleStore.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/customModuleStore.test.ts",
+    "sha256": "eaaa366ed0d94a307f66e071333a68e6675771557df955144246d43548a9d338"
+  },
+  {
+    "source": "frontend/src/store/__tests__/globalConfigStore.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/globalConfigStore.test.ts",
+    "sha256": "4c4e06490fcc76ad7fa28a6c23ad0da7a76ff96fe194cf6c0d38bf0cba3d4f88"
+  },
+  {
+    "source": "frontend/src/store/__tests__/aiAssistantStore.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/aiAssistantStore.test.ts",
+    "sha256": "aa6245a6e163dba0126d0af35e43eb0e204d0e468cc1816dfa5c98f68d1162ad"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/moduleDefaultVars.audit.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleDefaultVars.audit.test.ts",
+    "sha256": "c2acbf8f149f449cff22a1b95024791541945f47595b42b4901235ec459aa46e"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/moduleColors.audit.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts",
+    "sha256": "063aff00c4140fee3dceda2eab8305a36592927c92b750d32babe36bbf09299a"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/safeMarkdown.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/safeMarkdown.test.ts",
+    "sha256": "bb313054da7d58a432cd4764dae737501ce617d917c33f42bd3e60ce7520b057"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/pinyinCoverage.audit.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pinyinCoverage.audit.test.ts",
+    "sha256": "4aad4079d910464797bd05a1e70ce3395112951c6d6d70b29722ae4c73c68f40"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/regression.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/regression.test.ts",
+    "sha256": "c3ab79d2cf86108315711720cd549bd8a8c799ae6580c9fafd5fb0b7b4cf3816"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/pinyin.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pinyin.test.ts",
+    "sha256": "c7d720465de54dcfab08964f019c9740d69ecb297e1941c04c2c565049da1b33"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/moduleSearchEntries.audit.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleSearchEntries.audit.test.ts",
+    "sha256": "e12cab77f96009ed6085d53102c5f7316599149ee2c5fe0532dc2316bebff2ed"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/i18n.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/i18n.test.ts",
+    "sha256": "43dcf93a3352b510435e482b6672b5ccc47013855f48d41a7f2fd75c55d43ad4"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/pathPicker.audit.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/pathPicker.audit.test.ts",
+    "sha256": "40dba79313524a66fadc4902fe349ed400b0b2a63838cf305065022f59b76065"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/requiredFields.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/requiredFields.test.ts",
+    "sha256": "b5255f66fc93f24029dd9a050e00362919b49e40fde16b52bdc3b7307aa235d1"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/fieldLabels.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/fieldLabels.test.ts",
+    "sha256": "c06bc1e8214674ceaa978168b01fdcd538373e58833378c6e7b260baeb81a6bf"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/helpers/addNodeDefaults.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.ts",
+    "sha256": "95d972fe26ff8cfb3ed42b0fa79899560336d68e7f58dfddcf916cf45ef7ebae"
+  },
+  {
+    "source": "frontend/src/lib/__tests__/helpers/addNodeDefaults.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts",
+    "sha256": "ae1037beb5e2e6c45f66367e407d62a057650f7ec08fb639bf74345512aceae1"
+  },
+  {
+    "source": "frontend/src/components/ui/confirm-dialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
+    "sha256": "8dc6eac3f70e31bb1940aa1d881dcafbf04878e3f9b1cd3028d23bee451fb685"
+  },
+  {
+    "source": "frontend/src/components/ui/qq-contact-select.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/qq-contact-select.tsx",
+    "sha256": "6f0729feb2e00f23da3c8b8341e0c1f2e044039522b894f2bb7e850eb97b6888"
+  },
+  {
+    "source": "frontend/src/components/ui/slider.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/slider.tsx",
+    "sha256": "b17a5ff2cf5cd66c53fec50790c0cf3a280ba049caccd12081ae0f98fe1153f5"
+  },
+  {
+    "source": "frontend/src/components/ui/popover.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/popover.tsx",
+    "sha256": "7905a9faafc76fdbc42d52a5f02df6189d585549320aee023c634a10d33f9190"
+  },
+  {
+    "source": "frontend/src/components/ui/window-title-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/window-title-input.tsx",
+    "sha256": "027e60f4bcbf24ea733a15fa9ad1374c9e1dfbda0524db350c01890990ce35fd"
+  },
+  {
+    "source": "frontend/src/components/ui/variable-name-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx",
+    "sha256": "6b70d865b3a2bacaf330c127b9a09678c09a83226167e789c6e1eeb5d5b88851"
+  },
+  {
+    "source": "frontend/src/components/ui/hierarchical-excel-selector.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/hierarchical-excel-selector.tsx",
+    "sha256": "68483cae4382cdc27a79a7c92da3e8ef70cb7d9244dec37895d9626fddaef2d6"
+  },
+  {
+    "source": "frontend/src/components/ui/url-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/url-input.tsx",
+    "sha256": "68cf786f22c70072c3608ad597daca703edb4f83ed31ba79a00334a80d1c4499"
+  },
+  {
+    "source": "frontend/src/components/ui/coordinate-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/coordinate-input.tsx",
+    "sha256": "c34412d612237e35945d862c8f496259f509b57f0c5de2010bb4c7c5581dd351"
+  },
+  {
+    "source": "frontend/src/components/ui/select-native.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/select-native.tsx",
+    "sha256": "4475e95beee1228cea88cfde8f433b22f87f1074886eb4b9ac52aafa81e2fe67"
+  },
+  {
+    "source": "frontend/src/components/ui/scroll-area.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/scroll-area.tsx",
+    "sha256": "7444fa457de06f4842ef93dc1a047056a70b3b60b64c371ee24d2439ba4c4df4"
+  },
+  {
+    "source": "frontend/src/components/ui/label.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/label.tsx",
+    "sha256": "7951c073ae4402a7dd0da76f19485a180965e5b355c55db7a0ce6f00bb207380"
+  },
+  {
+    "source": "frontend/src/components/ui/number-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/number-input.tsx",
+    "sha256": "95a6cf80f80420d6873c956ca70eeb234fd74e201d72d2a6a2a5f0b2d3e06eb4"
+  },
+  {
+    "source": "frontend/src/components/ui/password-prompt.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/password-prompt.tsx",
+    "sha256": "6d1bb62670f26a7c7e6675a69f68440c9bbd0dc225849c066b40c83bfc15c699"
+  },
+  {
+    "source": "frontend/src/components/ui/switch.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/switch.tsx",
+    "sha256": "fc8d0d63fef8170e5a8e7a0670d4ee0daa1cb8717488edb68b697187e75dad2a"
+  },
+  {
+    "source": "frontend/src/components/ui/radio-group.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/radio-group.tsx",
+    "sha256": "3225e2fe1ab3d4a8881229a7b0d001419040544c77787f6f867ef1ea0e2beb63"
+  },
+  {
+    "source": "frontend/src/components/ui/date-time-picker.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/date-time-picker.tsx",
+    "sha256": "5d1b03b8bb4d1337172d1fe5edbec9d7c830b8bfbae7d4bb95f644cd6cc96d04"
+  },
+  {
+    "source": "frontend/src/components/ui/image-path-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx",
+    "sha256": "f7ae25d54b7617183f8cb5c4957cbb79b156420ac49d303208962769d30c3e33"
+  },
+  {
+    "source": "frontend/src/components/ui/dialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dialog.tsx",
+    "sha256": "1a187d5298d43f248e5913ba04ff972ad895e323d1e0b919a02c38510ecfe34b"
+  },
+  {
+    "source": "frontend/src/components/ui/color-picker.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/color-picker.tsx",
+    "sha256": "59a6a93830b6d730d9d551b4069ffa26240877888064cb52dac4adf94e557b19"
+  },
+  {
+    "source": "frontend/src/components/ui/dialog-portal.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dialog-portal.tsx",
+    "sha256": "2ca7af26b7b55440ec9c93c92a4451f069839ab2ac2e6b33aa2bb6fa38b5a48d"
+  },
+  {
+    "source": "frontend/src/components/ui/phone-coordinate-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
+    "sha256": "6995e18414e06c76d686d3e9a03a482f76836dff5467f61e29b9be115fb6043b"
+  },
+  {
+    "source": "frontend/src/components/ui/path-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx",
+    "sha256": "5731db19673ff1ef072e02e67e791c0ec8a0abab8d5edda5dc42ecbecb91f2dd"
+  },
+  {
+    "source": "frontend/src/components/ui/custom-dialogs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/custom-dialogs.tsx",
+    "sha256": "42bc15c4fd532883aa6ab305f0f85debac36fbb596bf695a9dd3ffe748722a64"
+  },
+  {
+    "source": "frontend/src/components/ui/button.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/button.tsx",
+    "sha256": "e7dcd8a5dfbf75e3b609e1e1dba3057d12cc51790fe51815c7607aa8c4c2cbcf"
+  },
+  {
+    "source": "frontend/src/components/ui/variable-ref-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-ref-input.tsx",
+    "sha256": "d020e8f349442bfd8ab0c0cb836559cb1616154d25843ae4838cfb297c2bb2e5"
+  },
+  {
+    "source": "frontend/src/components/ui/checkbox.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/checkbox.tsx",
+    "sha256": "a79b63650abf7bbea3b68f86111f3b06a8111d1a38eeab8a1f96c34f2fc7a176"
+  },
+  {
+    "source": "frontend/src/components/ui/dual-coordinate-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dual-coordinate-input.tsx",
+    "sha256": "6a54a5716a71fae7d6fe59138aff0f199f5543e96f32b0024670e885601707fe"
+  },
+  {
+    "source": "frontend/src/components/ui/variable-input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx",
+    "sha256": "a46fadb688d7914d0ce8aff4cc391e33f315c1bee5c5e370b5c42ea9f2b4fd3c"
+  },
+  {
+    "source": "frontend/src/components/ui/dropdown-menu.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/dropdown-menu.tsx",
+    "sha256": "5e0e951138e6af81837e165a75d63b3ea462884a5838dbf0a66d1a6ee6529bad"
+  },
+  {
+    "source": "frontend/src/components/ui/select.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx",
+    "sha256": "9e924ae66a2947f31ccab1fe28a83018324c6a91b8b284d1ddc3c5b261d2b7ac"
+  },
+  {
+    "source": "frontend/src/components/ui/textarea.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx",
+    "sha256": "cedcf3778c6b10a33f2dab0ba135d808abfb04f465ce4d7db272ac989a3c0a16"
+  },
+  {
+    "source": "frontend/src/components/ui/input.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/input.tsx",
+    "sha256": "e1b2538855db04da19af624f53d9f0405276def8c76e2134b806f08baa3448e0"
+  },
+  {
+    "source": "frontend/src/components/__tests__/button.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/button.test.tsx",
+    "sha256": "10287175e2ee45d5746784ffb2bcad12d55432da493dc1f47544f2183efbfb5d"
+  },
+  {
+    "source": "frontend/src/components/__tests__/confirm-dialog.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/confirm-dialog.test.tsx",
+    "sha256": "a46264dc2ce4e3ee45400a404a72e95b8f47eb30f9f687dfeabc7052b97f6162"
+  },
+  {
+    "source": "frontend/src/components/__tests__/date-time-picker.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/date-time-picker.test.tsx",
+    "sha256": "1e56f6a677d75424da54b155ed5d378d3afa7944a0acf3077a9ed4bfad91d832"
+  },
+  {
+    "source": "frontend/src/components/workflow/PanelResizer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/PanelResizer.tsx",
+    "sha256": "0faf1be9272b0b030136c09d531b29afdf199e82f26e8bdb2370308507cb81bb"
+  },
+  {
+    "source": "frontend/src/components/workflow/BlockFlowView.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/BlockFlowView.tsx",
+    "sha256": "d025e5d5ed5524aa5362fe23752c463dba00b47bb2e86852f8d872dec8feed80"
+  },
+  {
+    "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
+    "sha256": "699dcd9907936d392035fe928dc0167bd7e16afc14b157873e33f0c11a6206d7"
+  },
+  {
+    "source": "frontend/src/components/workflow/mcpTemplates.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/mcpTemplates.ts",
+    "sha256": "e39e6e5406b230219daf48591a8ed12cfeab34d791b73cbb7ea0391fa758012e"
+  },
+  {
+    "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
+    "sha256": "93de0fe9500566254e6f01718620645dcb7a6d30a8ca4a2f6dbd6200e0826c32"
+  },
+  {
+    "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
+    "sha256": "2317d4151eb60293fa5b6f533ddc19d68318ea5aeadacd2c89604585e742fee8"
+  },
+  {
+    "source": "frontend/src/components/workflow/AutoBrowserDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/AutoBrowserDialog.tsx",
+    "sha256": "b988b16bad57a91c6cc1ee5ba9e7835d9f48e952d7875ba82c84ec2f7befe7c1"
+  },
+  {
+    "source": "frontend/src/components/workflow/EditCustomModuleDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/EditCustomModuleDialog.tsx",
+    "sha256": "72ba0c970ea01d6bd978e65e44c86c60ac07a540333859526d1373b13adcd9d2"
+  },
+  {
+    "source": "frontend/src/components/workflow/ExportDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ExportDialog.tsx",
+    "sha256": "5c1ea6bd4bf3750d02d132f8cb8d0358553f863cb7ab5645a9c692632a729aa0"
+  },
+  {
+    "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
+    "sha256": "8c2d6cbb460d5046881da64a54bc670cd8fdb0ac46d2ef9135450fede67134f9"
+  },
+  {
+    "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
+    "sha256": "51c014c02d88ad6ab5c9ec62dcbddab57c9c9e71d59177ce627563cb22de62fd"
+  },
+  {
+    "source": "frontend/src/components/workflow/CustomModuleList.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/CustomModuleList.tsx",
+    "sha256": "451cbf3fbefe929e51be94617e3f6d7c3c1c7f789f8a7dc16c2d0a27c27265da"
+  },
+  {
+    "source": "frontend/src/components/workflow/MusicPlayerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerContainer.tsx",
+    "sha256": "4add27aa68dfc47d0f87303629f80b6782af98aa34b57878d22b8634cac0134d"
+  },
+  {
+    "source": "frontend/src/components/workflow/RemoteCursor.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/RemoteCursor.tsx",
+    "sha256": "7fb657b011cedd661462deb29f880603322eb08f0ab09a67192b1a584fa1659e"
+  },
+  {
+    "source": "frontend/src/components/workflow/NoteNode.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/NoteNode.tsx",
+    "sha256": "7546f7537e2a867b880b3f6b22c12d821ba95753d2441a77e52a24bd78936777"
+  },
+  {
+    "source": "frontend/src/components/workflow/LogPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
+    "sha256": "8f8d79094c25dbce5af5f2c5c4e0a4af339a79ed21d201be2d0c30f3d460cbd7"
+  },
+  {
+    "source": "frontend/src/components/workflow/MissingPacksDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MissingPacksDialog.tsx",
+    "sha256": "a6134d1296e2b2b21cfa006c6c08f588f6d07f90ccf229c22a1302abcc54b9f2"
+  },
+  {
+    "source": "frontend/src/components/workflow/CreateCustomModuleDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/CreateCustomModuleDialog.tsx",
+    "sha256": "1ba9040815e2cde5a6f873016e0ddf2de615e4cef6d92a61f5558eb7c43f4499"
+  },
+  {
+    "source": "frontend/src/components/workflow/QuickModulePicker.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/QuickModulePicker.tsx",
+    "sha256": "0131cd705bc29efd34f6fa3b85f474f318fa386eacf14ed38bac4bdeae3621a2"
+  },
+  {
+    "source": "frontend/src/components/workflow/Toolbar.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
+    "sha256": "ea296b6872335ffbc816e2e300e256e30a5aca457795d0914226b796f0a47cad"
+  },
+  {
+    "source": "frontend/src/components/workflow/moduleColors.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/moduleColors.ts",
+    "sha256": "613cc4a54653763f43b0d93e8517b57046d17824eb77d0f60c85e44578e043d9"
+  },
+  {
+    "source": "frontend/src/components/workflow/InjectJsEditorDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/InjectJsEditorDialog.tsx",
+    "sha256": "035e6f5bdf1ba7498c74cabef51b133d7785cfbcc5c235792753041569cad0f3"
+  },
+  {
+    "source": "frontend/src/components/workflow/VideoPlayerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerContainer.tsx",
+    "sha256": "45949e79b281c753c3674139c22896f53022d814073a52a941c652c3e0447f6e"
+  },
+  {
+    "source": "frontend/src/components/workflow/ScreenshotNameDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ScreenshotNameDialog.tsx",
+    "sha256": "69d948edd0bba7d7e252eb2bda746c1af31b2ec261bf17d4614341d36686407e"
+  },
+  {
+    "source": "frontend/src/components/workflow/MusicPlayerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerDialog.tsx",
+    "sha256": "9b1a0456f5128f2d9395b1689d945f60db460b44de4b4f099a35a3fbba666da2"
+  },
+  {
+    "source": "frontend/src/components/workflow/GroupNode.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/GroupNode.tsx",
+    "sha256": "5cb7cee032826d45e23ba24e8788d541222a39b4dc6a4296897cb1496ce31b50"
+  },
+  {
+    "source": "frontend/src/components/workflow/FeaturePackDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/FeaturePackDialog.tsx",
+    "sha256": "b77e71536439d637f6c5ee5cd2c35b651f75b8f5de52ef5b91bc7739c89e975d"
+  },
+  {
+    "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
+    "sha256": "6017d3b79a4412ccee7e44d78119a8b0f63bfce0b510e462584fafd9f46406ae"
+  },
+  {
+    "source": "frontend/src/components/workflow/JsEditorDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/JsEditorDialog.tsx",
+    "sha256": "a3561781f7094b16cd1acaf2d0995a1048377c4229eb2529345f7f1c6330ef22"
+  },
+  {
+    "source": "frontend/src/components/workflow/CustomModuleManageDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/CustomModuleManageDialog.tsx",
+    "sha256": "dacbf7529b72fab31459528743d1a14e49e8ba7a039f12c3e293bd5449d115e2"
+  },
+  {
+    "source": "frontend/src/components/workflow/ConfigPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
+    "sha256": "ac44f090b8c016fe7f98b7fac33f111f53ac2f940e2cb14d9493152d900f1cd9"
+  },
+  {
+    "source": "frontend/src/components/workflow/ModuleNode.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx",
+    "sha256": "5e7f281025da445482472bb028f7f8d4ff5c4704f8d0d8223455aa98983c2be4"
+  },
+  {
+    "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
+    "sha256": "1259af7db21f4fcae5233d38383a181f50a76fd534e3395f3f12e79fda4085e4"
+  },
+  {
+    "source": "frontend/src/components/workflow/SubflowMonitorDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/SubflowMonitorDialog.tsx",
+    "sha256": "5b9af665d9d7e08ddad3456ac3b774328af297b1e56c9897453014c98b8c1f83"
+  },
+  {
+    "source": "frontend/src/components/workflow/DataTable.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/DataTable.tsx",
+    "sha256": "8ecac8a77a75817a2ccc4420324bc449b178027b66b2e34e55bfb777832da7a4"
+  },
+  {
+    "source": "frontend/src/components/workflow/DebugBar.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/DebugBar.tsx",
+    "sha256": "1c266822f0c39502bf30980e0e6531aba8b0014fff349e930865763e1fdc1ebe"
+  },
+  {
+    "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
+    "sha256": "c7e68194fbab7c60b016b8236d09c6b9ddd6b9b80d754894bf5ad6b02ff1f23d"
+  },
+  {
+    "source": "frontend/src/components/workflow/ExcelAssetsPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ExcelAssetsPanel.tsx",
+    "sha256": "45e9e1d406413de0a33645a2b8b0dbf1aeff31926afcd59ed634d2ebc0ecebec"
+  },
+  {
+    "source": "frontend/src/components/workflow/LogList.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/LogList.tsx",
+    "sha256": "c222f69aaa6b69e1fbd66b0fd5007954ba3e946ed10e52c084ae5896c115e5d6"
+  },
+  {
+    "source": "frontend/src/components/workflow/RecorderPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
+    "sha256": "fb659eec5a180ed431d57022b5198ba622db9ec21f755d2e445508a5cf99990d"
+  },
+  {
+    "source": "frontend/src/components/workflow/PythonEditorDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/PythonEditorDialog.tsx",
+    "sha256": "1e22588ed7970db2d1dbfa9b900baa6ef75f4c2aef566a173311ac61a19a6e90"
+  },
+  {
+    "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
+    "sha256": "89e7a24dfb23346b6a15e02980c75342432208a6360aa4a18a6779fa82b05b68"
+  },
+  {
+    "source": "frontend/src/components/workflow/SubflowHeaderNode.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/SubflowHeaderNode.tsx",
+    "sha256": "757ead55928982631800747d848a9fa76f73a4b16c473c7369624e17e4503b8d"
+  },
+  {
+    "source": "frontend/src/components/workflow/VideoPlayerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerDialog.tsx",
+    "sha256": "7c484c5b26609ae5bd718bd594efbf6e079deef53c6c1b8dc4d6688d456abaa7"
+  },
+  {
+    "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+    "sha256": "e8061d498db9870ed419c6569affa131e0305623d6f7aac026cc587bee309ed0"
+  },
+  {
+    "source": "frontend/src/components/workflow/AICodeAssistant.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/AICodeAssistant.tsx",
+    "sha256": "408085e166d7d22750c938199d44b8baa062a8645dd7f9eaf87c15cf96af426a"
+  },
+  {
+    "source": "frontend/src/components/workflow/ImageViewerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerContainer.tsx",
+    "sha256": "4dc89660a66b90ae9ddf15d299877925c8722173adc3dca2680f7335ea7a559f"
+  },
+  {
+    "source": "frontend/src/components/workflow/blockFlowModel.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/blockFlowModel.ts",
+    "sha256": "7e7de6c37c1081541cc92234f3412e03b561c2cae801120099ee46364c90bd76"
+  },
+  {
+    "source": "frontend/src/components/ai-assistant/AIAssistantPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx",
+    "sha256": "e12315aaece5b8307a4e67135ec5a56cf99b12b0f06f592eee299cc47f8494fa"
+  },
+  {
+    "source": "frontend/src/components/ai-assistant/MessageBubble.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
+    "sha256": "7d2ddbf506f78146644531c05e8988a4f850097f46b145fee108c65dfe3baa81"
+  },
+  {
+    "source": "frontend/src/components/ai-assistant/__tests__/MessageBubble.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/assistant/__tests__/MessageBubble.test.tsx",
+    "sha256": "8218da8c901ca0e0568288546721d527fbefc6fcb41e366047e8931830380531"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-excel.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.ts",
+    "sha256": "9e74555c98e1bdf0d2d39cc29175009c45cb4b7b022b7ec8027a29f2c28dede2"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-variables.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-variables.ts",
+    "sha256": "7e131eb4a25ecb7dc4a9000af5d5df06b6225288abcdb13c94fbeb115b0360aa"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-tips.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-tips.en.ts",
+    "sha256": "a1919aaf6aed3b31f8bc486513f89f64deeac8cdb85ff2e4de1e5bdb34f2cfc1"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-scheduled-tasks.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-scheduled-tasks.en.ts",
+    "sha256": "4e260ddf9dc15b68be5aa5375b345faf433548eb71f9e69b3d7fb1174e0c18da"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-cases.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-cases.ts",
+    "sha256": "aca75038708a54a8450cf7a119834c58417c8fdee3b665a3f28cfb2ffd17f317"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ai-assistant.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-assistant.en.ts",
+    "sha256": "47bf09834c9ea03b272242490a22fce63c52994519b0fb209fe06fc0d41dd373"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-utils.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-utils.en.ts",
+    "sha256": "3b554f02e4345ff6112afd11d760b8fa81ec8f0fdbcf5e88b760689750cd57ac"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-word.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.ts",
+    "sha256": "d7ad2a1f1af0b3a96c3e21ddd59c071c7a88f42c452b8cb0f2848364942dfd23"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-database.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.en.ts",
+    "sha256": "319e26024f4af61d7349426559cbbb0a62caf6bd903fabf1d0ed59a8086ba508"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-debug.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-debug.en.ts",
+    "sha256": "aaef98328d137112bc07d4e0a331ad6ba6701c5a5cf395ebf2e3b9e806877928"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-data.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-data.en.ts",
+    "sha256": "d419a890b9a6b1e7a065688a59d0ac64ead6b537fc714c5592c3a4e7ca284bae"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-platform.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-platform.en.ts",
+    "sha256": "9b7ce0695ec91fa89ad3a68dff8e03cbf78d0e5021d92769826405be9c1610d6"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-excel.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.en.ts",
+    "sha256": "f33229f66c4c5debaeaccd4bbe77482065c226b483bea206cb6ab9e9ad9ec18a"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-feishu.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.en.ts",
+    "sha256": "f58e4ae5683366fbaea86d2a5ac55997fddb7966e04a6f16df6480fabca45db3"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-data.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-data.ts",
+    "sha256": "0aab738bac54a224a5c183072add956964ec23261329b6da07dc937d5c5355e6"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-custom-modules.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-custom-modules.ts",
+    "sha256": "4016b5c0a8a9473afc89ef06a06bbbd7c6a09d0668ad20168165049857bb5b52"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-pdf.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.en.ts",
+    "sha256": "57a306a45dcfa070ed27f0b0b9a5a05e45792cd081c2fdf64ed0a3ac8bf10a42"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-basic.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-basic.en.ts",
+    "sha256": "997fa42fb920130fe54d021dd7a110147a1a0518a543961b87348f46389325f4"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-sap.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.en.ts",
+    "sha256": "6746e43a01d4cb8e250afe8cda21f896fa2234384ccf4b352d22c53c4e3e177d"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-tips.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-tips.ts",
+    "sha256": "6690c6f2900a008983e5023935c2d0e9b22dd73522ad52dfc48483fcacf0ed4e"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-bots.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.en.ts",
+    "sha256": "9e3573ef6f1b6ed33336f260665d14011e9e183711d610bf02c20449b4ce7d10"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ssh.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ssh.en.ts",
+    "sha256": "2d2f3a3fc86814392bb5ef56f120c8edb763fb90a277532479a7d83a33938f4c"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-sap.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.ts",
+    "sha256": "0ee329ca5d8f0eb6c679aa73a316d995669b9889858665e3cea7b07d2398ab85"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-getting-started.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.ts",
+    "sha256": "444eadaa37ae7cd14e6d2bc5e30b83332853e4b0b49bc1a1ee8643f608ace119"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-test-report.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-test-report.en.ts",
+    "sha256": "65178eeaad4cba4246d2af3a61b3362ae37f7508849ac596c87c7ffbc7c38824"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-platform.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-platform.ts",
+    "sha256": "ed36d3d9ca26a463c6763e8f4505770e92b0d3f6f429f1b67ecd60ea6ac83b87"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-share.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-share.en.ts",
+    "sha256": "e649e0c569945184ab3a7b431820e82cb24cd27ea551ff3caf71f8126fa691ad"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-network.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.en.ts",
+    "sha256": "3126075b0882593ec3a2f8e680eae9e5d1913ca9c73d852abe0a78e939c48d24"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-triggers.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-triggers.en.ts",
+    "sha256": "e7bb5e5c1e29f344298077b88050a3e26fcbf387baf09bca2850511d1d834bc2"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-media.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.ts",
+    "sha256": "f728545afc97cd1391e5d04da629a4fb650962ffe104c88ac55487da52832345"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-getting-started.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.en.ts",
+    "sha256": "41e7b1cb1c282cadb530db66d5f1c9ab9b0f75c32185c4f5d4215bb1f35ef3cd"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-files.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.ts",
+    "sha256": "ca3d1cb27767624c02c3cad1c020cba46c53d9c182ebe05a4e590eb649e07e3f"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ssh.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ssh.ts",
+    "sha256": "c4209d206f6603acf91a766511ff006ae492e9d8f75b58bc6d2c4ad05a8addf7"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-phone.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.ts",
+    "sha256": "7839af557f92db4412be1d58619b6255bd51327c6e184286e80158bf11825b3e"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-custom-modules.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-custom-modules.en.ts",
+    "sha256": "8695c8235bf6e3a1a6f8b3840c22bdecd711ef2f72aee05e4f9ca501a0e6297a"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-variables.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-variables.en.ts",
+    "sha256": "33e17a72e53ab51c20738e523c7a6bce7aeed89bfb6040877f8d04fac745ff70"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-media.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.en.ts",
+    "sha256": "eb2754f206b70d8c204cfe1c26cc2458643eaac1d42d549af9d8c925d21190ef"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-input.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.en.ts",
+    "sha256": "74c4773037a2265dd531ee3869c15f427f648ace95323d01b6160b9608f10f29"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-notifications.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notifications.ts",
+    "sha256": "84d5ce60f442d65c9a776e96d012380c25cf8d4119ff1a14a26fcdb6c8e57e58"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-phone.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.en.ts",
+    "sha256": "9c73e2262db305711a1964da2d191fce290ab21d54edbf785bac408770f55e92"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-feishu.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.ts",
+    "sha256": "5fa49ad512b246b9b17c5695d3209c3c68b618c2f39459ed5e15dcc716159654"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-selector.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-selector.ts",
+    "sha256": "d689d98980c3efacd2103efddaef7bf32d90db8c34d2d81275874e42ad24eb09"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-files.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.en.ts",
+    "sha256": "0bf1a5021c159f7b11cd1613c3188839800eed34eed10d9417218dc5ace59b68"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-cases.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-cases.en.ts",
+    "sha256": "a747c0cdf40d4235f822fc9c07c5c05e2d48b692bb43068a67f2d8bf70f0685b"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-bots.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.ts",
+    "sha256": "f11b1e48e1c2725af23c13e3fdde3d47f2071f50ff0711e4c26bbcfed494c92b"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-database.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.ts",
+    "sha256": "37c6ceb739e24e624085d822e4f322fb6a90fcda114e10fda3a7095f9b80792c"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/types.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/types.ts",
+    "sha256": "b616e0a1a8010c3ec435c8a3de94378ba625c396005f74d4e76f154811c9a441"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-image.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.en.ts",
+    "sha256": "1e3d1288d5ec0a6548ed82c5e979b04098420c3cb706fe86e558bb29031651b9"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-browser.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-browser.en.ts",
+    "sha256": "e8d84f4e509c4f97f7437f5c30cbd5e765e9a244670aa44fbef92fdb81e454b1"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-notify.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notify.en.ts",
+    "sha256": "3968b4c10e806f5a52a10336e2af21f73256b7d49f7d28e1d1e9558a9e98ac6e"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-network.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.ts",
+    "sha256": "e1ee4eda9cc6d1392681f889cec4ebfedfdcab06a82adddf462a402fc43519ca"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-image.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.ts",
+    "sha256": "1611c465d56b952d26b31370e96f16ea695db4399237cd800e3e599b416d51a5"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-plugin-dev.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.ts",
+    "sha256": "ab99abb911f03131675cda61b593a6d653a605fb1d32e4bf88dfe6a5d38623df"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/MarkdownRenderer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/MarkdownRenderer.tsx",
+    "sha256": "63cd9c5bf9bb413e471559bc4936ce650805d7df431b318f826e3f829cb95f0b"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-desktop.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.en.ts",
+    "sha256": "33d15fbc1f7ec685a8e2feccf5255b05372e1bf31a404b4befd98f1a5165472d"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-notify.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notify.ts",
+    "sha256": "a9fa38c955e405b5e2045327ae99a902443ec652cbb1b8eb21431a0020c7b1e9"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-browser.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-browser.ts",
+    "sha256": "ce8d432b85014e52bd5e65d8b8cd5539b87f08ab93d795db5fd966afad6e4b67"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/documents.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/documents.ts",
+    "sha256": "de902be8c35a7ae4c4e32b01ead812d02eba52fa10282e0babd4e10e416a4f7f"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-math-flow.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-math-flow.en.ts",
+    "sha256": "5b141856937cbd5d82b459aedd8a7e0549306dac3a619a6186088f209a0f4401"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-scheduled-tasks.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-scheduled-tasks.ts",
+    "sha256": "0ba2e9899be4e6b0eb09e5746cfd949dc56a37f43399f94762e0a64d013db965"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/DocumentationDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/DocumentationDialog.tsx",
+    "sha256": "167bc628e9d3213d0bd15a907b10e8bb9e354a1f9197c35823f715dacb02b375"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ai-vision.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-vision.ts",
+    "sha256": "5c3c869844e8a60074e17526f13bf139bc4aae02e9fb646e3f650a53905ddee7"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-advanced.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-advanced.en.ts",
+    "sha256": "51b58a86abe45039378bc91b1550778245a3a83a2ce816733d48a0dfaebc24f1"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-notifications.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-notifications.en.ts",
+    "sha256": "2cfe87b40d28b39fd61886d5089b9f8efaeb4582d7a6b70fb28e01b321e4c2f8"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/contents.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts",
+    "sha256": "444773c14fb1e075b1b73fc08ec677ea8e7957d139a59ed94b2c7a814a1f1559"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/index.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/index.ts",
+    "sha256": "f6da54228441a16d48e5b9f0565aeb43d25238bf945c2ba1b94b7c907a0919dc"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-pdf.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.ts",
+    "sha256": "a658f8b972e5def989def91632fa8b757eb926e525b7605e4a05a161d64d15b0"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-selector.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-selector.en.ts",
+    "sha256": "74d32a8770ca90ebd5bfec0a574abc3097db74bd1994f15fef09ccf0ee7b8891"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-advanced.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-advanced.ts",
+    "sha256": "9985fa4d97afa57f9a03dfd52d83e444468c7f071651e97ea31ff3f9f79f66a3"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-input.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.ts",
+    "sha256": "53f4bb68793079db8603c2ac66056f70b1a57a3e091758ace4489f35ec47cbe7"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-math-flow.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-math-flow.ts",
+    "sha256": "70b3b7a3d3ca45e0ac289e389277de94381fcfe7db981b3b8c75e7137ac9b510"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-desktop.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.ts",
+    "sha256": "c9e47309860ce94275a4576c63ee0560990dd7c15b42b81efa53cbabe9f7f035"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-word.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.en.ts",
+    "sha256": "437cc8420175ce18e78044565801be6246e0e7942059ae428aa4f4d3f2017310"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-debug.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-debug.ts",
+    "sha256": "7bb2f37cec1343bfa186305c474b853cef70b3768abb8fb4cd9e075b2cb74898"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-share.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-share.ts",
+    "sha256": "b92233c54b97a3fddf11f4e02712c81804470333c353872e348a53e492626ecf"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-module-reference.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-module-reference.en.ts",
+    "sha256": "cd467582d2bc8a1d42a0692b990f081c6855ee59e842f1591f4433eb99f4f786"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-utils.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-utils.ts",
+    "sha256": "916eedde6b8d1515435422702d902660d978dcfaab069f44b9a5b69d77769e50"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-module-reference.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-module-reference.ts",
+    "sha256": "316e3106a14a7d8d1fb34298a0929b12755c3f4abe1791544bb26de851bb3feb"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-basic.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-basic.ts",
+    "sha256": "4dfdef1db604db11f13fc554fab83a3b123370073e9ffa408064bfafa7f1fce2"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ai-assistant.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-assistant.ts",
+    "sha256": "6050d322f5dd04fe9dcc5bfe8f993ebbf4628f3e51d7cf7283eb8feac0b27a3a"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-patterns.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-patterns.ts",
+    "sha256": "c1b243a6fedca46668ba1748b664f4aef066794ca6016915f02ba0f29490861b"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-test-report.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-test-report.ts",
+    "sha256": "755c42924d934000b8d9f5a5b3773cab1d911f9afe76d54f0e708b5b63ef84ba"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-patterns.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-patterns.en.ts",
+    "sha256": "8e910d0895b70b34f4a25ac4a7fadcdf0c8721eb4bc7057fc9701563d6ff828d"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-triggers.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-triggers.ts",
+    "sha256": "6a4de332248c2e6b7a42adfd93395f5da0263c9d3a3fa2c9b86b39b492f055ca"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-ai-vision.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ai-vision.en.ts",
+    "sha256": "3cd4bdd55df1855683a86a4a08f8eee0a738bcc4a6cdffd1c345dea86ff7a3c1"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-plugin-dev.en.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.en.ts",
+    "sha256": "e63a44248d0958f349fed827cd66f6f67235941e801a7e3c4a1e8f9b8591c646"
+  },
+  {
+    "source": "frontend/src/components/workflow/__tests__/blockFlowModel.test.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/blockFlowModel.test.ts",
+    "sha256": "2bd818fc3225132785db23cf78bfd4ba0f5ab6312797a9eb25277430b7a9d648"
+  },
+  {
+    "source": "frontend/src/components/workflow/__tests__/MissingPacksDialog.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/MissingPacksDialog.test.tsx",
+    "sha256": "95fb5d6982f7caa704a4838dbb30b7cc05198973116c71ef5792250ef203a1e1"
+  },
+  {
+    "source": "frontend/src/components/workflow/__tests__/CustomModuleList.test.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/__tests__/CustomModuleList.test.tsx",
+    "sha256": "c627a7fa99162b2788b63aae45fe5064535d69b8fcdb3dad42a9da67e8eec940"
+  },
+  {
+    "source": "frontend/src/components/workflow/icons/TestReportIcon.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/icons/TestReportIcon.tsx",
+    "sha256": "a49a1f19e08ec72016f71fffce01c29b04c475665c99b3c7ee42095090a210dc"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/UtilityToolsConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UtilityToolsConfigs.tsx",
+    "sha256": "928733ec6cc692bd6ee87c36fb1501795ebd724307baad5e42cefe77d8c00384"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/AIModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
+    "sha256": "9812da7dd3fd34299e89814b6ab5a83affb31a51e0e199e4b7d671f72fa3ffa7"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/MediaModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MediaModuleConfigs.tsx",
+    "sha256": "009af936c4a916947439ccf7384bcb0465eff3e1a69d01cf2d124c4e3ede8913"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ExcelPreviewDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelPreviewDialog.tsx",
+    "sha256": "e64ffa7f4db57d5d6355a64e1c8706b689c41d20fcace5862d522d99d3310ef4"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
+    "sha256": "b5d3686f46beb3252f57874cfe3d53f88b769aaf3417dc71fc91800a0d9676ca"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/AIMediaConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIMediaConfigs.tsx",
+    "sha256": "084c8779ab8c0cc62313409b9e96d1da6b4f8e0edf752e8740e92ce00b01a73c"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/MathAdvancedConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MathAdvancedConfigs.tsx",
+    "sha256": "e7c814c1c270eeff765b5f07762663f9842018855534be0b4b06ab6123dacb8a"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DatabaseModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DatabaseModuleConfigs.tsx",
+    "sha256": "27a488e8a8dbc2ec988b7704acc4e0f6a3271feb81d3d9e216eaefcb311a0ae6"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DictAdvancedConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DictAdvancedConfigs.tsx",
+    "sha256": "e828e09099a0732fdf5b96bf83d78cc4b83868a2e48596cb071b82ab83aac5c0"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
+    "sha256": "44c2297420bbb4845e6b98f94d8d88cfa701613c5946be8e9b2bead04f86f277"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PillowImageConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PillowImageConfigs.tsx",
+    "sha256": "4b3b829eca5017f7555a5dbbad02253d3ec5857b2dace75bd32108b87714664b"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DrissionPageConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DrissionPageConfigs.tsx",
+    "sha256": "6dc8fafcf6b22c1788bb6e66efddbd05eb5d40151a11d81b7a733c3ef3c90f3d"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ListAdvancedConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ListAdvancedConfigs.tsx",
+    "sha256": "1823a42910434d105b20d2988483c07208016da616d59258b15ebe26b5fbe82b"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/SimilarSelectorDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SimilarSelectorDialog.tsx",
+    "sha256": "92c240a5f8211e2e7e8b5538e06a6445cefd4bd1efa733f15b194745a00fcf9f"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/YtDlpModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/YtDlpModuleConfigs.tsx",
+    "sha256": "e9b5f565c3a7f08a90ee4478969caaa882bca04261a2480d5ca469156e81b4a3"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/BlindWatermarkConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BlindWatermarkConfigs.tsx",
+    "sha256": "b0b14aa85b8455226f68e384263e376b9cba1005134848de16e7691c441cdf6f"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WPSModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WPSModuleConfigs.tsx",
+    "sha256": "7c7f18d3b9b097d4600fbd8be7ab57270cccfda1563afa171d71e27c1335f721"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
+    "sha256": "fc8e19e5505507498c1d3ec8efd28868647e4116a4b43e0016eee2a841082546"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/BasicModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+    "sha256": "2e3adb0370a3cc72736a958f958c31ea8fd07fa6c94c563cea956e3316e09587"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/SAPModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SAPModuleConfigs.tsx",
+    "sha256": "1e8d0700151d92efd2486d97c7703d769855f2235bd44329eca45a0240a9983c"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/TestAllureConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TestAllureConfigs.tsx",
+    "sha256": "5162a40ff9c377ab994b4bde7c24bb33e011d23a8f40a512f71342850de9fc1f"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
+    "sha256": "eb4153d228b8e98c06d099f239babab5ba8b561514353870972ef5a901918e14"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/CustomModuleConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/CustomModuleConfig.tsx",
+    "sha256": "30cfbb0bafcd49bccdedd8c6672bf038dcecceac366cad1800e737a764ac3d9a"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/SSHModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SSHModuleConfigs.tsx",
+    "sha256": "9a9a9ab92bae25d4508a3c9ad1810e925d35cb58ce9612fb84178aa489e701e8"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WebhookModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WebhookModuleConfigs.tsx",
+    "sha256": "8aac7cee33767c95676c42bfb99b1c42b2cd43c23389696adfc94c16ba0c38a5"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
+    "sha256": "e84d6c0ca58d7b8e81f912cf02391a88bf21dbdd31ecd37f3863652ae5fe2e3b"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DatabaseAdvancedConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DatabaseAdvancedConfigs.tsx",
+    "sha256": "7af1c047e88be57ddeedcfa10c59954acbf1453b8f95c8328ba79051ecedc11c"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FormatFactoryConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FormatFactoryConfigs.tsx",
+    "sha256": "21308dab806f728eda45c2c64b97922adc3e53143ee6571872af219aedf0e43a"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WordModuleConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WordModuleConfig.tsx",
+    "sha256": "d7dfffea3335810e959fdd763287fd70687793892944964bd26c916ad449f230"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/UrlInputDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UrlInputDialog.tsx",
+    "sha256": "167571672f468e8f25abe5de40d41605e8335fc30d5df1dcd02d0b0f599d88c2"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/MathListConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MathListConfigs.tsx",
+    "sha256": "7951766f4433050c6f20d8c7d78ec95ab0732d6f1e67a6e73e77e3b5763d25ba"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ExcelModuleConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelModuleConfig.tsx",
+    "sha256": "4d2d69792ec019cf075f855c0886027c9ba6373be1a9ec3d75cbb34bbcf1f182"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/RunWorkflowFileConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/RunWorkflowFileConfig.tsx",
+    "sha256": "fce81e4d0494672dbca47dd83149f68d50bff88c9b494cd2867385bef71c204c"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/NotifyModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/NotifyModuleConfigs.tsx",
+    "sha256": "6848576ec99911adb303dfdcb2602906cf31b6f98f9ac6b58d4c5baa5ea6d9ea"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/index.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/index.ts",
+    "sha256": "94ef3887e574302d07e3d6b6540bf162d75fedc8a9922f838ea3e5518eab500f"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DesktopModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DesktopModuleConfigs.tsx",
+    "sha256": "62bf5dbb940bceae1b8ff7ec7c0c1a7ba9097547762cb153f483d180ea061ab2"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FileModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FileModuleConfigs.tsx",
+    "sha256": "ab8577cd28e964b1b5af218c1b466b770c6068608a86b1b6b8d3270eebbfaff6"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DataModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DataModuleConfigs.tsx",
+    "sha256": "49c059b4790a206c26f6990e8eb19d864960a45f12f88dbcba8b1278e8a2cc5d"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ReadExcelConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ReadExcelConfig.tsx",
+    "sha256": "45f43d43830295a48be16f14ff7a26055f46ed7f2489bdd0c4e64e461946a9a2"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FeishuModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FeishuModuleConfigs.tsx",
+    "sha256": "ee938ccdd062b1511437ba1821dd858fe164a47d38e75809e35997c706a98d96"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/AdvancedModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+    "sha256": "055999828e018a1fd599b5c42bd4c0b10f188657c82b5ba359b3927d25b04158"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WeChatModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WeChatModuleConfigs.tsx",
+    "sha256": "5a4090bbdf6c1fab63728c02a3258a5ece054dc71251497b4e8986b14ef84f71"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/StatisticsConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/StatisticsConfigs.tsx",
+    "sha256": "f081c02bd0d4f15acd44f01fedf98a41d8fc91d0be017c83882a2caca6451847"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ControlModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
+    "sha256": "551e3dac26adda40bd8f1654567edb1c308cc5ef83560733d1f5714b72355e62"
+  }
+]

@@ -1,7 +1,7 @@
 # AutoFlow 项目目录结构
 
 - 日期：2026-09-13
-- 状态：目录骨架与已实现领域的职责索引；2026-09-13 按用户要求移除旧 Studio 实现，当前仅保留独立空窗口。
+- 状态：目录骨架与已实现领域的职责索引；2026-09-13 按用户要求移除旧 Studio 实现，当前已按用户授权迁入 WebRPA 前端与 Mock 边界。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
 ## 路径基准
@@ -98,7 +98,7 @@ reference/
 | `apps/backend/tests/integration/` | 真实临时数据库、迁移和仓储测试。 |
 | `apps/backend/tests/unit/` | 纯规则、用例和隔离适配测试。 |
 | `apps/desktop/src/main/ipc/` | 有明确输入输出的 IPC handler；禁止任意文件或进程命令。 |
-| `apps/desktop/src/main/ipc/automation-studio.ts` | 独立空窗口的创建、重复打开聚焦、最小化恢复和关闭重开；无旧草稿、运行或离开握手。 |
+| `apps/desktop/src/main/ipc/automation-studio.ts` | 独立 Studio 窗口的创建、复用、恢复、关闭确认及退出前关闭协调；加载独立 studio.html。 |
 | `apps/desktop/src/main/platform/macos/` | 必要的 macOS 桌面适配。 |
 | `apps/desktop/src/main/platform/windows/` | 必要的 Windows 桌面适配。 |
 | `apps/desktop/src/main/sidecar/` | 本地后端启动、就绪、恢复和退出监管。 |
@@ -253,3 +253,14 @@ reference/
 - `scripts/smoke-studio-window.mjs` 只验收正式空窗口和宿主生命周期，不再执行旧里程碑流程；`smoke:studio` 指向该脚本。
 - 旧源码及早期原型已归档至 `codex/studio-before-removal-20260913@4eda207`；未完成 M6 另存 `codex/m6-unfinished-checkpoint-20260913@59ae8d4`。
 - 清理范围、实际检查结果及平台边界见 [清理验收](migration/studio-removal.md)。原 M1–M5 规格/验收保留为历史证据，不是当前功能列表。
+
+## Studio 前端源码迁入（2026-09-13）
+
+- `renderer/studio.html` / `studio.tsx`：同一个 Electron renderer 构建的独立入口，原编辑器 CSS 仅在这里加载。
+- `renderer/app/StudioApp.tsx`：装配组件、Mock 环境标识和测试场景；主窗口入口保持独立。
+- `renderer/domains/workflows/components/`：原编辑组件、专用 controls、节点配置、文档及助手；`editor-store.ts` 保留源图算法。
+- `workflows/api.ts`、`api/transport.ts`：保留原前端方法、请求/响应形状，统一 IO 替换点。当前 Mock 由用户明确授权，不是正式 OpenAPI 后端客户端。
+- `workflows/events.ts` / `api/event-client.ts`：原事件消费者 + HTTP 命令 + SSE 顺序续读；解析复用 shared/api/events.ts。
+- `workflows/api/mock-*.ts`：本地协议夹具；文档/资产/配置持久化，录制/运行/事件内存状态。不能导入 main/preload/backend。
+- `workflows/styles/`：源 CSS 与 AutoFlow token 映射；`SOURCE.md`、`source-manifest.json`、`LICENSE.WebRPA` 保存来源/边界/许可。
+- `workflows/tests/` 与源邻接 `__tests__/`：请求、事件、编辑和原算法审计测试。无新的后端表或业务路由。

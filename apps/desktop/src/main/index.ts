@@ -16,8 +16,8 @@ const studio = new StudioWindowController({
   mainSenderId: () => mainWindow?.webContents.id,
   preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'system' },
   preloadPath: join(__dirname, '../preload/index.js'),
-  rendererFile: join(__dirname, '../renderer/index.html'),
-  rendererUrl: process.env.ELECTRON_RENDERER_URL,
+  rendererFile: join(__dirname, '../renderer/studio.html'),
+  rendererUrl: process.env.ELECTRON_RENDERER_URL ? new URL('studio.html', process.env.ELECTRON_RENDERER_URL).toString() : undefined,
 })
 
 function requireRuntimeSender(event: DesktopIpcEvent): void {
@@ -133,6 +133,7 @@ app.on('before-quit', event => {
   isQuitting = true
   void (async () => {
     try {
+      if (!await studio.closeForQuit()) { isQuitting = false; return }
       await settings?.shutdown()
       stoppedForQuit = true
       app.quit()

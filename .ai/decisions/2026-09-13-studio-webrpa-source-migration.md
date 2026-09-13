@@ -39,3 +39,12 @@
 - 2026-09-13；状态 confirmed；来源用户明确要求先绘制画布原型，WebRPA 的样式/布局配 AutoFlow 风格配色。
 - 布局、尺寸、控件密度和操作分区保留原版；原蓝色品牌替换为 AutoFlow 暖灰/米白/黏土棕及 sage 语义色。原 CSS 独立装载方案保留，颜色映射限定 Studio；不机械套用宿主更大的控件或主页面布局。
 - 静态原型基于冻结版展示图和 AutoFlow 实际 profiles 截图及 tokens，用于用户视觉审查，不计 R0–R8 的运行验收通过。
+
+## 前端优先与 Mock 边界（最新，confirmed）
+
+- 用户最新授权：先完整迁入前端 UI/交互、请求、Store、事件和 SSE，接口允许 Mock。替代本文此前“不得先做完整 UI”的批次顺序，后端真实验收标准不变。
+- 原组件、专用控件、两种画布、图算法和事件处理器迁入 `renderer/domains/workflows`；保持 React/TS/Vite/Tailwind 主版本，不复制原项目启动器和 package.json。
+- 正式同构建增加 studio.html；主窗口不加载原编辑器 CSS。Mock 由唯一 `studioFetch` 边界注入，不覆盖全局 fetch；原 SocketService 消费者通过 HTTP 命令和共享 SSE 解析器适配，不引入 Socket.IO 服务。
+- 源码清单限定的旧文件暂时保留原显式 any，只有这一条 lint 规则豁免；新适配层遵循严格 TS 和完整 lint。这是可定位的迁入债务，不宣称所有旧类型已经重建。
+- Mock 文档/资源/配置保存到浏览器专属 localStorage，不是 SQLite 工作区落盘；运行和录制只产生明确标注的协议测试事件。真实 Profile、浏览器、系统服务、工作区隔离仍依赖后端阶段。
+- 证据见[前端迁入验收](../../docs/migration/studio-frontend-mock-validation.md)。未测平台与未知接口继续明确列出，不用原 M1–M6 记录替代。

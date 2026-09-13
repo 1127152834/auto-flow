@@ -1,0 +1,962 @@
+// Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
+import { studioFetch } from './api/transport'
+import { StudioEventClient as Socket } from './api/event-client'
+import { useWorkflowStore } from './editor-store'
+import { useNodeRunStore } from './hooks/stores/nodeRunStore'
+import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
+import { useDebugStore } from './hooks/stores/debugStore'
+import type { LogLevel } from './types/index'
+import { getBackendBaseUrl } from './api/config'
+
+// 输入弹窗回调
+type InputPromptCallback = (data: {
+  requestId: string
+  variableName: string
+  title: string
+  message: string
+  defaultValue: string
+  inputMode: 'single' | 'list'
+}) => void
+
+// 浏览器被占用错误回调
+type BrowserBusyCallback = () => void
+
+// 浏览器意外关闭回调
+type BrowserClosedCallback = () => void
+
+/** 子工作流监控事件名（后端 app/executors/workflow_chain.py 推送） */
+export type SubflowEventName =
+  | 'subflow:started'
+  | 'subflow:node_start'
+  | 'subflow:node_complete'
+  | 'subflow:log'
+  | 'subflow:completed'
+
+// 全局音频播放器（用于管理播放状态）
+let currentAudio: HTMLAudioElement | null = null
+
+// 数据行批量处理缓冲区 - 已移除，不再使用
+// let dataRowBuffer: Record<string, unknown>[] = []
+// let dataRowFlushTimer: ReturnType<typeof setTimeout> | null = null
+// const DATA_ROW_FLUSH_INTERVAL = 16
+// const DATA_ROW_BATCH_SIZE = 50
+
+// 是否正在执行中（用于控制是否接收实时数据行）
+let isExecuting = false
+
+class SocketService {
+  private socket: Socket | null = null
+  private connected = false
+  private inputPromptCallback: InputPromptCallback | null = null
+  private browserBusyCallback: BrowserBusyCallback | null = null
+  private browserClosedCallback: BrowserClosedCallback | null = null
+  // 本轮执行经实时通道落进底栏的日志条数（execution:started 时归零）。
+  // 计划任务监控页据此判断实时通道是否有效：有效就不再事后整批补拉历史日志，
+  // 避免同一次执行的日志追加第二遍（见 App.tsx 的 hydrateMonitorPage）。
+  private realtimeLogsSinceStart = 0
+
+  /**
+   * 本轮执行是否已通过实时通道收到过日志。
+   *
+   * 计划任务监控页的事后补拉（hydrateMonitorPage）据此决定是否整批灌入历史日志：
+   * 返回 true 说明底栏已有本次执行的实时日志，再补一遍就是重复显示。
+   */
+  hasRealtimeLogsForCurrentRun(): boolean {
+    return this.realtimeLogsSinceStart > 0
+  }
+
+  // 设置输入弹窗回调
+  setInputPromptCallback(callback: InputPromptCallback | null) {
+    this.inputPromptCallback = callback
+  }
+
+  // 设置浏览器被占用错误回调
+  setBrowserBusyCallback(callback: BrowserBusyCallback | null) {
+    this.browserBusyCallback = callback
+  }
+
+  // 设置浏览器意外关闭回调
+  setBrowserClosedCallback(callback: BrowserClosedCallback | null) {
+    this.browserClosedCallback = callback
+  }
+
+  // 发送输入结果
+  sendInputResult(requestId: string, value: string | null) {
+    if (this.socket?.connected) {
+      this.socket.emit('input_prompt_result', { requestId, value })
+    }
+  }
+
+  // 发送语音合成结果
+  sendTTSResult(requestId: string, success: boolean) {
+    if (this.socket?.connected) {
+      this.socket.emit('tts_result', { requestId, success })
+    }
+  }
+
+  // 发送JS脚本执行结果
+  sendJsScriptResult(requestId: string, success: boolean, result?: unknown, error?: string, variables?: Record<string, unknown>) {
+    if (this.socket?.connected) {
+      this.socket.emit('js_script_result', { requestId, success, result, error, variables })
+    }
+  }
+
+  // 发送音乐播放结果
+  sendPlayMusicResult(requestId: string, success: boolean, error?: string) {
+    if (this.socket?.connected) {
+      this.socket.emit('play_music_result', { requestId, success, error })
+    }
+  }
+
+  // 发送视频播放结果
+  sendPlayVideoResult(requestId: string, success: boolean, error?: string) {
+    if (this.socket?.connected) {
+      this.socket.emit('play_video_result', { requestId, success, error })
+    }
+  }
+
+  // 发送图片查看结果
+  sendViewImageResult(requestId: string, success: boolean, error?: string) {
+    if (this.socket?.connected) {
+      this.socket.emit('view_image_result', { requestId, success, error })
+    }
+  }
+
+  /** 通用事件发射（供 AI 助手 client_action ack 等场景使用） */
+  emit(event: string, data?: unknown) {
+    if (this.socket?.connected) {
+      this.socket.emit(event, data)
+    }
+  }
+
+  // 播放音乐：等待播放完成=是 → 弹播放器并等它播完；=否 → 不弹窗，后台直接播放
+  private playMusic(data: {
+    requestId: string
+    audioUrl: string
+    waitForEnd: boolean
+  }) {
+    try {
+      // 停止之前的音频
+      if (currentAudio) {
+        currentAudio.pause()
+        currentAudio = null
+      }
+
+      // 兜底：不等待播放完成时不弹播放器，后台直接播放。
+      // 正常情况下后端已按 waitForEnd 改走原生播放通道、根本不会派发本事件，
+      // 这里保留是为了「事件仍以某种路径到达」时不再出现弹窗（历史缺陷的双重防线）。
+      if (!data.waitForEnd) {
+        this.playMusicBackground(data)
+        return
+      }
+
+      // 使用播放器弹窗
+      import('./components/MusicPlayerDialog').then(({ showMusicPlayer }) => {
+        showMusicPlayer(
+          {
+            audioUrl: data.audioUrl,
+            requestId: data.requestId,
+            waitForEnd: data.waitForEnd
+          },
+          (success, error) => {
+            this.sendPlayMusicResult(data.requestId, success, error)
+          }
+        )
+      }).catch(err => {
+        // 如果导入失败，回退到简单播放
+        console.error('加载播放器失败，使用简单播放:', err)
+        this.playMusicSimple(data)
+      })
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      this.sendPlayMusicResult(data.requestId, false, errorMsg)
+    }
+  }
+
+  // 后台播放（不弹窗、不阻塞）：先让后端把音频转成浏览器可播放的地址，再静默播放
+  private async playMusicBackground(data: {
+    requestId: string
+    audioUrl: string
+    waitForEnd: boolean
+  }) {
+    try {
+      let url = data.audioUrl
+      // 本地文件路径（如 E:\music\a.mp3）浏览器无法直接播放，必须经后端转换取回可访问 URL。
+      // 这一步是播放器弹窗里原本就有的处理，后台播放同样需要，否则本地文件一律播不出声。
+      try {
+        const resp = await studioFetch(`${getBackendBaseUrl()}/api/system/convert-audio`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audioUrl: data.audioUrl }),
+        })
+        const result = await resp.json()
+        if (result?.success && result.audioPath) {
+          url = `${getBackendBaseUrl()}${result.audioPath}`
+        }
+      } catch (convErr) {
+        // 转换失败不算致命：网络 URL 仍可直接播放，交给下面的 Audio 处理
+        console.warn('[socket] 音频转换失败，尝试直接播放原地址:', convErr)
+      }
+
+      const audio = new Audio(url)
+      currentAudio = audio
+      audio.onended = () => {
+        if (currentAudio === audio) currentAudio = null
+      }
+      audio.play().catch((err) => {
+        // 播放失败只记日志：此时工作流已经继续往下走，不应再回一个失败结果
+        console.error('[socket] 后台播放音乐失败:', err)
+      })
+
+      // 立刻回结果，让工作流继续执行后续模块（音频在后台继续播）
+      this.sendPlayMusicResult(data.requestId, true)
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      this.sendPlayMusicResult(data.requestId, false, errorMsg)
+    }
+  }
+
+  // 简单播放（备用方案）
+  private playMusicSimple(data: {
+    requestId: string
+    audioUrl: string
+    waitForEnd: boolean
+  }) {
+    try {
+      const audio = new Audio(data.audioUrl)
+      currentAudio = audio
+
+      if (data.waitForEnd) {
+        audio.onended = () => {
+          this.sendPlayMusicResult(data.requestId, true)
+          currentAudio = null
+        }
+        audio.onerror = () => {
+          this.sendPlayMusicResult(data.requestId, false, '音频加载或播放失败')
+          currentAudio = null
+        }
+        audio.play().catch((err) => {
+          this.sendPlayMusicResult(data.requestId, false, err.message)
+          currentAudio = null
+        })
+      } else {
+        audio.play().catch((err) => {
+          console.error('播放音乐失败:', err)
+        })
+        this.sendPlayMusicResult(data.requestId, true)
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      this.sendPlayMusicResult(data.requestId, false, errorMsg)
+    }
+  }
+
+  // 播放视频：等待播放完成=是 → 等它播完再继续；=否 → 播放器照常打开，但工作流立刻往下走
+  //
+  // 与音乐的区别：视频没有画面就失去意义，所以「不等待」时不能不显示播放器，
+  // 而是解除阻塞——播放器留在页面上继续播，用户可随时手动关闭。
+  private playVideo(data: {
+    requestId: string
+    videoUrl: string
+    waitForEnd: boolean
+  }) {
+    // 不等待时是否已经回过结果，避免播放器关闭时重复回一次
+    let answered = false
+    const answerOnce = (success: boolean, error?: string) => {
+      if (answered) return
+      answered = true
+      this.sendPlayVideoResult(data.requestId, success, error)
+    }
+    try {
+      import('./components/VideoPlayerDialog').then(({ showVideoPlayer }) => {
+        showVideoPlayer(
+          {
+            videoUrl: data.videoUrl,
+            requestId: data.requestId,
+            waitForEnd: data.waitForEnd
+          },
+          (success, error) => {
+            answerOnce(success, error)
+          }
+        )
+        // 播放器已打开：不等待播放完成时立刻放行工作流
+        if (!data.waitForEnd) {
+          answerOnce(true)
+        }
+      }).catch(err => {
+        const errorMsg = err instanceof Error ? err.message : String(err)
+        answerOnce(false, `加载播放器失败: ${errorMsg}`)
+      })
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      answerOnce(false, errorMsg)
+    }
+  }
+
+  // 查看图片 - 显示图片查看器弹窗
+  private viewImage(data: {
+    requestId: string
+    imageUrl: string
+    autoClose: boolean
+    displayTime: number
+  }) {
+    try {
+      import('./components/ImageViewerDialog').then(({ showImageViewer }) => {
+        showImageViewer(
+          {
+            imageUrl: data.imageUrl,
+            requestId: data.requestId,
+            autoClose: data.autoClose,
+            displayTime: data.displayTime
+          },
+          (success, error) => {
+            this.sendViewImageResult(data.requestId, success, error)
+          }
+        )
+      }).catch(err => {
+        const errorMsg = err instanceof Error ? err.message : String(err)
+        this.sendViewImageResult(data.requestId, false, `加载图片查看器失败: ${errorMsg}`)
+      })
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      this.sendViewImageResult(data.requestId, false, errorMsg)
+    }
+  }
+
+  // 执行语音合成
+  private executeTTS(data: {
+    requestId: string
+    text: string
+    lang: string
+    rate: number
+    pitch: number
+    volume: number
+  }) {
+    try {
+      const utterance = new SpeechSynthesisUtterance(data.text)
+      utterance.lang = data.lang
+      utterance.rate = data.rate
+      utterance.pitch = data.pitch
+      utterance.volume = data.volume
+
+      utterance.onend = () => {
+        this.sendTTSResult(data.requestId, true)
+      }
+
+      utterance.onerror = () => {
+        this.sendTTSResult(data.requestId, false)
+      }
+
+      // 取消之前的语音
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(utterance)
+    } catch {
+      this.sendTTSResult(data.requestId, false)
+    }
+  }
+
+  // 执行JS脚本
+  private executeJsScript(data: {
+    requestId: string
+    code: string
+    variables: Record<string, unknown>
+  }) {
+    try {
+      // 创建一个可修改的 vars 对象副本
+      const vars = { ...data.variables }
+      
+      // 创建一个包含用户代码的函数
+      // 用户代码中应该定义 main(vars) 函数
+      const wrappedCode = `
+        ${data.code}
+        
+        // 调用 main 函数并返回结果
+        if (typeof main === 'function') {
+          return main(vars);
+        } else {
+          throw new Error('未找到 main 函数，请确保代码中定义了 main(vars) 函数');
+        }
+      `
+      
+      // 使用 Function 构造器创建函数，传入 vars 参数
+
+      const fn = new Function('vars', wrappedCode)
+      const result = fn(vars)
+      
+      // 返回结果和修改后的变量对象
+      this.sendJsScriptResult(data.requestId, true, result, undefined, vars)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      this.sendJsScriptResult(data.requestId, false, undefined, errorMessage)
+    }
+  }
+
+  connect() {
+    if (this.socket?.connected) {
+      return
+    }
+
+    // 如果已有socket实例，先清理
+    if (this.socket) {
+      this.socket.removeAllListeners()
+      this.socket.disconnect()
+      this.socket = null
+    }
+
+    // 每次连接时都动态获取最新的后端地址
+    const socketUrl = getBackendBaseUrl()
+    console.log('[Socket] 连接到后端:', socketUrl)
+
+    this.socket = new Socket(socketUrl)
+    this.socket.on('command_error', (error: unknown) => {
+      useWorkflowStore.getState().addLog({ level: 'error', message: `Studio command failed: ${error instanceof Error ? error.message : JSON.stringify(error)}` })
+    })
+
+    this.socket.on('connect', () => {
+      console.log('Socket connected')
+      this.connected = true
+      
+      // 绑定外部待绑定的事件监听器
+      this.bindPendingListeners()
+      
+      // 连接后同步 verboseLog 状态到后端
+      const verboseLog = useWorkflowStore.getState().verboseLog
+      this.socket?.emit('set_verbose_log', { enabled: verboseLog })
+      
+      // 连接后设置当前工作流ID（用于全局热键控制）
+      console.log('[Socket] Socket连接成功，发送 set_current_workflow 事件')
+      this.socket?.emit('set_current_workflow', { workflowId: 'current' })
+      
+      // SSE resumes from the acknowledged sequence; connection alone never completes a run.
+    })
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected, reason:', reason)
+      this.connected = false
+      
+      // 如果是执行中断开，标记需要在重连后检查状态
+      if (isExecuting) {
+        console.log('[Socket] 执行中断开连接，等待序号补读')
+      }
+    })
+
+    // 执行开始
+    this.socket.on('execution:started', (data: { workflowId: string }) => {
+      console.log('Execution started:', data.workflowId)
+      isExecuting = true
+      // 新一轮执行：实时日志计数归零
+      this.realtimeLogsSinceStart = 0
+      const store = useWorkflowStore.getState()
+      store.setExecutionStatus('running')
+      // 清空节点运行态高亮（开始新一轮执行）
+      useNodeRunStore.getState().clear()
+      // 记录当前执行的 workflowId，供"下载数据"按钮使用
+      store.setCurrentExecutionWorkflowId(data.workflowId)
+      // 清空之前的数据
+      store.clearCollectedData()
+      // 不要清空变量列表！变量应该保留，由后端的 variable_update 事件更新
+      // useWorkflowStore.setState({ variables: [] })
+    })
+
+    // 节点开始执行 → 高亮"运行中"
+    this.socket.on('execution:node_start', (data: { workflowId: string; nodeId: string }) => {
+      // 运行状态高亮开关（默认关闭）：关闭时不写入运行态，画布不闪烁，避免大型工作流高速运行卡顿
+      if (!useGlobalConfigStore.getState().config.display?.runStatusHighlight) return
+      if (data?.nodeId) useNodeRunStore.getState().setStatus(data.nodeId, 'running')
+    })
+    // 节点执行完成 → 高亮"成功/失败"
+    this.socket.on('execution:node_complete', (data: { workflowId: string; nodeId: string; success: boolean }) => {
+      if (!useGlobalConfigStore.getState().config.display?.runStatusHighlight) return
+      if (data?.nodeId) useNodeRunStore.getState().setStatus(data.nodeId, data.success ? 'success' : 'failed')
+    })
+
+    // 调试：命中断点/单步 → 暂停
+    this.socket.on('execution:paused', (data: { workflowId: string; node_id: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => {
+      useDebugStore.getState().setPaused({ nodeId: data.node_id, label: data.label, variables: data.variables, reason: data.reason })
+    })
+    // 调试：恢复
+    this.socket.on('execution:resumed', () => {
+      useDebugStore.getState().clearPaused()
+    })
+
+    // ============ 日志批处理缓冲（高性能） ============
+    // 后端短时间内可能推送大量日志，直接 setState 会导致主线程被 React 渲染塞满。
+    // 我们把所有日志先放入缓冲队列，每 80ms（或队列 ≥ 200 条）合并后一次性更新 store。
+    // 这样无论后端多快，前端始终保持 ≥ 12fps 的批处理节奏，体感丝滑。
+    const LOG_BATCH_INTERVAL_MS = 80
+    const LOG_BATCH_MAX_SIZE = 200
+    let logBuffer: Array<{ level: LogLevel; message: string; nodeId?: string; duration?: number }> = []
+    let logFlushTimer: ReturnType<typeof setTimeout> | null = null
+
+    const flushLogBuffer = () => {
+      if (logBuffer.length === 0) return
+      const batch = logBuffer
+      logBuffer = []
+      if (logFlushTimer !== null) {
+        clearTimeout(logFlushTimer)
+        logFlushTimer = null
+      }
+      try {
+        useWorkflowStore.getState().addLogBatch(batch)
+        this.realtimeLogsSinceStart += batch.length
+      } catch (e) {
+        console.error('[Socket] flush log buffer failed:', e)
+      }
+    }
+
+    const scheduleLogFlush = () => {
+      if (logBuffer.length >= LOG_BATCH_MAX_SIZE) {
+        // 缓冲区过大立即冲刷，防止内存堆积
+        flushLogBuffer()
+        return
+      }
+      if (logFlushTimer !== null) return
+      logFlushTimer = setTimeout(flushLogBuffer, LOG_BATCH_INTERVAL_MS)
+    }
+
+    // 浏览器错误检测（提取为公共函数，单/批量入口共用）
+    const detectBrowserError = (level: LogLevel, message: string) => {
+      if (level !== 'error' || !message) return
+      const browserClosedPatterns = [
+        'Target page, context or browser has been closed',
+        'browser has been closed',
+        'Browser closed',
+        'Page closed',
+      ]
+      const browserStartFailedPatterns = [
+        'launch_persistent_context',
+        '无法启动持久化浏览器',
+        '浏览器数据目录被占用',
+        'user-data-dir',
+        '浏览器启动后立即关闭',
+        '打开浏览器失败',
+        '浏览器启动超时',
+      ]
+      const isBrowserClosed = browserClosedPatterns.some((p) => message.includes(p))
+      const isBrowserStartFailed = browserStartFailedPatterns.some((p) => message.includes(p))
+      if (isBrowserClosed && !isBrowserStartFailed && isExecuting && this.browserClosedCallback) {
+        this.browserClosedCallback()
+      } else if (isBrowserStartFailed && this.browserBusyCallback) {
+        this.browserBusyCallback()
+      }
+    }
+
+    // 单条日志消息 - 走缓冲，不直接 setState
+    this.socket.on('execution:log', (data: {
+      workflowId: string
+      log: {
+        id: string
+        timestamp: string
+        level: LogLevel
+        nodeId?: string
+        message: string
+        duration?: number
+        isUserLog?: boolean
+        isSystemLog?: boolean
+      }
+    }) => {
+      const verboseLog = useWorkflowStore.getState().verboseLog
+      const log = data.log
+
+      detectBrowserError(log.level, log.message)
+
+      // 简洁日志模式过滤（错误/警告 + 用户日志 + 系统日志 必显示）
+      if (!verboseLog && !log.isUserLog && !log.isSystemLog && log.level !== 'error' && log.level !== 'warning') {
+        return
+      }
+
+      logBuffer.push({
+        level: log.level,
+        message: log.message,
+        nodeId: log.nodeId,
+        duration: log.duration,
+      })
+      scheduleLogFlush()
+    })
+
+    // 批量日志消息 - 也走同一缓冲队列，避免双路径竞争
+    this.socket.on('execution:log_batch', (data: {
+      workflowId: string
+      logs: Array<{
+        id: string
+        timestamp: string
+        level: LogLevel
+        nodeId?: string
+        message: string
+        duration?: number
+        isUserLog?: boolean
+        isSystemLog?: boolean
+      }>
+    }) => {
+      const verboseLog = useWorkflowStore.getState().verboseLog
+      for (const log of data.logs) {
+        detectBrowserError(log.level, log.message)
+        if (!verboseLog && !log.isUserLog && !log.isSystemLog && log.level !== 'error' && log.level !== 'warning') {
+          continue
+        }
+        logBuffer.push({
+          level: log.level,
+          message: log.message,
+          nodeId: log.nodeId,
+          duration: log.duration,
+        })
+      }
+      scheduleLogFlush()
+    })
+
+    // 输入弹窗请求
+    this.socket.on('execution:input_prompt', (data: {
+      requestId: string
+      variableName: string
+      title: string
+      message: string
+      defaultValue: string
+      inputMode?: 'single' | 'list'
+    }) => {
+      if (this.inputPromptCallback) {
+        this.inputPromptCallback({
+          ...data,
+          inputMode: data.inputMode || 'single'
+        })
+      }
+    })
+
+    // 语音合成请求
+    this.socket.on('execution:tts_request', (data: {
+      requestId: string
+      text: string
+      lang: string
+      rate: number
+      pitch: number
+      volume: number
+    }) => {
+      this.executeTTS(data)
+    })
+
+    // JS脚本执行请求
+    this.socket.on('execution:js_script', (data: {
+      requestId: string
+      code: string
+      variables: Record<string, unknown>
+    }) => {
+      this.executeJsScript(data)
+    })
+
+    // 播放音乐请求
+    this.socket.on('execution:play_music', (data: {
+      requestId: string
+      audioUrl: string
+      waitForEnd: boolean
+    }) => {
+      this.playMusic(data)
+    })
+
+    // 播放视频请求
+    this.socket.on('execution:play_video', (data: {
+      requestId: string
+      videoUrl: string
+      waitForEnd: boolean
+    }) => {
+      this.playVideo(data)
+    })
+
+    // 查看图片请求
+    this.socket.on('execution:view_image', (data: {
+      requestId: string
+      imageUrl: string
+      autoClose: boolean
+      displayTime: number
+    }) => {
+      this.viewImage(data)
+    })
+
+    // 执行完成
+    this.socket.on('execution:completed', (data: {
+      workflowId: string
+      result: {
+        status: string
+        executedNodes: number
+        failedNodes: number
+        dataFile?: string
+      }
+      collectedData?: Record<string, unknown>[]
+      healedSelectors?: { nodeId?: string; configKey?: string; oldSelector?: string; newSelector?: string }[]
+    }) => {
+      console.log('[Socket] 收到 execution:completed 事件 - 后端执行完成！', data)
+      useDebugStore.getState().clearPaused()
+      
+      // 立即冲刷日志缓冲，确保完成日志和最后的执行日志全部显示
+      flushLogBuffer()
+      
+      // 停止接收实时数据行
+      isExecuting = false
+      
+      const status = data.result.status as 'completed' | 'failed' | 'stopped'
+      console.log('[Socket] 立即设置执行状态为:', status)
+      
+      // 立即更新所有状态
+      const store = useWorkflowStore.getState()
+      store.setExecutionStatus(status)
+      // 确保 currentExecutionWorkflowId 已设置（即使错过了 execution:started）
+      if (data.workflowId) {
+        store.setCurrentExecutionWorkflowId(data.workflowId)
+      }
+      
+      // 处理收集的数据（兜底同步）
+      // 前端在执行期间已通过 execution:data_row / data_row_batch 流式收齐全部数据；
+      // completed 附带的 collectedData 仅作兜底（且后端封顶 5000）。若它的条数不超过
+      // 前端已有的，就不覆盖，避免把流式收到的更多数据截断。
+      if (data.collectedData && data.collectedData.length > 0) {
+        const current = store.collectedData?.length || 0
+        if (data.collectedData.length > current) {
+          console.log('[Socket] completed 同步数据:', data.collectedData.length, '条（当前', current, '）')
+          store.setCollectedData(data.collectedData)
+        } else {
+          console.log('[Socket] completed 数据(', data.collectedData.length, ')不多于已流式接收(', current, ')，保留现有不覆盖')
+        }
+      }
+      
+      // 触发全局事件，通知所有组件执行已完成
+      window.dispatchEvent(new CustomEvent('execution:completed', { 
+        detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } 
+      }))
+
+      // 选择器自愈：若运行中有选择器被自愈，提示用户是否写回工作流（持久化）
+      if (data.healedSelectors && data.healedSelectors.length > 0) {
+        try {
+          const heals = data.healedSelectors.filter((h) => h.nodeId && h.newSelector)
+          if (heals.length > 0) {
+            window.dispatchEvent(new CustomEvent('selector:healed', { detail: { heals } }))
+          }
+        } catch { /* ignore */ }
+      }
+      
+      // 停止所有音频播放
+      this.stopAllAudio()
+      
+      // 添加完成日志
+      store.addLog({
+        level: status === 'completed' ? 'success' : 'error',
+        message: `执行${status === 'completed' ? '完成' : '失败'}，共执行 ${data.result.executedNodes} 个节点，失败 ${data.result.failedNodes} 个`,
+      })
+      
+      console.log('[Socket] 前端状态已全部更新完成！')
+    })
+
+    // 数据行收集 - 实时显示（单条，兼容旧路径）
+    this.socket.on('execution:data_row', (data: {
+      workflowId: string
+      row: Record<string, unknown>
+    }) => {
+      if (!isExecuting) return
+      
+      const store = useWorkflowStore.getState()
+      store.addDataRow(data.row)
+    })
+
+    // 数据行收集 - 批量实时显示（高性能：后端合批推送，前端一次性入库，配合虚拟滚动表格）
+    this.socket.on('execution:data_row_batch', (data: {
+      workflowId: string
+      rows: Array<Record<string, unknown>>
+    }) => {
+      if (!isExecuting) return
+      if (!Array.isArray(data.rows) || data.rows.length === 0) return
+      const store = useWorkflowStore.getState()
+      store.addDataRows(data.rows)
+    })
+
+    // 执行停止
+    this.socket.on('execution:stopped', (_data: { workflowId: string }) => {
+      isExecuting = false  // 停止接收实时数据行
+      useDebugStore.getState().clearPaused()
+      // 停止所有音频播放
+      this.stopAllAudio()
+      useWorkflowStore.getState().setExecutionStatus('stopped')
+    })
+    
+    // 热键触发运行工作流
+    this.socket.on('hotkey:run_workflow', (_data: { workflowId: string }) => {
+      console.log('[Socket] 收到 hotkey:run_workflow 事件')
+      // 触发全局事件，让 Toolbar 组件处理
+      window.dispatchEvent(new CustomEvent('hotkey:run'))
+      console.log('[Socket] 已触发 window 的 hotkey:run 事件')
+    })
+    
+    // 热键触发停止工作流
+    this.socket.on('hotkey:stop_workflow', (_data: { workflowId: string }) => {
+      console.log('[Socket] 收到 hotkey:stop_workflow 事件')
+      window.dispatchEvent(new CustomEvent('hotkey:stop'))
+      console.log('[Socket] 已触发 window 的 hotkey:stop 事件')
+    })
+    
+    // 热键提示没有活动工作流
+    this.socket.on('hotkey:no_workflow', () => {
+      console.log('[Socket] 收到 hotkey:no_workflow 事件 - 没有活动的工作流')
+    })
+    
+    // 热键触发开始录制宏 (F9)
+    this.socket.on('hotkey:macro_start', () => {
+      console.log('[Socket] 收到 hotkey:macro_start 事件')
+      window.dispatchEvent(new CustomEvent('hotkey:macro_start'))
+      console.log('[Socket] 已触发 window 的 hotkey:macro_start 事件')
+    })
+    
+    // 热键触发停止录制宏 (F10)
+    this.socket.on('hotkey:macro_stop', () => {
+      console.log('[Socket] 收到 hotkey:macro_stop 事件')
+      window.dispatchEvent(new CustomEvent('hotkey:macro_stop'))
+      console.log('[Socket] 已触发 window 的 hotkey:macro_stop 事件')
+    })
+    
+    // 热键触发截图 (Ctrl+Shift+F12)
+    this.socket.on('hotkey:screenshot', () => {
+      console.log('[Socket] 收到 hotkey:screenshot 事件')
+      window.dispatchEvent(new CustomEvent('hotkey:screenshot'))
+      console.log('[Socket] 已触发 window 的 hotkey:screenshot 事件')
+    })
+
+    // 用户自定义全局热键触发
+    this.socket.on('hotkey:custom_action', (data: { actionId: string }) => {
+      console.log('[Socket] 收到 hotkey:custom_action 事件', data)
+      window.dispatchEvent(new CustomEvent('hotkey:custom_action', { detail: data }))
+    })
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.removeAllListeners()
+      this.socket.disconnect()
+      this.socket = null
+      this.connected = false
+    }
+    isExecuting = false
+  }
+
+  isConnected() {
+    return this.connected
+  }
+
+  // 待绑定的外部监听器（用于 socket 尚未连接时）
+  private pendingListeners: Array<{ event: string; callback: (...args: any[]) => void }> = []
+  // 持久外部监听器（重连后需要重新绑定）
+  private externalListeners: Array<{ event: string; callback: (...args: any[]) => void }> = []
+
+  // 添加 on 方法，支持外部监听事件
+  on(event: string, callback: (...args: any[]) => void) {
+    // 记录到 externalListeners，用于重连后重新绑定
+    this.externalListeners.push({ event, callback })
+    if (this.socket) {
+      this.socket.on(event, callback)
+    } else {
+      // 如果 socket 还没初始化，加入待绑定队列
+      this.pendingListeners.push({ event, callback })
+    }
+  }
+
+  // 添加 off 方法，支持外部移除监听事件
+  off(event: string, callback: (...args: any[]) => void) {
+    if (this.socket) {
+      this.socket.off(event, callback)
+    }
+    // 同时从待绑定队列和持久监听器中移除
+    const matcher = (l: { event: string; callback: (...args: any[]) => void }) =>
+      !(l.event === event && l.callback === callback)
+    this.pendingListeners = this.pendingListeners.filter(matcher)
+    this.externalListeners = this.externalListeners.filter(matcher)
+  }
+
+  /**
+   * 订阅子工作流监控事件（「运行其它工作流」时后端推送的 subflow:* 系列）。
+   *
+   * 这些事件只有子工作流监控窗口关心，不进日志缓冲、不写节点运行态 store，
+   * 所以走外部监听器通道而不是 setupEventListeners 里的固定监听：
+   * 窗口组件卸载时要能干净退订，避免重复注册。
+   * 返回取消订阅函数。
+   */
+  onSubflowEvent(event: SubflowEventName, handler: (data: Record<string, any>) => void): () => void {
+    const wrapped = (data: unknown) => {
+      // 后端载荷理论上一定是对象，但推送链路上任何一环出问题都不该把窗口打崩
+      if (!data || typeof data !== 'object') return
+      try {
+        handler(data as Record<string, any>)
+      } catch (err) {
+        console.error(`[Socket] 处理 ${event} 事件失败:`, err)
+      }
+    }
+    this.on(event, wrapped)
+    return () => this.off(event, wrapped)
+  }
+
+  // 内部：把待绑定的监听器（含历史外部 listener）一次性绑定到 socket
+  private bindPendingListeners() {
+    if (!this.socket) return
+    // 1) 绑定待绑定的（首次）
+    for (const l of this.pendingListeners) {
+      this.socket.on(l.event, l.callback)
+    }
+    this.pendingListeners = []
+    // 2) 重连场景：external listeners 不在 pendingListeners 中，需要重新绑定
+    //    （connect 函数中 removeAllListeners 后所有事件都被清掉了，
+    //     externalListeners 永久保留，这里幂等地 on 上去）
+    //    因为 socket.io 的 on 会去重重复回调（实际 on 多次会注册多次），
+    //    所以先 off 一次再 on
+    for (const l of this.externalListeners) {
+      try {
+        this.socket.off(l.event, l.callback)
+      } catch {}
+      this.socket.on(l.event, l.callback)
+    }
+  }
+
+  // 停止所有音频/视频播放
+  private stopAllAudio() {
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+      currentAudio = null
+    }
+    // 同时停止语音合成
+    window.speechSynthesis.cancel()
+    // 关闭音乐播放器弹窗
+    import('./components/MusicPlayerDialog').then(({ hideMusicPlayer }) => {
+      hideMusicPlayer()
+    }).catch(() => {})
+    // 关闭视频播放器弹窗
+    import('./components/VideoPlayerDialog').then(({ hideVideoPlayer }) => {
+      hideVideoPlayer()
+    }).catch(() => {})
+    // 关闭图片查看器弹窗
+    import('./components/ImageViewerDialog').then(({ hideImageViewer }) => {
+      hideImageViewer()
+    }).catch(() => {})
+  }
+
+  // 发送停止执行请求
+  stopExecution(workflowId: string) {
+    // 停止所有音频
+    this.stopAllAudio()
+    if (this.socket?.connected) {
+      this.socket.emit('execution_stop', { workflowId })
+    }
+  }
+
+  // 设置详细日志开关状态（同步到后端）
+  setVerboseLog(enabled: boolean) {
+    if (this.socket?.connected) {
+      this.socket.emit('set_verbose_log', { enabled })
+    }
+  }
+  
+  // 设置当前活动的工作流ID（用于全局热键控制）
+  setCurrentWorkflow(workflowId: string | null) {
+    console.log('[Socket] 准备设置当前工作流ID:', workflowId, '| Socket已连接:', this.socket?.connected)
+    if (this.socket?.connected) {
+      this.socket.emit('set_current_workflow', { workflowId })
+      console.log('[Socket] 已发送 set_current_workflow 事件')
+    } else {
+      console.log('[Socket] Socket未连接，无法发送 set_current_workflow 事件')
+    }
+  }
+}
+
+export const socketService = new SocketService()

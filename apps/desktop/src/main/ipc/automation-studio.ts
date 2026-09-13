@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, dialog } from 'electron'
 import type { UiPreferences } from '../../shared/settings'
 
 export type DesktopIpcEvent = { sender: { id: number; mainFrame: unknown }; senderFrame: unknown }
@@ -18,6 +18,7 @@ type StudioWindowOptions = {
 /** Owns the single independent Studio window. */
 export class StudioWindowController {
   private window: BrowserWindow | undefined
+  private closeResult: ((closed: boolean) => void) | undefined
 
   constructor(private readonly options: StudioWindowOptions) {}
 
@@ -34,7 +35,15 @@ export class StudioWindowController {
       webPreferences: { preload: this.options.preloadPath, contextIsolation: true, sandbox: true, nodeIntegration: false },
     })
     this.window = window
-    window.once('closed', () => { if (this.window === window) this.window = undefined })
+    window.once('closed', () => {
+      if (this.window === window) this.window = undefined
+      this.closeResult?.(true); this.closeResult = undefined
+    })
+    window.webContents.on('will-prevent-unload', event => {
+      const discard = dialog.showMessageBoxSync(window, {type:'warning',title:'工作流尚未保存',message:'关闭将放弃当前未保存的编辑。',detail:'需要保存时，请选择继续编辑，再使用保存按钮。',buttons:['放弃并关闭','继续编辑'],defaultId:1,cancelId:1}) === 0
+      if (discard) event.preventDefault()
+      else {this.closeResult?.(false);this.closeResult = undefined}
+    })
     window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
     window.webContents.on('will-navigate', event => event.preventDefault())
     window.webContents.on('did-finish-load', () => this.applyPreferences(this.options.preferences()))
@@ -51,6 +60,11 @@ export class StudioWindowController {
       if (!window.isDestroyed()) window.destroy()
       throw new Error('无法打开工作流工作台，请重试')
     }
+  }
+
+  async closeForQuit(): Promise<boolean> {
+    if (!this.window || this.window.isDestroyed()) return true
+    return new Promise(resolve => { this.closeResult = resolve; this.window!.close() })
   }
 
   applyPreferences(preferences: UiPreferences): void {

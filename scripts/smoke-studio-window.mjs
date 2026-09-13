@@ -6,9 +6,9 @@ import { launchElectron, connectCdp, wait, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
-const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-empty-studio-')))
+const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-source-studio-')))
 const qaIndex = process.argv.indexOf('--qa-directory')
-const qa = qaIndex < 0 ? join(root, 'docs/migration/studio-removal-qa') : resolve(process.argv[qaIndex + 1])
+const qa = qaIndex < 0 ? join(root, 'docs/migration/studio-frontend-qa') : resolve(process.argv[qaIndex + 1])
 await mkdir(qa, { recursive: true })
 let desktop, studio, native, devServer
 const checks = []
@@ -37,8 +37,9 @@ try {
 
   assert.ok(await main.evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.includes('工作流工作台')); if (!b) return false; b.click(); return true })()`))
   studio = await studioTarget()
-  await waitFor(studio, `Boolean(document.querySelector('[aria-label="工作流工作台"]'))`, 'empty Studio shell')
-  assert.equal(await studio.evaluate(`document.querySelectorAll('input, textarea, select, button, .react-flow').length`), 0)
+  await waitFor(studio, `Boolean(document.querySelector('[aria-label="工作流工作台"]'))`, 'source Studio editor')
+  await waitFor(studio, `Boolean(document.querySelector('.react-flow')) && document.body.innerText.includes('Mock 接口')`, 'source canvas and explicit mock mode')
+  assert.ok((await studio.evaluate(`location.pathname`)).endsWith('/studio.html'))
   const originalId = await studioId()
   await main.evaluate('window.autoflow.openAutomationStudio()')
   assert.equal((await targets()).filter(t => t.url.includes('view=automation-studio')).length, 1)
@@ -47,17 +48,17 @@ try {
   await waitFor(native, `smokeElectron.BrowserWindow.fromId(${originalId}).isMinimized()`, 'Studio minimized')
   await main.evaluate('window.autoflow.openAutomationStudio()')
   await waitFor(native, `!smokeElectron.BrowserWindow.fromId(${originalId}).isMinimized()`, 'Studio restored')
-  checks.push('overview opens empty Studio; repeat open reuses and restores the same window')
+  checks.push('overview opens source Studio; repeat open reuses and restores the same window')
 
   await native.evaluate(`smokeElectron.BrowserWindow.fromId(${originalId}).close()`)
-  await waitFor(native, `!smokeElectron.BrowserWindow.fromId(${originalId})`, 'Studio closes without retired draft prompts')
+  await waitFor(native, `!smokeElectron.BrowserWindow.fromId(${originalId})`, 'unchanged Studio closes')
   studio.close()
   await main.evaluate('window.autoflow.openAutomationStudio()')
   studio = await studioTarget()
   const reopenedId = await studioId()
   assert.notEqual(reopenedId, originalId)
-  await waitFor(studio, `Boolean(document.querySelector('[aria-label="工作流工作台"]'))`, 'reopened empty Studio')
-  checks.push('Studio closes and reopens without editor, run, or export state')
+  await waitFor(studio, `Boolean(document.querySelector('[aria-label="工作流工作台"]'))`, 'reopened source Studio')
+  checks.push('unchanged Studio closes and reopens its source editor')
 
   await native.evaluate(`smokeElectron.BrowserWindow.getAllWindows().find(w => w.id !== ${reopenedId}).close()`)
   await waitFor(native, 'smokeElectron.BrowserWindow.getAllWindows().length === 1', 'main window closed')

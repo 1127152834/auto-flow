@@ -1,0 +1,3 @@
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0

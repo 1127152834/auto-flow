@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "addNode 解析器的口径基线（Property 13：两份解析器结果一致）。",
+    "前端 vitest 侧（frontend/src/lib/__tests__/helpers/addNodeDefaults.ts）与后端 pytest 侧",
+    "（backend/tests/contract/addnode_parser.py）各自断言自己的解析结果等于本文件。",
+    "任一侧解析器逻辑漂移都会立刻失败；源码新增模块时两侧同时失败，只需更新本文件一处。",
+    "禁止为了让测试变绿而随手改这里的数字——先确认解析器逻辑仍然正确。",
+    "design.md 记的 167 处 / 171 个 type 是立项时的实测值，此后源码新增了 desktop_* 控件",
+    "操作整批模块（appVariable 15 条 + controlVariable 14 条），故当前值高于立项值。"
+  ],
+  "_bodyBoundaryNote": [
+    "函数体边界不用绝对行号断言：行号会随 workflowStore.ts 任何位置的增删行而漂移，",
+    "锁死它只会制造无意义的维护负担。改为结构性断言——函数体内不得出现相邻 store 动作的",
+    "签名（见 forbiddenInBody），这同样能抓出「括号配对被字符串里的花括号带偏、把相邻动作",
+    "吞进来」这类真实错误，且不随行号变化。"
+  ],
+  "forbiddenInBody": ["updateNodeData:", "blockInsertNode:", "deleteNode:"],
+  "branchCount": 162,
+  "multiTypeBranchCount": 7,
+  "moduleTypeCount": 185,
+  "varFieldCount": 187,
+  "modulesWithVarFieldsCount": 174,
+  "computedVarFieldCount": 8,
+  "fieldDistribution": {
+    "resultVariable": 115,
+    "saveToVariable": 24,
+    "appVariable": 15,
+    "variableName": 14,
+    "controlVariable": 14,
+    "indexVariable": 2,
+    "itemVariable": 1,
+    "saveNewElementSelector": 1,
+    "saveChangeInfo": 1
+  }
+}

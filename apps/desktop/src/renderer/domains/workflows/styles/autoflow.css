@@ -1,0 +1,31 @@
+/* Only the independent Studio HTML loads these source-compatible AutoFlow tokens. */
+:root {
+  --slate-50: 40 33% 98%; --slate-100: 38 27% 95%; --slate-150: 40 22% 92%;
+  --slate-200: 40 16% 82%; --slate-300: 38 14% 75%; --slate-400: 36 8% 60%;
+  --slate-500: 38 6% 44%; --slate-600: 38 6% 36%; --slate-700: 40 6% 25%;
+  --slate-800: 40 6% 19%; --slate-900: 40 8% 15%;
+  --brand-50: 27 52% 96%; --brand-100: 27 51% 90%; --brand-200: 26 43% 80%;
+  --brand-300: 25 42% 68%; --brand-400: 24 43% 55%; --brand-500: 23 47% 43%;
+  --brand-600: 20 50% 37%; --brand-700: 20 51% 35%; --brand-800: 20 48% 29%; --brand-900: 20 45% 23%;
+  --background: 40 26% 93%; --card: 45 33% 98%; --popover: 45 33% 98%;
+  --foreground: 40 6% 19%; --border: 40 16% 82%; --muted: 38 27% 95%; --muted-foreground: 38 6% 36%;
+}
+@theme {
+  --color-blue-50: #faf2ec; --color-blue-100: #f2e3d7; --color-blue-200: #e4c8b6;
+  --color-blue-500: #a36240; --color-blue-600: #8d4e2f; --color-blue-700: #88492c;
+  --color-slate-50: #fbfaf7; --color-slate-100: #f6f3ee; --color-slate-200: #d8d3c9;
+  --color-slate-500: #777168; --color-slate-600: #625e57; --color-slate-800: #34322e;
+}
+html,body,#root { height:100%; margin:0; overflow:hidden; }
+.studio-shell { height:100dvh; display:flex; flex-direction:column; background:#f1eee7; color:#34322e; }
+.studio-mock-banner { display:flex; align-items:center; justify-content:space-between; min-height:28px; padding:4px 14px; font-size:11px; background:#f2e3d7; border-bottom:1px solid #d8d3c9; gap:12px; }
+.studio-mock-banner b { color:#88492c; margin-left:8px; }
+.studio-mock-banner button,.studio-mock-tools button { cursor:pointer; border:1px solid #c7c0b5; border-radius:5px; padding:2px 7px; background:#fbfaf7; white-space:nowrap; }
+.studio-mock-tools { display:flex; flex-wrap:wrap; gap:6px; padding:8px; font-size:11px; border-bottom:1px solid #d8d3c9; }
+.studio-editor { flex:1; min-height:0; overflow:hidden; }
+.studio-editor > div { height:100%; }
+.studio-mock-page { position:fixed; right:12px; bottom:12px; width:310px; z-index:2147483647; padding:12px; border:2px solid #8d4e2f; border-radius:10px; background:#fbfaf7; box-shadow:0 10px 40px #34322e33; font-size:12px; }
+.studio-mock-page header { display:flex; justify-content:space-between; }
+.studio-mock-page p { margin:7px 0; color:#625e57; }
+.studio-mock-page input:not([type=checkbox]),.studio-mock-page select { border:1px solid #d8d3c9; border-radius:4px; padding:5px; width:100%; margin:4px 0; }
+.studio-mock-page button { border:1px solid #c7c0b5; padding:4px 8px; border-radius:4px; cursor:pointer; background:#f2e3d7; white-space:nowrap; }

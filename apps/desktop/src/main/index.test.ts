@@ -8,6 +8,7 @@ import type { DesktopRuntimeContext } from '../shared/runtime'
 class FakeWindow extends EventEmitter {
   static instances: FakeWindow[] = []
   destroyed = false
+  unsaved = false
   webContents = Object.assign(new EventEmitter(), { id: 10 + FakeWindow.instances.length, mainFrame: {}, setWindowOpenHandler: vi.fn(), setZoomFactor: vi.fn(), send: vi.fn() })
   loadURL = vi.fn(async () => {})
   loadFile = vi.fn(async () => {})
@@ -18,7 +19,7 @@ class FakeWindow extends EventEmitter {
   isDestroyed() { return this.destroyed }
   isMinimized() { return false }
   destroy() { this.destroyed = true; this.emit('closed') }
-  close() { const event = { preventDefault: vi.fn() }; this.emit('close', event); if (!event.preventDefault.mock.calls.length) this.destroy() }
+  close() { if (this.unsaved) { const veto={preventDefault:vi.fn()}; this.webContents.emit('will-prevent-unload',veto); if (!veto.preventDefault.mock.calls.length) return } const event = { preventDefault: vi.fn() }; this.emit('close', event); if (!event.preventDefault.mock.calls.length) this.destroy() }
   constructor() { super(); FakeWindow.instances.push(this) }
 }
 
@@ -46,7 +47,7 @@ beforeEach(async () => {
     app.emit('before-quit', event)
     if (!event.preventDefault.mock.calls.length) for (const window of FakeWindow.instances) if (!window.destroyed) window.close()
   })
-  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn() } }))
+  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
   vi.doMock('./settings/controller', () => ({ SettingsController: class {
     constructor(private options: SettingsControllerOptions) {}
     start = async () => {}
@@ -111,26 +112,40 @@ it('keeps the old workspace and open windows on switch failure', async () => {
   expect(studio.destroyed).toBe(false)
 })
 
-it('stops the sidecar before quitting and closing the empty Studio', async () => {
+it('closes Studio before stopping the sidecar and quitting the main window', async () => {
   const studio = await openStudio()
   let finishShutdown!: () => void
   settings.shutdown.mockImplementationOnce(() => new Promise<void>(resolve => { finishShutdown = resolve }))
   app.quit()
-  expect(settings.shutdown).toHaveBeenCalledOnce()
-  expect(studio.destroyed).toBe(false)
+  await vi.waitFor(()=>expect(settings.shutdown).toHaveBeenCalledOnce())
+  expect(studio.destroyed).toBe(true)
+  expect(FakeWindow.instances[0]!.destroyed).toBe(false)
   finishShutdown()
-  await vi.waitFor(() => expect(studio.destroyed).toBe(true))
+  await vi.waitFor(() => expect(FakeWindow.instances[0]!.destroyed).toBe(true))
 })
 
-it('keeps windows open after failed shutdown and permits a later retry', async () => {
-  const studio = await openStudio()
+it('keeps the main window on shutdown failure and permits retry', async () => {
+  await openStudio()
   settings.shutdown.mockRejectedValueOnce(new Error('cleanup failed'))
   app.quit()
-  await Promise.resolve(); await Promise.resolve()
-  expect(studio.destroyed).toBe(false)
+  const {dialog}=await import('electron')
+  await vi.waitFor(()=>expect(dialog.showErrorBox).toHaveBeenCalledOnce())
+  expect(FakeWindow.instances[0]!.destroyed).toBe(false)
   app.quit()
-  await vi.waitFor(() => expect(studio.destroyed).toBe(true))
+  await vi.waitFor(() => expect(FakeWindow.instances[0]!.destroyed).toBe(true))
   expect(settings.shutdown).toHaveBeenCalledTimes(2)
+})
+
+it('does not shut down the sidecar when the user keeps the unsaved Studio open',async()=>{
+  const studio=await openStudio();studio.unsaved=true
+  app.quit()
+  await Promise.resolve();await Promise.resolve()
+  expect(settings.shutdown).not.toHaveBeenCalled()
+  expect(studio.destroyed).toBe(false)
+  const {dialog}=await import('electron')
+  vi.mocked(dialog.showMessageBoxSync).mockReturnValue(0)
+  app.quit()
+  await vi.waitFor(()=>expect(settings.shutdown).toHaveBeenCalledOnce())
 })
 
 it('keeps Studio alive when the main window closes and permits reuse from its replacement', async () => {

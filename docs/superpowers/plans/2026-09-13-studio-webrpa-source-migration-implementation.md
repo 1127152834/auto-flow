@@ -1,6 +1,8 @@
 # Studio WebRPA 源码迁入详细里程碑计划
 
-> 2026-09-13 修订：用户在清除旧 Studio 后要求制定迁入方式，并明确架构、技术栈、开发习惯贴合 AutoFlow。产品方向及工程约束 confirmed，详细里程碑安排 proposed；用户要求“方便测试，稳步前行”。本次仅更新文档；迁入代码尚未开始。[设计规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)为行为和边界依据。
+> **2026-09-13 最新实施决策（confirmed）**：用户授权先将范围内 WebRPA 前端、Store、请求、事件与交互迁入 AutoFlow，外部接口先用 Mock。本轮已落地正式 Studio 入口和源码编辑器，详见[前端迁入记录](../../migration/studio-frontend-mock-validation.md)。本文原“R1 真实闭环先于全量前端”的执行顺序被本决策替代；R0–R8 的真实后端、生命周期和平台验收标准继续有效，Mock 测试不能勾选为真实运行通过。
+
+> 2026-09-13 修订：用户在清除旧 Studio 后要求制定迁入方式，并明确架构、技术栈、开发习惯贴合 AutoFlow。产品方向及工程约束 confirmed，详细里程碑安排 proposed；用户要求“方便测试，稳步前行”。本段记录当时文档基线，当前实现状态以上方最新决策为准。[设计规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)为行为和边界依据。
 
 ## 1. 当前基线与交付原则
 

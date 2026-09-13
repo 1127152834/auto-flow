@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-13",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "source-frontend-with-explicit-mock",
+  "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "sourceManifestFiles": 275,
+  "sourceHashesVerified": true,
+  "checks": {
+    "frontend": {
+      "files": 76,
+      "passed": 474
+    },
+    "scripts": {
+      "passed": 12
+    },
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapiCheck": "passed"
+  },
+  "actualUI": [
+    "Vite: drag and configure node",
+    "Vite: recorder accepted navigation, Chinese input, click; generated 3 nodes and 2 edges",
+    "Vite: save, reopen, breakpoint and single step",
+    "Electron built HTML: overview opens studio.html with source editor",
+    "Electron: close and reopen empty Studio; normal quit exit 0",
+    "Vite: full page reload followed by reopening preserves name, node and URL"
+  ],
+  "notVerified": [
+    "all 472 module forms individually",
+    "real browser execution/recording/picking",
+    "workspace/backend persistence and resource locks",
+    "native dirty-node close prompt through UI automation",
+    "packaged distribution",
+    "macOS Intel",
+    "Windows"
+  ],
+  "notes": [
+    "Source whitespace is retained; git diff --check reports inherited trailing spaces.",
+    "Mock protocol visits source node-array order; it is not a control-flow executor."
+  ]
+}
