@@ -1,3 +1,5 @@
+import { FileText } from "@phosphor-icons/react";
+import { DataTablePageFrame } from "../components/DataTablePageFrame";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   useCallback,
@@ -19,7 +21,6 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "../../../shared/components/ui/alert-dialog";
-import { Badge } from "../../../shared/components/ui/badge";
 import { Button } from "../../../shared/components/ui/button";
 import { Skeleton } from "../../../shared/components/ui/skeleton";
 import {
@@ -78,11 +79,11 @@ export type DataTableDetailPageProps = {
   registerLeaveGuard(guard: (() => Promise<boolean>) | null): void;
 };
 const labels: Record<DataTableTab, string> = {
-  records: "记录",
-  fields: "字段",
-  statuses: "状态",
-  source: "来源",
-  settings: "设置",
+  records: "数据记录",
+  fields: "字段与校验",
+  statuses: "业务状态",
+  source: "来源设置",
+  settings: "数据表设置",
 };
 const errorMessage = (value: unknown) =>
   value instanceof Error ? value.message : "读取数据失败";
@@ -558,12 +559,9 @@ function DataTableDetail({
     onEdit={() => { if (recordLocation.mode === "detail") onRecordNavigate?.({ ...recordLocation, mode: "edit" }) }}
     onDelete={() => { if (routeRecord && editing.canLeave()) void askDiscardOnce("editor", () => { editing.close(); editing.open({ kind: "recordDelete", record: routeRecord }) }) }}
     onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }} />
-    : recordLocation ? <RecordEditPage
-      conflictView={recordLocation.mode === "edit" && conflictLatest?.session === editing.editor?.session && conflictLatest?.input.kind === "recordEdit" && matchesRoute(conflictLatest.input.record.ref) ? <section aria-label="最新内容" className="grid min-w-0 gap-4 rounded-card border border-line bg-surface p-5"><h2 className="text-base font-semibold">最新内容</h2><p className="text-sm text-muted">左侧输入仍保留。重新编辑将采用这里的最新内容，不会自动合并或覆盖。</p><RecordFieldsView fields={conflictLatest.context.fields.items} record={conflictLatest.input.record} /><div className="flex flex-wrap gap-2"><Button variant="ghost" onClick={() => { setConflictLatest(null); setConflictError(null) }}>保留当前草稿</Button><Button variant="primary" disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></div></section> : undefined}
+    : recordLocation ? <RecordEditPage embedded
       mode={recordLocation.mode === "create" ? "create" : "edit"}
       loading={!recordEditor && !routeError && !editing.recoveryBlocked && !foreignRecovery} error={routeError} disabled={disabled || editing.busy || editing.recoveryPending} onBack={backToRecords}
-      onStatus={recordLocation.mode === "edit" ? () => onRecordNavigate?.({ ...recordLocation, mode: "detail" }) : undefined}
-      statusName={routeRecord?.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}
       onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }}
       footer={<>{editorDirty ? <span className="mr-auto text-sm text-muted">未保存的修改</span> : null}<Button variant="ghost" disabled={disabled || editing.busy || editing.recoveryPending} onClick={backToRecords}>取消</Button>{editing.recoveryPending ? <Button type="submit" form="record" data-record-action="recover" disabled={disabled || editing.busy}>核对保存结果</Button> : <Button type="submit" form="record" variant="primary" disabled={disabled || editing.busy || !writable || recordLocation.mode === "edit" && !editorDirty}>{editing.busy ? "正在保存…" : recordLocation.mode === "create" ? "创建记录" : "保存修改"}</Button>}</>}
       editorForm={recordEditor ? <RecordEditorForm key={recordEditor.session} id="record" presentation="page" externalActions mode={recordEditor.kind === "recordCreate" ? "create" : "edit"}
@@ -594,31 +592,21 @@ function DataTableDetail({
       </section>
     );
   return (
-    <section className="grid min-w-0 gap-3" data-table-detail>
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 flex-wrap items-center gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>
-            返回数据表
-          </Button>
-          {recordLocation ? <span className="break-words text-sm text-muted">{table.name}</span> : <h1 className="m-0 break-words text-2xl font-semibold">{table.name}</h1>}
-        <Badge>
-          {readonly
-            ? "只读"
-            : table.sourceKind === "local"
-              ? "本地数据"
-              : table.sourceKind === "excel"
-                ? "Excel 导入"
-                : table.sourceKind === "sheets"
-                  ? "Google Sheets"
-                  : "来源未配置"}
-        </Badge>
-          </div>{!recordLocation ? <p className="mb-0 mt-1 truncate text-sm text-muted" title={table.description || "暂无说明"}>{table.description || "暂无说明"}</p> : null}
+    <Tabs value={tab} onValueChange={value => onTabChange(value as DataTableTab)} data-table-detail>
+      <DataTablePageFrame notice={null} header={<div className="flex min-w-0 gap-5">
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"><FileText size={32} /></span>
+        <div className="min-w-0">
+          {recordLocation?.mode === "detail" ? <h2 className="m-0 break-words text-2xl font-semibold">{table.name}</h2> : <h1 className="m-0 break-words text-2xl font-semibold">{recordLocation?.mode === "create" ? "新增记录" : recordLocation?.mode === "edit" ? `编辑记录 · ${recordLocation.recordKey.value}` : table.name}</h1>}
+          <p className="mb-0 mt-1 break-words text-base text-muted">{recordLocation?.mode === "create" ? "填写业务字段，保存后先写入本地。" : recordLocation?.mode === "edit" ? "修改业务字段，保存后先写入本地。" : table.description || "暂无说明"}</p>
+          <p className="mb-0 mt-2 text-sm text-muted">{table.sourceKind === "excel" ? "Excel 一次导入" : table.sourceKind === "sheets" ? "Google Sheets" : table.sourceKind === "local" ? "本地数据" : "来源未配置"}　|　{readonly ? "只读" : "本地可维护"}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {writable && !recordLocation ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
-          {tab !== "records" && !recordLocation ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
-        </div>
-      </header>
+      </div>} tabs={<TabsList className="w-full justify-start overflow-x-auto">
+        {(Object.keys(labels) as DataTableTab[]).map(value => <TabsTrigger className="rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay" key={value} value={value} disabled={disabled}>{labels[value]}</TabsTrigger>)}
+      </TabsList>}>
+      {!recordLocation ? <div className="flex flex-wrap justify-between gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>返回数据表</Button><div className="flex flex-wrap gap-2">
+        {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
+        {tab !== "records" ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
+      </div></div> : null}
       {tableError ? (
         <p role="alert">
           {tableError}
@@ -633,17 +621,6 @@ function DataTableDetail({
       ) : null}
       {foreignRecovery ? <div role="alert" className="rounded-control border border-clay/30 bg-clay/5 p-4 text-sm"><p>另一个记录的保存结果尚未确认，请先核对原请求。当前地址的表单尚未开启。</p><Button disabled={disabled || editing.busy} onClick={() => void editing.recover().catch(() => undefined)}>核对原记录保存结果</Button>{editing.error ? <p>{editing.error}</p> : null}{errorActions}</div> : null}
       {editing.recoveryBlocked ? <p role="alert">{editing.error ?? "本地保存恢复记录异常，当前数据表已禁止写入。"}</p> : null}
-      <Tabs
-        value={tab}
-        onValueChange={(value) => onTabChange(value as DataTableTab)}
-      >
-        <TabsList className="w-full justify-start overflow-x-auto">
-          {(Object.keys(labels) as DataTableTab[]).map((value) => (
-            <TabsTrigger key={value} value={value} disabled={disabled}>
-              {labels[value]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
         <TabsContent value="records" className="grid gap-3">
           {!recordLocation ? <>
           <RecordQueryToolbar
@@ -858,7 +835,6 @@ function DataTableDetail({
           </dl>
           </section>
         </TabsContent>
-      </Tabs>
       <Modal
         open={detailTarget !== null && detailIntent === "view"}
         onOpenChange={(open) => {
@@ -1101,7 +1077,7 @@ function DataTableDetail({
         filter={base64url(effectiveQuery.filter)} orderBy={base64url(effectiveQuery.orderBy)} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
         onCompleted={operation => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
-      <AlertDialog open={Boolean((conflictLatest && !(recordLocation?.mode === "edit" && conflictLatest.input.kind === "recordEdit")) || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
+      <AlertDialog open={Boolean(conflictLatest || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
       <AlertDialog
         open={leaveOpen}
         onOpenChange={(next) => {
@@ -1150,6 +1126,7 @@ function DataTableDetail({
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </section>
+      </DataTablePageFrame>
+    </Tabs>
   );
 }

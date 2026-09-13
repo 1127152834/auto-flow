@@ -309,7 +309,7 @@ it('restores an accepted-unknown create after a full coordinator remount without
 it('shows corrupt recovery evidence as a write block instead of throwing from route activation',async()=>{
   localStorage.setItem('autoflow:data-edit:w:p:t','{bad-json');const {client}=api()
   renderPage(<DataTableDetailPage {...props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})}/>)
-  expect(await screen.findByRole('alert')).toBeVisible()
+  await waitFor(()=>expect(screen.getByRole('alert')).toBeVisible())
   expect(screen.queryByRole('form',{name:'新建记录表单'})).not.toBeInTheDocument()
 })
 it('does not mount a recovered record A form under a direct record B edit address',async()=>{
@@ -339,14 +339,14 @@ it('does not mount record A pending status controls inside record B detail',asyn
   expect(await screen.findByRole('region',{name:'业务状态'})).toHaveTextContent('进行中')
 })
 
-it('compares a conflicted record draft with fetched current facts in the page without replacing input',async()=>{
+it('compares a conflicted record draft with fetched current facts before explicit adoption without replacing input',async()=>{
   let changed=false;const {client,request}=api(),original=request.getMockImplementation()!
   request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'){changed=true;throw new ApiClientError('changed',409,'REVISION_CONFLICT')}if(path.includes('/records/'))return changed?{...record,values:[{fieldId:'f',value:'最新内容',readable:true,source:'local' as const}],contentRevision:2}:record;return original(path,init)})
   renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
   const input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}))
-  expect(await screen.findByRole('region',{name:'最新内容'})).toHaveTextContent('最新内容')
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('最新内容')
   expect(screen.getByLabelText('姓名')).toHaveValue('我的修改')
-  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(screen.getByRole('alertdialog')).toBeVisible()
   await userEvent.click(screen.getByRole('button',{name:'保留当前草稿'}))
   expect(screen.getByLabelText('姓名')).toHaveValue('我的修改')
 })
@@ -359,15 +359,31 @@ it('revokes a late conflict comparison when navigating to another typed record',
   const view=renderPage(<DataTableDetailPage {...options}/>);const input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}));await waitFor(()=>expect(release).toBeTypeOf('function'))
   view.rerender(<DataTableDetailPage {...options} record={{mode:'edit',datasetGeneration:'g',recordKey:{type:'text',value:'B'}}}/>);release!(table)
   await waitFor(()=>expect(request.mock.calls.some(([path])=>path.includes('/Qg?'))).toBe(true))
-  expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'重新编辑'})).not.toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'重新编辑'})).not.toBeInTheDocument()
 })
 
 it('adopts the latest record revision explicitly and clears comparison after successful save',async()=>{
   let changed=false,saved=false;const {client,request}=api(),original=request.getMockImplementation()!
   const latest={...record,values:[{fieldId:'f',value:'最新内容',readable:true,source:'local' as const}],contentRevision:2}
   request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'){if(!changed){changed=true;throw new ApiClientError('changed',409,'REVISION_CONFLICT')}saved=true;return {...latest,contentRevision:3}}if(path.includes('/records/'))return changed?latest:record;return original(path,init)})
-  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>);let input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}));await screen.findByRole('region',{name:'最新内容'});await userEvent.click(screen.getByRole('button',{name:'重新编辑'}))
-  input=await screen.findByLabelText('姓名');expect(input).toHaveValue('最新内容');expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument();await userEvent.clear(input);await userEvent.type(input,'确认的新修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await waitFor(()=>expect(saved).toBe(true))
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>);let input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}));await screen.findByRole('alertdialog');await userEvent.click(screen.getByRole('button',{name:'重新编辑'}))
+  input=await screen.findByLabelText('姓名');expect(input).toHaveValue('最新内容');expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();await userEvent.clear(input);await userEvent.type(input,'确认的新修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await waitFor(()=>expect(saved).toBe(true))
   const patch=request.mock.calls.filter(([,init])=>init?.method==='PATCH').at(-1)![1]!.body as {expectedContentRevision:number};expect(patch.expectedContentRevision).toBe(2)
-  expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+it('keeps the original gallery table heading, tabs and record form inside one content card',async()=>{
+  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})}/>);
+  const heading=await screen.findByRole('heading',{name:'新增记录',level:1});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
+  expect(within(frame as HTMLElement).getByRole('tab',{name:'数据记录'})).toBeVisible()
+  expect(within(frame as HTMLElement).getByRole('tab',{name:'字段与校验'})).toBeVisible()
+  expect(within(frame as HTMLElement).getByRole('form',{name:'新建记录表单'})).toBeVisible()
+  expect(within(frame as HTMLElement).queryByRole('complementary')).not.toBeInTheDocument()
+})
+
+it('does not label an unconfigured source as local data in the table header',async()=>{
+ const {client}=api(); const original=client.request;
+ client.request=vi.fn(async(path:string,init)=>path.endsWith('/tables/t')?{...table,sourceKind:'unconfigured'}:original(path,init)) as StreamingApiClient['request'];
+ renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByRole('heading',{name:'客户表'});
+ expect(screen.getByTestId('data-table-page-frame').querySelector('[data-table-page-frame-header]')).toHaveTextContent('来源未配置');
 })

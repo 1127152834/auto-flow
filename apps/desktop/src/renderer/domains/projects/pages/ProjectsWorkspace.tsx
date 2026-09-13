@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '../../../shared/components/ui/alert-dialog'
@@ -12,6 +12,7 @@ import { ProjectFormDialog } from '../components/ProjectFormDialog'
 import { ProjectDirectoryPage } from './ProjectDirectoryPage'
 import { ProjectOverviewPage } from './ProjectOverviewPage'
 import { DataTableDirectoryPage } from '../../project-data/pages/DataTableDirectoryPage'
+import { createProjectDataApi } from '../../project-data/api'
 import { DataTableDetailPage } from '../../project-data/pages/DataTableDetailPage'
 
 export type ProjectsWorkspaceProps = {
@@ -66,6 +67,13 @@ type PendingCommand = { key: string; body: ProjectCreate; kind: 'create' } | { k
 export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, disabled, onNavigate, registerLeaveGuard }: ProjectsWorkspaceProps) {
   const api = useMemo(() => createProjectsApi(client), [client])
   const cache = useQueryClient()
+  const tableApi = useMemo(() => createProjectDataApi(client, route.projectId ?? ''), [client, route.projectId])
+  // Observe the detail page's existing query; route/instance identity prevents stale breadcrumbs.
+  const tableContext = useQuery({
+    queryKey: [workspaceKey, instanceId, 'project-data', route.projectId, 'table', route.tableId, 'view'],
+    queryFn: ({ signal }) => tableApi.get(route.tableId!, signal),
+    enabled: Boolean(route.projectId && route.tableId && route.tab === 'data'),
+  })
   const [conditions, setConditionsState] = useState(() => readConditions(workspaceKey))
   const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
   const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey, readMode(workspaceKey)))
@@ -192,7 +200,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     {route.projectId && route.tab === 'overview' && overview.isPending ? <p role="status" className="mx-auto max-w-7xl px-6 text-sm text-muted">正在加载概览…</p> : null}
     {route.projectId && route.tab === 'overview' && overview.isError ? <div role="alert" className="mx-auto flex max-w-7xl items-center gap-3 px-6 pt-4 text-sm text-danger"><span>{overview.error.message}</span><Button size="sm" disabled={overview.isFetching} onClick={() => void overview.refetch()}>重试概览</Button></div> : null}
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
-    {route.projectId && project ? <ProjectOverviewPage project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
+    {route.projectId && project ? <ProjectOverviewPage tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
       {route.tab === 'data' ? route.tableId
         ? <DataTableDetailPage key={`${workspaceKey}:${project.projectId}:${route.tableId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} record={route.record} onRecordNavigate={record => onNavigate({ ...route, dataTab: 'records', record })} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab, record: undefined })} />
         : <DataTableDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onOpen={tableId => onNavigate({ projectId: project.projectId, tab: 'data', tableId, dataTab: 'records' })} />

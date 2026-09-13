@@ -1,0 +1,13 @@
+{
+  "status": "implementation-started-not-accepted",
+  "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest",
+  "pages": [
+    {"id":"record-create","source":"05-data/004-record-create-72de4a.png","route":"#/projects/{projectId}/data/{tableId}/records/new","layout":"single outer table card, title and tabs in header, full-width field rows and footer","evidence":null},
+    {"id":"record-edit","source":"05-data/005-record-edit-validation-421c54.png","route":"#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}/edit","layout":"single outer table card, inline validation summary, full-width field rows and footer","evidence":null},
+    {"id":"record-detail","source":"05-data/003-record-detail-d3f6c5.png","route":"#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}","layout":"outer table card, record heading and edit/more actions, left fields and right project state","evidence":null}
+  ],
+  "supplementalStates": [
+    {"id":"record-conflict","source":null,"parent":"record-edit","placement":"full-width existing form alert; load latest opens existing centered confirmation with current facts, retain session safeguards; no additional page column","reason":"No original conflict art; follows original 006 centered confirmation and existing recovery semantics","evidence":null},
+    {"id":"record-recovery","source":null,"parent":"record-edit","placement":"full-width alert, original input frozen, existing footer action queries original operation","reason":"Unknown result cannot be treated as failure or blind resubmission","evidence":null}
+  ]
+}

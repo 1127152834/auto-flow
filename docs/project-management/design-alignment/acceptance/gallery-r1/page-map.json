@@ -1,0 +1,137 @@
+{
+  "status": "not-accepted",
+  "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest",
+  "pages": [
+    {
+      "id": "projects-recent",
+      "source": "00-projects/100-projects-prototype-5238b4.png",
+      "route": "#/projects",
+      "components": [
+        "ProjectDirectory",
+        "ProjectCard"
+      ],
+      "layout": "Large project title, create left/search right, recent heading/count, two-column roomy cards, all-projects link below cards",
+      "businessDifferences": [
+        "Current recent ordering uses lastOpenedAt; label must say 最近打开 rather than claim updatedAt.",
+        "No project icon picker exists; use real generic project icon, no business-dependent invented icons."
+      ],
+      "evidence": null
+    },
+    {
+      "id": "projects-all",
+      "source": null,
+      "parent": "projects-recent",
+      "route": "#/projects (all mode)",
+      "layout": "Same card visual system, real search/state/six sorts/pagination and return to recent",
+      "businessDifferences": [
+        "Derived view required by approved directory capability, not an independently approved original PNG."
+      ],
+      "evidence": null
+    },
+    {
+      "id": "data-directory",
+      "source": "05-data/001-data-v1-approved-ca940d.png",
+      "route": "#/projects/{projectId}/data",
+      "components": [
+        "ProjectHeader",
+        "ProjectTabs",
+        "DataTableDirectory"
+      ],
+      "layout": "Full project header, data heading/count and controls, two-column large cards, prominent real record count, source line, divided footer and open action",
+      "businessDifferences": [
+        "Only actual local and Excel capabilities; no simulated Sheets push failures/external SQLite reads.",
+        "Excel import remains available, edit action moves to real more menu."
+      ],
+      "evidence": null
+    },
+    {
+      "id": "records",
+      "source": "05-data/002-records-c496e3.png",
+      "route": "#/projects/{projectId}/data/{tableId}/records",
+      "components": [
+        "DataTablePageFrame",
+        "RecordQueryToolbar",
+        "DataRecordsTable"
+      ],
+      "layout": "One table card, full project context, count and query/actions row, record table, pagination",
+      "businessDifferences": [
+        "Keep explicit text-field search, sort, batch state and filtered export; no additional persistent sidebar."
+      ],
+      "evidence": null
+    },
+    {
+      "id": "filter",
+      "source": "05-data/017-record-filter-672930.png",
+      "parent": "records",
+      "components": [
+        "RecordQueryToolbar",
+        "RecordFilterEditor"
+      ],
+      "layout": "Anchored popover, field/operator/value and state, clear/cancel/apply footer",
+      "businessDifferences": [
+        "Existing nested AND/OR/NOT editor retained behind advanced mode without lossy conversion."
+      ],
+      "evidence": null
+    },
+    {
+      "id": "create-table",
+      "source": "05-data/016-create-table-73d061.png",
+      "parent": "data-directory",
+      "components": [
+        "DataTableFormDialog"
+      ],
+      "layout": "Centered name/description dialog, explanation and cancel/create footer",
+      "evidence": null
+    }
+  ],
+  "supplementalStates": [
+    {
+      "id": "loading",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "empty",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "no-match",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "refresh-error",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "query-validation",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "sort",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "columns",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    },
+    {
+      "id": "operation-recovery",
+      "evidence": null,
+      "source": null,
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+    }
+  ]
+}
