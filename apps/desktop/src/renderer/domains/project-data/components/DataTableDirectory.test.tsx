@@ -14,11 +14,27 @@ it('shows real table facts and keeps open separate from edit', async () => {
   const onImportExcel=vi.fn()
   render(<DataTableDirectory items={[table]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={onImportExcel} onOpen={onOpen} onEdit={onEdit} />)
   expect(screen.getByText('23 条记录')).toBeVisible()
-  expect(screen.getByText('本地数据')).toBeVisible()
+  expect(screen.getByText('本地表')).toBeVisible()
   await user.click(screen.getByRole('button', { name: '打开客户数据' }))
   await user.click(screen.getByRole('button', { name: '编辑客户数据' }))
   await user.click(screen.getByRole('button', { name: '从 Excel 导入' }))
   expect(onOpen).toHaveBeenCalledWith('t1'); expect(onEdit).toHaveBeenCalledWith('t1'); expect(onImportExcel).toHaveBeenCalledOnce()
+  expect(onOpen).toHaveBeenCalledOnce()
+})
+
+it('labels saved source kinds without inventing source facts', () => {
+  render(<DataTableDirectory items={[table, { ...table, tableId: 't2', name: 'Excel 表', sourceKind: 'excel' }, { ...table, tableId: 't3', name: '待配置表', sourceKind: 'unconfigured' }]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  expect(screen.getByText('本地表')).toBeVisible()
+  expect(screen.getByText('Excel 本地副本')).toBeVisible()
+  expect(screen.getByText('来源未配置')).toBeVisible()
+  expect(screen.queryByText('0 个来源')).not.toBeInTheDocument()
+})
+
+it('wraps unbroken table names and descriptions without widening the card', () => {
+  const name = '甲'.repeat(36); const description = '乙'.repeat(72)
+  render(<DataTableDirectory items={[{ ...table, name, description }]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  expect(screen.getByRole('heading', { name })).toHaveClass('break-all')
+  expect(screen.getByText(description)).toHaveClass('break-all')
 })
 
 it('distinguishes loading, empty, filtered empty, and stale error states', async () => {

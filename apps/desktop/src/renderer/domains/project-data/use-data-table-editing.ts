@@ -53,7 +53,7 @@ type Pending = { key: string; scope: Scope; session: string } & (
 )
 
 type Impact = Schema['DeletionImpactReport'] | Schema['FieldImpactReport']
-type Options = { workspaceKey: string; context: EditingContext | null; client: StreamingApiClient; instanceId: string; disabled: boolean; readonly: boolean; onSaved(kind: Pending['kind']): void }
+type Options = { workspaceKey: string; context: EditingContext | null; client: StreamingApiClient; instanceId: string; disabled: boolean; readonly: boolean; onSaved(kind: Pending['kind'], operationKey: string): void }
 type Live = Options & { mounted: boolean }
 
 const clone = <T,>(value: T): T => structuredClone(value)
@@ -192,7 +192,7 @@ export function useDataTableEditing(options: Options) {
       clearStored(command)
       pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; setEditor(null)
       activeSession.current = null; dialogBusy.current = null; setDialogSaving(false)
-      live.current.onSaved(command.kind)
+      live.current.onSaved(command.kind, command.key)
       return value
     } catch (caught) {
       if (!isCurrent()) return undefined

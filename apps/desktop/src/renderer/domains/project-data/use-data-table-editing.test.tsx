@@ -58,7 +58,7 @@ it('invalidates a late success after instance change and recovers only by lookup
   expect(onSaved).not.toHaveBeenCalled()
   await act(async () => { await result.current.recover() })
   expect(lookup.mock.calls.map(call => call[0])).toEqual([`/api/v1/projects/p/operations/by-idempotency-key/${key}`])
-  expect(onSaved).toHaveBeenCalledWith('recordCreate')
+  expect(onSaved).toHaveBeenCalledWith('recordCreate', key)
 })
 
 it('keeps an absent command frozen in readonly mode without resubmitting it', async () => {

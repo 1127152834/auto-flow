@@ -11,7 +11,7 @@ type Schema = components['schemas']
 type RecordView = Schema['DataRecordView']
 export type DataRecordsTableProps = {
   page?: Schema['DataRecordPage']; fields: Schema['DataFieldView'][]; statuses: Schema['DataStatusView'][]
-  visibleFieldIds?: string[]; loading?: boolean; error?: string | null; hasFilters?: boolean; readonly?: boolean; disabled?: boolean
+  toolbar?: boolean; visibleFieldIds?: string[]; loading?: boolean; error?: string | null; hasFilters?: boolean; readonly?: boolean; disabled?: boolean
   onRetry(): void; onOpen(record: RecordView): void; onPageChange(page: number): void
   onCreate?(): void; onStatusChange?(record: RecordView): void
   selection?: RecordSelection; onBulkStatus?(): void
@@ -29,13 +29,13 @@ function valueLabel(cell: Schema['DataCellView'] | undefined): string {
   return String(value)
 }
 
-export function DataRecordsTable({ page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
+export function DataRecordsTable({ toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
   const visible = visibleFieldIds ? new Set(visibleFieldIds) : null
   const columns = fields.filter(field => !visible || visible.has(field.ref.fieldId))
   const statusMap = new Map(statuses.map(status => [status.statusId, status]))
   return <section aria-label="数据记录" aria-busy={loading} className="grid min-w-0 gap-4">
-    <header className="flex items-center justify-between gap-3"><h2 className="m-0 text-lg font-semibold text-ink">数据记录</h2>{onCreate && !readonly ? <Button variant="primary" disabled={loading || disabled} onClick={onCreate}>新增记录</Button> : null}</header>
-    {selection && selection.count ? <div role="toolbar" aria-label="批量记录操作" className="flex flex-wrap items-center gap-3 rounded-control border border-line bg-surface-subtle p-3"><span>已选择 {selection.count} 条</span><Button size="sm" variant="ghost" disabled={loading || disabled} onClick={selection.clear}>清空选择</Button>{onBulkStatus ? <Button size="sm" disabled={readonly || loading || disabled} onClick={onBulkStatus}>批量设置状态</Button> : null}</div> : null}
+    {toolbar ? <header className="flex items-center justify-between gap-3"><h2 className="m-0 text-lg font-semibold text-ink">数据记录</h2>{onCreate && !readonly ? <Button variant="primary" disabled={loading || disabled} onClick={onCreate}>新增记录</Button> : null}</header> : null}
+    {toolbar && selection && selection.count ? <div role="toolbar" aria-label="批量记录操作" className="flex flex-wrap items-center gap-3 rounded-control border border-line bg-surface-subtle p-3"><span>已选择 {selection.count} 条</span><Button size="sm" variant="ghost" disabled={loading || disabled} onClick={selection.clear}>清空选择</Button>{onBulkStatus ? <Button size="sm" disabled={readonly || loading || disabled} onClick={onBulkStatus}>批量设置状态</Button> : null}</div> : null}
     {selection?.error ? <p role="alert" className="text-sm text-clay">{selection.error}</p> : null}
     {error ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-clay/30 bg-clay/10 p-3 text-sm"><span>{error}{page ? '。当前仍显示上次成功载入的内容。' : ''}</span><Button variant="ghost" disabled={loading} onClick={onRetry}>重试</Button></div> : null}
     {!page && loading ? <div role="status" className="grid gap-2"><span className="sr-only">正在加载记录</span><Skeleton className="h-12" /><Skeleton className="h-24" /></div>

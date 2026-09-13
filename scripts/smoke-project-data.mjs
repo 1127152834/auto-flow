@@ -129,7 +129,7 @@ try {
   for (const [label, text] of [['字段', '客户姓名'], ['状态', '可再次使用'], ['来源', '数据来源'], ['设置', '更新时间']]) {
     await click(label, '[role=tab]'); await visible(text)
   }
-  await click('记录', '[role=tab]'); await click('应用筛选'); await visible('合成客户甲')
+  await click('记录', '[role=tab]'); await click('筛选'); await click('应用筛选'); await visible('合成客户甲')
   checkpoint('five actual tabs display persisted field, status, source and record facts after UI writes')
   await click('设置', '[role=tab]'); await click('编辑数据表')
   await input('#data-table-description', '从设置页修改资料')

@@ -132,7 +132,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
       setRecoveryPending(false); creationMode.current = null; setEditor(null)
       cache.setQueryData([...prefix, 'table', saved.tableId], saved)
       void cache.invalidateQueries({ queryKey: [...prefix, 'tables'] })
-      notify({ title: command.kind === 'create' ? '数据表已创建' : '数据表已保存', tone: 'success' })
+      notify({ title: command.kind === 'create' ? '数据表已创建' : '数据表已保存', tone: 'success', operationId: JSON.stringify([workspaceKey, command.key]) })
       if (command.kind === 'create') onOpen(saved.tableId)
     } catch (caught) {
       if (!current()) return
@@ -162,13 +162,12 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
   const dirtyChanged = useCallback((value: boolean) => { dirty.current = value }, [])
   const savingChanged = useCallback((value: boolean) => { busy.current = value }, [])
   return <section className="grid min-w-0 gap-4" aria-label="项目数据">
-    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem_12rem]">
+    {disabled ? <p role="status" className="text-sm text-muted">正在恢复服务连接，暂时无法保存。</p> : null}
+    <DataTableDirectory toolbar={<div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem_12rem]">
       <Input aria-label="搜索数据表" placeholder="搜索名称或描述" value={query.query} onChange={event => setQuery({ ...query, query: event.target.value, page: 1 })} />
       <Select aria-label="数据来源" clearable={false} value={query.sourceKind ?? 'all'} options={sources} onValueChange={value => setQuery({ ...query, sourceKind: value === 'all' || value === null ? undefined : value as DirectoryQuery['sourceKind'], page: 1 })} />
       <Select aria-label="数据表排序" clearable={false} value={query.sort} options={sorts} onValueChange={value => setQuery({ ...query, sort: value as DirectoryQuery['sort'], page: 1 })} />
-    </div>
-    {disabled ? <p role="status" className="text-sm text-muted">正在恢复服务连接，暂时无法保存。</p> : null}
-    <DataTableDirectory items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error?.message} readonly={readonly || disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onImportExcel={startExcel} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
+    </div>} items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error?.message} readonly={readonly || disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onImportExcel={startExcel} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
     {directory.data ? <Pagination offset={(query.page - 1) * query.pageSize} limit={query.pageSize} total={directory.data.total} count={directory.data.items.length} disabled={directory.isFetching || disabled} onOffsetChange={offset => setQuery({ ...query, page: Math.floor(offset / query.pageSize) + 1 })} /> : null}
     <DataTableFormDialog open={Boolean(editor)} mode={editor?.table ? 'edit' : 'create'} sessionKey={editor?.session ?? 'closed'} submissionEpoch={submissionEpoch} initialValues={editor?.table ? tableValues(editor.table) : undefined}
       readonly={readonly || disabled} recoveryPending={recoveryPending} onRecover={disabled ? undefined : () => execute('lookup')} onSubmit={values => execute('submit', values)} onDirtyChange={dirtyChanged} onSavingChange={savingChanged} onRequestClose={guard}

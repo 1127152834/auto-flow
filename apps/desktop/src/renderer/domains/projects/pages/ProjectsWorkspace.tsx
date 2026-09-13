@@ -164,7 +164,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     dirtyRef.current = false; savingRef.current = false
     setSaving(false); setEditor(null)
     leaveResolver.current?.(true); leaveResolver.current = null; setLeaveOpen(false)
-    notify({ title: command.kind === 'create' ? '项目已创建' : '项目已更新', tone: 'success' })
+    notify({ title: command.kind === 'create' ? '项目已创建' : '项目已更新', tone: 'success', operationId: JSON.stringify([workspaceKey, command.key]) })
     if (command.kind === 'create') onNavigate({ projectId: saved.projectId, tab: 'overview' })
   }
 

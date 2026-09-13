@@ -72,7 +72,7 @@ async function chooseExcelFile() { const label=await renderer.evaluate(`document
 async function openDetail(name='详情流程表') { await renderer.evaluate(`location.hash=${JSON.stringify(`#/projects/${projectId}/data/${tableId}/records`)}`); await visible(name) }
 async function createStatus(name) { await click('状态'); await click('新建状态'); await input('#status-name',name); await click('创建状态'); await visible(name); await click('记录') }
 async function selectPage() { await waitFor(renderer, `(()=>{const e=document.querySelector('[aria-label="选择本页记录"]');return Boolean(e&&!e.disabled&&e.getAttribute('aria-disabled')!=='true')})()`, 'selectable current record page'); await click('选择本页记录', '[aria-label="选择本页记录"]') }
-async function applyNameFilter(value) { await click('添加字段条件'); await inputLabel('比较值',value); await select('filter.items.0运算符','开头是'); await click('应用筛选'); await wait(300) }
+async function applyNameFilter(value) { await click('筛选'); await click('添加字段条件'); await inputLabel('比较值',value); await select('filter.items.0运算符','开头是'); await click('应用筛选'); await wait(300) }
 async function onlyTable() { const items=(await api(`/projects/${projectId}/tables`)).items; assert.equal(items.length,1); return items[0] }
 async function recordFacts() { const table=await onlyTable(); return (await api(`/projects/${projectId}/tables/${tableId}/records?datasetGeneration=${table.datasetGeneration}`)).items }
 async function terminal(timeout=20000) { await waitFor(renderer, `document.body.innerText.includes('操作已完成')||document.body.innerText.includes('操作未全部完成')`, 'terminal operation', timeout); assert.ok(await renderer.evaluate(`document.body.innerText.includes('操作已完成')`)); await capture(`terminal-${checks.length}`) }

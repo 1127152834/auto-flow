@@ -21,7 +21,6 @@ import {
 } from "../../../shared/components/ui/alert-dialog";
 import { Badge } from "../../../shared/components/ui/badge";
 import { Button } from "../../../shared/components/ui/button";
-import { Checkbox } from "../../../shared/components/ui/checkbox";
 import { Skeleton } from "../../../shared/components/ui/skeleton";
 import {
   Tabs,
@@ -38,12 +37,12 @@ import { DataTableFormDialog } from "../components/DataTableFormDialog";
 import { ExcelExportWorkflow } from "../components/ExcelExportWorkflow";
 import { ExcelImportWizard } from "../components/ExcelImportWizard";
 import { FieldEditorDialog } from "../components/FieldEditorDialog";
-import { RecordFilterEditor } from "../components/RecordFilterEditor";
+import { RecordQueryToolbar, composeRecordQuery, type QuickSearch } from "../components/RecordQueryToolbar";
 import { RecordEditorDialog } from "../components/RecordEditorDialog";
 import { RecordStatusDialog } from "../components/RecordStatusDialog";
 import { RecordStatusBatchDialog } from "../components/RecordStatusBatchDialog";
 import { StatusEditorDialog } from "../components/StatusEditorDialog";
-import { emptyRecordQuery, type FilterExpression, type RecordQuery } from "../record-query";
+import { emptyRecordQuery, parseRecordQuery, recordQueryDraft, type FilterExpression, type RecordQuery } from "../record-query";
 import { createRecordsApi, type RecordKey } from "../records-api";
 import { createExcelApi } from "../excel-api";
 import { createProjectFileClient } from "../project-file-client";
@@ -85,7 +84,7 @@ const base64url = (value: unknown) => {
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 };
-type TableViewState = { query: RecordQuery; page: number; visibleFieldIds: string[] | null; scrollY: number };
+type TableViewState = { quickSearch: QuickSearch; query: RecordQuery; page: number; visibleFieldIds: string[] | null; scrollY: number };
 const tableViewKey = (workspace: string, project: string, table: string) => `autoflow:table-view:${JSON.stringify([workspace, project, table])}`;
 const validFilter = (value: unknown, depth = 1): value is FilterExpression => {
   if (!value || typeof value !== "object" || depth > 5) return false;
@@ -104,8 +103,8 @@ const readTableView = (key: string): TableViewState => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(key) ?? "null") as Partial<TableViewState> | null;
     const visible = saved?.visibleFieldIds;
-    return { query: validFilter(saved?.query?.filter) && validOrder(saved?.query?.orderBy) ? saved.query! : emptyRecordQuery(), page: Number.isSafeInteger(saved?.page) && saved!.page! > 0 && saved!.page! <= 2147483647 ? saved!.page! : 1, visibleFieldIds: visible === null || Array.isArray(visible) && visible.length <= 1000 && visible.every(id => typeof id === "string") ? visible ?? null : null, scrollY: typeof saved?.scrollY === "number" && Number.isFinite(saved.scrollY) && saved.scrollY >= 0 ? saved.scrollY : 0 };
-  } catch { return { query: emptyRecordQuery(), page: 1, visibleFieldIds: null, scrollY: 0 } }
+    return { quickSearch: { fieldId: typeof saved?.quickSearch?.fieldId === "string" ? saved.quickSearch.fieldId : null, keyword: typeof saved?.quickSearch?.keyword === "string" ? saved.quickSearch.keyword : "" }, query: validFilter(saved?.query?.filter) && validOrder(saved?.query?.orderBy) ? saved.query! : emptyRecordQuery(), page: Number.isSafeInteger(saved?.page) && saved!.page! > 0 && saved!.page! <= 2147483647 ? saved!.page! : 1, visibleFieldIds: visible === null || Array.isArray(visible) && visible.length <= 1000 && visible.every(id => typeof id === "string") ? visible ?? null : null, scrollY: typeof saved?.scrollY === "number" && Number.isFinite(saved.scrollY) && saved.scrollY >= 0 ? saved.scrollY : 0 };
+  } catch { return { quickSearch: { fieldId: null, keyword: "" }, query: emptyRecordQuery(), page: 1, visibleFieldIds: null, scrollY: 0 } }
 };
 const sanitizeQuery = (query: RecordQuery, fieldIds: Set<string>, statusIds: Set<string>): RecordQuery => {
   const walk = (node: FilterExpression): FilterExpression | null => {
@@ -156,11 +155,13 @@ function DataTableDetail({
   const initialView = useRef<TableViewState | null>(null);
   if (!initialView.current) initialView.current = readTableView(viewStateKey);
   const [table, setTable] = useState<Table | null>(null);
+  const [quickSearch, setQuickSearch] = useState<QuickSearch>(initialView.current.quickSearch);
+  const [queryError, setQueryError] = useState<string | null>(null);
+  const [queryNotice, setQueryNotice] = useState<string | null>(null);
   const [query, setQuery] = useState<RecordQuery>(() => structuredClone(initialView.current!.query)),
     [recordPage, setRecordPage] = useState(initialView.current.page),
     [visibleFieldIds, setVisibleFieldIds] = useState<string[] | null>(() => initialView.current!.visibleFieldIds),
     [scrollY, setScrollY] = useState(initialView.current.scrollY),
-    [filterDirty, setFilterDirty] = useState(false),
     [generationWarning, setGenerationWarning] = useState<string | null>(null),
     [filterSession, setFilterSession] = useState(0);
   const [detailTarget, setDetailTarget] = useState<{
@@ -177,7 +178,6 @@ function DataTableDetail({
     [conflictError, setConflictError] = useState<string | null>(null);
   const leaveResolve = useRef<((allowed: boolean) => void) | null>(null),
     leaveAction = useRef<(() => void) | null>(null),
-    dirtyRef = useRef(filterDirty),
     editorDirtyRef = useRef(editorDirty),
     workflowDirtyRef = useRef(false),
     workflowBusyRef = useRef(false),
@@ -204,24 +204,23 @@ function DataTableDetail({
     queryFn: ({ signal }) => tableApi.get(tableId, signal),
     placeholderData: (previous) => previous,
   });
-  useEffect(() => { try { sessionStorage.setItem(viewStateKey, JSON.stringify({ query, page: recordPage, visibleFieldIds, scrollY })) } catch { /* view state remains usable in memory */ } }, [query, recordPage, scrollY, viewStateKey, visibleFieldIds]);
+  useEffect(() => { try { sessionStorage.setItem(viewStateKey, JSON.stringify({ query, quickSearch, page: recordPage, visibleFieldIds, scrollY })) } catch { /* view state remains usable in memory */ } }, [query, quickSearch, recordPage, scrollY, viewStateKey, visibleFieldIds]);
   useEffect(() => { const save = () => setScrollY(window.scrollY); window.addEventListener("scroll", save, { passive: true }); return () => window.removeEventListener("scroll", save) }, []);
-  useLayoutEffect(() => {
-    dirtyRef.current = filterDirty;
-  }, [filterDirty]);
   useEffect(() => {
     const next = tableQuery.data;
     if (!next) return;
     if (
       table &&
       table.datasetGeneration !== next.datasetGeneration &&
-      (dirtyRef.current || editorDirtyRef.current || workflowDirtyRef.current)
+      (editorDirtyRef.current || workflowDirtyRef.current)
     ) {
       setGenerationWarning("数据已更新，请先处理当前编辑草稿再载入。");
       return;
     }
     if (table && table.datasetGeneration !== next.datasetGeneration) {
       setQuery(emptyRecordQuery());
+      setQuickSearch({ fieldId: null, keyword: "" });
+      setQueryNotice("数据已更新，查询条件已重置。");
       setRecordPage(1);
       setVisibleFieldIds(null);
       setFilterSession((value) => value + 1);
@@ -264,21 +263,27 @@ function DataTableDetail({
         : null,
     [client, generation, projectId, tableId],
   );
+  const fields = catalogQuery.data?.[0].items ?? [], statuses = catalogQuery.data?.[1].items ?? [];
+  const effectiveQuery = useMemo(() => {
+    if (!catalogQuery.data) return null;
+    const schema = catalogQuery.data[0].items;
+    try { return parseRecordQuery(recordQueryDraft(composeRecordQuery(schema, query, quickSearch)), schema, catalogQuery.data[1].items) } catch { return null }
+  }, [catalogQuery.data, query, quickSearch]);
   const recordsQuery = useQuery({
-    queryKey: [...prefix, generation, "records", query, recordPage],
+    queryKey: [...prefix, generation, "records", effectiveQuery, recordPage],
     queryFn: ({ signal }) => {
-      if (!recordsApi) throw new Error("数据表不可用");
+      if (!recordsApi || !effectiveQuery) throw new Error("数据表不可用");
       return recordsApi.list(
         {
-          filter: query.filter,
-          orderBy: query.orderBy,
+          filter: effectiveQuery.filter,
+          orderBy: effectiveQuery.orderBy,
           page: recordPage,
           pageSize: 50,
         },
         signal,
       );
     },
-    enabled: Boolean(recordsApi) && !generationWarning,
+    enabled: Boolean(recordsApi && effectiveQuery) && !generationWarning,
   });
   const detailQuery = useQuery({
     queryKey: [
@@ -300,18 +305,20 @@ function DataTableDetail({
       recordsApi && detailTarget && detailTarget.generation === generation,
     ),
   });
-  const fields = catalogQuery.data?.[0].items ?? [],
-    statuses = catalogQuery.data?.[1].items ?? [],
-    page = recordsQuery.data;
+  const page = recordsQuery.data;
   const restoredScroll = useRef(false);
   useLayoutEffect(() => { if (!restoredScroll.current && page) { restoredScroll.current = true; window.scrollTo({ top: scrollY, behavior: "auto" }) } }, [page, scrollY]);
   useEffect(() => {
     if (!catalogQuery.data) return;
     const available = new Set(catalogQuery.data[0].items.map(item => item.ref.fieldId)), availableStatuses = new Set(catalogQuery.data[1].items.map(item => item.statusId));
-    if (visibleFieldIds !== null) { const next = visibleFieldIds.filter(id => available.has(id)); if (next.length !== visibleFieldIds.length) setVisibleFieldIds(next) }
+    if (visibleFieldIds !== null) { const next = visibleFieldIds.filter(id => available.has(id)); if (next.length !== visibleFieldIds.length) { setVisibleFieldIds(next); setQueryNotice("表结构已更新，已移除不可用的显示列。") } }
     const nextQuery = sanitizeQuery(query, available, availableStatuses);
-    if (JSON.stringify(nextQuery) !== JSON.stringify(query)) { setQuery(nextQuery); setRecordPage(1) }
-  }, [catalogQuery.data, query, visibleFieldIds]);
+    if (JSON.stringify(nextQuery) !== JSON.stringify(query)) { setQuery(nextQuery); setRecordPage(1); setQueryError(null); setQueryNotice("表结构已更新，已移除不可用的查询条件。") }
+    if (!catalogQuery.data[0].items.some(field => field.ref.fieldId === quickSearch.fieldId && field.type === "string")) {
+      const first = catalogQuery.data[0].items.find(field => field.type === "string")?.ref.fieldId ?? null;
+      if (quickSearch.fieldId !== first || quickSearch.keyword) { setQuickSearch({ fieldId: first, keyword: "" }); if (quickSearch.keyword) { setRecordPage(1); setQueryNotice("搜索字段已变更，请重新搜索。") } }
+    }
+  }, [catalogQuery.data, query, quickSearch, visibleFieldIds]);
   const selection = useRecordSelection({ workspaceKey, projectId, tableId, datasetGeneration: generation ?? "" });
   const context = useMemo<EditingContext | null>(
     () =>
@@ -345,7 +352,7 @@ function DataTableDetail({
     instanceId,
     disabled,
     readonly,
-    onSaved: (kind) => {
+    onSaved: (kind, operationKey) => {
       void cache.invalidateQueries({ queryKey: prefix });
       void cache.invalidateQueries({
         queryKey: [
@@ -360,6 +367,7 @@ function DataTableDetail({
       notify({
         title: kind.includes("Delete") ? "删除已确认" : "保存已确认",
         tone: "success",
+        operationId: JSON.stringify([workspaceKey, projectId, tableId, generation, operationKey]),
       });
     },
   });
@@ -373,9 +381,8 @@ function DataTableDetail({
   const excelApi = useMemo(() => createExcelApi(client, files, projectId), [client, files, projectId]);
   const statusBatchApi = useMemo(() => createStatusBatchApi(client, projectId, tableId), [client, projectId, tableId]);
   useLayoutEffect(() => {
-    dirtyRef.current = filterDirty;
     editorDirtyRef.current = editorDirty;
-  }, [editorDirty, filterDirty]);
+  }, [editorDirty]);
   const askDiscardOnce = useCallback(
     (target: "editor" | "all" = "all", action?: () => void) => {
       if (leaveResolve.current) return Promise.resolve(false);
@@ -383,7 +390,7 @@ function DataTableDetail({
         const dirty =
           target === "editor"
             ? editorDirtyRef.current || workflowDirtyRef.current
-            : dirtyRef.current || editorDirtyRef.current || workflowDirtyRef.current;
+            : editorDirtyRef.current || workflowDirtyRef.current;
         if (!dirty) {
           action?.();
           resolve(true);
@@ -400,7 +407,7 @@ function DataTableDetail({
   useLayoutEffect(() => {
     registerLeaveGuard(() => {
       if (!editing.canLeave() || workflowBusyRef.current) return Promise.resolve(false);
-      return !dirtyRef.current && !editorDirtyRef.current && !workflowDirtyRef.current
+      return !editorDirtyRef.current && !workflowDirtyRef.current
         ? Promise.resolve(true)
         : askDiscardOnce("all");
     });
@@ -419,10 +426,11 @@ function DataTableDetail({
       if (!next) return;
       editing.close();
       closeWorkflow();
-      setFilterDirty(false);
       setEditorDirty(false);
       setFilterSession((value) => value + 1);
       setQuery(emptyRecordQuery());
+      setQuickSearch({ fieldId: null, keyword: "" });
+      setQueryNotice("数据已更新，查询条件已重置。");
       setRecordPage(1);
       setDetailTarget(null);
       setTable(next);
@@ -448,7 +456,7 @@ function DataTableDetail({
     context && !readonly && !disabled && !generationWarning && !editing.recoveryBlocked,
   );
   const openWorkflow = (kind: "batch" | "replace" | "export") => {
-    if (disabled || workflow || editing.editor || (kind !== "export" && !writable) || (kind === "batch" && selection.count === 0)) return;
+    if (disabled || workflow || editing.editor || (kind === "export" && !effectiveQuery) || (kind !== "export" && !writable) || (kind === "batch" && selection.count === 0)) return;
     workflowDirtyRef.current = false; workflowBusyRef.current = false;
     setWorkflow({ kind, session: crypto.randomUUID() });
   };
@@ -551,7 +559,7 @@ function DataTableDetail({
         </Badge>
         <div className="flex flex-wrap gap-2">
           {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
-          <Button disabled={disabled || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button>
+          {tab !== "records" ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
         </div>
       </header>
       {tableError ? (
@@ -579,32 +587,26 @@ function DataTableDetail({
           ))}
         </TabsList>
         <TabsContent value="records" className="grid gap-5">
-          <RecordFilterEditor
-            key={`${projectId}:${tableId}:${table.datasetGeneration}:${filterSession}`}
-            fields={fields}
-            statuses={statuses}
-            appliedQuery={query}
-            disabled={disabled || Boolean(generationWarning)}
-            onDirtyChange={setFilterDirty}
-            onApply={(next) => {
-              setQuery(next);
-              setRecordPage(1);
-            }}
+          <RecordQueryToolbar
+            fields={fields} statuses={statuses} query={query} visibleFieldIds={visibleFieldIds} quickSearch={quickSearch}
+            resetKey={`${projectId}:${tableId}:${generation}:${table.tableRevision}:${catalogQuery.data?.[0].tableRevision}:${filterSession}`}
+            disabled={disabled || Boolean(generationWarning) || !catalogQuery.data || Boolean(workflow || editing.editor)} readonly={!writable}
+            exportDisabled={!effectiveQuery} queryError={queryError ?? undefined}
+            selectionCount={selection.count} onClearSelection={selection.clear}
+            onCreate={() => editing.open({ kind: "recordCreate" })} onBatchStatus={() => openWorkflow("batch")} onExport={() => { if (effectiveQuery) openWorkflow("export") }}
+            onApplyQuery={next => { try { composeRecordQuery(fields, next, quickSearch); setQuery(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
+            onApplySearch={next => { try { composeRecordQuery(fields, query, next); setQuickSearch(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
+            onApplyColumns={setVisibleFieldIds}
           />
-          {fields.length ? <fieldset className="flex flex-wrap gap-3 rounded-control border border-line p-3"><legend className="px-1 text-sm font-medium">显示列</legend>{fields.map(field => {
-            const checked = visibleFieldIds === null || visibleFieldIds.includes(field.ref.fieldId);
-            return <label key={field.ref.fieldId} className="flex items-center gap-2 text-sm"><Checkbox checked={checked} disabled={disabled || Boolean(generationWarning)} onCheckedChange={value => setVisibleFieldIds(current => {
-              const selected = new Set(current ?? fields.map(item => item.ref.fieldId));
-              if (value === true) selected.add(field.ref.fieldId); else selected.delete(field.ref.fieldId);
-              return [...selected];
-            })} />{field.name}</label>;
-          })}</fieldset> : null}
+          {catalogQuery.data && !effectiveQuery && !generationWarning ? <p role="alert" className="text-sm text-danger">当前查询条件不可用，请调整筛选或清空搜索后重试。</p> : null}
+          {queryNotice ? <p role="status" className="text-sm text-muted">{queryNotice}</p> : null}
           <DataRecordsTable
+            toolbar={false}
             page={page}
             fields={fields}
             statuses={statuses}
             visibleFieldIds={visibleFieldIds ?? undefined}
-            loading={recordsQuery.isPending}
+            loading={recordsQuery.isFetching || catalogQuery.isFetching}
             error={
               recordsQuery.error
                 ? errorMessage(recordsQuery.error)
@@ -613,7 +615,7 @@ function DataTableDetail({
                   : undefined
             }
             hasFilters={
-              query.filter.type !== "all" ||
+              Boolean(quickSearch.keyword) || query.filter.type !== "all" ||
               query.filter.items.length > 0 ||
               query.orderBy.length > 0
             }
@@ -1027,14 +1029,14 @@ function DataTableDetail({
       {workflow?.kind === "batch" ? <RecordStatusBatchDialog open sessionKey={workflow.session} contextKey={workflowContext} storageScopeKey={stableWorkflowScope} targets={selection.targets} statuses={statuses} api={statusBatchApi} readonly={!writable} disabled={disabled || Boolean(generationWarning)}
         onClose={() => { if (workflowDirtyRef.current) { void askDiscardOnce("editor", closeWorkflow) } else closeWorkflow() }}
         onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
-        onSettled={workflowSettled} onCompleted={() => notify({ title: "批量状态已更新", tone: "success" })} /> : null}
+        onSettled={workflowSettled} onCompleted={operation => notify({ title: "批量状态已更新", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) })} /> : null}
       {workflow?.kind === "replace" ? <ExcelImportWizard open mode="replace" sessionKey={workflow.session} scopeKey={stableWorkflowScope} contextKey={workflowContext} api={excelApi} files={files} table={table} existingFields={fields} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
-        onCompleted={operation => { closeWorkflow(); if (operation.status !== "succeeded" || !operation.result || !("table" in operation.result)) return; cache.setQueryData([...prefix, "view"], operation.result.table); void cache.invalidateQueries({ queryKey: prefix }); notify({ title: "Excel 数据已更新", tone: "success" }) }} /> : null}
-      {workflow?.kind === "export" ? <ExcelExportWorkflow open sessionKey={workflow.session} scopeKey={stableWorkflowScope} contextKey={workflowContext} table={table} fields={fields} statuses={statuses} api={excelApi} files={files}
-        filter={base64url(query.filter)} orderBy={base64url(query.orderBy)} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
+        onCompleted={operation => { closeWorkflow(); if (operation.status !== "succeeded" || !operation.result || !("table" in operation.result)) return; cache.setQueryData([...prefix, "view"], operation.result.table); void cache.invalidateQueries({ queryKey: prefix }); notify({ title: "Excel 数据已更新", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
+      {workflow?.kind === "export" && effectiveQuery ? <ExcelExportWorkflow open sessionKey={workflow.session} scopeKey={stableWorkflowScope} contextKey={workflowContext} table={table} fields={fields} statuses={statuses} api={excelApi} files={files}
+        filter={base64url(effectiveQuery.filter)} orderBy={base64url(effectiveQuery.orderBy)} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
-        onCompleted={() => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success" }) }} /> : null}
+        onCompleted={operation => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
       <AlertDialog open={Boolean(conflictLatest || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button onClick={() => { editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
       <AlertDialog
         open={leaveOpen}
@@ -1052,7 +1054,7 @@ function DataTableDetail({
           <AlertDialogDescription>
             {discardTarget === "editor"
               ? "未保存的记录、字段或状态修改将丢失。"
-              : `${dirtyRef.current ? "未应用的筛选和排序；" : ""}${editorDirtyRef.current ? "未保存的记录、字段或状态修改；" : ""}${workflowDirtyRef.current ? "未完成的批量或文件设置；" : ""}将丢失。`}
+              : `${editorDirtyRef.current ? "未保存的记录、字段或状态修改；" : ""}${workflowDirtyRef.current ? "未完成的批量或文件设置；" : ""}将丢失。`}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
             <AlertDialogCancel asChild>
@@ -1066,8 +1068,7 @@ function DataTableDetail({
                   const action = leaveAction.current;
                   setLeaveOpen(false);
                   if (discardTarget === "all") {
-                    setFilterDirty(false);
-                    setFilterSession((value) => value + 1);
+                                  setFilterSession((value) => value + 1);
                   }
                   setEditorDirty(false);
                   workflowDirtyRef.current = false;
