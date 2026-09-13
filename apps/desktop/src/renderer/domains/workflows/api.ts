@@ -82,6 +82,10 @@ export async function apiRequest<T = any>(
       return { success: false, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError }
     }
     const data = await response.json()
+    if (data && !Array.isArray(data) && data.success === false) {
+      const message = [data.error, data.message, data.detail].find(value => typeof value === 'string' && value.trim())
+      return { success: false, error: message || '操作失败，服务未提供具体原因' }
+    }
     return { success: true, data }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : '请求失败' }

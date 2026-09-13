@@ -1,0 +1,136 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/api-business-failures.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:92498) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/api-business-failures.test.ts (22 tests | 8 failed) 57ms
+     × rejects explicit business failure {"success":false,"error":"凭据不存在"} without a network outage 8ms
+     × rejects explicit business failure {"success":false,"message":"连接测试失败"} without a network outage 1ms
+     × rejects explicit business failure {"success":false,"detail":"权限不足"} without a network outage 1ms
+     × rejects explicit business failure {"success":false} without a network outage 1ms
+     × rejects explicit business failure {"success":false,"error":"凭据不存在"} without a network outage 21ms
+     × rejects explicit business failure {"success":false,"message":"连接测试失败"} without a network outage 6ms
+     × rejects explicit business failure {"success":false,"detail":"权限不足"} without a network outage 3ms
+     × rejects explicit business failure {"success":false} without a network outage 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over memory > rejects explicit business failure {"success":false,"error":"凭据不存在"} without a network outage
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over http > rejects explicit business failure {"success":false,"error":"凭据不存在"} without a network outage
+AssertionError: expected { success: true, data: { …(2) } } to deeply equal { success: false, error: '凭据不存在' }
+
+- Expected
++ Received
+
+  {
++   "data": {
+      "error": "凭据不存在",
+      "success": false,
++   },
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/api-business-failures.test.ts:28:22
+     26|     respond = () => Response.json(body)
+     27|     const response = await apiRequest('/contract')
+     28|     expect(response).toEqual({ success: false, error: message })
+       |                      ^
+     29|     expect(disconnected).not.toHaveBeenCalled()
+     30|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over memory > rejects explicit business failure {"success":false,"message":"连接测试失败"} without a network outage
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over http > rejects explicit business failure {"success":false,"message":"连接测试失败"} without a network outage
+AssertionError: expected { success: true, data: { …(2) } } to deeply equal { success: false, error: '连接测试失败' }
+
+- Expected
++ Received
+
+  {
+-   "error": "连接测试失败",
++   "data": {
++     "message": "连接测试失败",
+      "success": false,
++   },
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/api-business-failures.test.ts:28:22
+     26|     respond = () => Response.json(body)
+     27|     const response = await apiRequest('/contract')
+     28|     expect(response).toEqual({ success: false, error: message })
+       |                      ^
+     29|     expect(disconnected).not.toHaveBeenCalled()
+     30|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over memory > rejects explicit business failure {"success":false,"detail":"权限不足"} without a network outage
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over http > rejects explicit business failure {"success":false,"detail":"权限不足"} without a network outage
+AssertionError: expected { success: true, data: { …(2) } } to deeply equal { success: false, error: '权限不足' }
+
+- Expected
++ Received
+
+  {
+-   "error": "权限不足",
++   "data": {
++     "detail": "权限不足",
+      "success": false,
++   },
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/api-business-failures.test.ts:28:22
+     26|     respond = () => Response.json(body)
+     27|     const response = await apiRequest('/contract')
+     28|     expect(response).toEqual({ success: false, error: message })
+       |                      ^
+     29|     expect(disconnected).not.toHaveBeenCalled()
+     30|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over memory > rejects explicit business failure {"success":false} without a network outage
+ FAIL  src/renderer/domains/workflows/tests/api-business-failures.test.ts > API response contract over http > rejects explicit business failure {"success":false} without a network outage
+AssertionError: expected { success: true, …(1) } to deeply equal { success: false, …(1) }
+
+- Expected
++ Received
+
+  {
+-   "error": "操作失败，服务未提供具体原因",
++   "data": {
+      "success": false,
++   },
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/api-business-failures.test.ts:28:22
+     26|     respond = () => Response.json(body)
+     27|     const response = await apiRequest('/contract')
+     28|     expect(response).toEqual({ success: false, error: message })
+       |                      ^
+     29|     expect(disconnected).not.toHaveBeenCalled()
+     30|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 14 passed (22)
+   Start at  01:40:57
+   Duration  660ms (transform 94ms, setup 87ms, import 29ms, tests 57ms, environment 381ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/api-business-failures.test.ts

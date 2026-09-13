@@ -13648,5 +13648,420 @@
     "level": "browser-e2e",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-custom-module/browser-validation.md"
+  },
+  {
+    "id": "API.response.memory.business-error",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "{success:false,error:凭据不存在}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及凭据不存在",
+    "stateAssertion": "返回失败及凭据不存在；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.business-message",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "{success:false,message:连接测试失败}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及连接测试失败",
+    "stateAssertion": "返回失败及连接测试失败；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.business-detail",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "{success:false,detail:权限不足}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及权限不足",
+    "stateAssertion": "返回失败及权限不足；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.business-empty",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "{success:false}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及明确兜底原因",
+    "stateAssertion": "返回失败及明确兜底原因；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.zero-match",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "{success:true,matched:false,count:0}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "成功且保留零匹配",
+    "stateAssertion": "成功且保留零匹配；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.nested-false",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "嵌套 data.success=false"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "保持原嵌套成功响应",
+    "stateAssertion": "保持原嵌套成功响应；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.plain-object",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "模块元数据对象"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "原样返回成功对象",
+    "stateAssertion": "原样返回成功对象；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.array",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "数组元素含 success=false"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "原样返回成功数组",
+    "stateAssertion": "原样返回成功数组；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.null",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "JSON null"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回成功且 data=null",
+    "stateAssertion": "返回成功且 data=null；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.http-validation",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "HTTP 422 detail 定位字段"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "保留 HTTP 状态及参数路径",
+    "stateAssertion": "保留 HTTP 状态及参数路径；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.memory.invalid-json",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "memory",
+      "response": "HTTP 200 非法 JSON"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败，非连接中断",
+    "stateAssertion": "返回失败，非连接中断；不广播业务失败为网络断线",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.business-error",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "{success:false,error:凭据不存在}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及凭据不存在",
+    "stateAssertion": "返回失败及凭据不存在；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.business-message",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "{success:false,message:连接测试失败}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及连接测试失败",
+    "stateAssertion": "返回失败及连接测试失败；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.business-detail",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "{success:false,detail:权限不足}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及权限不足",
+    "stateAssertion": "返回失败及权限不足；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.business-empty",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "{success:false}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败及明确兜底原因",
+    "stateAssertion": "返回失败及明确兜底原因；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.zero-match",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "{success:true,matched:false,count:0}"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "成功且保留零匹配",
+    "stateAssertion": "成功且保留零匹配；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.nested-false",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "嵌套 data.success=false"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "保持原嵌套成功响应",
+    "stateAssertion": "保持原嵌套成功响应；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.plain-object",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "模块元数据对象"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "原样返回成功对象",
+    "stateAssertion": "原样返回成功对象；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.array",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "数组元素含 success=false"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "原样返回成功数组",
+    "stateAssertion": "原样返回成功数组；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.null",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "JSON null"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回成功且 data=null",
+    "stateAssertion": "返回成功且 data=null；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.http-validation",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "HTTP 422 detail 定位字段"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "保留 HTTP 状态及参数路径",
+    "stateAssertion": "保留 HTTP 状态及参数路径；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "API.response.http.invalid-json",
+    "capability": "shared-api-error-contract",
+    "preconditions": {
+      "transport": "http",
+      "response": "HTTP 200 非法 JSON"
+    },
+    "steps": [
+      "调用实际 apiRequest",
+      "等待响应并检查连接错误事件"
+    ],
+    "expectedUI": "消费者获得一致的成功/错误信号",
+    "expectedIO": "返回失败，非连接中断",
+    "stateAssertion": "返回失败，非连接中断；不广播业务失败为网络断线",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/api-business-failures.test.ts"
+  },
+  {
+    "id": "CREDENTIAL.save.business-failure",
+    "capability": "credential-settings",
+    "preconditions": {
+      "service": "Mock 凭据保存 HTTP 200 success=false",
+      "values": "虚构 fixture_credential / dummy-test-value"
+    },
+    "steps": [
+      "打开全局配置凭据库",
+      "新增凭据并填写字段",
+      "点击保存"
+    ],
+    "expectedUI": "显示保存失败：测试存储不可写，输入仍保留",
+    "expectedIO": "仅一次 POST，失败不执行后续列表刷新来假装成功",
+    "stateAssertion": "编辑态和输入保留，未调用真实凭据服务",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/credential-save-failure.test.tsx"
   }
 ]
