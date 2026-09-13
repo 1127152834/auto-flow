@@ -15420,5 +15420,124 @@
     "level": "store",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-alignment/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.completed",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "启动后先收到 completed 状态，再收到 HTTP 接受"
+    ],
+    "expectedUI": "状态保持 completed",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "状态保持 completed",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.stopped",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "启动后先收到 stopped 状态，再收到 HTTP 接受"
+    ],
+    "expectedUI": "状态保持 stopped",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "状态保持 stopped",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.failed",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "启动后先收到 failed 状态，再收到 HTTP 接受"
+    ],
+    "expectedUI": "状态保持 failed",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "状态保持 failed",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.pending",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "启动后先收到 pending 状态，再收到 HTTP 接受"
+    ],
+    "expectedUI": "状态保持 pending",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "状态保持 pending",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.repeated",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "创建等待中连续 F5，修改断点再返回创建结果"
+    ],
+    "expectedUI": "只创建并启动一次，使用点击前断点和单步值",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "只创建并启动一次，使用点击前断点和单步值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.retry",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "准备失败后再次明确按 F5"
+    ],
+    "expectedUI": "第一次不执行；重试成功进入启动",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "第一次不执行；重试成功进入启动",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "RUN.start-boundary.active",
+    "capability": "运行启动边界",
+    "preconditions": {
+      "document": "独立单节点草稿",
+      "transport": "workflowApi spies"
+    },
+    "steps": [
+      "running 状态发送 run-from-node"
+    ],
+    "expectedUI": "不发创建和执行请求，状态保持 running",
+    "expectedIO": "只有通过启动检查后发送 create/execute；HTTP 接受不伪造运行事件",
+    "stateAssertion": "不发创建和执行请求，状态保持 running",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
   }
 ]

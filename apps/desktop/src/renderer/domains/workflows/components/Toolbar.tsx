@@ -73,6 +73,7 @@ import {
 
 export function Toolbar() {
   const [workflowId, setWorkflowId] = useState<string | null>(null)
+  const startPending = useRef(false)
   const [showGlobalConfig, setShowGlobalConfig] = useState(false)
   const [showDocumentation, setShowDocumentation] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
@@ -200,6 +201,7 @@ export function Toolbar() {
   // 通用执行函数
   // startNodeId：可选，从指定节点开始运行（调试用），为空则从默认起始节点运行
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
+    if (startPending.current || useWorkflowStore.getState().executionStatus === 'running') return
     if (nodes.length === 0) {
       addLog({ level: 'warning', message: '工作流没有任何节点' })
       return
@@ -217,6 +219,11 @@ export function Toolbar() {
       startNodeLabel = (sn?.data?.label as string) || startNodeId
     }
 
+    const debugOptions = {
+      breakpoints: Array.from(useDebugStore.getState().breakpoints),
+      stepMode: useDebugStore.getState().stepMode,
+    }
+    startPending.current = true
     clearLogs()
     clearCollectedData()
     setBottomPanelTab('logs')  // 切换到日志栏
@@ -310,8 +317,7 @@ export function Toolbar() {
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
         browserConfig,
-        breakpoints: Array.from(useDebugStore.getState().breakpoints),
-        stepMode: useDebugStore.getState().stepMode,
+        ...debugOptions,
         startNodeId: startNodeId || undefined,
       })
       
@@ -320,12 +326,14 @@ export function Toolbar() {
         return
       }
 
-      setExecutionStatus('running')
+      // HTTP acceptance is not execution confirmation; SSE owns the running/terminal state.
       addLog({ level: 'info', message: startNodeId
-        ? `工作流已从指定节点开始执行：${startNodeLabel}`
-        : `工作流开始执行${headless ? '（无头模式）' : ''}` })
+        ? `从指定节点启动请求已接受：${startNodeLabel}`
+        : `启动请求已接受${headless ? '（无头模式）' : ''}` })
     } catch (error) {
       addLog({ level: 'error', message: `执行异常: ${error}` })
+    } finally {
+      startPending.current = false
     }
   }, [nodes, edges, variables, name, workflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
 
