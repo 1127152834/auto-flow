@@ -1,0 +1,54 @@
+{
+  "status": "partialPackageReviewed",
+  "scope": "VR1正常目录/无匹配/长名边界；非完整R1验收",
+  "reference": "../visual-audit-2026-09-13/references/r1-directory-overview.png",
+  "run": "../r1/runs/run-8BvVYs/result.json",
+  "reviewer": "主协调，view_image原图与真实截图目视对照",
+  "scoreMeaning": "人工四维估计，非像素测量；金图未冻结",
+  "pages": [
+    {
+      "page": "最近项目",
+      "actual": "../r1/runs/run-8BvVYs/VR-A01-recent.png",
+      "scores": [
+        25,
+        22,
+        21,
+        18
+      ],
+      "result": "normalStateReviewed"
+    },
+    {
+      "page": "全部项目",
+      "actual": "../r1/runs/run-8BvVYs/VR-A02-all.png",
+      "scores": [
+        25,
+        21,
+        21,
+        18
+      ],
+      "result": "normalStateReviewed"
+    },
+    {
+      "page": "200%长名边界",
+      "actual": "../r1/runs/run-8BvVYs/VR-A01-recent-200.png",
+      "scores": null,
+      "result": "boundaryReviewed"
+    }
+  ],
+  "pending": [
+    "A05加载/刷新错误完整取证",
+    "E02分页/重启完整重跑",
+    "VR2–VR5",
+    "原生窗口/电脑工具交付抽查",
+    "用户验收",
+    "Windows/其他架构/打包"
+  ],
+  "engineering": {
+    "targetedTests": 28,
+    "scriptTests": 1,
+    "typecheck": "passed",
+    "build": "passed",
+    "directoryE2E": "passed",
+    "wholeR1E2E": "notExecuted"
+  }
+}

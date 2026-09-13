@@ -1,0 +1,135 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T12:30:26.005Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "3bc17f161a2a5689ed90c28b2e37267739938253",
+    "dirtyFiles": [
+      "scripts/qa-project-alignment-r1.mjs"
+    ],
+    "scriptSha256": "afe3eb2d58af7d78db4a0a5a3775e9927112d210b15bc4cd12fbd52e4b8b1a1d",
+    "desktopBuildSha256": "543114b70cf31898c27ca533a155b6064d05c3584be1d6f0bb810cc605acd42a"
+  },
+  "checks": [
+    "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+    "E1: 更多编辑打开表单不导航",
+    "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复"
+  ],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent",
+      "file": "VR-A01-recent.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A02-all",
+      "file": "VR-A02-all.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "fixture": "第三个长名称项目经API预置",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A04-no-match",
+      "file": "VR-A04-no-match.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent-200",
+      "file": "VR-A01-recent-200.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 720,
+        "height": 498
+      },
+      "dpr": 4,
+      "fonts": "loaded",
+      "zoom": 2,
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航",
+        "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-NwZmia",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

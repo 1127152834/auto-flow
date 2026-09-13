@@ -7,3 +7,5 @@ VR0：visual_plan_test_review只读检查源码QA与规格，发现阶段编号�
 VR1规格审查：vr1_spec_review确认组件范围符合；QA实际视口、fixture分级、字体/几何证据3项已整改。原构建run-wUVDJP在缺少图标分区处失败；run-GHI7dj行为通过但视口不达基准，不作合格视觉图；run-AHZ6Xp在视口硬断言处失败，未误报通过。macOS视口限制改用显式CDP桌面视口，原生窗口验收另列。
 
 VR1工程审查：vr1_quality_review发现长名截断在Button外层而非实际文本；7b22b25将截断下沉span。真实长名200%取证待完成，不能先标视觉通过。
+
+工程复核：vr1_quality_review只读核对7b22b25与run-8BvVYs的实际200%截图，确认名称尾省略且菜单可见，关闭important。VR1组件工程通过；A05全状态、完整R1功能/视觉及用户验收仍待执行。

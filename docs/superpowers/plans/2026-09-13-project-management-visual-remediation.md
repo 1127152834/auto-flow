@@ -115,3 +115,11 @@ QA审查补充：每个动作/截图按规格证据分级登记；UI主流程清
 技能已通过允许文件读取加载，实际路径：`/Users/zhangtiancheng/.claude/plugins/cache/superpowers-marketplace/superpowers/5.0.7/skills/subagent-driven-development/SKILL.md` 与同skills根下 `verification-before-completion/SKILL.md`。不可用工具名不影响已读取的技能工作流；使用本环境子智能体/exec工具执行。
 
 工程交付门槛与用户验收分开：自动E1路径、E2/E4对应集成/故障回归、内部人工逐图审查全部通过后可交付；用户M01–09仍pending，等待用户验收，不因此虚称全部用户用例通过。
+
+## 本轮执行记录
+
+- VR0：759b815，规格/计划/27项清单/手测文档；独立审查及修复复核通过。
+- VR1组件：3bc17f1、7b22b25；图标/横向卡片/搜索工具区/长名省略。定向28项测试、typecheck/build通过。
+- VR1有界目录E2E：run-8BvVYs，通过真实UI创建A/B、打开/返回顺序、菜单不导航、无匹配恢复、未访问fixture排除、200%长名真实尾省略。记录原构建失败run-wUVDJP与后续取证校准失败；run-3tG4Kd虽然行为passed，但zoom重复应用导致实际400%，不得作为200%合格证据；最终run已硬断言720×512/DPR2。
+- 截图初审与 [对照页](../../project-management/design-alignment/acceptance/r1-visual/vr1-comparison.html)已形成；只覆盖正常目录与长名，未把A05全状态或完整R1标通过。
+- 当前：第一组件包已开始实施并有有界证据，VR2–VR5尚待执行；完整R1/userAcceptance仍pending，未进入R2。

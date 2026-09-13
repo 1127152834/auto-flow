@@ -1,0 +1,62 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T12:31:23.994Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "3bc17f161a2a5689ed90c28b2e37267739938253",
+    "dirtyFiles": [
+      "scripts/qa-project-alignment-r1.mjs"
+    ],
+    "scriptSha256": "ca8b0e3e8c7756f608b765dcc542d2e52e1c637ab7a3cd03ac2794b49979be8e",
+    "desktopBuildSha256": "543114b70cf31898c27ca533a155b6064d05c3584be1d6f0bb810cc605acd42a"
+  },
+  "checks": [],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "failure",
+      "file": "failure.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 124,
+          "y": 106,
+          "w": 1180,
+          "h": 36
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    }
+  ],
+  "error": "实际renderer视口基准\n+ actual - expected\n\n  {\n+   h: 1000,\n-   h: 1024,\n    w: 1440\n  }\n",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-3mEaAX",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

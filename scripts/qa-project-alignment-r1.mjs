@@ -81,22 +81,22 @@ async function main() {
   }
   async function visualDirectoryFlow() {
     const source={stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'}
-    const created=['内容采集项目','客户跟进项目']
+    const created=['内容采集项目','客户跟进项目'], longName='🧪'.repeat(36)
     for(const name of created){await click('新建项目');await input('#project-name',name);await input('#project-description',name==='内容采集项目'?'自动采集电商商品信息并生成结构化数据':'管理客户信息并自动生成跟进记录');await click('创建项目');await visible('项目资料');await click('返回项目目录')}
     await click('查看全部项目');await click(created[0]);await visible('项目资料');await click('返回项目目录');await click(created[1]);await visible('项目资料');await click('返回项目目录');await click('返回最近')
     await directoryGeometry();checkpoint('E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过')
     const names=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.textContent)");assert.ok(names[0].includes(created[1])&&names[1].includes(created[0]))
     await capture('VR-A01-recent',source)
     const before=await renderer.evaluate('location.hash');await click(`更多${created[1]}操作`);await click('编辑项目','[role=menuitem]');await visible('编辑项目');assert.equal(await renderer.evaluate('location.hash'),before);await click('取消');checkpoint('E1: 更多编辑打开表单不导航')
-    await api('/projects',{method:'POST',body:{name:'这是一个用于验证长名称换行和更多操作始终可见的未访问项目',description:'用于长文本边界。API准备，不代表UI创建通过。'}})
-    await click('查看全部项目');await visible('这是一个用于验证');await directoryGeometry();await capture('VR-A02-all',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径'})
+    await api('/projects',{method:'POST',body:{name:longName,description:'用于长文本边界。API准备，不代表UI创建通过。'}})
+    await click('查看全部项目');await visible(longName);await directoryGeometry();await capture('VR-A02-all',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径'})
     await input('[aria-label=搜索项目]','不存在的资料');await visible('没有匹配的项目');await capture('VR-A04-no-match',source);await input('[aria-label=搜索项目]','');await visible(created[0]);await click('返回最近')
-    assert.equal(await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].some(e=>e.textContent.includes('未访问项目'))"),false);checkpoint('E1: 未访问项目仅在全部目录可见；UI无匹配可恢复')
-    await click('查看全部项目');await click('这是一个用于验证长名称换行和更多操作始终可见的未访问项目');await visible('项目资料');await click('返回项目目录');await click('返回最近')
-    await zoom(2);await directoryGeometry();await capture('VR-A01-recent-200',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'长名fixture经UI打开成为最近记录'});await zoom(1)
+    assert.equal(await renderer.evaluate(`[...document.querySelectorAll('[aria-label=项目目录] article')].some(e=>e.textContent.includes(${JSON.stringify(longName)}))`),false);checkpoint('E1: 未访问项目仅在全部目录可见；UI无匹配可恢复')
+    await click('查看全部项目');await click(longName);await visible('项目资料');await click('返回项目目录');await click('返回最近')
+    await zoom(2);assert.deepEqual(await renderer.evaluate('({w:innerWidth,h:innerHeight,dpr:devicePixelRatio})'),{w:720,h:512,dpr:2},'200%逻辑视口与DPR');await renderer.evaluate("document.querySelector('[aria-label=项目目录] article').scrollIntoView({block:'center'})");await directoryGeometry();assert.ok(await renderer.evaluate(`(()=>{const e=[...document.querySelectorAll('button[title]')].find(e=>e.title===${JSON.stringify(longName)})?.querySelector('span.truncate');return e&&e.scrollWidth>e.clientWidth&&getComputedStyle(e).textOverflow==='ellipsis'})()`),'边界fixture必须实际触发名称省略');checkpoint('E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留');await capture('VR-A01-recent-200',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'长名fixture经UI打开成为最近记录'});await zoom(1)
     await report('passed');clean=true;console.log(`VR1目录E2E通过，视觉审查待填：${evidence}`)
   }
-  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);if(visualDirectory)await renderer.command('Emulation.setDeviceMetricsOverride',{width:Math.round(1440/value),height:Math.round(1024/value),deviceScaleFactor:value,mobile:false});await wait(250)}
+  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);if(visualDirectory)await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});await wait(250)}
   async function fits(){assert.ok(await renderer.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),'页面不得横向撑宽');assert.ok(await renderer.evaluate(`(()=>{const input=document.querySelector('[aria-label=文本搜索]'),button=[...document.querySelectorAll('[data-query-panel-trigger]')].find(e=>e.textContent==='筛选');if(!input||!button)return true;const a=input.getBoundingClientRect(),b=button.getBoundingClientRect();return a.right<=b.left+1||b.right<=a.left+1||a.bottom<=b.top+1||b.bottom<=a.top+1})()`),'搜索框与筛选按钮不得重叠')}
   async function seed(){
     for(let index=1;index<=52;index++)await api('/projects',{method:'POST',body:{name:`R1分页${String(index).padStart(3,'0')}`,description:'工具生成的分页边界资料'}})

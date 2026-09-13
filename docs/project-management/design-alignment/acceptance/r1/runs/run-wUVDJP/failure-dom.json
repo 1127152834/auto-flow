@@ -1,0 +1,170 @@
+{
+  "bodyStyle": "",
+  "buttons": [
+    {
+      "name": "总览",
+      "disabled": false,
+      "rect": {
+        "x": 196.203125,
+        "y": 8.5,
+        "w": 36,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"border-0 border-b-2 bg-transparent px-1 text-sm font-semibold border-transparent text-muted hover:text-ink\">总览</button>"
+    },
+    {
+      "name": "项目",
+      "disabled": false,
+      "rect": {
+        "x": 252.203125,
+        "y": 8.5,
+        "w": 36,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"border-0 border-b-2 bg-transparent px-1 text-sm font-semibold border-clay text-clay\" aria-current=\"page\">项目</button>"
+    },
+    {
+      "name": "浏览器配置",
+      "disabled": false,
+      "rect": {
+        "x": 308.203125,
+        "y": 8.5,
+        "w": 78,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"border-0 border-b-2 bg-transparent px-1 text-sm font-semibold border-transparent text-muted hover:text-ink\">浏览器配置</button>"
+    },
+    {
+      "name": "代理管理",
+      "disabled": false,
+      "rect": {
+        "x": 406.203125,
+        "y": 8.5,
+        "w": 64,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"border-0 border-b-2 bg-transparent px-1 text-sm font-semibold border-transparent text-muted hover:text-ink\">代理管理</button>"
+    },
+    {
+      "name": "模型管理",
+      "disabled": false,
+      "rect": {
+        "x": 490.203125,
+        "y": 8.5,
+        "w": 64,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"border-0 border-b-2 bg-transparent px-1 text-sm font-semibold border-transparent text-muted hover:text-ink\">模型管理</button>"
+    },
+    {
+      "name": "设置",
+      "disabled": false,
+      "rect": {
+        "x": 1220,
+        "y": 8.5,
+        "w": 57,
+        "h": 56
+      },
+      "hit": "<button type=\"button\" class=\"flex min-h-14 items-center gap-2 border-0 border-b-2 bg-transparent text-sm font-semibold border-transparent text-muted\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"21\" height=\"21\" fill=\"currentColor\" viewBox=\"0 0 256 "
+    },
+    {
+      "name": "关闭通知",
+      "disabled": false,
+      "rect": {
+        "x": 1365,
+        "y": 877,
+        "w": 42,
+        "h": 28
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">关闭</span>"
+    },
+    {
+      "name": "关闭通知",
+      "disabled": false,
+      "rect": {
+        "x": 1365,
+        "y": 939,
+        "w": 42,
+        "h": 28
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">关闭</span>"
+    },
+    {
+      "name": "刷新",
+      "disabled": false,
+      "rect": {
+        "x": 1132,
+        "y": 114,
+        "w": 84,
+        "h": 40
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" fill=\"currentColor\" viewBox=\"0 0 256 256\" class=\"\"><path d=\"M240,56v48a8,8,0,0,1-8,8H184a8,8,"
+    },
+    {
+      "name": "新建项目",
+      "disabled": false,
+      "rect": {
+        "x": 1224,
+        "y": 114,
+        "w": 112,
+        "h": 40
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" fill=\"currentColor\" viewBox=\"0 0 256 256\"><path d=\"M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16"
+    },
+    {
+      "name": "查看全部项目",
+      "disabled": false,
+      "rect": {
+        "x": 1196,
+        "y": 252,
+        "w": 140,
+        "h": 40
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">查看全部项目<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1em\" height=\"1em\" fill=\"currentColor\" viewBox=\"0 0 256 256\"><path d=\"M181.66,133.66l-80,80a8,8,0,0,1-11.3"
+    },
+    {
+      "name": "客户跟进项目",
+      "disabled": false,
+      "rect": {
+        "x": 125,
+        "y": 329,
+        "w": 98,
+        "h": 26
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">客户跟进项目</span>"
+    },
+    {
+      "name": "更多客户跟进项目操作",
+      "disabled": false,
+      "rect": {
+        "x": 661,
+        "y": 391,
+        "w": 32,
+        "h": 32
+      },
+      "hit": "<path d=\"M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Z\"></path>"
+    },
+    {
+      "name": "内容采集项目",
+      "disabled": false,
+      "rect": {
+        "x": 747,
+        "y": 329,
+        "w": 98,
+        "h": 26
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">内容采集项目</span>"
+    },
+    {
+      "name": "更多内容采集项目操作",
+      "disabled": false,
+      "rect": {
+        "x": 1283,
+        "y": 391,
+        "w": 32,
+        "h": 32
+      },
+      "hit": "<path d=\"M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Z\"></path>"
+    }
+  ]
+}
