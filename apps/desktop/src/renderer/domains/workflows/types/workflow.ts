@@ -1,3 +1,4 @@
+import type { components } from '../../../shared/api/generated'
 // Source: WebRPA@5ccb900e, types/workflow.ts; see SOURCE.md for license and adaptation boundaries.
 // 位置
 export interface Position {
@@ -661,16 +662,7 @@ export interface DataAsset {
 }
 
 // 图像资源
-export interface ImageAsset {
-  id: string
-  name: string
-  originalName: string
-  size: number
-  uploadedAt: string
-  folder: string
-  extension: string
-  path?: string  // 图像文件的真实路径
-}
+export type ImageAsset = components['schemas']['StudioImageAsset']
 
 // 工作流节点
 export interface WorkflowNode {

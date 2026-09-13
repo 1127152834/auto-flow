@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
+import type { components } from '../../shared/api/generated'
 import { studioFetch } from './api/transport'
 import { getBackendBaseUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
@@ -229,26 +230,26 @@ export const executorApi = {
 
 // ==================== 图像资源 API ====================
 export const imageAssetApi = {
-  list: () => apiRequest('/image-assets'),
-  listFolders: () => apiRequest('/image-assets/folders'),
-  get: (id: string) => apiRequest(`/image-assets/${id}`),
+  list: () => apiRequest<components['schemas']['StudioImageAsset'][]>('/image-assets'),
+  listFolders: () => apiRequest<string[]>('/image-assets/folders'),
+  get: (id: string) => apiRequest<components['schemas']['StudioImageAsset']>(`/image-assets/${id}`),
   upload: (file: File, folder?: string) => {
       const formData = new FormData()
       formData.append('file', file)
     if (folder) formData.append('folder', folder)
-    return apiRequest('/image-assets/upload', { method: 'POST', body: formData })
+    return apiRequest<components['schemas']['StudioImageUploadResult']>('/image-assets/upload', { method: 'POST', body: formData })
   },
-  delete: (id: string) => apiRequest(`/image-assets/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => apiRequest<components['schemas']['StudioImageMutationResult']>(`/image-assets/${id}`, { method: 'DELETE' }),
   createFolder: (name: string, parentPath?: string) =>
-    apiRequest('/image-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) }),
+    apiRequest<components['schemas']['StudioImageFolderCreated']>('/image-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) }),
   renameFolder: (oldPath: string, newName: string) =>
-    apiRequest('/image-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) }),
+    apiRequest<components['schemas']['StudioImageFolderRenamed']>('/image-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) }),
   deleteFolder: (folderPath: string) =>
-    apiRequest('/image-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) }),
+    apiRequest<components['schemas']['StudioImageFolderDeleted']>('/image-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) }),
   rename: (assetId: string, newName: string) =>
-    apiRequest(`/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' }),
+    apiRequest<components['schemas']['StudioImageRenameResult']>(`/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' }),
   moveAsset: (assetId: string, targetFolder?: string) =>
-    apiRequest('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
+    apiRequest<components['schemas']['StudioImageMoved']>('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
 }
 
 // ==================== 定时任务 API ====================

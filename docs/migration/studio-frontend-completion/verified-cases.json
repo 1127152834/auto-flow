@@ -18375,5 +18375,362 @@
     "level": "backend-contract",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.image-schema.envelope",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "上传与重命名必须返回 asset",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "上传与重命名必须返回 asset",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-id",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 id",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 id",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-name",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 name",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 name",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-originalName",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 originalName",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 originalName",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-size",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 size",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 size",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-uploadedAt",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 uploadedAt",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 uploadedAt",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-folder",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 folder",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 folder",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.missing-extension",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝缺少字段 extension",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝缺少字段 extension",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.size-0",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝非法 size 负数",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝非法 size 负数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.size-1",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝非法 size 小数",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝非法 size 小数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.size-2",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝非法 size 字符串",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝非法 size 字符串",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.size-3",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝非法 size 布尔",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝非法 size 布尔",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.size-4",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "拒绝非法 size 超过安全整数",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "拒绝非法 size 超过安全整数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.path-0",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "兼容路径 null 与扩展字段",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "兼容路径 null 与扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.path-1",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "兼容路径 data URI 与扩展字段",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "兼容路径 data URI 与扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.path-2",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "兼容路径 工作区路径 与扩展字段",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "兼容路径 工作区路径 与扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.mutation-path",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "校验变更确认字段 path",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "校验变更确认字段 path",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.mutation-newPath",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "校验变更确认字段 newPath",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "校验变更确认字段 newPath",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.mutation-deletedCount",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "校验变更确认字段 deletedCount",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "校验变更确认字段 deletedCount",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.mutation-newFolder",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "校验变更确认字段 newFolder",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "校验变更确认字段 newFolder",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "CONTRACT.image-schema.export",
+    "capability": "service:image-assets",
+    "preconditions": {
+      "fixture": "合法图像元数据及逐项非法变体"
+    },
+    "steps": [
+      "现有导出器发布资源模型引用",
+      "执行 Pydantic 模型校验或 schema 导出"
+    ],
+    "expectedUI": "模型测试，无界面断言",
+    "expectedIO": "明确接受兼容数据，拒绝错误字段/包络",
+    "stateAssertion": "现有导出器发布资源模型引用",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
   }
 ]

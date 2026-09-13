@@ -2356,6 +2356,73 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioImageAsset */
+        StudioImageAsset: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Originalname */
+            originalName: string;
+            /** Size */
+            size: number;
+            /** Uploadedat */
+            uploadedAt: string;
+            /** Folder */
+            folder: string;
+            /** Extension */
+            extension: string;
+            /**
+             * Path
+             * @default null
+             */
+            path: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioImageFolderCreated */
+        StudioImageFolderCreated: {
+            /** Success */
+            success: boolean;
+            /** Path */
+            path: string;
+        };
+        /** StudioImageFolderDeleted */
+        StudioImageFolderDeleted: {
+            /** Success */
+            success: boolean;
+            /** Deletedcount */
+            deletedCount: number;
+        };
+        /** StudioImageFolderRenamed */
+        StudioImageFolderRenamed: {
+            /** Success */
+            success: boolean;
+            /** Newpath */
+            newPath: string;
+        };
+        /** StudioImageMoved */
+        StudioImageMoved: {
+            /** Success */
+            success: boolean;
+            /** Newfolder */
+            newFolder: string;
+        };
+        /** StudioImageMutationResult */
+        StudioImageMutationResult: {
+            /** Success */
+            success: boolean;
+        };
+        /** StudioImageRenameResult */
+        StudioImageRenameResult: {
+            /** Success */
+            success: boolean;
+            asset: components["schemas"]["StudioImageAsset"];
+        };
+        /** StudioImageUploadResult */
+        StudioImageUploadResult: {
+            asset: components["schemas"]["StudioImageAsset"];
+        };
     };
     responses: never;
     parameters: never;
