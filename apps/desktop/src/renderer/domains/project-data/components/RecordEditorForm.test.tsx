@@ -31,3 +31,9 @@ it('locks duplicate submissions before the queued callback starts',async()=>{
   const submit=vi.fn(()=>new Promise(()=>undefined));render(<RecordEditorForm id="editor" mode="create" sessionKey="same" fields={[]} onSubmit={submit}/>)
   const form=screen.getByRole('form',{name:'新建记录表单'});act(()=>{fireEvent.submit(form);fireEvent.submit(form)});await act(async()=>{});expect(submit).toHaveBeenCalledOnce()
 })
+
+it('renders the page identity in Chinese and keeps the shared footer actions',()=>{
+  render(<RecordEditorForm id="editor" mode="edit" presentation="page" sessionKey="page" fields={[field('value')]} initialRecord={record([cell('value','short')])} footerClassName="sticky-actions" onCancel={vi.fn()} onSubmit={vi.fn()}/>)
+  expect(screen.getByText('记录身份：文本 · 001（只读）')).toBeVisible();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
+  expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument();expect(screen.getByRole('button',{name:'保存修改'}).closest('footer')).toBeInTheDocument()
+})

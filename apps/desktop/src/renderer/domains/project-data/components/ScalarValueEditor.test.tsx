@@ -108,3 +108,16 @@ it('shows presence contextually while keeping missing and null explicit', async 
   view.rerender(<ScalarValueEditor id="value" label="内容" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presenceDisplay="contextual" />)
   expect(screen.getByRole('combobox',{name:'内容值状态'})).toHaveAttribute('data-choice-value','null')
 })
+
+it('uses a single-line page editor until the value or user requests multiline input', async()=>{
+  const user=userEvent.setup(),draft=scalarDraft('short'),view=render(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={draft} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','INPUT');expect(screen.getAllByText('摘要')).toHaveLength(1)
+  await user.click(screen.getByRole('button',{name:'使用多行输入'}));expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
+  view.rerender(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={{...draft,text:'first\nsecond'}} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByLabelText('摘要')).toHaveValue('first\nsecond');expect(screen.getByRole('button',{name:'使用单行输入'})).toBeDisabled()
+})
+
+it('keeps page missing and null states explicit without repeating the field label',()=>{
+  render(<ScalarValueEditor id="page-null" label="备注" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByRole('combobox',{name:'备注值状态'})).toHaveAttribute('data-choice-value','null');expect(screen.getAllByText('备注')).toHaveLength(1)
+})
