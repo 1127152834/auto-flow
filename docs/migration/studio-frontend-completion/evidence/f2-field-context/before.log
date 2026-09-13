@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/config-field-context.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:87662) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/config-field-context.test.tsx (4 tests | 4 failed) 431ms
+   × does not interpret switching to another output field as renaming the previous node variable 203ms
+   × discards old rename state after pending-blur context changes 99ms
+   × discards old rename state after open-dialog context changes 76ms
+   × discards old rename state after document context changes 53ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/config-field-context.test.tsx > does not interpret switching to another output field as renaming the previous node variable
+AssertionError: expected <h3 …(1)></h3> to be null
+
+- Expected:
+null
+
++ Received:
+<h3
+  class="text-lg font-semibold text-gray-900"
+>
+  变量重命名
+</h3>
+
+ ❯ src/renderer/domains/workflows/tests/config-field-context.test.tsx:27:39
+     25|   fireEvent.blur(screen.getByPlaceholderText('变量名'))
+     26|   await act(async () => vi.advanceTimersByTimeAsync(200))
+     27|   expect(screen.queryByText('变量重命名')).toBeNull()
+       |                                       ^
+     28|   expect(store.getState().nodes[2].data.text).toBe('{alpha}')
+     29| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/config-field-context.test.tsx > discards old rename state after pending-blur context changes
+ FAIL  src/renderer/domains/workflows/tests/config-field-context.test.tsx > discards old rename state after open-dialog context changes
+ FAIL  src/renderer/domains/workflows/tests/config-field-context.test.tsx > discards old rename state after document context changes
+AssertionError: expected <h3 …(1)></h3> to be null
+
+- Expected:
+null
+
++ Received:
+<h3
+  class="text-lg font-semibold text-gray-900"
+>
+  变量重命名
+</h3>
+
+ ❯ src/renderer/domains/workflows/tests/config-field-context.test.tsx:40:39
+     38|   } else view.rerender(<ConfigPanel selectedNodeId={second} />)
+     39|   await act(async () => vi.advanceTimersByTimeAsync(200))
+     40|   expect(screen.queryByText('变量重命名')).toBeNull()
+       |                                       ^
+     41|   expect(store.getState().nodes[2].data.text).toBe('{alpha}')
+     42| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  03:09:19
+   Duration  2.80s (transform 1.17s, setup 92ms, import 1.65s, tests 431ms, environment 518ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/config-field-context.test.tsx

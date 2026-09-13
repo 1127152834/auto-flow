@@ -1475,7 +1475,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             </div>
 
             <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4 animate-fade-in">
+              <div key={`${documentId}:${selectedNodeId}`} className="space-y-4 animate-fade-in">
                 {/* 必填校验提示 */}
                 {(() => {
                   const missing = getMissingRequiredLabels(String(nodeData.moduleType), nodeData as Record<string, unknown>, requiredFieldsMap)

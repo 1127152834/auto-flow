@@ -16719,5 +16719,141 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.switch-node",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "切换至另一输出变量字段并失焦",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "不把 alpha 到 beta 的字段切换当作改名",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "不把 alpha 到 beta 的字段切换当作改名",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.pending-blur",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "改名失焦后立即切换节点",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "无旧改名提示，引用仍为 alpha",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "无旧改名提示，引用仍为 alpha",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.open-dialog",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "旧改名提示打开后切换节点",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "旧提示关闭，引用仍为 alpha",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "旧提示关闭，引用仍为 alpha",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.document",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "改名失焦后切换文档但保留相同节点 ID",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "不显示旧文档提示",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "不显示旧文档提示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.stale-confirm",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "改名提示打开后再改输出字段，点击全部更新",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "输出保留 delta，不把引用改为 gamma",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "输出保留 delta，不把引用改为 gamma",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.changed-before-blur",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "失焦等待期间再次修改字段",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "旧检查取消，引用不变",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "旧检查取消，引用不变",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.confirm",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "有效提示点击全部更新",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "输出和引用均为 gamma",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "输出和引用均为 gamma",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "TOOL.variable-rename-context.local-only",
+    "capability": "变量重命名字段上下文",
+    "preconditions": {
+      "nodes": "两个 get_element_info 输出 alpha/beta，一个 input_text 引用 alpha"
+    },
+    "steps": [
+      "有效提示点击仅改此处",
+      "推进失焦延迟 200ms"
+    ],
+    "expectedUI": "输出为 gamma，引用保留 alpha",
+    "expectedIO": "仅本地配置和引用更新，无服务命令",
+    "stateAssertion": "输出为 gamma，引用保留 alpha",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
   }
 ]

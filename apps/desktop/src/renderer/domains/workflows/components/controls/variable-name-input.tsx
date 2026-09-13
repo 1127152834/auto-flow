@@ -128,6 +128,8 @@ export function VariableNameInput({
   const isInitializedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (blurTimer.current) clearTimeout(blurTimer.current) }, [value])
   
   const globalVariables = useWorkflowStore((state) => state.variables)
   const nodes = useWorkflowStore((state) => state.nodes)
@@ -289,8 +291,9 @@ export function VariableNameInput({
   }
 
   const handleBlur = () => {
-    // 延迟关闭，允许点击选项
-    setTimeout(() => {
+    // 延迟关闭，允许点击选项；字段切换/卸载时取消旧任务。
+    if (blurTimer.current) clearTimeout(blurTimer.current)
+    blurTimer.current = setTimeout(() => {
       setShowSuggestions(false)
       
       const oldName = previousValueRef.current
@@ -322,6 +325,7 @@ export function VariableNameInput({
   }
 
   const handleConfirmRename = () => {
+    if (value !== pendingNewName) { setShowRenameDialog(false); return }
     const oldName = previousValueRef.current
     replaceVariableReferences(oldName, pendingNewName)
     previousValueRef.current = pendingNewName
