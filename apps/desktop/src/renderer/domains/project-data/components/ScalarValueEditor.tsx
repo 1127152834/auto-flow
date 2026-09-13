@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { FormField } from '../../../shared/components/FormField'
+import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Select } from '../../../shared/components/ui/select'
 import { Textarea } from '../../../shared/components/ui/textarea'
@@ -20,6 +22,9 @@ export type ScalarValueEditorProps = {
 
 export function ScalarValueEditor({ id, label, type, draft, onChange, disabled = false, readOnly = false, allowMissing = false, error, errorTarget, compact = false }: ScalarValueEditorProps) {
   const update = (change: Partial<ScalarDraft>) => onChange({ ...draft, ...change })
+  const hasLineBreak = /[\r\n]/.test(draft.text)
+  const [multiline, setMultiline] = useState(hasLineBreak)
+  useEffect(() => { if (hasLineBreak) setMultiline(true) }, [hasLineBreak])
   const presenceOptions = [
     ...(allowMissing ? [{ value: 'missing', label: '不填写' }] : draft.presence === 'missing' ? [{ value: 'missing', label: '未填写', disabled: true }] : []),
     { value: 'null', label: '清空' },
@@ -32,8 +37,9 @@ export function ScalarValueEditor({ id, label, type, draft, onChange, disabled =
         onValueChange={value => { if (value) update({ presence: value as ScalarDraft['presence'] }) }} />
     </FormField>
     {draft.presence === 'value' && type === 'string' ? <FormField label={label} htmlFor={id} error={errorTarget === 'value' ? error : undefined}>
-      {compact ? <Input size="sm" value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} /> : <Textarea value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />}
+      {compact && !multiline ? <Input size="sm" value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} /> : <Textarea rows={compact ? 2 : undefined} className={compact ? 'min-h-0' : undefined} value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />}
     </FormField> : null}
+    {compact && draft.presence === 'value' && type === 'string' ? <Button size="sm" variant="ghost" disabled={disabled || readOnly || (multiline && hasLineBreak)} onClick={() => setMultiline(value => !value)}>{multiline ? '使用单行输入' : '使用多行输入'}</Button> : null}
     {draft.presence === 'value' && type === 'number' ? <FormField label={label} htmlFor={id} error={errorTarget === 'value' ? error : undefined}>
       <Input inputMode="decimal" value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />
     </FormField> : null}
