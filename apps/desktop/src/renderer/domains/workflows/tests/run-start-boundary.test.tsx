@@ -8,6 +8,7 @@ import { Toolbar } from '../components/Toolbar'
 import { useWorkflowStore as store } from '../editor-store'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { workflowApi } from '../api'
+import { socketService } from '../events'
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>(r => { resolve = r }); return { promise, resolve } }
 beforeEach(() => {
   store.getState().clearWorkflow()
@@ -58,4 +59,18 @@ it('does not start another request through run-from-node while a run is active',
   expect(workflowApi.create).not.toHaveBeenCalled()
   expect(workflowApi.execute).not.toHaveBeenCalled()
   expect(store.getState().executionStatus).toBe('running')
+})
+
+it('binds a server workflow to the original editor document before starting', async () => {
+  const original = store.getState().id
+  const bind = vi.spyOn(socketService, 'bindExecutionDocument')
+  const response = deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
+  vi.mocked(workflowApi.create).mockReturnValue(response.promise)
+  render(<Toolbar />); fireEvent.keyDown(window, {key: 'F5'})
+  await waitFor(() => expect(workflowApi.create).toHaveBeenCalledTimes(1))
+  act(() => store.getState().clearWorkflow())
+  await act(async () => response.resolve({success: true, data: {id: 'server-identity'}}))
+  await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
+  expect(bind).toHaveBeenCalledWith('server-identity', original)
+  expect(bind.mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(workflowApi.execute).mock.invocationCallOrder[0])
 })

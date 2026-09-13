@@ -223,6 +223,7 @@ export function Toolbar() {
       breakpoints: Array.from(useDebugStore.getState().breakpoints),
       stepMode: useDebugStore.getState().stepMode,
     }
+    const sourceDocumentId = useWorkflowStore.getState().id
     startPending.current = true
     clearLogs()
     clearCollectedData()
@@ -314,6 +315,7 @@ export function Toolbar() {
         addLog({ level: 'error', message: '执行失败: 工作流 ID 缺失' })
         return
       }
+      socketService.bindExecutionDocument(currentWorkflowId, sourceDocumentId)
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
         browserConfig,

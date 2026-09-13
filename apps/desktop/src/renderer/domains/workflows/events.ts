@@ -36,6 +36,12 @@ export type SubflowEventName =
 let isExecuting = false
 
 class SocketService {
+  private executionDocument: {workflowId: string; documentId: string} | null = null
+
+  bindExecutionDocument(workflowId: string, documentId: string) {
+    this.executionDocument = {workflowId, documentId}
+  }
+
   private socket: Socket | null = null
   private connected = false
   private inputPromptSequence = 0
@@ -560,7 +566,7 @@ class SocketService {
         try {
           const heals = data.healedSelectors.filter((h) => h.nodeId && h.newSelector)
           if (heals.length > 0) {
-            window.dispatchEvent(new CustomEvent('selector:healed', { detail: { heals } }))
+            window.dispatchEvent(new CustomEvent('selector:healed', { detail: { workflowId: data.workflowId, documentId: this.executionDocument?.workflowId === data.workflowId ? this.executionDocument.documentId : undefined, heals } }))
           }
         } catch { /* ignore */ }
       }

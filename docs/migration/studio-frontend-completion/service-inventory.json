@@ -1872,7 +1872,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 72,
+          "line": 78,
           "source": "frontend/src/services/socket.ts",
           "call": "inputPromptApi.getState(data.requestId)"
         }
@@ -2010,7 +2010,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 384,
+          "line": 386,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "localWorkflowApi.getDefaultFolder()"
         },
@@ -3638,19 +3638,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 239,
+          "line": 240,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 824,
+          "line": 826,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 923,
+          "line": 925,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create(payload)"
         }
@@ -3762,7 +3762,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 317,
+          "line": 319,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.execute(currentWorkflowId, { \n        headless,\n        browserConfig,\n        ...debugOptions,\n        startNodeId: startNodeId || undefined,\n      })"
         }
@@ -3790,7 +3790,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 933,
+          "line": 935,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.exportScript(currentWorkflowId!, target)"
         }
@@ -3943,7 +3943,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 368,
+          "line": 370,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.stop(workflowId)"
         }
@@ -3971,19 +3971,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 272,
+          "line": 273,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 857,
+          "line": 859,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 931,
+          "line": 933,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, payload)"
         }
@@ -4011,7 +4011,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1056,
+          "line": 1058,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.export(name, content)"
         }
@@ -4039,7 +4039,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1097,
+          "line": 1099,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.import(bundle)"
         }
@@ -4080,7 +4080,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 556,
+          "line": 558,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4124,7 +4124,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 748,
+          "line": 750,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4144,7 +4144,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 746,
+          "line": 748,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4164,7 +4164,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 740,
+          "line": 742,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4184,7 +4184,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 744,
+          "line": 746,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4204,7 +4204,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 742,
+          "line": 744,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4224,7 +4224,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 750,
+          "line": 752,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4244,7 +4244,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 241,
+          "line": 247,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4257,7 +4257,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 249,
+          "line": 255,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4270,7 +4270,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 269,
+          "line": 275,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4352,7 +4352,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 758,
+          "line": 764,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4364,7 +4364,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 502,
+          "line": 508,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4372,7 +4372,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 554,
+          "line": 560,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('execution:completed', { \n        detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } \n      })"
@@ -4385,7 +4385,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 581,
+          "line": 587,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4398,7 +4398,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 592,
+          "line": 598,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4411,7 +4411,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 448,
+          "line": 454,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4424,7 +4424,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 465,
+          "line": 471,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4437,7 +4437,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 383,
+          "line": 389,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4450,7 +4450,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 417,
+          "line": 423,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4463,7 +4463,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 304,
+          "line": 310,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4476,7 +4476,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 298,
+          "line": 304,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4489,7 +4489,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 310,
+          "line": 316,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4502,7 +4502,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 474,
+          "line": 480,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4515,7 +4515,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 483,
+          "line": 489,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4528,7 +4528,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 315,
+          "line": 321,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4541,7 +4541,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 280,
+          "line": 286,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4554,7 +4554,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 603,
+          "line": 609,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4567,7 +4567,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 453,
+          "line": 459,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4580,7 +4580,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 492,
+          "line": 498,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4613,7 +4613,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 731,
+          "line": 733,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4639,7 +4639,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1082,
+          "line": 1074,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4671,7 +4671,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 485,
+          "line": 487,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -4683,7 +4683,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1087,
+          "line": 1079,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4717,7 +4717,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 653,
+          "line": 659,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         },
@@ -4731,7 +4731,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 655,
+          "line": 661,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:custom_action', { detail: data })"
@@ -4750,7 +4750,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 632,
+          "line": 638,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4758,7 +4758,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 634,
+          "line": 640,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_start')"
@@ -4777,7 +4777,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 639,
+          "line": 645,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4785,7 +4785,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 641,
+          "line": 647,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_stop')"
@@ -4798,7 +4798,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 627,
+          "line": 633,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4811,7 +4811,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 692,
+          "line": 694,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4819,7 +4819,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 615,
+          "line": 621,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:run')"
@@ -4832,7 +4832,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 612,
+          "line": 618,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4851,13 +4851,13 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 694,
+          "line": 696,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 646,
+          "line": 652,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4865,7 +4865,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 648,
+          "line": 654,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:screenshot')"
@@ -4878,7 +4878,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 693,
+          "line": 695,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4886,7 +4886,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 622,
+          "line": 628,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:stop')"
@@ -4899,7 +4899,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 620,
+          "line": 626,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4913,7 +4913,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 124,
+          "line": 130,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4937,19 +4937,19 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 541,
+          "line": 543,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 188,
+          "line": 189,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1032,
+          "line": 1033,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "window.addEventListener"
         },
@@ -4986,7 +4986,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1033,
+          "line": 1034,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "window.addEventListener"
         }
@@ -5025,7 +5025,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 728,
+          "line": 730,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5045,7 +5045,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 747,
+          "line": 749,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5065,7 +5065,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 745,
+          "line": 747,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5085,7 +5085,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 734,
+          "line": 736,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5105,7 +5105,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 739,
+          "line": 741,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5125,7 +5125,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 743,
+          "line": 745,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5151,7 +5151,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 194,
+          "line": 195,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5177,7 +5177,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 741,
+          "line": 743,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5197,7 +5197,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 749,
+          "line": 751,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5218,7 +5218,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 131,
+          "line": 137,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5231,7 +5231,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 138,
+          "line": 144,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5251,35 +5251,35 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 583,
+          "line": 585,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 783,
+          "line": 785,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 788,
+          "line": 790,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 794,
+          "line": 796,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 806,
+          "line": 808,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
@@ -5317,7 +5317,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1100,
+          "line": 1092,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5337,7 +5337,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 714,
+          "line": 716,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5375,7 +5375,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 356,
+          "line": 358,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5396,7 +5396,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 711,
+          "line": 713,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5435,7 +5435,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx",
-          "line": 1075,
+          "line": 1067,
           "source": "frontend/src/components/workflow/WorkflowEditor.tsx",
           "via": "window.addEventListener"
         }
@@ -5443,10 +5443,10 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 563,
+          "line": 569,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
-          "call": "new CustomEvent('selector:healed', { detail: { heals } })"
+          "call": "new CustomEvent('selector:healed', { detail: { workflowId: data.workflowId, documentId: this.executionDocument?.workflowId === data.workflowId ? this.executionDocument.documentId : undefined, heals } })"
         }
       ]
     },
@@ -5457,13 +5457,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 264,
+          "line": 270,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 773,
+          "line": 779,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5476,13 +5476,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 260,
+          "line": 266,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 765,
+          "line": 771,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5534,7 +5534,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 253,
+          "line": 259,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('socket:reconnected')"
@@ -5547,7 +5547,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 723,
+          "line": 725,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5607,7 +5607,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 753,
+          "line": 755,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5628,7 +5628,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 117,
+          "line": 123,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5661,7 +5661,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 145,
+          "line": 151,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6697,7 +6697,7 @@
       "body": "body: JSON.stringify({ filename, content: { _folder: currentFolder } })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 403,
+      "line": 405,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${getBackendBaseUrl()}/api/local-workflows/check-exists`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ filename, content: { _folder: currentFolder } })\n        })"
     },
@@ -6707,7 +6707,7 @@
       "body": "body: JSON.stringify({\n          filename,\n          content: { ...workflowData, _folder: currentFolder }\n        })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 433,
+      "line": 435,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/save-to-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({\n          filename,\n          content: { ...workflowData, _folder: currentFolder }\n        })\n      })"
     },
@@ -6717,7 +6717,7 @@
       "body": "body: JSON.stringify({ name })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 573,
+      "line": 575,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/save-clipboard-image`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ name })\n      })"
     },
@@ -6727,7 +6727,7 @@
       "body": "body: JSON.stringify({ saveToAssets: true })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 615,
+      "line": 617,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/screenshot-tool`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ saveToAssets: true })\n      })"
     },
@@ -6737,7 +6737,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 775,
+      "line": 777,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}`, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application/json' }\n      })"
     },
@@ -6747,7 +6747,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 884,
+      "line": 886,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
     },

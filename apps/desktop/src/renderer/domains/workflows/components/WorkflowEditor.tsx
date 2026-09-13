@@ -20,6 +20,7 @@ import { useWorkflowStore, type NodeData } from '../editor-store'
 import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+import { reviewSelectorHeals } from '../lib/selectorHealing'
 import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
@@ -1055,25 +1056,16 @@ export function WorkflowEditor() {
 
   // 选择器自愈：运行后若有选择器被自愈，询问是否写回工作流（持久化）
   useEffect(() => {
-    const onHealed = async (e: Event) => {
-      const detail = (e as CustomEvent).detail as { heals?: { nodeId?: string; configKey?: string; oldSelector?: string; newSelector?: string }[] }
-      const heals = (detail?.heals || []).filter((h) => h.nodeId && h.newSelector)
-      if (heals.length === 0) return
-      const ok = await confirmDialog(
-        `本次运行有 ${heals.length} 处选择器失效后被自动修复。是否把修复后的选择器写回工作流（持久化，下次直接生效）？`,
-        { type: 'warning', title: '选择器自愈', confirmText: '写回工作流', cancelText: '暂不' }
-      )
-      if (!ok) return
-      const store = useWorkflowStore.getState()
-      const updates = heals.filter(h => store.nodes.some(n => n.id === h.nodeId)).map(h => ({
-        nodeId: h.nodeId as string,
-        data: { [h.configKey || 'selector']: h.newSelector },
-      }))
-      store.updateNodesData(updates)
-      store.addLog({ level: 'success', message: `已写回 ${updates.length} 处自愈选择器，记得保存工作流` })
+    let active = true
+    let sequence = 0
+    const onHealed = (e: Event) => {
+      const request = ++sequence
+      void reviewSelectorHeals((e as CustomEvent).detail, message => confirmDialog(message,
+        { type: 'warning', title: '选择器自愈', confirmText: '写回工作流', cancelText: '暂不' }),
+      () => active && request === sequence)
     }
-    window.addEventListener('selector:healed', onHealed as EventListener)
-    return () => window.removeEventListener('selector:healed', onHealed as EventListener)
+    window.addEventListener('selector:healed', onHealed)
+    return () => { active = false; window.removeEventListener('selector:healed', onHealed) }
   }, [confirmDialog])
 
   // 监听 AI 小助手发起的画布操作（聚焦/适配/单节点运行）

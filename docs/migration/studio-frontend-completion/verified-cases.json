@@ -23908,5 +23908,271 @@
     "level": "protocol",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.batch-undo-redo",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "batch-undo-redo"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.document",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "document"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.field",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "field"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.delete",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "delete"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.unmount",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "unmount"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.declined",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "declined"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.foreign",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "foreign"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.missing-old",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "missing-old"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.already-edited",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "already-edited"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.invalid-key",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "invalid-key"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.duplicate",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "duplicate"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-context.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.memory-event",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "memory-event"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "rule-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-events.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.http-event",
+    "capability": "selector-healing-writeback",
+    "preconditions": {
+      "document": "click_element selector=#old",
+      "scenario": "http-event"
+    },
+    "steps": [
+      "发送带来源文档和旧值的修复建议",
+      "在确认前执行场景操作",
+      "检查实际Store或SSE转发结果"
+    ],
+    "expectedUI": "提示写回草稿；测试为规则/协议，不计原生UI",
+    "expectedIO": "事件保留workflowId；无自动保存请求",
+    "stateAssertion": "过期不写；有效整批一次撤销；取消保持脏状态",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-healing-events.test.ts"
+  },
+  {
+    "id": "F4.selector-healing.start-identity",
+    "capability": "selector-healing-source",
+    "preconditions": {
+      "serverId": "server-identity",
+      "documentId": "独立编辑器ID"
+    },
+    "steps": [
+      "通过Toolbar F5运行",
+      "创建响应等待期间切换文档",
+      "返回服务端ID后启动"
+    ],
+    "expectedUI": "启动处理保留原来源文档；不冒充完整离开保护",
+    "expectedIO": "bindExecutionDocument先于execute且绑定原documentId",
+    "stateAssertion": "不以新文档身份接收旧修复建议",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
   }
 ]
