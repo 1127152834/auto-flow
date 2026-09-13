@@ -38,7 +38,7 @@ let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
-let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; variables: ObjectValue; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; timer?: ReturnType<typeof setTimeout> } | null = null
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
 const failure = (message: string, status = 400) => response({ success: false, error: message, detail: message }, status)
@@ -132,12 +132,18 @@ function streamResponse(after: number, signal?: AbortSignal | null) {
   })
   return new Response(body, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
 }
+function validBreakpoints(value: unknown, nodeIds: string[]): value is string[] {
+  return Array.isArray(value) && value.every(id => typeof id === 'string' && nodeIds.includes(id))
+}
 function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): Response {
         if (run || recording || picking) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
         if (!doc) return failure('工作流不存在', 404)
         // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
         const sourceNodes = structuredClone(doc.nodes) as ObjectValue[]
         let nodes = sourceNodes
+        const nodeIds = sourceNodes.map(node => String(node.id))
+        const breakpoints = body.breakpoints === undefined ? [] : body.breakpoints
+        if (!validBreakpoints(breakpoints, nodeIds)) return failure('断点必须是运行快照中的节点标识数组', 422)
         if (findExcludedModuleType(nodes, moduleId => {
           const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
           return Array.isArray(children) ? children : undefined
@@ -153,7 +159,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         nextExecutionOrder = null
         finishedWorkflows.delete(id)
         runRows.set(id, [])
-        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: (body.breakpoints || []) as string[], variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
+        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
         tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
         run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
         return response({ success: true, workflowId: id, mock: true })
@@ -273,11 +279,16 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (action === '/execute') return startRun(id, db.workflows[id], body)
       if (action === '/stop') return stopRun(id)
       if (action.startsWith('/debug/')) {
+        if (!['/debug/resume', '/debug/step', '/debug/breakpoints'].includes(action)) return failure('未知调试操作', 404)
+        if (method !== 'POST') return failure('调试操作只接受 POST 请求', 405)
         if (!run || run.id !== id) return failure('没有活跃运行', 409)
-        if (action === '/debug/breakpoints') run.breakpoints = body.breakpoints as string[]
+        if (action === '/debug/breakpoints') {
+          if (!validBreakpoints(body.breakpoints, run.nodeIds)) return failure('断点必须是运行快照中的节点标识数组', 422)
+          run.breakpoints = [...body.breakpoints]
+        }
         else {
           if (!run.paused) return failure('运行未暂停', 409)
-          run.step = action.endsWith('/step'); emitMockEvent('execution:resumed', { workflowId: id }); tick(true)
+          run.step = action === '/debug/step'; emitMockEvent('execution:resumed', { workflowId: id }); tick(true)
         }
         return response({ success: true })
       }

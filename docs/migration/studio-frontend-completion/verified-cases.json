@@ -18732,5 +18732,617 @@
     "level": "backend contract",
     "status": "通过",
     "evidencePath": "apps/backend/tests/contract/test_studio_image_schemas.py"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.unknown-unknown",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 unknown 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 unknown 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.unknown-resume-extra",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 resume-extra 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 resume-extra 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.unknown-step-extra",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 step-extra 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 step-extra 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.method-resume",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET resume 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET resume 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.method-step",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET step 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET step 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.method-breakpoints",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET breakpoints 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET breakpoints 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.update-missing",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 missing",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 missing",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.update-null",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 null",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 null",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.update-string",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 string",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 string",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.update-number",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 number",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 number",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.update-unknown-node",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 unknown-node",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 unknown-node",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.double-step",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "重复单步拒绝且无额外事件",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "重复单步拒绝且无额外事件",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.start-null",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 null",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 null",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.start-string",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 string",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 string",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.start-number",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 number",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 number",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.start-unknown-node",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 unknown-node",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 unknown-node",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.memory.skipped-branch",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "memory",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "允许冻结快照中未经过分支的断点",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "允许冻结快照中未经过分支的断点",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.unknown-unknown",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 unknown 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 unknown 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.unknown-resume-extra",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 resume-extra 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 resume-extra 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.unknown-step-extra",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "未知动作 step-extra 返回404",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "未知动作 step-extra 返回404",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.method-resume",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET resume 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET resume 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.method-step",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET step 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET step 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.method-breakpoints",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "GET breakpoints 返回405",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "GET breakpoints 返回405",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.update-missing",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 missing",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 missing",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.update-null",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 null",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 null",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.update-string",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 string",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 string",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.update-number",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 number",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 number",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.update-unknown-node",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "拒绝断点更新 unknown-node",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "拒绝断点更新 unknown-node",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.double-step",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "重复单步拒绝且无额外事件",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "重复单步拒绝且无额外事件",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.start-null",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 null",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 null",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.start-string",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 string",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 string",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.start-number",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 number",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 number",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.start-unknown-node",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "启动前拒绝断点 unknown-node",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "启动前拒绝断点 unknown-node",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PROTOCOL.debug-validation.http.skipped-branch",
+    "capability": "debug:command-validation",
+    "preconditions": {
+      "transport": "http",
+      "document": "两节点冻结文档，首节点断点暂停"
+    },
+    "steps": [
+      "允许冻结快照中未经过分支的断点",
+      "对比请求前后事件序号及运行占用"
+    ],
+    "expectedUI": "协议测试，无界面断言",
+    "expectedIO": "允许冻结快照中未经过分支的断点",
+    "stateAssertion": "被拒绝请求不推进执行、不产生运行事件；合法断点更新保留原运行",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
   }
 ]
