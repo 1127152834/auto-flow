@@ -1,3 +1,5 @@
+import { DotsThree, Info, Trash } from '@phosphor-icons/react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
 import type { components } from '../../../shared/api/generated'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
@@ -22,6 +24,8 @@ export type DataRecordsTableProps = {
   disabled?: boolean
   onRetry(): void
   onOpen(record: RecordView): void
+  onEdit?(record: RecordView): void
+  onDelete?(record: RecordView): void
   onPageChange(page: number): void
   onCreate?(): void
   onStatusChange?(record: RecordView): void
@@ -41,7 +45,7 @@ function valueLabel(cell: Schema['DataCellView'] | undefined): string {
   return String(value)
 }
 
-export function DataRecordsTable({ toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
+export function DataRecordsTable({ toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
   const visible = visibleFieldIds ? new Set(visibleFieldIds) : null
   const columns = fields.filter((field) => !visible || visible.has(field.ref.fieldId))
   const statusMap = new Map(statuses.map((status) => [status.statusId, status]))
@@ -100,9 +104,9 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
       ) : page ? (
         <div tabIndex={0} role="region" aria-label="记录表格，超出宽度时可水平滚动" className="min-w-0 overflow-x-auto rounded-card border border-line bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay/50">
           <Table
-            className="w-full table-fixed"
+            className="w-full table-fixed text-base"
             style={{
-              minWidth: `${112 + 160 + 112 + (selection ? 48 : 0) + columns.length * 200}px`,
+              minWidth: `${112 + 160 + 160 + 192 + (selection ? 48 : 0) + columns.length * 200}px`,
             }}
           >
             <colgroup>
@@ -113,7 +117,8 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
               ))}
               {columns.length === 0 ? <col data-record-column="remainder" /> : null}
               <col data-record-column="status" style={{ width: 160 }} />
-              <col data-record-column="actions" style={{ width: 112 }} />
+              <col data-record-column="updated" style={{ width: 160 }} />
+              <col data-record-column="actions" style={{ width: 192 }} />
             </colgroup>
             <TableHeader>
               <TableRow>
@@ -134,7 +139,8 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                 ))}
                 {columns.length === 0 ? <TableHead aria-hidden="true" data-record-remainder /> : null}
                 <TableHead className="w-40">业务状态</TableHead>
-                <TableHead className="w-28">操作</TableHead>
+                <TableHead className="w-40">最近修改</TableHead>
+                <TableHead className="w-48">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -144,14 +150,16 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                   identity = `${keyLabels[key.type]} · ${key.value}`
                 const status = record.statusId ? statusMap.get(record.statusId) : undefined
                 const statusName = record.statusId ? (status?.name ?? '状态不可用') : '未设置'
+                const statusColor = status && /^#[0-9a-f]{6}$/i.test(status.color) ? status.color : undefined
+                const statusBadge = <Badge data-status-badge className="gap-2 px-3 py-1.5 text-sm text-ink" style={statusColor ? { backgroundColor: `${statusColor}18` } : undefined}><span aria-hidden="true" className="size-2.5 rounded-full bg-muted" style={statusColor ? { backgroundColor: statusColor } : undefined} />{statusName}</Badge>
                 return (
                   <TableRow key={JSON.stringify(record.ref)}>
                     {selection ? (
-                      <TableCell className="py-2">
+                      <TableCell className="py-3">
                         <Checkbox aria-label={`选择记录 ${identity}`} checked={selection.isSelected(record)} disabled={readonly || disabled || loading} onCheckedChange={(checked) => selection.toggle(record, checked === true)} />
                       </TableCell>
                     ) : null}
-                    <TableCell className="py-2">
+                    <TableCell className="py-3">
                       <span className="block truncate" title={identity} aria-label={identity}>
                         {identity}
                       </span>
@@ -159,28 +167,29 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                     {columns.map((field) => {
                       const label = valueLabel(cells.get(field.ref.fieldId))
                       return (
-                        <TableCell key={field.ref.fieldId} className="py-2">
+                        <TableCell key={field.ref.fieldId} className="py-3">
                           <span className="block truncate whitespace-pre" title={label}>
                             {label}
                           </span>
                         </TableCell>
                       )
                     })}
-                    {columns.length === 0 ? <TableCell aria-hidden="true" data-record-remainder className="py-2" /> : null}
-                    <TableCell className="py-2">
+                    {columns.length === 0 ? <TableCell aria-hidden="true" data-record-remainder className="py-3" /> : null}
+                    <TableCell className="py-3">
                       {onStatusChange ? (
                         <Button size="sm" variant="ghost" disabled={readonly || loading || disabled} aria-label={`修改状态 ${identity}`} onClick={() => onStatusChange(record)}>
-                          <Badge data-status-badge>{statusName}</Badge>
+                          {statusBadge}
                         </Button>
-                      ) : (
-                        <Badge data-status-badge>{statusName}</Badge>
-                      )}
+                      ) : statusBadge}
                     </TableCell>
-                    <TableCell className="py-2">
-                      <Button size="sm" variant="ghost" aria-label={`查看记录 ${identity}`} data-record-open={JSON.stringify(record.ref.recordKey)} onClick={() => onOpen(record)}>
+                    <TableCell className="py-3"><time className="block truncate text-muted" title={new Date(record.updatedAt).toLocaleString('zh-CN')} dateTime={record.updatedAt}>{new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(record.updatedAt))}</time></TableCell>
+                    <TableCell className="py-3"><div className="flex items-center gap-1">
+                      <Button size="sm" variant="ghost" className="px-2 text-base text-clay" aria-label={`查看记录 ${identity}`} data-record-open={JSON.stringify(record.ref.recordKey)} onClick={() => onOpen(record)}>
                         查看
                       </Button>
-                    </TableCell>
+                      {onEdit && !readonly ? <Button size="sm" variant="ghost" className="px-2 text-base text-clay" disabled={disabled || loading} aria-label={`编辑记录 ${identity}`} onClick={() => onEdit(record)}>编辑</Button> : null}
+                      {onDelete && !readonly ? <DropdownMenu><DropdownMenuTrigger asChild><Button size="sm" variant="ghost" className="w-8 px-0" disabled={disabled || loading} aria-label={`更多记录 ${identity}操作`}><DotsThree size={22} /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem className="text-danger" disabled={disabled || loading} onSelect={() => onDelete(record)}><Trash size={16} />删除记录</DropdownMenuItem></DropdownMenuContent></DropdownMenu> : null}
+                    </div></TableCell>
                   </TableRow>
                 )
               })}
@@ -188,7 +197,8 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
           </Table>
         </div>
       ) : null}
-      {page ? <Pagination offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={loading} onOffsetChange={(offset) => onPageChange(Math.floor(offset / page.pageSize) + 1)} /> : null}
+      {page ? <Pagination showPage offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={loading} onOffsetChange={(offset) => onPageChange(Math.floor(offset / page.pageSize) + 1)} /> : null}
+      <p className="m-0 flex items-start gap-2 text-base text-muted"><Info size={20} className="shrink-0" aria-hidden="true"/>业务状态由本项目维护，修改记录内容不会自动改变业务状态。</p>
     </section>
   )
 }

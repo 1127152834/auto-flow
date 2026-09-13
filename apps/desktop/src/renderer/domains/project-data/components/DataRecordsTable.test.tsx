@@ -62,7 +62,7 @@ it.each([0, 2])('reserves the declared column widths for %i business columns bef
   render(<DataRecordsTable {...props} fields={fields} page={page([row({ type: 'text', value: '1' })])} />)
   expect(screen.getByRole('columnheader', { name: '记录身份' })).toHaveAttribute('data-column-width', '112')
   expect(document.querySelector('[data-record-column="identity"]')).toHaveStyle({ width: '112px' })
-  expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${112 + 160 + 112 + count * 200}px` })
+  expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${112 + 160 + 160 + 192 + count * 200}px` })
 })
 
 it('uses a decorative remainder column when there are no business columns', () => {
@@ -94,4 +94,20 @@ it('disables every selection control while readonly, disabled, or loading',()=>{
   const selection={targets:[],count:0,error:null,isSelected:()=>false,toggle:vi.fn(),togglePage:vi.fn(),clear:vi.fn()}
   render(<DataRecordsTable {...props} page={page([row({type:'text',value:'1'})])} selection={selection} readonly disabled loading/>)
   expect(screen.getAllByRole('checkbox').every(item=>item.hasAttribute('disabled'))).toBe(true)
+})
+it('keeps original view, edit and more actions separate with the exact typed record',async()=>{
+ const item=row({type:'text',value:'001'}),open=vi.fn(),edit=vi.fn(),remove=vi.fn();
+ render(<DataRecordsTable {...props} page={page([item])} onOpen={open} onEdit={edit} onDelete={remove}/>);
+ await userEvent.click(screen.getByRole('button',{name:'编辑记录 文本 · 001'}));expect(edit).toHaveBeenCalledWith(item);expect(open).not.toHaveBeenCalled();
+ await userEvent.click(screen.getByRole('button',{name:'更多记录 文本 · 001操作'}));await userEvent.click(screen.getByRole('menuitem',{name:'删除记录'}));expect(remove).toHaveBeenCalledWith(item);expect(open).not.toHaveBeenCalled();
+ expect(screen.getByRole('columnheader',{name:'最近修改'})).toBeVisible();
+})
+
+it.each(['loading', 'disabled'] as const)('blocks an already open delete menu when %s changes',async state=>{
+ const item=row({type:'text',value:'001'}),remove=vi.fn();
+ const view=render(<DataRecordsTable {...props} page={page([item])} onDelete={remove}/>);
+ await userEvent.click(screen.getByRole('button',{name:'更多记录 文本 · 001操作'}));
+ view.rerender(<DataRecordsTable {...props} page={page([item])} onDelete={remove} {...{[state]:true}}/>);
+ expect(screen.getByRole('menuitem',{name:'删除记录'})).toHaveAttribute('aria-disabled','true');
+ await userEvent.click(screen.getByRole('menuitem',{name:'删除记录'}));expect(remove).not.toHaveBeenCalled();
 })

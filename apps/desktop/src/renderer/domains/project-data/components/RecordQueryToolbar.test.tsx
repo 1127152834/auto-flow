@@ -59,6 +59,24 @@ it('shows an optional local count and keeps the compact record actions in galler
   expect(screen.queryByText('0 条')).not.toBeInTheDocument()
 })
 
+it('matches the gallery toolbar scale and centers the filter panel',async()=>{
+  const user=userEvent.setup()
+  render(<RecordQueryToolbar {...props} totalCount={1248}/>)
+  expect(screen.getByText('1,248 条')).toHaveClass('text-[28px]')
+  expect(screen.getByRole('toolbar')).toHaveClass('[&_[data-record-action]]:h-12','[&_[data-record-action]]:text-base')
+  expect(screen.getByRole('search')).toHaveClass('[&_[data-af-control]]:h-12','[&_[data-af-control]]:text-base')
+  await user.click(screen.getByRole('button',{name:'筛选'}))
+  const panel=screen.getByRole('dialog',{name:'记录筛选'})
+  expect(panel).toHaveAttribute('data-align','center')
+  expect(within(panel).getByRole('heading',{name:'记录筛选'})).toHaveClass('text-xl')
+})
+
+it('prompts for record content while keeping the explicit search field',()=>{
+  render(<RecordQueryToolbar {...props}/>)
+  expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder','搜索记录内容')
+  expect(screen.getByLabelText('搜索字段')).toHaveAttribute('data-choice-value','name')
+})
+
 it('gives every query panel a title, close control, and geometry marker',async()=>{
   const user=userEvent.setup()
   render(<RecordQueryToolbar {...props}/>)
@@ -70,7 +88,8 @@ it('gives every query panel a title, close control, and geometry marker',async()
     expect(panel).toHaveAttribute('data-query-panel-size',size)
     const body=panel.querySelector('[data-query-panel-body]'),footer=panel.querySelector('[data-query-panel-footer]')
     expect(body).toBeTruthy(); expect(footer).toBeTruthy(); expect(body?.nextElementSibling).toBe(footer)
-    expect(within(footer as HTMLElement).getByRole('button',{name:'取消'})).toBeVisible()
+    expect(footer).toHaveClass('[&_button]:h-10','[&_button]:text-base')
+    expect(within(footer as HTMLElement).getByRole('button',{name:'取消'})).toHaveClass('border-control-border','bg-surface')
     await user.click(within(panel).getByRole('button',{name:`关闭${panelName}`}))
   }
 })
@@ -179,4 +198,9 @@ it('disables only export for an invalid effective query',async()=>{
 it('renders and focuses the parent query error instead of a generic message',()=>{
   render(<RecordQueryToolbar {...props} queryError="所选字段已失效，请修正筛选"/>)
   const alert=screen.getByRole('alert'); expect(alert).toHaveTextContent('所选字段已失效，请修正筛选'); expect(alert).toHaveFocus(); expect(alert).not.toHaveTextContent('应用失败')
+})
+it('keeps reimport in more actions and blocks an already open action when unavailable',async()=>{
+ const reimport=vi.fn(),user=userEvent.setup(),v=render(<RecordQueryToolbar {...props} onReimport={reimport}/>);
+ expect(screen.queryByRole('button',{name:'重新导入 Excel'})).not.toBeInTheDocument();await user.click(screen.getByRole('button',{name:'更多操作'}));await user.click(screen.getByRole('menuitem',{name:'重新导入 Excel'}));expect(reimport).toHaveBeenCalledOnce();
+ await user.click(screen.getByRole('button',{name:'更多操作'}));v.rerender(<RecordQueryToolbar {...props} onReimport={reimport} disabled/>);expect(screen.getByRole('menuitem',{name:'重新导入 Excel'})).toHaveAttribute('aria-disabled','true');
 })

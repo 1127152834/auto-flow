@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { afterEach, expect, it } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
@@ -39,4 +39,10 @@ it('supports outside dismissal and constrains the scrolling surface to available
   await user.click(screen.getByText('外部'))
   expect(screen.queryByLabelText('排序输入')).not.toBeInTheDocument()
   await waitFor(() => expect(screen.getByText('排序')).toHaveFocus())
+})
+it('keeps an open popup anchor in view after viewport resizing without scrolling a closed popup',async()=>{
+ const user=userEvent.setup();render(<Popover><PopoverTrigger>显示列</PopoverTrigger><PopoverContent><input aria-label="字段查询"/></PopoverContent></Popover>);
+ await user.click(screen.getByText('显示列'));const trigger=screen.getByText('显示列');const original=trigger.getBoundingClientRect.bind(trigger);trigger.getBoundingClientRect=()=>({...original(),bottom:window.innerHeight+100,top:window.innerHeight+50,left:12,right:112} as DOMRect);
+ const scroll=vi.spyOn(trigger,'scrollIntoView');window.dispatchEvent(new Event('resize'));expect(scroll).toHaveBeenCalledWith({block:'nearest',inline:'nearest',behavior:'instant'});
+ await user.keyboard('{Escape}');scroll.mockClear();window.dispatchEvent(new Event('resize'));expect(scroll).not.toHaveBeenCalled();
 })

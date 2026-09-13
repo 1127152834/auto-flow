@@ -10,7 +10,17 @@ beforeEach(()=>{vi.stubGlobal('ResizeObserver',class{observe(){} unobserve(){} d
 const ref={projectId:'p',tableId:'t',datasetGeneration:'g'}
 const fields=[{ref:{...ref,fieldId:'name'},key:'name',name:'标题',type:'string' as const,required:false,validation:{},writable:true,formula:false,fieldRevision:1}]
 const statuses=[{statusId:'open',name:'待核对',color:'#123456',order:0,statusRevision:1}]
-const renderFilter=(filter:FilterDraft,onChange=vi.fn())=>render(<GalleryRecordFilter fields={fields} statuses={statuses} filter={filter} onChange={onChange}/>)
+const renderFilter=(filter:FilterDraft,onChange=vi.fn(),dirty=false)=>render(<GalleryRecordFilter fields={fields} statuses={statuses} filter={filter} dirty={dirty} onChange={onChange}/>)
+
+it('uses gallery label and control scale and keeps the dirty marker in the field header',()=>{
+  renderFilter({type:'all',items:[]},vi.fn(),true)
+  const heading=screen.getByRole('heading',{name:'字段条件'})
+  expect(heading).toHaveClass('text-base')
+  expect(heading.parentElement).toContainElement(screen.getByText('尚未应用'))
+  expect(screen.getByRole('heading',{name:'业务状态'})).toHaveClass('text-base')
+  expect(screen.getByText('两项条件同时满足时显示；业务状态仅属于本项目。')).toHaveClass('text-sm')
+  expect(screen.getByTestId('gallery-simple-filter')).toHaveClass('[&_[data-af-control]]:text-base')
+})
 
 it('keeps an empty simple query empty until the user chooses a condition',async()=>{
   const user=userEvent.setup(),onChange=vi.fn();renderFilter({type:'all',items:[]},onChange)
@@ -29,6 +39,14 @@ it('edits a representable compare and status as two simple AND conditions',()=>{
   expect(screen.queryByRole('button',{name:'使用多行输入'})).not.toBeInTheDocument()
   expect(screen.getByRole('combobox',{name:'业务状态'})).toHaveTextContent('待核对')
   expect(screen.getByText('两项条件同时满足时显示；业务状态仅属于本项目。')).toBeVisible()
+})
+
+it('hides compare input for null operators and restores it for value operators',()=>{
+  const eq=recordQueryDraft({filter:{type:'compare',fieldId:'name',operator:'eq',value:'温室'},orderBy:[]}).filter as Extract<FilterDraft,{type:'compare'}>
+  const view=renderFilter({...eq,operator:'isNull'})
+  expect(screen.queryByLabelText('比较值')).not.toBeInTheDocument()
+  view.rerender(<GalleryRecordFilter fields={fields} statuses={statuses} filter={eq} onChange={vi.fn()}/>)
+  expect(screen.getByLabelText('比较值')).toHaveValue('温室')
 })
 
 it('maps nested field and status errors to their simple controls',()=>{

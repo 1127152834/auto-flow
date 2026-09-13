@@ -542,10 +542,10 @@ function DataTableDetail({
   const foreignRecovery = Boolean(recordLocation && editing.recoveryPending && editing.editor && !(recordEditor || (editing.editor.kind === "recordStatus" || editing.editor.kind === "recordDelete") && matchesRoute(editing.editor.record.ref)));
 
   const backToRecords = () => onRecordNavigate?.();
-  const openRecordFromList = (record: Schema["DataRecordView"]) => {
+  const openRecordFromList = (record: Schema["DataRecordView"], mode: "detail" | "edit" = "detail") => {
     originRowKey.current = record.ref.recordKey;
     try { sessionStorage.setItem(viewStateKey, JSON.stringify({ identity: { workspaceKey, projectId, tableId, datasetGeneration: generation }, originRowKey: record.ref.recordKey, query, quickSearch, page: recordPage, visibleFieldIds, scrollY: window.scrollY })) } catch { /* retain the in-memory return context */ }
-    onRecordNavigate?.({ mode: "detail", datasetGeneration: record.ref.datasetGeneration, recordKey: record.ref.recordKey });
+    onRecordNavigate?.({ mode, datasetGeneration: record.ref.datasetGeneration, recordKey: record.ref.recordKey });
   };
   const recordContent = recordLocation?.mode === "detail" ? <RecordDetailPage
     title={routeRecord ? fields.map(field => routeRecord.values.find(cell => cell.fieldId === field.ref.fieldId && cell.readable && !cell.error && typeof cell.value === "string" && cell.value)).find(Boolean)?.value as string || "记录详情" : "记录详情"}
@@ -603,9 +603,9 @@ function DataTableDetail({
       </div>} tabs={<TabsList className="w-full justify-start overflow-x-auto">
         {(Object.keys(labels) as DataTableTab[]).map(value => <TabsTrigger className="rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay" key={value} value={value} disabled={disabled}>{labels[value]}</TabsTrigger>)}
       </TabsList>}>
-      {!recordLocation ? <div className="flex flex-wrap justify-between gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>返回数据表</Button><div className="flex flex-wrap gap-2">
+      {!recordLocation && tab !== "records" ? <div className="flex flex-wrap justify-between gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>返回数据表</Button><div className="flex flex-wrap gap-2">
         {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
-        {tab !== "records" ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
+        <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button>
       </div></div> : null}
       {tableError ? (
         <p role="alert">
@@ -624,6 +624,8 @@ function DataTableDetail({
         <TabsContent value="records" className="grid gap-3">
           {!recordLocation ? <>
           <RecordQueryToolbar
+            totalCount={page?.total}
+            onReimport={writable ? () => openWorkflow("replace") : undefined}
             fields={fields} statuses={statuses} query={query} visibleFieldIds={visibleFieldIds} quickSearch={quickSearch}
             resetKey={`${projectId}:${tableId}:${generation}:${table.tableRevision}:${catalogQuery.data?.[0].tableRevision}:${filterSession}`}
             disabled={disabled || Boolean(generationWarning) || !catalogQuery.data || Boolean(workflow || editing.editor)} readonly={!writable}
@@ -691,6 +693,8 @@ function DataTableDetail({
                 generation: record.ref.datasetGeneration,
               });
             }}
+            onEdit={writable ? record => onRecordNavigate ? openRecordFromList(record, "edit") : editing.open({ kind: "recordEdit", record }) : undefined}
+            onDelete={writable ? record => editing.open({ kind: "recordDelete", record }) : undefined}
             onPageChange={setRecordPage}
           />
           </> : recordContent}

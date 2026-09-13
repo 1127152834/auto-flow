@@ -1,5 +1,5 @@
 import * as Primitive from '@radix-ui/react-popover'
-import { useRef, type ComponentPropsWithoutRef } from 'react'
+import { useEffect, useRef, type ComponentPropsWithoutRef } from 'react'
 import { cn } from '../../lib/utils'
 import { useOverlayHost } from './overlay-host'
 
@@ -11,8 +11,22 @@ export const PopoverClose = Primitive.Close
 export function PopoverContent({ className, style, onCloseAutoFocus, ...props }: ComponentPropsWithoutRef<typeof Primitive.Content>) {
   const host = useOverlayHost()
   const trigger = useRef<HTMLElement | null>(null)
+  const content = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const keepAnchorVisible = () => {
+      if (!content.current?.isConnected || content.current.dataset.state !== 'open' || !trigger.current?.isConnected) return
+      const rect = trigger.current.getBoundingClientRect()
+      if (rect.top < 12 || rect.bottom > window.innerHeight - 12 || rect.left < 12 || rect.right > window.innerWidth - 12) {
+        trigger.current.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' })
+      }
+    }
+    window.addEventListener('resize', keepAnchorVisible)
+    window.visualViewport?.addEventListener('resize', keepAnchorVisible)
+    return () => { window.removeEventListener('resize', keepAnchorVisible); window.visualViewport?.removeEventListener('resize', keepAnchorVisible) }
+  }, [])
   return <Primitive.Portal container={host.container}>
     <Primitive.Content ref={node => {
+      content.current = node
       if (node?.id) trigger.current = Array.from(document.querySelectorAll<HTMLElement>('[aria-controls]')).find(item => item.getAttribute('aria-controls') === node.id) ?? null
     }} onCloseAutoFocus={event => {
       onCloseAutoFocus?.(event)

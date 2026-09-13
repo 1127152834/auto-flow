@@ -57,7 +57,7 @@ it('creates an empty system record through the real command adapter',async()=>{
 
 it('applies filter JSON only after explicit apply and paginates on the server',async()=>{
   const {client,request}=api();renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice');const before=request.mock.calls.length
-  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}));expect(request).toHaveBeenCalledTimes(before)
+  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'高级条件'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}));expect(request).toHaveBeenCalledTimes(before)
   await userEvent.click(screen.getByLabelText('比较值值状态'));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('比较值'),'Ali');await userEvent.click(screen.getByRole('button',{name:'应用筛选'}))
   await waitFor(()=>expect(request.mock.calls.length).toBeGreaterThan(before));const url=String(request.mock.calls.at(-1)?.[0]);expect(url).toContain('filter=');expect(url).not.toContain('filter=eyJmaWx0ZXIi')
 })
@@ -76,7 +76,7 @@ it('loads a selected record through get and shows its readonly detail',async()=>
 
 it('protects record drafts while query drafts remain local',async()=>{
   const {client}=api(),register=vi.fn();renderPage(<DataTableDetailPage {...props(client,{registerLeaveGuard:register})}/>);await screen.findByText('Alice')
-  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}))
+  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'高级条件'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}))
   const guard=register.mock.calls.map(call=>call[0]).find(value=>typeof value==='function');expect(await guard()).toBe(true)
   await userEvent.keyboard('{Escape}')
   await userEvent.click(screen.getByRole('button',{name:'新增记录'}));await userEvent.click(screen.getByLabelText('姓名值状态'));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('姓名'),'保留草稿')
@@ -95,7 +95,7 @@ it('closes stale query drafts on a changed generation without applying them',asy
     throw new Error(path)
   })
   const view=renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice')
-  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}))
+  await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'高级条件'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}))
   currentTable={...table,datasetGeneration:'g2'};view.rerender(<DataTableDetailPage {...props(client,{instanceId:'i2'})}/>)
   await waitFor(()=>expect(screen.queryByText('字段条件')).not.toBeInTheDocument())
   expect(await screen.findByText('数据已更新，查询条件已重置。')).toBeVisible()
@@ -146,7 +146,7 @@ it('retries the failed catalog dependency from the records error action',async()
 
 it('passes frozen record selection into the batch status workflow',async()=>{
   const {client}=api();renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice')
-  await userEvent.click(screen.getByRole('checkbox',{name:'选择记录 文本 · 001'}));await userEvent.click(screen.getByRole('button',{name:'批量设置状态'}))
+  await userEvent.click(screen.getByRole('checkbox',{name:'选择记录 文本 · 001'}));await userEvent.click(screen.getByRole('button',{name:'更多操作'}));await userEvent.click(screen.getByRole('menuitem',{name:'批量设置状态'}))
   expect(await screen.findByRole('dialog',{name:'批量设置业务状态'})).toHaveTextContent('已选择 1 条记录')
 })
 
@@ -159,17 +159,17 @@ it('refreshes record facts when a batch partially applies before failing',async(
     if(path.endsWith('/record-status-batches')&&init?.method==='POST'){const key=new Headers(init.headers).get('Idempotency-Key');return {operation:{operationId:'partial',idempotencyKey:key,kind:'setRecordStatuses',projectId:'p',status:'failed',statusRevision:2,resource:{type:'table',projectId:'p',tableId:'t'},result:{blocks:[],changedCount:1,conflictCount:1,notStartedCount:0,cancelled:false},error:{message:'部分记录冲突'}}}}
     throw new Error(path)
   })
-  renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice');await userEvent.click(screen.getByRole('checkbox',{name:'选择记录 文本 · 001'}));await userEvent.click(screen.getByRole('button',{name:'批量设置状态'}));await userEvent.click(screen.getByRole('button',{name:'预检批量状态'}));await userEvent.click(await screen.findByRole('button',{name:'确认开始'}))
+  renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice');await userEvent.click(screen.getByRole('checkbox',{name:'选择记录 文本 · 001'}));await userEvent.click(screen.getByRole('button',{name:'更多操作'}));await userEvent.click(screen.getByRole('menuitem',{name:'批量设置状态'}));await userEvent.click(screen.getByRole('button',{name:'预检批量状态'}));await userEvent.click(await screen.findByRole('button',{name:'确认开始'}))
   expect(await screen.findByText('已修改 1 条')).toBeVisible();await waitFor(()=>expect(recordReads).toBeGreaterThan(1))
 })
 
 it('opens replace import only for writable tables and keeps archived export available',async()=>{
   const {client}=api(),view=renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByText('Alice')
-  await userEvent.click(screen.getByRole('button',{name:'重新导入 Excel'}));expect(await screen.findByRole('dialog',{name:'用 Excel 替换数据表'})).toBeVisible()
+  await userEvent.click(screen.getByRole('button',{name:'更多操作'}));await userEvent.click(screen.getByRole('menuitem',{name:'重新导入 Excel'}));expect(await screen.findByRole('dialog',{name:'用 Excel 替换数据表'})).toBeVisible()
   await userEvent.keyboard('{Escape}')
   view.rerender(<DataTableDetailPage {...props(client,{readonly:true})}/>)
   expect(screen.queryByRole('button',{name:'重新导入 Excel'})).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button',{name:'导出 Excel'}));expect(await screen.findByRole('dialog',{name:'导出 Excel'})).toBeVisible();expect(screen.getByRole('button',{name:'选择保存位置'})).toBeEnabled()
+  await userEvent.click(screen.getByRole('button',{name:'更多操作'}));await userEvent.click(screen.getByRole('menuitem',{name:'导出 Excel'}));expect(await screen.findByRole('dialog',{name:'导出 Excel'})).toBeVisible();expect(screen.getByRole('button',{name:'选择保存位置'})).toBeEnabled()
 })
 
 it('renders saved source facts without synthetic sync counters',async()=>{
@@ -256,8 +256,8 @@ it('keeps query drafts local and applies quick search only on submit',async()=>{
   expect(request).toHaveBeenCalledTimes(count)
   expect(screen.queryByRole('columnheader',{name:'姓名'})).not.toBeInTheDocument()
   expect(screen.getAllByRole('button',{name:'新增记录'})).toHaveLength(1)
-  expect(screen.getAllByRole('button',{name:'导出 Excel'})).toHaveLength(1)
-  expect(screen.getByRole('button',{name:'批量设置状态'})).toBeDisabled()
+  await userEvent.click(screen.getByRole('button',{name:'更多操作'}));expect(screen.getAllByRole('menuitem',{name:'导出 Excel'})).toHaveLength(1)
+  expect(screen.getByRole('menuitem',{name:'批量设置状态'})).toHaveAttribute('aria-disabled','true')
 })
 
 it('opens the typed detail route directly without fetching the record list', async()=>{
@@ -386,4 +386,11 @@ it('does not label an unconfigured source as local data in the table header',asy
  client.request=vi.fn(async(path:string,init)=>path.endsWith('/tables/t')?{...table,sourceKind:'unconfigured'}:original(path,init)) as StreamingApiClient['request'];
  renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByRole('heading',{name:'客户表'});
  expect(screen.getByTestId('data-table-page-frame').querySelector('[data-table-page-frame-header]')).toHaveTextContent('来源未配置');
+})
+it('opens the row edit route with typed identity and preserves the record list return context',async()=>{
+ const {client}=api(),navigate=vi.fn();renderPage(<DataTableDetailPage {...props(client,{onRecordNavigate:navigate})}/>);await screen.findByText('Alice');
+ await userEvent.click(screen.getByRole('button',{name:'编辑记录 文本 · 001'}));
+ expect(navigate).toHaveBeenCalledWith({mode:'edit',datasetGeneration:'g',recordKey:{type:'text',value:'001'}});
+ const stored=JSON.parse(sessionStorage.getItem('autoflow:table-view:'+JSON.stringify(['w','p','t']))??'null');
+ expect(stored.originRowKey).toEqual({type:'text',value:'001'});expect(stored.identity).toEqual({workspaceKey:'w',projectId:'p',tableId:'t',datasetGeneration:'g'});
 })

@@ -83,7 +83,7 @@ it('keeps archived tables openable while hiding mutating actions', async () => {
 it('shows a supplied total without presenting the current page length as the total', () => {
   const props = { items: [table], onRetry: vi.fn(), onCreate: vi.fn(), onImportExcel: vi.fn(), onOpen: vi.fn(), onEdit: vi.fn() }
   const view = render(<DataTableDirectory {...props} />)
-  expect(screen.getByRole('heading', { name: '数据表', level: 1 })).toBeVisible()
+  expect(screen.getByRole('heading', { name: '数据表', level: 2 })).toBeVisible()
   expect(screen.queryByText('1 张')).not.toBeInTheDocument()
   view.rerender(<DataTableDirectory {...props} totalCount={41} />)
   expect(screen.getByText('41 张')).toBeVisible()

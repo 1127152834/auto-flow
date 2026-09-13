@@ -12,3 +12,9 @@ it('keeps empty, first and last page boundaries and reports the actual page coun
  expect(screen.getByText('21–23 / 23')).toBeInTheDocument(); expect(screen.getByRole('button',{name:'下一页'})).toBeDisabled()
  await user.click(screen.getByRole('button',{name:'上一页'})); expect(change).toHaveBeenCalledWith(0)
 })
+
+it('shows the current page between the controls when requested', () => {
+ render(<Pagination showPage offset={50} limit={50} count={2} total={52} onOffsetChange={vi.fn()} />)
+ expect(screen.getByLabelText('当前页码')).toHaveTextContent('第 2 页')
+ expect(screen.getByRole('button',{name:'下一页'})).toBeDisabled()
+})
