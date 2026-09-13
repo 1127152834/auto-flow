@@ -25,13 +25,13 @@ export async function* parseServerSentEvents(
   const reader = stream.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let skipLineFeed = false
   let event = 'message'
   let data: string[] = []
   let id: string | undefined
 
   function dispatch(): ServerSentEvent | undefined {
-    if (data.length === 0) return undefined
-    const value = { event, data: data.join('\n'), ...(id === undefined ? {} : { id }) }
+    const value = data.length === 0 ? undefined : { event: event || 'message', data: data.join('\n'), ...(id === undefined ? {} : { id }) }
     event = 'message'
     data = []
     return value
@@ -55,22 +55,27 @@ export async function* parseServerSentEvents(
       const chunk = await reader.read()
       if (chunk.done) break
       buffer += decoder.decode(chunk.value, { stream: true })
-      let newline = buffer.indexOf('\n')
+      // CRLF is one delimiter even when split between network chunks; lone CR also ends a line.
+      if (skipLineFeed && buffer.length) {
+        if (buffer.startsWith('\n')) buffer = buffer.slice(1)
+        skipLineFeed = false
+      }
+      let newline = buffer.search(/[\r\n]/)
       while (newline >= 0) {
-        const rawLine = buffer.slice(0, newline)
+        const line = buffer.slice(0, newline)
+        const carriageReturn = buffer[newline] === '\r'
         buffer = buffer.slice(newline + 1)
-        const parsed = consume(rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine)
+        if (carriageReturn) {
+          if (buffer.startsWith('\n')) buffer = buffer.slice(1)
+          else if (!buffer.length) skipLineFeed = true
+        }
+        const parsed = consume(line)
         if (parsed) yield parsed
-        newline = buffer.indexOf('\n')
+        newline = buffer.search(/[\r\n]/)
       }
     }
-    buffer += decoder.decode()
-    if (buffer) {
-      const parsed = consume(buffer.endsWith('\r') ? buffer.slice(0, -1) : buffer)
-      if (parsed) yield parsed
-    }
-    const parsed = dispatch()
-    if (parsed) yield parsed
+    // Only a blank line commits an event. EOF must discard the unconfirmed tail.
+
   } finally {
     reader.releaseLock()
   }

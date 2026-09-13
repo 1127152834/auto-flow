@@ -16951,5 +16951,149 @@
     "level": "store",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.lf",
+    "capability": "LF逐字节中文/BOM/多行数据",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "LF逐字节中文/BOM/多行数据"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.cr",
+    "capability": "CR逐字节中文/BOM/多行数据",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "CR逐字节中文/BOM/多行数据"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.crlf",
+    "capability": "CRLF跨分块逐字节中文/BOM/多行数据",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "CRLF跨分块逐字节中文/BOM/多行数据"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.eof-line",
+    "capability": "末尾无换行事件丢弃",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "末尾无换行事件丢弃"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.eof-single-newline",
+    "capability": "仅一个换行的尾部事件丢弃",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "仅一个换行的尾部事件丢弃"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.eof-event-block",
+    "capability": "尾部事件类型块后无终止数据丢弃",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "尾部事件类型块后无终止数据丢弃"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.empty-block",
+    "capability": "空数据块重置旧事件类型",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "空数据块重置旧事件类型"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.memory-replay",
+    "capability": "内存传输截断后原序号补读",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "内存传输截断后原序号补读"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.sse-framing.http-replay",
+    "capability": "真实HTTP截断后原序号补读",
+    "preconditions": {
+      "stream": "包含中文和事件ID的受控SSE字节流"
+    },
+    "steps": [
+      "真实HTTP截断后原序号补读"
+    ],
+    "expectedUI": "仅完整事件可交给业务消费者",
+    "expectedIO": "补读用例游标0→0，其他为纯字节流解析",
+    "stateAssertion": "完整事件按顺序派发，未终止尾部不派发",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
   }
 ]

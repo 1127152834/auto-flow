@@ -95,3 +95,23 @@ it('backs off reconnects by one, two, then five seconds', async () => {
   await watcher
   expect(streamMock).toHaveBeenCalledTimes(4)
 })
+
+it.each(['\n', '\r', '\r\n'])('parses every byte boundary with %j line endings', async ending => {
+  const bytes = encoder.encode('\ufeff' + ['id: 1', 'event: custom', 'data: 中文', 'data: 第二行', '', 'event:', 'data: 完成', '', ''].join(ending))
+  const source = new ReadableStream<Uint8Array>({ start(controller) { for (const byte of bytes) controller.enqueue(new Uint8Array([byte])); controller.close() } })
+  const events = []
+  for await (const event of parseServerSentEvents(source)) events.push(event)
+  expect(events).toEqual([{ id: '1', event: 'custom', data: '中文\n第二行' }, { id: '1', event: 'message', data: '完成' }])
+})
+
+it.each(['data: tail', 'data: tail\n', 'event: stale\n\ndata: tail'])('discards unterminated event %j at EOF', async tail => {
+  const events = []
+  for await (const event of parseServerSentEvents(stream('id: 1\ndata: confirmed\n\n', tail))) events.push(event)
+  expect(events).toEqual([{ id: '1', event: 'message', data: 'confirmed' }])
+})
+
+it('resets an event type at a blank block even when there is no data', async () => {
+  const events = []
+  for await (const event of parseServerSentEvents(stream('event: obsolete\n\nid: 4\ndata: valid\n\n'))) events.push(event)
+  expect(events).toEqual([{ id: '4', event: 'message', data: 'valid' }])
+})

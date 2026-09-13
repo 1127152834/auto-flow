@@ -1,0 +1,204 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/shared/api/events.test.ts src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:89842) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/shared/api/events.test.ts (10 tests | 7 failed) 19ms
+   × parses every byte boundary with "\n" line endings 4ms
+   × parses every byte boundary with "\r" line endings 1ms
+   × parses every byte boundary with "\r\n" line endings 1ms
+   × discards unterminated event "data: tail" at EOF 1ms
+   × discards unterminated event "data: tail\n" at EOF 0ms
+   × discards unterminated event "event: stale\n\ndata: tail" at EOF 0ms
+   × resets an event type at a blank block even when there is no data 0ms
+(node:89854) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts (2 tests | 2 failed) 4141ms
+   × does not acknowledge an unterminated event before replay over memory 2042ms
+   × does not acknowledge an unterminated event before replay over http 2098ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/shared/api/events.test.ts > parses every byte boundary with "\n" line endings
+ FAIL  src/renderer/shared/api/events.test.ts > parses every byte boundary with "\r\n" line endings
+AssertionError: expected [ { event: 'custom', …(2) }, …(1) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -5,9 +5,9 @@
+      "event": "custom",
+      "id": "1",
+    },
+    {
+      "data": "完成",
+-     "event": "message",
++     "event": "",
+      "id": "1",
+    },
+  ]
+
+ ❯ src/renderer/shared/api/events.test.ts:104:18
+    102|   const events = []
+    103|   for await (const event of parseServerSentEvents(source)) events.push…
+    104|   expect(events).toEqual([{ id: '1', event: 'custom', data: '中文\n第二行' …
+       |                  ^
+    105| })
+    106|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/renderer/shared/api/events.test.ts > parses every byte boundary with "\r" line endings
+AssertionError: expected [] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "data": "中文
+- 第二行",
+-     "event": "custom",
+-     "id": "1",
+-   },
+-   {
+-     "data": "完成",
+-     "event": "message",
+-     "id": "1",
+-   },
+- ]
++ []
+
+ ❯ src/renderer/shared/api/events.test.ts:104:18
+    102|   const events = []
+    103|   for await (const event of parseServerSentEvents(source)) events.push…
+    104|   expect(events).toEqual([{ id: '1', event: 'custom', data: '中文\n第二行' …
+       |                  ^
+    105| })
+    106|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/renderer/shared/api/events.test.ts > discards unterminated event "data: tail" at EOF
+ FAIL  src/renderer/shared/api/events.test.ts > discards unterminated event "data: tail\n" at EOF
+AssertionError: expected [ { event: 'message', …(2) }, …(1) ] to deeply equal [ { id: '1', event: 'message', …(1) } ]
+
+- Expected
++ Received
+
+@@ -2,6 +2,11 @@
+    {
+      "data": "confirmed",
+      "event": "message",
+      "id": "1",
+    },
++   {
++     "data": "tail",
++     "event": "message",
++     "id": "1",
++   },
+  ]
+
+ ❯ src/renderer/shared/api/events.test.ts:110:18
+    108|   const events = []
+    109|   for await (const event of parseServerSentEvents(stream('id: 1\ndata:…
+    110|   expect(events).toEqual([{ id: '1', event: 'message', data: 'confirme…
+       |                  ^
+    111| })
+    112|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/renderer/shared/api/events.test.ts > discards unterminated event "event: stale\n\ndata: tail" at EOF
+AssertionError: expected [ { event: 'message', …(2) }, …(1) ] to deeply equal [ { id: '1', event: 'message', …(1) } ]
+
+- Expected
++ Received
+
+@@ -2,6 +2,11 @@
+    {
+      "data": "confirmed",
+      "event": "message",
+      "id": "1",
+    },
++   {
++     "data": "tail",
++     "event": "stale",
++     "id": "1",
++   },
+  ]
+
+ ❯ src/renderer/shared/api/events.test.ts:110:18
+    108|   const events = []
+    109|   for await (const event of parseServerSentEvents(stream('id: 1\ndata:…
+    110|   expect(events).toEqual([{ id: '1', event: 'message', data: 'confirme…
+       |                  ^
+    111| })
+    112|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/renderer/shared/api/events.test.ts > resets an event type at a blank block even when there is no data
+AssertionError: expected [ { event: 'obsolete', …(2) } ] to deeply equal [ { id: '4', event: 'message', …(1) } ]
+
+- Expected
++ Received
+
+  [
+    {
+      "data": "valid",
+-     "event": "message",
++     "event": "obsolete",
+      "id": "4",
+    },
+  ]
+
+ ❯ src/renderer/shared/api/events.test.ts:116:18
+    114|   const events = []
+    115|   for await (const event of parseServerSentEvents(stream('event: obsol…
+    116|   expect(events).toEqual([{ id: '4', event: 'message', data: 'valid' }…
+       |                  ^
+    117| })
+    118|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts > does not acknowledge an unterminated event before replay over memory
+ FAIL  src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts > does not acknowledge an unterminated event before replay over http
+AssertionError: expected [ '未确认' ] to deeply equal [ '已确认' ]
+
+- Expected
++ Received
+
+  [
+-   "已确认",
++   "未确认",
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts:24:43
+     22|   try {
+     23|     await vi.waitFor(() => expect(cursors.length).toBeGreaterThanOrEqu…
+     24|     await vi.waitFor(() => expect(values).toEqual(['已确认']))
+       |                                           ^
+     25|     expect(cursors.slice(0, 2)).toEqual(['0', '0'])
+     26|   } finally { client.disconnect(); await fixture?.close(); setStudioTr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  9 failed | 3 passed (12)
+   Start at  03:21:02
+   Duration  5.42s (transform 99ms, setup 99ms, import 34ms, tests 4.16s, environment 910ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/shared/api/events.test.ts src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts
