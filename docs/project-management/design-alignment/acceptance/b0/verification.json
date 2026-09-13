@@ -1,0 +1,22 @@
+{
+  "verifiedAt": "2026-09-13T09:06:28.907023+00:00",
+  "result": "passed",
+  "scope": "B0 PNG integrity, source hashes, source IDs, links, JSON and milestone separation only",
+  "checks": {
+    "sourceHashes": 112,
+    "pngFiles": 5,
+    "boardIds": 22,
+    "futureTaskRecordsNotStarted": 18,
+    "businessPathsUnchanged": true,
+    "localLinks": 35
+  },
+  "notExecuted": [
+    "business tests",
+    "new Electron application verification",
+    "Windows",
+    "other architectures",
+    "packaged builds"
+  ],
+  "visualReview": "Separate human/model image inspection; not inferred by this script",
+  "userAcceptance": "notExecuted"
+}

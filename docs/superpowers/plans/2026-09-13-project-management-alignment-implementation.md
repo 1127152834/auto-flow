@@ -12,7 +12,7 @@
 
 ## 1. 授权、基线与范围
 
-- 日期：2026-09-13。状态：**planned / 本轮只编写计划，所有实施证据为空**。
+- 日期：2026-09-13。状态：**B0图稿已生成，等待用户验收；R1–R3业务任务尚未开始**。历史计划内容保留，当前执行记录见[本次B0交付](../../project-management/design-alignment/acceptance/b0/README.md)。
 - 用户已确认提交 `4688353be07e06d08aa2319c3195086983768ad0` 的[完整对齐规格](../specs/2026-09-13-project-management-prototype-alignment-design.md)，包括Studio参数定义权威和字段聚合保存的有界回填取舍；不再重复要求选择。
 - 写入工作区 `/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation`，分支 `codex/project-management-implementation`；执行前重新核对HEAD及文件责任。
 - 主项目只读观察HEAD `25273d57ee50aeaf2b3861636a222428b673a181`；旧仓只读 `324748abe7095f085b4ffb9467be9cb5c8851a5c`，源码前缀`autoflow-desktop/`。主线仍有其他任务，计划不合并或修改其WIP。
@@ -41,7 +41,7 @@
 - Create: `docs/project-management/design-alignment/prototypes/r1-directory-overview.png`、`r2-record-pages.png`、`r2-record-states.png`、`r3-schema-draft.png`、`r3-file-and-batch-states.png`。
 - Create: `docs/project-management/design-alignment/implementation-ledger.json`。
 
-- [ ] B0.1 记录实际提交、已跟踪改动、迁移head和未跟踪文件归属；检查本目录AGENTS/.ai/PROJECT_STRUCTURE。运行以下只读命令，预期实施分支仍独立，不能依赖固定输出提交号：
+- [x] B0.1 记录实际提交、已跟踪改动、迁移head和未跟踪文件归属；检查本目录AGENTS/.ai/PROJECT_STRUCTURE。运行以下只读命令，预期实施分支仍独立，不能依赖固定输出提交号：
 
 ```bash
 git status --short
@@ -51,11 +51,11 @@ uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/
 python3 docs/project-management/design-alignment/verify-alignment.py
 ```
 
-- [ ] B0.2 使用imagegen前读取其SKILL.md并说明使用；引用真实原图、现有暖灰/黏土棕tokens与顶部导航。每页以1440×1024逻辑viewport为构图基准；同一模块多状态可成总览，但保留可单独放大的画板，不把二十个小窗塞成不可读缩略图。不生成HTML替代图。
-- [ ] B0.3 按R1→R2→R3生成上述5组PNG。brief逐项写明：原PMUI ID、标题、信息顺序、真实按钮、加载/空/错误/只读、保存/冲突/核验状态、返回目标。R2占用稿只作PM4未来状态标注，不能在R2页面伪造占用。R3文件与批状态必须保留PM2完整能力。
+- [x] B0.2 使用imagegen前读取其SKILL.md并说明使用；引用真实原图、现有暖灰/黏土棕tokens与顶部导航。每页以1440×1024逻辑viewport为构图基准；同一模块多状态可成总览，但保留可单独放大的画板，不把二十个小窗塞成不可读缩略图。不生成HTML替代图。
+- [x] B0.3 按R1→R2→R3生成上述5组PNG。brief逐项写明：原PMUI ID、标题、信息顺序、真实按钮、加载/空/错误/只读、保存/冲突/核验状态、返回目标。R2占用稿只作PM4未来状态标注，不能在R2页面伪造占用。R3文件与批状态必须保留PM2完整能力。
 - [ ] B0.4 记录每份输出hash、原图ID、对应交互和审阅结果；逐张看实际图片，核对中文、无多余侧栏、无虚构入口/数值。向用户展示对应切片的具体图稿，得到图稿确认后再开始该切片页面实现；已经确认的业务规格无需重问。
-- [ ] B0.5 将六组原缺图映射：ALIGN-DATA-01→R2两图，ALIGN-DATA-02→R3字段图，ALIGN-DATA-03→R3文件/批状态图；ALIGN-AUTO-01/02在G1后、PM3-A前补，ALIGN-ENV-01在PM8前补。R1额外补当前顶部导航下目录画板，不宣称是原图库新增历史稿。
-- [ ] B0.6 只提交本包实际生成且已检查的资产和记录：`git commit -m "docs: freeze project alignment visual acceptance baseline"`。没有图时不得勾选B0完成。
+- [x] B0.5 将六组原缺图映射：ALIGN-DATA-01→R2两图，ALIGN-DATA-02→R3字段图，ALIGN-DATA-03→R3文件/批状态图；ALIGN-AUTO-01/02在G1后、PM3-A前补，ALIGN-ENV-01在PM8前补。R1额外补当前顶部导航下目录画板，不宣称是原图库新增历史稿。
+- [x] B0.6 只提交本包实际生成且已检查的资产和记录：`git commit -m "docs: freeze project alignment visual acceptance baseline"`。没有图时不得勾选B0完成。
 
 账本每个任务使用以下结构，测试证据未运行保持null：
 
@@ -106,3 +106,11 @@ git diff --check
 - [ ] G1.6 更新paused PM3规格的已批准参数结论和最新依赖，再由writing-plans编写PM3-A、B、C细化计划。默认有限1次，数据调度PM4、End/人工PM5、完整诊断PM7；PM3-C不可推迟停止安全。
 
 G1是交接清单，不是已经完成的核心集成计划；本次规划并未授权执行G1中的业务修改。
+
+## B0本次执行记录（2026-09-13）
+
+实施起点205fa64，分支codex/project-management-implementation，迁移实查pm02_excel_exports。主线只读观察从52cc027推进至6a3869c，属于其他任务进展；未合入、未写入主项目。三个既有未跟踪QA目录保持原样。
+
+五组PNG已通过imagegen生成并逐张修订，来源、hash与准确画板号见prototypes/manifest.json。B0.4的资产检查已执行，用户图稿确认仍未执行，因此不勾选该完整步骤。B0.6提交结果以本包git提交为准。自动验证采用acceptance/b0/verify-assets.py只读核对，替代会重写历史coverage/verification的verify-alignment.py；没有更改历史报告以假称旧缺图已经验证。
+
+R1–R3共18项任务继续notStarted，业务证据为空；尚未生成的ALIGN-AUTO-01/02与ALIGN-ENV-01仍按G1/PM8门槛处理。B0只交付图稿审阅，不启动应用功能验收。

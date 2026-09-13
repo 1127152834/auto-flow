@@ -355,3 +355,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ### 原型纠偏实施计划（2026-09-13，planned）
 
 `docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`统筹B0图稿与R1–R3独立切片，三个同日前缀r1/r2/r3计划分别定义页面层级、记录路由编辑、字段聚合与数据回归。批准依据在`.ai/decisions/2026-09-13-project-alignment-design-approved.md`；旧“设计待确认”当前描述由此替代，业务代码尚未开始。Popover为计划新增，Drawer已由Modal placement提供；聚合schema/守卫迁移/状态引用为计划目标，不算已存在目录能力。
+
+## 项目管理B0视觉交付（2026-09-13）
+
+`docs/project-management/design-alignment/prototypes/`保存5组imagegen PNG、manifest与提示记录；`prototype-briefs.md`保存原图和旧代码复用映射；`prototype-interactions.md`保存精确交互规则；`implementation-ledger.json`记录B0及未来18任务，业务证据不由静态检查填充。`acceptance/b0/`保存图稿审阅入口、manual-test.md、只读资产验证脚本、核验与审查报告。B0待用户确认，业务源码与原始图库不在该包修改范围。

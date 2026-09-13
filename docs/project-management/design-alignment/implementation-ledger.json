@@ -1,0 +1,1000 @@
+{
+  "date": "2026-09-13",
+  "baseline": "205fa64",
+  "status": "B0-readyForUserReview",
+  "owner": "root",
+  "milestones": [
+    {
+      "id": "B0",
+      "status": "readyForUserReview",
+      "userAcceptance": "notExecuted",
+      "evidence": {
+        "automatic": "acceptance/b0/verification.json",
+        "visual": "acceptance/b0/review-resolution.md",
+        "electron": null,
+        "windows": null
+      }
+    },
+    {
+      "id": "R1",
+      "status": "notStarted",
+      "dependsOn": [
+        "B0-userAcceptance"
+      ]
+    },
+    {
+      "id": "R2",
+      "status": "notStarted",
+      "dependsOn": [
+        "R1-userAcceptance"
+      ]
+    },
+    {
+      "id": "R3",
+      "status": "notStarted",
+      "dependsOn": [
+        "R2-userAcceptance"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "taskId": "R1-01",
+      "title": "项目和对象页头",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "B0"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectTabs.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.test.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d",
+        "PMUI-c496e3859302",
+        "PMUI-ca940d758b68"
+      ]
+    },
+    {
+      "taskId": "R1-02",
+      "title": "最近卡片与全部目录",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R1-01"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/hooks.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectCard.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d",
+        "PMUI-c496e3859302",
+        "PMUI-ca940d758b68"
+      ]
+    },
+    {
+      "taskId": "R1-03",
+      "title": "补Popover，复用现有浮层宿主",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "B0"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/package.json"
+        },
+        {
+          "action": "Modify",
+          "path": "package-lock.json"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/popover.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/popover.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/select-radix.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/dialog.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d",
+        "PMUI-c496e3859302",
+        "PMUI-ca940d758b68"
+      ]
+    },
+    {
+      "taskId": "R1-04",
+      "title": "数据卡片与按需查询工具",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R1-01",
+        "R1-03"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFilterEditor.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d",
+        "PMUI-c496e3859302",
+        "PMUI-ca940d758b68"
+      ]
+    },
+    {
+      "taskId": "R1-05",
+      "title": "反馈去重与R1验收",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R1-02",
+        "R1-04"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/components/Toaster.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/components/Toaster.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r1/README.md"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r1/verification.json"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d",
+        "PMUI-c496e3859302",
+        "PMUI-ca940d758b68"
+      ]
+    },
+    {
+      "taskId": "R2-01",
+      "title": "规范键编码与路由",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "B0"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-route.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-route.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/types.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/records-api.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/records-api.test.ts"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-72de4a568a24",
+        "PMUI-76a0e5a3361b",
+        "PMUI-94895605c22f",
+        "PMUI-b3bf4542690d",
+        "PMUI-d3f6c5774ec4"
+      ]
+    },
+    {
+      "taskId": "R2-02",
+      "title": "表单内容从Modal中提取",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "B0"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.test.tsx"
+        },
+        {
+          "action": "Read",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-draft.ts"
+        },
+        {
+          "action": "Read",
+          "path": "apps/desktop/src/renderer/domains/project-data/scalar-draft.ts"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-72de4a568a24",
+        "PMUI-76a0e5a3361b",
+        "PMUI-94895605c22f",
+        "PMUI-b3bf4542690d",
+        "PMUI-d3f6c5774ec4"
+      ]
+    },
+    {
+      "taskId": "R2-03",
+      "title": "记录详情与编辑页面装配",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R1-05",
+        "R2-01",
+        "R2-02"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordDetailPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordEditPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-72de4a568a24",
+        "PMUI-76a0e5a3361b",
+        "PMUI-94895605c22f",
+        "PMUI-b3bf4542690d",
+        "PMUI-d3f6c5774ec4"
+      ]
+    },
+    {
+      "taskId": "R2-04",
+      "title": "受控外链桥",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R2-03"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/shared/external-links.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/main/ipc/external-links.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/main/ipc/external-links.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/main/index.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/main/index.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/preload/index.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/preload/index.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/api/types.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-72de4a568a24",
+        "PMUI-76a0e5a3361b",
+        "PMUI-94895605c22f",
+        "PMUI-b3bf4542690d",
+        "PMUI-d3f6c5774ec4"
+      ]
+    },
+    {
+      "taskId": "R2-05",
+      "title": "返回、草稿与恢复完整回归",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R2-03",
+        "R2-04"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-project-data.mjs"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-72de4a568a24",
+        "PMUI-76a0e5a3361b",
+        "PMUI-94895605c22f",
+        "PMUI-b3bf4542690d",
+        "PMUI-d3f6c5774ec4"
+      ]
+    },
+    {
+      "taskId": "R3-01",
+      "title": "冻结聚合DTO与失败语义",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "B0"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_schema_schemas.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/domain/project_data/schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/unit/test_project_data_schema.py"
+        },
+        {
+          "action": "Modify",
+          "path": "docs/project-management/implementation/api-contracts.md"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-02",
+      "title": "守卫迁移与预览证据",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-01"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_models.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm02_schema_drafts.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_migration.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_preview.py"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-03",
+      "title": "原子提交与幂等恢复",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-02"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/application/project_data/schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_commit.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/project_data_catalog.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/project_data_impacts.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/projects.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/domain/projects/models.py"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-04",
+      "title": "HTTP装配、生成类型与前端命令",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-03"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/contract/test_project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-api.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-api.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/bootstrap/app.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_schemas.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/api/generated.ts"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-05",
+      "title": "真实状态引用投影",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-02",
+        "R3-04"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/application/project_data/catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/domain/project_data/catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_catalog_schemas.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/contract/test_project_data_status_usage.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.test.ts"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-06",
+      "title": "字段表格、Drawer与整体草稿",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R2-05",
+        "R3-04"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.test.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaFieldDrawer.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaImpactDrawer.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/FieldEditorDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-07",
+      "title": "状态、来源、设置和文件/批状态画板接入",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-05",
+        "R3-06"
+      ],
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelImportWizard.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelExportDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordStatusBatchDialog.tsx"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    },
+    {
+      "taskId": "R3-08",
+      "title": "故障、性能与全模块退出",
+      "status": "notStarted",
+      "owner": "milestone-coordinator",
+      "dependsOn": [
+        "R3-07"
+      ],
+      "files": [
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-project-data.mjs"
+        },
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-pm2-detail-flows.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/smoke-project-alignment.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/measure-schema-commit.py"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r3/README.md"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r3/verification.json"
+        },
+        {
+          "action": "Modify",
+          "path": "docs/PROJECT_STRUCTURE.md"
+        }
+      ],
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "commit": null,
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-73d061eba024",
+        "PMUI-c3de19602511",
+        "PMUI-cf611c443491",
+        "PMUI-d59f5568efae",
+        "PMUI-eb086d4107db"
+      ]
+    }
+  ],
+  "unrelatedUntrackedPreserved": [
+    "docs/migration/project-data-directory-qa/run-577a57/",
+    "docs/migration/project-data-directory-qa/run-VoRvWR/",
+    "docs/migration/project-management-regression-qa/run-W6Td3i/"
+  ]
+}
