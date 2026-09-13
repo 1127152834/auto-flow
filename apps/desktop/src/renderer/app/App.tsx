@@ -41,7 +41,7 @@ export function App() {
       {session ? <ApiProvider key={session.workspaceKey} baseUrl={session.baseUrl} token={session.token} instanceId={session.instanceId} client={session.client}>
         <div inert={status !== 'connected'} aria-busy={status !== 'connected'} className={status !== 'connected' ? 'opacity-60' : undefined}>
           {route === 'dashboard' ? <DashboardPage client={session.client} onNavigate={navigate} />
-            : route === 'android' ? <AndroidPage />
+            : route === 'android' ? <AndroidPage connected={status === 'connected'} />
             : route === 'proxies' ? <ProxyManagementPage api={session.client} />
             : route === 'models' && modelApi ? <ModelManagementPage api={modelApi} instanceId={session.instanceId} />
             : <BrowserManagementPage disabled={status !== 'connected'} onReconnect={() => void reconnect()} />}

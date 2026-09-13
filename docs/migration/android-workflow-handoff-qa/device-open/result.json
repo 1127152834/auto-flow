@@ -1,0 +1,91 @@
+{
+  "run": {
+    "runId": "1f745afb-5ab5-4acd-9afc-77ab5871fd78",
+    "workflowId": "3f746be4-78d7-4123-ba75-dc0b2d8424d5",
+    "name": "手动操作 · 安卓工作流测试",
+    "profileId": null,
+    "profileName": null,
+    "target": {
+      "kind": "android",
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+    },
+    "targetName": "安卓工作流测试",
+    "targetSnapshot": {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "width": 720,
+      "height": 1280
+    },
+    "handoff": {
+      "handoffId": "bd70f9a1-e517-4ce5-a899-d507e7382e81",
+      "nodeId": "device-manual",
+      "state": "completed",
+      "prompt": "在原生窗口操作，完成后点击“结束操作”释放设备。会话最长 60 分钟。",
+      "deadlineAt": "2026-09-13T05:18:38.710335+00:00",
+      "nativeSessionId": "4f677bf7-df4e-4087-bcce-1a563756cbbf",
+      "error": null,
+      "receipts": {
+        "93ee7660-df0f-408a-bc0e-71a46f37046b": "open",
+        "781eabe9-700a-41a7-b522-4e654a5beb19": "continue"
+      }
+    },
+    "state": "succeeded",
+    "document": {
+      "id": "3f746be4-78d7-4123-ba75-dc0b2d8424d5",
+      "name": "手动操作 · 安卓工作流测试",
+      "schemaVersion": 1,
+      "nodes": [
+        {
+          "id": "device-manual",
+          "type": "android_manual",
+          "label": "设备页手动操作",
+          "config": {
+            "prompt": "在原生窗口操作，完成后点击“结束操作”释放设备。会话最长 60 分钟。",
+            "timeoutSeconds": 3600
+          }
+        }
+      ],
+      "edges": [],
+      "variables": []
+    },
+    "layout": {
+      "nodes": {
+        "device-manual": {
+          "x": 120.0,
+          "y": 100.0
+        }
+      },
+      "viewport": {
+        "x": 0.0,
+        "y": 0.0,
+        "zoom": 1.0
+      }
+    },
+    "profileSnapshot": null,
+    "nodeOrder": [
+      "device-manual"
+    ],
+    "currentNodeId": "device-manual",
+    "startedAt": "2026-09-13T04:18:37.065795+00:00",
+    "finishedAt": "2026-09-13T04:19:57.278671+00:00",
+    "latestSeq": 12,
+    "completedNodeIds": [
+      "device-manual"
+    ],
+    "error": null,
+    "artifacts": [],
+    "warnings": [],
+    "handoffReceipts": {
+      "bd70f9a1-e517-4ce5-a899-d507e7382e81": {
+        "93ee7660-df0f-408a-bc0e-71a46f37046b": "open",
+        "781eabe9-700a-41a7-b522-4e654a5beb19": "continue"
+      }
+    }
+  },
+  "device": {
+    "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+    "control": "idle",
+    "ownerRunId": null
+  }
+}

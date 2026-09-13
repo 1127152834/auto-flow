@@ -9,3 +9,7 @@
 - 平台：当前 Mac ARM64 + Lima，固定 scrcpy 3.3.4。Windows 返回不可用，不阻止其他模块启动。批量和混合图另行设计。
 - 交付：codex/android-workflow-handoff 独立分支与本地 Mac 包；并行 M4 主工作区未被修改。合并时需要显式迁移汇合及契约回归。
 - 证据：docs/migration/android-workflow-handoff-validation.md。
+
+## 设备页直接操作入口补充（2026-09-13，confirmed）
+
+来源：用户指出设备卡片点击无反应。原先“设备页仅查看”的范围现已 superseded：新增明确的打开按钮，通过既有运行接口创建仅含一个人工节点的手动会话，并在此次点击对应的会话进入等待后开窗。结束操作复用 continue；无后续自动节点。页面刷新、导航重进和关窗不自动开新会话，不改变占用/清理规则。预算为页面明确提示的 60 分钟。

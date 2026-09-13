@@ -9,3 +9,5 @@
 专用工作区留在 autoflow-android-handoff/.local/android-handoff-workspace；启动 scripts/open-android-demo.command。原有三台 Demo 设备保留。
 
 主工作区同时开发 M4（新增执行/产物契约与 0007_workflow_artifacts），本轮没有将安卓分支覆盖到该工作区。后续合并需汇合 0007_android_devices 与其迁移，不改写已应用 revision。正式分支基于 M3 d43ee31，不携带临时隔离基线提交。
+
+2026-09-13 补充（confirmed）：用户报告设备卡片无响应后，新增设备页“打开操作窗口”和手动会话控制，复用单人工节点运行。刷新不重开、未知状态禁用新增，结束后释放占用；全量 React 418 通过，打包真实点击与结束成功。旧“必须从 Studio 人工节点进入”的界面限制 superseded。
