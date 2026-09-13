@@ -53,6 +53,7 @@ class _ActiveRun:
     guards: ExitStack | None = None
     result: dict[str, Any] | None = None
     android: bool = False
+    android_context: AndroidDeviceService | None = None
     device_task: asyncio.Task[dict[str, Any]] | None = None
 
 
@@ -116,9 +117,9 @@ class WorkflowRunService:
             return {**record.data, "state": "stopping" if operation.stopping else "finishing", "error": _cleanup_error_data()}
         return record.data
 
-    def list(self, workflow_id: str | None, offset: int, limit: int) -> dict[str, Any]:
+    def list(self, workflow_id: str | None, offset: int, limit: int, device_id: str | None = None) -> dict[str, Any]:
         self._retry_completions()
-        items = self.repository.list_runs(workflow_id, offset, limit + 1)
+        items = self.repository.list_runs(workflow_id, offset, limit + 1, device_id)
         return {
             "items": [item.data for item in items[:limit]],
             "activeRunId": self.repository.active_id(),
@@ -147,9 +148,9 @@ class WorkflowRunService:
             return self.get(run_id)
         if self._closing:
             raise WorkflowError("WORKFLOW_RUN_SHUTTING_DOWN", "运行服务正在退出", 409)
-        if self.inspection_busy():
+        if self.inspection_busy() and not is_android:
             raise WorkflowError("INSPECTION_ACTIVE", "请先关闭拾取浏览器后运行", 409)
-        if self.busy():
+        if not is_android and (self._launcher.busy() or any(not value.android for value in self._active.values())):
             raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
         prepared = prepare_debug(document, layout, debug or {"start": "entry"}) if mode == "debug" else prepare_run(document, layout)
         validate_runtime(prepared.document, is_android)
@@ -157,11 +158,13 @@ class WorkflowRunService:
         try:
             profile = None
             executable = None
+            android_context = None
             if is_android:
                 if self.android is None or self.android_worker is None:
                     raise WorkflowError("ANDROID_UNAVAILABLE", "安卓运行环境未配置", 503)
-                device = self.android.claim(target["deviceId"], run_id)
-                guards.callback(self.android.rollback_claim)
+                android_context = self.android.context(target["deviceId"])
+                device = android_context.claim(target["deviceId"], run_id)
+                guards.callback(android_context.rollback_claim)
                 snapshot = {key: device.get(key) for key in ("deviceId", "name", "imageId", "width", "height")}
                 target_name = device["name"]
             else:
@@ -188,7 +191,7 @@ class WorkflowRunService:
             if saved is not record:
                 guards.close()
                 return saved.data
-            operation = _ActiveRun(guards=guards, android=is_android)
+            operation = _ActiveRun(guards=guards, android=is_android, android_context=android_context)
             self._active[run_id] = operation
             operation.task = asyncio.create_task(
                 self._execute(run_id, operation, prepared, profile, executable),
@@ -460,7 +463,9 @@ class WorkflowRunService:
 
     async def _run_android(self, run_id: str, operation: _ActiveRun, prepared: PreparedWorkflow) -> dict[str, Any]:
         assert self.android is not None and self.android_worker is not None
-        await self.android.connect()
+        context = operation.android_context
+        assert context is not None
+        await context.connect()
 
         async def publish(event: dict[str, Any], changes: dict[str, Any]) -> None:
             if operation.stopping:
@@ -477,13 +482,18 @@ class WorkflowRunService:
             assert self.android is not None
             node_id = event["nodeId"]
             record = self.get(run_id)
+            if event["operation"] == "android_boundary" and not operation.stopping:
+                if context.takeover_requested:
+                    context.takeover_requested = False
+                    await context.manual(node_id, {"prompt": "动作已完成，可以手动接管。结束接管后从下一动作继续。", "timeoutSeconds": 3600}, publish)
+                return {"result": None}
             if operation.stopping or node_id != record["currentNodeId"]:
                 raise asyncio.CancelledError
             try:
                 if event["operation"] == "android_manual":
-                    await self.android.manual(node_id, event["args"], publish)
+                    await context.manual(node_id, event["args"], publish)
                     return {"result": None}
-                data = await self.android.command(event["operation"], event["args"], float(event["args"]["timeoutSeconds"]))
+                data = await context.command(event["operation"], event["args"], float(event["args"]["timeoutSeconds"]))
                 if event["operation"] == "android_screenshot":
                     assert self.save_android_image is not None
                     result = self.save_android_image(run_id, node_id, data)
@@ -493,6 +503,22 @@ class WorkflowRunService:
                 return {"error": {"code": error.code if isinstance(error, AndroidError) else "ANDROID_TIMEOUT", "message": error.message if isinstance(error, AndroidError) else "安卓动作超时", "nodeId": node_id, "path": []}}
 
         return await self.android_worker.execute(run_id, prepared, lambda event: self._worker_event(run_id, operation, event), command)
+
+    def device_context(self, device_id: str) -> AndroidDeviceService | None:
+        return next((op.android_context for op in self._active.values() if op.android_context and op.android_context.device and op.android_context.device["deviceId"] == device_id), None)
+
+    def request_takeover(self, device_id: str) -> None:
+        context = self.device_context(device_id)
+        if not context or not context.device or context.stopping:
+            raise AndroidError("ANDROID_HANDOFF_STALE", "工作流已经结束")
+        record = self.get(context.device["ownerRunId"])
+        if record["state"] == "waiting_manual":
+            return
+        if record["state"] not in {"running", "starting", "pausing"}:
+            raise AndroidError("ANDROID_HANDOFF_UNAVAILABLE", "当前运行状态不能接管")
+        if not context.takeover_requested:
+            self._append(record["runId"], {"type": "log", "message": "已请求在当前动作结束后暂停"}, {"state": "pausing"})
+            context.takeover_requested = True
 
     async def handoff_control(self, run_id: str, handoff_id: str, request_id: str, action: str) -> dict[str, Any]:
         record = self.get(run_id)
@@ -507,18 +533,21 @@ class WorkflowRunService:
         operation = self._active.get(run_id)
         if not operation or not operation.android or operation.stopping or self.android is None:
             raise WorkflowError("ANDROID_HANDOFF_STALE", "当前运行不接受人工操作", 409)
-        await self.android.control(handoff_id, request_id, action)
+        assert operation.android_context is not None
+        await operation.android_context.control(handoff_id, request_id, action)
         return self.get(run_id)
 
     async def _cleanup_android(self, run_id: str, operation: _ActiveRun) -> None:
         assert self.android is not None and self.android_worker is not None
-        self.android.request_stop()
+        context = operation.android_context
+        assert context is not None
+        context.request_stop()
         if operation.device_task is not None and not operation.device_task.done():
             operation.device_task.cancel()
         await self.android_worker.stop(run_id)
         if operation.device_task is not None:
             await asyncio.gather(operation.device_task, return_exceptions=True)
-        await self.android.cleanup()
+        await context.cleanup()
 
     async def _cleanup(self, run_id: str, operation: _ActiveRun) -> None:
         if operation.cleanup_task is None:

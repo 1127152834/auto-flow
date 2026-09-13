@@ -1,0 +1,314 @@
+{
+  "board": [
+    {
+      "className": "ad-button  ",
+      "height": 44,
+      "label": "环境配置",
+      "width": 131,
+      "x": 1187,
+      "y": 108
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 44,
+      "label": "创建实例",
+      "width": 125,
+      "x": 1332,
+      "y": 108
+    },
+    {
+      "className": "ad-board",
+      "height": 601,
+      "label": "实例列表资源看板6 台设备 · 2 台可分配全部",
+      "width": 1425,
+      "x": 32,
+      "y": 184
+    },
+    {
+      "className": "ad-column",
+      "height": 541,
+      "label": "可分配2测试设备 01已就绪Android 13",
+      "width": 469,
+      "x": 33,
+      "y": 243
+    },
+    {
+      "className": "ad-device-card ad-card-0",
+      "height": 215,
+      "label": "测试设备 01已就绪Android 13 · 7",
+      "width": 447,
+      "x": 44,
+      "y": 297
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 38,
+      "label": "分配给工作流",
+      "width": 158,
+      "x": 175,
+      "y": 450.09375
+    },
+    {
+      "className": "ad-button  ",
+      "height": 38,
+      "label": "打开设备",
+      "width": 129,
+      "x": 344,
+      "y": 450.09375
+    },
+    {
+      "className": "ad-device-card ad-card-0",
+      "height": 215,
+      "label": "测试设备 02已就绪Android 13 · 7",
+      "width": 447,
+      "x": 44,
+      "y": 539
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 38,
+      "label": "分配给工作流",
+      "width": 158,
+      "x": 175,
+      "y": 692.09375
+    },
+    {
+      "className": "ad-button  ",
+      "height": 38,
+      "label": "打开设备",
+      "width": 129,
+      "x": 344,
+      "y": 692.09375
+    },
+    {
+      "className": "ad-column",
+      "height": 541,
+      "label": "工作流占用2订单回归 03临时实例Android",
+      "width": 469,
+      "x": 510,
+      "y": 243
+    },
+    {
+      "className": "ad-device-card ad-card-1",
+      "height": 230,
+      "label": "订单回归 03临时实例Android 13 · ",
+      "width": 443,
+      "x": 523,
+      "y": 297
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 35,
+      "label": "查看运行",
+      "width": 124,
+      "x": 540,
+      "y": 477.5
+    },
+    {
+      "className": "ad-button  ",
+      "height": 35,
+      "label": "预览",
+      "width": 104,
+      "x": 676,
+      "y": 477.5
+    },
+    {
+      "className": "ad-device-card ad-card-1",
+      "height": 230,
+      "label": "应用测试 04持久实例Android 13 · ",
+      "width": 443,
+      "x": 523,
+      "y": 539
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 35,
+      "label": "查看运行",
+      "width": 124,
+      "x": 540,
+      "y": 719.5
+    },
+    {
+      "className": "ad-button  ",
+      "height": 35,
+      "label": "预览",
+      "width": 104,
+      "x": 676,
+      "y": 719.5
+    },
+    {
+      "className": "ad-column",
+      "height": 541,
+      "label": "启动与停止2临时设备 05启动中Android ",
+      "width": 469,
+      "x": 987,
+      "y": 243
+    },
+    {
+      "className": "ad-device-card ad-card-2",
+      "height": 228,
+      "label": "临时设备 05启动中Android 13 · 5",
+      "width": 443,
+      "x": 1000,
+      "y": 297
+    },
+    {
+      "className": "ad-button  ",
+      "height": 38,
+      "label": "查看详情",
+      "width": 110,
+      "x": 1124,
+      "y": 462
+    },
+    {
+      "className": "ad-device-card ad-card-2",
+      "height": 228,
+      "label": "测试设备 06已停止Android 13 · 7",
+      "width": 443,
+      "x": 1000,
+      "y": 539
+    },
+    {
+      "className": "ad-button  ",
+      "height": 38,
+      "label": "启动设备",
+      "width": 110,
+      "x": 1124,
+      "y": 704.09375
+    },
+    {
+      "className": "ad-waiting",
+      "height": 202,
+      "label": "等待设备的任务 2查看全部运行 工作流所需环境分",
+      "width": 1425,
+      "x": 32,
+      "y": 801
+    }
+  ],
+  "manual": [
+    {
+      "className": "ad-screen-panel",
+      "height": 705,
+      "label": "手动控制中由你独占操作适应窗口实际比例全屏结束控",
+      "width": 950,
+      "x": 32,
+      "y": 253
+    },
+    {
+      "className": "ad-phone ",
+      "height": 572,
+      "label": "",
+      "width": 326,
+      "x": 360,
+      "y": 320
+    },
+    {
+      "className": "ad-device-tools",
+      "height": 476,
+      "label": "返回主页最近任务音量旋转截图",
+      "width": 63,
+      "x": 711,
+      "y": 328
+    },
+    {
+      "className": "ad-console-sidebar",
+      "height": 705,
+      "label": "输入与操作键盘输入点击画面后接收键盘事件。文本发",
+      "width": 467,
+      "x": 993,
+      "y": 253
+    }
+  ],
+  "create": [
+    {
+      "className": "ad-create-form",
+      "height": 691,
+      "label": "1基本信息实例名称将创建：测试设备 01、02、",
+      "width": 942.1328125,
+      "x": 32,
+      "y": 233
+    },
+    {
+      "className": "ad-quantity",
+      "height": 42,
+      "label": "",
+      "width": 151,
+      "x": 796.1328125,
+      "y": 302.5
+    },
+    {
+      "className": "ad-instance-types",
+      "height": 74,
+      "label": "持久实例保留应用和数据，适合重复调试临时实例供工",
+      "width": 731.1328125,
+      "x": 216,
+      "y": 771.5
+    },
+    {
+      "className": "ad-create-preview",
+      "height": 691,
+      "label": "创建预览数量3 台系统Android 13 · ",
+      "width": 466.859375,
+      "x": 990.1328125,
+      "y": 233
+    },
+    {
+      "className": "ad-create-footer",
+      "height": 89,
+      "label": "取消创建进度可在资源看板逐台查看。将创建 3 台",
+      "width": 1489,
+      "x": 0,
+      "y": 933
+    }
+  ],
+  "takeover": [
+    {
+      "className": "ad-readonly-banner",
+      "height": 43,
+      "label": "工作流正在操作设备，当前为只读预览。",
+      "width": 1396,
+      "x": 48,
+      "y": 253
+    },
+    {
+      "className": "ad-screen-panel",
+      "height": 652,
+      "label": "只读预览查看画面实际比例返回主页最近任务取得控制",
+      "width": 935.671875,
+      "x": 48,
+      "y": 311
+    },
+    {
+      "className": "ad-phone ",
+      "height": 561,
+      "label": "",
+      "width": 297,
+      "x": 370.3359375,
+      "y": 355
+    },
+    {
+      "className": "ad-device-tools",
+      "height": 294,
+      "label": "返回主页最近任务",
+      "width": 72,
+      "x": 863.671875,
+      "y": 412
+    },
+    {
+      "className": "ad-console-sidebar",
+      "height": 652,
+      "label": "当前工作流工作流名称订单回归运行标识本次运行运行",
+      "width": 445.328125,
+      "x": 998.671875,
+      "y": 311
+    },
+    {
+      "className": "ad-button ad-primary ",
+      "height": 42,
+      "label": "暂停并接管",
+      "width": 408.328125,
+      "x": 1016.671875,
+      "y": 751
+    }
+  ]
+}

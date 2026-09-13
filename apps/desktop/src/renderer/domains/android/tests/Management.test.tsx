@@ -6,7 +6,7 @@ import { CreateDeviceForm } from '../components/CreateDeviceForm'
 import { deviceGroup } from '../model'
 import type { AndroidApi, AndroidDevice, AndroidEnvironment } from '../api'
 
-const device: AndroidDevice = { deviceId: 'original', name: '原设备', runtimeId: 'lima', ownerRunId: null, control: 'idle', generation: 1, width: 720, height: 1280, imageId: 'sha256:' + 'a'.repeat(64), androidStatus: 'ready', lastError: null, cpu: 1, memoryMb: 1536, dpi: 320, androidVersion: '13', architecture: 'arm64', dataRetained: false, deleted: false }
+const device: AndroidDevice = { deviceId: 'original', name: '原设备', runtimeId: 'lima', ownerRunId: null, control: 'idle', generation: 1, width: 720, height: 1280, imageId: 'sha256:' + 'a'.repeat(64), androidStatus: 'ready', lastError: null, profileName: 'Android 13 标准 · ARM64', instanceType: 'persistent', locale: 'zh-CN', timezone: 'Asia/Shanghai', cpu: 1, memoryMb: 1536, dpi: 320, androidVersion: '13', architecture: 'arm64', dataRetained: false, deleted: false }
 const environment: AndroidEnvironment = { available: true, platformSupported: true, message: '运行环境可用', runtimeId: 'lima', cpuCount: 6, memoryMb: 8000, images: [{ id: device.imageId, name: 'Android 13 标准 · ARM64', reference: 'standard' }] }
 function api(): AndroidApi { return { create: vi.fn(async () => device), devices: vi.fn(), environment: vi.fn(), operate: vi.fn(), rename: vi.fn(), preview: vi.fn() } }
 beforeEach(() => vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} }))

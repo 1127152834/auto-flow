@@ -34,7 +34,7 @@ it('an uncertain response retries the same command ID rather than opening a seco
 })
 
 it('an occupied or unverified device cannot be selected', () => {
-  const base = { cpu: 1, memoryMb: 1536, dpi: 320, androidVersion: '13', architecture: 'arm64', dataRetained: false, deleted: false, deviceId: 'device', name: '安卓测试', runtimeId: 'lima', ownerRunId: 'run', control: 'manual', generation: 1, width: 720, height: 1280, imageId: 'image', androidStatus: 'ready', lastError: null }
+  const base = { profileName: 'Android 13 标准 · ARM64', instanceType: 'persistent', locale: 'zh-CN', timezone: 'Asia/Shanghai', cpu: 1, memoryMb: 1536, dpi: 320, androidVersion: '13', architecture: 'arm64', dataRetained: false, deleted: false, deviceId: 'device', name: '安卓测试', runtimeId: 'lima', ownerRunId: 'run', control: 'manual', generation: 1, width: 720, height: 1280, imageId: 'image', androidStatus: 'ready', lastError: null }
   render(<DeviceSelect devices={[base, { ...base, deviceId: 'unknown', control: 'idle', androidStatus: 'unknown' }]} value="" disabled={false} onChange={vi.fn()} />)
   for (const option of screen.getAllByRole('option').slice(1)) expect(option).toBeDisabled()
 })

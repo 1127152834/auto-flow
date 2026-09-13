@@ -1,0 +1,79 @@
+{
+  "real_capacity_waiting_not_ready": true,
+  "temporary_failure_retained": {
+    "state": "failed",
+    "device": {
+      "deviceId": "e9d2b178-0826-4fc3-b1f5-b452964eebee",
+      "name": "控制流测试 01",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "width": 720,
+      "height": 1280,
+      "dpi": 320,
+      "cpu": 1,
+      "memoryMb": 1536,
+      "runtimeId": "autoflow-redroid",
+      "workspaceId": "8068ac0d3cf80d760443237d02044e9faca3dad80319b1473d117b03d4f6b3f5",
+      "volumeId": "autoflow-android-e9d2b178-0826-4fc3-b1f5-b452964eebee-data",
+      "containerId": "c2761658cc18644c9aee82a25f57f890e8ca3a2d7d3131d23a299b8653b42b16",
+      "profileId": "d42f0000-db2b-5ba0-81d3-2633f5666b59",
+      "profileName": "Android 13 标准 · ARM64",
+      "instanceType": "temporary",
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai",
+      "androidStatus": "ready",
+      "ownerRunId": null,
+      "control": "idle",
+      "generation": 1,
+      "creationConfig": {
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "dpi": 320,
+        "cpu": 1,
+        "memoryMb": 1536,
+        "deviceId": "e9d2b178-0826-4fc3-b1f5-b452964eebee",
+        "name": "控制流测试 01",
+        "width": 720,
+        "height": 1280,
+        "start": false,
+        "profileId": "d42f0000-db2b-5ba0-81d3-2633f5666b59",
+        "profileName": "Android 13 标准 · ARM64",
+        "instanceType": "temporary",
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai"
+      },
+      "operationReceipts": {
+        "e9d2b178-0826-4fc3-b1f5-b452964eebee": {
+          "requestId": "e9d2b178-0826-4fc3-b1f5-b452964eebee",
+          "action": "create",
+          "deleteData": false
+        },
+        "2c0f33bf-e5a0-4193-b514-751d5544b2ac": {
+          "requestId": "2c0f33bf-e5a0-4193-b514-751d5544b2ac",
+          "action": "start",
+          "deleteData": false
+        }
+      },
+      "lastError": null,
+      "operation": {
+        "id": "2c0f33bf-e5a0-4193-b514-751d5544b2ac",
+        "action": "start",
+        "state": "succeeded",
+        "stage": "已完成",
+        "error": null,
+        "startedAt": "2026-09-13T07:49:29.094823+00:00",
+        "finishedAt": "2026-09-13T07:49:47.501306+00:00"
+      },
+      "dataRetained": false,
+      "configurationApplied": true,
+      "processes": {}
+    }
+  },
+  "apk_install_completion_marker": true,
+  "ten_minute_stream": {
+    "seconds": 600.4403954580193,
+    "packets": 901,
+    "bytes": 4604297,
+    "errors": 0,
+    "input_key_pair_ack_p95_ms": 5.137000000104308,
+    "measurement": "Transport stability and HTTP input acknowledgment; not display latency/FPS."
+  }
+}

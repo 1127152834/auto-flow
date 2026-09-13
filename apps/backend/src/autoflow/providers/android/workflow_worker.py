@@ -56,7 +56,14 @@ def main() -> int:
         async def page_condition(_rule: dict[str, Any], _deadline: float) -> bool:
             raise WorkflowError("WORKFLOW_RUNTIME_MISMATCH", "安卓流程不支持网页条件", 422)
 
-        scheduler = WorkflowExecution(variables, send, action, page_condition, error_of)
+        async def boundary(node_id: str) -> None:
+            request_id = str(uuid4())
+            send({"type": "android_command", "requestId": request_id, "nodeId": node_id, "operation": "android_boundary", "args": {}})
+            response = json.loads(await asyncio.to_thread(sys.stdin.readline, 65537))
+            if response.get("requestId") != request_id or response.get("error"):
+                raise ValueError("Boundary failed")
+
+        scheduler = WorkflowExecution(variables, send, action, page_condition, error_of, boundary=boundary)
         plan = initial.get("plan") or [{"nodeId": i} for i in initial["nodeIds"]]
         return await scheduler.run(initial["document"], plan, ready_message="安卓设备已连接")
 

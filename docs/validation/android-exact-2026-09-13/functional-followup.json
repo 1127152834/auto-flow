@@ -1,0 +1,56 @@
+{
+  "checks": [
+    {
+      "name": "no_manual_input_or_install_before_boundary",
+      "result": true
+    },
+    {
+      "name": "real_action_completed_before_manual_grant",
+      "result": true
+    },
+    {
+      "name": "long_press_visible_labels",
+      "result": [
+        "Views/Controls/1. Light Theme",
+        "Save",
+        "Save",
+        "Long press verification",
+        "Checkbox 1",
+        "Checkbox 2",
+        "RadioButton 1",
+        "RadioButton 2"
+      ]
+    },
+    {
+      "name": "long_press_menu_in_hierarchy",
+      "result": false
+    },
+    {
+      "name": "rotation_actual_dimensions",
+      "result": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "resume_does_not_replay_completed_action",
+      "result": true
+    },
+    {
+      "name": "temporary_success_recycled",
+      "result": true
+    },
+    {
+      "name": "completed",
+      "result": true
+    },
+    {
+      "name": "restored_existing_demo_containers",
+      "result": [
+        "afd-5a7beadf6de2468d",
+        "afd-635e8a215e194178",
+        "afd-ef3857a550924052"
+      ]
+    }
+  ]
+}

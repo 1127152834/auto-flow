@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-13",
+  "branch": "codex/android-workflow-handoff",
+  "m5_merge": "add29d8",
+  "checks": [
+    {
+      "command": "uv run pytest",
+      "cwd": "apps/backend",
+      "status": "passed",
+      "tests": 611,
+      "seconds": 91.74,
+      "warnings": 2
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test -- --run",
+      "status": "passed",
+      "files": 70,
+      "tests": 441
+    },
+    {
+      "command": "uv run ruff check .",
+      "cwd": "apps/backend",
+      "status": "passed"
+    },
+    {
+      "command": "uv run mypy src",
+      "cwd": "apps/backend",
+      "status": "passed",
+      "source_files": 188
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "status": "passed"
+    },
+    {
+      "command": "npm run openapi:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build",
+      "status": "passed"
+    },
+    {
+      "command": "npm run backend:build",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:scripts",
+      "status": "passed",
+      "tests": 12
+    },
+    {
+      "command": "npm run test:structure",
+      "status": "passed",
+      "tests": 3
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop exec -- electron-builder --config electron-builder.yml --dir --config.electronDist=../../node_modules/electron/dist",
+      "status": "passed",
+      "architecture": "arm64",
+      "developer_id_signed": false,
+      "note": "Normal package command encountered Electron download certificate failure. Reused installed identical pinned Electron 41.10.3; TLS validation was not disabled."
+    }
+  ],
+  "observed_failure_and_retest": "One initial concurrent heavy-load backend run failed the existing browser worker 50 ms cleanup assertion; isolated 3 variants passed, subsequent full backend run passed 611 tests.",
+  "packaged_gui": {
+    "multipart_apk_install": "passed, packaged-apk-installed.png",
+    "apps_to_console_cached_video_resume": "passed after decoder backpressure fix",
+    "real_touch_after_tab_switch": "passed, API Demos preference list opened",
+    "end_control": "passed, disconnected and inputs disabled without error",
+    "evidence": "packaged-final-console.png",
+    "qa_identity": "Only Info.plist bundle identifier/display name changed for isolation; app code and backend identical."
+  },
+  "package_hashes": {
+    "app.asar": {
+      "sha256": "5a995cbd3b703a80b9e1e1196d03308d443c9e9ef8b745172ba8fc0d29b491cf",
+      "qa_copy_matches": true
+    },
+    "backend/autoflow-backend": {
+      "sha256": "a3e708dfa465299c9bcfb9c135021e75d4f798d05d01b65e31ecbfad3fa4be6f",
+      "qa_copy_matches": true
+    }
+  },
+  "not_verified": [
+    "15 fps animation rate",
+    "click-to-visible-feedback p95 <=250 ms",
+    "two readonly streams plus one manual stream for 10 minutes",
+    "Developer ID signed distribution",
+    "latest mainline integration after 25273d5 removed old workflow studio"
+  ]
+}

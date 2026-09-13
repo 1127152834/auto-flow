@@ -153,6 +153,14 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
     while time.monotonic() < deadline:
         observation = await runtime.inspect(device)
         if observation["androidStatus"] == "ready":
+            if device.get("profileId") and not device.get("configurationApplied"):
+                stage("应用语言与时区")
+                script = shlex.join(["setprop", "persist.sys.locale", device["locale"]]) + "; " + shlex.join(["setprop", "persist.sys.timezone", device["timezone"]]) + "; setprop sys.boot_completed 0; stop; start"
+                await mutation(device, save, "exec", device["containerId"], "sh", "-c", script)
+                device["configurationApplied"] = True
+                save()
+                await asyncio.sleep(2)
+                continue
             device["androidStatus"] = "ready"
             return
         await asyncio.sleep(1)

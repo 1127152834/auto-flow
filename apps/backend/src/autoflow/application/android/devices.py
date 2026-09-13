@@ -25,9 +25,15 @@ class AndroidDeviceService:
         self.continue_task: asyncio.Task[None] | None = None
         self.stopping = False
         self.emit: Emit | None = None
+        self.close_console: Callable[[], Awaitable[None]] | None = None
+        self.takeover_requested = False
         self.preview_slots = asyncio.Semaphore(2)
         self.preview_locks: dict[str, asyncio.Lock] = {}
         self.previews: dict[str, tuple[float, bytes]] = {}
+
+    def context(self, device_id: str) -> "AndroidDeviceService":
+        factory = getattr(self.runtime, "for_device", None)
+        return AndroidDeviceService(self.repository, factory(device_id)) if factory else self
 
     async def environment(self) -> dict[str, Any]:
         return await self.runtime.environment()
@@ -91,7 +97,7 @@ class AndroidDeviceService:
 
     async def command(self, operation: str, args: dict[str, Any], timeout: float) -> bytes:
         async with self.control_lock:
-            if self.stopping or self.device is None or self.device["control"] != "workflow" or self.runtime.window_open() or (self.handoff is not None and not self.continued.is_set()):
+            if self.stopping or self.device is None or self.device["control"] != "workflow" or (self.runtime.window_open() and not getattr(self.runtime, "window_readonly", False)) or (self.handoff is not None and not self.continued.is_set()):
                 raise AndroidError("ANDROID_CONTROL_CONFLICT", "设备当前不允许自动操作")
             async with asyncio.timeout(timeout):
                 return await self.runtime.command(operation, args, timeout)
@@ -198,6 +204,8 @@ class AndroidDeviceService:
                     return
                 self.device["control"] = "closing_manual"
                 self._save()
+                if self.close_console:
+                    await self.close_console()
                 await self.runtime.close_window()
                 if self.stopping:
                     return
@@ -226,6 +234,8 @@ class AndroidDeviceService:
         if self.device is None:
             return
         try:
+            if self.close_console:
+                await self.close_console()
             await self.runtime.disconnect()
             await self.runtime.recover(self.device)
             self.device.update(control="idle", ownerRunId=None, lastError=None)
@@ -267,4 +277,4 @@ class AndroidDeviceService:
 
 def device_view(device: dict[str, Any]) -> dict[str, Any]:
     fields = ("deviceId", "name", "runtimeId", "ownerRunId", "control", "generation", "width", "height", "imageId")
-    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": "13", "architecture": "arm64", "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation")}
+    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": "13", "architecture": "arm64", "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation"), "profileId": device.get("profileId"), "profileName": device.get("profileName", "Android 13 标准 · ARM64"), "instanceType": device.get("instanceType", "persistent"), "locale": device.get("locale", "zh-CN"), "timezone": device.get("timezone", "Asia/Shanghai")}

@@ -185,3 +185,10 @@ class WorkflowDebugCommandRow(Base):
     id: Mapped[str] = mapped_column(String(120), primary_key=True)
     request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class AndroidResourceRow(Base):
+    __tablename__ = 'android_resources'
+    kind: Mapped[str] = mapped_column(String(24), primary_key=True)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)

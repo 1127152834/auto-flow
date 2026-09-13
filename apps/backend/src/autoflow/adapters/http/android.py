@@ -58,6 +58,11 @@ class AndroidDeviceRead(ApiModel):
     data_retained: bool = False
     deleted: bool = False
     operation: AndroidOperation | None = None
+    profile_id: str | None = None
+    profile_name: str = "Android 13 标准 · ARM64"
+    instance_type: str = "persistent"
+    locale: str = "zh-CN"
+    timezone: str = "Asia/Shanghai"
 
 
 class AndroidRename(ApiModel):

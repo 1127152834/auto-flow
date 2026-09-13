@@ -1,31 +1,18 @@
-> 2026-09-13 更正：**superseded / 未通过本轮四图还原验收**。用户重新给出R1–R4并指出实现不一致；下方历史passed只记录旧缩减范围，不能作为原型忠实度通过依据。遗漏等待任务表、数量/临时选项、输入面板和接管侧栏均是本次必须修正的差距，不再归为允许的范围差异。新的完整还原尚未实施，验收为not started。详见 `docs/superpowers/specs/2026-09-13-android-prototype-exact-design.md`。
+# 安卓四图还原设计验收
 
-# Android management design QA
+日期：2026-09-13。状态：confirmed（下列已测范围）；主线集成 pending。此记录替代旧缩减版 QA，不继承旧版 passed。
 
-Date: 2026-09-13. Historical status: **superseded**; earlier passed verdict withdrawn for prototype fidelity. Source: selected prototype images, implemented packaged Mac app, native accessibility interactions and screenshots. Confidence: high for the checked surfaces; this is not a claim of full prototype feature parity or pixel identity.
+四张用户原图为唯一视觉基准；恢复六卡三列看板、等待任务表、三步批量创建、手动输入侧栏和动作边界接管面板。客户端截图只剔除原图的 34px 原生标题栏，没有缩放对齐。生产和开发视觉状态共用组件，发布包不含固定六台设备。
 
-## Reference and evidence
-
-- Selected reference: `reference/redroid-demo/prototypes/2026-09-13/00-resource-board.png` and `02-create-instances.png`.
-- Side-by-side composites: [board](docs/migration/android-management-qa/ui/board-comparison.jpg), [create](docs/migration/android-management-qa/ui/create-comparison.jpg).
-- Actual UI: [detail](docs/migration/android-management-qa/ui/detail.png), [native window](docs/migration/android-management-qa/ui/native.png).
-- Reference aspect ratio about1.407; actual native capture1080×768. Both normalized to1080px width in the same composite and visually inspected together.
-
-## Findings and resolution
-
-| Area | Verified result |
+| 页面 | 同尺寸并排证据 |
 | --- | --- |
-| Hierarchy and composition | Warm canvas, horizontal global navigation, broad resource board with three columns, clay primary action; creation left2/3 form/right1/3 summary and bottom actions. |
-| Typography and spacing | Existing application type tokens retained, card headings and controls made legible; labels, group headings and summary align consistently. |
-| Colors and surfaces | Existing warm gray, off-white, clay and sage tokens reused; fine borders and restrained rounded cards consistent with reference family. |
-| Assets and state | Real Android screenshots at natural aspect ratio; stopped device shows an explicit placeholder. No fictional device content or unsupported success badges. Existing logo and Phosphor icons reused. |
-| Interaction | Create, advanced settings, detail tabs and native handoff checked in packaged Mac app. Session stays active on window close and ends explicitly. Form labels and enabled states visible in accessibility tree. |
-| P2 fixed | Initial create form pushed the startup control below the first screen; resource inputs collapsed into advanced settings. Second pass found sticky footer overlap; section spacing reduced and recaptured. Final startup switch and label are fully above the footer. |
+| 资源看板 | [对比](docs/validation/android-exact-2026-09-13/board-side-by-side.png) |
+| 手动控制台 | [对比](docs/validation/android-exact-2026-09-13/manual-side-by-side.png) |
+| 创建实例 | [对比](docs/validation/android-exact-2026-09-13/create-side-by-side.png) |
+| 工作流接管 | [对比](docs/validation/android-exact-2026-09-13/takeover-side-by-side.png) |
 
-No unresolved P0–P2 visual issues found on these checked surfaces. Smaller windows can scroll; exhaustive viewport/accessibility auditing is not claimed.
+[完整记录](docs/validation/android-exact-2026-09-13/README.md)包括实际图、叠图、差异图和真实 Mac 功能证据。[几何检查](docs/validation/android-exact-2026-09-13/geometry-check.json)中 17 处已测矩形全部满足 4px 主区块／2px 控件阈值。原图生成字体、噪声及抗锯齿仍有差别，不能宣称全像素相同或未测控件全部通过。置信度：高（已测布局与功能）。
 
-## Intentional scope differences
+原先遗漏的控件现在均有正式实现。实际 root 能力按设备结果展示，未将参考图成功徽标用于生产。页面内连续画面和独立 Mac 窗口共享设备控制权；工作流占用时服务端限制人工输入。
 
-The illustration has six fictitious devices, parallel/temporary task queues, quantity input and root badges. This version renders actual registered devices, supports one persistent creation request at a time and serial control, with root explicitly unverified. It omits the unsupported queue and temporary-type controls. The former browser-touch detail prototype is superseded by the user's native-window direction: detail shows read-only frames and opens an independent Mac operation window. Workflows use the existing Studio target picker, not a new allocation wizard. These are functional boundaries, not visual defects hidden by mock data.
-
-The board evidence includes the stopped UI test instance. That test instance was subsequently cleaned up; see `docs/migration/android-management-qa/ui/cleanup.json`.
+最终 Mac 包实测通过 APK 上传、中文、真实触控、应用标签返回画面和结束控制。两设备并发、批量三台、动作边界接管与数据清理见上述记录。性能目标仍有未测项；主线新提交删除旧工作台，与 M5 方案冲突，尚未集成，未宣布整个计划完整交付。

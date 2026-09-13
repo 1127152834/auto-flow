@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.events.workflows import workflow_events_router
 from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.inspection import inspection_router
@@ -22,6 +23,8 @@ from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
 from autoflow.adapters.http.workflow_runs import workflow_runs_router
 from autoflow.adapters.http.workflows import workflows_router
+from autoflow.application.android.console import AndroidConsole
+from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
@@ -47,6 +50,7 @@ from autoflow.domain.profiles.ports import (
 )
 from autoflow.domain.workflows.runs import WorkflowRunLauncher
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
@@ -83,17 +87,18 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.filesystem.workflow_artifacts import artifact_path
-from autoflow.infrastructure.process.android_workflow_worker import (
-    AndroidWorkflowWorker,
-)
 from autoflow.infrastructure.filesystem.workflow_diagnostics import (
     read_workflow_json,
     result_archive,
+)
+from autoflow.infrastructure.process.android_workflow_worker import (
+    AndroidWorkflowWorker,
 )
 from autoflow.infrastructure.process.inspection_worker import InspectionWorkerManager
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
@@ -196,6 +201,12 @@ def create_app(
         read_json=read_workflow_json, archive=result_archive,
     )
 
+    android_resources = AndroidResourceRepository(session_factory)
+    android_fleet = AndroidFleet(android, android_resources, WorkflowService(SqlAlchemyWorkflowRepository(session_factory)), workflow_runs)
+    android_console = AndroidConsole(android, workflow_runs, android_resources, AndroidStream)
+    app.state.android_fleet = android_fleet
+    app.state.android_console = android_console
+
     inspection_workers = InspectionWorkerManager(paths.temp)
     inspection = InspectionService(profile_service, catalog_provider.installed, workflow_kernel_guard,
                                    proxy_runtime.resolve_profile, license_store.read, inspection_workers,
@@ -219,6 +230,8 @@ def create_app(
             *(["workflow_run_active"] if workflow_runs.busy() else []),
             *(["workflow_inspection_active"] if inspection.busy() else []),
             *(["android_management_active"] if android.management.busy() else []),
+            *(["android_console_active"] if android_console.busy() else []),
+            *(["android_queue_active"] if android_fleet.busy() else []),
         ],
         quiesce_gate,
     )
@@ -242,6 +255,8 @@ def create_app(
         try:
             import asyncio
 
+            await android_fleet.shutdown()
+            await android_console.shutdown()
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown(),
                 workflow_runs.shutdown(), inspection.shutdown(), android.management.shutdown()
@@ -257,8 +272,11 @@ def create_app(
                 session_factory.dispose()
 
     app.router.add_event_handler("startup", android.recover)
+    app.router.add_event_handler("startup", android_fleet.start)
+    app.router.add_event_handler("startup", android_console.start)
     app.router.add_event_handler("shutdown", shutdown)
     app.include_router(android_router(android))
+    app.include_router(android_fleet_router(android_fleet, android_console))
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
     app.include_router(
         profiles_router(

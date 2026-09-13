@@ -63,6 +63,7 @@ def png_size(data: bytes) -> tuple[int, int]:
 class MacAndroidRuntime:
     def __init__(self, root: Path, workspace: Path) -> None:
         self.root = root
+        self.workspace = workspace
         self.workspace_id = hashlib.sha256(str(workspace.resolve()).encode()).hexdigest()
         self._lock = ExclusiveFileLock(root / (VM + ".lock"))
         self._locked = False
@@ -72,6 +73,12 @@ class MacAndroidRuntime:
         self.terminal: int | None = None
         self.device: dict[str, Any] | None = None
         self.save: Callable[[], None] = lambda: None
+
+    def for_device(self, device_id: str) -> "MacAndroidRuntime":
+        device_id = str(__import__("uuid").UUID(device_id))
+        runtime = MacAndroidRuntime(self.root, self.workspace)
+        runtime._lock = ExclusiveFileLock(self.root / (VM + "-" + device_id + ".lock"))
+        return runtime
 
     async def environment(self) -> dict[str, Any]:
         supported = platform.system() == "Darwin" and platform.machine() == "arm64"
@@ -94,7 +101,11 @@ class MacAndroidRuntime:
 
     def new_device(self, config: dict[str, Any]) -> dict[str, Any]:
         name = "autoflow-android-" + config["deviceId"]
-        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName", "Android 13 标准 · ARM64"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+
+    async def capacity(self, device: dict[str, Any]) -> None:
+        from autoflow.providers.android.management import capacity
+        await capacity(device)
 
     async def manage(self, device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
         from autoflow.providers.android.management import manage
@@ -225,9 +236,15 @@ class MacAndroidRuntime:
             package = args["packageName"]
             if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+", package):
                 raise AndroidError("ANDROID_PACKAGE_INVALID", "应用包名无效", 422)
-            resolved = (await self._adb("shell", "cmd", "package", "resolve-activity", "--brief", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER", package)).decode().strip().splitlines()
-            component = resolved[-1] if resolved else ""
-            if not re.fullmatch(r"[A-Za-z0-9_.]+/[A-Za-z0-9_.$]+", component):
+            component = ""
+            for attempt in range(3):
+                resolved = (await self._adb("shell", "cmd", "package", "resolve-activity", "--brief", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER", package)).decode().strip().splitlines()
+                component = next((line.strip() for line in reversed(resolved) if re.fullmatch(r"[A-Za-z0-9_.]+/[A-Za-z0-9_.$]+", line.strip())), "")
+                if component:
+                    break
+                if attempt < 2:
+                    await asyncio.sleep(.5)
+            if not component:
                 raise AndroidError("ANDROID_APP_UNAVAILABLE", "应用不存在或没有启动入口", 422)
             argv = ["am", "start", "-W", "-n", component]
         else:
@@ -244,7 +261,33 @@ class MacAndroidRuntime:
         self.save()
         return data
 
-    async def open_window(self, title: str) -> None:
+    async def app_info(self) -> dict[str, Any]:
+        packages = (await self._adb("shell", "pm", "list", "packages", "-3")).decode().splitlines()
+        activity = (await self._adb("shell", "dumpsys", "activity", "activities")).decode()
+        match = re.search(r"(?:mResumedActivity|topResumedActivity)[=:].*? ([A-Za-z][A-Za-z0-9_.]+)/", activity)
+        uid = (await self._adb("shell", "id", "-u")).strip()
+        return {"packages": [line.removeprefix("package:") for line in packages if line.startswith("package:")], "currentPackage": match.group(1) if match else None, "shellRoot": "available" if uid == b"0" else "unavailable", "applicationRoot": "unknown"}
+
+    async def install_apk(self, data: bytes) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory(prefix="autoflow-apk-") as directory:
+            path = Path(directory) / "application.apk"
+            await asyncio.to_thread(path.write_bytes, data)
+            assert self.device is not None
+            remote = "/data/local/tmp/autoflow-apk-" + uuid4().hex + ".apk"
+            await self._adb("push", str(path), remote, timeout=60)
+            marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
+            self.device["pendingCommand"] = marker
+            self.save()
+            script = f"pm install -r {remote}; rc=$?; rm -f {remote}; echo $rc > {marker}; exit $rc"
+            result = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=120)
+            self.device.pop("pendingCommand", None)
+            self.save()
+            if b"Success" not in result:
+                raise AndroidError("ANDROID_INSTALL_FAILED", "Android 未确认 APK 安装成功", 422)
+
+    async def open_window(self, title: str, readonly: bool = False) -> None:
+        self.window_readonly = readonly
         if self.window_open():
             return
         assert self.device is not None
@@ -262,7 +305,7 @@ class MacAndroidRuntime:
         self.device["spawnPending"] = True
         self.save()
         try:
-            self.viewer = subprocess.Popen([str(executable), "--serial", str(self.serial), "--window-title", title, "--no-audio", "--no-clipboard-autosync", "--max-fps=30", "--max-size=1280", "--window-height=720"], stdout=slave, stderr=slave,  # noqa: ASYNC220 -- persist identity before yielding.
+            self.viewer = subprocess.Popen([str(executable), "--serial", str(self.serial), "--window-title", title, "--no-audio", "--no-clipboard-autosync", "--max-fps=30", "--max-size=1280", "--window-height=720", *(["--no-control"] if readonly else [])], stdout=slave, stderr=slave,  # noqa: ASYNC220 -- persist identity before yielding.
                                            env={**os.environ, "ADB": shutil.which("adb") or "adb", "SCRCPY_SERVER_PATH": str(binary.with_name("scrcpy-server")), "SCRCPY_ICON_PATH": str(binary.with_name("icon.png"))})
             self._remember("viewer", self.viewer)
         finally:

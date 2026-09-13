@@ -36,7 +36,7 @@ class SqlAlchemyWorkflowRunRepository:
                 session.add(WorkflowRunRow(
                     id=record.data["runId"], workflow_id=record.data["workflowId"],
                     request_hash=record.request_hash, started_at=record.data["startedAt"],
-                    active_slot=1, payload=deepcopy(record.data),
+                    active_slot=None if record.data.get("target", {}).get("kind") == "android" else 1, payload=deepcopy(record.data),
                 ))
                 session.flush()
                 session.add(WorkflowRunEventRow(run_id=record.data["runId"], seq=1, payload={
@@ -56,12 +56,14 @@ class SqlAlchemyWorkflowRunRepository:
 
     def active_id(self) -> str | None:
         with self._sessions() as session:
-            return session.scalar(select(WorkflowRunRow.id).where(WorkflowRunRow.active_slot == 1))
+            return session.scalar(select(WorkflowRunRow.id).where(WorkflowRunRow.payload["state"].as_string().in_(ACTIVE_RUN_STATES)).order_by(WorkflowRunRow.started_at))
 
-    def list_runs(self, workflow_id: str | None, offset: int, limit: int) -> list[RunRecord]:
+    def list_runs(self, workflow_id: str | None, offset: int, limit: int, device_id: str | None = None) -> list[RunRecord]:
         query = select(WorkflowRunRow)
         if workflow_id is not None:
             query = query.where(WorkflowRunRow.workflow_id == workflow_id)
+        if device_id is not None:
+            query = query.where(WorkflowRunRow.payload["target"]["deviceId"].as_string() == device_id)
         with self._sessions() as session:
             return [_record(row) for row in session.scalars(
                 query.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id.desc()).offset(offset).limit(limit)
@@ -100,8 +102,8 @@ class SqlAlchemyWorkflowRunRepository:
             stored.update(runId=run_id, seq=seq, timestamp=timestamp)
             payload["latestSeq"] = seq
             row.payload = payload
-            row.active_slot = 1 if payload["state"] in ACTIVE_RUN_STATES else None
-            if row.active_slot is None:
+            row.active_slot = 1 if payload["state"] in ACTIVE_RUN_STATES and payload.get("target", {}).get("kind") != "android" else None
+            if payload["state"] not in ACTIVE_RUN_STATES:
                 for command in session.scalars(select(WorkflowDebugCommandRow).where(WorkflowDebugCommandRow.run_id == run_id)):
                     if command.payload['state'] == 'accepted':
                         command.payload = {**command.payload, 'state': 'interrupted'}

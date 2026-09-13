@@ -8,7 +8,9 @@ const root = document.getElementById('root')
 
 if (!root) throw new Error('renderer root element is missing')
 
-createRoot(root).render(
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('androidFixture')) {
+  void import('./domains/android/tests/PrototypePreview').then(({ PrototypePreview }) => createRoot(root).render(<PrototypePreview />))
+} else createRoot(root).render(
   <StrictMode>
     {new URLSearchParams(window.location.search).get('view') === 'automation-studio' ? <StudioApp /> : <App />}
   </StrictMode>,

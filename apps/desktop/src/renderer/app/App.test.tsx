@@ -42,7 +42,7 @@ it('shows the default dashboard with real aggregate data', async () => {
   expect(await screen.findByRole('heading', { name: '总览' })).toBeInTheDocument()
   expect(await screen.findByText('已启用代理')).toBeInTheDocument()
   expect(screen.getByText('6')).toBeInTheDocument()
-  expect(screen.getByText('本地服务正常')).toBeInTheDocument()
+  expect(screen.getByText('本机 · 已连接')).toBeInTheDocument()
 })
 
 it('keeps settings reachable while the sidecar is offline', async () => {
@@ -76,7 +76,7 @@ it('waits for a starting sidecar before checking health', async () => {
   vi.mocked(window.autoflow.getSidecarStatus).mockResolvedValueOnce({ state: 'starting' }).mockResolvedValueOnce(ready())
   vi.stubGlobal('fetch', vi.fn(async (url: string) => Response.json(payload(url))))
   render(<App />)
-  expect(await screen.findByText('本地服务正常')).toBeInTheDocument()
+  expect(await screen.findByText('本机 · 已连接')).toBeInTheDocument()
   expect(window.autoflow.getSidecarStatus).toHaveBeenCalledTimes(2)
 })
 
@@ -84,7 +84,7 @@ it('reconnects after the recovery action without restarting the sidecar', async 
   const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError('network error')).mockImplementation(async (url: string) => Response.json(payload(url)))
   vi.stubGlobal('fetch', fetchMock); render(<App />)
   fireEvent.click(await screen.findByRole('button', { name: '重新连接' }))
-  expect(await screen.findByText('本地服务正常')).toBeInTheDocument()
+  expect(await screen.findByText('本机 · 已连接')).toBeInTheDocument()
   expect(window.autoflow.restartSidecar).not.toHaveBeenCalled()
 })
 

@@ -1,3 +1,5 @@
+> 2026-09-13 更新：confirmed / implemented in isolated branch；P0–P7 已有代码，P8 以最终验收记录为准，未宣称主线完整交付。D1 已确认内嵌与原生共享控制权；M5 已汇合。主线随后删除旧工作台，合入待决。以下是原计划状态，superseded。
+
 # 安卓原型精确还原
 
 日期：2026-09-13；状态：视觉目标confirmed，规格/实施计划proposed，业务实现not started。来源：用户重新附四图并明确要求一模一样，先写规格和实施计划。

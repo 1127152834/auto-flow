@@ -1,0 +1,151 @@
+{
+  "startedAt": "2026-09-13T14:48:42",
+  "checks": [
+    {
+      "name": "batch_ids",
+      "result": [
+        "a8894341-0840-42d6-a593-32693e0daac1",
+        "203deb78-789d-4f86-85ad-ff040fe15cca",
+        "a23f7db4-7628-4db5-bb64-eb2907606279"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "waiting_create",
+        "waiting_create",
+        "waiting_create"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "creating",
+        "waiting_create",
+        "waiting_create"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "starting",
+        "waiting_create",
+        "waiting_create"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "succeeded",
+        "creating",
+        "waiting_create"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "succeeded",
+        "starting",
+        "waiting_create"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "succeeded",
+        "succeeded",
+        "creating"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "succeeded",
+        "succeeded",
+        "starting"
+      ]
+    },
+    {
+      "name": "batch_progress",
+      "result": [
+        "succeeded",
+        "succeeded",
+        "succeeded"
+      ]
+    },
+    {
+      "name": "three_instances_ready_independent_volumes",
+      "result": true
+    },
+    {
+      "name": "locale_applied",
+      "result": true
+    },
+    {
+      "name": "two_real_devices_simultaneous_control",
+      "result": [
+        "712d4b74-1b30-4f02-b211-58abcde8ebdb",
+        "ade22811-e34d-47ce-a3a2-859bcdcc6852"
+      ]
+    },
+    {
+      "name": "same_device_conflict",
+      "result": 409
+    },
+    {
+      "name": "apk_install_launch",
+      "result": {
+        "packages": [
+          "io.appium.android.apis"
+        ],
+        "currentPackage": null,
+        "shellRoot": "unavailable",
+        "applicationRoot": "unknown"
+      }
+    },
+    {
+      "name": "touch_and_chinese_input",
+      "result": true
+    },
+    {
+      "name": "long_press_menu",
+      "result": false
+    },
+    {
+      "name": "old_input_rejected",
+      "result": true
+    },
+    {
+      "name": "native_window_open",
+      "result": true
+    },
+    {
+      "name": "shared_native_embedded_lease",
+      "result": true
+    },
+    {
+      "name": "two_real_workflow_workers_concurrent",
+      "result": true
+    },
+    {
+      "name": "two_workflows_completed_once",
+      "result": true
+    },
+    {
+      "name": "persistent_data_retained_after_stop_start",
+      "result": true
+    },
+    {
+      "name": "completed",
+      "result": true
+    },
+    {
+      "name": "restored_existing_demo_containers",
+      "result": [
+        "afd-5a7beadf6de2468d",
+        "afd-635e8a215e194178",
+        "afd-ef3857a550924052"
+      ]
+    }
+  ]
+}

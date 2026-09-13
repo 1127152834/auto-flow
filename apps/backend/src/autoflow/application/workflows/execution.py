@@ -29,10 +29,11 @@ class WorkflowExecution:
     def __init__(self, variables: dict[str, Any], emit: Callable[[dict[str, Any]], None],
                  action: Callable[[dict[str, Any], dict[str, Any], float], Awaitable[dict[str, Any] | None]],
                  page_condition: Callable[[dict[str, Any], float], Awaitable[bool]],
-                 error_of: Callable[[Exception, str], dict[str, Any]], debug: WorkflowDebug | None = None) -> None:
+                 error_of: Callable[[Exception, str], dict[str, Any]], debug: WorkflowDebug | None = None, boundary: Callable[[str], Awaitable[None]] | None = None) -> None:
         self.variables, self.emit = variables, emit
         self.action, self.page_condition, self.error_of = action, page_condition, error_of
         self.debug = debug
+        self.boundary = boundary
         self.count = 0
         self.nodes: dict[str, dict[str, Any]] = {}
 
@@ -45,6 +46,8 @@ class WorkflowExecution:
         self.emit({'type': 'ready', 'message': ready_message})
         try:
             await self._sequence(plan, [])
+            if self.boundary:
+                await self.boundary(plan[-1]["nodeId"])
         except _ExecutionFailed as error:
             if self.debug and self.debug.failure is None:
                 self.debug.identity = {'nodeId': error.error.get('nodeId'), 'loopPath': []}
@@ -64,6 +67,8 @@ class WorkflowExecution:
                 self.emit({'type': 'log', 'level': 'error', 'nodeId': node_id, 'message': error['message'], 'error': error, 'loopPath': deepcopy(path)})
                 raise _ExecutionFailed(error) from None
         identity = {'nodeId': node_id, 'executionId': uuid4().hex, 'loopPath': deepcopy(path)}
+        if self.boundary:
+            await self.boundary(node_id)
         if self.debug:
             await self.debug.before(identity)
         self.count += 1

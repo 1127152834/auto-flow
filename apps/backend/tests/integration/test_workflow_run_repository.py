@@ -39,7 +39,7 @@ def test_m2_migration_upgrades_m1_and_keeps_existing_workflow(tmp_path):
     migrate_database(database)
     with factory() as session:
         assert session.execute(text("SELECT name FROM workflow_documents")).scalar() == "kept"
-        assert session.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0009_merge_android_m5"
+        assert session.execute(text("SELECT version_num FROM alembic_version")).scalar() == "0010_android_fleet"
     assert {"workflow_runs", "workflow_run_events"} <= set(inspect(factory.kw["bind"]).get_table_names())
     factory.dispose()
 

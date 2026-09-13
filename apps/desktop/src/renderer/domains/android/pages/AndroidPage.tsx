@@ -1,119 +1,555 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { useApi } from '../../../app/ApiProvider'
-import { androidApi } from '../api'
-import { DeviceCard, type DeviceAction } from '../components/DeviceControls'
-import { Plus, GearSix, MagnifyingGlass, SquaresFour, ListBullets, ArrowClockwise, Info } from '@phosphor-icons/react'
-import { ApiClientError } from '../../../shared/api/client'
-import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select'
+import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
+import { fleetApi, type ConsoleSession, type Profile, type DeviceRun, type AllocationRequest } from '../fleet-api'
+import { createWorkflowApi } from '../../workflows/api'
+import { ResourceBoard } from '../components/ResourceBoard'
+import { CreateInstances } from '../components/CreateInstances'
+import { DeviceConsole } from '../components/DeviceConsole'
+import { Action } from '../components/PrototypeControls'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
-import { CreateDeviceForm } from '../components/CreateDeviceForm'
-import { DeviceDetails } from '../components/DeviceDetails'
-import { groups, deviceGroup } from '../model'
-import { RunPanel } from '../../workflows/components/RunPanel'
-import { Button } from '../../../shared/components/ui/button'
-import { useWorkflowRun } from '../../workflows/hooks/useWorkflowRun'
-import { createWorkflowRunApi } from '../../workflows/run-api'
-import { ManualHandoffPanel } from '../../workflows/components/ManualHandoffPanel'
-import { runStateLabel } from '../../workflows/run-types'
-import type { AndroidDevice, DeviceCommand } from '../api'
-import type { WorkflowContent } from '../../workflows/types'
+import '../android.css'
 
 export function AndroidPage({ connected = true }: { connected?: boolean }) {
-  const { client, instanceId } = useApi()
-  const api = useMemo(() => androidApi(client), [client])
-  const runApi = useMemo(() => createWorkflowRunApi(client), [client])
-  const run = useWorkflowRun(runApi, connected)
-  const intent = useRef<{ workflowId: string; requestId: string } | null>(null)
-  const [openError, setOpenError] = useState('')
-  const [view, setView] = useState<'board' | 'list'>('board')
-  const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState('')
-  const [creating, setCreating] = useState<{ source?: AndroidDevice } | null>(null)
-  const [detailId, setDetailId] = useState<string | null>(null)
-  const [environmentOpen, setEnvironmentOpen] = useState(false)
-  const [confirmation, setConfirmation] = useState<{ device: AndroidDevice; action: DeviceAction } | null>(null)
-  const [deleteData, setDeleteData] = useState(false)
-  const [name, setName] = useState('')
-  const pendingOperation = useRef<DeviceCommand | null>(null)
-  const [mutating, setMutating] = useState(false)
-  const active = run.active
-  const standalone = active?.document.nodes.length === 1 && active.document.nodes[0].id === 'device-manual'
-  // Only an explicit click creates this intent. Reconnecting/remounting never opens a window.
+  const { client, instanceId } = useApi(),
+    api = useMemo(() => androidApi(client), [client]),
+    fleet = useMemo(() => fleetApi(client), [client]),
+    workflows = useMemo(() => createWorkflowApi(client), [client])
+  const [page, setPage] = useState<'board' | 'create' | 'detail'>('board'),
+    [selected, setSelected] = useState<string | null>(null),
+    [source, setSource] = useState<AndroidDevice>()
+  const [session, setSession] = useState<ConsoleSession | null>(null),
+    [error, setError] = useState(''),
+    [busy, setBusy] = useState(false)
+  const [profilesOpen, setProfilesOpen] = useState(false),
+    [profileDraft, setProfileDraft] = useState<Profile | null>(null),
+    [allocateOpen, setAllocateOpen] = useState(false)
+  const [allocation, setAllocation] = useState<AllocationRequest | null>(null),
+    [management, setManagement] = useState<{ device: AndroidDevice; action: string } | null>(null),
+    [name, setName] = useState(''),
+    [deleteData, setDeleteData] = useState(false)
+  const [allocationInputs, setAllocationInputs] = useState<Record<string, string>>({})
+  const allocationWorkflow = useQuery({
+    queryKey: ['android', instanceId, 'allocation-workflow', allocation?.workflowId],
+    queryFn: () => workflows.get(allocation!.workflowId),
+    enabled: Boolean(connected && allocateOpen && allocation?.workflowId),
+  })
+  const [historyPage, setHistoryPage] = useState(0)
+  const detailHistory = useQuery({
+    queryKey: ['android', instanceId, 'device-history-page', selected, historyPage],
+    queryFn: () => fleet.history(selected!, historyPage * 50),
+    enabled: Boolean(connected && selected && page === 'detail'),
+    refetchInterval: 3000,
+  })
+  const pendingManagement = useRef<DeviceCommand | null>(null),
+    pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null)
+  const devices = useQuery({
+    queryKey: ['android', instanceId, 'devices'],
+    queryFn: api.devices,
+    enabled: connected,
+    refetchInterval: 3000,
+  })
+  const environment = useQuery({
+    queryKey: ['android', instanceId, 'environment'],
+    queryFn: api.environment,
+    enabled: connected,
+    refetchInterval: 15000,
+  })
+  const profiles = useQuery({
+    queryKey: ['android', instanceId, 'profiles'],
+    queryFn: fleet.profiles,
+    enabled: connected,
+  })
+  const batches = useQuery({
+    queryKey: ['android', instanceId, 'batches'],
+    queryFn: fleet.batches,
+    enabled: connected,
+    refetchInterval: 3000,
+  })
+  const allocations = useQuery({
+    queryKey: ['android', instanceId, 'allocations'],
+    queryFn: fleet.allocations,
+    enabled: connected,
+    refetchInterval: 3000,
+  })
+  const workflowList = useQuery({
+    queryKey: ['android', instanceId, 'workflows'],
+    queryFn: workflows.list,
+    enabled: connected && allocateOpen,
+  })
+  const sessionStatus = useQuery({
+    queryKey: ['android', instanceId, 'session', session?.id],
+    queryFn: () => fleet.readSession(session!.id),
+    enabled: Boolean(connected && session && session.state !== 'closed'),
+    refetchInterval: 5000,
+  })
   useEffect(() => {
-    const pending = intent.current
-    if (!connected || !pending || !active || active.workflowId !== pending.workflowId || active.state !== 'waiting_manual' || !active.handoff) return
-    intent.current = null
-    let current = true
-    void runApi.handoff(active.runId, active.handoff.handoffId, 'open', pending.requestId).catch(error => {
-      if (current) setOpenError(error instanceof Error ? error.message : '打开结果未知，请检查会话状态')
+    if (sessionStatus.data)
+      setSession((previous) =>
+        previous &&
+        (previous.id !== sessionStatus.data.id ||
+          previous.generation > sessionStatus.data.generation ||
+          (previous.state === 'closed' && sessionStatus.data.state !== 'closed'))
+          ? previous
+          : sessionStatus.data,
+      )
+  }, [sessionStatus.data])
+  const all = devices.data ?? [],
+    device = all.find((d) => d.deviceId === selected)
+  const histories = useQueries({
+    queries: all.map((d) => ({
+      queryKey: ['android', instanceId, 'history', d.deviceId],
+      queryFn: () => fleet.history(d.deviceId),
+      enabled: connected,
+      refetchInterval: 3000,
+    })),
+  })
+  const historyMap = Object.fromEntries(all.map((d, i) => [d.deviceId, histories[i]?.data ?? []])) as Record<
+    string,
+    DeviceRun[]
+  >
+  const runs = Object.fromEntries(
+    all.map((d) => [
+      d.deviceId,
+      historyMap[d.deviceId]?.find((r) => !['succeeded', 'failed', 'stopped', 'interrupted'].includes(r.state)),
+    ]),
+  )
+  const apps = useQuery({
+    queryKey: ['android', instanceId, 'apps', session?.id, session?.generation],
+    queryFn: () => fleet.apps(session!.id),
+    enabled: Boolean(connected && session && session.state !== 'closed'),
+    refetchInterval: 10000,
+  })
+  const refresh = () => {
+    void devices.refetch()
+    void batches.refetch()
+    void allocations.refetch()
+    void apps.refetch()
+    histories.forEach((h) => {
+      void h.refetch()
     })
-    return () => { current = false }
-  }, [active, connected, runApi])
-  const open = async (device: AndroidDevice) => {
-    setOpenError('')
-    const workflowId = crypto.randomUUID()
-    intent.current = { workflowId, requestId: crypto.randomUUID() }
-    const content: WorkflowContent = {
-      document: { id: workflowId, schemaVersion: 1, name: `手动操作 · ${device.name}`, variables: [], edges: [], nodes: [{ id: 'device-manual', type: 'android_manual', label: '设备页手动操作', config: { prompt: '在原生窗口操作，完成后点击“结束操作”释放设备。会话最长 60 分钟。', timeoutSeconds: 3600 } }] },
-      layout: { nodes: { 'device-manual': { x: 120, y: 100 } }, viewport: { x: 0, y: 0, zoom: 1 } },
-    }
-    await run.start(content, { kind: 'android', deviceId: device.deviceId })
   }
-  const environment = useQuery({ queryKey: ['android', instanceId, 'environment'], queryFn: api.environment, enabled: connected, refetchInterval: 10000 })
-  const devices = useQuery({ queryKey: ['android', instanceId, 'devices'], queryFn: api.devices, enabled: connected, refetchInterval: 3000 })
-  const all = (devices.data ?? []).map(device => devices.isError ? { ...device, androidStatus: 'unknown', lastError: '无法核实当前设备状态' } : device)
-  const selected = all.find(device => device.deviceId === detailId)
-  const blocked = !connected || run.busy || run.uncertain || Boolean(active) || mutating || devices.isError || environment.isError || !environment.data?.available || all.some(d => d.control === 'managing')
-  const refresh = () => { void devices.refetch(); void environment.refetch(); void run.refresh() }
-  const action = (device: AndroidDevice, value: DeviceAction) => {
-    if (value === 'copy') { setCreating({ source: device }); return }
-    pendingOperation.current = null
-    setOpenError(''); setDeleteData(false); setName(device.name); setConfirmation({ device, action: value })
-  }
-  const confirm = async () => {
-    if (!confirmation || mutating) return
-    setMutating(true); setOpenError('')
+  const perform = async (fn: () => Promise<unknown>) => {
+    if (busy) return
+    setBusy(true)
+    setError('')
     try {
-      if (confirmation.action === 'rename') await api.rename(confirmation.device.deviceId, name.trim())
-      else if (confirmation.action !== 'copy') {
-        pendingOperation.current ??= { requestId: crypto.randomUUID(), action: confirmation.action, deleteData }
-        await api.operate(confirmation.device.deviceId, pendingOperation.current)
-      }
-      setConfirmation(null); refresh()
+      await fn()
+      refresh()
     } catch (e) {
-      if (e instanceof ApiClientError && e.status < 500) pendingOperation.current = null
-      setOpenError(pendingOperation.current ? '操作结果尚未确认，请按原编号重试或刷新状态核实。' : e instanceof Error ? e.message : '操作未完成')
+      setError(e instanceof Error ? e.message : '结果尚未确认，请刷新核实')
+    } finally {
+      setBusy(false)
     }
-    finally { setMutating(false) }
   }
-  const studio = async () => {
-    try {
-      if (!window.autoflow?.openAutomationStudio) throw new Error('请从 AutoFlow 桌面应用打开工作流工作台')
+  const open = async (d: AndroidDevice) => {
+    if (selected !== d.deviceId) setHistoryPage(0)
+    setSelected(d.deviceId)
+    setPage('detail')
+    if (session?.deviceId === d.deviceId && session.state !== 'closed') {
+      await sessionStatus.refetch()
+      return
+    }
+    if (d.androidStatus !== 'ready') return
+    await perform(async () => {
+      if (session && session.state !== 'closed') await fleet.action(session, 'end')
+      if (pendingOpen.current?.deviceId !== d.deviceId)
+        pendingOpen.current = { deviceId: d.deviceId, requestId: crypto.randomUUID() }
+      const next = await fleet.session(
+        d.deviceId,
+        d.ownerRunId || d.control !== 'idle' ? 'readonly' : 'manual',
+        pendingOpen.current.requestId,
+      )
+      setSession(next)
+      pendingOpen.current = null
+    })
+  }
+  const onSession = useCallback((s: ConsoleSession) => {
+    setSession(s)
+  }, [])
+  const manage = (d: AndroidDevice, action: string) => {
+    if (action === 'copy') {
+      setSource(d)
+      setPage('create')
+      return
+    }
+    setError('')
+    setManagement({ device: d, action })
+    setName(d.name)
+    setDeleteData(false)
+    pendingManagement.current = null
+  }
+  const confirmManage = async () => {
+    if (!management) return
+    await perform(async () => {
+      if (management.action === 'rename') await api.rename(management.device.deviceId, name)
+      else {
+        pendingManagement.current ??= {
+          requestId: crypto.randomUUID(),
+          action: management.action as DeviceCommand['action'],
+          deleteData,
+        }
+        await api.operate(management.device.deviceId, pendingManagement.current)
+      }
+      setManagement(null)
+    })
+  }
+  const allocate = (d?: AndroidDevice) => {
+    setAllocationInputs({})
+    setAllocation({
+      requestId: crypto.randomUUID(),
+      workflowId: '',
+      profileId: d?.profileId ?? profiles.data?.[0]?.id ?? '',
+      mode: d ? 'specified' : 'automatic',
+      deviceId: d?.deviceId ?? null,
+      values: {},
+    })
+    setAllocateOpen(true)
+  }
+  const studio = () => {
+    void perform(async () => {
+      if (!window.autoflow?.openAutomationStudio) throw new Error('请使用 AutoFlow 桌面应用打开工作流工作台')
       await window.autoflow.openAutomationStudio()
-    } catch (e) { setOpenError(e instanceof Error ? e.message : '工作台打开失败') }
+    })
   }
-  const manual = active?.target.kind === 'android' && active.handoff ? <ManualHandoffPanel key={`${active.runId}:${active.handoff.handoffId}`} run={active} api={runApi} connected={connected} standalone={standalone} onRefresh={refresh} onStop={() => void run.stop()} /> : active?.target.kind === 'android' ? <Button disabled={run.busy || !connected} onClick={() => void run.stop()}>停止并清理</Button> : null
-  const visible = all.filter(d => d.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) && (!filter || deviceGroup(d) === filter))
-  const card = (device: AndroidDevice) => <DeviceCard key={device.deviceId} device={device} api={api} previewEnabled={connected && !devices.isError} onOpen={() => void open(device)} onDetail={() => setDetailId(device.deviceId)} onAction={value => action(device, value)} disabled={blocked} />
-  const history = <RunPanel run={run.run?.target.kind === 'android' && run.run.target.deviceId === detailId ? run.run : null} events={run.events ?? []} history={(run.history ?? []).filter(item => item.target.kind === 'android' && item.target.deviceId === detailId)} nextOffset={run.nextOffset ?? null} sameDocument connected={connected} message={run.message} api={runApi} onSelect={id => run.select(id)} onLocate={() => {}} onMore={() => void run.more()} />
-  return <main className="mx-auto max-w-[1600px] px-8 py-7">
-    {(environment.error || devices.error) && <p role="alert" className="mb-4 rounded-control border border-red-200 bg-red-50 p-3 text-sm text-red-700">无法核实设备状态，请检查本机服务后刷新。</p>}
-    {(run.message || openError) && !confirmation && <p role="alert" className="mb-4 text-sm text-red-700">{openError || run.message}</p>}
-    {run.canRetryStart && <Button onClick={() => void run.retryStart()} disabled={run.busy}>按原编号重试启动</Button>}
-    {creating && environment.data ? <CreateDeviceForm environment={environment.data} source={creating.source} api={api} onCancel={() => setCreating(null)} disabled={blocked} onCreated={() => { setCreating(null); setDetailId(null); refresh() }} /> : selected ? <DeviceDetails device={selected} api={api} disabled={blocked} connected={connected} onBack={() => setDetailId(null)} onOpen={() => void open(selected)} onStudio={() => void studio()} history={history}>{active?.target.kind === 'android' && active.target.deviceId === selected.deviceId ? manual : null}</DeviceDetails> : <>
-      <header className="mb-6 flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-2xl font-semibold">安卓模拟器</h1><p className="mt-2 text-sm text-muted">管理独立设备，为工作流分配运行环境。</p></div><div className="flex gap-3"><Button onClick={() => setEnvironmentOpen(true)}><GearSix size={18} />运行环境</Button><Button variant="primary" disabled={blocked} onClick={() => setCreating({})}><Plus size={18} />创建实例</Button></div></header>
-      <div className="mb-3 flex items-center justify-between gap-3 text-xs text-muted"><p role="status">{environment.data?.message ?? '正在检查运行环境…'}</p><Button variant="ghost" className="h-8 text-xs" disabled={!connected || devices.isFetching} onClick={refresh}><ArrowClockwise size={14} />刷新状态</Button></div>
-      {active && <p role="status" className="mb-4 rounded-control border border-line bg-surface p-3 text-sm">{active.targetName} · {runStateLabel[active.state]}{active.target.kind !== 'android' ? '，请先结束当前工作流，再操作安卓设备。' : ''}</p>}
-      {!active && run.run?.document.nodes[0]?.id === 'device-manual' && run.run.error && <p role="alert" className="mb-3 text-sm text-red-700">{run.run.error.message}</p>}
-      <div className="rounded-card border border-line bg-surface/60 p-2"><div className="flex flex-wrap items-center gap-3 px-1 pb-3 pt-1"><div className="flex gap-1 rounded-control border border-line bg-surface p-1" role="group" aria-label="显示方式"><Button className="h-8 px-3 text-xs" variant={view === 'list' ? 'primary' : 'ghost'} aria-pressed={view === 'list'} onClick={() => setView('list')}><ListBullets size={15} />实例列表</Button><Button className="h-8 px-3 text-xs" variant={view === 'board' ? 'primary' : 'ghost'} aria-pressed={view === 'board'} onClick={() => setView('board')}><SquaresFour size={15} />资源看板</Button></div><span className="text-xs text-muted">{all.length} 台设备 · {all.filter(d => deviceGroup(d) === '可分配').length} 台可分配</span><div className="ml-auto flex flex-wrap gap-2"><div className="relative"><MagnifyingGlass size={16} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input aria-label="搜索设备" placeholder="搜索实例名称" className="w-48 pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Select aria-label="筛选设备状态" value={filter} onChange={e => setFilter(e.target.value)}><option value="">全部状态</option>{groups.map(g => <option key={g}>{g}</option>)}</Select></div></div>
-        {devices.isPending ? <p role="status" className="p-8 text-sm text-muted">正在读取设备…</p> : !all.length ? <div className="rounded-control border border-dashed border-line px-8 py-16 text-center"><h2 className="font-semibold">创建第一台安卓实例</h2><p className="mt-2 text-sm text-muted">每台设备独立保存应用和数据，支持原生窗口与工作流操作。</p><Button className="mt-5" variant="primary" disabled={blocked} onClick={() => setCreating({})}><Plus size={16} />创建实例</Button></div> : view === 'board' ? <div className="grid gap-2 xl:grid-cols-3">{groups.map((group, index) => <section key={group} className="min-w-0 rounded-control border border-line bg-surface-subtle/60 p-3" aria-label={group}><h2 className="mb-4 flex items-center gap-2 text-sm font-semibold"><span className={`h-2.5 w-2.5 rounded-full ${index === 0 ? 'bg-sage' : index === 1 ? 'bg-clay' : 'bg-muted'}`} />{group}<span className="rounded bg-surface px-1.5 text-xs">{visible.filter(d => deviceGroup(d) === group).length}</span></h2><div className="space-y-3">{visible.filter(d => deviceGroup(d) === group).map(card)}{!visible.some(d => deviceGroup(d) === group) && <p className="py-16 text-center text-xs text-muted">暂无{group}设备</p>}</div></section>)}</div> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{visible.map(card)}</div>}
+  return (
+    <>
+      <div
+        className="ad-page"
+        style={{
+          display: error && !management && !profilesOpen && !allocateOpen ? 'block' : 'none',
+          minHeight: 0,
+          paddingBottom: 0,
+        }}
+      >
+        <p role="alert" className="ad-error">
+          {error}
+        </p>
       </div>
-      {(search || filter) && <p className="mt-3 text-xs text-muted">匹配 {visible.length} / {all.length} 台设备</p>}
-      <section className="mt-5 rounded-card border border-line bg-surface p-5"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-sm font-semibold">工作流与设备</h2><Button className="h-8 text-xs" variant="ghost" onClick={() => void studio()}>打开工作流工作台 →</Button></div><p className="mt-3 flex items-start gap-2 text-xs text-muted"><Info size={16} className="shrink-0" />在工作台中选择安卓设备。执行期间独占设备；到达人工处理节点后可打开原生窗口，结束运行后保留数据。</p>{manual && <div className="mt-4">{manual}</div>}</section>
-    </>}
-    <Dialog open={environmentOpen} onOpenChange={setEnvironmentOpen}><DialogContent><DialogTitle>Mac 安卓运行环境</DialogTitle><DialogDescription>{environment.data?.message ?? '正在检查运行环境'}</DialogDescription><dl className="space-y-3 text-sm"><div>环境：{environment.data?.runtimeId ?? '—'}</div><div>CPU：{environment.data?.cpuCount ?? '—'} · 内存：{environment.data?.memoryMb ?? '—'} MiB</div><div>已缓存系统：{environment.data?.images?.map(item => item.name).join('、') || '未找到兼容镜像'}</div></dl><p className="text-xs text-muted">当前使用 Lima 中的 Docker Engine。设备管理继续按串行执行，原生窗口由本机服务维护。</p><div className="flex justify-end gap-2"><Button onClick={refresh}>重新检查</Button><Button onClick={() => setEnvironmentOpen(false)}>关闭</Button></div></DialogContent></Dialog>
-    <Dialog open={Boolean(confirmation)} busy={mutating} onOpenChange={value => { if (!value) { setConfirmation(null); setOpenError('') } }}><DialogContent><DialogTitle>{confirmation?.action === 'delete' ? '删除实例' : confirmation?.action === 'rename' ? '重命名实例' : confirmation?.action === 'stop' ? '停止设备' : confirmation?.action === 'restart' ? '重启设备' : confirmation?.action === 'recover' ? '核实设备状态' : '启动设备'}</DialogTitle><DialogDescription>{confirmation?.device.name} · {confirmation?.action === 'delete' ? '仅操作此实例及其独立数据，其他设备不受影响。' : '设备操作进度和结果会显示在卡片中。'}</DialogDescription>{confirmation?.action === 'delete' ? <><label className="flex items-start gap-3 rounded-control border border-line p-4 text-sm"><input type="checkbox" disabled={mutating || Boolean(pendingOperation.current)} checked={deleteData} onChange={e => setDeleteData(e.target.checked)} className="mt-1 accent-clay" />同时永久删除应用和数据</label><p className="text-sm text-muted">{deleteData ? '容器和独立数据卷都会删除，此操作无法恢复。' : '移除运行环境，保留数据和登记记录；之后可以恢复实例。'}</p></> : confirmation?.action === 'rename' ? <Input aria-label="新的实例名称" maxLength={80} value={name} onChange={e => setName(e.target.value)} /> : <p className="text-sm text-muted">{confirmation?.action === 'recover' ? '只核实上一操作是否结束及当前资源状态，不自动重放失败命令。' : '应用和数据会保留。请等待操作结果后再打开设备。'}</p>}{openError && <p role="alert" className="text-sm text-red-700">{openError}</p>}<div className="flex justify-end gap-2"><Button disabled={mutating} onClick={() => setConfirmation(null)}>取消</Button><Button variant={confirmation?.action === 'delete' && deleteData ? 'danger' : 'primary'} disabled={mutating || confirmation?.action === 'rename' && !name.trim()} onClick={() => void confirm()}>{mutating ? '正在提交…' : openError && pendingOperation.current ? '按原编号重试' : confirmation?.action === 'delete' ? deleteData ? '删除实例和数据' : '移除实例并保留数据' : '确认操作'}</Button></div></DialogContent></Dialog>
-  </main>
+      {devices.isError && <div className="ad-error">设备状态无法核实，请检查本机服务。</div>}
+      {page === 'create' ? (
+        <CreateInstances
+          profiles={profiles.data ?? []}
+          environment={environment.data}
+          source={source}
+          onBack={() => setPage('board')}
+          onProfiles={() => setProfilesOpen(true)}
+          onSubmit={async (body) => {
+            await fleet.batch(body)
+            setPage('board')
+            refresh()
+          }}
+        />
+      ) : page === 'detail' && device ? (
+        <DeviceConsole
+          device={device}
+          session={session?.deviceId === device.deviceId ? session : null}
+          api={fleet}
+          deviceApi={api}
+          run={runs[device.deviceId]}
+          history={detailHistory.data ?? historyMap[device.deviceId]}
+          historyPage={historyPage}
+          onHistoryPage={setHistoryPage}
+          apps={apps.data}
+          onBack={() => setPage('board')}
+          onSession={onSession}
+          onOpen={() => void open(device)}
+          onManage={(action) => manage(device, action)}
+          onAllocate={() => allocate(device)}
+          onRefresh={refresh}
+        />
+      ) : (
+        <ResourceBoard
+          devices={all}
+          profiles={profiles.data ?? []}
+          allocations={allocations.data ?? []}
+          batches={batches.data ?? []}
+          runs={runs}
+          api={api}
+          onCreate={() => {
+            setSource(undefined)
+            setPage('create')
+          }}
+          onProfiles={() => setProfilesOpen(true)}
+          onOpen={(d) => void open(d)}
+          onAllocate={allocate}
+          onManage={manage}
+          onRuns={studio}
+          onBatch={(id, action) => void perform(() => fleet.batchAction(id, action))}
+          onCancelAllocation={(id) => void perform(() => fleet.cancelAllocation(id))}
+        />
+      )}
+      <Dialog
+        open={Boolean(management)}
+        onOpenChange={(v) => {
+          if (!v) setManagement(null)
+        }}
+        busy={busy}
+      >
+        <DialogContent>
+          <DialogTitle>
+            {
+              (
+                {
+                  rename: '重命名实例',
+                  start: '启动设备',
+                  stop: '停止设备',
+                  restart: '重启设备',
+                  recover: '核实状态',
+                  delete: '删除实例',
+                } as Record<string, string>
+              )[management?.action ?? '']
+            }
+          </DialogTitle>
+          <DialogDescription>{management?.device.name} · 操作进度将在资源看板中显示。</DialogDescription>
+          <div className="ad-page" style={{ minHeight: 0, padding: 0 }}>
+            {management?.action === 'rename' && (
+              <input aria-label="新的实例名称" value={name} onChange={(e) => setName(e.target.value)} />
+            )}
+            {management?.action === 'delete' && (
+              <label>
+                <input
+                  type="checkbox"
+                  disabled={Boolean(pendingManagement.current)}
+                  checked={deleteData}
+                  onChange={(e) => setDeleteData(e.target.checked)}
+                />
+                同时永久删除此实例的应用和数据
+              </label>
+            )}
+            {error && (
+              <p role="alert" className="ad-error">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-3 mt-5">
+              <Action disabled={busy} onClick={() => setManagement(null)}>
+                取消
+              </Action>
+              <Action primary disabled={busy} onClick={() => void confirmManage()}>
+                {busy ? '正在提交…' : '确认操作'}
+              </Action>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={profilesOpen} onOpenChange={setProfilesOpen} busy={busy}>
+        <DialogContent>
+          <DialogTitle>环境配置</DialogTitle>
+          <DialogDescription>为创建实例保存系统、资源、语言和时区配置。</DialogDescription>
+          <div className="ad-page ad-profile-editor" style={{ minHeight: 0, padding: 0 }}>
+            {profileDraft ? (
+              <>
+                <label>
+                  配置名称
+                  <input
+                    value={profileDraft.name}
+                    onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })}
+                  />
+                </label>
+                {(['cpu', 'memoryMb', 'dpi'] as const).map((key) => (
+                  <label key={key}>
+                    {{ cpu: 'CPU 核数', memoryMb: '内存 MB', dpi: '显示密度' }[key]}
+                    <input
+                      type="number"
+                      value={profileDraft[key]}
+                      onChange={(e) => setProfileDraft({ ...profileDraft, [key]: Number(e.target.value) })}
+                    />
+                  </label>
+                ))}
+                <label>
+                  语言
+                  <select
+                    value={profileDraft.locale}
+                    onChange={(e) => setProfileDraft({ ...profileDraft, locale: e.target.value })}
+                  >
+                    <option value="zh-CN">简体中文</option>
+                    <option value="en-US">English</option>
+                  </select>
+                </label>
+                <label>
+                  时区
+                  <input
+                    value={profileDraft.timezone}
+                    onChange={(e) => setProfileDraft({ ...profileDraft, timezone: e.target.value })}
+                  />
+                </label>
+                <Action
+                  primary
+                  onClick={() =>
+                    void perform(async () => {
+                      await fleet.saveProfile(profileDraft)
+                      await profiles.refetch()
+                      setProfileDraft(null)
+                    })
+                  }
+                >
+                  保存配置
+                </Action>
+                <Action onClick={() => setProfileDraft(null)}>返回</Action>
+              </>
+            ) : (
+              <>
+                {profiles.data?.map((profile) => (
+                  <div className="ad-profile-row" key={profile.id}>
+                    <span>{profile.name}</span>
+                    <Action onClick={() => setProfileDraft(profile)}>编辑</Action>
+                    <Action
+                      onClick={() =>
+                        setProfileDraft({
+                          ...profile,
+                          id: crypto.randomUUID(),
+                          name: `${profile.name} 副本`,
+                          revision: 0,
+                        })
+                      }
+                    >
+                      复制
+                    </Action>
+                  </div>
+                ))}
+                {!profiles.data?.length && <p>{environment.data?.message ?? '正在检查运行环境…'}</p>}
+                <Action
+                  onClick={() => {
+                    void profiles.refetch()
+                    void environment.refetch()
+                  }}
+                >
+                  重新检查
+                </Action>
+              </>
+            )}
+            {error && (
+              <p role="alert" className="ad-error">
+                {error}
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={allocateOpen} onOpenChange={setAllocateOpen} busy={busy}>
+        <DialogContent>
+          <DialogTitle>分配给工作流</DialogTitle>
+          <DialogDescription>工作流执行期间独占设备；失败或中断时保留设备检查。</DialogDescription>
+          {allocation && (
+            <div className="ad-page ad-profile-editor" style={{ minHeight: 0, padding: 0 }}>
+              <label>
+                工作流
+                <select
+                  value={allocation.workflowId}
+                  onChange={(e) => {
+                    setAllocationInputs({})
+                    setAllocation({ ...allocation, workflowId: e.target.value })
+                  }}
+                >
+                  <option value="">选择已保存的工作流</option>
+                  {workflowList.data?.items.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                所需环境
+                <select
+                  value={allocation.profileId}
+                  onChange={(e) => setAllocation({ ...allocation, profileId: e.target.value })}
+                >
+                  {profiles.data?.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                分配方式
+                <select
+                  value={allocation.mode}
+                  onChange={(e) =>
+                    setAllocation({
+                      ...allocation,
+                      mode: e.target.value as AllocationRequest['mode'],
+                      deviceId: e.target.value === 'specified' ? (all[0]?.deviceId ?? null) : null,
+                    })
+                  }
+                >
+                  <option value="automatic">自动分配</option>
+                  <option value="specified">指定设备</option>
+                  <option value="temporary">新建临时实例</option>
+                </select>
+              </label>
+              {allocation.mode === 'specified' && (
+                <select
+                  aria-label="指定设备"
+                  value={allocation.deviceId ?? ''}
+                  onChange={(e) => setAllocation({ ...allocation, deviceId: e.target.value })}
+                >
+                  {all.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {allocationWorkflow.data?.document.variables.map((v) => (
+                <label key={v.name}>
+                  {v.name}
+                  {v.type === 'boolean' ? (
+                    <select
+                      value={allocationInputs[v.name] ?? String(v.value)}
+                      onChange={(e) => setAllocationInputs({ ...allocationInputs, [v.name]: e.target.value })}
+                    >
+                      <option value="true">是</option>
+                      <option value="false">否</option>
+                    </select>
+                  ) : (
+                    <input
+                      type={v.type === 'number' ? 'number' : 'text'}
+                      value={
+                        allocationInputs[v.name] ??
+                        (v.type === 'string' ? String(v.value ?? '') : JSON.stringify(v.value))
+                      }
+                      onChange={(e) => setAllocationInputs({ ...allocationInputs, [v.name]: e.target.value })}
+                    />
+                  )}
+                </label>
+              ))}
+              {error && (
+                <p role="alert" className="ad-error">
+                  {error}
+                </p>
+              )}
+              <Action
+                primary
+                disabled={busy || !allocation.workflowId || !allocation.profileId}
+                onClick={() =>
+                  void perform(async () => {
+                    const values = Object.fromEntries(
+                      (allocationWorkflow.data?.document.variables ?? []).map((v) => {
+                        const input = allocationInputs[v.name]
+                        if (input === undefined) return [v.name, v.value]
+                        try {
+                          return [v.name, v.type === 'string' ? input : JSON.parse(input)]
+                        } catch {
+                          throw new Error(`${v.name} 的输入格式无效`)
+                        }
+                      }),
+                    )
+                    await fleet.allocate({ ...allocation, values })
+                    setAllocateOpen(false)
+                  })
+                }
+              >
+                加入分配队列
+              </Action>
+              <Action onClick={studio}>打开工作流工作台</Action>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }

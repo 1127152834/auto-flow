@@ -16,6 +16,7 @@ class AndroidManagement:
         self.repository, self.runtime = repository, runtime
         self.task: asyncio.Task[None] | None = None
         self.closing = False
+        self.device_runtime: AndroidRuntime | None = None
 
     def busy(self) -> bool:
         return self.task is not None and not self.task.done()
@@ -68,9 +69,20 @@ class AndroidManagement:
             raise
 
     def _start(self, device: dict[str, Any], request: dict[str, Any]) -> dict[str, Any]:
+        factory = getattr(self.runtime, "for_device", None)
+        if factory:
+            self.device_runtime = factory(device["deviceId"])
+            assert self.device_runtime is not None
+            self.device_runtime.lock()
         device.setdefault("operationReceipts", {})[request["requestId"]] = deepcopy(request)
         device.update(control="managing", lastError=None, operation={"id": request["requestId"], "action": request["action"], "state": "running", "stage": "准备中", "error": None, "startedAt": now(), "finishedAt": None})
-        self.repository.save(device)
+        try:
+            self.repository.save(device)
+        except BaseException:
+            if self.device_runtime:
+                self.device_runtime.unlock()
+                self.device_runtime = None
+            raise
         self.task = asyncio.create_task(self._execute(device, request), name="android-management")
         return deepcopy(device)
 
@@ -96,6 +108,9 @@ class AndroidManagement:
             try:
                 save()
             finally:
+                if self.device_runtime:
+                    self.device_runtime.unlock()
+                    self.device_runtime = None
                 self.runtime.unlock()
 
     def rename(self, device_id: str, name: str) -> dict[str, Any]:

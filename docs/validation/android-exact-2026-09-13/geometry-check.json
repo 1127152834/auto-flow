@@ -1,0 +1,433 @@
+{
+  "date": "2026-09-13",
+  "method": "reference rectangle measurements versus CUA DOM bounding rectangles; original OS titlebar excluded",
+  "checks": [
+    {
+      "page": "board",
+      "region": "ad-board",
+      "index": 0,
+      "source": [
+        32,
+        184,
+        1425,
+        600
+      ],
+      "actual": [
+        32,
+        184,
+        1425,
+        601
+      ],
+      "delta": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "board",
+      "region": "ad-waiting",
+      "index": 0,
+      "source": [
+        32,
+        801,
+        1425,
+        202
+      ],
+      "actual": [
+        32,
+        801,
+        1425,
+        202
+      ],
+      "delta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "board",
+      "region": "ad-device-card ad-card-0",
+      "index": 0,
+      "source": [
+        44,
+        297,
+        448,
+        215
+      ],
+      "actual": [
+        44,
+        297,
+        447,
+        215
+      ],
+      "delta": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "board",
+      "region": "ad-device-card ad-card-0",
+      "index": 1,
+      "source": [
+        44,
+        539,
+        448,
+        215
+      ],
+      "actual": [
+        44,
+        539,
+        447,
+        215
+      ],
+      "delta": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "manual",
+      "region": "ad-screen-panel",
+      "index": 0,
+      "source": [
+        32,
+        253,
+        950,
+        705
+      ],
+      "actual": [
+        32,
+        253,
+        950,
+        705
+      ],
+      "delta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "manual",
+      "region": "ad-console-sidebar",
+      "index": 0,
+      "source": [
+        993,
+        253,
+        467,
+        705
+      ],
+      "actual": [
+        993,
+        253,
+        467,
+        705
+      ],
+      "delta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "manual",
+      "region": "ad-phone ",
+      "index": 0,
+      "source": [
+        360,
+        319,
+        326,
+        572
+      ],
+      "actual": [
+        360,
+        320,
+        326,
+        572
+      ],
+      "delta": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "manual",
+      "region": "ad-device-tools",
+      "index": 0,
+      "source": [
+        712,
+        327,
+        63,
+        476
+      ],
+      "actual": [
+        711,
+        328,
+        63,
+        476
+      ],
+      "delta": [
+        1,
+        1,
+        0,
+        0
+      ],
+      "tolerance": 2,
+      "pass": true
+    },
+    {
+      "page": "create",
+      "region": "ad-create-form",
+      "index": 0,
+      "source": [
+        33,
+        233,
+        941,
+        691
+      ],
+      "actual": [
+        32,
+        233,
+        942.1328125,
+        691
+      ],
+      "delta": [
+        1,
+        0,
+        1.133,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "create",
+      "region": "ad-create-preview",
+      "index": 0,
+      "source": [
+        990,
+        233,
+        467,
+        691
+      ],
+      "actual": [
+        990.1328125,
+        233,
+        466.859375,
+        691
+      ],
+      "delta": [
+        0.133,
+        0,
+        0.141,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "create",
+      "region": "ad-create-footer",
+      "index": 0,
+      "source": [
+        0,
+        933,
+        1489,
+        89
+      ],
+      "actual": [
+        0,
+        933,
+        1489,
+        89
+      ],
+      "delta": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "create",
+      "region": "ad-quantity",
+      "index": 0,
+      "source": [
+        795,
+        303,
+        151,
+        42
+      ],
+      "actual": [
+        796.1328125,
+        302.5,
+        151,
+        42
+      ],
+      "delta": [
+        1.133,
+        0.5,
+        0,
+        0
+      ],
+      "tolerance": 2,
+      "pass": true
+    },
+    {
+      "page": "create",
+      "region": "ad-instance-types",
+      "index": 0,
+      "source": [
+        216,
+        771,
+        730,
+        74
+      ],
+      "actual": [
+        216,
+        771.5,
+        731.1328125,
+        74
+      ],
+      "delta": [
+        0,
+        0.5,
+        1.133,
+        0
+      ],
+      "tolerance": 2,
+      "pass": true
+    },
+    {
+      "page": "takeover",
+      "region": "ad-screen-panel",
+      "index": 0,
+      "source": [
+        48,
+        311,
+        935,
+        652
+      ],
+      "actual": [
+        48,
+        311,
+        935.671875,
+        652
+      ],
+      "delta": [
+        0,
+        0,
+        0.672,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "takeover",
+      "region": "ad-console-sidebar",
+      "index": 0,
+      "source": [
+        998,
+        311,
+        445,
+        652
+      ],
+      "actual": [
+        998.671875,
+        311,
+        445.328125,
+        652
+      ],
+      "delta": [
+        0.672,
+        0,
+        0.328,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "takeover",
+      "region": "ad-phone ",
+      "index": 0,
+      "source": [
+        369,
+        355,
+        297,
+        561
+      ],
+      "actual": [
+        370.3359375,
+        355,
+        297,
+        561
+      ],
+      "delta": [
+        1.336,
+        0,
+        0,
+        0
+      ],
+      "tolerance": 4,
+      "pass": true
+    },
+    {
+      "page": "takeover",
+      "region": "ad-device-tools",
+      "index": 0,
+      "source": [
+        862,
+        411,
+        72,
+        294
+      ],
+      "actual": [
+        863.671875,
+        412,
+        72,
+        294
+      ],
+      "delta": [
+        1.672,
+        1,
+        0,
+        0
+      ],
+      "tolerance": 2,
+      "pass": true
+    }
+  ],
+  "allMeasuredRegionsPass": true,
+  "scope": "Measured regions only; not a claim that every image pixel or every text glyph is identical."
+}

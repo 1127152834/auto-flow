@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-13",
+  "workspaces": [
+    {
+      "path": ".local/android-exact-qa/workspace",
+      "devices": [
+        {
+          "deviceId": "a8894341-0840-42d6-a593-32693e0daac1",
+          "deleted": true
+        },
+        {
+          "deviceId": "203deb78-789d-4f86-85ad-ff040fe15cca",
+          "deleted": true
+        },
+        {
+          "deviceId": "a23f7db4-7628-4db5-bb64-eb2907606279",
+          "deleted": true
+        }
+      ]
+    },
+    {
+      "path": ".local/android-exact-qa/followup",
+      "devices": [
+        {
+          "deviceId": "ee80a8fe-3353-4e5f-8549-697c04228913",
+          "deleted": true
+        },
+        {
+          "deviceId": "8353c77a-a935-462c-b75a-268cd2b8fbc0",
+          "deleted": true
+        },
+        {
+          "deviceId": "d8738a7f-58fd-4df3-9923-640801b49a28",
+          "deleted": true
+        },
+        {
+          "deviceId": "27991bde-69d1-49e7-bc4f-dab8189d3d19",
+          "deleted": true
+        },
+        {
+          "deviceId": "9340a34c-97ed-4089-aca6-6f3e053fdd45",
+          "deleted": true
+        }
+      ]
+    },
+    {
+      "path": ".local/android-exact-package",
+      "devices": [
+        {
+          "deviceId": "dc45d25c-3d20-40bb-9095-7298434f2669",
+          "deleted": true
+        },
+        {
+          "deviceId": "9ec3335f-db9b-4b08-aa94-f719e6991276",
+          "deleted": true
+        },
+        {
+          "deviceId": "419c706e-716f-4c5c-a7e7-a0ab30d6dbb9",
+          "deleted": true
+        },
+        {
+          "deviceId": "e9d2b178-0826-4fc3-b1f5-b452964eebee",
+          "deleted": true
+        }
+      ]
+    }
+  ],
+  "original_demo_containers": [
+    {
+      "name": "afd-5a7beadf6de2468d",
+      "running": true
+    },
+    {
+      "name": "afd-635e8a215e194178",
+      "running": true
+    },
+    {
+      "name": "afd-ef3857a550924052",
+      "running": true
+    }
+  ],
+  "remaining_containers": [
+    "autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985",
+    "afd-5a7beadf6de2468d",
+    "autoflow-redroid-demo-manager-1",
+    "afd-635e8a215e194178",
+    "afd-ef3857a550924052"
+  ],
+  "remaining_volumes": [
+    "afd-5a7beadf6de2468d-data",
+    "afd-635e8a215e194178-data",
+    "afd-ef3857a550924052-data",
+    "autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985-data",
+    "autoflow-redroid-demo_uploads"
+  ]
+}
