@@ -1,0 +1,173 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+ ❯ src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx (14 tests | 1 failed) 684ms
+   × shows the persisted target count and actionable conflict messages after selection is cleared 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx > shows the persisted target count and actionable conflict messages after selection is cleared
+TestingLibraryElementError: Unable to find an element with the text: 本次操作共 120 条记录，提交后按每块 100 条处理。. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m"autoflow-dialog-overlay fixed inset-0 bg-[var(--color-overlay)]"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"modal-overlay"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto; z-index: calc(var(--layer-modal) + 0 * var(--layer-step));"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"radix-_r_3g_"[39m
+    [33maria-labelledby[39m=[32m"radix-_r_3f_"[39m
+    [33mclass[39m=[32m"autoflow-dialog-content fixed left-1/2 top-1/2 grid w-[min(92vw,32rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-modal border border-line bg-surface p-6 shadow-modal focus:outline-none motion-safe:transition-all"[39m
+    [33mdata-overlay-depth[39m=[32m"0"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_3e_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"z-index: calc(var(--layer-modal) + 0 * var(--layer-step) + 1); pointer-events: auto;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<h2[39m
+      [33mclass[39m=[32m"text-lg font-semibold text-ink"[39m
+      [33mid[39m=[32m"radix-_r_3f_"[39m
+    [36m>[39m
+      [0m批量设置业务状态[0m
+    [36m</h2>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-sm text-muted"[39m
+      [33mid[39m=[32m"radix-_r_3g_"[39m
+    [36m>[39m
+      [0m已选择 [0m
+      [0m0[0m
+      [0m 条记录，提交后按每块 100 条处理。[0m
+    [36m</p>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"数据操作进度"[39m
+      [33mclass[39m=[32m"grid gap-3 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33maria-live[39m=[32m"polite"[39m
+        [33mclass[39m=[32m"m-0 text-sm font-medium"[39m
+        [33mrole[39m=[32m"status"[39m
+      [36m>[39m
+        [0m操作未全部完成[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap gap-x-5 gap-y-2 text-sm"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m已修改 [0m
+          [0m20[0m
+          [0m 条[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m冲突 [0m
+          [0m100[0m
+          [0m 条[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m未执行 [0m
+          [0m0[0m
+          [0m 条[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm text-danger"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0mOne or more blocks conflicted[0m
+      [36m</p>[39m
+      [36m<ul>[39m
+        [36m<li>[39m
+          [0mStatus revision changed[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m开始新的批量操作[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"grid min-w-0"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+            [36m>[39m
+              [0m刷新结果[0m
+            [36m</span>[39m
+          [36m</span>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+    [36m<div[39m
+      [33mdata-overlay-host[39m=[32m"true"[39m
+      [33mstyle[39m=[32m"display: contents;"[39m
+    [36m/>[39m
+  [36m</div>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx:160:17
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  04:41:08
+   Duration  3.04s (transform 115ms, setup 0ms, import 1.59s, tests 684ms, environment 657ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx

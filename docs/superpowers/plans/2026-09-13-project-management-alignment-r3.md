@@ -12,7 +12,17 @@
 
 ---
 
-前置：B0的R3字段和文件/批状态画板已确认；R1控件与R2记录闭环可复用。后台R3-01–04可在R2期间独立推进，生成类型和页面装配由主协调串行合入。以下新类型/路径为实施目标，现存路径以Files清单区分。
+前置：原 Gallery 是唯一视觉基准，只替换全局顶部导航；R1、R2 已完成机器与视觉验收，证据分别保存在 gallery-r1、gallery-r2。后台R3-01–04可在R2期间独立推进，生成类型和页面装配由主协调串行合入。以下新类型/路径为实施目标，现存路径以Files清单区分。
+
+## 2026-09-14 执行记录（当前有效）
+
+- 基线：`eccde15`；R2 生产 `a08c2fe`、证据 `c2a2002` 和格式修正 `eccde15` 已提交。R3 状态：进行中，未宣称业务通过。
+- 在实施工作区核对 Alembic 唯一 head 为 `pm02_excel_exports`；新迁移顺序追加 `pm02_schema_drafts`。主线、旧仓及其他任务未跟踪资料不修改、不代提交。
+- 主协调独占：ORM/迁移、HTTP 装配、生成类型、页面/恢复协调与公共证据。
+- 数据智能体：纯候选校验/DTO、聚合仓储和应用服务及定向测试。
+- 字段组件智能体：共享字段表单提取、SchemaFieldDrawer 及其测试；来源组件智能体：TableSettingsForm、DataTableSourcePanel 及其测试。
+- 现有 identity 字段只保护类型；formula/non-writable 保护完整定义。聚合 API 只读既有 key，旧单字段 API 合同保留。
+- 每包先规格后工程审查；R3 未完成前不进入 PM3。用户手测、Windows、其他架构及打包均未执行。
 
 ## R3-01：冻结聚合DTO与失败语义
 
@@ -115,7 +125,7 @@ END;
 
 ## R3-03：原子提交与幂等恢复
 
-**Files:** Modify `apps/backend/src/autoflow/infrastructure/database/project_data_schema.py`；Create `apps/backend/src/autoflow/application/project_data/schema.py`、`apps/backend/tests/integration/test_project_data_schema_commit.py`。Read既有 `apps/backend/tests/integration/project_data_catalog.py`、`apps/backend/tests/integration/project_data_impacts.py`、`apps/backend/tests/integration/projects.py`、`apps/backend/tests/integration/domain/projects/models.py`。
+**Files:** Modify `apps/backend/src/autoflow/infrastructure/database/project_data_schema.py`；Create `apps/backend/src/autoflow/application/project_data/schema.py`、`apps/backend/tests/integration/test_project_data_schema_commit.py`。Read既有 `apps/backend/src/autoflow/infrastructure/database/project_data_catalog.py`、`apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py`、`apps/backend/src/autoflow/infrastructure/database/projects.py`、`apps/backend/src/autoflow/domain/projects/models.py`。
 
 仓储类命名 `SqlAlchemyProjectDataSchema`，构造参数为现有session_factory；`preview(project_id, table_id, candidate)`和`commit(project_id, table_id, candidate, impact_revision, operation)`分别持有本任务定义的读/写工作单元。服务层不能在仓储之外自行提交，也不能通过旧HTTP组合。
 
@@ -267,3 +277,24 @@ assert.equal(layout.modalCount, 0)
 - [ ] 每包规格审查→工程审查→修正复核；记录真实失败与修正，不把无截图的项勾通过。Windows/其他架构/打包未执行保持null与原因；本机Electron新截图与原图ID对应。提交 `test: verify aligned project data flows and bounded schema commits`。
 
 完成R3后停在纠偏验收点。PM2历史报告不覆盖，PM3参数/核心合同及迁移汇合按总计划G1处理。
+
+## 2026-09-14 Gallery 实际执行记录（取代上述计划态，不改写历史）
+
+本轮从eccde15继续；后端e467035、前端b2d1543、批状态修复800fb01。原计划中的`scripts/smoke-project-alignment.mjs`实际由独立`qa-project-alignment-r3.mjs`和`smoke-gallery-r3-batch-partial.mjs`承担，避免再建重复runner；`acceptance/r3`交付路径明确更正为`acceptance/gallery-r3`。R3-03误写在tests目录下的生产文件路径在implementation-ledger内纠正；所有历史字段原值保留。
+
+| 包 | 实际结果 | 验证来源 |
+|---|---|---|
+| R3-01 | 完整候选DTO、身份与类型/保护规则冻结 | schema unit、真实HTTP contract；e467035 |
+| R3-02 | pm02_schema_drafts守卫迁移、锁外一致预检和有效期证据 | 空库/升级、schema_guard并发、Preview tests |
+| R3-03 | 1000行/4MiB回填、短事务原子提交、CAS与原键恢复 | schema commit并发/故障/边界tests，performance/schema-commit.json |
+| R3-04 | 三个真实HTTP能力、唯一生成类型与前端原命令接入 | HTTP契约/OpenAPI/typecheck，schema-api与editing Hook tests |
+| R3-05 | 一致快照真实记录/活动批引用，未实现配置引用不造0 | status usage并发tests、状态页面真实UI |
+| R3-06 | 原008表格/009抽屉/100影响，局部应用和外层保存分开 | build6 run-TIUvZc，原图逐项对照、真实409/原键/重连/200% |
+| R3-07 | 原010状态/012来源/014设置；保留文件和批状态 | 实际Excel链/源哈希/重导入、状态引用、设置连续保存；batch 120部分结果修复后复测 |
+| R3-08 | 独立规格/工程审查、真实失败修复、机器报告、逐图对照、手册 | acceptance/gallery-r3/machine-report.json、cases.json、review.md、manual-test.md |
+
+已实际完成后端全量853项、前端134文件1126项；Ruff/mypy/typecheck/lint/build/OpenAPI/脚本33/结构3及Gallery静态来源核验。Vitest使用相同完整集合限制2 workers，保留默认高并行超时日志，不放宽超时。图稿只有逐图定性审查，不声明像素一致或用户确认。
+
+真实失败和闭合见review.md：200%横溢、状态旧弹窗、重连后旧cache覆盖新事实、已提交批状态冲突DTO 500、终态冻结数量错误。每个问题修复后复测，不删除原断言。120条为HTTP规模资料准备，选择/预检/提交/重启原操作均实际UI；原生文件链独立保留build3真实面板证据，并记录最终版本文件代码的适用范围。
+
+本次机器验收与用户验收分离，后者未执行。Windows/其他架构/打包未执行。最终统一交付只到R3；PM3没有开工，主线迁移汇合仍是后续明确前置事项。阶段退出以machine-report最终状态为准，本文不代替实时执行结果。

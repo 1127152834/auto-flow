@@ -51,7 +51,7 @@ export async function main(options={}) {
   async function click(text,selector='button'){
     if(selector==='button' && ['批量设置状态','导出 Excel','重新导入 Excel'].includes(text) && await renderer.evaluate("!!document.querySelector('[aria-label=更多操作]')")){await click('更多操作');selector='[role=menuitem]'}
     if(text==='刷新')text='刷新项目';
-    if(selector==='[role=tab]')text=({记录:'数据记录',字段:'字段与校验',状态:'业务状态',来源:'来源设置',设置:'数据表设置'})[text]??text;
+    if(selector==='[role=tab]')text=({记录:'数据记录',字段:'字段与校验',状态:'数据状态',来源:'来源设置',设置:'数据表设置'})[text]??text;
     const point=await waitFor(renderer,`(()=>{const matches=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>(${JSON.stringify(text)}===''||e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)})&&e.getClientRects().length);if(matches.length!==1)return null;const el=matches[0];if(el.disabled)return null;el.scrollIntoView({block:'center'});const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return el.contains(document.elementFromPoint(x,y))?{x,y}:null})()`,text)
     await renderer.command('Input.dispatchMouseEvent',{type:'mouseMoved',...point});
     for(const type of ['mousePressed','mouseReleased'])await renderer.command('Input.dispatchMouseEvent',{type,...point,button:'left',clickCount:1});await wait(120)
@@ -121,6 +121,19 @@ export async function main(options={}) {
     for(let index=1;index<=120;index++)await api(`/projects/${project.projectId}/tables/${table.tableId}/records`,{method:'POST',body:{datasetGeneration:table.datasetGeneration,values:[{fieldId:field.field.ref.fieldId,value:`${index%2?'温室':'花园'}资料${String(index).padStart(3,'0')}`}]}})
     fixture={project,table,field:field.field};await writeFile(join(evidence,'fixtures.json'),JSON.stringify(fixture,null,2));checkpoint('生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）')
   }
+  async function saveFieldDrafts(base, expectedFields) {
+    const before=await api(`${base}/fields`)
+    assert.deepEqual(before.items,[],'仅在完整草稿确认后才创建这些字段')
+    await click('保存字段');await visible('保存字段前核对影响')
+    assert.deepEqual(await api(`${base}/fields`),before,'整体预检不能写入字段')
+    await click('确认保存字段');await waitFor(renderer,"!document.querySelector('[role=dialog]')",'atomic schema confirmation closes');await visible('暂无未保存修改')
+    const after=await waitFact(async()=>{const value=await api(`${base}/fields`);return value.items.length===expectedFields.length?value:null},'all schema fields committed')
+    assert.equal(after.tableRevision,before.tableRevision+1,'全部字段通过一次原子提交推进表修订')
+    const types={文本:'string',日期:'date',布尔:'boolean',数字:'number'}
+    for(const [name,keyName,type,required=false] of expectedFields){const actual=after.items.find(field=>field.key===keyName);assert.ok(actual,`真实字段缺失: ${keyName}`);assert.equal(actual.name,name);assert.equal(actual.type,types[type]);assert.equal(actual.required,required)}
+    checkpoint(`E1/E2: ${expectedFields.length} 个字段经抽屉应用→整体预检→单次确认保存，GET确认名称/键/类型/必填与原子表修订`)
+    return after.items
+  }
   async function uiDataFlow() {
     const source={stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-B/R1-C'}
     await click('查看全部项目');await click('R1手建A');await visible('项目资料');await click('数据','[aria-label=项目功能] button');await visible('还没有数据表');await capture('r1-b-empty',source)
@@ -129,11 +142,14 @@ export async function main(options={}) {
     }
     const directoryHash=await renderer.evaluate('location.hash');await click('更多资料库操作');await click('编辑数据表','[role=menuitem]');await input('#data-table-description','保存整理后的文章资料');await click('保存修改');await waitFor(renderer,"!document.querySelector('#data-table-form')&&document.querySelector('[aria-label=数据表目录]').innerText.includes('保存整理后的文章资料')",'card edit saved');assert.equal(await renderer.evaluate('location.hash'),directoryHash,'更多编辑不打开表');checkpoint('E1: 数据目录更多编辑真实说明，保存后卡片更新且路由保持');
     await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'正常态通知自然退出');await capture('r1-b-two-local-tables',source);await click('打开数据表：资料库');await visible('还没有记录');await click('字段','[role=tab]')
-    for(const [name,keyName,type] of [['标题','title','文本'],['文章链接','url','文本'],['发布日期','published','日期'],['已检查','checked','布尔'],['优先级','priority','数字']]){
-      await click('新建字段');await input('#field-name',name);await input('#field-key',keyName);if(type!=='文本'){await click('','#field-type');await choice({日期:'date',布尔:'boolean',数字:'number'}[type],type)}await click('创建字段');await waitFor(renderer,"!document.querySelector('#field-editor-form')",'field saved')
+    const project=(await api('/projects?q=R1手建A')).items[0],table=(await api(`/projects/${project.projectId}/tables`)).items.find(t=>t.name==='资料库'),base=`/projects/${project.projectId}/tables/${table.tableId}`
+    const expectedFields=[['标题','title','文本'],['文章链接','url','文本'],['发布日期','published','日期'],['已检查','checked','布尔'],['优先级','priority','数字']]
+    for(const [name,keyName,type] of expectedFields){
+      await click('新增字段');await input('#field-name',name);await input('#field-key',keyName);if(type!=='文本'){await click('','#field-type');await choice({日期:'date',布尔:'boolean',数字:'number'}[type],type)}await click('应用到草稿');await waitFor(renderer,"!document.querySelector('#schema-field-drawer-form')",'field applied to local draft')
+      assert.deepEqual((await api(`${base}/fields`)).items,[],'抽屉应用尚未写入任何字段')
     }
-    await click('状态','[role=tab]');for(const name of ['已核对','待补充']){await click('新建状态');await input('#status-name',name);await click('创建状态');await waitFor(renderer,"!document.querySelector('#status-editor-form')",'status saved')}
-    const project=(await api('/projects?q=R1手建A')).items[0],table=(await api(`/projects/${project.projectId}/tables`)).items.find(t=>t.name==='资料库'),base=`/projects/${project.projectId}/tables/${table.tableId}`,fields=(await api(`${base}/fields`)).items
+    const fields=await saveFieldDrafts(base,expectedFields)
+    await click('状态','[role=tab]');for(const name of ['已核对','待补充']){await click('新增状态');await input('#status-name',name);await click('创建状态');await waitFor(renderer,"!document.querySelector('#status-editor-form')",'status saved')}
     await click('记录','[role=tab]')
     for(let index=0;index<3;index++){
       await click('新增记录');await visible('新增记录');if(recordPages&&index===0){await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'新增页正常态通知自然退出');await capture('r2-create-normal',{stateSource:'ui',navigation:'pointer',level:'E1',reference:'R2-B'})}
@@ -233,10 +249,13 @@ export async function main(options={}) {
   async function referenceRecordFlow(project){
     const source={stateSource:'ui',navigation:'pointer-and-keyboard',level:'E1'};
     await click('返回数据表');await click('新建数据表');await input('#data-table-name','原型对照资料');await input('#data-table-description','收集资料，整理内容，维护项目数据');await click('创建数据表');await click('字段','[role=tab]');
-    for(const [name,keyName,type,required] of [['标题','title','文本',true],['文章链接','url','文本',true],['发布日期','published','日期',false],['摘要','summary','文本',false]]){
-      await click('新建字段');await input('#field-name',name);await input('#field-key',keyName);if(type==='日期'){await click('','#field-type');await choice('date','日期')}if(required)await click('','[role=dialog] [role=checkbox]');await click('创建字段');await waitFor(renderer,"!document.querySelector('#field-editor-form')",'reference field created');
+    const table=(await api(`/projects/${project.projectId}/tables`)).items.find(t=>t.name==='原型对照资料'),base=`/projects/${project.projectId}/tables/${table.tableId}`;
+    const expectedFields=[['标题','title','文本',true],['文章链接','url','文本',true],['发布日期','published','日期',false],['摘要','summary','文本',false]];
+    for(const [name,keyName,type,required] of expectedFields){
+      await click('新增字段');await input('#field-name',name);await input('#field-key',keyName);if(type==='日期'){await click('','#field-type');await choice('date','日期')}if(required)await click('','[role=dialog] [role=switch][aria-label="必填"]');await click('应用到草稿');await waitFor(renderer,"!document.querySelector('#schema-field-drawer-form')",'reference field applied locally');
+      assert.deepEqual((await api(`${base}/fields`)).items,[],'原型参考字段仍是未提交草稿');
     }
-    const table=(await api(`/projects/${project.projectId}/tables`)).items.find(t=>t.name==='原型对照资料'),base=`/projects/${project.projectId}/tables/${table.tableId}`,fields=(await api(`${base}/fields`)).items;const field=name=>fields.find(f=>f.name===name),fieldInput=name=>`#record-${field(name).ref.fieldId}`;
+    const fields=await saveFieldDrafts(base,expectedFields);const field=name=>fields.find(f=>f.name===name),fieldInput=name=>`#record-${field(name).ref.fieldId}`;
     await click('记录','[role=tab]');await click('新增记录');await input(fieldInput('标题'),'温室光照管理笔记');await input(fieldInput('文章链接'),'https://example.com/notes/R019');await input(fieldInput('发布日期'),'2026-09-13');
     await click('选择发布日期');await writeFile(join(evidence,'calendar-focus-open.json'),JSON.stringify(await renderer.evaluate("({active:document.activeElement?.outerHTML,calendar:document.querySelector('.af-calendar')?.outerHTML})"),null,2));await waitFor(renderer,"document.activeElement?.textContent?.trim()==='13'",'calendar selected date receives focus');await key('ArrowRight');await writeFile(join(evidence,'calendar-focus-next.json'),JSON.stringify(await renderer.evaluate("({active:document.activeElement?.outerHTML})"),null,2));await waitFor(renderer,"document.activeElement?.textContent?.trim()==='14'",'calendar arrow moves to next date');await key('Enter');await waitFor(renderer,"!document.querySelector('.af-calendar')",'calendar Enter commits selection');assert.equal(await renderer.evaluate(`document.querySelector(${JSON.stringify(fieldInput('发布日期'))}).value`),'2026-09-14');
     await click('值选项',`fieldset:has(${fieldInput('摘要')}) button`);await click('使用多行输入',`fieldset:has(${fieldInput('摘要')}) button`);await click('值选项',`fieldset:has(${fieldInput('摘要')}) button`);await input(fieldInput('摘要'),'整理温室补光与遮阳相关资料。');await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'reference create unrelated notifications settle');await renderer.evaluate('window.scrollTo(0,0)');await capture('r2-reference-create',{...source,reference:'R2-B'});await renderer.evaluate('window.scrollTo(0,document.documentElement.scrollHeight)');await capture('r2-reference-create-bottom',{...source,reference:'R2-B'});await click('保存到本地');await waitFor(renderer,"Boolean(document.querySelector('[data-record-page=detail] [aria-label=基本信息]'))",'reference record created');await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'toast settled');await renderer.evaluate('window.scrollTo(0,0)');await capture('r2-reference-detail',{...source,reference:'R2-A'});

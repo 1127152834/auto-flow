@@ -76,3 +76,9 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 ### Gallery R2 退出（2026-09-14，confirmed）
 
 来源：acceptance/gallery-r2/machine-report.json、review.md、run-msXqcI真实E2E及原003–007。实现a08c2fe，保留真实typed身份/单命令恢复，通栏新增编辑、自有日历、详情左右区、居中未保存/删除确认。127文件1030前端、38后端、29脚本、3结构及PM2回归通过；逐页86/88/89/91/88。原生http/https外链已验证；原生文件面板完整闭环、R3、Windows、打包、用户手测未执行。连续授权允许进入R3，不进入PM3。
+
+### Gallery R3 实现与验收证据（2026-09-14，confirmed）
+
+来源：本实施分支e467035/b2d1543/800fb01、`docs/project-management/design-alignment/acceptance/gallery-r3/`。R3已实现原008/009/100/010/012/014结构、完整字段草稿及原子保存、真实状态引用、来源和设置。853后端/1126前端、33脚本/3结构与工程检查通过；真实120条部分结果修复了仓储已提交但HTTP拒绝details导致500、结果选择数清零的实际问题。最终同版本截图和回归见machine-report，不将历史B0或小测试冒称完整视觉验收。
+
+原生Excel完整链实际操作于build3，文件实现后续未改；最终build6使用独立真实IPC/HTTP/SQLite文件回归并明确E4选择注入。Windows、其他架构、打包版本和用户手测未执行。记录`gallery-delivery.md`作为统一交付入口，R3后停止，PM3未开始。旧“R3仍未实施”的当前描述由本节取代；旧报告自身不改写。

@@ -1,7 +1,7 @@
 {
-  "date": "2026-09-13",
+  "date": "2026-09-14",
   "baseline": "205fa64",
-  "status": "gallery-realignment-plan-revised",
+  "status": "gallery-R1-R3-implemented-and-machine-verified",
   "owner": "root",
   "milestones": [
     {
@@ -29,17 +29,26 @@
       "currentVisualEvidence": null
     },
     {
-      "id": "R1",
-      "status": "visual-revalidation-required",
-      "dependsOn": [
-        "G0-gallery-source-and-frame"
-      ],
-      "userAcceptance": "pending",
+      "id": "G0",
+      "status": "sourceFrozen",
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "source": "gallery-baseline/source-manifest.json"
+      },
+      "userAcceptance": "2026-09-13用户明确gallery为唯一来源，仅全局导航改顶部"
+    },
+    {
+      "id": "R1",
+      "status": "gallery-implemented-and-machine-verified",
+      "dependsOn": [
+        "G0"
+      ],
+      "userAcceptance": "not-executed",
+      "evidence": {
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "electron": "acceptance/gallery-r1/machine-report.json",
         "windows": null,
-        "manual": "acceptance/r1/manual-test.md"
+        "manual": "acceptance/gallery-r1/manual-test.md",
+        "visual": "acceptance/gallery-r1/review.md"
       },
       "historicalStateBeforeGalleryCorrection": {
         "status": "readyForUserAcceptance",
@@ -54,13 +63,22 @@
           "manual": "acceptance/r1/manual-test.md"
         }
       },
-      "currentVisualEvidence": null
+      "currentVisualEvidence": "acceptance/gallery-r1/page-map.json",
+      "preGalleryExecutionState": {
+        "status": "visual-revalidation-required",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null,
+          "manual": "acceptance/r1/manual-test.md"
+        }
+      }
     },
     {
       "id": "R2",
-      "status": "partially-implemented-visual-not-accepted",
+      "status": "gallery-implemented-and-machine-verified",
       "dependsOn": [
-        "R1-gallery-engineering-e2e-visual-gate"
+        "R1"
       ],
       "historicalStateBeforeGalleryCorrection": {
         "status": "notStarted",
@@ -68,13 +86,24 @@
           "R1-userAcceptance"
         ]
       },
-      "currentVisualEvidence": null
+      "currentVisualEvidence": "acceptance/gallery-r2/page-map.json",
+      "preGalleryExecutionState": {
+        "status": "partially-implemented-visual-not-accepted",
+        "evidence": null
+      },
+      "userAcceptance": "not-executed",
+      "evidence": {
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
+        "electron": "acceptance/gallery-r2/machine-report.json"
+      }
     },
     {
       "id": "R3",
-      "status": "not-complete",
+      "status": "gallery-implemented-and-machine-verified",
       "dependsOn": [
-        "R2-gallery-engineering-e2e-visual-gate"
+        "R2"
       ],
       "historicalStateBeforeGalleryCorrection": {
         "status": "notStarted",
@@ -82,17 +111,25 @@
           "R2-userAcceptance"
         ]
       },
-      "currentVisualEvidence": null
+      "currentVisualEvidence": "acceptance/gallery-r3/page-map.json",
+      "userAcceptance": "not-executed",
+      "evidence": {
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/visual-review.json",
+        "electron": "acceptance/gallery-r3/runs/run-TIUvZc/result.json",
+        "manual": "acceptance/gallery-r3/manual-test.md",
+        "windows": null
+      }
     }
   ],
   "tasks": [
     {
       "taskId": "R1-01",
       "title": "项目和对象页头",
-      "status": "implementedAndVerified",
-      "owner": "root (integration), bounded component agents",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
-        "B0"
+        "G0"
       ],
       "files": [
         {
@@ -122,11 +159,13 @@
         }
       ],
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "visual": "acceptance/gallery-r1/page-map.json",
+        "review": "acceptance/gallery-r1/review.md",
+        "manual": "acceptance/gallery-r1/manual-test.md",
         "windows": null
       },
-      "commit": "73a4bc8",
+      "commit": "a6a0e8e",
       "sourceIds": [
         "PMUI-5238b479f001",
         "PMUI-6729305d756d",
@@ -135,13 +174,52 @@
         "PMUI-ca940d758b68"
       ],
       "review": "acceptance/r1/review-resolution.md",
-      "userAcceptance": "pending"
+      "userAcceptance": "not-executed",
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "implementedAndVerified",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null
+        },
+        "commit": "73a4bc8",
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectTabs.tsx",
+            "reason": "已有能力符合本轮设计，复用"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.test.tsx"
+          }
+        ],
+        "dependsOn": [
+          "B0"
+        ]
+      }
     },
     {
       "taskId": "R1-02",
       "title": "最近卡片与全部目录",
-      "status": "implementedAndVerified",
-      "owner": "root (integration), bounded component agents",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R1-01"
       ],
@@ -172,11 +250,13 @@
         }
       ],
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "visual": "acceptance/gallery-r1/page-map.json",
+        "review": "acceptance/gallery-r1/review.md",
+        "manual": "acceptance/gallery-r1/manual-test.md",
         "windows": null
       },
-      "commit": "73a4bc8",
+      "commit": "a6a0e8e",
       "sourceIds": [
         "PMUI-5238b479f001",
         "PMUI-6729305d756d",
@@ -185,15 +265,53 @@
         "PMUI-ca940d758b68"
       ],
       "review": "acceptance/r1/review-resolution.md",
-      "userAcceptance": "pending"
+      "userAcceptance": "not-executed",
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "implementedAndVerified",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null
+        },
+        "commit": "73a4bc8",
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/hooks.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/projects/components/ProjectCard.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R1-01"
+        ]
+      }
     },
     {
       "taskId": "R1-03",
       "title": "补Popover，复用现有浮层宿主",
-      "status": "implementedAndVerified",
-      "owner": "root (integration), bounded component agents",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
-        "B0"
+        "G0"
       ],
       "files": [
         {
@@ -229,11 +347,13 @@
         }
       ],
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "visual": "acceptance/gallery-r1/page-map.json",
+        "review": "acceptance/gallery-r1/review.md",
+        "manual": "acceptance/gallery-r1/manual-test.md",
         "windows": null
       },
-      "commit": "fb7d02d",
+      "commit": "a6a0e8e",
       "sourceIds": [
         "PMUI-5238b479f001",
         "PMUI-6729305d756d",
@@ -242,13 +362,58 @@
         "PMUI-ca940d758b68"
       ],
       "review": "acceptance/r1/review-resolution.md",
-      "userAcceptance": "pending"
+      "userAcceptance": "not-executed",
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "implementedAndVerified",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null
+        },
+        "commit": "fb7d02d",
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/package.json"
+          },
+          {
+            "action": "Modify",
+            "path": "package-lock.json"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/shared/components/ui/popover.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/shared/components/ui/popover.test.tsx"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx",
+            "reason": "已有能力符合本轮设计，复用"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/shared/components/ui/select-radix.tsx",
+            "reason": "已有能力符合本轮设计，复用"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/shared/components/ui/dialog.tsx",
+            "reason": "已有能力符合本轮设计，复用"
+          }
+        ],
+        "dependsOn": [
+          "B0"
+        ]
+      }
     },
     {
       "taskId": "R1-04",
       "title": "数据卡片与按需查询工具",
-      "status": "implementedAndVerified",
-      "owner": "root (integration), bounded component agents",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R1-01",
         "R1-03"
@@ -284,11 +449,13 @@
         }
       ],
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "visual": "acceptance/gallery-r1/page-map.json",
+        "review": "acceptance/gallery-r1/review.md",
+        "manual": "acceptance/gallery-r1/manual-test.md",
         "windows": null
       },
-      "commit": "4daa752",
+      "commit": "a6a0e8e",
       "sourceIds": [
         "PMUI-5238b479f001",
         "PMUI-6729305d756d",
@@ -297,13 +464,56 @@
         "PMUI-ca940d758b68"
       ],
       "review": "acceptance/r1/review-resolution.md",
-      "userAcceptance": "pending"
+      "userAcceptance": "not-executed",
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "implementedAndVerified",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null
+        },
+        "commit": "4daa752",
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFilterEditor.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R1-01",
+          "R1-03"
+        ]
+      }
     },
     {
       "taskId": "R1-05",
       "title": "反馈去重与R1验收",
-      "status": "implementedAndVerified",
-      "owner": "root (integration), bounded component agents",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R1-02",
         "R1-04"
@@ -327,11 +537,13 @@
         }
       ],
       "evidence": {
-        "automatic": "acceptance/r1/verification.json",
-        "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+        "automatic": "acceptance/gallery-r1/machine-report.json",
+        "visual": "acceptance/gallery-r1/page-map.json",
+        "review": "acceptance/gallery-r1/review.md",
+        "manual": "acceptance/gallery-r1/manual-test.md",
         "windows": null
       },
-      "commit": "05aa3e9",
+      "commit": "a6a0e8e",
       "sourceIds": [
         "PMUI-5238b479f001",
         "PMUI-6729305d756d",
@@ -340,15 +552,46 @@
         "PMUI-ca940d758b68"
       ],
       "review": "acceptance/r1/review-resolution.md",
-      "userAcceptance": "pending"
+      "userAcceptance": "not-executed",
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "implementedAndVerified",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null
+        },
+        "commit": "05aa3e9",
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/shared/components/Toaster.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/shared/components/Toaster.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "docs/project-management/design-alignment/acceptance/r1/README.md"
+          },
+          {
+            "action": "Create",
+            "path": "docs/project-management/design-alignment/acceptance/r1/verification.json"
+          }
+        ],
+        "dependsOn": [
+          "R1-02",
+          "R1-04"
+        ]
+      }
     },
     {
       "taskId": "R2-01",
       "title": "规范键编码与路由",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
-        "B0"
+        "G0"
       ],
       "files": [
         {
@@ -381,11 +624,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/page-map.json",
+        "review": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "a08c2fe",
       "sourceIds": [
         "PMUI-421c549596d2",
         "PMUI-72de4a568a24",
@@ -393,15 +638,58 @@
         "PMUI-94895605c22f",
         "PMUI-b3bf4542690d",
         "PMUI-d3f6c5774ec4"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/record-route.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/record-route.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/types.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/app/navigation.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/records-api.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/records-api.test.ts"
+          }
+        ],
+        "dependsOn": [
+          "B0"
+        ]
+      },
+      "userAcceptance": "not-executed"
     },
     {
       "taskId": "R2-02",
       "title": "表单内容从Modal中提取",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
-        "B0"
+        "G0"
       ],
       "files": [
         {
@@ -438,11 +726,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/page-map.json",
+        "review": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "a08c2fe",
       "sourceIds": [
         "PMUI-421c549596d2",
         "PMUI-72de4a568a24",
@@ -450,13 +740,60 @@
         "PMUI-94895605c22f",
         "PMUI-b3bf4542690d",
         "PMUI-d3f6c5774ec4"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.test.tsx"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/domains/project-data/record-draft.ts"
+          },
+          {
+            "action": "Read",
+            "path": "apps/desktop/src/renderer/domains/project-data/scalar-draft.ts"
+          }
+        ],
+        "dependsOn": [
+          "B0"
+        ]
+      },
+      "userAcceptance": "not-executed"
     },
     {
       "taskId": "R2-03",
       "title": "记录详情与编辑页面装配",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R1-05",
         "R2-01",
@@ -493,11 +830,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/page-map.json",
+        "review": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "a08c2fe",
       "sourceIds": [
         "PMUI-421c549596d2",
         "PMUI-72de4a568a24",
@@ -505,13 +844,58 @@
         "PMUI-94895605c22f",
         "PMUI-b3bf4542690d",
         "PMUI-d3f6c5774ec4"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordDetailPage.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordEditPage.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R1-05",
+          "R2-01",
+          "R2-02"
+        ]
+      },
+      "userAcceptance": "not-executed"
     },
     {
       "taskId": "R2-04",
       "title": "受控外链桥",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R2-03"
       ],
@@ -554,11 +938,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/page-map.json",
+        "review": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "a08c2fe",
       "sourceIds": [
         "PMUI-421c549596d2",
         "PMUI-72de4a568a24",
@@ -566,13 +952,64 @@
         "PMUI-94895605c22f",
         "PMUI-b3bf4542690d",
         "PMUI-d3f6c5774ec4"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/shared/external-links.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/main/ipc/external-links.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/main/ipc/external-links.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/main/index.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/main/index.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/preload/index.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/preload/index.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/shared/api/types.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R2-03"
+        ]
+      },
+      "userAcceptance": "not-executed"
     },
     {
       "taskId": "R2-05",
       "title": "返回、草稿与恢复完整回归",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R2-03",
         "R2-04"
@@ -608,11 +1045,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r2/machine-report.json",
+        "visual": "acceptance/gallery-r2/page-map.json",
+        "review": "acceptance/gallery-r2/review.md",
+        "manual": "acceptance/gallery-r2/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "a08c2fe",
       "sourceIds": [
         "PMUI-421c549596d2",
         "PMUI-72de4a568a24",
@@ -620,15 +1059,59 @@
         "PMUI-94895605c22f",
         "PMUI-b3bf4542690d",
         "PMUI-d3f6c5774ec4"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "scripts/smoke-project-data.mjs"
+          }
+        ],
+        "dependsOn": [
+          "R2-03",
+          "R2-04"
+        ]
+      },
+      "userAcceptance": "not-executed"
     },
     {
       "taskId": "R3-01",
       "title": "冻结聚合DTO与失败语义",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
-        "B0"
+        "G0"
       ],
       "files": [
         {
@@ -649,11 +1132,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "e467035",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -661,13 +1146,45 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/adapters/http/project_data_schema_schemas.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/domain/project_data/schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/unit/test_project_data_schema.py"
+          },
+          {
+            "action": "Modify",
+            "path": "docs/project-management/implementation/api-contracts.md"
+          }
+        ],
+        "dependsOn": [
+          "B0"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-02",
       "title": "守卫迁移与预览证据",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-01"
       ],
@@ -694,11 +1211,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "e467035",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -706,13 +1225,49 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/infrastructure/database/project_data_models.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm02_schema_drafts.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/test_project_data_schema_migration.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/test_project_data_schema_preview.py"
+          }
+        ],
+        "dependsOn": [
+          "R3-01"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-03",
       "title": "原子提交与幂等恢复",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-02"
       ],
@@ -730,28 +1285,34 @@
           "path": "apps/backend/tests/integration/test_project_data_schema_commit.py"
         },
         {
-          "action": "Create",
-          "path": "apps/backend/tests/integration/project_data_catalog.py"
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_catalog.py",
+          "reason": "纠正原计划误写的目录，职责不变"
         },
         {
-          "action": "Create",
-          "path": "apps/backend/tests/integration/project_data_impacts.py"
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py",
+          "reason": "纠正原计划误写的目录，职责不变"
         },
         {
-          "action": "Create",
-          "path": "apps/backend/tests/integration/projects.py"
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/projects.py",
+          "reason": "纠正原计划误写的目录，职责不变"
         },
         {
-          "action": "Create",
-          "path": "apps/backend/tests/integration/domain/projects/models.py"
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/domain/projects/models.py",
+          "reason": "纠正原计划误写的目录，职责不变"
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "e467035",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -759,13 +1320,57 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/application/project_data/schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/test_project_data_schema_commit.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/project_data_catalog.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/project_data_impacts.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/projects.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/integration/domain/projects/models.py"
+          }
+        ],
+        "dependsOn": [
+          "R3-02"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-04",
       "title": "HTTP装配、生成类型与前端命令",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-03"
       ],
@@ -800,11 +1405,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "e467035",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -812,13 +1419,57 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/backend/src/autoflow/adapters/http/project_data_schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/contract/test_project_data_schema.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/schema-api.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/schema-api.test.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/bootstrap/app.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/adapters/http/project_schemas.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/shared/api/generated.ts"
+          }
+        ],
+        "dependsOn": [
+          "R3-03"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-05",
       "title": "真实状态引用投影",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-02",
         "R3-04"
@@ -858,11 +1509,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "e467035",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -870,13 +1523,62 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/application/project_data/catalog.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/domain/project_data/catalog.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/infrastructure/database/project_data_catalog.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/adapters/http/project_data.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/backend/src/autoflow/adapters/http/project_data_catalog_schemas.py"
+          },
+          {
+            "action": "Create",
+            "path": "apps/backend/tests/contract/test_project_data_status_usage.py"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.ts"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.test.ts"
+          }
+        ],
+        "dependsOn": [
+          "R3-02",
+          "R3-04"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-06",
       "title": "字段表格、Drawer与整体草稿",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R2-05",
         "R3-04"
@@ -924,11 +1626,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "b2d1543",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -936,13 +1640,70 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.test.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.ts"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaFieldDrawer.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaImpactDrawer.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/FieldEditorDialog.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R2-05",
+          "R3-04"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-07",
       "title": "状态、来源、设置和文件/批状态画板接入",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-05",
         "R3-06"
@@ -986,11 +1747,13 @@
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "b2d1543",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -998,13 +1761,66 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.test.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.tsx"
+          },
+          {
+            "action": "Create",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.test.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelImportWizard.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelExportDialog.tsx"
+          },
+          {
+            "action": "Modify",
+            "path": "apps/desktop/src/renderer/domains/project-data/components/RecordStatusBatchDialog.tsx"
+          }
+        ],
+        "dependsOn": [
+          "R3-05",
+          "R3-06"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md"
     },
     {
       "taskId": "R3-08",
       "title": "故障、性能与全模块退出",
-      "status": "notStarted",
-      "owner": "milestone-coordinator",
+      "status": "implementedAndGalleryVerified",
+      "owner": "root integration; independent bounded agents",
       "dependsOn": [
         "R3-07"
       ],
@@ -1019,31 +1835,41 @@
         },
         {
           "action": "Create",
-          "path": "scripts/smoke-project-alignment.mjs"
-        },
-        {
-          "action": "Create",
           "path": "scripts/measure-schema-commit.py"
-        },
-        {
-          "action": "Create",
-          "path": "docs/project-management/design-alignment/acceptance/r3/README.md"
-        },
-        {
-          "action": "Create",
-          "path": "docs/project-management/design-alignment/acceptance/r3/verification.json"
         },
         {
           "action": "Modify",
           "path": "docs/PROJECT_STRUCTURE.md"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/qa-project-alignment-r3.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/qa-project-alignment-r3.test.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/smoke-gallery-r3-batch-partial.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/gallery-r3/manual-test.md"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/gallery-r3/review.md"
         }
       ],
       "evidence": {
-        "automatic": null,
-        "electron": null,
+        "automatic": "acceptance/gallery-r3/machine-report.json",
+        "visual": "acceptance/gallery-r3/page-map.json",
+        "review": "acceptance/gallery-r3/review.md",
+        "manual": "acceptance/gallery-r3/manual-test.md",
         "windows": null
       },
-      "commit": null,
+      "commit": "800fb01",
       "sourceIds": [
         "PMUI-378eb24a5f9c",
         "PMUI-73d061eba024",
@@ -1051,7 +1877,52 @@
         "PMUI-cf611c443491",
         "PMUI-d59f5568efae",
         "PMUI-eb086d4107db"
-      ]
+      ],
+      "historicalStateBeforeGalleryDelivery": {
+        "status": "notStarted",
+        "evidence": {
+          "automatic": null,
+          "electron": null,
+          "windows": null
+        },
+        "commit": null,
+        "files": [
+          {
+            "action": "Modify",
+            "path": "scripts/smoke-project-data.mjs"
+          },
+          {
+            "action": "Modify",
+            "path": "scripts/smoke-pm2-detail-flows.mjs"
+          },
+          {
+            "action": "Create",
+            "path": "scripts/smoke-project-alignment.mjs"
+          },
+          {
+            "action": "Create",
+            "path": "scripts/measure-schema-commit.py"
+          },
+          {
+            "action": "Create",
+            "path": "docs/project-management/design-alignment/acceptance/r3/README.md"
+          },
+          {
+            "action": "Create",
+            "path": "docs/project-management/design-alignment/acceptance/r3/verification.json"
+          },
+          {
+            "action": "Modify",
+            "path": "docs/PROJECT_STRUCTURE.md"
+          }
+        ],
+        "dependsOn": [
+          "R3-07"
+        ]
+      },
+      "userAcceptance": "not-executed",
+      "review": "acceptance/gallery-r3/review.md",
+      "evidenceCommit": "separate-stage-evidence-commit"
     }
   ],
   "unrelatedUntrackedPreserved": [
@@ -1062,12 +1933,15 @@
   "executionBaseline": "1e79c7b",
   "galleryRevision": {
     "date": "2026-09-13",
-    "status": "plan-revised-awaiting-review",
+    "status": "R1-R2-R3-machine-verified-user-not-run",
     "source": "gallery-baseline/source-manifest.json",
     "spec": "../../superpowers/specs/2026-09-13-project-management-gallery-fidelity.md",
     "plan": "../../superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
     "navigationException": "global-sidebar-to-existing-top-navigation-only",
     "historicalB0VisualResults": "not-valid-for-gallery-acceptance",
-    "implementationThisRevision": false
+    "implementationThisRevision": true,
+    "backendR3Commit": "e467035",
+    "frontendR3Commit": "b2d1543",
+    "finalProductionCommit": "800fb01"
   }
 }

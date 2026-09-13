@@ -384,3 +384,14 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ### Gallery R2 组件责任（2026-09-14，confirmed）
 
 `renderer/domains/project-data/components/RecordEditorForm`维护已有数据草稿/校验与可见错误通知；页面负责路由、外层保存栏和会话隔离。`RecordUnsavedDialog`只呈现真实修改字段和离开选择，`DataDeletionDialog`复用真实删除预检/原操作恢复。`shared/components/ui/calendar-date-input`基于DayPicker与现有Popover提供本地日期选择，保持原文输入和日期时间业务语义，禁止系统默认日期面板。实际文件以apps/desktop/src为前缀。R3字段聚合仍未实施。
+
+### Gallery R3 字段统一保存（2026-09-14，实现已接入，验收进行中）
+
+本节替代前述“R3未实施”的当前能力描述，保留历史阶段证据。原Gallery为唯一视觉来源，只有全局导航改顶部。
+
+- `domain/project_data/schema.py` 定义完整字段候选及有界回填校验；`application/project_data/schema.py` 编排现有ProjectOperation身份；`infrastructure/database/project_data_schema.py` 负责一致读预检、持久影响证据和原子提交。既有单字段服务保持独立可用。
+- `migrations/versions/pm02_schema_drafts.py` 从实施分支实际 `pm02_excel_exports` 追加，新增内部记录变更守卫与当前状态计数索引。守卫不替代公开内容、状态、关联、结构修订；主线Studio迁移汇合尚未执行。
+- `adapters/http/project_data_schema.py` 提供真实schema预检/提交；现有project_data路由提供statuses/usage。OpenAPI生成类型只包含真实handler。状态引用由一致快照读取当前记录和活动批操作；未实现的自动化引用显式标记。
+- `renderer/domains/project-data/schema-api.ts` 复用原命令恢复；`schema-draft.ts`/`use-schema-draft.ts` 只维护本地字段候选；`use-data-table-editing.ts` 负责同一持久操作身份、作用域隔离和恢复。
+- `components/FieldEditorFields.tsx` 共享旧弹窗与新字段抽屉的RHF字段；`SchemaFieldDrawer` 仅应用本地草稿，`SchemaEditor` 外层统一保存，`SchemaImpactDrawer` 显示真实预检结果。`DataStatusTable`、`TableSettingsForm`、`DataTableSourcePanel` 分别展示真实引用、内联资料编辑和来源事实。页面仅装配现有能力。
+- `scripts/qa-project-alignment-r3.mjs` 运行专用临时工作区真实Electron/服务及持久结果恢复；`measure-schema-commit.py` 测量自建临时库1000行/4MiB边界与一万行预检。`acceptance/gallery-r3/` 保留失败与成功运行、逐图审查、手测和机器报告，未完成报告不得替代阶段通过。

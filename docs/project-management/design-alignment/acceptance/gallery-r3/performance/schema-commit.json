@@ -1,0 +1,219 @@
+{
+  "recorded_at": "2026-09-13T20:03:32.979180+00:00",
+  "status": "passed",
+  "database_policy": "owned temporary databases removed after measurement; no user database opened",
+  "timing": "Preview wall time; successful commit timer from SQLAlchemy BEGIN IMMEDIATE execution to Session.after_commit. Rejections have no successful commit duration. Read count zero means no measured sample, not zero latency.",
+  "cases": [
+    {
+      "case": "1000_rows",
+      "status": "passed",
+      "rows": 1000,
+      "journal_mode": "delete",
+      "setup_ms": 2549.368,
+      "preview_ms": 26.594,
+      "commit_call_ms": 467.641,
+      "begin_immediate_to_commit_ms": 466.847,
+      "expected_rejection": false,
+      "commit_error": null,
+      "canonical_bytes_before": 59000,
+      "canonical_bytes_after": 104000,
+      "candidate_backfill_bytes": 104000,
+      "target_boundary_bytes": null,
+      "backfilled_records": 1000,
+      "db_bytes_before": 4251648,
+      "db_bytes_after": 5427200,
+      "database_sidecar_bytes": {
+        "-wal": 0,
+        "-shm": 0,
+        "-journal": 0
+      },
+      "concurrent_reads": {
+        "preview": {
+          "count": 6,
+          "min_ms": 0.271,
+          "median_ms": 0.33,
+          "p95_ms": 2.791,
+          "max_ms": 2.791
+        },
+        "commit": {
+          "count": 119,
+          "min_ms": 0.213,
+          "median_ms": 0.496,
+          "p95_ms": 1.079,
+          "max_ms": 23.917
+        }
+      },
+      "concurrent_read_failures": []
+    },
+    {
+      "case": "4mib_exact",
+      "status": "passed",
+      "rows": 1000,
+      "journal_mode": "delete",
+      "setup_ms": 3064.221,
+      "preview_ms": 93.184,
+      "commit_call_ms": 514.653,
+      "begin_immediate_to_commit_ms": 513.437,
+      "expected_rejection": false,
+      "commit_error": null,
+      "canonical_bytes_before": 4149304,
+      "canonical_bytes_after": 4194304,
+      "candidate_backfill_bytes": 4194304,
+      "target_boundary_bytes": 4194304,
+      "backfilled_records": 1000,
+      "db_bytes_before": 16760832,
+      "db_bytes_after": 30138368,
+      "database_sidecar_bytes": {
+        "-wal": 0,
+        "-shm": 0,
+        "-journal": 0
+      },
+      "concurrent_reads": {
+        "preview": {
+          "count": 13,
+          "min_ms": 0.252,
+          "median_ms": 0.303,
+          "p95_ms": 10.377,
+          "max_ms": 10.377
+        },
+        "commit": {
+          "count": 37,
+          "min_ms": 0.249,
+          "median_ms": 0.466,
+          "p95_ms": 7.622,
+          "max_ms": 385.117
+        }
+      },
+      "concurrent_read_failures": []
+    },
+    {
+      "case": "1001_rows_rejected",
+      "status": "passed",
+      "rows": 1001,
+      "journal_mode": "delete",
+      "setup_ms": 2450.072,
+      "preview_ms": 24.218,
+      "commit_call_ms": 2.317,
+      "begin_immediate_to_commit_ms": null,
+      "expected_rejection": true,
+      "commit_error": {
+        "code": "IMPACT_STALE",
+        "status": 409
+      },
+      "canonical_bytes_before": 59059,
+      "canonical_bytes_after": 59059,
+      "candidate_backfill_bytes": 104104,
+      "target_boundary_bytes": null,
+      "backfilled_records": 0,
+      "db_bytes_before": 4247552,
+      "db_bytes_after": 4247552,
+      "database_sidecar_bytes": {
+        "-wal": 0,
+        "-shm": 0,
+        "-journal": 0
+      },
+      "concurrent_reads": {
+        "preview": {
+          "count": 4,
+          "min_ms": 0.218,
+          "median_ms": 0.43,
+          "p95_ms": 2.52,
+          "max_ms": 2.52
+        },
+        "commit": {
+          "count": 1,
+          "min_ms": 0.459,
+          "median_ms": 0.459,
+          "p95_ms": 0.459,
+          "max_ms": 0.459
+        }
+      },
+      "concurrent_read_failures": []
+    },
+    {
+      "case": "4mib_plus_one_rejected",
+      "status": "passed",
+      "rows": 1000,
+      "journal_mode": "delete",
+      "setup_ms": 3022.637,
+      "preview_ms": 78.731,
+      "commit_call_ms": 2.368,
+      "begin_immediate_to_commit_ms": null,
+      "expected_rejection": true,
+      "commit_error": {
+        "code": "IMPACT_STALE",
+        "status": 409
+      },
+      "canonical_bytes_before": 4149305,
+      "canonical_bytes_after": 4149305,
+      "candidate_backfill_bytes": 4194305,
+      "target_boundary_bytes": 4194305,
+      "backfilled_records": 0,
+      "db_bytes_before": 16769024,
+      "db_bytes_after": 16769024,
+      "database_sidecar_bytes": {
+        "-wal": 0,
+        "-shm": 0,
+        "-journal": 0
+      },
+      "concurrent_reads": {
+        "preview": {
+          "count": 10,
+          "min_ms": 0.276,
+          "median_ms": 0.354,
+          "p95_ms": 11.895,
+          "max_ms": 11.895
+        },
+        "commit": {
+          "count": 1,
+          "min_ms": 0.456,
+          "median_ms": 0.456,
+          "p95_ms": 0.456,
+          "max_ms": 0.456
+        }
+      },
+      "concurrent_read_failures": []
+    },
+    {
+      "case": "10000_rows_rules_only",
+      "status": "passed",
+      "rows": 10000,
+      "journal_mode": "delete",
+      "setup_ms": 26054.793,
+      "preview_ms": 227.689,
+      "commit_call_ms": 6.209,
+      "begin_immediate_to_commit_ms": 5.9,
+      "expected_rejection": false,
+      "commit_error": null,
+      "canonical_bytes_before": 590000,
+      "canonical_bytes_after": 590000,
+      "candidate_backfill_bytes": 0,
+      "target_boundary_bytes": null,
+      "backfilled_records": 0,
+      "db_bytes_before": 38678528,
+      "db_bytes_after": 38682624,
+      "database_sidecar_bytes": {
+        "-wal": 0,
+        "-shm": 0,
+        "-journal": 0
+      },
+      "concurrent_reads": {
+        "preview": {
+          "count": 41,
+          "min_ms": 0.198,
+          "median_ms": 0.267,
+          "p95_ms": 5.968,
+          "max_ms": 15.928
+        },
+        "commit": {
+          "count": 2,
+          "min_ms": 0.347,
+          "median_ms": 0.403,
+          "p95_ms": 0.459,
+          "max_ms": 0.459
+        }
+      },
+      "concurrent_read_failures": []
+    }
+  ]
+}

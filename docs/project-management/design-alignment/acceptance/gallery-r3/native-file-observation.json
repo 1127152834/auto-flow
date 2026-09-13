@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-13T20:16:04.161032+00:00",
+  "run": "../../../../migration/pm2-detail-qa/run-cqRTZI/result.json",
+  "operator": "Codex computer-use / cua_repl",
+  "userManualAcceptance": "not-run",
+  "buildLabel": "build3",
+  "desktopBuildSha256": "f8dbecbd62a8feeda2931e109b85dab225f12684a678a99883a34c53debda2d0",
+  "nativeDialogPolicy": "real showOpenDialog/showSaveDialog; no replacements or injected picker results",
+  "observations": [
+    "Native open selected original.xlsx in tool-owned temporary directory",
+    "Native save wrote new filtered.xlsx",
+    "Native same-name prompt accepted; app reported existing target and kept original export unchanged",
+    "Native open selected replacement.xlsx; UI explicit mapping/impact published new generation and source hash remained unchanged",
+    "Complete Electron and FastAPI restart, then native open selected large-10000.xlsx; actual10000 rows and second page verified"
+  ],
+  "platform": "darwin-arm64",
+  "limits": [
+    "Native large import wall time152125ms includes operator interaction and a94sec computer-use lookup; not engine-only performance",
+    "Panel interactions are recorded in conversation computer-use output; application screenshots and checks stored in linked run",
+    "原生文件链采于build3；到最终build6文件选择授权/Excel导入导出实现未改。字段/状态视觉、设置缓存与批状态响应DTO及结果提示有后续修复，分别由build6专项与回归验证；不能把本原生记录标成build6。"
+  ]
+}

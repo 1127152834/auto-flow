@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  134 passed (134)
+      Tests  1126 passed (1126)
+   Start at  04:43:27
+   Duration  139.88s (transform 2.31s, setup 0ms, import 126.36s, tests 90.02s, environment 49.41s)

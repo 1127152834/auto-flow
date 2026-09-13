@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx -t older reconnect cache snapshot|two reconnects
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 47 skipped (49)
+   Start at  04:25:45
+   Duration  4.93s (transform 535ms, setup 0ms, import 3.69s, tests 754ms, environment 382ms)
