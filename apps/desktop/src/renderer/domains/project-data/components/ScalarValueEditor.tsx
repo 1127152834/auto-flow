@@ -34,8 +34,9 @@ export function ScalarValueEditor({ id, label, type, draft, onChange, disabled =
     { value: 'value', label: '填写值' },
   ]
   const page=presentation==='page',adaptiveText=compact||page,fieldLabel=page?'':label,fieldClass=page?'[&>label]:sr-only':undefined
-  return <fieldset className={`grid min-w-0 ${page?'items-start gap-3 sm:grid-cols-[7rem_minmax(0,1fr)]':compact?'gap-2':'gap-3'}`}>
-    <legend className={compact ? 'sr-only' : page?'pt-2 text-sm font-medium text-ink':'mb-1 text-sm font-medium text-ink'}>{label}</legend><div className={`grid min-w-0 ${compact?'gap-2':'gap-3'}`}>
+  return <fieldset className={`grid min-w-0 ${compact?'gap-2':'gap-3'}`}>
+    <legend className={compact||page?'sr-only':'mb-1 text-sm font-medium text-ink'}>{label}</legend><div data-record-field-layout={page?'page':undefined} className={page?'grid min-w-0 items-start gap-3 sm:grid-cols-[7rem_minmax(0,1fr)]':'contents'}>
+    {page?<span data-record-field-label className="pt-2 text-sm font-medium text-ink" aria-hidden="true">{label}</span>:null}<div data-record-field-controls={page?'true':undefined} className={`grid min-w-0 ${compact?'gap-2':'gap-3'}`}>
     {presenceDisplay === 'always' || draft.presence !== 'value' || readOnly || showPresence ? <FormField label="值状态" htmlFor={`${id}-presence`} error={errorTarget === 'presence' ? error : undefined}>
       <Select aria-label={`${label}值状态`} value={draft.presence} options={presenceOptions} disabled={disabled} readOnly={readOnly} clearable={false}
         onValueChange={value => { if (value) update({ presence: value as ScalarDraft['presence'] }) }} />
@@ -56,6 +57,6 @@ export function ScalarValueEditor({ id, label, type, draft, onChange, disabled =
         disabled={disabled} readOnly={readOnly} clearable={false} onValueChange={value => { if (value) update({ precision: value as ScalarDraft['precision'], ...(value === 'date' ? { offset: '' } : {}) }) }} /></FormField>
       <FormField className={fieldClass} label={fieldLabel} htmlFor={id} error={errorTarget === 'value' ? error : undefined}><Input aria-label={page?label:undefined} value={draft.text} disabled={disabled} readOnly={readOnly} placeholder={draft.precision === 'date' ? 'YYYY-MM-DD' : 'YYYY-MM-DDTHH:mm:ss'} onChange={event => update({ text: event.target.value })} /></FormField>
       {draft.precision === 'datetime' ? <FormField label="时区偏移" htmlFor={`${id}-offset`} hint="留空、Z 或 ±HH:MM" error={errorTarget === 'offset' ? error : undefined}><Input aria-label={`${label}时区偏移`} value={draft.offset} disabled={disabled} readOnly={readOnly} placeholder="+08:00" onChange={event => update({ offset: event.target.value })} /></FormField> : null}
-    </> : null}</div>
+    </> : null}</div></div>
   </fieldset>
 }
