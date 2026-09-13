@@ -345,3 +345,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 此前“等待原编辑任务”描述为历史状态，已被本节替代。DataTableDetailPage 现组合五页签与真实记录/字段/状态/表资料编辑、冻结选择批量状态、Excel重新导入/导出、来源事实；use-data-table-editing 负责显式写入、稳定作用域的持久原命令恢复、CAS和草稿保护，不在页面重写事务。表查询/列显示/滚动位置按工作区/项目/表保存。
 
 三个新/扩展 smoke 脚本：smoke-project-data.mjs 覆盖编辑与双工作区/重启恢复；smoke-pm2-detail-flows.mjs 覆盖文件和批状态含10000行；smoke-pm2-native-picker.mjs 需实际原生面板操作，不注入其结果。pm2-verification.json 汇总本机证据及未执行平台。verify-pm2-delivery.mjs --require-complete 在完整交付报告后应通过。主线迁移分叉仍未合并，PM3尚未开始。
+
+### 项目管理原型对齐设计资产（2026-09-13，proposed）
+
+`docs/project-management/design-alignment/`保存全模块逐图事实、自动化四页签旧实现补充、93张审阅/112张来源覆盖、独立审查与仅文档核验脚本；不含新业务原型代码。完整目标规格为`docs/superpowers/specs/2026-09-13-project-management-prototype-alignment-design.md`，现状顶部导航为已确认约束，新增聚合字段合同和参数权威仍待设计确认。
+
+前一轮`docs/project-management/reviews/2026-09-13-prototype-alignment/`的20图审阅及7组应用截图保留历史范围。本轮没有修改页面、数据库或Studio。PM3继续暂停；恢复前需参数身份/覆盖合同裁定及主线能力与迁移分叉核验。
