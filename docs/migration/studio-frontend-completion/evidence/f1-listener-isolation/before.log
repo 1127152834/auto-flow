@@ -1,0 +1,65 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/event-listener-isolation.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:20562) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/event-listener-isolation.test.ts (3 tests | 3 failed) 6019ms
+   × continues dispatching and advances the replay cursor after a listener throws over memory 2508ms
+   × continues dispatching and advances the replay cursor after a listener throws over http 2508ms
+   × does not query an applied command again when a command-result subscriber throws 1003ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-listener-isolation.test.ts > continues dispatching and advances the replay cursor after a listener throws over memory
+ FAIL  src/renderer/domains/workflows/tests/event-listener-isolation.test.ts > continues dispatching and advances the replay cursor after a listener throws over http
+AssertionError: expected [] to deeply equal [ 1, 2, 3 ]
+
+- Expected
++ Received
+
+- [
+-   1,
+-   2,
+-   3,
+- ]
++ []
+
+ ❯ vi.waitFor.timeout src/renderer/domains/workflows/tests/event-listener-isolation.test.ts:26:45
+     24|   client.on('fixture:item', (value: { seq: number }) => { received.pus…
+     25|   try {
+     26|     await vi.waitFor(() => expect(received).toEqual([1, 2, 3]), { time…
+       |                                             ^
+     27|     expect(requests.slice(0, 2)).toEqual(['0', '2'])
+     28|     expect(broken).toHaveBeenCalledTimes(3)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-listener-isolation.test.ts > does not query an applied command again when a command-result subscriber throws
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/renderer/domains/workflows/tests/event-listener-isolation.test.ts:47:46
+     45|   try {
+     46|     client.emit('fixture:command', {}, 'stable-command')
+     47|     await vi.waitFor(() => expect(confirmed).toHaveBeenCalledOnce())
+       |                                              ^
+     48|     expect(requests.some(url => url.endsWith('/commands/stable-command…
+     49|   } finally { client.disconnect(); setStudioTransport(mockRequest); er…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  02:04:54
+   Duration  6.59s (transform 88ms, setup 85ms, import 22ms, tests 6.02s, environment 360ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/event-listener-isolation.test.ts

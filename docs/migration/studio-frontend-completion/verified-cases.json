@@ -14464,5 +14464,59 @@
     "level": "integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "EVENT.listener-isolation.memory",
+    "capability": "内存 SSE 订阅者失败",
+    "preconditions": {
+      "listener": "首个订阅者抛错，第二个正常"
+    },
+    "steps": [
+      "触发事件",
+      "等待后续消费者",
+      "检查请求游标或命令查询"
+    ],
+    "expectedUI": "不适用：事件客户端集成测试",
+    "expectedIO": "按已确认序号补读；已收到的命令响应不重复查询",
+    "stateAssertion": "正常订阅者收到事件，抛错另行输出，不重复网页命令",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-listener-isolation/target.log"
+  },
+  {
+    "id": "EVENT.listener-isolation.http",
+    "capability": "HTTP SSE 订阅者失败",
+    "preconditions": {
+      "listener": "首个订阅者抛错，第二个正常"
+    },
+    "steps": [
+      "触发事件",
+      "等待后续消费者",
+      "检查请求游标或命令查询"
+    ],
+    "expectedUI": "不适用：事件客户端集成测试",
+    "expectedIO": "按已确认序号补读；已收到的命令响应不重复查询",
+    "stateAssertion": "正常订阅者收到事件，抛错另行输出，不重复网页命令",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-listener-isolation/target.log"
+  },
+  {
+    "id": "EVENT.listener-isolation.command",
+    "capability": "命令结果订阅者失败",
+    "preconditions": {
+      "listener": "首个订阅者抛错，第二个正常"
+    },
+    "steps": [
+      "触发事件",
+      "等待后续消费者",
+      "检查请求游标或命令查询"
+    ],
+    "expectedUI": "不适用：事件客户端集成测试",
+    "expectedIO": "按已确认序号补读；已收到的命令响应不重复查询",
+    "stateAssertion": "正常订阅者收到事件，抛错另行输出，不重复网页命令",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-listener-isolation/target.log"
   }
 ]

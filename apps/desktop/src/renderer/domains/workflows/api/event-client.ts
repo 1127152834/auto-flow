@@ -54,7 +54,11 @@ export class StudioEventClient {
     }
   }
   private dispatch(event: string, data?: unknown) {
-    for (const handler of this.listeners.get(event) ?? []) handler(...[data] as never[])
+    // UI subscriber failures are not transport failures: replaying would duplicate already-applied effects.
+    for (const handler of [...(this.listeners.get(event) ?? [])]) {
+      try { handler(...[data] as never[]) }
+      catch (error) { console.error('[Studio events] subscriber failed', event, error) }
+    }
   }
   private async listen() {
     if (this.controller.signal.aborted) return
