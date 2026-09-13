@@ -109,3 +109,37 @@ it('focuses and aria-describes the exact value, offset, and presence controls', 
   await user.click(screen.getByRole('button',{name:'创建记录'})); const presence=screen.getByRole('combobox',{name:'必填值状态'}); expect(presence).toHaveFocus(); expect(presence).toHaveAccessibleDescription('请填写必填字段')
   await chooseOption(user,presence,'value'); await user.click(screen.getByRole('button',{name:'创建记录'})); const requiredInput=screen.getByLabelText('必填'); expect(requiredInput).toHaveFocus(); expect(requiredInput).toHaveAccessibleDescription('请填写必填字段')
 })
+
+it('keeps a dirty draft and permits lookup-only recovery after reconnect', async () => {
+  const recover=vi.fn().mockResolvedValue(undefined), submit=vi.fn(), user=userEvent.setup()
+  const props={open:true,mode:'create' as const,sessionKey:'same',submissionEpoch:'i1',fields:[field('x',{name:'内容'})],onOpenChange:vi.fn(),onSubmit:submit,onRecover:recover}
+  const view=render(<RecordEditorDialog {...props}/>)
+  await chooseOption(user,screen.getByRole('combobox',{name:'内容值状态'}),'value'); await user.type(screen.getByLabelText('内容'),'draft')
+  view.rerender(<RecordEditorDialog {...props} submissionEpoch="i2" recoveryPending readonly error="结果未知" errorActions={<button>重试原请求</button>}/>)
+  expect(screen.getByLabelText('内容')).toHaveValue('draft'); expect(screen.getByRole('combobox',{name:'内容值状态'})).toHaveAttribute('aria-readonly','true')
+  expect(screen.getByRole('button',{name:'重试原请求'})).toBeVisible(); await user.click(screen.getByRole('button',{name:'核对保存结果'}))
+  expect(recover).toHaveBeenCalledOnce(); expect(submit).not.toHaveBeenCalled()
+})
+
+it('revokes a pending close approval when a newer submit fails', async () => {
+  let approve!: (approved: boolean) => void
+  const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), submit=vi.fn().mockRejectedValue(new Error('new submission failed'))
+  render(<RecordEditorDialog open mode="create" sessionKey="close-submit" fields={[]} onOpenChange={close} onRequestClose={requestClose} onSubmit={submit}/>)
+  await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建记录'})); await screen.findByText('new submission failed')
+  await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
+})
+
+it('clears a pending recovery lock when a new session starts', async () => {
+  let finish!:()=>void
+  const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), props={open:true,mode:'create' as const,fields:[],onOpenChange:vi.fn(),onSubmit:vi.fn(),onRecover:recover}
+  const view=render(<RecordEditorDialog {...props} sessionKey="old" recoveryPending/>); await userEvent.click(screen.getByRole('button',{name:'核对保存结果'}))
+  view.rerender(<RecordEditorDialog {...props} sessionKey="new"/>); expect(screen.getByRole('button',{name:'取消'})).toBeEnabled(); await act(async()=>finish())
+})
+
+it('rechecks guards after an asynchronous close approval', async () => {
+  let approve!:(allowed:boolean)=>void
+  const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), props={open:true,mode:'create' as const,sessionKey:'close-guard',fields:[],onOpenChange:close,onRequestClose:requestClose,onSubmit:vi.fn()}
+  const view=render(<RecordEditorDialog {...props}/>); await userEvent.click(screen.getByRole('button',{name:'取消'})); expect(requestClose).toHaveBeenCalledOnce()
+  view.rerender(<RecordEditorDialog {...props} saving/>); approve(true); await act(async()=>{})
+  expect(close).not.toHaveBeenCalled()
+})

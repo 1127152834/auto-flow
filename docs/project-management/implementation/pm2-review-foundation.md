@@ -186,3 +186,9 @@ DELETE的202结果与原操作查询使用相同identity/kind/succeeded及领域
 root实现两受控组件，复用Modal/Select，不发网络请求。删除必须展示真实impact/blockers，未知结果只核对；单行状态使用statusId|null，保留原业务状态和typed身份，无变化禁提交。
 
 独立审查发现并经RED修复：删除失败后旧取消许可仍能关窗（1fail7pass），改为新动作撤销旧关闭票据；新状态会话baseline等于上一dirty选择时不重渲染（2fail5pass），改为baseline/selection原子state。重连无须等待旧Promise即可核对，旧结果不覆盖新会话。最终两组件15测试、11独立探针、四文件ESLint和全项目typecheck通过。pm2_delete_dialog_review规格→工程→两次修复复核闭合。正式页面挂载及真实写入验收仍在Task6，不提升完整PM2。
+
+## C2c Task4 三Editor生命周期（2026-09-13）
+
+Record/Field/Status编辑器统一submissionEpoch/recoveryPending/errorActions/close/recover/saving回调；组件仍各自维护草稿，Field重连清影响保定义。初始5项新增RED修后59测试通过，独立审查又以7失败探针查出三类P2：旧关闭许可晚于新提交失败误关；新session未清完整恢复锁导致永久busy；Status pristine刷新提前return吞掉重连撤权。pm2_editor_lifecycle_fix补7仓内RED后修复，新动作推进epoch并撤销close锁，新会话完整清锁，撤权先于pristine刷新。
+
+最终root复跑66测试通过；pm2_editor_lifecycle_review独立规格→工程→修复复核66仓内+16仓外探针通过，全局typecheck/六文件ESLint通过。未把组件交付等同正式写入页面；Task3控制器及Task6挂载继续。

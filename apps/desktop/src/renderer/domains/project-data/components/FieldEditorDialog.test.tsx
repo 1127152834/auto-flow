@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { FieldEditorDialog } from './FieldEditorDialog'
@@ -146,4 +146,38 @@ it('keeps failed create input and clears dirty state when the dialog closes', as
   expect(await screen.findByRole('alert')).toHaveTextContent('保存失败'); expect(screen.getByLabelText('字段名称')).toHaveValue('Draft')
   view.rerender(<FieldEditorDialog open={false} {...props} />)
   expect(dirty).toHaveBeenLastCalledWith(false)
+})
+
+it('revokes an old preview on reconnect while preserving the definition draft', async () => {
+  let finish!:(value:typeof impact)=>void
+  const preview=vi.fn(()=>new Promise<typeof impact>(resolve=>{finish=resolve})), user=userEvent.setup()
+  const props={open:true,mode:'edit' as const,sessionKey:'same',submissionEpoch:'i1',initialField:field,onOpenChange:vi.fn(),onPreview:preview,onSubmit:vi.fn()}
+  const view=render(<FieldEditorDialog {...props}/>); await user.type(screen.getByLabelText('字段名称'),' draft'); await user.click(screen.getByRole('button',{name:'预检影响'}))
+  view.rerender(<FieldEditorDialog {...props} submissionEpoch="i2" recoveryPending onRecover={vi.fn().mockResolvedValue(undefined)}/>)
+  finish(impact); await Promise.resolve(); await Promise.resolve()
+  expect(screen.getByLabelText('字段名称')).toHaveValue('Email draft'); expect(screen.queryByText('已检查')).not.toBeInTheDocument(); expect(screen.getByRole('button',{name:'核对保存结果'})).toBeVisible()
+})
+
+it('allows readonly recovery and reports local saving lifecycle', async () => {
+  let finish!:()=>void
+  const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), savingChange=vi.fn()
+  render(<FieldEditorDialog open mode="edit" sessionKey="recover" initialField={field} readonly recoveryPending onOpenChange={vi.fn()} onSubmit={vi.fn()} onRecover={recover} onSavingChange={savingChange}/>)
+  await userEvent.click(screen.getByRole('button',{name:'核对保存结果'})); expect(recover).toHaveBeenCalledOnce(); expect(savingChange).toHaveBeenLastCalledWith(true)
+  finish(); await waitFor(()=>expect(savingChange).toHaveBeenLastCalledWith(false))
+})
+
+it('revokes a pending close approval when a newer submit fails', async () => {
+  let approve!: (approved: boolean) => void
+  const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), submit=vi.fn().mockRejectedValue(new Error('new submission failed'))
+  render(<FieldEditorDialog open mode="create" sessionKey="close-submit" onOpenChange={close} onRequestClose={requestClose} onSubmit={submit}/>)
+  fireEvent.change(screen.getByLabelText('字段名称'),{target:{value:'Name'}}); fireEvent.change(screen.getByLabelText('字段键'),{target:{value:'name'}})
+  await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建字段'})); await screen.findByText('new submission failed')
+  await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
+})
+
+it('clears a pending recovery lock when a new session starts', async () => {
+  let finish!:()=>void
+  const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), props={open:true,mode:'create' as const,onOpenChange:vi.fn(),onSubmit:vi.fn(),onRecover:recover}
+  const view=render(<FieldEditorDialog {...props} sessionKey="old" recoveryPending/>); await userEvent.click(screen.getByRole('button',{name:'核对保存结果'}))
+  view.rerender(<FieldEditorDialog {...props} sessionKey="new"/>); expect(screen.getByRole('button',{name:'取消'})).toBeEnabled(); await act(async()=>finish())
 })

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { startTransition, Suspense, useState } from 'react'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -139,4 +139,43 @@ it('accepts only nonnegative safe integer status orders', () => {
   expect(statusFormSchema.safeParse({ ...base, order: Number.MAX_SAFE_INTEGER }).success).toBe(true)
   expect(statusFormSchema.safeParse({ ...base, order: Number.MAX_SAFE_INTEGER + 1 }).success).toBe(false)
   expect(statusFormSchema.safeParse({ ...base, order: Number.NaN }).success).toBe(false)
+})
+
+it('preserves the draft across reconnect and allows readonly recovery only once', async () => {
+  const recover=vi.fn(()=>new Promise(()=>undefined)), submit=vi.fn(), user=userEvent.setup()
+  const props={open:true,mode:'edit' as const,sessionKey:'same',submissionEpoch:'i1',initialValues:{name:'A',color:'#111111',order:0},onOpenChange:vi.fn(),onSubmit:submit,onRecover:recover}
+  const view=render(<StatusEditorDialog {...props}/>); await user.type(screen.getByLabelText('状态名称'),' draft')
+  view.rerender(<StatusEditorDialog {...props} submissionEpoch="i2" recoveryPending readonly error="结果未知" errorActions={<button>重试原请求</button>}/>)
+  expect(screen.getByLabelText('状态名称')).toHaveValue('A draft'); expect(screen.getByLabelText('状态名称')).toHaveAttribute('readonly')
+  const button=screen.getByRole('button',{name:'核对保存结果'}); await user.dblClick(button); expect(recover).toHaveBeenCalledOnce(); expect(submit).not.toHaveBeenCalled()
+})
+
+it('does not submit after async validation when readonly commits', async () => {
+  const submit=vi.fn(), props={open:true,mode:'create' as const,sessionKey:'validation',onOpenChange:vi.fn(),onSubmit:submit}
+  const view=render(<StatusEditorDialog {...props}/>); fireEvent.change(screen.getByLabelText('状态名称'),{target:{value:'Ready'}}); fireEvent.submit(document.querySelector('#status-editor-form')!)
+  view.rerender(<StatusEditorDialog {...props} readonly/>); await Promise.resolve(); await Promise.resolve()
+  expect(submit).not.toHaveBeenCalled()
+})
+
+it('revokes a pending close approval when a newer submit fails', async () => {
+  let approve!: (approved: boolean) => void
+  const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})), submit=vi.fn().mockRejectedValue(new Error('new submission failed'))
+  render(<StatusEditorDialog open mode="create" sessionKey="close-submit" onOpenChange={close} onRequestClose={requestClose} onSubmit={submit}/>)
+  fireEvent.change(screen.getByLabelText('状态名称'),{target:{value:'Ready'}}); await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建状态'})); await screen.findByText('new submission failed')
+  await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
+})
+
+it('clears a pending recovery lock when a new session starts', async () => {
+  let finish!:()=>void
+  const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), props={open:true,mode:'create' as const,onOpenChange:vi.fn(),onSubmit:vi.fn(),onRecover:recover}
+  const view=render(<StatusEditorDialog {...props} sessionKey="old" recoveryPending/>); await userEvent.click(screen.getByRole('button',{name:'核对保存结果'}))
+  view.rerender(<StatusEditorDialog {...props} sessionKey="new"/>); expect(screen.getByRole('button',{name:'取消'})).toBeEnabled(); await act(async()=>finish())
+})
+
+it('processes reconnect revocation before a pristine initial value refresh', async () => {
+  let finish!:()=>void
+  const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), initial={name:'Ready',color:'#111111',order:0}
+  const props={open:true,mode:'edit' as const,sessionKey:'same',recoveryPending:true,onOpenChange:vi.fn(),onSubmit:vi.fn(),onRecover:recover}
+  const view=render(<StatusEditorDialog {...props} initialValues={initial} submissionEpoch="i1"/>); await userEvent.click(screen.getByRole('button',{name:'核对保存结果'}))
+  view.rerender(<StatusEditorDialog {...props} initialValues={{...initial}} submissionEpoch="i2"/>); expect(screen.getByRole('button',{name:'取消'})).toBeEnabled(); await act(async()=>finish())
 })

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { components } from '../../../shared/api/generated'
 import { FormField } from '../../../shared/components/FormField'
@@ -20,21 +20,21 @@ type Scalar = Schema['DataCellWrite']['value']
 export type FieldSubmission = { definition: Definition; existingRecordDefault?: Scalar } | { definition: Definition; impactRevision: number }
 export type FieldEditorDialogProps = {
   open: boolean; mode: 'create' | 'edit'; sessionKey: string; initialField?: Schema['DataFieldView']; isIdentityField?: boolean
-  saving?: boolean; error?: string | null; readonly?: boolean
-  onOpenChange(open: boolean): void; onPreview?(definition: Definition): Promise<Impact>; onSubmit(value: FieldSubmission): Promise<unknown>; onDirtyChange?(dirty: boolean): void
+  submissionEpoch?: string | number; saving?: boolean; recoveryPending?: boolean; error?: string | null; errorActions?: ReactNode; readonly?: boolean
+  onOpenChange(open: boolean): void; onRequestClose?(): boolean | void | Promise<boolean | void>; onPreview?(definition: Definition): Promise<Impact>; onSubmit(value: FieldSubmission): Promise<unknown>; onRecover?(): Promise<unknown>; onDirtyChange?(dirty: boolean): void; onSavingChange?(saving: boolean): void
 }
 
 const fromField = (field?: Schema['DataFieldView']): FieldFormValues => field ? { key: field.key, name: field.name, type: field.type, required: field.required, minLength: String(field.validation.minLength ?? ''), maxLength: String(field.validation.maxLength ?? ''), pattern: String(field.validation.pattern ?? ''), minimum: String(field.validation.minimum ?? ''), maximum: String(field.validation.maximum ?? '') } : emptyFieldForm
 const same = (a: unknown, b: FieldFormValues) => JSON.stringify(a) === JSON.stringify(b)
 
-export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIdentityField = false, saving = false, error, readonly = false, onOpenChange, onPreview, onSubmit, onDirtyChange }: FieldEditorDialogProps) {
+export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIdentityField = false, submissionEpoch = 0, saving = false, recoveryPending = false, error, errorActions, readonly = false, onOpenChange, onRequestClose, onPreview, onSubmit, onRecover, onDirtyChange, onSavingChange }: FieldEditorDialogProps) {
   const initial = fromField(initialField)
   const form = useForm<FieldFormValues>({ resolver: zodResolver(fieldFormSchema), defaultValues: initial })
   const values = useWatch({ control: form.control })
   const [draft, setDraft] = useState<ScalarDraft>(() => scalarDraft(undefined))
   const [impact, setImpact] = useState<Impact | null>(null)
-  const [busyLocal, setBusyLocal] = useState(false), [submitError, setSubmitError] = useState<string | null>(null), [confirmClose, setConfirmClose] = useState(false)
-  const epoch = useRef(0), active = useRef(sessionKey), wasOpen = useRef(open), baseline = useRef(initial), dirtyCallback = useRef(onDirtyChange), running = useRef<number | null>(null)
+  const [busyLocal, setBusyLocal] = useState(false), [recovering,setRecovering]=useState(false), [submitError, setSubmitError] = useState<string | null>(null), [confirmClose, setConfirmClose] = useState(false)
+  const epoch = useRef(0), active = useRef(sessionKey), activeSubmission=useRef(submissionEpoch), wasOpen = useRef(open), baseline = useRef(initial), dirtyCallback = useRef(onDirtyChange), savingCallback=useRef(onSavingChange), running = useRef<number | null>(null), recoverLock=useRef(false), closeLock=useRef(false)
   const changed = mode === 'create' ? form.formState.isDirty || draft.presence !== 'missing' : !same(values, baseline.current)
   const parsedValues = fieldFormSchema.safeParse(values)
   const currentDefinition = parsedValues.success ? fieldDefinition(parsedValues.data) as Definition : null
@@ -42,16 +42,17 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
   const baselineDefinition = baselineValues.success ? fieldDefinition(baselineValues.data) as Definition : null
   const actionChanged = mode === 'create' || currentDefinition === null ? changed : baselineDefinition !== null && JSON.stringify(currentDefinition) !== JSON.stringify(baselineDefinition)
   const protectedField = mode === 'edit' && Boolean(initialField?.formula || initialField?.writable === false)
-  const busy = saving || busyLocal
+  const busy = saving || busyLocal || recovering, frozen=busy||recoveryPending
   const blocked = Boolean(impact?.blockers.length)
-  const submitGuard = useRef({ blocked, readonly, protectedField })
+  const submitGuard = useRef({ blocked, readonly, protectedField, open, saving, recoveryPending })
   useLayoutEffect(() => {
-    const closed = !open && wasOpen.current
+    const closed = !open && wasOpen.current, reconnect=activeSubmission.current!==submissionEpoch
     const starts = active.current !== sessionKey || (open && !wasOpen.current); active.current = sessionKey; wasOpen.current = open
-    if (closed) { epoch.current += 1; running.current = null; setConfirmClose(false); dirtyCallback.current?.(false) }
+    activeSubmission.current=submissionEpoch
+    if (closed||reconnect) { epoch.current += 1; running.current = null; recoverLock.current=false; closeLock.current=false; setBusyLocal(false); setRecovering(false); setImpact(null); setSubmitError(null); setConfirmClose(false); if(closed)dirtyCallback.current?.(false) }
     if (!starts) return
-    epoch.current += 1; running.current = null; baseline.current = fromField(initialField); form.reset(baseline.current); setDraft(scalarDraft(undefined)); setImpact(null); setBusyLocal(false); setSubmitError(null); setConfirmClose(false)
-  }, [form, initialField, open, sessionKey])
+    epoch.current += 1; running.current = null; recoverLock.current=false; closeLock.current=false; baseline.current = fromField(initialField); form.reset(baseline.current); setDraft(scalarDraft(undefined)); setImpact(null); setBusyLocal(false); setRecovering(false); setSubmitError(null); setConfirmClose(false)
+  }, [form, initialField, open, sessionKey, submissionEpoch])
   useEffect(() => {
     if (!open || active.current !== sessionKey || changed) return
     const refreshed = fromField(initialField)
@@ -61,19 +62,21 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
       setImpact(null)
     }
   }, [changed, form, initialField, open, sessionKey])
-  useLayoutEffect(() => { dirtyCallback.current = onDirtyChange }, [onDirtyChange])
-  useLayoutEffect(() => { submitGuard.current = { blocked, readonly, protectedField } }, [blocked, protectedField, readonly])
+  useLayoutEffect(() => { dirtyCallback.current = onDirtyChange; savingCallback.current=onSavingChange }, [onDirtyChange,onSavingChange])
+  useLayoutEffect(() => { submitGuard.current = { blocked, readonly, protectedField, open, saving, recoveryPending } }, [blocked,open, protectedField,recoveryPending, readonly,saving])
   useEffect(() => { if (open) onDirtyChange?.(changed) }, [changed, onDirtyChange, open, sessionKey])
-  useEffect(() => () => { epoch.current += 1; dirtyCallback.current?.(false) }, [])
+  useEffect(()=>{onSavingChange?.(busy)},[busy,onSavingChange])
+  useEffect(() => () => { epoch.current += 1; dirtyCallback.current?.(false); savingCallback.current?.(false) }, [])
   useEffect(() => { setImpact(null) }, [values])
-  const requestClose = () => { if (busy) return; if (changed) setConfirmClose(true); else onOpenChange(false) }
+  const requestClose=()=>{if(busy||running.current!==null||recoverLock.current||closeLock.current)return;if(onRequestClose){const ticket=epoch.current;closeLock.current=true;void Promise.resolve().then(onRequestClose).then(approved=>{const guard=submitGuard.current;if(approved===true&&ticket===epoch.current&&guard.open&&!guard.saving&&!guard.recoveryPending&&running.current===null&&!recoverLock.current)onOpenChange(false)}).catch(()=>undefined).finally(()=>{if(ticket===epoch.current)closeLock.current=false});return}if(changed||recoveryPending){if(!recoveryPending)setConfirmClose(true);return}onOpenChange(false)}
   const run = (event: FormEvent) => {
-    event.preventDefault(); if (busy || running.current !== null || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)) return
+    event.preventDefault(); if (busy || recoveryPending || running.current !== null || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)) return
+    epoch.current += 1; closeLock.current=false
     const ticket = epoch.current
-    running.current = ticket; setBusyLocal(true); setSubmitError(null)
+    running.current = ticket; savingCallback.current?.(true); setBusyLocal(true); setSubmitError(null)
     void form.handleSubmit(async raw => {
-      if (ticket !== epoch.current || running.current !== ticket || submitGuard.current.blocked || submitGuard.current.readonly || submitGuard.current.protectedField) {
-        if (running.current === ticket) { running.current = null; setBusyLocal(false) }
+      if (ticket !== epoch.current || running.current !== ticket || !submitGuard.current.open || submitGuard.current.saving || submitGuard.current.recoveryPending || submitGuard.current.blocked || submitGuard.current.readonly || submitGuard.current.protectedField) {
+        if (running.current === ticket) { running.current = null; setBusyLocal(false); savingCallback.current?.(submitGuard.current.saving) }
         return
       }
       const definition = fieldDefinition(raw) as Definition
@@ -89,28 +92,29 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
           await onSubmit(parsed === undefined ? { definition } : { definition, existingRecordDefault: parsed })
         }
       } catch (caught) { if (ticket === epoch.current) setSubmitError(caught instanceof Error ? caught.message : '保存字段失败') }
-      finally { if (running.current === ticket) running.current = null; if (ticket === epoch.current) setBusyLocal(false) }
+      finally { if (running.current === ticket) running.current = null; if (ticket === epoch.current) {setBusyLocal(false);savingCallback.current?.(submitGuard.current.saving)} }
     }, errors => {
       if (ticket !== epoch.current || running.current !== ticket) return
-      running.current = null; setBusyLocal(false)
+      running.current = null; setBusyLocal(false); savingCallback.current?.(submitGuard.current.saving)
       form.setFocus(errors.name ? 'name' : errors.key ? 'key' : errors.type ? 'type' : errors.minLength ? 'minLength' : errors.maxLength ? 'maxLength' : errors.pattern ? 'pattern' : errors.minimum ? 'minimum' : 'maximum')
     })(event)
   }
+  const recover=()=>{if(!onRecover||recoverLock.current||busy)return;epoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=epoch.current;void onRecover().catch(caught=>{if(ticket===epoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===epoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(submitGuard.current.saving)}})}
   const type = (values.type ?? 'string') as Definition['type']
   return <>
-    <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新建字段' : '编辑字段'} description={protectedField ? '公式或只读字段不能编辑。' : isIdentityField ? '身份字段的类型不可修改。' : '设置字段定义和验证规则。'} footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button><Button type="submit" form="field-editor-form" variant="primary" disabled={busy || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)}>{busy ? '处理中…' : mode === 'edit' && !impact ? '预检影响' : mode === 'edit' ? '确认修改' : '创建字段'}</Button></>}>
+    <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新建字段' : '编辑字段'} description={protectedField ? '公式或只读字段不能编辑。' : isIdentityField ? '身份字段的类型不可修改。' : '设置字段定义和验证规则。'} footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="field-editor-form" variant="primary" disabled={busy || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)}>{busy ? '处理中…' : mode === 'edit' && !impact ? '预检影响' : mode === 'edit' ? '确认修改' : '创建字段'}</Button>}</>}>
       <form id="field-editor-form" className="grid gap-4" noValidate onSubmit={run}>
-        {error || submitError ? <p role="alert">{submitError ?? error}</p> : null}
-        <FormField label="字段名称" htmlFor="field-name" error={form.formState.errors.name?.message}><Input id="field-name" readOnly={busy || readonly || protectedField} {...form.register('name')} /></FormField>
-        <FormField label="字段键" htmlFor="field-key" error={form.formState.errors.key?.message}><Input id="field-key" readOnly={busy || readonly || protectedField} {...form.register('key')} /></FormField>
-        <FormField label="字段类型" htmlFor="field-type"><Select id="field-type" value={type} options={[{value:'string',label:'文本'},{value:'number',label:'数字'},{value:'boolean',label:'布尔'},{value:'date',label:'日期'}]} clearable={false} disabled={busy} readOnly={readonly || protectedField || isIdentityField} onValueChange={value => { if (value) { form.setValue('type', value as Definition['type'], { shouldDirty: true }); setDraft(scalarDraft(undefined)) } }} /></FormField>
-        <label className="flex items-center gap-2"><Checkbox checked={Boolean(values.required)} disabled={busy || readonly || protectedField} onCheckedChange={checked => form.setValue('required', checked === true, { shouldDirty: true })} />必填</label>
-        {type === 'string' ? <><FormField label="最小长度" htmlFor="field-min-length" error={form.formState.errors.minLength?.message}><Input id="field-min-length" readOnly={busy || readonly || protectedField} {...form.register('minLength')} /></FormField><FormField label="最大长度" htmlFor="field-max-length" error={form.formState.errors.maxLength?.message}><Input id="field-max-length" readOnly={busy || readonly || protectedField} {...form.register('maxLength')} /></FormField><FormField label="Python 正则表达式" htmlFor="field-pattern" error={form.formState.errors.pattern?.message}><Input id="field-pattern" readOnly={busy || readonly || protectedField} {...form.register('pattern')} /></FormField></> : null}
-        {type === 'number' ? <><FormField label="最小值" htmlFor="field-minimum" error={form.formState.errors.minimum?.message}><Input id="field-minimum" readOnly={busy || readonly || protectedField} {...form.register('minimum')} /></FormField><FormField label="最大值" htmlFor="field-maximum" error={form.formState.errors.maximum?.message}><Input id="field-maximum" readOnly={busy || readonly || protectedField} {...form.register('maximum')} /></FormField></> : null}
-        {mode === 'create' ? <><ScalarValueEditor id="field-default" label="现有记录默认值" type={type} draft={draft} onChange={setDraft} allowMissing disabled={busy} readOnly={readonly} /><p className="text-xs text-muted">非空表创建必填字段时需要默认值，最终由服务端校验。</p></> : null}
+        {error || submitError ? <div role="alert"><p>{submitError ?? error}</p>{errorActions?<div>{errorActions}</div>:null}</div> : null}
+        <FormField label="字段名称" htmlFor="field-name" error={form.formState.errors.name?.message}><Input id="field-name" readOnly={frozen || readonly || protectedField} {...form.register('name')} /></FormField>
+        <FormField label="字段键" htmlFor="field-key" error={form.formState.errors.key?.message}><Input id="field-key" readOnly={frozen || readonly || protectedField} {...form.register('key')} /></FormField>
+        <FormField label="字段类型" htmlFor="field-type"><Select id="field-type" value={type} options={[{value:'string',label:'文本'},{value:'number',label:'数字'},{value:'boolean',label:'布尔'},{value:'date',label:'日期'}]} clearable={false} disabled={frozen} readOnly={readonly || protectedField || isIdentityField} onValueChange={value => { if (value) { form.setValue('type', value as Definition['type'], { shouldDirty: true }); setDraft(scalarDraft(undefined)) } }} /></FormField>
+        <label className="flex items-center gap-2"><Checkbox checked={Boolean(values.required)} disabled={frozen || readonly || protectedField} onCheckedChange={checked => form.setValue('required', checked === true, { shouldDirty: true })} />必填</label>
+        {type === 'string' ? <><FormField label="最小长度" htmlFor="field-min-length" error={form.formState.errors.minLength?.message}><Input id="field-min-length" readOnly={frozen || readonly || protectedField} {...form.register('minLength')} /></FormField><FormField label="最大长度" htmlFor="field-max-length" error={form.formState.errors.maxLength?.message}><Input id="field-max-length" readOnly={frozen || readonly || protectedField} {...form.register('maxLength')} /></FormField><FormField label="Python 正则表达式" htmlFor="field-pattern" error={form.formState.errors.pattern?.message}><Input id="field-pattern" readOnly={frozen || readonly || protectedField} {...form.register('pattern')} /></FormField></> : null}
+        {type === 'number' ? <><FormField label="最小值" htmlFor="field-minimum" error={form.formState.errors.minimum?.message}><Input id="field-minimum" readOnly={frozen || readonly || protectedField} {...form.register('minimum')} /></FormField><FormField label="最大值" htmlFor="field-maximum" error={form.formState.errors.maximum?.message}><Input id="field-maximum" readOnly={frozen || readonly || protectedField} {...form.register('maximum')} /></FormField></> : null}
+        {mode === 'create' ? <><ScalarValueEditor id="field-default" label="现有记录默认值" type={type} draft={draft} onChange={setDraft} allowMissing disabled={frozen} readOnly={readonly} /><p className="text-xs text-muted">非空表创建必填字段时需要默认值，最终由服务端校验。</p></> : null}
         {impact ? <section aria-label="字段影响预检"><p>{impact.impacts.map(item => item.message).join('；') || '没有记录受到影响'}</p>{impact.blockers.map(item => <p role="alert" key={item.code}>{item.message}</p>)}</section> : null}
       </form>
     </Modal>
-    <AlertDialog open={open && confirmClose} onOpenChange={next => { if (!busy || next) setConfirmClose(next) }}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>关闭后，本次字段修改将不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus disabled={busy}>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" disabled={busy} onClick={() => { setConfirmClose(false); onOpenChange(false) }}>放弃修改</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
+    <AlertDialog open={open && confirmClose} onOpenChange={next => { if (!frozen || next) setConfirmClose(next) }}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>关闭后，本次字段修改将不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus disabled={frozen}>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" disabled={frozen} onClick={() => { if(frozen)return;setConfirmClose(false); onOpenChange(false) }}>放弃修改</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
   </>
 }

@@ -354,7 +354,7 @@ const statusDeleteBody = { expectedStatusRevision: e.status.statusRevision, expe
 
 **Files:** 三个已有 Editor 及各自测试；只读参考 `DataTableFormDialog.tsx/.test.tsx`，不改它。
 
-- [ ] 每个测试文件增加行为测试：dirty + `submissionEpoch` 变化仍保留输入；旧请求晚到不覆盖 error；recoveryPending 冻结字段且显示核对按钮；readonly 核对仍调用 onRecover；busy/unknown 时 Escape、取消、遮罩不能丢命令；外部 onRequestClose 返回 false不关、true只在再次检查 guard后关。StatusEditor 额外测试连续两次 submit只发一次以及异步RHF验证期间变readonly/closed不发请求。
+- [x] 每个测试文件增加行为测试：dirty + `submissionEpoch` 变化仍保留输入；旧请求晚到不覆盖 error；recoveryPending 冻结字段且显示核对按钮；readonly 核对仍调用 onRecover；busy/unknown 时 Escape、取消、遮罩不能丢命令；外部 onRequestClose 返回 false不关、true只在再次检查 guard后关。StatusEditor 额外测试连续两次 submit只发一次以及异步RHF验证期间变readonly/closed不发请求。
 
 ```tsx
 // 追加 RecordEditorDialog.test.tsx，复用此文件 field() 和 test environment。
@@ -372,8 +372,8 @@ it('keeps drafts and permits lookup-only recovery after reconnect to readonly', 
 })
 ```
 
-- [ ] 运行三个 editor 测试，预期新 props/按钮缺失失败。
-- [ ] 每个 Editor props 增补以下相同可选接口；这是接口一致化，不抽取第四个通用表单状态机：
+- [x] 运行三个 editor 测试，预期新 props/按钮缺失失败。
+- [x] 每个 Editor props 增补以下相同可选接口；这是接口一致化，不抽取第四个通用表单状态机：
 
 ```ts
 submissionEpoch?: string | number
@@ -396,7 +396,7 @@ footer 的替换代码（置于每个 Editor 既有取消按钮之后；保存�
 
 FieldEditor 使用其 `field-editor-form/actionChanged/blocked/protectedField`，StatusEditor 使用其 `status-editor-form/hasChanges`；三者 error 区渲染 `errorActions`。recover 实现直接采用 DataTableFormDialog 已验证的同名完整函数（包括 recoverLock/ticket/catch/finally），不通过 submit 模拟恢复；requestClose优先 onRequestClose，内部确认仅在没有外部guard且不是recoveryPending时使用。所有 unmount cleanup 通知 dirty=false/saving=false。
 
-- [ ] 执行三个 Editor 测试与 DataTableFormDialog 回归、typecheck；检查原 missing/null/date、identity/readonly保护、changed-only 测试仍通过。提交 `feat(project-data): preserve editor drafts across guarded recovery`。
+- [x] 执行三个 Editor 测试与 DataTableFormDialog 回归、typecheck；检查原 missing/null/date、identity/readonly保护、changed-only 测试仍通过。提交 `feat(project-data): preserve editor drafts across guarded recovery`。
 
 ## Task 5：单行状态与删除确认组件
 
