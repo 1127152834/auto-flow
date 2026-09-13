@@ -645,11 +645,6 @@
     "sha256": "8218da8c901ca0e0568288546721d527fbefc6fcb41e366047e8931830380531"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-excel.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.ts",
-    "sha256": "9e74555c98e1bdf0d2d39cc29175009c45cb4b7b022b7ec8027a29f2c28dede2"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-variables.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-variables.ts",
     "sha256": "7e131eb4a25ecb7dc4a9000af5d5df06b6225288abcdb13c94fbeb115b0360aa"
@@ -658,11 +653,6 @@
     "source": "frontend/src/components/workflow/documentation/content-cases.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-cases.ts",
     "sha256": "aca75038708a54a8450cf7a119834c58417c8fdee3b665a3f28cfb2ffd17f317"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-word.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.ts",
-    "sha256": "d7ad2a1f1af0b3a96c3e21ddd59c071c7a88f42c452b8cb0f2848364942dfd23"
   },
   {
     "source": "frontend/src/components/workflow/documentation/content-data.ts",
@@ -680,11 +670,6 @@
     "sha256": "6690c6f2900a008983e5023935c2d0e9b22dd73522ad52dfc48483fcacf0ed4e"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-sap.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.ts",
-    "sha256": "0ee329ca5d8f0eb6c679aa73a316d995669b9889858665e3cea7b07d2398ab85"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-getting-started.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.ts",
     "sha256": "444eadaa37ae7cd14e6d2bc5e30b83332853e4b0b49bc1a1ee8643f608ace119"
@@ -695,24 +680,9 @@
     "sha256": "ed36d3d9ca26a463c6763e8f4505770e92b0d3f6f429f1b67ecd60ea6ac83b87"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-media.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.ts",
-    "sha256": "f728545afc97cd1391e5d04da629a4fb650962ffe104c88ac55487da52832345"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-files.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.ts",
-    "sha256": "ca3d1cb27767624c02c3cad1c020cba46c53d9c182ebe05a4e590eb649e07e3f"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-ssh.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-ssh.ts",
     "sha256": "c4209d206f6603acf91a766511ff006ae492e9d8f75b58bc6d2c4ad05a8addf7"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-phone.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.ts",
-    "sha256": "7839af557f92db4412be1d58619b6255bd51327c6e184286e80158bf11825b3e"
   },
   {
     "source": "frontend/src/components/workflow/documentation/content-notifications.ts",
@@ -720,19 +690,9 @@
     "sha256": "84d5ce60f442d65c9a776e96d012380c25cf8d4119ff1a14a26fcdb6c8e57e58"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-feishu.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.ts",
-    "sha256": "5fa49ad512b246b9b17c5695d3209c3c68b618c2f39459ed5e15dcc716159654"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-selector.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-selector.ts",
     "sha256": "d689d98980c3efacd2103efddaef7bf32d90db8c34d2d81275874e42ad24eb09"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-bots.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.ts",
-    "sha256": "f11b1e48e1c2725af23c13e3fdde3d47f2071f50ff0711e4c26bbcfed494c92b"
   },
   {
     "source": "frontend/src/components/workflow/documentation/content-database.ts",
@@ -748,11 +708,6 @@
     "source": "frontend/src/components/workflow/documentation/content-network.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.ts",
     "sha256": "e1ee4eda9cc6d1392681f889cec4ebfedfdcab06a82adddf462a402fc43519ca"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-image.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.ts",
-    "sha256": "1611c465d56b952d26b31370e96f16ea695db4399237cd800e3e599b416d51a5"
   },
   {
     "source": "frontend/src/components/workflow/documentation/content-plugin-dev.ts",
@@ -805,29 +760,14 @@
     "sha256": "f6da54228441a16d48e5b9f0565aeb43d25238bf945c2ba1b94b7c907a0919dc"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-pdf.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.ts",
-    "sha256": "a658f8b972e5def989def91632fa8b757eb926e525b7605e4a05a161d64d15b0"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-advanced.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-advanced.ts",
     "sha256": "9985fa4d97afa57f9a03dfd52d83e444468c7f071651e97ea31ff3f9f79f66a3"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-input.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.ts",
-    "sha256": "53f4bb68793079db8603c2ac66056f70b1a57a3e091758ace4489f35ec47cbe7"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/content-math-flow.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-math-flow.ts",
     "sha256": "70b3b7a3d3ca45e0ac289e389277de94381fcfe7db981b3b8c75e7137ac9b510"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-desktop.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.ts",
-    "sha256": "c9e47309860ce94275a4576c63ee0560990dd7c15b42b81efa53cbabe9f7f035"
   },
   {
     "source": "frontend/src/components/workflow/documentation/content-debug.ts",

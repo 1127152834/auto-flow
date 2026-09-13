@@ -1,0 +1,9 @@
+(node:96624) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+AutoFlow 保留节点中文教学覆盖审计
+保留节点: 284；中文文档: 28
+仅验证中文名称可检索，不代表配置说明完整或节点执行已验收。
+未提及模块数: 0
+结果: PASS

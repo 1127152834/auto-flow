@@ -418,5 +418,77 @@
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.en.ts",
     "sha256": "e63a44248d0958f349fed827cd66f6f67235941e801a7e3c4a1e8f9b8591c646",
     "reason": "2026-09-14 用户明确取消界面国际化及英文文档，产品仅提供中文界面"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-excel.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-excel.ts",
+    "sha256": "9e74555c98e1bdf0d2d39cc29175009c45cb4b7b022b7ec8027a29f2c28dede2",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-word.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-word.ts",
+    "sha256": "d7ad2a1f1af0b3a96c3e21ddd59c071c7a88f42c452b8cb0f2848364942dfd23",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-sap.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-sap.ts",
+    "sha256": "0ee329ca5d8f0eb6c679aa73a316d995669b9889858665e3cea7b07d2398ab85",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-media.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-media.ts",
+    "sha256": "f728545afc97cd1391e5d04da629a4fb650962ffe104c88ac55487da52832345",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-files.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-files.ts",
+    "sha256": "ca3d1cb27767624c02c3cad1c020cba46c53d9c182ebe05a4e590eb649e07e3f",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-phone.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-phone.ts",
+    "sha256": "7839af557f92db4412be1d58619b6255bd51327c6e184286e80158bf11825b3e",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-feishu.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-feishu.ts",
+    "sha256": "5fa49ad512b246b9b17c5695d3209c3c68b618c2f39459ed5e15dcc716159654",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-bots.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-bots.ts",
+    "sha256": "f11b1e48e1c2725af23c13e3fdde3d47f2071f50ff0711e4c26bbcfed494c92b",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-image.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-image.ts",
+    "sha256": "1611c465d56b952d26b31370e96f16ea695db4399237cd800e3e599b416d51a5",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-pdf.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-pdf.ts",
+    "sha256": "a658f8b972e5def989def91632fa8b757eb926e525b7605e4a05a161d64d15b0",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-input.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-input.ts",
+    "sha256": "53f4bb68793079db8603c2ac66056f70b1a57a3e091758ace4489f35ec47cbe7",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-desktop.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.ts",
+    "sha256": "c9e47309860ce94275a4576c63ee0560990dd7c15b42b81efa53cbabe9f7f035",
+    "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
   }
 ]

@@ -14063,5 +14063,230 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/credential-save-failure.test.tsx"
+  },
+  {
+    "id": "DOC.excluded.excel",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "excel"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.word",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "word"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.desktop",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "desktop"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.input",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "input"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.image",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "image"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.files",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "files"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.pdf",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "pdf"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.media",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "media"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.phone",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "phone"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.bots",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "bots"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.sap",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "sap"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.excluded.feishu",
+    "capability": "已排除节点教学配套",
+    "preconditions": {
+      "topic": "feishu"
+    },
+    "steps": [
+      "读取教学导航与对应懒加载内容"
+    ],
+    "expectedUI": "导航无该专题",
+    "expectedIO": "该专题加载返回空内容",
+    "stateAssertion": "共享专题继续存在",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "DOC.retained.catalog-audit",
+    "capability": "中文名称可检索",
+    "preconditions": {
+      "retainedNodes": 284
+    },
+    "steps": [
+      "运行中文文档审计脚本"
+    ],
+    "expectedUI": "不适用：静态审计",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "284 个保留节点名称均被提及；不代表全部配置说明完整",
+    "level": "static",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f0-chinese-doc-scope/audit.log"
+  },
+  {
+    "id": "DOC.reference.browser",
+    "capability": "速查表导航",
+    "preconditions": {
+      "entry": "localhost:5175/studio.html"
+    },
+    "steps": [
+      "打开教学文档",
+      "点击模块速查表"
+    ],
+    "expectedUI": "标题和正文切换，五项补充说明可见",
+    "expectedIO": "加载对应中文文档",
+    "stateAssertion": "排除专题无导航入口",
+    "level": "browser-e2e",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f0-chinese-doc-scope/browser.md"
   }
 ]

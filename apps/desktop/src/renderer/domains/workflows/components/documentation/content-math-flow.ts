@@ -60,7 +60,7 @@ export const mathFlowGuideContent = `# 数学统计与 CSV 处理
 **示例**（计算学生成绩统计）：
 \`\`\`mermaid
 flowchart TD
-    A[读取Excel成绩表] --> B[提取分数列表]
+    A[准备成绩列表变量] --> B[提取分数列表]
     B --> C1[计算平均值\nlist_average]
     B --> C2[计算中位数\nstat_median]
     B --> C3[计算标准差\nstat_stdev]

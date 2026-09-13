@@ -132,35 +132,32 @@ curl -X POST http://localhost:YOUR_PORT/api/triggers/webhook/your_id \\
 ### 配置项
 - **监控路径**：文件或文件夹路径
 - **监控类型**：created（创建）、modified（修改）、deleted（删除）、any（任意）
-- **文件名模式**：通配符匹配，如 \`*.txt\`、\`report_*.xlsx\`
+- **文件名模式**：通配符匹配，如 \`*.txt\`、\`report_*.txt\`
 - **超时时间**：等待时间（0=无限等待）
 - **保存事件信息到变量**：事件数据保存的变量名
 
 ### 使用场景
 - 自动处理新下载的文件
 - 监控日志文件变化
-- 文件同步和备份
-- 自动导入数据文件
 
-### 示例：自动处理下载文件
+### 示例：收到文件事件后通知
 \`\`\`
 配置：
 - 监控路径：C:\\Users\\Downloads
 - 监控类型：created
-- 文件名模式：*.xlsx
+- 文件名模式：*.txt
 - 保存到变量：file_event
 
 后续流程：
-1. 读取Excel文件（使用 {{file_event.filePath}}）
-2. 数据处理
-3. 发送邮件通知
+1. 打印日志，记录 {{file_event.filePath}}
+2. 发送邮件通知
 \`\`\`
 
 ### 通配符说明
 - \`*\`：匹配任意字符
 - \`?\`：匹配单个字符
 - \`*.txt\`：所有txt文件
-- \`report_*.xlsx\`：以report_开头的Excel文件
+- \`report_*.txt\`：以report_开头的文本文件
 
 ---
 

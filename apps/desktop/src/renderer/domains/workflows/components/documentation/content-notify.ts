@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-notify.ts; see SOURCE.md for license and adaptation boundaries.
 export const notifyGuideContent = `# 多渠道通知
 
-本章介绍 WebRPA 支持的 17 种通知渠道，让工作流在完成、出错或达到特定条件时，自动向你发送通知。
+本章介绍 WebRPA 支持的 16 种通知渠道，让工作流在完成、出错或达到特定条件时，自动向你发送通知。
 
 ---
 
@@ -15,7 +15,6 @@ export const notifyGuideContent = `# 多渠道通知
 | Telegram | 国际用户首选 |
 | 钉钉 | 企业办公 |
 | 企业微信 | 企业办公 |
-| 飞书 | 企业办公 |
 | Bark | iOS 用户 |
 | Slack | 国际团队协作 |
 | Microsoft Teams | 微软生态企业 |
@@ -111,25 +110,6 @@ export const notifyGuideContent = `# 多渠道通知
 | 消息类型 | text/markdown/image/news |
 | 消息内容 | 正文 |
 | @成员 | 企业微信用户 ID，多个用逗号分隔 |
-
----
-
-## 飞书通知（notify_feishu）
-
-通过飞书群机器人发送消息。
-
-**获取 Webhook**：
-1. 飞书群 -> 群设置 -> 群机器人 -> 添加自定义机器人
-2. 复制 Webhook 地址
-
-**配置项**：
-
-| 参数 | 说明 |
-|------|------|
-| Webhook URL | 飞书机器人 Webhook |
-| 签名密钥 | 若开启了签名验证（可选） |
-| 消息类型 | text/post（富文本）/interactive（卡片） |
-| 消息内容 | 正文 |
 
 ---
 
