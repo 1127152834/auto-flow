@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
+import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
@@ -61,6 +62,8 @@ async function createWindow(): Promise<void> {
     request: fetch,
     clipboard,
   }))
+  ipcMain.removeHandler('autoflow:open-external-link')
+  ipcMain.handle('autoflow:open-external-link', createOpenExternalLinkHandler({ allowedSenderId: mainWindow.webContents.id, openExternal: url => shell.openExternal(url) }))
   ipcMain.removeHandler('autoflow:reveal-kernel')
   ipcMain.handle('autoflow:reveal-kernel', createRevealKernelHandler({
     allowedSenderId: mainWindow.webContents.id,

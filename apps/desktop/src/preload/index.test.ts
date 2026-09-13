@@ -1,11 +1,12 @@
 import { EventEmitter } from 'node:events'
 import { beforeEach, expect, it, vi } from 'vitest'
 import type { AutomationStudioBridge } from '../shared/automation-studio'
+import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { RuntimeBridge } from '../shared/runtime'
 
 let ipc: EventEmitter & { invoke: ReturnType<typeof vi.fn> }
-let bridge: AutomationStudioBridge & RuntimeBridge & ProjectFileBridge
+let bridge: AutomationStudioBridge & RuntimeBridge & ProjectFileBridge & ExternalLinkBridge
 
 beforeEach(async () => {
   vi.resetModules()
@@ -55,4 +56,11 @@ it('exposes controlled project file choices and per-window proof without paths',
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-excel-input', 'project')
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-xlsx-output', 'project', '资料.xlsx')
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:context')
+})
+
+it('exposes only the named external link invocation', async () => {
+  await bridge.openExternalLink('https://example.com')
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:open-external-link', 'https://example.com')
+  expect(bridge).not.toHaveProperty('ipcRenderer')
+  expect(bridge).not.toHaveProperty('shell')
 })

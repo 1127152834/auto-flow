@@ -1,4 +1,5 @@
 import type { components } from './generated'
+import type { ExternalLinkBridge } from '../../../shared/external-links'
 import type { ProjectFileBridge } from '../../../shared/project-files'
 import type { SettingsBridge } from '../../../shared/settings'
 import type { AutomationStudioBridge } from '../../../shared/automation-studio'
@@ -32,7 +33,7 @@ export type KernelOperation = components['schemas']['KernelOperationRead']
 export type KernelOperationList = components['schemas']['KernelOperationList']
 export type KernelRef = components['schemas']['KernelRefRead']
 
-export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge & ProjectFileBridge> & RuntimeBridge & {
+export type AutoflowBridge = Partial<SettingsBridge & AutomationStudioBridge & ProjectFileBridge & ExternalLinkBridge> & RuntimeBridge & {
   getSidecarStatus: () => Promise<SidecarStatus>
   restartSidecar: () => Promise<SidecarStatus>
   copyProxyCredentials?: (request: { proxyId: string; protocol: 'http' | 'socks5'; format: 'username' | 'password' | 'url' }) => Promise<{ copied: true }>

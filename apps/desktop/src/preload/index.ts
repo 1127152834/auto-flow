@@ -5,6 +5,7 @@ import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
 import type { AutomationStudioBridge, StudioLeaveReason } from '../shared/automation-studio'
+import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { DesktopRuntimeContext } from '../shared/runtime'
 
@@ -38,6 +39,8 @@ const automationStudioBridge: AutomationStudioBridge = {
   },
 }
 
+const externalLinkBridge: ExternalLinkBridge = { openExternalLink: url => ipcRenderer.invoke('autoflow:open-external-link', url) }
+
 const projectFileBridge: ProjectFileBridge = {
   getProjectFileContext: () => ipcRenderer.invoke('autoflow:project-files:context'),
   chooseExcelInput: projectId => ipcRenderer.invoke('autoflow:project-files:choose-excel-input', projectId),
@@ -62,6 +65,7 @@ contextBridge.exposeInMainWorld('autoflow', {
   ...automationStudioBridge,
   ...settingsBridge,
   ...projectFileBridge,
+  ...externalLinkBridge,
   getRuntimeContext: (): Promise<DesktopRuntimeContext> => ipcRenderer.invoke('autoflow:runtime-context'),
   onRuntimeContextChanged: (handler: (context: DesktopRuntimeContext) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, context: DesktopRuntimeContext) => handler(context)
