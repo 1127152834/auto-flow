@@ -47,11 +47,21 @@ it('shows column names and clearing search submits only an empty quick search',a
   expect(query.filter).toEqual({type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:0}]})
 })
 
-it('orders record actions and gives every query panel a title, close control, and geometry marker',async()=>{
+it('shows an optional local count and keeps the compact record actions in gallery order',async()=>{
+  const user=userEvent.setup()
+  const view=render(<RecordQueryToolbar {...props} totalCount={1248}/>)
+  expect(screen.getByText('1,248 条')).toBeVisible(); expect(screen.getByText('本地记录')).toBeVisible()
+  expect(Array.from(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','more','create'])
+  expect(screen.getByRole('button',{name:'搜索记录'})).toBeVisible()
+  await user.click(screen.getByRole('button',{name:'更多操作'}))
+  expect(screen.getByRole('menuitem',{name:'批量设置状态'})).toBeVisible(); expect(screen.getByRole('menuitem',{name:'导出 Excel'})).toBeVisible()
+  view.rerender(<RecordQueryToolbar {...props}/>)
+  expect(screen.queryByText('0 条')).not.toBeInTheDocument()
+})
+
+it('gives every query panel a title, close control, and geometry marker',async()=>{
   const user=userEvent.setup()
   render(<RecordQueryToolbar {...props}/>)
-  expect(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).toHaveLength(6)
-  expect(Array.from(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','batch-status','export','create'])
   for (const [buttonName,panelName,size] of [['筛选','记录筛选','filter'],['排序','记录排序','sort'],['显示列','显示列','columns']] as const) {
     await user.click(screen.getByRole('button',{name:buttonName}))
     const panel=screen.getByRole('dialog',{name:panelName})
@@ -92,9 +102,11 @@ it('keeps filter drafts local and applies only the filter part',async()=>{
   render(<RecordQueryToolbar {...props} onApplyQuery={onApplyQuery}/>)
   expect(screen.queryByRole('dialog',{name:'记录筛选'})).not.toBeInTheDocument()
   await user.click(screen.getByRole('button',{name:'筛选'}))
-  const panel=screen.getByRole('dialog',{name:'记录筛选'}); await user.click(within(panel).getByRole('button',{name:'添加状态条件'}))
+  expect(screen.queryByText('尚未应用')).not.toBeInTheDocument()
+  const panel=screen.getByRole('dialog',{name:'记录筛选'}); await user.click(within(panel).getByRole('combobox',{name:'业务状态'})); await user.click(screen.getByRole('option',{name:'进行中'}))
+  expect(within(panel).getByText('尚未应用')).toBeVisible()
   await user.click(within(panel).getByRole('button',{name:'取消'})); expect(onApplyQuery).not.toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'筛选'})); await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'添加状态条件'}))
+  await user.click(screen.getByRole('button',{name:'筛选'})); await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('combobox',{name:'业务状态'})); await user.click(screen.getByRole('option',{name:'进行中'}))
   await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'应用筛选'}))
   expect(onApplyQuery).toHaveBeenCalledWith({filter:{type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:0},{type:'status',operator:'eq',statusId:'open'}]},orderBy:query.orderBy})
 })
@@ -121,7 +133,7 @@ it('searches only on submit and disables search when no text field exists',async
 it('keeps a rejected apply open, focuses its error, resets drafts, and exposes record actions',async()=>{
   const user=userEvent.setup(),onApplyQuery=vi.fn(()=>false),clear=vi.fn(),batch=vi.fn(),view=render(<RecordQueryToolbar {...props} selectionCount={2} onClearSelection={clear} onBatchStatus={batch} onApplyQuery={onApplyQuery}/>)
   expect(screen.getByText('已选择 2 条')).toBeVisible(); await user.click(screen.getByRole('button',{name:'清空选择'})); expect(clear).toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'批量设置状态'})); expect(batch).toHaveBeenCalled()
+  await user.click(screen.getByRole('button',{name:'更多操作'})); await user.click(screen.getByRole('menuitem',{name:'批量设置状态'})); expect(batch).toHaveBeenCalled()
   await user.click(screen.getByRole('button',{name:'排序'})); await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'删除排序'})); await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'应用排序'}))
   const alert=screen.getByRole('alert'); expect(alert).toHaveFocus(); expect(screen.getByRole('dialog',{name:'记录排序'})).toBeVisible()
   view.rerender(<RecordQueryToolbar {...props} resetKey="next" onApplyQuery={onApplyQuery}/>); expect(screen.queryByRole('dialog',{name:'记录排序'})).not.toBeInTheDocument()
@@ -130,8 +142,7 @@ it('keeps a rejected apply open, focuses its error, resets drafts, and exposes r
 it('hides create in readonly mode and keeps batch status disabled',()=>{
   render(<RecordQueryToolbar {...props} readonly selectionCount={2}/>)
   expect(screen.queryByRole('button',{name:'新增记录'})).not.toBeInTheDocument()
-  expect(screen.getByRole('button',{name:'批量设置状态'})).toBeDisabled()
-  expect(screen.getByRole('button',{name:'导出 Excel'})).toBeEnabled()
+  expect(screen.getByRole('button',{name:'更多操作'})).toBeEnabled()
 })
 
 it('clears a failed search error when edited and adopts the next successful trimmed search',async()=>{
@@ -153,7 +164,7 @@ it('clears a previous search error after a successful explicit clear',async()=>{
 it('disables only export for an invalid effective query',async()=>{
   const user=userEvent.setup()
   render(<RecordQueryToolbar {...props} exportDisabled/>)
-  expect(screen.getByRole('button',{name:'导出 Excel'})).toBeDisabled()
+  await user.click(screen.getByRole('button',{name:'更多操作'})); expect(screen.getByRole('menuitem',{name:'导出 Excel'})).toHaveAttribute('data-disabled'); await user.keyboard('{Escape}')
   expect(screen.getByRole('button',{name:'筛选'})).toBeEnabled(); await user.click(screen.getByRole('button',{name:'筛选'})); expect(screen.getByRole('dialog',{name:'记录筛选'})).toBeVisible()
 })
 
