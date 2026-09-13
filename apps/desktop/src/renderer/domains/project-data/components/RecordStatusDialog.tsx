@@ -6,6 +6,7 @@ import { Select } from '../../../shared/components/ui/select'
 
 type Schema = components['schemas']
 export type RecordStatusDialogProps = {
+  presentation?: 'dialog' | 'inline'
   open: boolean; sessionKey: string; submissionEpoch: string | number
   record: Schema['DataRecordView']; statuses: Schema['DataStatusView'][]
   readonly: boolean; saving: boolean; recoveryPending: boolean; error: string | null; errorActions?: ReactNode
@@ -15,7 +16,7 @@ export type RecordStatusDialogProps = {
 }
 
 export function RecordStatusDialog(props: RecordStatusDialogProps) {
-  const { open, sessionKey, submissionEpoch, record, statuses, readonly, saving, recoveryPending, error, errorActions } = props
+  const { presentation='dialog', open, sessionKey, submissionEpoch, record, statuses, readonly, saving, recoveryPending, error, errorActions } = props
   const [draft, setDraft] = useState({ selected: record.statusId, baseline: record.statusId }), [working, setWorking] = useState(false), [localError, setLocalError] = useState<string | null>(null)
   const selected = draft.selected
   const live = useRef(props), selection = useRef(selected), baseline = useRef(record.statusId)
@@ -55,16 +56,17 @@ export function RecordStatusDialog(props: RecordStatusDialogProps) {
     catch (caught) { if (mounted.current && ticket === epoch.current) setLocalError(caught instanceof Error ? caught.message : '保存状态失败') }
     finally { if (mounted.current && ticket === epoch.current) { actionLock.current = false; setWorking(false); live.current.onSavingChange(false) } }
   }
-  return <Modal open={open} onOpenChange={next => { if (!next) void close() }} closeDisabled={busy || recoveryPending} size="small" title="修改业务状态" description={`${record.ref.recordKey.type} · ${record.ref.recordKey.value}`}
-    footer={<><Button type="button" variant="ghost" disabled={busy || recoveryPending} onClick={() => void close()}>取消</Button>
-      {recoveryPending ? <Button type="button" disabled={busy || !props.onRecover} onClick={() => void run(true)}>{working ? '正在核对…' : '核对保存结果'}</Button>
-        : <Button type="button" variant="primary" disabled={busy || readonly || unavailable || (selected !== null && selected === draft.baseline)} onClick={() => void run(false)}>{busy ? '正在保存…' : '保存状态'}</Button>}</>}>
-    <div className="grid gap-3">
+  const reset=()=>{selection.current=baseline.current;setDraft({selected:baseline.current,baseline:baseline.current});setLocalError(null);live.current.onDirtyChange(false)}
+  const content=<div className="grid gap-3">
       {error || localError ? <div role="alert"><p>{localError ?? error}</p>{errorActions}</div> : null}
       {unavailable ? <p role="alert">原状态已不可用，请载入最新资料。</p> : null}
       <Select aria-label="记录业务状态" value={selected ?? '__unset__'} clearable={false} readOnly={readonly} disabled={busy || recoveryPending || unavailable}
         options={[{ value: '__unset__', label: '未设置' }, ...statuses.map(status => ({ value: status.statusId, label: status.name }))]}
         onValueChange={value => { if (value === null || actionLock.current || live.current.saving || live.current.readonly || live.current.recoveryPending) return; const next = value === '__unset__' ? null : value; selection.current = next; setDraft({ selected: next, baseline: baseline.current }); live.current.onDirtyChange(next !== baseline.current) }} />
     </div>
-  </Modal>
+  const save=recoveryPending?<Button type="button" disabled={busy || !props.onRecover} onClick={() => void run(true)}>{working ? '正在核对…' : '核对保存结果'}</Button>
+    :<Button type="button" variant="primary" disabled={busy || readonly || unavailable || (selected !== null && selected === draft.baseline)} onClick={() => void run(false)}>{busy ? '正在保存…' : '保存状态'}</Button>
+  if(presentation==='inline')return open?<div aria-label="业务状态编辑" className="grid gap-3">{content}<div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="ghost" disabled={busy||recoveryPending||readonly||unavailable} onClick={()=>{selection.current=null;setDraft({selected:null,baseline:baseline.current});live.current.onDirtyChange(null!==baseline.current);void run(false)}}>清空状态</Button><Button type="button" variant="ghost" disabled={busy||recoveryPending} onClick={reset}>取消</Button>{save}</div></div>:null
+  return <Modal open={open} onOpenChange={next => { if (!next) void close() }} closeDisabled={busy || recoveryPending} size="small" title="修改业务状态" description={`${record.ref.recordKey.type} · ${record.ref.recordKey.value}`}
+    footer={<><Button type="button" variant="ghost" disabled={busy || recoveryPending} onClick={() => void close()}>取消</Button>{save}</>}>{content}</Modal>
 }

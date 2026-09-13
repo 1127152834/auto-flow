@@ -86,3 +86,16 @@ it.each([false, true])('renders the new session baseline when it equals the prio
   expect(screen.getByRole('button', { name: '保存状态' })).toBeDisabled()
   expect(p.onDirtyChange).toHaveBeenLastCalledWith(false)
 })
+
+it('renders inline without a dialog and cancels a draft back to its baseline', async () => {
+  const p=props({presentation:'inline'}),user=userEvent.setup();render(<RecordStatusDialog {...p}/>)
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+  await chooseOption(user,screen.getByRole('combobox',{name:'记录业务状态'}),'s2');expect(screen.getByRole('button',{name:'保存状态'})).toBeEnabled()
+  await user.click(screen.getByRole('button',{name:'取消'}));expect(screen.getByRole('combobox')).toHaveTextContent('待处理');expect(p.onDirtyChange).toHaveBeenLastCalledWith(false)
+  await chooseOption(user,screen.getByRole('combobox',{name:'记录业务状态'}),'s2');await user.click(screen.getByRole('button',{name:'保存状态'}));expect(p.onSubmit).toHaveBeenCalledWith('s2')
+})
+
+it('inline clear explicitly submits null even from a null baseline', async () => {
+  const p=props({presentation:'inline',record:{...record,statusId:null}});render(<RecordStatusDialog {...p}/>)
+  await userEvent.click(screen.getByRole('button',{name:'清空状态'}));expect(p.onSubmit).toHaveBeenCalledWith(null);expect(p.onOpenChange).not.toHaveBeenCalled()
+})
