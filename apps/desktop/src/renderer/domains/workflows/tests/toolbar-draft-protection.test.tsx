@@ -191,3 +191,78 @@ it('marks an AI-generated document dirty and preserves its declared variables', 
   expect(useWorkflowStore.getState().variables).toEqual(variables)
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
+
+const importBundle = { type: 'webrpa-workflow-bundle', version: 1, name: 'bundle target', workflow: { nodes: [], edges: [], variables: [{ name: 'bundled', value: 'from file', type: 'string', scope: 'global' }] } }
+function selectBundle(text: Promise<string> = Promise.resolve(JSON.stringify(importBundle))) {
+  const inputs: HTMLInputElement[] = []
+  const picker = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(function (this: HTMLInputElement) { inputs.push(this) })
+  fireEvent.click(screen.getByRole('button', { name: '导入整包' }))
+  picker.mockRestore()
+  const file = new File(['fixture'], 'test.bundle.json', { type: 'application/json' })
+  Object.defineProperty(file, 'text', { value: () => text })
+  fireEvent.change(inputs[0], { target: { files: [file] } })
+}
+it('does not call bundle import when leaving the draft is cancelled', async () => {
+  const request = vi.fn(mockRequest)
+  setStudioTransport(request)
+  render(<Toolbar />)
+  selectBundle()
+  fireEvent.click(await screen.findByRole('button', { name: '取消' }))
+  expect(request.mock.calls.some(([input]) => String(input).endsWith('/workflow-bundle/import'))).toBe(false)
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})
+it.each(['保存后继续', '放弃修改'])('imports a bundle after %s and keeps it dirty until saved', async choice => {
+  render(<Toolbar />)
+  selectBundle()
+  fireEvent.click(await screen.findByRole('button', { name: choice }))
+  await waitFor(() => expect(useWorkflowStore.getState().name).toBe('bundle target'))
+  expect(useWorkflowStore.getState().variables).toEqual(importBundle.workflow.variables)
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  expect(saved).toHaveLength(choice === '保存后继续' ? 1 : 0)
+})
+it.each(['save', 'import'])('keeps the document when bundle %s fails', async failure => {
+  const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input).endsWith(failure === 'save' ? '/save-to-folder' : '/workflow-bundle/import')) return Response.json({ success: false, error: 'bundle fixture failure' }, { status: 507 })
+    return mockRequest(input, init)
+  })
+  setStudioTransport(request)
+  render(<Toolbar />)
+  selectBundle()
+  fireEvent.click(await screen.findByRole('button', { name: failure === 'save' ? '保存后继续' : '放弃修改' }))
+  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('bundle fixture failure'))).toBe(true))
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+  if (failure === 'save') expect(request.mock.calls.some(([input]) => String(input).endsWith('/workflow-bundle/import'))).toBe(false)
+})
+it('does not import a bundle read for an older draft', async () => {
+  let release!: (text: string) => void
+  const text = new Promise<string>(resolve => { release = resolve })
+  render(<Toolbar />)
+  selectBundle(text)
+  expect((screen.getByRole('button', { name: '导入整包' }) as HTMLButtonElement).disabled).toBe(true)
+  act(() => useWorkflowStore.getState().updateVariable('draft', 'edited while reading'))
+  await act(async () => release(JSON.stringify(importBundle)))
+  expect(screen.queryByRole('dialog', { name: '保存当前工作流？' })).toBeNull()
+  expect(useWorkflowStore.getState().variables[0].value).toBe('edited while reading')
+})
+it('retains edits made during bundle resource restoration', async () => {
+  let release!: (response: Response) => void
+  setStudioTransport(async (input, init) => String(input).endsWith('/workflow-bundle/import')
+    ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  render(<Toolbar />)
+  selectBundle()
+  fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
+  await waitFor(() => expect(release).toBeDefined())
+  act(() => useWorkflowStore.getState().updateVariable('draft', 'edited while restoring'))
+  await act(async () => release(Response.json({ success: true, name: importBundle.name, workflow: importBundle.workflow })))
+  expect(useWorkflowStore.getState().variables[0].value).toBe('edited while restoring')
+  expect(useWorkflowStore.getState().logs.some(log => log.message.includes('资源已导入，但草稿'))).toBe(true)
+})
+it('does not report success for an invalid workflow returned by bundle import', async () => {
+  setStudioTransport(async (input, init) => String(input).endsWith('/workflow-bundle/import')
+    ? Response.json({ success: true, workflow: { nodes: null, edges: [] } }) : mockRequest(input, init))
+  render(<Toolbar />)
+  selectBundle()
+  fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
+  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('整包中的工作流格式无效'))).toBe(true))
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})

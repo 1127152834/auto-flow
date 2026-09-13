@@ -13100,5 +13100,141 @@
     "level": "component + editor rule",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.bundle-import.cancel",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "选测试整包 → 取消"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "无导入请求，保留变量",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.save",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "选测试整包 → 保存后继续"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "保存原草稿，再载入目标变量并标脏",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.discard",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "选测试整包 → 放弃修改"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "不保存原草稿，导入目标并标脏",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.save-failure",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "保存返回507"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "不调用导入服务，不离开",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.import-failure",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "导入返回507"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "保留原草稿",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.file-race",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "读取文件期间编辑"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "拒绝迟到文件，不要求放弃新编辑",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.service-race",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "资源恢复期间编辑"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "不覆盖画布，明确资源已导入",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.bundle-import.invalid-response",
+    "capability": "整包导入",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "独立 bundle fixture"
+    },
+    "steps": [
+      "返回无效工作流"
+    ],
+    "expectedUI": "根据决定及错误保留或替换画布；请求中禁用导入按钮",
+    "expectedIO": "确认之后才发资源导入请求",
+    "stateAssertion": "不报告成功，保留原画布",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
   }
 ]

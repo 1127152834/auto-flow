@@ -12,102 +12,102 @@
     ],
     "conditions": [
       {
+        "line": 34,
+        "expression": "language === 'javascript'"
+      },
+      {
         "line": 35,
         "expression": "language === 'javascript'"
       },
       {
-        "line": 36,
-        "expression": "language === 'javascript'"
-      },
-      {
-        "line": 41,
+        "line": 40,
         "expression": "variables.length > 0"
       },
       {
-        "line": 57,
+        "line": 56,
         "expression": "language === 'javascript'"
       },
       {
-        "line": 77,
+        "line": 76,
         "expression": "language === 'javascript'"
       },
       {
-        "line": 77,
+        "line": 76,
         "expression": "moduleType === 'inject_javascript'"
       },
       {
-        "line": 330,
+        "line": 329,
         "expression": "currentCode"
       },
       {
-        "line": 345,
+        "line": 343,
         "expression": "!userPrompt.trim()"
       },
       {
-        "line": 351,
+        "line": 349,
         "expression": "!globalConfig.ai.apiUrl"
       },
       {
-        "line": 356,
+        "line": 354,
         "expression": "!globalConfig.ai.model"
       },
       {
-        "line": 384,
+        "line": 382,
         "expression": "globalConfig.ai.apiKey"
       },
       {
-        "line": 394,
+        "line": 392,
         "expression": "!response.ok"
       },
       {
-        "line": 404,
+        "line": 402,
         "expression": "result.choices && result.choices.length > 0"
       },
       {
-        "line": 408,
+        "line": 406,
         "expression": "result.message"
       },
       {
-        "line": 416,
+        "line": 414,
         "expression": "line.trim()"
       },
       {
-        "line": 419,
+        "line": 417,
         "expression": "chunk.message?.content"
       },
       {
-        "line": 422,
+        "line": 420,
         "expression": "chunk.done"
       },
       {
-        "line": 430,
+        "line": 428,
         "expression": "!generatedCode"
       },
       {
-        "line": 448,
+        "line": 446,
         "expression": "err instanceof Error"
       },
       {
-        "line": 475,
+        "line": 473,
         "expression": "language === 'javascript'"
       },
       {
-        "line": 530,
+        "line": 528,
         "expression": "language === 'javascript'"
       },
       {
-        "line": 561,
+        "line": 559,
         "expression": "isLoading"
       }
     ],
     "bindings": [
       {
-        "line": 528,
+        "line": 526,
         "attribute": "value",
         "expression": "{userPrompt}"
       },
       {
-        "line": 529,
+        "line": 527,
         "attribute": "onChange",
         "expression": "{(e) => setUserPrompt(e.target.value)}"
       }
@@ -4415,7 +4415,7 @@
   {
     "component": "ModelProfilesManager",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 35,
+    "line": 34,
     "fields": [],
     "tools": [
       "Button",
@@ -4427,79 +4427,79 @@
     ],
     "conditions": [
       {
-        "line": 45,
+        "line": 44,
         "expression": "m.id === id"
       },
       {
-        "line": 49,
+        "line": 48,
         "expression": "activeModelId === id"
       },
       {
-        "line": 52,
+        "line": 51,
         "expression": "showScenes"
       },
       {
-        "line": 57,
+        "line": 56,
         "expression": "!m"
       },
       {
-        "line": 59,
+        "line": 58,
         "expression": "cur.has(s)"
       }
     ],
     "bindings": [
       {
-        "line": 71,
+        "line": 70,
         "attribute": "value",
         "expression": "{m.label}"
       },
       {
-        "line": 71,
+        "line": 70,
         "attribute": "onChange",
         "expression": "{(e) => update(m.id, { label: e.target.value })}"
       },
       {
-        "line": 73,
+        "line": 72,
         "attribute": "checked",
         "expression": "{activeModelId === m.id}"
       },
       {
-        "line": 78,
+        "line": 77,
         "attribute": "value",
         "expression": "{m.apiUrl}"
       },
       {
-        "line": 78,
+        "line": 77,
         "attribute": "onChange",
         "expression": "{(e) => update(m.id, { apiUrl: e.target.value })}"
       },
       {
-        "line": 80,
+        "line": 79,
         "attribute": "value",
         "expression": "{m.apiKey}"
       },
       {
-        "line": 80,
+        "line": 79,
         "attribute": "onChange",
         "expression": "{(e) => update(m.id, { apiKey: e.target.value })}"
       },
       {
-        "line": 81,
+        "line": 80,
         "attribute": "value",
         "expression": "{m.model}"
       },
       {
-        "line": 81,
+        "line": 80,
         "attribute": "onChange",
         "expression": "{(e) => update(m.id, { model: e.target.value })}"
       },
       {
-        "line": 88,
+        "line": 87,
         "attribute": "checked",
         "expression": "{(m.scenes || []).includes(s.key)}"
       },
       {
-        "line": 88,
+        "line": 87,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleScene(m.id, s.key)}"
       }
@@ -4509,7 +4509,7 @@
   {
     "component": "SecuritySettings",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 105,
+    "line": 104,
     "fields": [],
     "tools": [
       "Button",
@@ -4521,53 +4521,53 @@
     ],
     "conditions": [
       {
-        "line": 115,
+        "line": 114,
         "expression": "res.data"
       },
       {
-        "line": 129,
+        "line": 128,
         "expression": "r.data?.token"
       },
       {
-        "line": 132,
+        "line": 131,
         "expression": "!token"
       },
       {
-        "line": 151,
+        "line": 150,
         "expression": "isLocal"
       },
       {
-        "line": 157,
+        "line": 156,
         "expression": "copied"
       },
       {
-        "line": 171,
+        "line": 170,
         "expression": "copied"
       }
     ],
     "bindings": [
       {
-        "line": 148,
+        "line": 147,
         "attribute": "checked",
         "expression": "{enabled}"
       },
       {
-        "line": 148,
+        "line": 147,
         "attribute": "onCheckedChange",
         "expression": "{(c) => toggle(c)}"
       },
       {
-        "line": 155,
+        "line": 154,
         "attribute": "value",
         "expression": "{token || ''}"
       },
       {
-        "line": 169,
+        "line": 168,
         "attribute": "value",
         "expression": "{manualToken}"
       },
       {
-        "line": 169,
+        "line": 168,
         "attribute": "onChange",
         "expression": "{(e) => setManualToken(e.target.value)}"
       }
@@ -4577,7 +4577,7 @@
   {
     "component": "CredentialSettings",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 184,
+    "line": 183,
     "fields": [],
     "tools": [
       "Button",
@@ -4590,88 +4590,88 @@
     ],
     "conditions": [
       {
-        "line": 194,
+        "line": 193,
         "expression": "res.data?.credentials"
       },
       {
-        "line": 203,
+        "line": 202,
         "expression": "c.fields.length"
       },
       {
-        "line": 207,
+        "line": 206,
         "expression": "!editing"
       },
       {
-        "line": 208,
+        "line": 207,
         "expression": "!editing.name.trim()"
       },
       {
-        "line": 211,
+        "line": 210,
         "expression": "f.key.trim()"
       },
       {
-        "line": 213,
+        "line": 212,
         "expression": "Object.keys(fields).length === 0"
       },
       {
-        "line": 215,
+        "line": 214,
         "expression": "res.error"
       },
       {
-        "line": 222,
+        "line": 221,
         "expression": "!ok"
       },
       {
-        "line": 234,
+        "line": 233,
         "expression": "editing"
       },
       {
-        "line": 268,
+        "line": 267,
         "expression": "loading"
       },
       {
-        "line": 270,
+        "line": 269,
         "expression": "list.length === 0"
       }
     ],
     "bindings": [
       {
-        "line": 239,
+        "line": 238,
         "attribute": "value",
         "expression": "{editing.name}"
       },
       {
-        "line": 239,
+        "line": 238,
         "attribute": "onChange",
         "expression": "{(e) => setEditing({ ...editing, name: e.target.value })}"
       },
       {
-        "line": 243,
+        "line": 242,
         "attribute": "value",
         "expression": "{editing.description}"
       },
       {
-        "line": 243,
+        "line": 242,
         "attribute": "onChange",
         "expression": "{(e) => setEditing({ ...editing, description: e.target.value })}"
       },
       {
-        "line": 250,
+        "line": 249,
         "attribute": "value",
         "expression": "{f.key}"
       },
       {
-        "line": 250,
+        "line": 249,
         "attribute": "onChange",
         "expression": "{(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], key: e.target.value }; setEditing({ ...editing, fields: fs }) }}"
       },
       {
-        "line": 251,
+        "line": 250,
         "attribute": "value",
         "expression": "{f.value}"
       },
       {
-        "line": 251,
+        "line": 250,
         "attribute": "onChange",
         "expression": "{(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], value: e.target.value }; setEditing({ ...editing, fields: fs }) }}"
       }
@@ -4681,7 +4681,7 @@
   {
     "component": "RetentionSettings",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 295,
+    "line": 294,
     "fields": [],
     "tools": [
       "Button",
@@ -4694,52 +4694,52 @@
     ],
     "conditions": [
       {
-        "line": 304,
+        "line": 303,
         "expression": "res.data?.config"
       },
       {
-        "line": 305,
+        "line": 304,
         "expression": "res.data?.usage"
       },
       {
-        "line": 310,
+        "line": 309,
         "expression": "!cfg"
       },
       {
-        "line": 314,
+        "line": 313,
         "expression": "res.data?.config"
       },
       {
-        "line": 327,
+        "line": 326,
         "expression": "!cfg"
       },
       {
-        "line": 362,
+        "line": 361,
         "expression": "cleaning"
       },
       {
-        "line": 364,
+        "line": 363,
         "expression": "saving"
       }
     ],
     "bindings": [
       {
-        "line": 332,
+        "line": 331,
         "attribute": "value",
         "expression": "{cfg[key] as number}"
       },
       {
-        "line": 332,
+        "line": 331,
         "attribute": "onChange",
         "expression": "{(e) => setCfg({ ...cfg, [key]: Number(e.target.value) })}"
       },
       {
-        "line": 351,
+        "line": 350,
         "attribute": "checked",
         "expression": "{cfg.enabled}"
       },
       {
-        "line": 351,
+        "line": 350,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setCfg({ ...cfg, enabled: c })}"
       }
@@ -4749,7 +4749,7 @@
   {
     "component": "GlobalConfigDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 388,
+    "line": 387,
     "fields": [
       "ai",
       "aiAssistant",
@@ -4803,91 +4803,95 @@
     ],
     "conditions": [
       {
-        "line": 427,
+        "line": 425,
         "expression": "isOpen"
       },
       {
-        "line": 432,
+        "line": 430,
         "expression": "data.folder"
       },
       {
-        "line": 464,
+        "line": 462,
         "expression": "!b"
       },
       {
-        "line": 472,
+        "line": 470,
         "expression": "latestBrowserRef.current"
       },
       {
-        "line": 481,
+        "line": 479,
         "expression": "!isOpen || !hasDirs"
       },
       {
-        "line": 488,
+        "line": 486,
         "expression": "cancelled"
       },
       {
-        "line": 492,
+        "line": 490,
         "expression": "!cancelled"
       },
       {
-        "line": 499,
+        "line": 497,
         "expression": "showBrowserConfigTip && browserConfigTipRef.current"
       },
       {
-        "line": 510,
+        "line": 508,
         "expression": "!isOpen"
       },
       {
-        "line": 514,
+        "line": 512,
         "expression": "confirmed"
       },
       {
-        "line": 522,
+        "line": 520,
         "expression": "Array.isArray(value)"
       },
       {
-        "line": 523,
+        "line": 521,
         "expression": "value && typeof value === 'object'"
       },
       {
-        "line": 526,
+        "line": 524,
         "expression": "SENSITIVE_KEY_RE.test(k) && typeof v === 'string'"
       },
       {
-        "line": 541,
+        "line": 539,
         "expression": "includeSensitive"
       },
       {
-        "line": 553,
+        "line": 551,
         "expression": "includeSensitive"
       },
       {
-        "line": 570,
+        "line": 568,
         "expression": "!file"
       },
       {
-        "line": 575,
+        "line": 573,
         "expression": "!ok"
       },
       {
-        "line": 577,
+        "line": 575,
         "expression": "success"
       },
       {
-        "line": 581,
+        "line": 579,
         "expression": "cfg.browser"
       },
       {
-        "line": 591,
+        "line": 589,
         "expression": "input"
       },
       {
-        "line": 659,
+        "line": 657,
         "expression": "isActive"
       },
       {
-        "line": 666,
+        "line": 664,
+        "expression": "isActive"
+      },
+      {
+        "line": 669,
         "expression": "isActive"
       },
       {
@@ -4895,858 +4899,846 @@
         "expression": "isActive"
       },
       {
-        "line": 673,
-        "expression": "isActive"
-      },
-      {
-        "line": 702,
-        "expression": "uiLang === 'zh'"
-      },
-      {
-        "line": 707,
-        "expression": "uiLang === 'en'"
-      },
-      {
-        "line": 794,
+        "line": 774,
         "expression": "e.key === 'Escape'"
       },
       {
-        "line": 796,
+        "line": 776,
         "expression": "c"
       },
       {
-        "line": 1028,
+        "line": 1008,
         "expression": "!payload.api_url || !payload.model"
       },
       {
-        "line": 1034,
+        "line": 1014,
         "expression": "res.success && res.data"
       },
       {
-        "line": 1037,
+        "line": 1017,
         "expression": "d.success"
       },
       {
-        "line": 1048,
+        "line": 1028,
         "expression": "assistantTest.status === 'testing'"
       },
       {
-        "line": 1060,
+        "line": 1040,
         "expression": "typeof assistantTest.latency === 'number'"
       },
       {
-        "line": 1156,
+        "line": 1136,
         "expression": "active"
       },
       {
-        "line": 1159,
+        "line": 1139,
         "expression": "active"
       },
       {
-        "line": 1259,
+        "line": 1239,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'openai'"
       },
       {
-        "line": 1260,
+        "line": 1240,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'zhipu'"
       },
       {
-        "line": 1261,
+        "line": 1241,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'deepseek'"
       },
       {
-        "line": 1262,
+        "line": 1242,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'groq'"
       },
       {
-        "line": 1263,
+        "line": 1243,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'gemini'"
       },
       {
-        "line": 1285,
+        "line": 1265,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'ollama'"
       },
       {
-        "line": 1286,
+        "line": 1266,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'openai'"
       },
       {
-        "line": 1287,
+        "line": 1267,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'zhipu'"
       },
       {
-        "line": 1288,
+        "line": 1268,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'deepseek'"
       },
       {
-        "line": 1289,
+        "line": 1269,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'groq'"
       },
       {
-        "line": 1290,
+        "line": 1270,
         "expression": "(config.aiScraper?.llmProvider || 'ollama') === 'gemini'"
       },
       {
-        "line": 1445,
+        "line": 1425,
         "expression": "result.data?.success && result.data.path"
       },
       {
-        "line": 1455,
+        "line": 1435,
         "expression": "isSelectingFolder"
       },
       {
-        "line": 1618,
+        "line": 1598,
         "expression": "active"
       },
       {
-        "line": 1621,
+        "line": 1601,
         "expression": "opt.id === 'default'"
       },
       {
-        "line": 1621,
+        "line": 1601,
         "expression": "opt.id === 'dark'"
       },
       {
-        "line": 1623,
+        "line": 1603,
         "expression": "active"
       },
       {
-        "line": 1734,
+        "line": 1714,
         "expression": "(config.browser?.type || 'msedge') === option.value"
       },
       {
-        "line": 1775,
+        "line": 1755,
         "expression": "result.data?.success && result.data.path"
       },
       {
-        "line": 1785,
+        "line": 1765,
         "expression": "isSelectingBrowser"
       },
       {
-        "line": 1825,
+        "line": 1805,
         "expression": "result.data?.success && result.data.path"
       },
       {
-        "line": 1835,
+        "line": 1815,
         "expression": "isSelectingFolder"
       },
       {
-        "line": 1913,
+        "line": 1893,
         "expression": "result.data?.success && result.data.path"
       },
       {
-        "line": 1916,
+        "line": 1896,
         "expression": "cur"
       },
       {
-        "line": 1917,
+        "line": 1897,
         "expression": "!lines.includes(picked)"
       },
       {
-        "line": 1929,
+        "line": 1909,
         "expression": "isSelectingFolder"
       },
       {
-        "line": 1951,
+        "line": 1931,
         "expression": "chromiumStatus.available"
       },
       {
-        "line": 2193,
+        "line": 2173,
         "expression": "result.data?.success && result.data.path"
       },
       {
-        "line": 2318,
+        "line": 2298,
         "expression": "exportIncludeSensitive"
       }
     ],
     "bindings": [
       {
-        "line": 719,
+        "line": 699,
         "attribute": "checked",
         "expression": "{config.system.checkUpdateOnStartup}"
       },
       {
-        "line": 720,
+        "line": 700,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateSystemConfig({ checkUpdateOnStartup: c })}"
       },
       {
-        "line": 732,
+        "line": 712,
         "attribute": "checked",
         "expression": "{config.system.autoDetectClipboardScreenshot}"
       },
       {
-        "line": 733,
+        "line": 713,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateSystemConfig({ autoDetectClipboardScreenshot: c })}"
       },
       {
-        "line": 745,
+        "line": 725,
         "attribute": "checked",
         "expression": "{config.system.showAIAssistantButton}"
       },
       {
-        "line": 746,
+        "line": 726,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateSystemConfig({ showAIAssistantButton: c })}"
       },
       {
-        "line": 768,
+        "line": 748,
         "attribute": "checked",
         "expression": "{config.system.canvasWidgets?.[key] !== false}"
       },
       {
-        "line": 769,
+        "line": 749,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateSystemConfig({ canvasWidgets: { ...config.system.canvasWidgets, [key]: c } })}"
       },
       {
-        "line": 790,
+        "line": 770,
         "attribute": "value",
         "expression": "{combo}"
       },
       {
-        "line": 823,
+        "line": 803,
         "attribute": "value",
         "expression": "{config.ai.apiUrl}"
       },
       {
-        "line": 824,
+        "line": 804,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ apiUrl: e.target.value })}"
       },
       {
-        "line": 837,
+        "line": 817,
         "attribute": "value",
         "expression": "{config.ai.apiKey}"
       },
       {
-        "line": 838,
+        "line": 818,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ apiKey: e.target.value })}"
       },
       {
-        "line": 846,
+        "line": 826,
         "attribute": "value",
         "expression": "{config.ai.model}"
       },
       {
-        "line": 847,
+        "line": 827,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ model: e.target.value })}"
       },
       {
-        "line": 860,
+        "line": 840,
         "attribute": "value",
         "expression": "{config.ai.temperature}"
       },
       {
-        "line": 861,
+        "line": 841,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ temperature: parseFloat(e.target.value) || 0.7 })}"
       },
       {
-        "line": 870,
+        "line": 850,
         "attribute": "value",
         "expression": "{config.ai.maxTokens}"
       },
       {
-        "line": 871,
+        "line": 851,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ maxTokens: parseInt(e.target.value) || 2000 })}"
       },
       {
-        "line": 879,
+        "line": 859,
         "attribute": "value",
         "expression": "{config.ai.systemPrompt}"
       },
       {
-        "line": 880,
+        "line": 860,
         "attribute": "onChange",
         "expression": "{(e) => updateAIConfig({ systemPrompt: e.target.value })}"
       },
       {
-        "line": 898,
+        "line": 878,
         "attribute": "onChange",
         "expression": "{(patch) => updateAIConfig(patch)}"
       },
       {
-        "line": 905,
+        "line": 885,
         "attribute": "checked",
         "expression": "{config.ai?.autoFallback ?? false}"
       },
       {
-        "line": 905,
+        "line": 885,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIConfig({ autoFallback: c })}"
       },
       {
-        "line": 950,
+        "line": 930,
         "attribute": "value",
         "expression": "{config.aiAssistant?.apiUrl || ''}"
       },
       {
-        "line": 951,
+        "line": 931,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ apiUrl: e.target.value })}"
       },
       {
-        "line": 964,
+        "line": 944,
         "attribute": "value",
         "expression": "{config.aiAssistant?.apiKey || ''}"
       },
       {
-        "line": 965,
+        "line": 945,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ apiKey: e.target.value })}"
       },
       {
-        "line": 973,
+        "line": 953,
         "attribute": "value",
         "expression": "{config.aiAssistant?.model || ''}"
       },
       {
-        "line": 974,
+        "line": 954,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ model: e.target.value })}"
       },
       {
-        "line": 991,
+        "line": 971,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.supportsVision ?? false}"
       },
       {
-        "line": 992,
+        "line": 972,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ supportsVision: c })}"
       },
       {
-        "line": 1001,
+        "line": 981,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.isThinking ?? false}"
       },
       {
-        "line": 1002,
+        "line": 982,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ isThinking: c })}"
       },
       {
-        "line": 1084,
+        "line": 1064,
         "attribute": "value",
         "expression": "{config.aiAssistant?.temperature ?? 0.7}"
       },
       {
-        "line": 1085,
+        "line": 1065,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ temperature: parseFloat(e.target.value) || 0.7 })}"
       },
       {
-        "line": 1094,
+        "line": 1074,
         "attribute": "value",
         "expression": "{config.aiAssistant?.maxTokens ?? 4000}"
       },
       {
-        "line": 1095,
+        "line": 1075,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ maxTokens: parseInt(e.target.value) || 4000 })}"
       },
       {
-        "line": 1103,
+        "line": 1083,
         "attribute": "value",
         "expression": "{config.aiAssistant?.systemPrompt || ''}"
       },
       {
-        "line": 1104,
+        "line": 1084,
         "attribute": "onChange",
         "expression": "{(e) => updateAIAssistantConfig({ systemPrompt: e.target.value })}"
       },
       {
-        "line": 1119,
+        "line": 1099,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.enableTools ?? true}"
       },
       {
-        "line": 1120,
+        "line": 1100,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ enableTools: c })}"
       },
       {
-        "line": 1131,
+        "line": 1111,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.autoApprove ?? false}"
       },
       {
-        "line": 1132,
+        "line": 1112,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ autoApprove: c })}"
       },
       {
-        "line": 1182,
+        "line": 1162,
         "attribute": "onChange",
         "expression": "{(patch) => updateAIAssistantConfig(patch)}"
       },
       {
-        "line": 1189,
+        "line": 1169,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.autoFallback ?? false}"
       },
       {
-        "line": 1189,
+        "line": 1169,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ autoFallback: c })}"
       },
       {
-        "line": 1196,
+        "line": 1176,
         "attribute": "checked",
         "expression": "{config.aiAssistant?.autoSceneRoute ?? false}"
       },
       {
-        "line": 1196,
+        "line": 1176,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateAIAssistantConfig({ autoSceneRoute: c })}"
       },
       {
-        "line": 1207,
+        "line": 1187,
         "attribute": "value",
         "expression": "{config.aiAssistant?.maxHealRounds ?? 5}"
       },
       {
-        "line": 1208,
+        "line": 1188,
         "attribute": "onChange",
         "expression": "{(e) => {\n                        const n = Math.max(1, Math.min(20, parseInt(e.target.value || '5', 10) || 5))\n                        updateAIAssistantConfig({ maxHealRounds: n })\n                      }}"
       },
       {
-        "line": 1235,
+        "line": 1215,
         "attribute": "value",
         "expression": "{config.aiScraper?.llmProvider || 'ollama'}"
       },
       {
-        "line": 1236,
+        "line": 1216,
         "attribute": "onChange",
         "expression": "{(e) => updateAIScraperConfig({ llmProvider: e.target.value })}"
       },
       {
-        "line": 1238,
+        "line": 1218,
         "attribute": "value",
         "expression": "\"ollama\""
       },
       {
-        "line": 1239,
+        "line": 1219,
         "attribute": "value",
         "expression": "\"openai\""
       },
       {
-        "line": 1240,
+        "line": 1220,
         "attribute": "value",
         "expression": "\"groq\""
       },
       {
-        "line": 1241,
+        "line": 1221,
         "attribute": "value",
         "expression": "\"gemini\""
       },
       {
-        "line": 1242,
+        "line": 1222,
         "attribute": "value",
         "expression": "\"azure\""
       },
       {
-        "line": 1243,
+        "line": 1223,
         "attribute": "value",
         "expression": "\"zhipu\""
       },
       {
-        "line": 1244,
+        "line": 1224,
         "attribute": "value",
         "expression": "\"deepseek\""
       },
       {
-        "line": 1245,
+        "line": 1225,
         "attribute": "value",
         "expression": "\"custom\""
       },
       {
-        "line": 1256,
+        "line": 1236,
         "attribute": "value",
         "expression": "{config.aiScraper?.apiUrl || ''}"
       },
       {
-        "line": 1257,
+        "line": 1237,
         "attribute": "onChange",
         "expression": "{(e) => updateAIScraperConfig({ apiUrl: e.target.value })}"
       },
       {
-        "line": 1282,
+        "line": 1262,
         "attribute": "value",
         "expression": "{config.aiScraper?.llmModel || ''}"
       },
       {
-        "line": 1283,
+        "line": 1263,
         "attribute": "onChange",
         "expression": "{(e) => updateAIScraperConfig({ llmModel: e.target.value })}"
       },
       {
-        "line": 1338,
+        "line": 1318,
         "attribute": "value",
         "expression": "{config.aiScraper?.apiKey || ''}"
       },
       {
-        "line": 1339,
+        "line": 1319,
         "attribute": "onChange",
         "expression": "{(e) => updateAIScraperConfig({ apiKey: e.target.value })}"
       },
       {
-        "line": 1350,
+        "line": 1330,
         "attribute": "value",
         "expression": "{config.aiScraper?.azureEndpoint || ''}"
       },
       {
-        "line": 1351,
+        "line": 1331,
         "attribute": "onChange",
         "expression": "{(e) => updateAIScraperConfig({ azureEndpoint: e.target.value })}"
       },
       {
-        "line": 1380,
+        "line": 1360,
         "attribute": "value",
         "expression": "{config.email.senderEmail}"
       },
       {
-        "line": 1381,
+        "line": 1361,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailConfig({ senderEmail: e.target.value })}"
       },
       {
-        "line": 1390,
+        "line": 1370,
         "attribute": "value",
         "expression": "{config.email.authCode}"
       },
       {
-        "line": 1391,
+        "line": 1371,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailConfig({ authCode: e.target.value })}"
       },
       {
-        "line": 1400,
+        "line": 1380,
         "attribute": "value",
         "expression": "{config.email.smtpServer}"
       },
       {
-        "line": 1401,
+        "line": 1381,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailConfig({ smtpServer: e.target.value })}"
       },
       {
-        "line": 1410,
+        "line": 1390,
         "attribute": "value",
         "expression": "{config.email.smtpPort}"
       },
       {
-        "line": 1411,
+        "line": 1391,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailConfig({ smtpPort: parseInt(e.target.value) || 465 })}"
       },
       {
-        "line": 1430,
+        "line": 1410,
         "attribute": "value",
         "expression": "{config.workflow?.localFolder || ''}"
       },
       {
-        "line": 1431,
+        "line": 1411,
         "attribute": "onChange",
         "expression": "{(e) => updateWorkflowConfig({ localFolder: e.target.value })}"
       },
       {
-        "line": 1486,
+        "line": 1466,
         "attribute": "checked",
         "expression": "{config.workflow?.autoSave || false}"
       },
       {
-        "line": 1487,
+        "line": 1467,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateWorkflowConfig({ autoSave: c })}"
       },
       {
-        "line": 1500,
+        "line": 1480,
         "attribute": "checked",
         "expression": "{config.workflow?.showOverwriteConfirm !== false}"
       },
       {
-        "line": 1501,
+        "line": 1481,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateWorkflowConfig({ showOverwriteConfirm: c })}"
       },
       {
-        "line": 1514,
+        "line": 1494,
         "attribute": "checked",
         "expression": "{config.workflow?.autoSaveCopy === true}"
       },
       {
-        "line": 1515,
+        "line": 1495,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateWorkflowConfig({ autoSaveCopy: c })}"
       },
       {
-        "line": 1535,
+        "line": 1515,
         "attribute": "value",
         "expression": "{config.database?.host || 'localhost'}"
       },
       {
-        "line": 1536,
+        "line": 1516,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ host: e.target.value })}"
       },
       {
-        "line": 1545,
+        "line": 1525,
         "attribute": "value",
         "expression": "{config.database?.port || 3306}"
       },
       {
-        "line": 1546,
+        "line": 1526,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ port: parseInt(e.target.value) || 3306 })}"
       },
       {
-        "line": 1555,
+        "line": 1535,
         "attribute": "value",
         "expression": "{config.database?.user || ''}"
       },
       {
-        "line": 1556,
+        "line": 1536,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ user: e.target.value })}"
       },
       {
-        "line": 1565,
+        "line": 1545,
         "attribute": "value",
         "expression": "{config.database?.password || ''}"
       },
       {
-        "line": 1566,
+        "line": 1546,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ password: e.target.value })}"
       },
       {
-        "line": 1574,
+        "line": 1554,
         "attribute": "value",
         "expression": "{config.database?.database || ''}"
       },
       {
-        "line": 1575,
+        "line": 1555,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ database: e.target.value })}"
       },
       {
-        "line": 1583,
+        "line": 1563,
         "attribute": "value",
         "expression": "{config.database?.charset || 'utf8mb4'}"
       },
       {
-        "line": 1584,
+        "line": 1564,
         "attribute": "onChange",
         "expression": "{(e) => updateDatabaseConfig({ charset: e.target.value })}"
       },
       {
-        "line": 1639,
+        "line": 1619,
         "attribute": "checked",
         "expression": "{config.display?.showMouseCoordinates || false}"
       },
       {
-        "line": 1640,
+        "line": 1620,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateDisplayConfig({ showMouseCoordinates: c })}"
       },
       {
-        "line": 1653,
+        "line": 1633,
         "attribute": "checked",
         "expression": "{config.display?.runStatusHighlight || false}"
       },
       {
-        "line": 1654,
+        "line": 1634,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateDisplayConfig({ runStatusHighlight: c })}"
       },
       {
-        "line": 1673,
+        "line": 1653,
         "attribute": "value",
         "expression": "{[config.display?.handleSize || 12]}"
       },
       {
-        "line": 1674,
+        "line": 1654,
         "attribute": "onValueChange",
         "expression": "{(vals) => updateDisplayConfig({ handleSize: vals[0] })}"
       },
       {
-        "line": 1740,
+        "line": 1720,
         "attribute": "value",
         "expression": "{option.value}"
       },
       {
-        "line": 1741,
+        "line": 1721,
         "attribute": "checked",
         "expression": "{(config.browser?.type || 'msedge') === option.value}"
       },
       {
-        "line": 1757,
+        "line": 1737,
         "attribute": "value",
         "expression": "{config.browser?.executablePath || ''}"
       },
       {
-        "line": 1758,
+        "line": 1738,
         "attribute": "onChange",
         "expression": "{(e) => updateBrowserConfig({ executablePath: e.target.value })}"
       },
       {
-        "line": 1810,
+        "line": 1790,
         "attribute": "value",
         "expression": "{config.browser?.userDataDir || ''}"
       },
       {
-        "line": 1811,
+        "line": 1791,
         "attribute": "onChange",
         "expression": "{(e) => updateBrowserConfig({ userDataDir: e.target.value })}"
       },
       {
-        "line": 1861,
+        "line": 1841,
         "attribute": "value",
         "expression": "{config.browser?.launchArgs || ''}"
       },
       {
-        "line": 1862,
+        "line": 1842,
         "attribute": "onChange",
         "expression": "{(e) => updateBrowserConfig({ launchArgs: e.target.value })}"
       },
       {
-        "line": 1938,
+        "line": 1918,
         "attribute": "value",
         "expression": "{config.browser?.extensionDirs || ''}"
       },
       {
-        "line": 1939,
+        "line": 1919,
         "attribute": "onChange",
         "expression": "{(e) => updateBrowserConfig({ extensionDirs: e.target.value })}"
       },
       {
-        "line": 1973,
+        "line": 1953,
         "attribute": "checked",
         "expression": "{config.browser?.fullscreen ?? false}"
       },
       {
-        "line": 1974,
+        "line": 1954,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateBrowserConfig({ fullscreen: c })}"
       },
       {
-        "line": 1985,
+        "line": 1965,
         "attribute": "checked",
         "expression": "{config.browser?.autoCloseBrowser ?? true}"
       },
       {
-        "line": 1986,
+        "line": 1966,
         "attribute": "onCheckedChange",
         "expression": "{(c) => {\n                      console.log('[GlobalConfig] 切换 autoCloseBrowser:', c)\n                      updateBrowserConfig({ autoCloseBrowser: c })\n                      setShowBrowserConfigTip(true)\n                      // 立即验证更新\n                      setTimeout(() => {\n                        const newConfig = useGlobalConfigStore.getState().config\n                        console.log('[GlobalConfig] 更新后的配置:', newConfig.browser?.autoCloseBrowser)\n                      }, 100)\n                    }}"
       },
       {
-        "line": 2006,
+        "line": 1986,
         "attribute": "checked",
         "expression": "{config.browser?.autoCopySelector ?? true}"
       },
       {
-        "line": 2007,
+        "line": 1987,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateBrowserConfig({ autoCopySelector: c })}"
       },
       {
-        "line": 2071,
+        "line": 2051,
         "attribute": "value",
         "expression": "{config.emailTrigger?.imapServer || ''}"
       },
       {
-        "line": 2072,
+        "line": 2052,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailTriggerConfig({ imapServer: e.target.value })}"
       },
       {
-        "line": 2084,
+        "line": 2064,
         "attribute": "value",
         "expression": "{config.emailTrigger?.imapPort || 993}"
       },
       {
-        "line": 2085,
+        "line": 2065,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailTriggerConfig({ imapPort: parseInt(e.target.value) || 993 })}"
       },
       {
-        "line": 2096,
+        "line": 2076,
         "attribute": "value",
         "expression": "{config.emailTrigger?.emailAccount || ''}"
       },
       {
-        "line": 2097,
+        "line": 2077,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailTriggerConfig({ emailAccount: e.target.value })}"
       },
       {
-        "line": 2106,
+        "line": 2086,
         "attribute": "value",
         "expression": "{config.emailTrigger?.emailPassword || ''}"
       },
       {
-        "line": 2107,
+        "line": 2087,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailTriggerConfig({ emailPassword: e.target.value })}"
       },
       {
-        "line": 2119,
+        "line": 2099,
         "attribute": "value",
         "expression": "{config.emailTrigger?.checkInterval || 30}"
       },
       {
-        "line": 2120,
+        "line": 2100,
         "attribute": "onChange",
         "expression": "{(e) => updateEmailTriggerConfig({ checkInterval: parseInt(e.target.value) || 30 })}"
       },
       {
-        "line": 2142,
+        "line": 2122,
         "attribute": "value",
         "expression": "{config.apiTrigger?.defaultHeaders || '{}'}"
       },
       {
-        "line": 2143,
+        "line": 2123,
         "attribute": "onChange",
         "expression": "{(e) => updateApiTriggerConfig({ defaultHeaders: e.target.value })}"
       },
       {
-        "line": 2156,
+        "line": 2136,
         "attribute": "value",
         "expression": "{config.apiTrigger?.checkInterval || 10}"
       },
       {
-        "line": 2157,
+        "line": 2137,
         "attribute": "onChange",
         "expression": "{(e) => updateApiTriggerConfig({ checkInterval: parseInt(e.target.value) || 10 })}"
       },
       {
-        "line": 2180,
+        "line": 2160,
         "attribute": "value",
         "expression": "{config.fileTrigger?.defaultWatchPath || ''}"
       },
       {
-        "line": 2181,
+        "line": 2161,
         "attribute": "onChange",
         "expression": "{(e) => updateFileTriggerConfig({ defaultWatchPath: e.target.value })}"
       },
       {
-        "line": 2251,
+        "line": 2231,
         "attribute": "onChange",
         "expression": "{handleImportConfig}"
       },
       {
-        "line": 2311,
+        "line": 2291,
         "attribute": "checked",
         "expression": "{exportIncludeSensitive}"
       },
       {
-        "line": 2312,
+        "line": 2292,
         "attribute": "onChange",
         "expression": "{(e) => setExportIncludeSensitive(e.target.checked)}"
       }
@@ -5756,7 +5748,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-    "line": 428,
+    "line": 426,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5776,7 +5768,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 42,
+    "line": 51,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5786,7 +5778,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 57,
+    "line": 66,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5796,7 +5788,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 84,
+    "line": 97,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5806,7 +5798,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 114,
+    "line": 133,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5816,7 +5808,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 141,
+    "line": 160,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5826,7 +5818,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 154,
+    "line": 155,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5836,7 +5828,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 419,
+    "line": 420,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5846,7 +5838,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 562,
+    "line": 559,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5856,7 +5848,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 603,
+    "line": 600,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5866,7 +5858,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 763,
+    "line": 760,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5876,7 +5868,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 875,
+    "line": 872,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -6349,50 +6341,50 @@
         "expression": "typeof val === 'string' && val.trim()"
       },
       {
-        "line": 276,
+        "line": 274,
         "expression": "result !== undefined"
       },
       {
-        "line": 281,
+        "line": 279,
         "expression": "error instanceof Error"
       },
       {
-        "line": 305,
+        "line": 303,
         "expression": "!isOpen"
       },
       {
-        "line": 355,
+        "line": 353,
         "expression": "copied"
       },
       {
-        "line": 356,
+        "line": 354,
         "expression": "copied"
       },
       {
-        "line": 404,
+        "line": 402,
         "expression": "variables.length === 0"
       },
       {
-        "line": 427,
+        "line": 425,
         "expression": "testResult"
       },
       {
-        "line": 430,
+        "line": 428,
         "expression": "testResult.success"
       },
       {
-        "line": 435,
+        "line": 433,
         "expression": "testResult.success"
       }
     ],
     "bindings": [
       {
-        "line": 371,
+        "line": 369,
         "attribute": "value",
         "expression": "{currentCode}"
       },
       {
-        "line": 372,
+        "line": 370,
         "attribute": "onChange",
         "expression": "{(value) => setCurrentCode(value || '')}"
       }
@@ -6908,7 +6900,7 @@
   {
     "component": "LocalWorkflowDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 27,
+    "line": 29,
     "fields": [
       "content",
       "error",
@@ -6932,78 +6924,98 @@
     ],
     "conditions": [
       {
-        "line": 46,
+        "line": 55,
         "expression": "data.folder"
       },
       {
-        "line": 65,
+        "line": 74,
         "expression": "data.workflows"
       },
       {
-        "line": 76,
+        "line": 85,
         "expression": "isOpen"
       },
       {
-        "line": 90,
-        "expression": "data.success && data.content"
+        "line": 92,
+        "expression": "opening.current"
       },
       {
-        "line": 92,
+        "line": 103,
+        "expression": "version !== openVersion.current"
+      },
+      {
+        "line": 104,
+        "expression": "snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original"
+      },
+      {
+        "line": 108,
+        "expression": "response.ok && data.success && data.content"
+      },
+      {
+        "line": 109,
+        "expression": "!(await beforeReplace()) || version !== openVersion.current"
+      },
+      {
+        "line": 111,
         "expression": "success"
       },
       {
-        "line": 112,
+        "line": 121,
+        "expression": "version === openVersion.current"
+      },
+      {
+        "line": 131,
         "expression": "confirmed"
       },
       {
-        "line": 121,
+        "line": 140,
         "expression": "data.success"
       },
       {
-        "line": 148,
+        "line": 167,
         "expression": "data.success"
       },
       {
-        "line": 159,
+        "line": 178,
         "expression": "bytes < 1024"
       },
       {
-        "line": 160,
+        "line": 179,
         "expression": "bytes < 1024 * 1024"
       },
       {
-        "line": 164,
+        "line": 183,
         "expression": "!isOpen"
       },
       {
-        "line": 243,
+        "line": 262,
         "expression": "loading"
       },
       {
-        "line": 248,
+        "line": 267,
         "expression": "filteredWorkflows.length === 0"
       },
       {
-        "line": 251,
+        "line": 270,
         "expression": "searchTerm"
       },
       {
-        "line": 254,
+        "line": 273,
         "expression": "searchTerm"
       },
       {
-        "line": 257,
+        "line": 276,
         "expression": "searchTerm"
       }
     ],
     "bindings": [
       {
-        "line": 195,
+        "line": 214,
         "attribute": "value",
         "expression": "{searchTerm}"
       },
       {
-        "line": 196,
+        "line": 215,
         "attribute": "onChange",
         "expression": "{(e) => setSearchTerm(e.target.value)}"
       }
@@ -7013,7 +7025,7 @@
   {
     "component": "WorkflowVirtualList",
     "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-    "line": 305,
+    "line": 324,
     "fields": [],
     "tools": [
       "Clock",
@@ -7022,15 +7034,15 @@
     ],
     "conditions": [
       {
-        "line": 324,
+        "line": 343,
         "expression": "!workflow"
       },
       {
-        "line": 343,
+        "line": 362,
         "expression": "animate"
       },
       {
-        "line": 345,
+        "line": 364,
         "expression": "animate"
       }
     ],
@@ -8277,7 +8289,7 @@
   {
     "component": "ModuleItemRaw",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1518,
+    "line": 1516,
     "fields": [],
     "tools": [
       "GripHorizontal",
@@ -8286,71 +8298,75 @@
     ],
     "conditions": [
       {
-        "line": 1540,
+        "line": 1538,
         "expression": "!Icon || !label"
       },
       {
-        "line": 1541,
+        "line": 1539,
         "expression": "typeof console !== 'undefined'"
       },
       {
-        "line": 1549,
+        "line": 1547,
         "expression": "showColorPicker"
       },
       {
-        "line": 1552,
+        "line": 1550,
         "expression": "!target.closest('.color-picker-container')"
       },
       {
-        "line": 1578,
+        "line": 1576,
         "expression": "enableSortDrag && onSortDragOver && event.dataTransfer.types.includes('application/sort-favorite')"
       },
       {
-        "line": 1586,
+        "line": 1584,
         "expression": "enableSortDrag && onSortDrop && event.dataTransfer.types.includes('application/sort-favorite')"
       },
       {
-        "line": 1594,
+        "line": 1592,
         "expression": "!query"
       },
       {
-        "line": 1598,
+        "line": 1596,
         "expression": "index === -1"
       },
       {
-        "line": 1620,
+        "line": 1618,
         "expression": "colorButtonRef.current"
       },
       {
-        "line": 1641,
+        "line": 1639,
         "expression": "customColor"
       },
       {
-        "line": 1657,
+        "line": 1655,
         "expression": "isDropTarget"
       },
       {
-        "line": 1658,
+        "line": 1656,
         "expression": "isDragging"
       },
       {
-        "line": 1680,
+        "line": 1678,
+        "expression": "customColor"
+      },
+      {
+        "line": 1690,
         "expression": "customColor"
       },
       {
         "line": 1692,
-        "expression": "customColor"
-      },
-      {
-        "line": 1694,
         "expression": "highlight"
       },
       {
-        "line": 1711,
+        "line": 1709,
         "expression": "customColor"
       },
       {
-        "line": 1720,
+        "line": 1718,
+        "expression": "isFavorite"
+      },
+      {
+        "line": 1722,
         "expression": "isFavorite"
       },
       {
@@ -8358,11 +8374,7 @@
         "expression": "isFavorite"
       },
       {
-        "line": 1726,
-        "expression": "isFavorite"
-      },
-      {
-        "line": 1753,
+        "line": 1751,
         "expression": "color.value"
       }
     ],
@@ -8372,7 +8384,7 @@
   {
     "component": "ModuleItem",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1770,
+    "line": 1768,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -8382,7 +8394,7 @@
   {
     "component": "ModuleSidebarRaw",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1772,
+    "line": 1770,
     "fields": [],
     "tools": [
       "Boxes",
@@ -8405,79 +8417,83 @@
     ],
     "conditions": [
       {
-        "line": 1796,
+        "line": 1794,
         "expression": "window.innerWidth < 1024"
       },
       {
-        "line": 1840,
+        "line": 1838,
         "expression": "next.has(categoryName)"
       },
       {
-        "line": 1866,
+        "line": 1864,
         "expression": "showFavoritesOnly"
       },
       {
-        "line": 1875,
+        "line": 1873,
         "expression": "idxA !== -1"
       },
       {
-        "line": 1876,
+        "line": 1874,
         "expression": "idxB !== -1"
       },
       {
-        "line": 1889,
+        "line": 1887,
         "expression": "frequentModules.length > 0"
       },
       {
-        "line": 1893,
+        "line": 1891,
         "expression": "!searchQuery.trim()"
       },
       {
-        "line": 1909,
+        "line": 1907,
         "expression": "frequentMatched.length > 0"
       },
       {
-        "line": 1932,
+        "line": 1930,
         "expression": "searchQuery.trim() || showFavoritesOnly"
       },
       {
-        "line": 1946,
+        "line": 1944,
         "expression": "isCollapsed"
       },
       {
-        "line": 1946,
+        "line": 1944,
         "expression": "draftWidth === null"
       },
       {
-        "line": 1949,
+        "line": 1947,
         "expression": "isCollapsed"
       },
       {
-        "line": 2005,
+        "line": 2003,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2010,
+        "line": 2008,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2011,
+        "line": 2009,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2016,
+        "line": 2014,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2021,
+        "line": 2019,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2022,
+        "line": 2020,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2050,
+        "line": 2048,
+        "expression": "showFavoritesOnly"
+      },
+      {
+        "line": 2052,
         "expression": "showFavoritesOnly"
       },
       {
@@ -8485,54 +8501,50 @@
         "expression": "showFavoritesOnly"
       },
       {
-        "line": 2056,
-        "expression": "showFavoritesOnly"
-      },
-      {
-        "line": 2071,
+        "line": 2069,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2073,
+        "line": 2071,
         "expression": "filteredCategories.length === 0"
       },
       {
-        "line": 2093,
+        "line": 2091,
         "expression": "expanded"
       },
       {
-        "line": 2160,
+        "line": 2158,
         "expression": "!shouldEdit"
       },
       {
-        "line": 2166,
+        "line": 2164,
         "expression": "!alreadyEditing"
       },
       {
-        "line": 2184,
+        "line": 2182,
         "expression": "fresh"
       },
       {
-        "line": 2196,
+        "line": 2194,
         "expression": "node.type === 'group'"
       },
       {
-        "line": 2198,
+        "line": 2196,
         "expression": "node.type === 'note'"
       },
       {
-        "line": 2200,
+        "line": 2198,
         "expression": "node.type === 'subflow_header'"
       }
     ],
     "bindings": [
       {
-        "line": 2032,
+        "line": 2030,
         "attribute": "value",
         "expression": "{searchQuery}"
       },
       {
-        "line": 2033,
+        "line": 2031,
         "attribute": "onChange",
         "expression": "{(e) => setSearchQuery(e.target.value)}"
       }
@@ -8542,7 +8554,7 @@
   {
     "component": "ModuleSidebar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 2279,
+    "line": 2277,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9709,7 +9721,7 @@
   {
     "component": "DocumentationDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 21,
+    "line": 22,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9879,7 +9891,7 @@
   {
     "component": "Toolbar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 72,
+    "line": 73,
     "fields": [
       "asset",
       "assetId",
@@ -9948,446 +9960,442 @@
     ],
     "conditions": [
       {
-        "line": 138,
+        "line": 139,
         "expression": "nameOnFocusRef.current !== name"
       },
       {
-        "line": 158,
+        "line": 159,
         "expression": "data.folder"
       },
       {
-        "line": 172,
+        "line": 173,
         "expression": "moduleId && moduleName"
       },
       {
-        "line": 200,
+        "line": 201,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 205,
+        "line": 206,
         "expression": "findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)"
       },
       {
-        "line": 212,
+        "line": 213,
         "expression": "startNodeId"
       },
       {
-        "line": 220,
+        "line": 221,
         "expression": "startNodeId"
       },
       {
-        "line": 222,
+        "line": 223,
         "expression": "headless"
       },
       {
-        "line": 228,
+        "line": 229,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 253,
+        "line": 254,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 285,
+        "line": 286,
         "expression": "updateResult.error"
       },
       {
-        "line": 290,
+        "line": 291,
         "expression": "config.browser"
       },
       {
-        "line": 303,
+        "line": 304,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 315,
+        "line": 316,
         "expression": "executeResult.error"
       },
       {
-        "line": 321,
+        "line": 322,
         "expression": "startNodeId"
       },
       {
-        "line": 323,
+        "line": 324,
         "expression": "headless"
       },
       {
-        "line": 343,
+        "line": 344,
         "expression": "nodeId"
       },
       {
-        "line": 350,
+        "line": 351,
         "expression": "workflowId"
       },
       {
-        "line": 358,
+        "line": 359,
         "expression": "result.error"
       },
       {
-        "line": 371,
+        "line": 372,
         "expression": "!currentFolder"
       },
       {
-        "line": 373,
+        "line": 374,
         "expression": "result.error"
       },
       {
-        "line": 375,
+        "line": 376,
         "expression": "currentFolder"
       },
       {
-        "line": 377,
+        "line": 378,
         "expression": "!currentFolder"
       },
       {
-        "line": 378,
+        "line": 379,
         "expression": "!skipConfirm"
       },
       {
-        "line": 390,
+        "line": 391,
         "expression": "!skipConfirm && (autoSaveCopy || showOverwriteConfirm)"
       },
       {
-        "line": 397,
+        "line": 398,
         "expression": "!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean'"
       },
       {
-        "line": 400,
+        "line": 401,
         "expression": "checkData.exists && autoSaveCopy"
       },
       {
-        "line": 406,
+        "line": 407,
         "expression": "checkData.exists"
       },
       {
-        "line": 411,
+        "line": 412,
         "expression": "!shouldOverwrite"
       },
       {
-        "line": 431,
+        "line": 432,
         "expression": "response.ok && data.success"
       },
       {
-        "line": 432,
+        "line": 433,
         "expression": "!skipConfirm"
-      },
-      {
-        "line": 435,
-        "expression": "snapshotKey(exportWorkflow()) === savedContent"
       },
       {
         "line": 437,
+        "expression": "unchanged"
+      },
+      {
+        "line": 440,
         "expression": "!skipConfirm"
       },
       {
-        "line": 442,
+        "line": 445,
         "expression": "!skipConfirm"
       },
       {
-        "line": 456,
-        "expression": "useWorkflowStore.getState().hasUnsavedChanges"
+        "line": 460,
+        "expression": "await confirmLeave()"
       },
       {
-        "line": 461,
-        "expression": "!ok"
-      },
-      {
-        "line": 468,
+        "line": 465,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 472,
+        "line": 469,
         "expression": "isAutoLayouting"
       },
       {
-        "line": 476,
+        "line": 473,
         "expression": "res.ok"
       },
       {
-        "line": 492,
+        "line": 489,
         "expression": "!config.workflow?.autoSave"
       },
       {
-        "line": 495,
+        "line": 492,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 509,
+        "line": 506,
         "expression": "e.key === 'F5'"
       },
       {
-        "line": 511,
+        "line": 508,
         "expression": "e.shiftKey"
       },
       {
-        "line": 515,
+        "line": 512,
         "expression": "(e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'"
       },
       {
-        "line": 524,
+        "line": 521,
         "expression": "isInInput"
       },
       {
-        "line": 527,
+        "line": 524,
         "expression": "e.altKey && e.key === 'n'"
       },
       {
-        "line": 540,
+        "line": 537,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 573,
+        "line": 570,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 595,
+        "line": 592,
         "expression": "isScreenshotting"
       },
       {
-        "line": 616,
+        "line": 613,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 624,
+        "line": 621,
         "expression": "data.success && data.asset"
       },
       {
-        "line": 630,
+        "line": 627,
         "expression": "data.cancelled"
       },
       {
-        "line": 633,
+        "line": 630,
         "expression": "data.error === 'timeout'"
       },
       {
-        "line": 669,
+        "line": 666,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 675,
+        "line": 672,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 707,
+        "line": 704,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 708,
+        "line": 705,
         "expression": "p?.headless"
       },
       {
-        "line": 716,
+        "line": 713,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 761,
+        "line": 758,
         "expression": "!screenshotAsset"
       },
       {
-        "line": 772,
+        "line": 769,
         "expression": "response.ok"
       },
       {
-        "line": 795,
+        "line": 792,
         "expression": "screenshotAsset"
       },
       {
-        "line": 806,
+        "line": 803,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 815,
+        "line": 812,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 840,
+        "line": 837,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 879,
+        "line": 876,
         "expression": "data.code"
       },
       {
-        "line": 902,
+        "line": 899,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 914,
+        "line": 911,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 916,
+        "line": 913,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 927,
+        "line": 924,
         "expression": "data?.code"
       },
       {
-        "line": 937,
+        "line": 934,
         "expression": "target === 'selenium'"
       },
       {
-        "line": 949,
+        "line": 946,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 996,
+        "line": 993,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1006,
+        "line": 1003,
         "expression": "!password"
       },
       {
-        "line": 1007,
+        "line": 1004,
         "expression": "password.length < 4"
       },
       {
-        "line": 1038,
+        "line": 1035,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1049,
+        "line": 1046,
         "expression": "res.error || !res.data?.bundle"
       },
       {
-        "line": 1075,
+        "line": 1072,
         "expression": "!file"
       },
       {
-        "line": 1079,
+        "line": 1076,
         "expression": "res.error || !res.data?.success || !res.data.workflow"
       },
       {
-        "line": 1101,
+        "line": 1098,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1121,
+        "line": 1118,
         "expression": "v === undefined || v === null"
       },
       {
-        "line": 1122,
+        "line": 1119,
         "expression": "typeof v === 'string'"
       },
       {
-        "line": 1123,
+        "line": 1120,
         "expression": "v === ''"
       },
       {
-        "line": 1125,
+        "line": 1122,
         "expression": "v.includes('\\n')"
       },
       {
-        "line": 1128,
+        "line": 1125,
         "expression": "typeof v === 'number' || typeof v === 'boolean'"
       },
       {
-        "line": 1131,
+        "line": 1128,
         "expression": "s.length > 200"
       },
       {
-        "line": 1145,
+        "line": 1142,
         "expression": "variables.length > 0"
       },
       {
-        "line": 1150,
+        "line": 1147,
         "expression": "v.value === undefined || v.value === null || v.value === ''"
       },
       {
-        "line": 1152,
+        "line": 1149,
         "expression": "typeof v.value === 'object'"
       },
       {
-        "line": 1169,
+        "line": 1166,
         "expression": "data.remark"
       },
       {
-        "line": 1175,
+        "line": 1172,
         "expression": "META_FIELDS.has(k)"
       },
       {
-        "line": 1176,
+        "line": 1173,
         "expression": "v === undefined || v === null || v === ''"
       },
       {
-        "line": 1177,
+        "line": 1174,
         "expression": "typeof v === 'function'"
       },
       {
-        "line": 1181,
+        "line": 1178,
         "expression": "configEntries.length > 0"
       },
       {
-        "line": 1191,
+        "line": 1188,
         "expression": "edges.length > 0"
       },
       {
-        "line": 1258,
+        "line": 1255,
         "expression": "!editingCustomModuleId"
       },
       {
-        "line": 1263,
+        "line": 1260,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1294,
+        "line": 1291,
         "expression": "result.error"
       },
       {
-        "line": 1300,
+        "line": 1297,
         "expression": "result.data"
       },
       {
-        "line": 1303,
+        "line": 1300,
         "expression": "m.id === editingCustomModuleId"
       },
       {
-        "line": 1321,
+        "line": 1318,
         "expression": "!shouldContinue"
       },
       {
-        "line": 1343,
+        "line": 1340,
         "expression": "backupRaw"
       },
       {
-        "line": 1402,
+        "line": 1399,
         "expression": "shouldExit"
       },
       {
-        "line": 1421,
+        "line": 1418,
         "expression": "isRunning"
       },
       {
-        "line": 1423,
+        "line": 1420,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1427,
+        "line": 1424,
         "expression": "isRunning"
       },
       {
-        "line": 1427,
+        "line": 1424,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1443,
+        "line": 1440,
         "expression": "!isRunning"
       },
       {
-        "line": 1581,
+        "line": 1578,
         "expression": "isAutoLayouting"
       }
     ],
     "bindings": [
       {
-        "line": 1430,
+        "line": 1427,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 1431,
+        "line": 1428,
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }
@@ -37452,7 +37460,7 @@
   {
     "component": "ConfirmDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
-    "line": 19,
+    "line": 21,
     "fields": [],
     "tools": [
       "AlertTriangle",
@@ -37463,31 +37471,31 @@
     ],
     "conditions": [
       {
-        "line": 33,
+        "line": 37,
         "expression": "!isOpen"
       },
       {
-        "line": 35,
+        "line": 39,
         "expression": "e.key === 'Escape'"
       },
       {
-        "line": 37,
+        "line": 41,
         "expression": "type === 'alert'"
       },
       {
-        "line": 49,
+        "line": 53,
         "expression": "!isOpen"
       },
       {
-        "line": 114,
+        "line": 118,
         "expression": "!isAlertOnly && onCancel"
       },
       {
-        "line": 120,
+        "line": 124,
         "expression": "isAlertOnly"
       },
       {
-        "line": 153,
+        "line": 160,
         "expression": "type === 'warning'"
       }
     ],
@@ -37520,7 +37528,7 @@
   {
     "component": "ConfirmDialogComponent",
     "file": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
-    "line": 277,
+    "line": 284,
     "fields": [],
     "tools": [
       "ConfirmDialog"

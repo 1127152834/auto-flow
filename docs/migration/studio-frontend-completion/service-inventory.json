@@ -900,7 +900,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1287,
+          "line": 1307,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "customModulesApi.update(editingCustomModuleId, {\n        workflow: workflowData\n      })"
         },
@@ -3435,7 +3435,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1075,
+          "line": 1086,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.import(bundle)"
         }
@@ -3714,7 +3714,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1336,
+          "line": 1356,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('editingModuleChanged')"

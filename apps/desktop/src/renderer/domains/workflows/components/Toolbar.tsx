@@ -1062,36 +1062,56 @@ export function Toolbar() {
     }
   }, [nodes, edges, variables, name, addLog])
 
-  // 导入整包（还原自定义模块/图片，并加载工作流到画布）
+  // 导入整包（还原资源前处理草稿，迟到响应不能覆盖继续编辑的内容）。
+  const importingBundle = useRef(false)
+  const [isImportingBundle, setIsImportingBundle] = useState(false)
   const handleImportBundle = useCallback(() => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'application/json,.json'
     input.onchange = async () => {
       const file = input.files?.[0]
-      if (!file) return
+      if (!file || importingBundle.current) return
+      importingBundle.current = true
+      setIsImportingBundle(true)
+      const original = snapshotKey(exportWorkflow())
       try {
         const bundle = JSON.parse(await file.text())
+        if (snapshotKey(exportWorkflow()) !== original) {
+          addLog({ level: 'warning', message: '读取文件期间草稿已修改，请重新导入' })
+          return
+        }
+        if (!(await confirmLeave())) return
+        const accepted = snapshotKey(exportWorkflow())
         const res = await workflowBundleApi.import(bundle)
         if (res.error || !res.data?.success || !res.data.workflow) {
           addLog({ level: 'error', message: `整包导入失败: ${res.error || res.data?.error || '格式不正确'}` })
           return
         }
+        if (snapshotKey(exportWorkflow()) !== accepted) {
+          addLog({ level: 'warning', message: '资源已导入，但草稿在等待期间发生修改；已保留当前画布，请重新导入工作流' })
+          return
+        }
         const wf = res.data.workflow
-        useWorkflowStore.getState().importWorkflow({
+        const imported = useWorkflowStore.getState().importWorkflow({
           name: res.data.name || '导入的工作流',
           nodes: wf.nodes as any,
           edges: wf.edges as any,
           variables: wf.variables as any,
         })
+        if (!imported) {
+          addLog({ level: 'error', message: '整包中的工作流格式无效，已保留当前画布' })
+          return
+        }
+        useWorkflowStore.setState({ hasUnsavedChanges: true })
         const r = res.data.restored
         addLog({ level: 'success', message: `整包已导入（还原模块 ${r?.customModules || 0} 个、图片 ${r?.images || 0} 张）` })
       } catch (e) {
         addLog({ level: 'error', message: `整包文件解析失败: ${e}` })
-      }
+      } finally { importingBundle.current = false; setIsImportingBundle(false) }
     }
     input.click()
-  }, [addLog])
+  }, [addLog, confirmLeave, exportWorkflow])
 
   // 导出为 Markdown
   const handleExportMarkdown = useCallback(() => {
@@ -1512,7 +1532,7 @@ export function Toolbar() {
           <Code className="w-4 h-4 mr-1" />
           导出
         </Button>
-        <Button variant="tonal-info" size="sm" onClick={handleImportBundle}>
+        <Button variant="tonal-info" size="sm" onClick={handleImportBundle} disabled={isImportingBundle}>
           <Package className="w-4 h-4 mr-1" />导入整包
         </Button>
       </div>
@@ -1547,7 +1567,7 @@ export function Toolbar() {
             <Code className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
             导出
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleImportBundle}>
+          <DropdownMenuItem onClick={handleImportBundle} disabled={isImportingBundle}>
             <Package className="w-4 h-4 mr-2 text-[hsl(var(--brand-600))]" />
             导入整包
           </DropdownMenuItem>
