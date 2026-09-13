@@ -14858,5 +14858,221 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.401",
+    "capability": "AutoFlow 错误协议 401",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.409",
+    "capability": "AutoFlow 错误协议 409",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.422",
+    "capability": "AutoFlow 错误协议 422",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.503",
+    "capability": "AutoFlow 错误协议 503",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.proxy-unknown",
+    "capability": "AutoFlow 错误协议 proxy-unknown",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.memory.malformed",
+    "capability": "AutoFlow 错误协议 malformed",
+    "preconditions": {
+      "transport": "memory",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.401",
+    "capability": "AutoFlow 错误协议 401",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.409",
+    "capability": "AutoFlow 错误协议 409",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.422",
+    "capability": "AutoFlow 错误协议 422",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.503",
+    "capability": "AutoFlow 错误协议 503",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.proxy-unknown",
+    "capability": "AutoFlow 错误协议 proxy-unknown",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.autoflow-error.http.malformed",
+    "capability": "AutoFlow 错误协议 malformed",
+    "preconditions": {
+      "transport": "http",
+      "payload": "正式 generated.ts 错误包或损坏夹具"
+    },
+    "steps": [
+      "调用 Studio apiRequest",
+      "检查返回消息和错误元数据"
+    ],
+    "expectedUI": "可读错误消息保留；不把 details 整体拼到展示字符串",
+    "expectedIO": "保留状态码、requestId、字段错误、结果未知等正式合同信息",
+    "stateAssertion": "请求失败不作为成功数据返回，损坏包无伪造元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
   }
 ]

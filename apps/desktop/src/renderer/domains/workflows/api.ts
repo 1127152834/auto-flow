@@ -1,6 +1,7 @@
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from './api/transport'
 import { getBackendBaseUrl } from './api/config'
+import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
 function getApiBase(): string {
@@ -32,6 +33,7 @@ export interface ApiResponse<T = any> {
   success: boolean
   data?: T
   error?: string
+  errorDetails?: ApiWireError
 }
 
 // 调用 API 请求
@@ -57,10 +59,14 @@ export async function apiRequest<T = any>(
     if (!response.ok) {
       // 尝试解析后端返回的详细错误信息（FastAPI 422 的 detail 字段）
       let detailMessage = ''
+      let errorDetails: ApiWireError | undefined
       try {
         const errBody = await response.json()
         if (errBody) {
-          if (typeof errBody.detail === 'string') {
+          errorDetails = parseApiWireError(errBody)
+          if (errorDetails) {
+            detailMessage = errorDetails.message
+          } else if (typeof errBody.detail === 'string') {
             detailMessage = errBody.detail
           } else if (Array.isArray(errBody.detail)) {
             detailMessage = errBody.detail
@@ -79,7 +85,7 @@ export async function apiRequest<T = any>(
         // 忽略 JSON 解析失败
       }
       const baseError = `HTTP ${response.status}: ${response.statusText}`
-      return { success: false, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError }
+      return { success: false, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError, ...(errorDetails ? { errorDetails } : {}) }
     }
     const data = await response.json()
     if (data && !Array.isArray(data) && data.success === false) {

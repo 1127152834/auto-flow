@@ -1,0 +1,191 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:40900) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts (12 tests | 10 failed) 65ms
+     × preserves a standard error envelope at HTTP 401 10ms
+     × preserves a standard error envelope at HTTP 409 1ms
+     × preserves a standard error envelope at HTTP 422 1ms
+     × preserves a standard error envelope at HTTP 503 1ms
+     × preserves the proxy error contract including unknown command outcome 2ms
+     × preserves a standard error envelope at HTTP 401 28ms
+     × preserves a standard error envelope at HTTP 409 8ms
+     × preserves a standard error envelope at HTTP 422 3ms
+     × preserves a standard error envelope at HTTP 503 2ms
+     × preserves the proxy error contract including unknown command outcome 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio memory transport > preserves a standard error envelope at HTTP 401
+AssertionError: expected 'HTTP 401: ' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 401: "
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio memory transport > preserves a standard error envelope at HTTP 409
+AssertionError: expected 'HTTP 409: ' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 409: "
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio memory transport > preserves a standard error envelope at HTTP 422
+AssertionError: expected 'HTTP 422: ' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 422: "
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio memory transport > preserves a standard error envelope at HTTP 503
+AssertionError: expected 'HTTP 503: ' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 503: "
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio memory transport > preserves the proxy error contract including unknown command outcome
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio http transport > preserves the proxy error contract including unknown command outcome
+AssertionError: expected undefined to deeply equal { code: 'PROXY_OUTCOME_UNKNOWN', …(5) }
+
+- Expected:
+{
+  "code": "PROXY_OUTCOME_UNKNOWN",
+  "field_errors": {},
+  "message": "操作结果尚未确认",
+  "outcome_unknown": true,
+  "request_id": "proxy-request",
+  "retry_after_seconds": 3,
+}
+
++ Received:
+undefined
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:32:33
+     30|     body = { error }; status = 503
+     31|     const result = await apiRequest('/contract')
+     32|     expect(result.errorDetails).toEqual(error)
+       |                                 ^
+     33|     expect(result.error).toContain('操作结果尚未确认')
+     34|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio http transport > preserves a standard error envelope at HTTP 401
+AssertionError: expected 'HTTP 401: Unauthorized' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 401: Unauthorized"
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio http transport > preserves a standard error envelope at HTTP 409
+AssertionError: expected 'HTTP 409: Conflict' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 409: Conflict"
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio http transport > preserves a standard error envelope at HTTP 422
+AssertionError: expected 'HTTP 422: Unprocessable Entity' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 422: Unprocessable Entity"
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts > AutoFlow errors through Studio http transport > preserves a standard error envelope at HTTP 503
+AssertionError: expected 'HTTP 503: Service Unavailable' to contain '服务拒绝本次操作'
+
+Expected: "服务拒绝本次操作"
+Received: "HTTP 503: Service Unavailable"
+
+ ❯ src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts:23:26
+     21|     const result = await apiRequest('/contract')
+     22|     expect(result.success).toBe(false)
+     23|     expect(result.error).toContain('服务拒绝本次操作')
+       |                          ^
+     24|     expect(result.error).toContain(`HTTP ${code}`)
+     25|     expect(result.errorDetails).toEqual(error)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 2 passed (12)
+   Start at  02:25:13
+   Duration  1.45s (transform 135ms, setup 116ms, import 51ms, tests 65ms, environment 961ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts

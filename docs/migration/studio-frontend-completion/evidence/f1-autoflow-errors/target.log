@@ -1,0 +1,18 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/autoflow-error-envelope.test.ts src/renderer/domains/workflows/tests/api-business-failures.test.ts src/renderer/shared/api/client.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:41808) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41814) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41817) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  3 passed (3)
+      Tests  51 passed (51)
+   Start at  02:25:42
+   Duration  2.10s (transform 137ms, setup 125ms, import 74ms, tests 113ms, environment 1.43s)

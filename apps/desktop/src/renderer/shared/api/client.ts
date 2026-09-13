@@ -63,6 +63,27 @@ function stringRecord(value: unknown): Record<string, string> | undefined {
   return entries.length ? Object.fromEntries(entries) : undefined
 }
 
+export function parseApiWireError(payload: unknown): ApiWireError | undefined {
+  const envelope = record(payload)
+  const detail = record(envelope?.error)
+  let error: ApiWireError | undefined
+  if (typeof detail?.code === 'string' && typeof detail.message === 'string') {
+    error = typeof detail.request_id === 'string'
+      ? {
+          code: detail.code, message: detail.message, request_id: detail.request_id,
+          field_errors: record(detail.field_errors) ?? {},
+          retry_after_seconds: typeof detail.retry_after_seconds === 'number' && Number.isFinite(detail.retry_after_seconds) ? detail.retry_after_seconds : null,
+          outcome_unknown: detail.outcome_unknown === true,
+        }
+      : {
+          code: detail.code, message: detail.message,
+          details: record(detail.details) ?? {},
+          requestId: typeof detail.requestId === 'string' ? detail.requestId : '',
+        }
+  }
+  return error
+}
+
 function isJsonBody(body: ApiRequestInit['body']): body is Record<string, unknown> | unknown[] {
   if (Array.isArray(body)) return true
   if (!body || typeof body !== 'object') return false
@@ -96,23 +117,7 @@ export function createApiClient(configOrBaseUrl: ApiClientConfig | string, token
   async function ensureOk(response: Response): Promise<Response> {
     if (!response.ok) {
       const payload: unknown = await response.json().catch(() => undefined)
-      const envelope = record(payload)
-      const detail = record(envelope?.error)
-      let error: ApiWireError | undefined
-      if (typeof detail?.code === 'string' && typeof detail.message === 'string') {
-        error = typeof detail.request_id === 'string'
-          ? {
-              code: detail.code, message: detail.message, request_id: detail.request_id,
-              field_errors: record(detail.field_errors) ?? {},
-              retry_after_seconds: typeof detail.retry_after_seconds === 'number' && Number.isFinite(detail.retry_after_seconds) ? detail.retry_after_seconds : null,
-              outcome_unknown: detail.outcome_unknown === true,
-            }
-          : {
-              code: detail.code, message: detail.message,
-              details: record(detail.details) ?? {},
-              requestId: typeof detail.requestId === 'string' ? detail.requestId : '',
-            }
-      }
+      const error = parseApiWireError(payload)
       const legacyDetail = response.status === 401 ? '本地服务认证失败' : undefined
       throw new ApiClientError(
         error?.message ?? legacyDetail ?? `API request failed with status ${response.status}`,
