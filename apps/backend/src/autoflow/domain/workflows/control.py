@@ -156,8 +156,8 @@ def compile_control(document: dict[str, Any], *, check_variables: bool = True) -
                 for name, path in node_references(node):
                     if name not in available:
                         fail('VARIABLE_NOT_AVAILABLE', f'变量 {name} 在此路径尚不可用', path, current)
-            if kind in {'set_variable', 'get_element_info', 'screenshot', 'android_screenshot'}:
-                target = config['variableName']
+            if kind in {'set_variable', 'get_element_info', 'screenshot', 'android_screenshot'} and isinstance(config.get('variableName'), str):
+                target = config.get('variableName', '')
                 if target in locals_:
                     fail('LOOP_VARIABLE_READ_ONLY', '循环临时变量只读', ['config', 'variableName'], current)
                 available = available | {target}

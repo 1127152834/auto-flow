@@ -29,6 +29,7 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
   const activeRef = useRef<string | null>(null)
   const [events, setEvents] = useState<Record<string, RunEvent[]>>({})
   const eventsRef = useRef(events)
+  const eventCursors = useRef<Record<string, number>>({})
   const [history, setHistory] = useState<RunSummary[]>([])
   const [nextOffset, setNextOffset] = useState<number | null>(null)
   const olderPagesLoaded = useRef(false)
@@ -63,7 +64,11 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
   }, [markActive])
   const append = useCallback((id: string, incoming: RunEvent[]) => {
     if (!alive.current) return
-    eventsRef.current = { ...eventsRef.current, [id]: mergeRunEvents(eventsRef.current[id] ?? [], incoming.filter(event => event.runId === id)) }
+    const merged = mergeRunEvents(eventsRef.current[id] ?? [], incoming.filter(event => event.runId === id))
+    let cursor = eventCursors.current[id] ?? 0
+    for (const event of merged) { if (event.seq <= cursor) continue; if (event.seq !== cursor + 1) break; cursor = event.seq }
+    eventCursors.current[id] = cursor
+    eventsRef.current = { ...eventsRef.current, [id]: merged.slice(-1000) }
     setEvents(eventsRef.current)
   }, [])
 
@@ -152,9 +157,9 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
     }
   }, [accept, markActive, select, verifyActive])
 
-  const start = useCallback(async (content: WorkflowContent, resource: string | NonNullable<RunStart['target']>) => {
+  const start = useCallback(async (content: WorkflowContent, resource: string | NonNullable<RunStart['target']>, debug?: RunStart['debug']) => {
     if (!online.current || busyRef.current || activeRef.current || pendingStart.current || !verified.current) return
-    await submit({ ...structuredClone(content), ...(typeof resource === 'string' ? { profileId: resource } : { target: resource }), runId: crypto.randomUUID() })
+    await submit({ ...structuredClone(content), ...(typeof resource === 'string' ? { profileId: resource } : { target: resource }), runId: crypto.randomUUID(), mode: 'run', ...(debug ? { mode: 'debug' as const, debug } : {}) })
   }, [submit])
   const retryStart = useCallback(async () => {
     if (!online.current || busyRef.current || !pendingStart.current) return
@@ -216,11 +221,7 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
         void api.get(selectedId).then(value => { if (!controller.signal.aborted) accept(value) }).catch(() => undefined)
       }, 200)
     }
-    const cursor = () => {
-      let seq = 0
-      for (const event of eventsRef.current[selectedId] ?? []) { if (event.seq !== seq + 1) break; seq = event.seq }
-      return seq
-    }
+    const cursor = () => eventCursors.current[selectedId] ?? 0
     const read = async () => {
       try {
         const record = await api.get(selectedId)

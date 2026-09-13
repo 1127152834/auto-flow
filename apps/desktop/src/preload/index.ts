@@ -5,7 +5,7 @@ import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
 import type { AutomationStudioBridge, StudioLeaveReason } from '../shared/automation-studio'
-import type { DesktopRuntimeContext } from '../shared/runtime'
+import type { DesktopRuntimeContext, WorkflowExportRequest } from '../shared/runtime'
 
 let prepareLeave: ((reason: StudioLeaveReason) => Promise<boolean>) | undefined
 let transitionLocked = false
@@ -54,6 +54,7 @@ ipcRenderer.on('autoflow:preferences-changed', (_event, preferences: UiPreferenc
 contextBridge.exposeInMainWorld('autoflow', {
   ...automationStudioBridge,
   ...settingsBridge,
+  exportWorkflow: (request: WorkflowExportRequest) => ipcRenderer.invoke('autoflow:workflow-export', request),
   getRuntimeContext: (): Promise<DesktopRuntimeContext> => ipcRenderer.invoke('autoflow:runtime-context'),
   onRuntimeContextChanged: (handler: (context: DesktopRuntimeContext) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, context: DesktopRuntimeContext) => handler(context)

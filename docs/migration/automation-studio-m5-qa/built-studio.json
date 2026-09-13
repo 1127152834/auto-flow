@@ -1,0 +1,13 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "built",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "formal canvas creates paired loop/condition, configures typed count and iframe extraction, connects distinct handles and saves v2",
+    "native Studio debug entry pause, manual variable commit, one real open action, page list, resume and loop/condition/iframe completion",
+    "formal variable checkpoint survives completion and full-history log search uses real persisted debug events",
+    "paused debug leave protection: cancel and real save conflict retain browser; discard waits for cleanup before creating next document"
+  ],
+  "complete": true
+}

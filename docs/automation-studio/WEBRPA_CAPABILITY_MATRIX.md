@@ -244,3 +244,17 @@ verification
 | 原结果/日志能力 | 原 seq/SSE 加 executionId/loopPath、SQLite 产物索引 | adapt：每次执行和产物独立标识，不用静态节点完成数判断终态，首屏50产物及游标分页 | 历史迁移、55次真实提取与断点续读、重启后读取 |
 
 M4 未移入：range/infinite 等额外循环入口、调度、子流程、错误分支、重试、Debug、录制。未完成项仍由顶部核心对齐目标追踪。[专项验收与证据](../migration/automation-studio-m4-validation.md)。
+
+## M5 实施差异（2026-09-13）
+
+以下差异来自用户明确批准的 M5 计划。固定参考仍为 `5ccb900e8dcf1530aae66f676d87593c416c7ebb`；没有复制旧服务或建立第二套执行器。
+
+| 源码来源 | AutoFlow 目标 | 动作与批准的差异 | 验证 |
+| --- | --- | --- | --- |
+| `backend/app/services/workflow_executor.py:329` configure_debug、`:336` debug_resume、`:348` set_breakpoints | `application/workflows/debug.py` 与现有 execution.py | adapt：保留节点前暂停、断点和单步；明确控制节点一次调度、独立 executionId/轮次；暂停不计入网页节点预算 | 双层循环逐条单步、循环重复命中、12秒真实暂停、纯变量暂停停止 |
+| `backend/app/api/workflows.py:388` 启动选项与 `:921` 后续调试接口 | 原 runs API 与 debug/commands | adapt：从文档级即时控制改为运行快照资源上的稳定 commandId、pauseId、controlRevision；状态由 worker 确认并持久化，同标识异内容409 | 重复单步/迟到暂停拒绝、命令仓储恢复、HTTP契约 |
+| `workflows.py:656` start_node_id | `domain/workflows/debug.py` | adapt：只允许顶层直接起跑；真实嵌套路径使用运行至此，缺少输入显式补充，不制造分支和局部变量 | 跳过无效上游配置、手动导航后真实执行、嵌套目标未达与非法起点 |
+| `frontend/src/components/workflow/DebugPanel.tsx`、工作流编辑工具栏 | AutoFlow DebugStart/DebugPanel/RunLogs | adapt：使用正式组件、草稿隔离；可见临时浏览器，失败保留现场直到结束；没有“单节点日志占位”入口 | 正式开发/构建/打包入口，真实变量修改与页面结果、失败后清理 |
+| 原日志与变量诊断能力 | 原 SQLite seq/SSE + purpose诊断索引、文件引用、原生流式导出 | adapt：调试专属检查点及增量追加，普通运行不增加追踪成本；结果与诊断分别计数和导出；全库筛选 | 1000轮、大于64KiB变量、分页、ZIP/JSONL/诊断JSON、重启读取 |
+
+不宣称旧协议或文件格式兼容。旧 M4 段落里的 Debug“未完成”是当时状态，已由本节与 [M5专项验收](../migration/automation-studio-m5-validation.md)替代。子流程、错误处理/自动重试、录制、双视图、分组注释及其余网页动作仍未交付。

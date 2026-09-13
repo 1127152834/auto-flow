@@ -1314,6 +1314,91 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows/runs/{run_id}/debug/commands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Debug Command */
+        post: operations["debug_command_api_v1_workflows_runs__run_id__debug_commands_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/runs/{run_id}/debug/commands/{command_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Command Status */
+        get: operations["command_status_api_v1_workflows_runs__run_id__debug_commands__command_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/runs/{run_id}/debug/variables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Variables */
+        get: operations["variables_api_v1_workflows_runs__run_id__debug_variables_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/runs/{run_id}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Logs */
+        get: operations["logs_api_v1_workflows_runs__run_id__logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/runs/{run_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export */
+        get: operations["export_api_v1_workflows_runs__run_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -1882,6 +1967,91 @@ export type components = {
              * Format: date-time
              */
             generatedAt: string;
+        };
+        /** DebugCommand */
+        DebugCommand: {
+            /** Commandid */
+            commandId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Pauseid */
+            pauseId?: string | null;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "pause" | "resume" | "step" | "breakpoints" | "variables" | "page" | "pages";
+            /** Breakpoints */
+            breakpoints?: string[];
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Pageid */
+            pageId?: string | null;
+            /** Url */
+            url?: string | null;
+            /**
+             * Focus
+             * @default false
+             */
+            focus: boolean;
+        };
+        /** DebugCommandRead */
+        DebugCommandRead: {
+            /** Commandid */
+            commandId: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "accepted" | "applied" | "rejected" | "interrupted";
+            /** Debug */
+            debug?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Data */
+            data?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Error */
+            error?: {
+                [key: string]: string;
+            } | null;
+        };
+        /** DebugOptions */
+        DebugOptions: {
+            /**
+             * Start
+             * @default entry
+             * @enum {string}
+             */
+            start: "entry" | "node" | "until";
+            /** Targetnodeid */
+            targetNodeId?: string | null;
+            /** Breakpoints */
+            breakpoints?: string[];
+            /** Values */
+            values?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** DebugVariables */
+        DebugVariables: {
+            /** Checkpointid */
+            checkpointId?: string | null;
+            /** Items */
+            items: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Nextoffset */
+            nextOffset?: number | null;
+            /** Diagnosticartifacts */
+            diagnosticArtifacts?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Nextcursor */
+            nextCursor?: number | null;
         };
         /** DefaultKernelRead */
         DefaultKernelRead: {
@@ -3070,6 +3240,17 @@ export type components = {
         };
         /** RunArtifact */
         RunArtifact: {
+            /**
+             * Purpose
+             * @default result
+             * @enum {string}
+             */
+            purpose: "result" | "diagnostic";
+            /**
+             * Eventseq
+             * @default 0
+             */
+            eventSeq: number;
             /** Executionid */
             executionId?: string | null;
             /** Looppath */
@@ -3116,6 +3297,16 @@ export type components = {
         };
         /** RunEvent */
         RunEvent: {
+            /** Debug */
+            debug?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Reason */
+            reason?: string | null;
+            /** Response */
+            response?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /** Executionid */
             executionId?: string | null;
             /** Looppath */
@@ -3168,6 +3359,20 @@ export type components = {
         };
         /** RunRead */
         RunRead: {
+            /** Nodeexecutioncounts */
+            nodeExecutionCounts?: {
+                [key: string]: number;
+            };
+            /**
+             * Mode
+             * @default run
+             * @enum {string}
+             */
+            mode: "run" | "debug";
+            /** Debug */
+            debug?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /**
              * Executioncount
              * @default 0
@@ -3200,7 +3405,7 @@ export type components = {
              * State
              * @enum {string}
              */
-            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
+            state: "starting" | "running" | "pausing" | "paused" | "failed_paused" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
             /** Currentnodeid */
             currentNodeId: string | null;
             /**
@@ -3215,6 +3420,12 @@ export type components = {
             /** Completednodeids */
             completedNodeIds: string[];
             error: components["schemas"]["RunError"] | null;
+            debugOptions?: components["schemas"]["DebugOptions"] | null;
+            /**
+             * Artifactordinal
+             * @default 0
+             */
+            artifactOrdinal: number;
             /** Nextartifactcursor */
             nextArtifactCursor?: number | null;
             document: components["schemas"]["WorkflowDocument"];
@@ -3237,6 +3448,13 @@ export type components = {
         };
         /** RunStart */
         RunStart: {
+            /**
+             * Mode
+             * @default run
+             * @enum {string}
+             */
+            mode: "run" | "debug";
+            debug?: components["schemas"]["DebugOptions"] | null;
             /** Runid */
             runId: string;
             document: components["schemas"]["WorkflowDocument"];
@@ -3248,6 +3466,20 @@ export type components = {
         };
         /** RunSummary */
         RunSummary: {
+            /** Nodeexecutioncounts */
+            nodeExecutionCounts?: {
+                [key: string]: number;
+            };
+            /**
+             * Mode
+             * @default run
+             * @enum {string}
+             */
+            mode: "run" | "debug";
+            /** Debug */
+            debug?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
             /**
              * Executioncount
              * @default 0
@@ -3280,7 +3512,7 @@ export type components = {
              * State
              * @enum {string}
              */
-            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
+            state: "starting" | "running" | "pausing" | "paused" | "failed_paused" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
             /** Currentnodeid */
             currentNodeId: string | null;
             /**
@@ -3440,6 +3672,8 @@ export type components = {
         };
         /** WorkflowLayout */
         WorkflowLayout: {
+            /** Breakpoints */
+            breakpoints?: string[];
             /** Nodes */
             nodes: {
                 [key: string]: components["schemas"]["WorkflowPosition"];
@@ -8548,6 +8782,412 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    debug_command_api_v1_workflows_runs__run_id__debug_commands_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DebugCommandRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    command_status_api_v1_workflows_runs__run_id__debug_commands__command_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+                command_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DebugCommandRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    variables_api_v1_workflows_runs__run_id__debug_variables_get: {
+        parameters: {
+            query?: {
+                checkpointId?: string | null;
+                offset?: number;
+                limit?: number;
+                after?: number;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DebugVariables"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    logs_api_v1_workflows_runs__run_id__logs_get: {
+        parameters: {
+            query?: {
+                afterSeq?: number;
+                limit?: number;
+                throughSeq?: number | null;
+                level?: string;
+                q?: string;
+                tail?: boolean;
+                nodeId?: string;
+                executionId?: string;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunEvents"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_api_v1_workflows_runs__run_id__export_get: {
+        parameters: {
+            query?: {
+                kind?: "logs" | "results" | "diagnostics";
+                throughSeq?: number | null;
+                level?: string;
+                q?: string;
+                nodeId?: string;
+                executionId?: string;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */

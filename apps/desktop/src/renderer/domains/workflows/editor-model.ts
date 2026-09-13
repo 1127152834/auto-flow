@@ -69,7 +69,7 @@ export function deleteSelection(content: WorkflowContent, nodeIds: string[], edg
   const edges = new Set(edgeIds)
   return {
     document: { ...content.document, nodes: content.document.nodes.filter(node => !nodes.has(node.id)), edges: content.document.edges.filter(edge => !edges.has(edge.id) && !nodes.has(edge.source) && !nodes.has(edge.target)) },
-    layout: { ...content.layout, nodes: Object.fromEntries(Object.entries(content.layout.nodes).filter(([id]) => !nodes.has(id))) },
+    layout: { ...content.layout, ...(content.layout.breakpoints ? { breakpoints: content.layout.breakpoints.filter(id => !nodes.has(id)) } : {}), nodes: Object.fromEntries(Object.entries(content.layout.nodes).filter(([id]) => !nodes.has(id))) },
   }
 }
 
@@ -87,7 +87,7 @@ export function pasteNodes(content: WorkflowContent, clipboard: WorkflowContent,
   })
   const edges = clipboard.document.edges.filter(edge => mapping.has(edge.source) && mapping.has(edge.target)).map(edge => ({ ...edge, id: crypto.randomUUID(), source: mapping.get(edge.source)!, target: mapping.get(edge.target)! }))
   const layout = Object.fromEntries(selected.map(node => [mapping.get(node.id)!, { x: anchor.x + clipboard.layout.nodes[node.id].x - origin.x, y: anchor.y + clipboard.layout.nodes[node.id].y - origin.y }]))
-  return { ids: nodes.map(node => node.id), content: { document: { ...content.document, nodes: [...content.document.nodes, ...nodes], edges: [...content.document.edges, ...edges] }, layout: { ...content.layout, nodes: { ...content.layout.nodes, ...layout } } } }
+  return { ids: nodes.map(node => node.id), content: { document: { ...content.document, nodes: [...content.document.nodes, ...nodes], edges: [...content.document.edges, ...edges] }, layout: { ...content.layout, breakpoints: [...(content.layout.breakpoints ?? []), ...(clipboard.layout.breakpoints ?? []).filter(id => mapping.has(id)).map(id => mapping.get(id)!)], nodes: { ...content.layout.nodes, ...layout } } } }
 }
 
 const referencePattern = /\$\{([\p{L}_][\p{L}\p{N}_]*)\}|(?<![${])\{([\p{L}_][\p{L}\p{N}_]*)\}(?!\})/gu

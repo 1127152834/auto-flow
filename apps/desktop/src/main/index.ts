@@ -1,5 +1,6 @@
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
+import { createWorkflowExportHandler } from './ipc/workflow-export'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
@@ -120,6 +121,7 @@ app.whenReady().then(async () => {
   ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
   ipcMain.handle('autoflow:studio-ready', (event, ready: unknown) => studio.markReady(event, ready))
   ipcMain.handle('autoflow:studio-leave-result', (event, id: unknown, approved: unknown) => studio.reply(event, id, approved))
+  ipcMain.handle('autoflow:workflow-export', createWorkflowExportHandler({ allowed: event => studio.isSender(event), context: () => settings!.getRuntimeContext(), request: fetch, selectPath: async defaultPath => { const result = await dialog.showSaveDialog({ title: '导出工作流记录', defaultPath }); return result.canceled ? null : result.filePath ?? null } }))
   ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
   ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
   ipcMain.handle('autoflow:platform-paths', event => {

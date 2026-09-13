@@ -1,5 +1,7 @@
+import json
 from datetime import datetime
 from typing import Annotated, Any, Literal
+from urllib.parse import urlsplit
 from uuid import UUID
 
 from pydantic import Field, JsonValue, field_validator, model_validator
@@ -8,7 +10,7 @@ from .schemas import ApiModel
 from .workflow_schemas import WorkflowDocument, WorkflowIssue, WorkflowLayout
 
 RunState = Literal[
-    "starting", "running", "finishing", "stopping", "succeeded", "failed",
+    "starting", "running", "pausing", "paused", "failed_paused", "finishing", "stopping", "succeeded", "failed",
     "cancelled", "interrupted", "waiting_manual", "resuming",
 ]
 
@@ -41,12 +43,74 @@ class HandoffCommand(ApiModel):
     request_id: UUID
 
 
+class DebugOptions(ApiModel):
+    start: Literal['entry', 'node', 'until'] = 'entry'
+    target_node_id: str | None = None
+    breakpoints: list[str] = Field(default_factory=list, max_length=2000)
+    values: dict[str, JsonValue] = Field(default_factory=dict)
+
+
+class DebugCommand(ApiModel):
+    command_id: str = Field(min_length=1, max_length=120, pattern=r'^[a-zA-Z0-9_-]+$')
+    expected_revision: int = Field(ge=0, strict=True)
+    pause_id: str | None = None
+    action: Literal['pause', 'resume', 'step', 'breakpoints', 'variables', 'page', 'pages']
+    breakpoints: list[str] = Field(default_factory=list, max_length=2000)
+    values: dict[str, JsonValue] = Field(default_factory=dict)
+    page_id: str | None = None
+    url: str | None = None
+    focus: bool = False
+
+
+    @field_validator('url')
+    @classmethod
+    def navigation_url(cls, value: str | None) -> str | None:
+        if value is not None:
+            parsed = urlsplit(value)
+            if parsed.scheme not in {'http', 'https'} or not parsed.hostname or any(c.isspace() for c in parsed.netloc):
+                raise ValueError('请输入有效 HTTP/HTTPS 导航地址')
+            _ = parsed.port
+        return value
+
+    @field_validator('values')
+    @classmethod
+    def finite_values(cls, value: dict[str, JsonValue]) -> dict[str, JsonValue]:
+        json.dumps(value, allow_nan=False)
+        return value
+
+
+class DebugCommandRead(ApiModel):
+    command_id: str
+    state: Literal['accepted', 'applied', 'rejected', 'interrupted']
+    debug: dict[str, JsonValue] | None = None
+    data: dict[str, JsonValue] | None = None
+    error: dict[str, str] | None = None
+
+
+class DebugVariables(ApiModel):
+    checkpoint_id: str | None = None
+    items: list[dict[str, JsonValue]]
+    next_offset: int | None = None
+    diagnostic_artifacts: list[dict[str, JsonValue]] = Field(default_factory=list)
+    next_cursor: int | None = None
+
+
 class RunStart(ApiModel):
+    mode: Literal['run', 'debug'] = 'run'
+    debug: DebugOptions | None = None
     run_id: str
     document: WorkflowDocument
     layout: WorkflowLayout
     profile_id: str | None = None
     target: RunTarget | None = None
+
+    @model_validator(mode='after')
+    def valid_debug_mode(self) -> 'RunStart':
+        if self.mode == 'run' and self.debug is not None:
+            raise ValueError('普通运行不能携带调试参数')
+        if self.debug is not None:
+            json.dumps(self.debug.values, allow_nan=False)
+        return self
 
     @field_validator("run_id", "profile_id")
     @classmethod
@@ -73,6 +137,8 @@ class LoopIteration(ApiModel):
 
 
 class RunArtifact(ApiModel):
+    purpose: Literal["result", "diagnostic"] = "result"
+    event_seq: int = 0
     execution_id: str | None = None
     loop_path: list[LoopIteration] = Field(default_factory=list)
     ordinal: int | None = None
@@ -92,6 +158,9 @@ class RunArtifacts(ApiModel):
 
 
 class RunSummary(ApiModel):
+    node_execution_counts: dict[str, int] = Field(default_factory=dict)
+    mode: Literal["run", "debug"] = "run"
+    debug: dict[str, JsonValue] | None = None
     execution_count: int = 0
     current_execution_id: str | None = None
     current_loop_path: list[LoopIteration] = Field(default_factory=list)
@@ -123,6 +192,8 @@ class RunSummary(ApiModel):
 
 
 class RunRead(RunSummary):
+    debug_options: DebugOptions | None = None
+    artifact_ordinal: int = 0
     next_artifact_cursor: int | None = None
 
     @model_validator(mode="before")
@@ -149,6 +220,9 @@ class RunList(ApiModel):
 
 
 class RunEvent(ApiModel):
+    debug: dict[str, JsonValue] | None = None
+    reason: str | None = None
+    response: dict[str, JsonValue] | None = None
     execution_id: str | None = None
     loop_path: list[LoopIteration] = Field(default_factory=list)
     branch: str | None = None

@@ -1,11 +1,19 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import { parseServerSentEvents } from '../../shared/api/events'
-import type { RunArtifacts, RunEvent, RunEvents, RunList, RunRead, RunStart } from './run-types'
+import type { DebugCommand, DebugCommandRead, DebugVariables, RunArtifacts, RunEvent, RunEvents, RunList, RunRead, RunStart } from './run-types'
 
 const path = (id?: string) => `/api/v1/workflows/runs${id ? `/${encodeURIComponent(id)}` : ''}`
 
 export function createWorkflowRunApi(client: StreamingApiClient) {
   return {
+    debugCommand: (id: string, body: DebugCommand) => client.request<DebugCommandRead>(`${path(id)}/debug/commands`, { method: 'POST', body }),
+    debugCommandStatus: (id: string, commandId: string) => client.request<DebugCommandRead>(`${path(id)}/debug/commands/${encodeURIComponent(commandId)}`),
+    variables: (id: string, checkpointId = '', offset = 0, after = 0) => client.request<DebugVariables>(`${path(id)}/debug/variables?${new URLSearchParams({ ...(checkpointId ? { checkpointId } : {}), offset: String(offset), after: String(after), limit: '50' })}`),
+    logs: (id: string, filters: Record<string, string>, afterSeq = 0, tail = false) => client.request<RunEvents>(`${path(id)}/logs?${new URLSearchParams({ ...filters, tail: String(tail), afterSeq: String(afterSeq), limit: '200' })}`),
+    async export(id: string, kind: string, throughSeq: number, filters: Record<string, string> = {}) {
+      const response = await client.stream(`${path(id)}/export?${new URLSearchParams({ ...filters, kind, throughSeq: String(throughSeq) })}`)
+      return response.blob()
+    },
     list: (offset = 0) => client.request<RunList>(`${path()}?offset=${offset}&limit=20`),
     get: (id: string) => client.request<RunRead>(path(id)),
     start: (body: RunStart) => client.request<RunRead>(path(), { method: 'POST', body }),

@@ -168,10 +168,20 @@ class AndroidDeviceRow(Base):
 
 class WorkflowRunArtifactRow(Base):
     __tablename__ = "workflow_run_artifacts"
-    __table_args__ = (UniqueConstraint("run_id", "ordinal", name="uq_workflow_artifact_ordinal"), Index("ix_workflow_artifacts_node", "run_id", "node_id", "ordinal"), Index("ix_workflow_artifacts_execution", "run_id", "execution_id", "ordinal"))
+    __table_args__ = (UniqueConstraint("run_id", "ordinal", name="uq_workflow_artifact_ordinal"), Index("ix_workflow_artifacts_node", "run_id", "node_id", "ordinal"), Index("ix_workflow_artifacts_execution", "run_id", "execution_id", "ordinal"), Index("ix_workflow_artifacts_purpose", "run_id", "purpose", "ordinal"))
     run_id: Mapped[str] = mapped_column(ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
     id: Mapped[str] = mapped_column(String(120), primary_key=True)
     ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+    purpose: Mapped[str] = mapped_column(String(20), nullable=False, server_default="result")
+    event_seq: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     node_id: Mapped[str] = mapped_column(String(120), nullable=False)
     execution_id: Mapped[str | None] = mapped_column(String(120))
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowDebugCommandRow(Base):
+    __tablename__ = "workflow_debug_commands"
+    run_id: Mapped[str] = mapped_column(ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)

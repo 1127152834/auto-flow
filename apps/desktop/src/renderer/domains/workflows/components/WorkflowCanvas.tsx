@@ -5,7 +5,7 @@ import '@xyflow/react/dist/style.css'
 import { ports, expandBlocks } from '../control-model'
 import type { WorkflowEdge, NodeDefinition, Point, WorkflowContent, WorkflowIssue } from '../types'
 
-type CanvasNode = Node<{ label: string; title: string; kind: string; summary: string; issueCount: number; outputs: WorkflowEdge['sourceHandle'][]; runStatus?: string }, 'workflow'>
+type CanvasNode = Node<{ label: string; title: string; kind: string; summary: string; issueCount: number; outputs: WorkflowEdge['sourceHandle'][]; runStatus?: string; breakpoint?: boolean }, 'workflow'>
 const icons = { open_page: Globe, click_element: CursorClick, input_text: TextT, wait_element: Timer, get_element_info: BracketsCurly, screenshot: Camera, condition: GitBranch, condition_end: GitBranch, loop: ArrowsClockwise, loop_end: ArrowsClockwise, set_variable: Equals, break_loop: StopCircle, continue_loop: SkipForward }
 function WorkflowNodeView({ id, data, selected }: NodeProps<CanvasNode>) {
   const updateInternals = useUpdateNodeInternals()
@@ -16,7 +16,7 @@ function WorkflowNodeView({ id, data, selected }: NodeProps<CanvasNode>) {
   const Icon = icons[data.kind as keyof typeof icons] ?? Globe
   return <div className={`w-[220px] rounded-card border bg-surface shadow-sm transition-shadow ${selected ? 'border-clay shadow-[0_0_0_2px_var(--color-clay-soft)]' : 'border-line'}`}>
     <Handle type="target" position={Position.Left} id="in" className="!h-3 !w-3 !border-2 !border-surface !bg-clay" />
-    <div className="flex items-start gap-3 p-3.5"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-clay-soft text-clay"><Icon size={19} /></span><div className="min-w-0"><div className="truncate text-sm font-semibold text-ink">{data.label || data.title}</div><p className="mt-1 truncate text-[11px] text-muted">{data.summary || data.title}</p></div></div>
+    <div className="flex items-start gap-3 p-3.5">{data.breakpoint ? <span aria-label="断点" className="h-3 w-3 shrink-0 rounded-full bg-red-600" /> : null}<span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-clay-soft text-clay"><Icon size={19} /></span><div className="min-w-0"><div className="truncate text-sm font-semibold text-ink">{data.label || data.title}</div><p className="mt-1 truncate text-[11px] text-muted">{data.summary || data.title}</p></div></div>
     {data.issueCount > 0 ? <div className="flex items-center gap-1.5 border-t border-line px-3.5 py-2 text-[11px] text-amber-800"><WarningCircle size={13} />{data.issueCount} 项待配置</div> : null}
     {data.runStatus ? <div role="status" className={`border-t border-line px-3.5 py-2 text-[11px] ${data.runStatus.startsWith('失败') ? 'text-red-700' : 'text-clay'}`}>{data.runStatus}</div> : null}
     {data.outputs.map((port, index) => <Handle key={port} type="source" position={Position.Right} id={port} style={{ top: `${(index + 1) * 100 / (data.outputs.length + 1)}%` }} className="!h-3 !w-3 !border-2 !border-surface !bg-clay">{port !== 'out' ? <span className="absolute right-3 -top-1 whitespace-nowrap bg-surface text-[10px] text-clay">{{ true: '是', false: '否', body: '循环体', done: '结束' }[port]}</span> : null}</Handle>)}
@@ -48,7 +48,7 @@ export function WorkflowCanvas(props: WorkflowCanvasProps) {
       label: node.label, title: catalog.find(item => item.type === node.type)?.title ?? node.type, kind: node.type,
       summary: String(node.config.url || node.config.selector || (node.type === 'screenshot' ? '网页截图' : '')),
       outputs: ports(node), issueCount: issues.filter(issue => issue.nodeId === node.id).length,
-      runStatus: runMarkers?.[node.id],
+      runStatus: runMarkers?.[node.id], breakpoint: (content.layout.breakpoints ?? []).includes(node.id),
     },
   })), [content, catalog, issues, selectedNodes, runMarkers, measurements])
   const edges = useMemo<Edge[]>(() => content.document.edges.map(edge => ({ ...edge, selected: selectedEdges.includes(edge.id), style: { stroke: selectedEdges.includes(edge.id) ? '#a2684a' : '#989087', strokeWidth: 2 } })), [content.document.edges, selectedEdges])
