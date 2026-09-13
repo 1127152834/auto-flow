@@ -1,0 +1,109 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/web-config-branches.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:83792) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/web-config-branches.test.tsx (27 tests | 27 failed) 1652ms
+   × undefined='new_tab' through real form, undo, copy and reopen 229ms
+   × undefined='current_tab' through real form, undo, copy and reopen 102ms
+   × undefined='load' through real form, undo, copy and reopen 82ms
+   × undefined='domcontentloaded' through real form, undo, copy and reopen 79ms
+   × undefined='networkidle' through real form, undo, copy and reopen 62ms
+   × undefined='title' through real form, undo, copy and reopen 48ms
+   × undefined='url' through real form, undo, copy and reopen 44ms
+   × undefined='single' through real form, undo, copy and reopen 47ms
+   × undefined='double' through real form, undo, copy and reopen 45ms
+   × undefined='right' through real form, undo, copy and reopen 46ms
+   × undefined='text' through real form, undo, copy and reopen 53ms
+   × undefined='innerHTML' through real form, undo, copy and reopen 52ms
+   × undefined='value' through real form, undo, copy and reopen 52ms
+   × undefined='href' through real form, undo, copy and reopen 50ms
+   × undefined='src' through real form, undo, copy and reopen 71ms
+   × undefined='attributes' through real form, undo, copy and reopen 79ms
+   × undefined='visible' through real form, undo, copy and reopen 72ms
+   × undefined='hidden' through real form, undo, copy and reopen 76ms
+   × undefined='attached' through real form, undo, copy and reopen 68ms
+   × undefined='detached' through real form, undo, copy and reopen 51ms
+   × undefined='time' through real form, undo, copy and reopen 50ms
+   × undefined='selector' through real form, undo, copy and reopen 49ms
+   × undefined='navigation' through real form, undo, copy and reopen 47ms
+   × click_element.followNewTab=点击后跟进新标签页 checkbox survives undo and reopening 28ms
+   × click_element.followNewTab=点击后跟进新标签页 checkbox survives undo and reopening 26ms
+   × input_text.clearBefore=输入前清空原有内容 checkbox survives undo and reopening 20ms
+   × input_text.clearBefore=输入前清空原有内容 checkbox survives undo and reopening 18ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='new_tab' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='current_tab' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='load' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='domcontentloaded' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='networkidle' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='title' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='url' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='single' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='double' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='right' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='text' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='innerHTML' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='value' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='href' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='src' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='attributes' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='visible' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='hidden' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='attached' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='detached' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='time' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='selector' through real form, undo, copy and reopen
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > undefined='navigation' through real form, undo, copy and reopen
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/web-config-branches.test.tsx:39:46
+     37|   fireEvent.click(screen.getByRole('option', { name: option, exact: tr…
+     38|   expect(store.getState().nodes[0].data[field]).toBe(value)
+     39|   expect(store.getState().hasUnsavedChanges).toBe(true)
+       |                                              ^
+     40|   if (type === 'wait') {
+     41|     expect(screen.queryByPlaceholderText('例如: 1 或 2.5') !== null).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > click_element.followNewTab=点击后跟进新标签页 checkbox survives undo and reopening
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > click_element.followNewTab=点击后跟进新标签页 checkbox survives undo and reopening
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > input_text.clearBefore=输入前清空原有内容 checkbox survives undo and reopening
+ FAIL  src/renderer/domains/workflows/tests/web-config-branches.test.tsx > input_text.clearBefore=输入前清空原有内容 checkbox survives undo and reopening
+TypeError: Cannot read properties of undefined (reading 'data')
+ ❯ src/renderer/domains/workflows/tests/web-config-branches.test.tsx:64:34
+     62|   expect(store.getState().nodes[0].data[field]).toBe(value)
+     63|   act(() => store.getState().undo())
+     64|   expect(store.getState().nodes[0].data[field]).toBe(!value)
+       |                                  ^
+     65|   act(() => store.getState().redo())
+     66|   roundtrip(id, field, value)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  27 failed (27)
+   Start at  02:53:49
+   Duration  3.88s (transform 1.26s, setup 98ms, import 1.64s, tests 1.65s, environment 378ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/web-config-branches.test.tsx

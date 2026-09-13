@@ -15879,5 +15879,593 @@
     "level": "store",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "NODE.branch.open_page.openMode.new_tab",
+    "capability": "open_page 配置分支",
+    "preconditions": {
+      "nodeType": "open_page",
+      "field": "openMode",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 new_tab",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 new_tab；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.open_page.openMode.current_tab",
+    "capability": "open_page 配置分支",
+    "preconditions": {
+      "nodeType": "open_page",
+      "field": "openMode",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 current_tab",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 current_tab；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.open_page.waitUntil.load",
+    "capability": "open_page 配置分支",
+    "preconditions": {
+      "nodeType": "open_page",
+      "field": "waitUntil",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 load",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 load；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.open_page.waitUntil.domcontentloaded",
+    "capability": "open_page 配置分支",
+    "preconditions": {
+      "nodeType": "open_page",
+      "field": "waitUntil",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 domcontentloaded",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 domcontentloaded；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.open_page.waitUntil.networkidle",
+    "capability": "open_page 配置分支",
+    "preconditions": {
+      "nodeType": "open_page",
+      "field": "waitUntil",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 networkidle",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 networkidle；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.use_opened_page.matchMode.title",
+    "capability": "use_opened_page 配置分支",
+    "preconditions": {
+      "nodeType": "use_opened_page",
+      "field": "matchMode",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 title",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 title；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.use_opened_page.matchMode.url",
+    "capability": "use_opened_page 配置分支",
+    "preconditions": {
+      "nodeType": "use_opened_page",
+      "field": "matchMode",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 url",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 url；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.click_element.clickType.single",
+    "capability": "click_element 配置分支",
+    "preconditions": {
+      "nodeType": "click_element",
+      "field": "clickType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 single",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 single；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.click_element.clickType.double",
+    "capability": "click_element 配置分支",
+    "preconditions": {
+      "nodeType": "click_element",
+      "field": "clickType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 double",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 double；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.click_element.clickType.right",
+    "capability": "click_element 配置分支",
+    "preconditions": {
+      "nodeType": "click_element",
+      "field": "clickType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 right",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 right；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.text",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 text",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 text；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.innerhtml",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 innerHTML",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 innerHTML；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.value",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 value",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 value；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.href",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 href",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 href；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.src",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 src",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 src；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.get_element_info.attribute.attributes",
+    "capability": "get_element_info 配置分支",
+    "preconditions": {
+      "nodeType": "get_element_info",
+      "field": "attribute",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 attributes",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 attributes；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait_element.waitCondition.visible",
+    "capability": "wait_element 配置分支",
+    "preconditions": {
+      "nodeType": "wait_element",
+      "field": "waitCondition",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 visible",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 visible；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait_element.waitCondition.hidden",
+    "capability": "wait_element 配置分支",
+    "preconditions": {
+      "nodeType": "wait_element",
+      "field": "waitCondition",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 hidden",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 hidden；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait_element.waitCondition.attached",
+    "capability": "wait_element 配置分支",
+    "preconditions": {
+      "nodeType": "wait_element",
+      "field": "waitCondition",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 attached",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 attached；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait_element.waitCondition.detached",
+    "capability": "wait_element 配置分支",
+    "preconditions": {
+      "nodeType": "wait_element",
+      "field": "waitCondition",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 detached",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 detached；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait.waitType.time",
+    "capability": "wait 配置分支",
+    "preconditions": {
+      "nodeType": "wait",
+      "field": "waitType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 time",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 time；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait.waitType.selector",
+    "capability": "wait 配置分支",
+    "preconditions": {
+      "nodeType": "wait",
+      "field": "waitType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 selector",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 selector；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.wait.waitType.navigation",
+    "capability": "wait 配置分支",
+    "preconditions": {
+      "nodeType": "wait",
+      "field": "waitType",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 展开下拉并点击选项设置 navigation",
+      "撤销、重做、复制",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 navigation；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致，复制保留配置，标记未保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.click_element.followNewTab.false",
+    "capability": "click_element 配置分支",
+    "preconditions": {
+      "nodeType": "click_element",
+      "field": "followNewTab",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 点击复选框设置 False",
+      "撤销、重做",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 False；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.click_element.followNewTab.true",
+    "capability": "click_element 配置分支",
+    "preconditions": {
+      "nodeType": "click_element",
+      "field": "followNewTab",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 点击复选框设置 True",
+      "撤销、重做",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 True；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.input_text.clearBefore.false",
+    "capability": "input_text 配置分支",
+    "preconditions": {
+      "nodeType": "input_text",
+      "field": "clearBefore",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 点击复选框设置 False",
+      "撤销、重做",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 False；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.branch.input_text.clearBefore.true",
+    "capability": "input_text 配置分支",
+    "preconditions": {
+      "nodeType": "input_text",
+      "field": "clearBefore",
+      "initial": "同一字段另一合法值"
+    },
+    "steps": [
+      "通过真实 ConfigPanel 点击复选框设置 True",
+      "撤销、重做",
+      "导出后清空并重新导入文档"
+    ],
+    "expectedUI": "值为 True；分支说明或显隐随配置变化（适用时）",
+    "expectedIO": "无服务调用；真实 onChange 更新 Store",
+    "stateAssertion": "参数、历史和文档往返一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "EDITOR.node-config.ai-batch",
+    "capability": "原子参数历史",
+    "preconditions": {
+      "nodes": "两个已保存节点"
+    },
+    "steps": [
+      "AI 修改两个节点后撤销重做"
+    ],
+    "expectedUI": "一次撤销恢复两个节点，标记未保存",
+    "expectedIO": "本地 Store/AI action",
+    "stateAssertion": "一次撤销恢复两个节点，标记未保存",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "EDITOR.node-config.no-op",
+    "capability": "原子参数历史",
+    "preconditions": {
+      "nodes": "两个已保存节点"
+    },
+    "steps": [
+      "更新不存在节点及重复相同值"
+    ],
+    "expectedUI": "不修改脏状态和历史",
+    "expectedIO": "本地 Store/AI action",
+    "stateAssertion": "不修改脏状态和历史",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "EDITOR.node-config.merged-patches",
+    "capability": "原子参数历史",
+    "preconditions": {
+      "nodes": "两个已保存节点"
+    },
+    "steps": [
+      "重复补丁并移除可选字段，然后撤销"
+    ],
+    "expectedUI": "保留最后补丁，撤销恢复之前字段",
+    "expectedIO": "本地 Store/AI action",
+    "stateAssertion": "保留最后补丁，撤销恢复之前字段",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
   }
 ]

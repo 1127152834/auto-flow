@@ -616,7 +616,7 @@ export async function executeClientAction(
           return { success: false, error: '缺少 patches' }
         }
         const store = useWorkflowStore.getState()
-        let applied = 0
+        const updates: { nodeId: string; data: Record<string, any> }[] = []
         for (const p of patches) {
           if (!p?.node_id || !p?.config) continue
           const cfg = { ...p.config }
@@ -628,10 +628,10 @@ export async function executeClientAction(
               cfg.name = labelVal
             }
           }
-          store.updateNodeData(p.node_id, cfg as any)
-          applied++
+          if (store.nodes.some(node => node.id === p.node_id)) updates.push({ nodeId: p.node_id, data: cfg })
         }
-        return { success: true, message: `已批量更新 ${applied} 个节点` }
+        store.updateNodesData(updates)
+        return { success: true, message: `已批量更新 ${updates.length} 个节点` }
       }
 
       case 'get_node_runtime_errors': {

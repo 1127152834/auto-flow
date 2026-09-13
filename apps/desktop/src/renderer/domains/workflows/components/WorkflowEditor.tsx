@@ -1065,15 +1065,12 @@ export function WorkflowEditor() {
       )
       if (!ok) return
       const store = useWorkflowStore.getState()
-      let applied = 0
-      for (const h of heals) {
-        const node = store.nodes.find((n) => n.id === h.nodeId)
-        if (node) {
-          store.updateNodeData(h.nodeId as string, { [h.configKey || 'selector']: h.newSelector } as any)
-          applied++
-        }
-      }
-      store.addLog({ level: 'success', message: `已写回 ${applied} 处自愈选择器，记得保存工作流` })
+      const updates = heals.filter(h => store.nodes.some(n => n.id === h.nodeId)).map(h => ({
+        nodeId: h.nodeId as string,
+        data: { [h.configKey || 'selector']: h.newSelector },
+      }))
+      store.updateNodesData(updates)
+      store.addLog({ level: 'success', message: `已写回 ${updates.length} 处自愈选择器，记得保存工作流` })
     }
     window.addEventListener('selector:healed', onHealed as EventListener)
     return () => window.removeEventListener('selector:healed', onHealed as EventListener)

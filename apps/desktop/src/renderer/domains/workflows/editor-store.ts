@@ -267,6 +267,7 @@ interface WorkflowState {
   
   // 更新节点数据
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void
+  updateNodesData: (patches: { nodeId: string; data: Partial<NodeData> }[]) => void
   
   // 删除节点
   deleteNode: (nodeId: string) => void
@@ -2520,13 +2521,20 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   updateNodeData: (nodeId, data) => {
-    set({
-      nodes: get().nodes.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, ...data } }
-          : node
-      ),
+    get().updateNodesData([{ nodeId, data }])
+  },
+
+  updateNodesData: (patches) => {
+    const patchMap = new Map<string, Partial<NodeData>>()
+    for (const patch of patches) patchMap.set(patch.nodeId, { ...patchMap.get(patch.nodeId), ...patch.data })
+    const nodes = get().nodes.map(node => {
+      const patch = patchMap.get(node.id)
+      if (!patch || Object.entries(patch).every(([key, value]) => Object.is(node.data[key], value))) return node
+      return { ...node, data: { ...node.data, ...patch } }
     })
+    if (nodes.every((node, index) => node === get().nodes[index])) return
+    get().pushHistory()
+    set({ nodes, hasUnsavedChanges: true })
   },
 
   deleteNode: (nodeId) => {
