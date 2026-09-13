@@ -5,6 +5,7 @@ export const UI_DICT: Record<string, string> = {
   '请输入有限数字': 'Enter a finite number', '布尔值必须是 true 或 false': 'Boolean values must be true or false',
   '列表值必须是 JSON 数组': 'List values must be JSON arrays', '字典值必须是 JSON 对象': 'Dictionary values must be JSON objects',
   '确认添加变量': 'Confirm variable', '取消添加变量': 'Cancel variable',
+  '无法确认目标文件状态': 'Unable to verify the target file state',
   // 工具栏
   '新建': 'New', '保存': 'Save', '打开': 'Open', '导出': 'Export',
   '运行': 'Run', '停止': 'Stop', '设置': 'Settings', '文档': 'Docs', '教学文档': 'Tutorials',

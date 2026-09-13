@@ -365,13 +365,8 @@ export function Toolbar() {
   }, [workflowId, setExecutionStatus, addLog])
 
   const handleSave = useCallback(async (skipConfirm = false) => {
-    if (nodes.length === 0) {
-      if (!skipConfirm) {
-        addLog({ level: 'warning', message: '工作流没有任何节点，无法保存' })
-      }
-      return
-    }
-
+    const workflowData = JSON.parse(exportWorkflow())
+    let filename = workflowData.name || '未命名工作流'
     let currentFolder = config.workflow?.localFolder || defaultFolder
     if (!currentFolder) {
       const result = await localWorkflowApi.getDefaultFolder()
@@ -386,45 +381,29 @@ export function Toolbar() {
       return
     }
 
-    // 使用工作流名称作为文件名
-    let filename = name || '未命名工作流'
-    const workflowData = JSON.parse(exportWorkflow())
-
     try {
       // 覆盖提示 / 自动副本开关
       const showOverwriteConfirm = config.workflow?.showOverwriteConfirm !== false
       const autoSaveCopy = config.workflow?.autoSaveCopy === true
 
-      // 自动副本优先：开启后同名工作流不再弹覆盖提示，而是另存为带时间戳的副本
-      if (!skipConfirm && autoSaveCopy) {
-        const API_BASE = getBackendBaseUrl()
-        const checkResponse = await studioFetch(`${API_BASE}/api/local-workflows/check-exists`, {
+      // Failed existence checks must not silently turn into overwrite permission.
+      if (!skipConfirm && (autoSaveCopy || showOverwriteConfirm)) {
+        const checkResponse = await studioFetch(`${getBackendBaseUrl()}/api/local-workflows/check-exists`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ filename, content: { _folder: currentFolder } })
         })
         const checkData = await checkResponse.json()
-        if (checkData.exists) {
+        if (!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean') {
+          throw new Error(checkData.error || '无法确认目标文件状态')
+        }
+        if (checkData.exists && autoSaveCopy) {
           const d = new Date()
           const p = (n: number) => String(n).padStart(2, '0')
           const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`
           filename = `${filename} - 副本 ${stamp}`
           addLog({ level: 'info', message: `已开启"自动创建副本"，本次另存为：${filename}` })
-        }
-      } else if (!skipConfirm && showOverwriteConfirm) {
-        const API_BASE = getBackendBaseUrl()
-        const checkResponse = await studioFetch(`${API_BASE}/api/local-workflows/check-exists`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename,
-            content: { _folder: currentFolder }
-          })
-        })
-        const checkData = await checkResponse.json()
-
-        // 如果文件已存在，询问用户是否覆盖
-        if (checkData.exists) {
+        } else if (checkData.exists) {
           const shouldOverwrite = await confirm(
             `工作流 "${checkData.filename}" 已存在，是否覆盖？`,
             { type: 'warning', title: '文件已存在', confirmText: '覆盖', cancelText: '取消' }
@@ -449,7 +428,7 @@ export function Toolbar() {
       })
       const data = await response.json()
 
-      if (data.success) {
+      if (response.ok && data.success) {
         if (!skipConfirm) {
           addLog({ level: 'success', message: `工作流已保存: ${data.filename}` })
         }
@@ -464,7 +443,7 @@ export function Toolbar() {
         addLog({ level: 'error', message: `保存出错: ${e}` })
       }
     }
-  }, [nodes.length, config.workflow?.localFolder, config.workflow?.showOverwriteConfirm, config.workflow?.autoSaveCopy, defaultFolder, name, exportWorkflow, addLog, confirm])
+  }, [config.workflow?.localFolder, config.workflow?.showOverwriteConfirm, config.workflow?.autoSaveCopy, defaultFolder, exportWorkflow, addLog, confirm])
 
   const handleNewWorkflow = useCallback(() => {
     clearWorkflow()
@@ -472,9 +451,9 @@ export function Toolbar() {
     addLog({ level: 'info', message: '已创建新工作流' })
   }, [clearWorkflow, addLog])
 
-  // 点击"新建"按钮：画布有内容时先确认，避免误清空未保存的工作流
+  // 所有新建入口都按文档脏状态确认，包括仅有变量或名称的草稿。
   const handleNewWorkflowClick = useCallback(async () => {
-    if (nodes.length > 0) {
+    if (useWorkflowStore.getState().hasUnsavedChanges) {
       const ok = await confirm('新建工作流会清空当前画布，未保存的内容将丢失。确定要新建吗？', {
         type: 'warning',
         title: '新建工作流',
@@ -482,7 +461,7 @@ export function Toolbar() {
       if (!ok) return
     }
     handleNewWorkflow()
-  }, [nodes.length, confirm, handleNewWorkflow])
+  }, [confirm, handleNewWorkflow])
 
   // 智能整理（基于 ELKJS 的自动排版）
   const handleAutoLayout = useCallback(async () => {
@@ -544,27 +523,21 @@ export function Toolbar() {
       const isInInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
       if (isInInput) return
       
-      // Ctrl+S 保存
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault()
-        handleSave()
-      }
       // Alt+N 新建
       if (e.altKey && e.key === 'n') {
         e.preventDefault()
-        handleNewWorkflow()
+        void handleNewWorkflowClick()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, handleNewWorkflow])
+  }, [handleSave, handleNewWorkflowClick])
   
   // 页面关闭/刷新前检查未保存的更改
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // 只有当有节点且有未保存的更改时才提示
-      if (nodes.length > 0 && hasUnsavedChanges) {
+      if (hasUnsavedChanges) {
         e.preventDefault()
         // 现代浏览器会显示标准提示，自定义消息可能不会显示
         e.returnValue = '工作流有未保存的更改，确定要离开吗？'
@@ -574,7 +547,7 @@ export function Toolbar() {
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [nodes.length, hasUnsavedChanges])
+  }, [hasUnsavedChanges])
   
   // 监听剪贴板中的新图片
   useClipboardImageMonitor((width, height) => {
@@ -745,7 +718,7 @@ export function Toolbar() {
       }
     }))
     offs.push(onAssistantUiEvent('new_workflow', () => {
-      handleNewWorkflow()
+      void handleNewWorkflowClick()
     }))
     offs.push(onAssistantUiEvent('export_workflow', (p: any) => {
       handleExportRef.current?.(p?.format || 'json')
@@ -776,7 +749,7 @@ export function Toolbar() {
     return () => {
       offs.forEach((off) => off())
     }
-  }, [handleSave, handleNewWorkflow, handleRunHeadless])
+  }, [handleSave, handleNewWorkflowClick, handleRunHeadless])
 
   // 通知后端当前工作流ID（用于全局热键控制）
   const handleOpen = () => {

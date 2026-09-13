@@ -12376,5 +12376,89 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "DOC.empty.save",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "零节点变量文档点击保存"
+    ],
+    "expectedUI": "请求包含变量与空nodes，成功后清除dirty",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "请求包含变量与空nodes，成功后清除dirty",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "DOC.new.button",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "新建按钮取消"
+    ],
+    "expectedUI": "确认出现，变量保持",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "确认出现，变量保持",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "DOC.new.shortcut",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "Alt+N取消"
+    ],
+    "expectedUI": "确认出现，变量保持",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "确认出现，变量保持",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "DOC.new.assistant",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "new_workflow事件取消"
+    ],
+    "expectedUI": "确认出现，变量保持",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "确认出现，变量保持",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "DOC.save.check-failure",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "文件存在查询503"
+    ],
+    "expectedUI": "不发保存请求，错误可见，dirty保持",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "不发保存请求，错误可见，dirty保持",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "DOC.save.newer-variable",
+    "capability": "草稿保存与新建",
+    "preconditions": "独立Mock路径，only-variable草稿；组件装配真实Toolbar",
+    "steps": [
+      "保存未返回时修改变量"
+    ],
+    "expectedUI": "请求旧值、当前新值，旧响应不能清除dirty",
+    "expectedIO": "实际transport消费；保存/查询按用例断言；新建取消无清空",
+    "stateAssertion": "请求旧值、当前新值，旧响应不能清除dirty",
+    "level": "component + transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
   }
 ]
