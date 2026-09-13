@@ -116,3 +116,81 @@ it('does not invalidate session A when a suspended session B render never commit
   finishA()
   await waitFor(() => expect(screen.getByRole('button', { name: '保存修改' })).toBeEnabled())
 })
+
+it('lets the application guard own dirty close and reports draft changes', async () => {
+  const onDirtyChange = vi.fn(), onRequestClose = vi.fn().mockResolvedValue(false), onOpenChange = vi.fn()
+  render(<DataTableFormDialog open mode="create" sessionKey="guard" onSubmit={vi.fn()} onOpenChange={onOpenChange} onDirtyChange={onDirtyChange} onRequestClose={onRequestClose} />)
+  await userEvent.type(screen.getByLabelText('数据表名称'), '草稿')
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true)
+  await userEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(onRequestClose).toHaveBeenCalledOnce()
+  expect(onOpenChange).not.toHaveBeenCalled()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+it('revokes resolver submission when the form closes or becomes readonly before resolution', async () => {
+  for (const change of [{ open: false }, { readonly: true }]) {
+    const onSubmit = vi.fn()
+    const props = { open: true, mode: 'edit' as const, sessionKey: 'a', initialValues: { name: 'A', description: '' }, onSubmit, onOpenChange: vi.fn() }
+    const view = render(<DataTableFormDialog {...props} />)
+    fireEvent.submit(view.container.ownerDocument.querySelector('#data-table-form')!)
+    view.rerender(<DataTableFormDialog {...props} {...change} />)
+    await waitFor(() => expect(screen.queryByText('正在保存…')).not.toBeInTheDocument())
+    expect(onSubmit).not.toHaveBeenCalled()
+    view.unmount()
+  }
+})
+
+it('prevents duplicate submit events before React commits the saving state', async () => {
+  const onSubmit = vi.fn().mockResolvedValue(undefined)
+  render(<DataTableFormDialog open mode="edit" sessionKey="a" initialValues={{ name: 'A', description: '' }} onSubmit={onSubmit} onOpenChange={vi.fn()} />)
+  const form = document.querySelector<HTMLFormElement>('#data-table-form')!
+  fireEvent.submit(form); fireEvent.submit(form)
+  await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+})
+
+it('retains the draft on reconnect and offers recovery while inputs are frozen', async () => {
+  const onRecover = vi.fn().mockResolvedValue(undefined)
+  const props = { open: true, mode: 'edit' as const, sessionKey: 'a', submissionEpoch: 'i1', initialValues: { name: 'A', description: '' }, onSubmit: vi.fn(), onOpenChange: vi.fn(), onRecover }
+  const view = render(<DataTableFormDialog {...props} />)
+  await userEvent.type(screen.getByLabelText('数据表名称'), '草稿')
+  view.rerender(<DataTableFormDialog {...props} submissionEpoch="i2" recoveryPending />)
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('A草稿')
+  expect(screen.getByLabelText('数据表名称')).toHaveAttribute('readonly')
+  await userEvent.click(screen.getByRole('button', { name: '核对保存结果' }))
+  expect(onRecover).toHaveBeenCalledOnce()
+  expect(props.onSubmit).not.toHaveBeenCalled()
+})
+
+it('reports local saving to the parent and exposes parent error actions', async () => {
+  let finish!:()=>void
+  const onSavingChange=vi.fn(),pending=new Promise<void>(resolve=>{finish=resolve})
+  render(<DataTableFormDialog open mode="edit" sessionKey="saving" initialValues={{name:'A',description:''}} error="冲突" errorActions={<button>重新载入</button>} onSavingChange={onSavingChange} onOpenChange={vi.fn()} onSubmit={()=>pending}/>)
+  expect(screen.getByRole('button',{name:'重新载入'})).toBeVisible()
+  fireEvent.submit(document.querySelector('#data-table-form')!)
+  expect(onSavingChange).toHaveBeenLastCalledWith(true);finish()
+  await waitFor(()=>expect(onSavingChange).toHaveBeenLastCalledWith(false))
+})
+
+it('does not allow a pending recovery to be discarded without an external guard', async () => {
+  const close=vi.fn()
+  render(<DataTableFormDialog open mode="edit" sessionKey="recovery" recoveryPending initialValues={{name:'A',description:''}} onOpenChange={close} onSubmit={vi.fn()}/>)
+  await userEvent.click(screen.getByRole('button',{name:'取消'}))
+  expect(close).not.toHaveBeenCalled();expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+it('does not apply a stale close approval after saving has started', async () => {
+  let approve!: (allowed: boolean) => void, finish!: () => void
+  const onRequestClose = vi.fn(() => new Promise<boolean>(resolve => { approve = resolve }))
+  const onSubmit = vi.fn(() => new Promise<void>(resolve => { finish = resolve })), onOpenChange = vi.fn()
+  render(<DataTableFormDialog open mode="create" sessionKey="a" onOpenChange={onOpenChange} onRequestClose={onRequestClose} onSubmit={onSubmit} />)
+  await userEvent.type(screen.getByLabelText('数据表名称'), '草稿')
+  await userEvent.click(screen.getByRole('button', { name: '取消' }))
+  await userEvent.click(screen.getByRole('button', { name: '创建数据表' }))
+  await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
+  approve(true)
+  await Promise.resolve(); await Promise.resolve(); await Promise.resolve()
+  expect(onOpenChange).not.toHaveBeenCalled()
+  finish()
+  await waitFor(() => expect(screen.getByRole('button', { name: '创建数据表' })).toBeEnabled())
+})
