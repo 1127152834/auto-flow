@@ -11,9 +11,11 @@
 
 ## 1. 产品基准
 
+2026-09-13 最新视觉约束（confirmed，用户明确要求）：**布局、控件形状/尺寸/密度和交互方式沿用 WebRPA；整体风格配色沿用 AutoFlow**。这替代此前“原颜色也完全保留”的建议。使用当前暖灰 canvas、米白 surface、黏土棕 clay、低饱和 sage 语义色；主题覆写限 Studio，不借换色重排布局或放大控件。静态原型用于审查，不能作为迁入功能完成证据。
+
 新 Studio 的默认行为取自冻结源码。直接迁移组件、状态管理、配置表单和业务算法；不根据截图重新绘制，不把原节点翻译成现有少量自定义节点后再执行。
 
-原样保留范围内的布局、样式、图标、文案、菜单位置、面板伸缩、图画布/模块条双视图、选择/拖放/连线、快捷键、撤销重做、分组便签、变量、导入导出、日志结果、录制拾取和调试交互。原有子流程、错误策略与重试不再因旧 M1–M6 排期而继续删减。品牌署名及许可文件保留来源记录；AutoFlow 宿主窗口标题可使用 AutoFlow 名称。
+保留范围内的原布局、控件样式（配色按 AutoFlow 覆写）、图标、文案、菜单位置、面板伸缩、图画布/模块条双视图、选择/拖放/连线、快捷键、撤销重做、分组便签、变量、导入导出、日志结果、录制拾取和调试交互。原有子流程、错误策略与重试不再因旧 M1–M6 排期而继续删减。品牌署名及许可文件保留来源记录；AutoFlow 宿主窗口标题可使用 AutoFlow 名称。
 
 此前用户明确排除的企业管理、Windows 桌面/系统控件控制、发布和版本管理继续排除。远程企业协同属于排除范围；工作流文件保存/打开/导入/导出、撤销历史、运行诊断不属于版本发布管理，必须保留。Windows 上运行网页自动化仍属于目标。
 
@@ -47,7 +49,7 @@
 
 不整份迁入原 globalConfigStore，它包含浏览器及其他模块的凭据/配置。保留范围内的工作台行为配置和视图偏好；宿主资源和凭据经 AutoFlow 服务取得。自动保存、覆盖确认/副本保存、自定义快捷键、运行后关闭浏览器等逐项登记目标配置归属，不能因不是视觉设置而删除。原 autoCloseBrowser 并非现有 Profile 字段，应保留为工作台会话策略；原文件副本保存映射到 SQLite 文档副本时需核对同名、标识及脏状态行为。原 Store 中直接导入 socket 等 IO 副作用移到 hook/api/events 装配，原编辑动作本身尽量不改。
 
-建议同一次 renderer 构建增加独立 `studio.html` 入口，原 WebRPA CSS 只进入这个文档，主应用 CSS 不进入 Studio。两个窗口共用 main/preload 和 sidecar。调整现有固定 Studio URL/构建文件与注册窗口主 frame 校验，保留窗口复用、最小化恢复、关闭重开和工作区协调。不得通过全局覆盖 AutoFlow CSS 来追求相似，也不把所有 `@/` 导入指向宿主共享组件。
+建议同一次 renderer 构建增加独立 `studio.html` 入口，原 WebRPA CSS 与限定颜色的 AutoFlow 主题映射只进入这个文档，不整份导入主应用布局 CSS。两个窗口共用 main/preload 和 sidecar。调整现有固定 Studio URL/构建文件与注册窗口主 frame 校验，保留窗口复用、最小化恢复、关闭重开和工作区协调。不得通过全局覆盖 AutoFlow CSS 来追求相似，也不把所有 `@/` 导入指向宿主共享组件。
 
 后端继续使用 `apps/backend/src/autoflow`：纯模型、解析和变量规则归 `domain/workflows`；执行调度和上下文归 `application/workflows`；网页执行器、录制拾取归 `providers/browser`；数据库、文件和 worker 归各自 infrastructure；HTTP/事件归 adapters。按源文件职责落位，不把整份 WebRPA app 包塞进某一层。迁移路径不等于重写实现；每个内部算法的改动需要具体原因与测试。
 
@@ -66,7 +68,7 @@
 | 前端服务数据 | 使用现有 ApiProvider / TanStack Query / 共享客户端；不复制 axios、localStorage token、自建全局重连弹窗 |
 | 后端与存储 | Python 3.11 / FastAPI / Pydantic / SQLAlchemy / SQLite / Alembic / PyInstaller 沿现有工程；CloakBrowser 使用现有 Profile 与启动参数适配 |
 
-一致性要求作用于代码职责、接口、依赖与验证；Studio 的可见 UI 仍以 WebRPA 为基准。共享组件与原控件不等价时，保留领域控件并记录原因，不顺手重画页面。
+一致性要求作用于代码职责、接口、依赖与验证；Studio 的布局与交互样式以 WebRPA 为基准，整体配色按用户最新要求使用 AutoFlow tokens。共享组件与原控件不等价时，保留领域控件并记录原因，不顺手重画页面。
 
 ### 后端拆分边界
 
