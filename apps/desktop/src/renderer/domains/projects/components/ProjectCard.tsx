@@ -16,7 +16,7 @@ export function ProjectCard({ project, compact = false, disabled, onOpen, onEdit
   return <article aria-disabled={!canOpen || undefined} className={`group relative flex min-w-0 items-start rounded-card border border-line bg-surface ${compact ? 'gap-3 p-3 pr-12' : 'gap-4 p-5 pr-14'} ${canOpen ? 'cursor-pointer hover:border-clay/50 hover:bg-surface-hover' : 'opacity-60'}`} onClick={event => { if (!(event.target as Element).closest('button')) open() }}>
     <div data-project-icon className={`flex shrink-0 items-center justify-center rounded-control bg-clay/10 text-clay ${compact ? 'h-10 w-10' : 'h-12 w-12'}`}><Folder aria-hidden="true" size={compact ? 22 : 26} weight="duotone" /></div>
     <div data-project-info className="min-w-0 flex-1">
-      <Button variant="ghost" title={project.name} className="h-auto max-w-full justify-start truncate p-0 text-left text-base font-medium text-ink hover:bg-transparent" disabled={!canOpen} onClick={open}>{project.name}</Button>
+      <Button variant="ghost" title={project.name} className="h-auto max-w-full min-w-0 justify-start p-0 text-left text-base font-medium text-ink hover:bg-transparent" disabled={!canOpen} onClick={open}><span className="min-w-0 truncate">{project.name}</span></Button>
       <p className="mb-0 mt-1 line-clamp-2 break-words text-sm leading-5 text-muted">{project.description || '暂无项目描述'}</p>
       <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
         {compact ? <span>{lifecycleLabel[project.lifecycleState] ?? project.lifecycleState}</span> : null}<span className="truncate">最近打开：{formatDate(project.lastOpenedAt)}</span>
