@@ -143,3 +143,66 @@ it('shows explicit initial-load failure, and readonly data remains openable', as
   expect(view.props.onOpen).toHaveBeenCalledWith('t')
   expect(screen.queryByRole('button', { name: '新建数据表' })).not.toBeInTheDocument()
 })
+
+it.each(['instance', 'client', 'readonly', 'disabled', 'workspace'] as const)('does not resend a lost write after %s revokes admission during lookup', async change => {
+  const lookup = deferred<never>()
+  const request = vi.fn((path: string, init?: ApiRequestInit) => {
+    if (init?.method === 'POST') return Promise.reject(new TypeError('响应丢失'))
+    if (path.includes('/operations/')) return lookup.promise
+    return Promise.resolve(page([]))
+  })
+  const view = mount(request as StreamingApiClient['request'])
+  await userEvent.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await userEvent.type(screen.getByLabelText('数据表名称'), '冻结名称')
+  await userEvent.click(screen.getByRole('button', { name: '创建数据表' }))
+  await waitFor(() => expect(request.mock.calls.some(([path]) => path.includes('/operations/'))).toBe(true))
+  view.update(change === 'instance' ? { instanceId: 'i2' } : change === 'client'
+    ? { client: { request: vi.fn().mockResolvedValue(page([])), stream: vi.fn(), health: vi.fn() } }
+    : change === 'workspace' ? { workspaceKey: 'w2' } : { [change]: true })
+  await act(async () => { lookup.reject(new ApiClientError('未接受', 404, 'OPERATION_NOT_FOUND')) })
+  expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
+  expect(view.props.onOpen).not.toHaveBeenCalled()
+})
+
+it('only queries while readonly and retries an explicitly absent command with the original key and body', async () => {
+  let absent = false
+  const request = vi.fn(async (path: string, init?: ApiRequestInit) => {
+    if (init?.method === 'POST') { if (absent) return table; throw new TypeError('响应丢失') }
+    if (path.includes('/operations/')) { if (absent) throw new ApiClientError('未接受', 404, 'OPERATION_NOT_FOUND'); throw new TypeError('断线') }
+    return page([])
+  })
+  const view = mount(request as StreamingApiClient['request'])
+  await userEvent.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await userEvent.type(screen.getByLabelText('数据表名称'), '冻结草稿')
+  await userEvent.click(screen.getByRole('button', { name: '创建数据表' }))
+  await screen.findByText('上次保存结果尚未确认，请先核对结果。')
+  absent = true; view.update({ readonly: true })
+  await userEvent.click(screen.getByRole('button', { name: '核对保存结果' }))
+  expect(await screen.findByRole('button', { name: '重试原请求' })).toBeDisabled()
+  expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('冻结草稿')
+  view.update({ readonly: false })
+  await userEvent.click(screen.getByRole('button', { name: '重试原请求' }))
+  await waitFor(() => expect(view.props.onOpen).toHaveBeenCalledWith('t'))
+  const writes = request.mock.calls.filter(([, init]) => init?.method === 'POST')
+  expect(writes).toHaveLength(2)
+  expect(writes[1][1]).toEqual(writes[0][1])
+})
+
+it('lets the user discard an explicitly unaccepted command without losing the editable draft', async () => {
+  let lookups = 0
+  const request = vi.fn(async (path: string, init?: ApiRequestInit) => {
+    if (init?.method === 'POST') throw new TypeError('响应丢失')
+    if (path.includes('/operations/')) { if (++lookups === 1) throw new TypeError('断线'); throw new ApiClientError('未接受', 404, 'OPERATION_NOT_FOUND') }
+    return page([])
+  })
+  mount(request as StreamingApiClient['request'])
+  await userEvent.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await userEvent.type(screen.getByLabelText('数据表名称'), '继续编辑')
+  await userEvent.click(screen.getByRole('button', { name: '创建数据表' }))
+  await userEvent.click(await screen.findByRole('button', { name: '核对保存结果' }))
+  await userEvent.click(await screen.findByRole('button', { name: '放弃未接受请求' }))
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('继续编辑')
+  expect(screen.getByLabelText('数据表名称')).not.toHaveAttribute('readonly')
+  expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
+})

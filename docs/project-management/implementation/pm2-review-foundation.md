@@ -172,3 +172,7 @@ Ruff首次命令将uv --directory之后的相对路径重复拼接，退出1，�
 ## C2c Task1 共享命令发送准入（2026-09-13）
 
 DELETE的202结果与原操作查询使用相同identity/kind/succeeded及领域投影校验；lookupOnly始终只读，精确未接受错误独立表示；每次真实写入含404后原key重发前动态检查canSubmit。pm2_command_admission_impl先RED10项失败，再实现；独立pm2_command_admission_review规格→工程通过，4文件61测试与22项畸形wrapper/readonly/撤权/Abort探针通过。root最终单文件17测试及eslint通过，TypeScript通过。当前Task1仅共享算法，实际目录Task1b与删除客户端Task2单独审查，不把helper存在当成所有消费者已受保护。
+
+## C2c Task1b 实际目录恢复准入（2026-09-13）
+
+目录表API四个命令入口透传动态策略。scope包含workspace/project/client/instance/session，发送前校验，恢复只查询；精确未接受保原key/body，可明确重试或放弃未接受请求。client改变推进独立submissionEpoch，草稿保留。RED新增7反例失败：五种撤权仍发生第二次POST、两项缺恢复操作；修复后目录/API/表单41测试通过，独立审查同41测试+7仓外探针通过，包括readonly成功核对、新client、非精确404、双击及迟到结果。TypeScript与限定ESLint通过；更后并行Editor写入期间出现的全仓类型暂态不算本包验收。最终目录和两客户端联合102测试通过。

@@ -174,9 +174,9 @@ export function createDataCommand(client: StreamingApiClient, projectId: string)
 
 **Files:** `apps/desktop/src/renderer/domains/project-data/api.ts`、`api.test.ts`、`pages/DataTableDirectoryPage.tsx`、`pages/DataTableDirectoryPage.test.tsx`。紧接Task1完成；不能只迁移新Record入口。
 
-- [ ] Directory RED测试以延迟Promise控制：保存表POST丢包→operation查询等待→rerender新instance/readonly/disabled或卸载换workspace→旧查询返回OPERATION_NOT_FOUND，断言没有第二次POST。再验证新client核对succeeded仍取回原表；只读核对NOT_FOUND不发写、原key/body仍可见；恢复可写后点击“重试原请求”只用原key/body。API单测验证policy原对象透传而非调用时算一次boolean。
-- [ ] desktop运行 `npm test -- src/renderer/domains/project-data/pages/DataTableDirectoryPage.test.tsx src/renderer/domains/project-data/api.test.ts`，预期新迟到补写断言RED。
-- [ ] `createProjectDataApi`内部command末尾增加 `policy?:DataCommandPolicy`，将其作为 execute 的第8参数；公开签名改为：
+- [x] Directory RED测试以延迟Promise控制：保存表POST丢包→operation查询等待→rerender新instance/readonly/disabled或卸载换workspace→旧查询返回OPERATION_NOT_FOUND，断言没有第二次POST。再验证新client核对succeeded仍取回原表；只读核对NOT_FOUND不发写、原key/body仍可见；恢复可写后点击“重试原请求”只用原key/body。API单测验证policy原对象透传而非调用时算一次boolean。
+- [x] desktop运行 `npm test -- src/renderer/domains/project-data/pages/DataTableDirectoryPage.test.tsx src/renderer/domains/project-data/api.test.ts`，预期新迟到补写断言RED。
+- [x] `createProjectDataApi`内部command末尾增加 `policy?:DataCommandPolicy`，将其作为 execute 的第8参数；公开签名改为：
 
 ```ts
 create: (body: TableCreate, key: string, policy?: DataCommandPolicy) => command('createTable', body, key, undefined, false, policy),
@@ -185,9 +185,9 @@ resumeCreate: (body: TableCreate, key: string, policy?: DataCommandPolicy) => co
 resumePatch: (tableId: string, body: TablePatch, key: string, policy?: DataCommandPolicy) => command('updateTable', body, key, tableId, true, policy),
 ```
 
-- [ ] Directory保留其已有pending/epoch/scope/mounted，不引入controller替换它。将当前 `current()` 声明移到API调用前，current校验补client/workspace/project；传 `const policy={lookupOnly:resume,canSubmit:()=>current()&&!scope.current.readonly}` 给四个实际API调用。首次写current在每次submit前由helper重新读取；不是只在then/catch判断。readonly不使查询current失效。scope ref加入client/workspace/project并将client变更纳入epoch失效；workspace/project React key仍保留。
-- [ ] 增加一个 `notAccepted` boolean承载精确 `DataCommandNotAccepted`，catch时保留pending/setRecoveryPending(true)，不要当一般Error清pending。现有DataTableFormDialog的errorActions可直接显示“重试原请求”（disabled当readonly/disabled/busy）与“放弃未接受请求”；前者以原pending调用create/patch `resume=false`并传动态guard，后者才清pending并解除frozen。unknown时不能放弃；notAccepted在有效scope下允许明确放弃且保留草稿。`execute`增加一个显式mode参数区分submit/lookup/retry，禁止依pending存在就无法选择原请求重试。
-- [ ] 运行Directory/API/表单测试，预期全部PASS；提交 `fix(project-data): guard directory command resubmission across scope changes`。README/导航/表单本体不用改。
+- [x] Directory保留其已有pending/epoch/scope/mounted，不引入controller替换它。将当前 `current()` 声明移到API调用前，current校验补client/workspace/project；传 `const policy={lookupOnly:resume,canSubmit:()=>current()&&!scope.current.readonly}` 给四个实际API调用。首次写current在每次submit前由helper重新读取；不是只在then/catch判断。readonly不使查询current失效。scope ref加入client/workspace/project并将client变更纳入epoch失效；workspace/project React key仍保留。
+- [x] 增加一个 `notAccepted` boolean承载精确 `DataCommandNotAccepted`，catch时保留pending/setRecoveryPending(true)，不要当一般Error清pending。现有DataTableFormDialog的errorActions可直接显示“重试原请求”（disabled当readonly/disabled/busy）与“放弃未接受请求”；前者以原pending调用create/patch `resume=false`并传动态guard，后者才清pending并解除frozen。unknown时不能放弃；notAccepted在有效scope下允许明确放弃且保留草稿。`execute`增加一个显式mode参数区分submit/lookup/retry，禁止依pending存在就无法选择原请求重试。
+- [x] 运行Directory/API/表单测试，预期全部PASS；提交 `fix(project-data): guard directory command resubmission across scope changes`。README/导航/表单本体不用改。
 
 **读请求例外：** GET和mutation-impact的POST是查询，不设置write canSubmit，不用 `method !== 'GET'` 推导权限。preview晚响应仍做scope/ticket隔离；readonly可查询影响和原Operation。该区别是客户端策略；本包不改后端quiesce期间暂停新预检的既有全局行为。
 
