@@ -13,10 +13,16 @@ it('renders the gallery create-table structure without changing the data limits'
   expect(dialog).toHaveClass('max-w-[32.5rem]')
   expect(dialog).toHaveClass('[&_[data-slot=dialog-title]]:text-[28px]')
   expect(screen.getByText('*')).toHaveAttribute('aria-hidden','true')
-  expect(screen.getByLabelText('数据表名称')).toHaveAttribute('maxlength','120')
-  expect(screen.getByLabelText('用途说明（可选）')).toHaveAttribute('maxlength','1000')
   expect(screen.getByText('创建后即可维护本地记录，后续可按需配置数据来源。')).toBeVisible()
   expect(screen.queryByText(/来源未配置|不能新增/)).not.toBeInTheDocument()
+})
+
+it('accepts the schema limits as Unicode code points without native UTF-16 truncation',async()=>{
+  const user=userEvent.setup(),submit=vi.fn().mockResolvedValue(undefined),name='😀'.repeat(120),description='😀'.repeat(1000)
+  render(<DataTableFormDialog open mode="create" sessionKey="unicode-limits" onOpenChange={vi.fn()} onSubmit={submit}/>)
+  await user.type(screen.getByLabelText('数据表名称'),name);await user.type(screen.getByLabelText('用途说明（可选）'),description)
+  await user.click(screen.getByRole('button',{name:'创建数据表'}))
+  await waitFor(()=>expect(submit).toHaveBeenCalledWith({name,description}))
 })
 
 it('validates, trims, submits once, and leaves closing to the parent', async () => {
