@@ -1,0 +1,437 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:9386) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx (19 tests | 19 failed) 258ms
+   × submits an actual checkbox value with no hidden text default 106ms
+   × submits an actual slider_int value with no hidden text default 15ms
+   × submits an actual slider_float value with no hidden text default 12ms
+   × submits a chosen select_single option with no text default 13ms
+   × submits a chosen select_multiple option with no text default 12ms
+   × permits empty optional select_single selection 12ms
+   × permits empty optional select_multiple selection 9ms
+   × preserves zero as a slider default when the minimum is negative 10ms
+   × rejects nonfinite numeric input Infinity 9ms
+   × rejects nonfinite numeric input -Infinity 20ms
+   × rejects nonfinite numeric input 1e309 8ms
+   × validates AI submission for integer 3ms
+   × validates AI submission for number 4ms
+   × validates AI submission for number 3ms
+   × validates AI submission for single 4ms
+   × validates AI submission for select_single 3ms
+   × validates AI submission for select_multiple 3ms
+   × validates AI submission for checkbox 8ms
+   × rejects a late AI action from a previous prompt 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 19 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > submits an actual checkbox value with no hidden text default
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', 'false' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:22:41
+     20| it.each(['checkbox','slider_int','slider_float'] as const)('submits an…
+     21|   open(mode);confirm()
+     22|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     23| })
+     24| it.each(['select_single','select_multiple'] as const)('submits a chose…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > submits an actual slider_int value with no hidden text default
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > submits an actual slider_float value with no hidden text default
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '0' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:22:41
+     20| it.each(['checkbox','slider_int','slider_float'] as const)('submits an…
+     21|   open(mode);confirm()
+     22|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     23| })
+     24| it.each(['select_single','select_multiple'] as const)('submits a chose…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > submits a chosen select_single option with no text default
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '乙' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:26:41
+     24| it.each(['select_single','select_multiple'] as const)('submits a chose…
+     25|   open(mode,{selectOptions:['甲','乙']});fireEvent.click(screen.getByTex…
+     26|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     27| })
+     28| it.each(['select_single','select_multiple'] as const)('permits empty o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > submits a chosen select_multiple option with no text default
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '["乙"]' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:26:41
+     24| it.each(['select_single','select_multiple'] as const)('submits a chose…
+     25|   open(mode,{selectOptions:['甲','乙']});fireEvent.click(screen.getByTex…
+     26|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     27| })
+     28| it.each(['select_single','select_multiple'] as const)('permits empty o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > permits empty optional select_single selection
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:30:41
+     28| it.each(['select_single','select_multiple'] as const)('permits empty o…
+     29|   open(mode,{selectOptions:['甲'],required:false});confirm()
+     30|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     31| })
+     32| it('preserves zero as a slider default when the minimum is negative',(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > permits empty optional select_multiple selection
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '[]' ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:30:41
+     28| it.each(['select_single','select_multiple'] as const)('permits empty o…
+     29|   open(mode,{selectOptions:['甲'],required:false});confirm()
+     30|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     31| })
+     32| it('preserves zero as a slider default when the minimum is negative',(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > preserves zero as a slider default when the minimum is negative
+AssertionError: expected "sendInputResult" to be called with arguments: [ 'prompt-1', '0' ]
+
+Received:
+
+  1st sendInputResult call:
+
+  [
+    "prompt-1",
+-   "0",
++   "-10",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:34:41
+     32| it('preserves zero as a slider default when the minimum is negative',(…
+     33|   open('slider_int',{defaultValue:'0',minValue:-10,maxValue:10});confi…
+     34|   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1…
+       |                                         ^
+     35| })
+     36| it.each(['Infinity','-Infinity','1e309'])('rejects nonfinite numeric i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > rejects nonfinite numeric input Infinity
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "Infinity",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:38:45
+     36| it.each(['Infinity','-Infinity','1e309'])('rejects nonfinite numeric i…
+     37|   open('number',{defaultValue});confirm()
+     38|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     39| })
+     40| it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > rejects nonfinite numeric input -Infinity
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "-Infinity",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:38:45
+     36| it.each(['Infinity','-Infinity','1e309'])('rejects nonfinite numeric i…
+     37|   open('number',{defaultValue});confirm()
+     38|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     39| })
+     40| it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > rejects nonfinite numeric input 1e309
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "1e309",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:38:45
+     36| it.each(['Infinity','-Infinity','1e309'])('rejects nonfinite numeric i…
+     37|   open('number',{defaultValue});confirm()
+     38|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     39| })
+     40| it.each([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for integer
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "1.5",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for number
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "Infinity",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for number
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "11",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for single
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "long",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for select_single
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "不存在",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for select_multiple
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "["不存在"]",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > validates AI submission for checkbox
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "true",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:46:45
+     44|   const action=useDialogRegistry.getState().getAction('input_prompt_pr…
+     45|   await act(async()=>{try{await action.handler({value})}catch{/* calle…
+     46|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     47|   expect(screen.queryByRole('dialog')).not.toBeNull()
+     48| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/19]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx > rejects a late AI action from a previous prompt
+AssertionError: expected "sendInputResult" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st sendInputResult call:
+
+    Array [
+      "prompt-1",
+      "stale",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx:54:45
+     52|   act(()=>receive({requestId:'prompt-2',title:'新输入',message:'请填写',vari…
+     53|   await act(async()=>{try{await old.handler({value:'stale'})}catch{/* …
+     54|   expect(socketService.sendInputResult).not.toHaveBeenCalled()
+       |                                             ^
+     55|   expect(screen.queryByRole('dialog',{name:'新输入'})).not.toBeNull()
+     56| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/19]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  19 failed (19)
+   Start at  04:29:46
+   Duration  1.66s (transform 296ms, setup 107ms, import 533ms, tests 258ms, environment 630ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx

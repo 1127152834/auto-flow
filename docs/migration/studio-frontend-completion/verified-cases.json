@@ -19785,5 +19785,765 @@
     "level": "component/editor rule",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/node-config-history.test.ts"
+  },
+  {
+    "id": "INPUT.validation.actual-checkbox",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "无隐藏文本默认值仍可提交 checkbox",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "无隐藏文本默认值仍可提交 checkbox",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.actual-slider_int",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "无隐藏文本默认值仍可提交 slider_int",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "无隐藏文本默认值仍可提交 slider_int",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.actual-slider_float",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "无隐藏文本默认值仍可提交 slider_float",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "无隐藏文本默认值仍可提交 slider_float",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.chosen-select_single",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "已选 select_single 正常提交",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "已选 select_single 正常提交",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.chosen-select_multiple",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "已选 select_multiple 正常提交",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "已选 select_multiple 正常提交",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.optional-select_single",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "可选 select_single 允许空结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "可选 select_single 允许空结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.optional-select_multiple",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "可选 select_multiple 允许空结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "可选 select_multiple 允许空结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.zero",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "滑动条保留零默认值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "滑动条保留零默认值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.finite-0",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝非有限数值 Infinity",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝非有限数值 Infinity",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.finite-1",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝非有限数值 -Infinity",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝非有限数值 -Infinity",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.finite-2",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝非有限数值 1e309",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝非有限数值 1e309",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-0",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI整数拒绝小数",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI整数拒绝小数",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-1",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI数字拒绝Infinity",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI数字拒绝Infinity",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-2",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI最大值验证",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI最大值验证",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-3",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI文本长度验证",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI文本长度验证",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-4",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI单选成员验证",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI单选成员验证",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-5",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI多选成员验证",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI多选成员验证",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.ai-6",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "AI布尔类型验证",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "AI布尔类型验证",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.stale-ai",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝前一请求的迟到AI操作",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝前一请求的迟到AI操作",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-single",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 single 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 single 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-multiline",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 multiline 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 multiline 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-list",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 list 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 list 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-password",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 password 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 password 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-file",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 file 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 file 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-folder",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 folder 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 folder 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-number",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 number 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 number 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.valid-integer",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "保留合法 integer 结果",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "保留合法 integer 结果",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-single",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 single 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 single 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-multiline",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 multiline 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 multiline 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-list",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 list 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 list 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-password",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 password 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 password 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-file",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 file 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 file 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-folder",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 folder 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 folder 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-number",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 number 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 number 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.required-integer",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "拒绝必填 integer 空值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "拒绝必填 integer 空值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.duplicate-event",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "重复输入事件保留已编辑值",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "重复输入事件保留已编辑值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.duplicate-ai",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "重复AI操作只提交一次",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "重复AI操作只提交一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INPUT.validation.cancel",
+    "capability": "run:input-prompt",
+    "preconditions": {
+      "requestId": "prompt-1",
+      "transport": "组件提交 spy",
+      "mode": "对应测试参数，覆盖13种输入模式"
+    },
+    "steps": [
+      "取消返回null且缓存操作失效",
+      "通过组件确定或注册的AI弹窗动作提交",
+      "检查结果参数或保留的错误状态"
+    ],
+    "expectedUI": "合法值关闭；非法值显示错误并保留输入框；迟到动作不关闭新请求",
+    "expectedIO": "只向原 requestId 提交合法原文编码或取消null",
+    "stateAssertion": "取消返回null且缓存操作失效",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
   }
 ]

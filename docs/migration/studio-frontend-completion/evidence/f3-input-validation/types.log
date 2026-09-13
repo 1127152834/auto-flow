@@ -1,0 +1,35 @@
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(19,72): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(role: ByRoleMatcher, options?: ByRoleOptions | undefined): HTMLElement', gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+  Overload 2 of 2, '(role: ByRoleMatcher, options?: ByRoleOptions | undefined): HTMLElement', gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(21,8): error TS2345: Argument of type '"checkbox" | "slider_int" | "slider_float"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"checkbox"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(25,8): error TS2345: Argument of type '"select_single" | "select_multiple"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"select_single"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(29,8): error TS2345: Argument of type '"select_single" | "select_multiple"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"select_single"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(33,8): error TS2345: Argument of type '"slider_int"' is not assignable to parameter of type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(37,8): error TS2345: Argument of type '"number"' is not assignable to parameter of type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(43,8): error TS2345: Argument of type '"number" | "checkbox" | "single" | "select_single" | "select_multiple" | "integer"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"number"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(60,7): error TS2345: Argument of type '"number" | "password" | "list" | "file" | "folder" | "single" | "multiline" | "integer"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"number"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(63,7): error TS2345: Argument of type '"number" | "password" | "list" | "file" | "folder" | "single" | "multiline" | "integer"' is not assignable to parameter of type '"list" | "single"'.
+  Type '"number"' is not assignable to type '"list" | "single"'.
+src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx(79,55): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(role: ByRoleMatcher, options?: ByRoleOptions | undefined): HTMLElement', gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+  Overload 2 of 2, '(role: ByRoleMatcher, options?: ByRoleOptions | undefined): HTMLElement', gave the following error.
+    Object literal may only specify known properties, and 'exact' does not exist in type 'ByRoleOptions'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c tsc --noEmit

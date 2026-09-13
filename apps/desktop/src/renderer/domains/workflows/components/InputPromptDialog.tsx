@@ -1,6 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/InputPromptDialog.tsx; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from '../api/transport'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
 import { Label } from './controls/label'
@@ -26,6 +26,38 @@ interface PromptData {
   selectOptions?: string[]  // 列表选择的选项
 }
 
+// Both human input and assistant actions use the same literal-value rules.
+function validatePromptValue(data: PromptData, raw: unknown): { value: string } | { error: string } {
+  const mode = data.inputMode
+  const required = data.required !== false
+  if (mode === 'checkbox') return typeof raw === 'boolean' ? { value: String(raw) } : { error: '请输入布尔值' }
+  if (mode === 'select_single' || mode === 'select_multiple') {
+    const items = mode === 'select_single' ? (typeof raw === 'string' ? (raw ? [raw] : []) : null) : raw
+    if (!Array.isArray(items) || items.some(item => typeof item !== 'string')) return { error: '请选择有效选项' }
+    if (required && items.length === 0) return { error: '请至少选择一项' }
+    if (items.some(item => !data.selectOptions?.includes(item))) return { error: '选择结果包含不存在的选项' }
+    return { value: mode === 'select_single' ? (items[0] ?? '') : JSON.stringify(items) }
+  }
+  const numeric = ['number', 'integer', 'slider_int', 'slider_float'].includes(mode)
+  if (typeof raw !== 'string' && !(numeric && typeof raw === 'number')) return { error: '输入值类型不正确' }
+  const value = String(raw)
+  const trimmed = value.trim()
+  if (!trimmed) return required ? { error: '此项为必填' } : { value: '' }
+  if (numeric) {
+    const number = Number(trimmed)
+    if (!Number.isFinite(number)) return { error: '请输入有限的数字' }
+    if ((mode === 'integer' || mode === 'slider_int') && !Number.isInteger(number)) return { error: '请输入整数，不能包含小数' }
+    const slider = mode === 'slider_int' || mode === 'slider_float'
+    const min = data.minValue ?? (slider ? 0 : undefined)
+    const max = data.maxValue ?? (slider ? 100 : undefined)
+    if (min !== undefined && number < min) return { error: `数值不能小于 ${min}` }
+    if (max !== undefined && number > max) return { error: `数值不能大于 ${max}` }
+    return { value: trimmed }
+  }
+  if (data.maxLength != null && data.maxLength > 0 && trimmed.length > data.maxLength) return { error: `长度不能超过 ${data.maxLength} 个字符` }
+  return { value }
+}
+
 export function InputPromptDialog() {
   const [promptData, setPromptData] = useState<PromptData | null>(null)
   const [inputValue, setInputValue] = useState('')
@@ -33,8 +65,11 @@ export function InputPromptDialog() {
   const [sliderValue, setSliderValue] = useState(0)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [error, setError] = useState('')
+  const activeRequest = useRef<string | null>(null)
 
   const handlePromptRequest = useCallback((data: PromptData) => {
+    if (activeRequest.current === data.requestId) return
+    activeRequest.current = data.requestId
     try {
       // 归一化默认值为字符串：defaultValue 可能是数字（如 integer 模式配了 8），
       // 若直接存进 inputValue 状态，后续 inputValue.split / inputValue.trim 会因
@@ -53,8 +88,10 @@ export function InputPromptDialog() {
       }
       // 滑动条模式：解析默认值为数字
       if (data.inputMode === 'slider_int' || data.inputMode === 'slider_float') {
-        const defaultNum = parseFloat(defaultStr) || data.minValue || 0
-        setSliderValue(defaultNum)
+        const parsed = defaultStr.trim() ? Number(defaultStr) : NaN
+        const defaultNum = Number.isFinite(parsed) ? parsed : (data.minValue ?? 0)
+        const clamped = Math.max(data.minValue ?? 0, Math.min(data.maxValue ?? 100, defaultNum))
+        setSliderValue(data.inputMode === 'slider_int' ? Math.round(clamped) : clamped)
       } else {
         setSliderValue(0)
       }
@@ -89,63 +126,10 @@ export function InputPromptDialog() {
   useEffect(() => {
     socketService.setInputPromptCallback(handlePromptRequest)
     return () => {
+      activeRequest.current = null
       socketService.setInputPromptCallback(null)
     }
   }, [handlePromptRequest])
-
-  const validateInput = (): boolean => {
-    if (!promptData) return false
-    
-    const { inputMode, required, minValue, maxValue, maxLength } = promptData
-    const trimmedValue = inputValue.trim()
-    
-    // 必填检查
-    if (required !== false && !trimmedValue) {
-      setError('此项为必填')
-      return false
-    }
-    
-    // 文件/文件夹模式不需要额外验证
-    if (inputMode === 'file' || inputMode === 'folder') {
-      setError('')
-      return true
-    }
-    
-    // 数字模式验证
-    if (inputMode === 'number' || inputMode === 'integer') {
-      if (trimmedValue) {
-        const num = Number(trimmedValue)
-        if (isNaN(num)) {
-          setError(inputMode === 'integer' ? '请输入有效的整数' : '请输入有效的数字')
-          return false
-        }
-        if (inputMode === 'integer' && !Number.isInteger(num)) {
-          setError('请输入整数，不能包含小数')
-          return false
-        }
-        if (minValue != null && num < minValue) {
-          setError(`数值不能小于 ${minValue}`)
-          return false
-        }
-        if (maxValue != null && num > maxValue) {
-          setError(`数值不能大于 ${maxValue}`)
-          return false
-        }
-      }
-      // 数字模式不检查字符长度
-      setError('')
-      return true
-    }
-    
-    // 长度检查（仅对非数字模式）
-    if (maxLength != null && maxLength > 0 && trimmedValue.length > maxLength) {
-      setError(`长度不能超过 ${maxLength} 个字符`)
-      return false
-    }
-    
-    setError('')
-    return true
-  }
 
   // 选择文件
   const handleSelectFile = async () => {
@@ -185,53 +169,33 @@ export function InputPromptDialog() {
     }
   }
 
+  const submitValue = (raw: unknown): boolean => {
+    if (!promptData || activeRequest.current !== promptData.requestId) return false
+    const result = validatePromptValue(promptData, raw)
+    if ('error' in result) { setError(result.error); return false }
+    activeRequest.current = null
+    socketService.sendInputResult(promptData.requestId, result.value)
+    setPromptData(null)
+    setInputValue('')
+    setCheckboxValue(false)
+    setSliderValue(0)
+    setSelectedItems([])
+    setError('')
+    return true
+  }
+
   const handleSubmit = () => {
-    if (!validateInput()) return
-    
-    if (promptData) {
-      let resultValue: string = inputValue
-      
-      // 复选框模式：返回布尔值的字符串表示
-      if (promptData.inputMode === 'checkbox') {
-        resultValue = checkboxValue ? 'true' : 'false'
-      }
-      // 滑动条模式：返回数字的字符串表示
-      else if (promptData.inputMode === 'slider_int' || promptData.inputMode === 'slider_float') {
-        resultValue = sliderValue.toString()
-      }
-      // 列表单选模式：返回选中的单个项
-      else if (promptData.inputMode === 'select_single') {
-        if (selectedItems.length === 0) {
-          setError('请至少选择一项')
-          return
-        }
-        resultValue = selectedItems[0]
-      }
-      // 列表多选模式：返回选中项的 JSON 数组
-      else if (promptData.inputMode === 'select_multiple') {
-        if (selectedItems.length === 0) {
-          setError('请至少选择一项')
-          return
-        }
-        resultValue = JSON.stringify(selectedItems)
-      }
-      // 数字模式转换
-      else if ((promptData.inputMode === 'number' || promptData.inputMode === 'integer') && inputValue.trim()) {
-        resultValue = inputValue.trim()
-      }
-      
-      socketService.sendInputResult(promptData.requestId, resultValue)
-      setPromptData(null)
-      setInputValue('')
-      setCheckboxValue(false)
-      setSliderValue(0)
-      setSelectedItems([])
-      setError('')
-    }
+    const mode = promptData?.inputMode
+    const raw = mode === 'checkbox' ? checkboxValue
+      : mode === 'slider_int' || mode === 'slider_float' ? sliderValue
+      : mode === 'select_single' ? (selectedItems[0] ?? '')
+      : mode === 'select_multiple' ? selectedItems : inputValue
+    submitValue(raw)
   }
 
   const handleCancel = () => {
-    if (promptData) {
+    if (promptData && activeRequest.current === promptData.requestId) {
+      activeRequest.current = null
       socketService.sendInputResult(promptData.requestId, null)
       setPromptData(null)
       setInputValue('')
@@ -286,23 +250,7 @@ export function InputPromptDialog() {
           primary: true,
           params: { value: submitParam },
           handler: (params) => {
-            const v = params?.value
-            if (promptData.inputMode === 'checkbox') {
-              socketService.sendInputResult(promptData.requestId, v ? 'true' : 'false')
-            } else if (promptData.inputMode === 'select_multiple') {
-              socketService.sendInputResult(
-                promptData.requestId,
-                JSON.stringify(Array.isArray(v) ? v : [v])
-              )
-            } else {
-              socketService.sendInputResult(promptData.requestId, String(v ?? ''))
-            }
-            setPromptData(null)
-            setInputValue('')
-            setCheckboxValue(false)
-            setSliderValue(0)
-            setSelectedItems([])
-            setError('')
+            if (!submitValue(params?.value)) throw new Error('输入未通过验证或请求已过期')
           },
         },
         {
