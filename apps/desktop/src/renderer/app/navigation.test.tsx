@@ -77,3 +77,14 @@ it('restores a Back event received while a global navigation confirmation is pen
   expect(result.current.hash).toBe(project)
   await waitFor(() => expect(window.location.hash).toBe(project))
 })
+
+it('round trips all five real data table tabs and rejects malformed nested addresses', () => {
+  const projectId = '00000000-0000-4000-8000-000000000001', tableId = '00000000-0000-4000-8000-000000000002'
+  for (const dataTab of ['records', 'fields', 'statuses', 'source', 'settings'] as const) {
+    const route = { projectId, tab: 'data' as const, tableId, dataTab }
+    const hash = `#/projects/${projectId}/data/${tableId}/${dataTab}`
+    expect(projectHash(route)).toBe(hash)
+    expect(parseAppLocation(hash)).toEqual({ section: 'projects', project: route })
+  }
+  for (const hash of [`#/projects/${projectId}/data/no-id/records`, `#/projects/${projectId}/data/${tableId}/bogus`, `#/projects/${projectId}/runs/${tableId}/records`, `#/projects/${projectId}/data/${tableId}`]) expect(parseAppLocation(hash).error).toBeTruthy()
+})

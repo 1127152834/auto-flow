@@ -227,3 +227,46 @@ C2接入前代码复查发现旧表客户端未冻结body且未核验Operation�
 - [x] 原命令快照、NaN保真、脏草稿原始数据基线、重复/迟到命令、错误焦点/ARIA及列宽计算问题闭合。
 - [ ] 正式数据页面、完整PM2 Electron验收仍未交付；继续筛选组件/C2与删除/固定批状态/B2。
 - [x] 下一删除包只读盘点已纠正历史FK问题：状态采用软删除保留旧引用，不暗清tombstone或旧代次；具体迁移/guard/块日志进入下一详细执行卡。
+
+## A2g/C1g/C2 下一执行卡（2026-09-13）
+
+起点f46f869，工作区干净；上一目标轮为progress（七项代码提交与564测试证据），无本地外部阻塞。先补迁移与真实页面，不改Studio或主目录。
+
+### A2g1 状态历史存储（主协调）
+
+文件：ORM project_data_models.py、新迁移`infrastructure/database/migrations/versions/pm02_status_tombstones.py`（revision同名，parent=pm02_project_data）、`tests/integration/test_project_data_status_migration.py`，旧migration测试仅更新当前head和显式INSERT列。新增deleted默认false；删除原全表name_key唯一，改活动行部分唯一索引。使用已有Alembic短事务及batch重建保留FK，禁止改历史迁移。downgrade发现墓碑时明确拒绝，不能复活已删除状态。
+
+先RED：已有pm02数据库含当前/旧generation/删除记录的状态引用，升级保持记录和FK；活动同名拒绝，墓碑同名新UUID允许；注入重建失败全回滚且能再升级；空库升级；无墓碑可降级，有墓碑不允许丢删除事实。uv run pytest两个migration文件→实现→Ruff/mypy→独立审查。
+
+### A2g2 删除命令和真实状态准入（pm2_data_rules_impl）
+
+仅backend：新增application/project_data/deletions.py、domain/project_data/deletions.py、infrastructure/database/project_data_deletions.py及tests/integration/test_project_data_deletions.py；修改现catalog/records/queries仓储的所有DataStatusRow活动查询及其定向回归。迁移/ORM由root独占；HTTP/生成类型也root。
+
+导出DataDeletionService(repository)的preview_status(project_id,table_id,status_id)、preview_record(project_id,table_id,dataset_generation,encoded_record_key,record_key_type)、delete_status(project_id,table_id,status_id,key,payload)、delete_record(project_id,table_id,encoded_record_key,key,payload)。command返回(result,Operation,replayed)，preview返回冻结ImpactReport形状；依现有commands helper，不新建任务执行框架。repository持有sessionFactory。
+
+DELETE status payload严格expectedStatusRevision/expectedTableRevision/impactRevision；DELETE record严格datasetGeneration/recordKeyType/expectedContentRevision/expectedStatusRevision/expectedLinkRevision/impactRevision。完整target/action参与规范摘要，原Operation查询先于CAS和deleted判断。所有当前local/excel写入在一个BEGIN IMMEDIATE内复验scope/lifecycle/currentGeneration、版本、10分钟impact、真实引用后提交tombstone+Operation+DataChange。其他source或尚不可解释的关联/slot影响明确阻断，不伪报外部影响已检查。
+
+status impact blocker只计当前generation的未删除记录及当前实际存在的槽/结构依赖，不把旧行当永久阻断。status删除标deleted并推进statusRevision/tableRevision，结果{action:'delete',statusId,deleted:true,tableRevision}；旧行/旧Operation保持原值。record标deleted，仅updatedAt变化，不隐式推进三revision或清状态/关联；结果{target:{type:'record',recordRef},deleted:true}，DataChange保留完整before/after快照。记录槽中已存在完整RecordRef引用必须查全当前有效表，真实关联环境未支持删除清理则阻断。
+
+预检不得建Operation。报告绑定action/完整target/currentGeneration、项目生命周期、tableRevision、目标修订与当前引用事实；提交重建digest，变更/过期412。current refs动态变化、两个删除竞争、其他项目/旧generation、同key响应恢复、表中途write故障rollback、墓碑名称复用及状态list/update/setStatus/filter均不再接受墓碑须测试。后续Task/Sheets/automation模型接入时同步扩展真实guard，当前不能标记这些跨模块能力通过。执行定向pytest、Ruff/mypy后独立规格→工程审查。
+
+### C1g 记录筛选和排序（pm2_excel_adapter_impl）
+
+只新增renderer/domains/project-data/record-query.ts、record-query.test.ts、components/RecordFilterEditor.tsx及相邻测试。对照后端domain/project_data/query.py准确使用all/any/not/compare/status及orderBy字段/systemField结构；标量类型从生成DataCellWrite继承，不更改生成文件。
+
+组件是受控草稿，支持组（全部/任一）、反向条件、添加/删除条件和组；最多depth5、每组50/总叶100，排序≤8且目标唯一，业务字段与状态允许操作由类型决定。空all明确全部记录，空any不允许UI无意制造无匹配而不提示；null操作不传value/statusId，普通比较不得传null。日期复用ScalarValueEditor不转本机时区，不在JS做业务过滤；应用只把合法filter/orderBy交父层，修改条件不自动发请求。暴露onDirtyChange/disabled，输入invalid草稿仍保护，不把错误值转null，长字段名/选项用真实Select自有面板。
+
+先RED真实组件交互及纯模型序列化：嵌套and/or/not，字符串/number/bool/date/null/status操作，换字段/运算符清不适用值，失效引用保留可修复提示，排序去重和上限，取消恢复父值，apply校验不发错误payload。之后实现、Vitest/typecheck/lint、独立两阶段审查。父级API负责已有base64url传输，组件不得双编码。
+
+### C2a 真实数据入口与目录（主协调）
+
+新增domains/project-data/pages/DataTableDirectoryPage.tsx及test；接入真实createProjectDataApi和已审DataTableDirectory/FormDialog/Select/Input/Pagination。目录状态包含q/sourceKind/sort/page，workspace/instance/project/query构成查询键；AbortSignal取消读取。编辑冻结原tableRevision；结果不明用原key恢复，禁止将新草稿混入旧命令。迟到响应通过commit期scope/ticket防止关闭新表单或Toast串上下文。同工作区重连保留草稿，新工作区清理。表单补onDirtyChange和请求状态回调/恢复动作的最小真实需求；全局离开统一父级guard。
+
+App route扩展为#/projects/{projectId}/data/{tableId}/{records|fields|statuses|source|settings}，只在目标页面可用时允许打开。目录和表内页面按真实API逐步挂载，不给未实现模块加假按钮/假0。组件测试使用合成API响应，正式页面直接请求后端。完成导航/关闭/恢复联调后，再将本地数据能力标为available并做真实Electron；本执行包单独不宣告完整PM2。
+
+### A2g/C1g/C2b 实际完成（2026-09-13）
+
+- [x] 历史状态墓碑迁移、删除预检/命令/HTTP、目录表单、筛选组件与五页签读取均完成独立规格/工程审查。
+- [x] 719后端、606前端全量；类型/lint/build、OpenAPI、scripts18/structure3通过。
+- [x] macOS arm64真实目录创建/编辑/冲突/重连/重启及PM1既有模块回归；报告pm2-directory-deletions-verification.json。
+- [ ] C2c九项写入UI、A2h耐久批状态、B2文件/Excel发布继续；不将当前读页等同PM2完成。

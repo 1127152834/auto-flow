@@ -33,3 +33,5 @@
 - 2026-09-13（confirmed，提交及核验）：PM2服务端记录筛选/排序/分页和16项数据HTTP已交付，字段/状态客户端与状态组件已提交；最后查询连接池清理竞态修复后698后端/490前端全量通过。最新报告pm2-query-editor-verification.json；尚无正式数据页面/Excel IPC/批状态，不得宣布PM2完成。B2主进程/内部通道盘点完成，旧picker直接返path不能照搬。
 
 - 2026-09-13（confirmed，实际代码/独立审查/最终自动验证）：PM2记录客户端、共享命令恢复、四类型值编辑、字段影响编辑、冻结记录草稿与记录表格已提交至737ce3e；最终564前端/86文件通过，typecheck/lint/build及OpenAPI/scripts/structure通过。后端本轮无源码变化，698测试仍指上轮报告。正式数据五页签和文件IPC尚未挂载，PM2不完整；最新pm2-editors-verification.json，继续C2/删除与耐久批状态/B2。状态删除不能物理清除历史FK引用，下一包采用软删除保持历史事实。
+
+- 2026-09-13（confirmed，实际代码与自动/隔离Electron核验）：PM2状态历史墓碑和删除HTTP已交付，head pm02_status_tombstones；正式数据目录与五页签读取已接通。719后端/606前端及本机macOS arm64目录创建/编辑/冲突/重连/重启、已有模块回归通过。旧“正式数据页未挂载”当前结论superseded；记录/字段/状态写UI、批状态、Excel发布仍待C2c/A2h/B2完成，PM2整体未完成。报告pm2-directory-deletions-verification.json；后续共享命令每次原key重发须动态校验scope/只读准入。

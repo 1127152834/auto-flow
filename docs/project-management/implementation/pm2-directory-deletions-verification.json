@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-09-13T00:26:43.351100+00:00",
+  "status": "passed-for-directory-read-navigation-and-deletion-backend",
+  "milestoneStatus": "PM2-inProgress",
+  "baseCommit": "f4e1d08",
+  "codeCommits": [
+    "e58877d",
+    "2813980",
+    "c1339f7",
+    "2cded8e",
+    "32c3395",
+    "f4e1d08"
+  ],
+  "scope": [
+    "状态历史墓碑迁移及记录/状态删除预检、事务、HTTP",
+    "数据表目录创建/编辑、冲突及命令恢复",
+    "五页签真实读取、记录筛选排序、嵌套路由和离开保护"
+  ],
+  "checks": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "exitCode": 0,
+      "passed": 719,
+      "warnings": 2,
+      "log": "/tmp/autoflow-pm2-delete-full-pytest-final.log"
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "passed": 606,
+      "files": 90,
+      "log": "/tmp/autoflow-pm2-directory-full-vitest-final.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run ruff check src tests",
+      "cwd": "apps/backend",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run mypy src",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "sourceFiles": 172
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "passed": 3
+    }
+  ],
+  "warnings": [
+    "FastAPI/Starlette testclient deprecations (2)",
+    "Existing Zod PURE annotations stripped by Rollup"
+  ],
+  "review": {
+    "status": "specification then engineering passed after fixes",
+    "record": "docs/project-management/implementation/pm2-review-foundation.md",
+    "directoryAndDetail": "pm2_rules_spec_review",
+    "deletionHttp": "pm2_http_review"
+  },
+  "actualApp": {
+    "platform": "macOS arm64",
+    "entry": "built-html",
+    "data": "docs/migration/project-data-directory-qa/run-MJZJp0/result.json",
+    "existingModules": "docs/migration/project-management-regression-qa/run-ssfRfo/built-html.json",
+    "visualInspection": [
+      "records.png",
+      "zoom-200-dropdown.png"
+    ],
+    "dataWriteScope": "table create/update UI; field/status/record data was set up via real HTTP, not editing UI"
+  },
+  "coverage": {
+    "features": 48,
+    "acceptanceScenarios": 178,
+    "executionContracts": 18,
+    "capabilityGates": 7,
+    "wholePm2NotPromoted": true
+  },
+  "notVerified": [
+    "字段/状态/记录正式写入界面",
+    "固定目标耐久批状态",
+    "受控Excel IPC及真实导入/重新导入/导出",
+    "Google Sheets实网",
+    "Studio项目执行/End环境保留",
+    "Windows",
+    "macOS x64",
+    "发行包"
+  ],
+  "next": [
+    "C2c写入界面与每次实际发送的动态准入",
+    "A2h耐久批状态",
+    "B2受控文件与Excel发布",
+    "完整PM2验收后PM3–PM9"
+  ],
+  "continuationAudit": {
+    "previousPromptTurn": "no implementation progress; revalidated worktree and resumed live verification",
+    "currentTurn": "progress: actual Electron evidence and reviewed integration delivery",
+    "goal": "active",
+    "externalBlocker": "none for local PM2 work"
+  }
+}

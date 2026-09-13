@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { StreamingApiClient } from '../../../shared/api/client'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '../../../shared/components/ui/alert-dialog'
 import { Button } from '../../../shared/components/ui/button'
 import { notify, Toaster } from '../../../shared/components/Toaster'
@@ -11,6 +11,8 @@ import type { ProjectCreate, ProjectListConditions, ProjectPatch, ProjectRoute, 
 import { ProjectFormDialog } from '../components/ProjectFormDialog'
 import { ProjectDirectoryPage } from './ProjectDirectoryPage'
 import { ProjectOverviewPage } from './ProjectOverviewPage'
+import { DataTableDirectoryPage } from '../../project-data/pages/DataTableDirectoryPage'
+import { DataTableDetailPage } from '../../project-data/pages/DataTableDetailPage'
 
 export type ProjectsWorkspaceProps = {
   route: ProjectRoute
@@ -57,6 +59,9 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const [editor, setEditor] = useState<Editor | null>(null)
   const [saving, setSaving] = useState(false)
   const [recoveryPending, setRecoveryPending] = useState(false)
+  const dataGuard = useRef<(() => Promise<boolean>) | null>(null)
+  const registerDataGuard = useCallback((next: (() => Promise<boolean>) | null) => { dataGuard.current = next }, [])
+  const [retainedProject, setRetainedProject] = useState<{ workspaceKey: string; project: ProjectView } | null>(null)
   const dirtyRef = useRef(false)
   const savingRef = useRef(false)
   const [leaveOpen, setLeaveOpen] = useState(false)
@@ -73,6 +78,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions)
   const detail = useProject(api, workspaceKey, instanceId, route.projectId)
   const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId)
+  useLayoutEffect(() => { if (detail.data) setRetainedProject({ workspaceKey, project: detail.data }) }, [detail.data, workspaceKey])
 
   useEffect(() => { setConditionsState(readConditions(workspaceKey)); setScrollTop(readScrollTop(workspaceKey)); setEditor(null); dirtyRef.current = false; pending.current = null }, [workspaceKey])
   const setConditions = (value: ProjectListConditions) => { setScrollTop(0); writeScrollTop(workspaceKey, 0); setConditionsState(value); writeConditions(workspaceKey, value) }
@@ -92,10 +98,11 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
 
   const guard = useCallback(async () => {
     if (savingRef.current) return false
-    if (!dirtyRef.current && !pending.current) return true
+    if (!dirtyRef.current && !pending.current) return await dataGuard.current?.() ?? true
     if (leaveResolver.current) return false
     setLeaveOpen(true)
-    return new Promise<boolean>(resolve => { leaveResolver.current = resolve })
+    const allowed = await new Promise<boolean>(resolve => { leaveResolver.current = resolve })
+    return allowed && (await dataGuard.current?.() ?? true)
   }, [])
   useEffect(() => { registerLeaveGuard(guard); return () => registerLeaveGuard(null) }, [guard, registerLeaveGuard])
   useEffect(() => {
@@ -162,14 +169,20 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     onNavigate({ projectId: project.projectId, tab: 'overview' })
   }
 
-  const project = detail.data ?? (editor?.project?.projectId === route.projectId ? editor?.project ?? undefined : undefined)
+  const definitiveReadFailure = detail.error instanceof ApiClientError && detail.error.status >= 400 && detail.error.status < 500 && detail.error.status !== 408
+  const project = detail.data ?? (!definitiveReadFailure && retainedProject?.workspaceKey === workspaceKey && retainedProject.project.projectId === route.projectId ? retainedProject.project : undefined)
   const editorProjectId = editor?.project?.projectId
   return <>
     <Toaster />
     {route.projectId && route.tab === 'overview' && overview.isPending ? <p role="status" className="mx-auto max-w-7xl px-6 text-sm text-muted">正在加载概览…</p> : null}
     {route.projectId && route.tab === 'overview' && overview.isError ? <div role="alert" className="mx-auto flex max-w-7xl items-center gap-3 px-6 pt-4 text-sm text-danger"><span>{overview.error.message}</span><Button size="sm" disabled={overview.isFetching} onClick={() => void overview.refetch()}>重试概览</Button></div> : null}
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
-    {route.projectId && project ? <ProjectOverviewPage project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })} />
+    {route.projectId && project ? <ProjectOverviewPage project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
+      {route.tab === 'data' ? route.tableId
+        ? <DataTableDetailPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab })} />
+        : <DataTableDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onOpen={tableId => onNavigate({ projectId: project.projectId, tab: 'data', tableId, dataTab: 'records' })} />
+        : undefined}
+      </ProjectOverviewPage>
       : route.projectId && detail.isLoading ? <main className="p-6" role="status">正在加载项目…</main>
       : route.projectId && detail.isError ? <main className="grid gap-3 p-6" role="alert"><p>无法加载项目。</p><div className="flex gap-2"><Button onClick={() => void detail.refetch()}>重试</Button><Button variant="ghost" onClick={() => onNavigate({ tab: 'overview' })}>返回项目目录</Button></div></main>
       : <ProjectDirectoryPage page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, value) }} onConditionsChange={setConditions} onRefresh={() => void directory.refetch()} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} />}

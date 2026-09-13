@@ -154,3 +154,10 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - C1f：主协调实现，pm2_data_rules_impl规格/工程与列宽修复复核；d37cb1c。
 - A3c：主协调实现，pm2_rules_spec_review审查；bc3aa24。A3d主协调实现，pm2_excel_adapter_impl审查；dc9ddf2。
 - 最终564前端测试及工程检查通过，报告pm2-editors-verification.json。未提升任何完整DT验收条目，未运行PM2真实应用；C2页面、筛选、删除/批状态、Excel文件流程继续实施。
+
+### A2g/C1g/C2a–C2b（2026-09-13）
+
+- A2g迁移由主协调、删除核心由pm2_data_rules_impl、HTTP由主协调/pm2_data_rules_impl完成；pm2_rules_spec_review和pm2_http_review独立规格/工程复核，提交e58877d、2cded8e、32c3395、f4e1d08。
+- C1g/C2a组件由pm2_excel_adapter_impl、目录与App由主协调、C2b由pm2_excel_adapter_impl完成；pm2_rules_spec_review独立审查并闭合4个作用域/竞争探针。
+- 719后端、606前端，macOS arm64真实目录和既有模块回归证据见pm2-directory-deletions-verification.json。仅DT-01/02/10/12对应子范围登记部分证据，不提升完整验收。
+- 下一责任：C2c共享命令准入/编辑器/页面、A2h批状态、B2文件发布；PM2退出条件不变。

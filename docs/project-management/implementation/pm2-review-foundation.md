@@ -160,3 +160,11 @@ A2g2：状态/记录删除预检绑定完整身份、当前代次、项目生命
 - 22项相关HTTP测试通过；矩阵新增deleteRecord操作kind过滤曾422，修正真实查询枚举后通过。覆盖strict payload、typed identity、scope/auth、引用blocker、影响变化、CAS、归档和quiesce。
 - 独立规格/工程审查通过；额外TestClient探针覆盖9种畸形typed key、5种action错误、4种编码路径错误、六必填、安全整数、精确result/Operation查询及墓碑/归档后的原key重放。7源码mypy、Ruff通过，生成类型只读核对通过。
 - 全量后端首次713通过/6失败，失败均为其他迁移回归仍断言旧head。已仅更新两测试文件的head/最终version期望为pm02_status_tombstones，保留旧资源内容与FK检查；该6项重新通过。全量重新核验单独记最终报告。
+
+## C2b 详情与 App 装配（2026-09-13）
+
+独立规格、工程审查通过。三项P2已用失败测试修复：记录详情绑定key+generation并禁止旧键查询新代次；重复离开请求不得覆盖未决resolver；目录加载失败时记录页重试真实失败的catalog查询。连同表A→B迟到响应/AbortSignal共4独立探针通过，四文件37项仓内测试及10个renderer文件ESLint通过。
+
+最终606前端/719后端全量通过。真实隔离Electron两组脚本通过，覆盖表目录创建/编辑/冲突/重连/重启、五页签读取和PM1/既有模块回归。最新图像records与200%下拉已人工读取。首次QA脚本把aria-label当可见文本、第二次把document滚动条宽度变化当应用撑宽，均纠正测试观察；实际root宽708、trigger宽192在下拉展开前后保持，未修改已正确的CSS。旧run-P0vTUA的“directory CRUD”范围词不准确，由最新run-MJZJp0明确create/read/update取代；不声称表删除或记录编辑UI通过。
+
+Ruff首次命令将uv --directory之后的相对路径重复拼接，退出1，改为backend工作目录下src/tests后Ruff和mypy172源码通过。未把错误调用算成通过。

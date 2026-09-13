@@ -139,3 +139,7 @@ PM3参数型链可在PM2完成前开始，完整退出依赖仍包括PM2；PM7�
 | OV-01 | 真实资料和最近访问 | partially_verified | 数量/运行摘要/继续工作 PM7 |
 
 证据：[PM1机器核验](pm1-verification.json)、[本机Electron](../../migration/project-management-pm1-qa/built-html.json)。PM1-A/B/C交付完成，不改变其他44项功能、178项未来规则及18契约/7门槛的证据为空。PM0历史plan-verification.json与FX样例保持原内容。
+
+## PM2 目录读取子范围证据（2026-09-13）
+
+DT-01/02/10/12登记部分自动与macOS arm64实际应用证据，详见pm2-directory-deletions-verification.json及coverage.json各项scope；不提升完整验收。48功能、178场景、18执行契约、7能力门槛编号不变。写UI、批状态、文件/Excel、Sheets及后续运行仍保持未验收。

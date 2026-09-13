@@ -90,3 +90,9 @@ cc86607记录显式写入、3630e78字段编辑事务和7a2986f真实HTTP已交�
 bc3aa24/8c25641/113f0c7/d37cb1c/ad8a5d7/dc9ddf2/737ce3e已交付记录客户端、共享原命令恢复、标量/字段/记录编辑和记录表格组件。独立审查修复了NaN序列化成null、表请求漂移、字段预检校验竞态、记录脏草稿扩大写回、重复/迟到提交、错误焦点与ARIA等问题。最终564前端测试/86文件、类型/lint/build通过；OpenAPI、scripts18/structure3通过。后端源码与8556f81一致，本轮未重新运行后端全量。
 
 主目录重新只读核对仍9490924且有其他任务WIP，未覆盖。PM0/PM1历史报告保留；coverage feature/acceptance/contract+gate entries与ef3178a一致，只有既有PM2进度元数据不同。组件未挂载正式页面，PM2整体仍在实施。删除状态的物理删除初步建议因旧行FK引用矛盾已撤回；软删除迁移与批状态持久块尚待实现，详见`.ai/knowledge/2026-09-13-project-data-deletion-batch-baseline.md`。
+
+### PM2 删除与真实目录基线（2026-09-13，confirmed）
+
+e58877d/2cded8e/32c3395/f4e1d08交付历史状态墓碑、删除影响/原子命令及18项数据HTTP；迁移head为pm02_status_tombstones。2813980/c1339f7及C2b接入真实数据目录、表单、筛选和五页签读取。此前“没有正式数据页”的当前描述由本节替代。最终719后端/606前端及工程检查通过；macOS arm64隔离Electron验证目录创建/编辑、真实冲突、重连草稿、200%下拉和重启持久化，另回归两工作区及已有模块入口。
+
+详见pm2-directory-deletions-verification.json。该UI证据不覆盖字段/状态/记录编辑界面；这些仍为C2c，后续需补每次HTTP重发的动态准入。批状态、Excel文件发布、Sheets和项目运行仍未完成，PM2不完整。主线只读再次核实9490924，未复制其他任务WIP。

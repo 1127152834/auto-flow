@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
@@ -181,4 +181,32 @@ it.each(['closing', 'archived', 'deleting'] as const)('keeps a %s project detail
   expect(edit).toBeDisabled()
   fireEvent.click(edit)
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+})
+
+it('mounts the actual data directory and composes its dirty guard with global navigation', async () => {
+  let guard: (() => Promise<boolean>) | null = null
+  const request = vi.fn((path: string) => Promise.resolve(path.includes('/tables?') ? { items: [], page: 1, pageSize: 50, total: 0, sort: '-updatedAt' } : path.includes('?') ? { items: [a], total: 1 } : a))
+  mount(request as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'data' }, registerLeaveGuard: value => { guard = value } })
+  await userEvent.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await userEvent.type(screen.getByLabelText('数据表名称'), '跨页面草稿')
+  let leaving!: Promise<boolean>
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('放弃未保存')
+  await userEvent.click(screen.getByRole('button', { name: '继续编辑' }))
+  await act(async () => { leaving = guard!() })
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('放弃未保存')
+  await userEvent.click(screen.getByRole('button', { name: '继续编辑' }))
+  expect(await leaving).toBe(false)
+})
+
+it('keeps a data form mounted across reconnect while refreshing the project facts', async () => {
+  const request = vi.fn((path: string) => Promise.resolve(path.includes('/tables?') ? { items: [], total: 0, page: 1, pageSize: 50 } : path.includes('?') ? { items: [a], total: 1 } : a))
+  const view = mount(request as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'data' } })
+  await userEvent.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await userEvent.type(screen.getByLabelText('数据表名称'), '保留草稿')
+  const reconnect = deferred<unknown>()
+  const newClient = { request: vi.fn(() => reconnect.promise), stream: vi.fn(), health: vi.fn() } as unknown as StreamingApiClient
+  view.rerender(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ProjectsWorkspace {...view.values} instanceId="i2" client={newClient} /></QueryClientProvider>)
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('保留草稿')
+  expect(screen.getByLabelText('数据表名称')).toBeVisible()
 })

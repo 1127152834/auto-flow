@@ -312,3 +312,12 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `renderer/domains/project-data/data-command.ts`是表/目录/记录客户端复用的原身份恢复函数；`records-api.ts`连接真实记录查询与命令，完整typed记录身份、固定请求快照和操作结果校验在领域客户端完成。
 
 `scalar-draft.ts`与`components/ScalarValueEditor.tsx`负责保真值和错误控件定位；`field-form-schema.ts`/FieldEditorDialog维护字段规则和影响确认；`record-draft.ts`/RecordEditorDialog冻结原数据比较基线并仅提交实际修改；DataRecordsTable展示真实记录页、状态与服务端分页回调。正式五页签、筛选组件、删除/批状态和受控文件流程仍待接入。最新范围报告为pm2-editors-verification.json，不替代PM2真实应用验收。
+
+## PM2 目录与详情装配增量（2026-09-13，confirmed）
+
+- `renderer/domains/project-data/pages/DataTableDirectoryPage.tsx`：表目录查询、创建/编辑原命令与草稿保护。
+- `renderer/domains/project-data/pages/DataTableDetailPage.tsx`：五页签真实读取、记录详情、筛选草稿及代次保护；写入UI单独继续C2c。
+- `renderer/domains/project-data/record-query.ts` 和 `components/RecordFilterEditor.tsx`：后端查询语法的草稿验证和编辑，不替代服务端过滤。
+- `application/project_data/deletions.py`、`domain/project_data/deletions.py`、`infrastructure/database/project_data_deletions.py`：删除用例、协议和事务/影响持久实现。HTTP适配位于`adapters/http/project_data_deletions.py`及schemas；不在页面自建引用检查。
+- `infrastructure/database/migrations/versions/pm02_status_tombstones.py`：状态历史墓碑与活动名称部分唯一；既有历史迁移保持。
+- `scripts/smoke-project-data.mjs`：隔离真实目录/详情验收，证据位于`docs/migration/project-data-directory-qa`；不冒充完整数据编辑或PM2验收。

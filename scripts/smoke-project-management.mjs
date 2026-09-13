@@ -55,7 +55,8 @@ try {
   const b = await create('项目 B', '另一项独立工作')
   checkpoint('UI creates A/B and edits A using persisted project revisions')
   await capture('overview')
-  for (const tab of ['自动化', '运行记录', '统计', '数据', '环境']) { await click(tab); await visible(`${tab}暂未开放`) }
+  for (const tab of ['自动化', '运行记录', '统计', '环境']) { await click(tab); await visible(`${tab}暂未开放`) }
+  await click('数据'); await visible('还没有数据表')
   await click('概览')
   await click('项目')
   await input('[aria-label="搜索项目"]', '修改后的项目 A')
@@ -195,7 +196,7 @@ try {
   await visible('项目资料')
   await capture('restarted')
   checkpoint('full Electron restart retains projects and last-opened timestamps, then reopens A')
-  const result = { scope: 'PM1 project entry and existing-module regression; PM2 data functionality not tested', result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
+  const result = { scope: 'PM1 project entry and existing-module regression; PM2 data entry only; detailed data behavior not tested', result: 'passed', entry, platform: process.platform, arch: process.arch, checkedAt: new Date().toISOString(), checks, measurements, windows: 'not-run' }
   await writeFile(join(qa, `${entry}.json`), JSON.stringify(result, null, 2) + '\n')
   console.log(JSON.stringify(result, null, 2))
 } catch (error) {

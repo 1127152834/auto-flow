@@ -18,6 +18,7 @@ const project: ProjectView = {
 }
 const availability = { automations: 'notImplemented', data: 'notImplemented', runs: 'notImplemented', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' } as const
 const requests = vi.fn(async (path: string) => {
+  if (path.includes('/tables?')) return { items: [], page: 1, pageSize: 50, total: 0, sort: '-updatedAt' }
   if (path.includes('/overview')) return { project, availability, counts: {}, activity: [], recent: [] }
   if (path === `/api/v1/projects/${project.projectId}`) return project
   if (path.startsWith('/api/v1/projects?')) return { items: [{ ...project, availability }], page: 1, pageSize: 50, total: 1, sort: '-lastOpenedAt' } satisfies ProjectPage
@@ -42,8 +43,9 @@ it('opens a real project context and the six approved tabs without fake controls
   expect(window.location.hash).toBe(`#/projects/${project.projectId}/overview`)
   for (const label of ['概览', '自动化', '运行记录', '统计', '数据', '环境']) expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '数据' }))
-  expect(await screen.findByText('数据暂未开放')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '新建数据表' })).not.toBeInTheDocument()
+  expect(await screen.findByText('还没有数据表')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '新建数据表' })).toBeEnabled()
+  expect(requests.mock.calls.some(([path]) => path.includes(`/projects/${project.projectId}/tables?`))).toBe(true)
   await user.click(screen.getByRole('button', { name: '返回项目目录' }))
   expect(await screen.findByRole('button', { name: '新建项目' })).toBeInTheDocument()
 })
@@ -83,4 +85,21 @@ it('shows an invalid project address with a working directory return', async () 
   expect(screen.getByText('项目地址无效，请从项目目录重新打开。')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '返回项目目录' }))
   expect(await screen.findByRole('button', { name: '新建项目' })).toBeInTheDocument()
+})
+
+
+it('keeps the data route and draft when cancelling Back or global navigation', async () => {
+  const user = userEvent.setup(); render(<App />)
+  await user.click(await screen.findByText(project.name)); await screen.findByRole('heading', { name: '项目资料' })
+  await user.click(screen.getByRole('button', { name: '数据' }))
+  await user.click(await screen.findByRole('button', { name: '新建数据表' }))
+  await user.type(screen.getByLabelText('数据表名称'), '数据草稿')
+  act(() => { window.location.hash = '#/settings' })
+  await user.click(await screen.findByRole('button', { name: '继续编辑' }))
+  await waitFor(() => expect(window.location.hash).toBe(`#/projects/${project.projectId}/data`))
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('数据草稿')
+  fireEvent.click(screen.getByRole('button', { name: '设置', hidden: true }))
+  await user.click(await screen.findByRole('button', { name: '继续编辑' }))
+  expect(window.location.hash).toBe(`#/projects/${project.projectId}/data`)
+  expect(screen.getByLabelText('数据表名称')).toHaveValue('数据草稿')
 })

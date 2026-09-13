@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { DataTableTab } from '../domains/project-data/types'
 import type { ProjectRoute, ProjectTab } from '../domains/projects/types'
 
 export type AppRoute = 'dashboard' | 'projects' | 'profiles' | 'proxies' | 'models' | 'settings'
@@ -10,6 +11,9 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/')
   if (parts[0] !== 'projects') return { section: globalRoutes.includes(parts[0] as AppRoute) ? parts[0] as AppRoute : 'dashboard' }
   if (parts.length === 1) return { section: 'projects', project: { tab: 'overview' } }
+  if (parts.length === 5 && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && ['records', 'fields', 'statuses', 'source', 'settings'].includes(parts[4])) {
+    return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: parts[4] as DataTableTab } }
+  }
   if (parts.length !== 3 || !projectIdPattern.test(parts[1]) || !projectTabs.includes(parts[2] as ProjectTab)) {
     return { section: 'projects', error: '项目地址无效，请从项目目录重新打开。' }
   }
@@ -17,7 +21,9 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 }
 
 export function projectHash(route: ProjectRoute) {
-  return route.projectId ? `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}` : '#/projects'
+  if (!route.projectId) return '#/projects'
+  const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
+  return route.tab === 'data' && route.tableId ? `${base}/${encodeURIComponent(route.tableId)}/${route.dataTab ?? 'records'}` : base
 }
 
 type Entry = { hash: string; index: number }
