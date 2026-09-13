@@ -12133,5 +12133,49 @@
     "level": "rule",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/assistant-ui-delivery.test.ts"
+  },
+  {
+    "id": "EDIT.drag.undo",
+    "capability": "连续拖动",
+    "preconditions": "一个节点位于10,20；已保存",
+    "steps": [
+      "连续位置事件30,40及60,80，结束后撤销/重做"
+    ],
+    "expectedUI": "节点回到10,20，再回到60,80（本例为Store规则测试）",
+    "expectedIO": "无服务请求；使用React Flow标准change事件",
+    "stateAssertion": "拖动第一事件即脏；一个手势只需一次撤销",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/editor-roundtrip.test.ts"
+  },
+  {
+    "id": "EDIT.keyboard.move",
+    "capability": "键盘移动",
+    "preconditions": "一个节点位于10,20；已保存",
+    "steps": [
+      "发送不带dragging标记的位置修改",
+      "撤销"
+    ],
+    "expectedUI": "节点回到10,20（本例为Store规则测试）",
+    "expectedIO": "无服务请求；使用React Flow标准change事件",
+    "stateAssertion": "位置变化标未保存",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/editor-roundtrip.test.ts"
+  },
+  {
+    "id": "EDIT.resize.undo",
+    "capability": "显式尺寸编辑",
+    "preconditions": "一个无显式尺寸节点",
+    "steps": [
+      "连续显式resize至300x100和400x200",
+      "撤销/重做"
+    ],
+    "expectedUI": "恢复初始尺寸，再恢复400x200（本例为Store规则测试）",
+    "expectedIO": "无服务请求；使用React Flow标准change事件",
+    "stateAssertion": "一个尺寸手势只需一次撤销",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/editor-roundtrip.test.ts"
   }
 ]

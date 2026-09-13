@@ -1,0 +1,72 @@
+
+> test
+> npm --workspace @autoflow/desktop test --run src/renderer/domains/workflows/tests/editor-roundtrip.test.ts
+
+npm warn "src/renderer/domains/workflows/tests/editor-roundtrip.test.ts" is being parsed as a normal command line argument.
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/editor-roundtrip.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:83297) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/editor-roundtrip.test.ts (6 tests | 2 failed) 10ms
+   × undoes a multi-event drag in one step and preserves the final position for redo 4ms
+   × treats position updates without a drag flag as editable keyboard movement 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-roundtrip.test.ts > undoes a multi-event drag in one step and preserves the final position for redo
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/editor-roundtrip.test.ts:61:57
+     59|   store.markAsSaved()
+     60|   store.onNodesChange([{ type: 'position', id, position: { x: 30, y: 4…
+     61|   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+       |                                                         ^
+     62|   store.onNodesChange([{ type: 'position', id, position: { x: 60, y: 8…
+     63|   store.onNodesChange([{ type: 'position', id, position: { x: 60, y: 8…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-roundtrip.test.ts > treats position updates without a drag flag as editable keyboard movement
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/editor-roundtrip.test.ts:74:57
+     72|   store.markAsSaved()
+     73|   store.onNodesChange([{ type: 'position', id: useWorkflowStore.getSta…
+     74|   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+       |                                                         ^
+     75|   store.undo()
+     76|   expect(useWorkflowStore.getState().nodes[0].position).toEqual({ x: 1…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  22:58:25
+   Duration  877ms (transform 121ms, setup 0ms, import 239ms, tests 10ms, environment 518ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/editor-roundtrip.test.ts

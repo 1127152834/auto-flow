@@ -1356,22 +1356,23 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   historyIndex: 0,
 
   onNodesChange: (changes) => {
-    // 检查是否有实质性变化（位置拖拽结束、删除、添加）
-    const hasSubstantialChange = changes.some(c => 
-      (c.type === 'position' && (c as { dragging?: boolean }).dragging === false) ||
-      c.type === 'remove' ||
-      c.type === 'add' ||
-      (c.type === 'dimensions' && !!c.setAttributes)
-    )
-    
-    // 先保存历史（变化之前）
-    if (hasSubstantialChange) {
-      get().pushHistory()
-      get().markAsUnsaved()  // 标记为未保存
-    }
-    
-    // 处理分组拖拽增强：当拖拽分组时，分组内的节点也跟着移动
     const currentNodes = get().nodes
+    const moved = changes.some(change => {
+      if (change.type !== 'position' || !change.position) return false
+      const node = currentNodes.find(candidate => candidate.id === change.id)
+      return !!node && (node.position.x !== change.position.x || node.position.y !== change.position.y)
+    })
+    const resized = changes.some(change => change.type === 'dimensions' && !!change.setAttributes)
+    const structural = changes.some(change => change.type === 'remove' || change.type === 'add' || change.type === 'replace')
+    // Capture BEFORE the first gesture event. Drag/resize completion must not snapshot
+    // the already-moved nodes and turn one gesture into many undo steps.
+    if (structural || (moved && !currentNodes.some(node => node.dragging)) ||
+        (resized && !currentNodes.some(node => node.resizing))) {
+      get().pushHistory()
+    }
+    if (structural || moved || resized) get().markAsUnsaved()
+
+    // 处理分组拖拽增强：当拖拽分组时，分组内的节点也跟着移动
     const enhancedChanges = [...changes]
     
     for (const change of changes) {

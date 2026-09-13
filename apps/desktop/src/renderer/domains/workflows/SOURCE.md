@@ -1,7 +1,7 @@
 # WebRPA frontend provenance and boundaries
 
 - Frozen source: `reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`.
-- `source-manifest.json` records 258 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
+- `source-manifest.json` records 257 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
 - The user authorized frontend-first migration with replaceable mock APIs on 2026-09-13. This supersedes the earlier sequencing requirement to finish a real backend before migrating the full frontend.
 
 ## Preserved implementation
@@ -43,3 +43,5 @@ The retained scheduled-task dependency now includes the eight source UI/Store fi
 Recording reads now use session IDs and monotonically increasing sequence cursors rather than destructive draining. Failed stops retain the review; generation appends one history operation without loading a new document. Automatic React Flow measurements and selection do not create history entries. See recorder-contract.md for tested limits; this is not real browser capture.
 
 F0 removed 32 unreferenced Windows-only configuration exports from the mixed AdvancedModuleConfigs file, the unused phone coordinate component and three exclusive API groups. Shared declarations and user data remain intact. File provenance and symbol boundaries are recorded in excluded-source-files.json and excluded-source-symbols.json.
+
+Drag and explicit resize history captures the first gesture state, not the final pointer event. Keyboard position changes also mark the document unsaved.
