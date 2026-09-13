@@ -302,20 +302,25 @@ type ImpactReport = {impactRevision:number;target:ResourceLocator;changeDigest:s
 type RecordStatusBatchRequest = {statusId:string|null;targets:{recordRef:RecordRef;expectedStatusRevision:number}[];blockSize:number}
 type RecordStatusBlock = {blockIndex:number;targets:{recordRef:RecordRef;expectedStatusRevision:number}[];state:'notStarted'|'committed'|'conflicted';blockers:Blocker[];committedRevisions:{recordRef:RecordRef;statusRevision:number}[]}
 type RecordStatusBatchPreview = {request:RecordStatusBatchRequest;blocks:RecordStatusBlock[];checkedAt:string}
-type RecordStatusBatchOutcome = {outcome:'completed'|'conflicted'|'cancelled';request:RecordStatusBatchRequest;blocks:RecordStatusBlock[];changedCount:number;conflictCount:number;notStartedCount:number;cancelled:boolean}
+type RecordStatusBatchOutcome = {outcome:'processing'|'completed'|'conflicted'|'cancelled'|'failed';request:RecordStatusBatchRequest;blocks:RecordStatusBlock[];changedCount:number;conflictCount:number;notStartedCount:number;cancelled:boolean}
 ```
 
 `ImpactReport` 的 `impactRevision` 是带有效期的服务端确认记录修订，绑定 project、动作、完整 target locator、拟变更 digest 和 expected revisions；后续命令携该 revision 时，服务端从命令本身重建相同 action/target/change 并比较，任一不符、确认过期或事实变化返回 412 `PRECONDITION_FAILED`。它只是预检证据，不持 lease，也不是业务 Operation。表级 replaceDataset/delete/changeSource 和生命周期专用预检保留各自入口，不能跨动作复用确认。
 
-`RecordStatusBatchRequest.targets` 是列表选择后固定的完整引用/状态版本，接受时去重，不能为空，单请求最多1000行；`blockSize` 为1–100，默认100。重复身份带不同版本应422，不能静默挑一条。按冻结顺序分块，稳定块身份为 `(operationId,blockIndex)`。每块在同一短事务重新检查目标、状态目录、占用和所有行版本，更新、事件、块结果一起提交；一行冲突则整块不写，结果列出具体 blocker 引用。前一块完成不保证后一块成功；取消只在块开始前关闭后续块，不撤销已提交事实。Operation 查询在执行中也返回已有块结果；所有块成功才 succeeded，其余已知冲突/取消为 failed 并保留完整 outcome，error 分别为 `BATCH_STATUS_CONFLICT/BATCH_STATUS_CANCELLED`。取消命令自身的成功仅表示后续块门闩已关闭，result 返回原操作的 operationId。客户端重连可从原 Operation.result 恢复每块已提交修订、冲突或未开始事实；禁止保存 filter 后后台重新求值更换目标。
+`RecordStatusBatchRequest.targets` 是列表选择后固定的完整引用/状态版本，接受时去重，不能为空，单请求最多1000行；`blockSize` 为1–100，默认100。重复身份带不同版本应422，不能静默挑一条。按冻结顺序分块，稳定块身份为 `(operationId,blockIndex)`。每块在同一短事务重新检查目标、状态目录、占用和所有行版本，更新、事件、块结果一起提交；一行冲突则整块不写，结果列出具体 blocker 引用。前一块完成不保证后一块成功；取消只在块开始前关闭后续块，不撤销已提交事实。Operation 查询在执行中也返回已有块结果；所有块成功才 succeeded，其余已知冲突/取消为 failed 并保留完整 outcome，error 分别为 `BATCH_STATUS_CONFLICT/BATCH_STATUS_CANCELLED`。未终态 outcome=processing；连续本地事务执行错误经有限重试仍失败时 outcome=failed，Operation.error.code=BATCH_STATUS_EXECUTION_FAILED，保留已经提交与尚未开始的块证据，不冒充状态冲突或取消。取消命令自身的成功仅表示后续块门闩已关闭，result 返回原操作的 operationId。客户端重连可从原 Operation.result 恢复每块已提交修订、冲突或未开始事实；禁止保存 filter 后后台重新求值更换目标。
 
 工作流节点不会逐条调用这些公共管理 URL。核心通过注入的项目能力端口调用 `readProjectRecord/queryProjectRecords/createProjectRecord/writeRecordFields/setRecordStatus/writeRecordSlot/bindRecordEnvironment/addProjectField`；端口重用上述对象、CAS 与错误语义，但携带受验证的 Task capability，不接受 renderer 自称 Task 或 lease。对 Task 此前未持有的动态查询记录，取得动态 lease、校验全部 CAS、实际写入、变化事件、幂等结果和同步意图必须在同一个短事务中全成或全不成，失败不得留下 lease；已有 Task lease 的写也在同一短事务提交写入、修订、事件、结果与同步意图，外部推送另行执行。
 
 ### 3.4 Excel、导出与 Sheets 来源
 
+2026-09-13 PM2 修订（confirmed，用户批准）：新建与替换路由分开；新建映射仅 new，替换只复用显式 fieldId。检查结果补齐 issues、ignoredEmptyRowCount、identityCandidates；预览不替代全量检查。候选分段写入不可见，发布时同时检查代次、结构和预览后的相关修改证据；新代次状态全部 null。服务端不得只靠 tableRevision 检测记录修改。
+
+文件选择由主进程验证 main frame 后通过 hostToken 内部登记，正文为 `{selectionToken,path,projectId,windowId,purpose,expiresAt}`；workspace/instance 由服务配置绑定。Renderer 仅持有受控令牌，公开 HTTP 不接收路径。主窗口另经受控 IPC 获取当前实例的窗口证明；内部登记使用 x-autoflow-file-window-token header，公开文件请求使用 x-autoflow-file-window-id 与 x-autoflow-file-window-token 并校验与原选择一致；不能把 windowId 仅作审计字段。选择/提交前可取消；接受后关闭视图不取消操作，通过原身份查询结果。导出先记录原目标与输出摘要，再无覆盖发布；reconcile 只核验既有事实，不另存或覆盖。
+
 | Method / path | 包 | 请求 | 成功响应 | scope 与主要错误 |
 |---|---|---|---|---|
-| `POST /api/v1/projects/{projectId}/table-imports/excel/inspect` | PM2-B | header key；`{selectionToken}` | 200 `ExcelInspection` | token 由 IPC 签发并在首次有效 inspect 时消费；422 文件格式。检查结果和受控文件句柄归属同一 inspection operation，可按原 key/operation 查询而不再次消费 token。 |
+| `POST /api/v1/projects/{projectId}/table-imports/excel/inspect` | PM2-B | header key；`{selectionToken}` | 200 `{operation,inspection:ExcelInspection}` | token 由 IPC 签发并在首次有效 inspect 时消费；422 文件格式。检查结果和受控文件句柄归属同一 inspection operation，可按原 key/operation 查询而不再次消费 token。 |
+| `POST /api/v1/projects/{projectId}/table-imports/excel` | PM2-B | header key；`ExcelCreateTableRequest` | 202 `OperationAccepted` | 新表与完整数据集原子发布；不预建空壳。 |
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/imports/excel` | PM2-B | header key；`ExcelImportRequest` | 202 `OperationAccepted` | 只引用同项目未过期 inspection；重新核验受控句柄、指纹、工作表、影响、generation 和 lease 后原子发布，不再次提交或消费 selectionToken。 |
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/exports/xlsx` | PM2-C | header key；`ExportRequest` | 202 `OperationAccepted` | 输出目标只用 `selectionToken`；不接受 path。result=`ExportResult`。 |
 | `GET /api/v1/projects/{projectId}/sheets/connections` | PM6-A | — | `{items:SheetsConnection[]}` | project；不返回凭据。 |
@@ -336,7 +341,10 @@ type RecordStatusBatchOutcome = {outcome:'completed'|'conflicted'|'cancelled';re
 
 ```ts
 type ExcelInspection = {inspectionId:string;fingerprint:string;filename:string;sheets:{sheetId:string;name:string;rowCount:number;columns:{index:number;name:string;sample:ScalarValue[]}[]}[];expiresAt:string}
-type ExcelImportRequest = {inspectionId:string;fingerprint:string;sheetId:string;mode:'createTable'|'replaceDataset';mapping:{columnIndex:number;field:FieldWrite;identity:boolean}[];impactRevision?:number;expectedTableRevision:number}
+type ExcelMapping = {columnIndex:number;target:{kind:'existing';fieldId:string}|{kind:'new';definition:FieldWrite}}
+type ExcelIdentity = {mode:'system'}|{mode:'column';columnIndex:number}
+type ExcelCreateTableRequest = {name:string;description:string;inspectionId:string;fingerprint:string;sheetId:string;mapping:ExcelMapping[];identity:ExcelIdentity}
+type ExcelImportRequest = {inspectionId:string;fingerprint:string;sheetId:string;mapping:ExcelMapping[];identity:ExcelIdentity;impactRevision:number;expectedDatasetGeneration:string;expectedTableRevision:number}
 type ExportRequest = {datasetGeneration:string;selectionToken:string;scope:'all'|'filter';filter?:FilterExpression;fieldIds:string[];includeStatus:boolean}
 type ExportResult = {filename:string;saved:true;recordCount:number}
 type SheetsConnection = {connectionId:string;accountLabel:string;credentialState:'available'|'missing'|'invalid';readable:boolean;writable:boolean;updatedAt:string}
