@@ -12,6 +12,16 @@ from .project_data_catalog_schemas import (
 from .project_data_deletion_schemas import RecordDeleteResult, StatusDeleteResult
 from .project_data_record_schemas import DataRecordView, RecordResourceLocator
 from .project_data_schemas import DataTableView, TableResourceLocator
+from .project_data_status_batch_schemas import (
+    CancelRecordStatusesResult,
+    RecordStatusBatchOutcome,
+)
+from .project_excel_schemas import (
+    ExcelExportResult,
+    ExcelImportResult,
+    ExcelInspectionView,
+    ExcelReconcileResult,
+)
 from .schemas import ApiModel
 
 
@@ -105,8 +115,14 @@ class ProjectOperationView(ApiModel):
         "updateRecord",
         "setRecordStatus",
         "deleteRecord",
+        "setRecordStatuses",
+        "cancelRecordStatuses",
+        "inspectExcel",
+        "importExcel",
+        "exportXlsx",
+        "reconcileOperation",
     ]
-    status: Literal["succeeded"]
+    status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
     resource: Annotated[
         ProjectResourceLocator
@@ -124,6 +140,12 @@ class ProjectOperationView(ApiModel):
         | StatusDeleteResult
         | DataRecordView
         | RecordDeleteResult
+        | RecordStatusBatchOutcome
+        | ExcelInspectionView
+        | ExcelImportResult
+        | ExcelExportResult
+        | ExcelReconcileResult
+        | CancelRecordStatusesResult
         | None
     )
     error: dict[str, Any] | None

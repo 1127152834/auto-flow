@@ -75,7 +75,9 @@ class SqlAlchemyProjectData:
             self._guard_project_write(session, project_id)
             row = session.scalar(
                 select(DataTableRow).where(
-                    DataTableRow.project_id == project_id, DataTableRow.id == table_id
+                    DataTableRow.published.is_(True),
+                    DataTableRow.project_id == project_id,
+                    DataTableRow.id == table_id,
                 )
             )
             if row is None:
@@ -97,7 +99,7 @@ class SqlAlchemyProjectData:
                         "retryable": False,
                     },
                 )
-            changed = _table(row, current["recordCount"]).patched(
+            changed = _table(row, current["recordCount"], current["source"]).patched(
                 patch, datetime.now(UTC)
             )
             snapshot = table_to_dict(changed)
@@ -124,7 +126,9 @@ class SqlAlchemyProjectData:
             self._guard_project_read(session, project_id)
             row = session.scalar(
                 select(DataTableRow).where(
-                    DataTableRow.project_id == project_id, DataTableRow.id == table_id
+                    DataTableRow.published.is_(True),
+                    DataTableRow.project_id == project_id,
+                    DataTableRow.id == table_id,
                 )
             )
             return self._snapshot(session, row) if row is not None else None
@@ -140,7 +144,9 @@ class SqlAlchemyProjectData:
     ) -> tuple[list[dict], int]:
         with self._session_factory() as session:
             self._guard_project_read(session, project_id)
-            query = select(DataTableRow).where(DataTableRow.project_id == project_id)
+            query = select(DataTableRow).where(
+                DataTableRow.published.is_(True), DataTableRow.project_id == project_id
+            )
             if q and (needle := q.strip().casefold()):
                 query = query.where(
                     DataTableRow.search_text.contains(needle, autoescape=True)
@@ -201,20 +207,37 @@ class SqlAlchemyProjectData:
 
     @staticmethod
     def _snapshot(session: Session, row: DataTableRow) -> dict:
-        record_count = session.scalar(
-            select(func.count())
-            .select_from(DataRecordRow)
-            .where(
-                DataRecordRow.project_id == row.project_id,
-                DataRecordRow.table_id == row.id,
-                DataRecordRow.dataset_generation == row.current_generation,
-                DataRecordRow.deleted.is_(False),
+        record_count = (
+            session.scalar(
+                select(func.count())
+                .select_from(DataRecordRow)
+                .where(
+                    DataRecordRow.project_id == row.project_id,
+                    DataRecordRow.table_id == row.id,
+                    DataRecordRow.dataset_generation == row.current_generation,
+                    DataRecordRow.deleted.is_(False),
+                )
             )
-        ) or 0
-        return table_to_dict(_table(row, record_count))
+            or 0
+        )
+        generation = session.get(DataGenerationRow, row.current_generation)
+        raw = generation.source if generation else {"kind": row.source_kind}
+        source = {"kind": row.source_kind}
+        # Display facts only: never expose a source path or file authorization.
+        if row.source_kind == "excel":
+            source.update(
+                {
+                    key: raw[key]
+                    for key in ("filename", "sheetName", "importedAt")
+                    if key in raw
+                }
+            )
+        return table_to_dict(_table(row, record_count, source))
 
 
-def _table(row: DataTableRow, record_count: int) -> DataTable:
+def _table(
+    row: DataTableRow, record_count: int, source: dict | None = None
+) -> DataTable:
     return DataTable(
         project_id=row.project_id,
         table_id=row.id,
@@ -228,6 +251,7 @@ def _table(row: DataTableRow, record_count: int) -> DataTable:
         created_at=_aware_required(row.created_at),
         updated_at=_aware_required(row.updated_at),
         record_count=record_count,
+        source=source,
     )
 
 

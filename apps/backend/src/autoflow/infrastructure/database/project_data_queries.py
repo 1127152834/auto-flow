@@ -51,6 +51,7 @@ class SqlAlchemyProjectDataQueries:
                 SqlAlchemyProjectData._guard_project_read(session, project_id)
                 table = session.scalar(
                     select(DataTableRow).where(
+                        DataTableRow.published.is_(True),
                         DataTableRow.project_id == project_id,
                         DataTableRow.id == table_id,
                     )

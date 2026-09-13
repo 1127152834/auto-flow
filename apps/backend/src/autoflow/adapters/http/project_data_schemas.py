@@ -47,12 +47,24 @@ class TableSlotDefinition(ApiModel):
     required: bool
 
 
+class DataTableSource(ApiModel):
+    kind: Literal["local", "excel", "sheets", "unconfigured"]
+    filename: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    sheet_name: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    imported_at: datetime | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
+
+
 class DataTableView(ApiModel):
     project_id: str
     table_id: str
     name: str
     description: str
     source_kind: Literal["local", "excel", "sheets", "unconfigured"]
+    source: DataTableSource | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     dataset_generation: str
     table_revision: int = Field(ge=1)
     identity: Annotated[

@@ -321,3 +321,15 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `application/project_data/deletions.py`、`domain/project_data/deletions.py`、`infrastructure/database/project_data_deletions.py`：删除用例、协议和事务/影响持久实现。HTTP适配位于`adapters/http/project_data_deletions.py`及schemas；不在页面自建引用检查。
 - `infrastructure/database/migrations/versions/pm02_status_tombstones.py`：状态历史墓碑与活动名称部分唯一；既有历史迁移保持。
 - `scripts/smoke-project-data.mjs`：隔离真实目录/详情验收，证据位于`docs/migration/project-data-directory-qa`；不冒充完整数据编辑或PM2验收。
+
+
+### PM2 修订实现中的持久文件与批量状态（2026-09-13）
+
+- `domain/project_data/status_batches.py` 与 application/database 同名模块：固定引用、按块事务、可恢复批状态；沿用项目Operation。
+- `shared/project-files.ts`、`main/project-files/`、preload固定IPC：窗口与服务实例绑定的文件令牌；渲染层不提交任意路径。
+- `application/project_data/excel.py` / `database/project_excel_inspections.py`：检查授权与持久检查事实；SQL仅在仓储。
+- `application/project_data/excel_import.py` / `database/project_excel_imports.py`：隐藏代次分段写入和短事务发布，复验影响确认及相关变更。
+- `application/project_data/excel_export.py` / `database/project_excel_exports.py`：一致读取快照、导出和原目标核验。
+- `filesystem/project_excel.py`：工作簿安全读取、新文件无覆盖发布、发布前摘要回调及只读核验；不会修改来源文件。
+- 迁移依次为 `pm02_status_batches` → `pm02_excel_inspections` → `pm02_excel_imports` → `pm02_excel_exports`，均追加在已交付 `pm02_status_tombstones` 后。主线Studio `0006_workflow_runs`分叉仍需后续统一集成。
+- 上述文件存在不代表完整PM2已验收；原编辑页面任务仍在进行，真实UI接入和全模块验收单独登记。

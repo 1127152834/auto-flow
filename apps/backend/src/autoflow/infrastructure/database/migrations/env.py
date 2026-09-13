@@ -1,7 +1,11 @@
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from autoflow.infrastructure.database import project_data_models  # noqa: F401
+from autoflow.infrastructure.database import (  # noqa: F401
+    project_data_models,
+    project_data_status_batch_models,
+    project_excel_models,
+)
 from autoflow.infrastructure.database.models import Base
 
 config = context.config
@@ -9,13 +13,21 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline():
-    context.configure(url=config.get_main_option("sqlalchemy.url"), target_metadata=target_metadata, literal_binds=True)
+    context.configure(
+        url=config.get_main_option("sqlalchemy.url"),
+        target_metadata=target_metadata,
+        literal_binds=True,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online():
-    connectable = engine_from_config(config.get_section(config.config_ini_section, {}), prefix="sqlalchemy.", poolclass=pool.NullPool)
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
     with connectable.connect() as connection:
         # sqlite3 legacy transaction mode does not BEGIN for DDL. Keep schema
         # changes and alembic_version atomic, including failed first launches.

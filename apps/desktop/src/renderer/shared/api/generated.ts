@@ -1,4 +1,106 @@
 export type paths = {
+    "/api/v1/projects/{projectId}/tables/{tableId}/exports/xlsx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Export */
+        post: operations["export_api_v1_projects__projectId__tables__tableId__exports_xlsx_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/operations/{operationId}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile */
+        post: operations["reconcile_api_v1_projects__projectId__operations__operationId__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/table-imports/excel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_projects__projectId__table_imports_excel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/imports/excel/impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Impact */
+        post: operations["impact_api_v1_projects__projectId__tables__tableId__imports_excel_impact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/imports/excel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace */
+        post: operations["replace_api_v1_projects__projectId__tables__tableId__imports_excel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/table-imports/excel/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inspect */
+        post: operations["inspect_api_v1_projects__projectId__table_imports_excel_inspect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/proxy-panel/connections": {
         parameters: {
             query?: never;
@@ -1356,6 +1458,57 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables/{tableId}/record-status-batches/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_projects__projectId__tables__tableId__record_status_batches_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/record-status-batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start */
+        post: operations["start_api_v1_projects__projectId__tables__tableId__record_status_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/record-status-batches/{operationId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_v1_projects__projectId__tables__tableId__record_status_batches__operationId__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/kernels/events": {
         parameters: {
             query?: never;
@@ -1506,6 +1659,16 @@ export type components = {
         BrowserErrorEnvelope: {
             error: components["schemas"]["BrowserApiError"];
         };
+        /** CancelRecordStatusesResult */
+        CancelRecordStatusesResult: {
+            /** Operationid */
+            operationId: string;
+            /**
+             * Subsequentblocksclosed
+             * @constant
+             */
+            subsequentBlocksClosed: true;
+        };
         /** Capability */
         Capability: {
             /** Key */
@@ -1523,6 +1686,22 @@ export type components = {
             constraints?: {
                 [key: string]: unknown;
             };
+        };
+        /** ColumnExcelIdentity */
+        ColumnExcelIdentity: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "column";
+            /** Columnindex */
+            columnIndex: number;
+        };
+        /** CommittedStatusRevision */
+        CommittedStatusRevision: {
+            recordRef: components["schemas"]["DataRecordRef"];
+            /** Statusrevision */
+            statusRevision: number;
         };
         /** ConnectionCreate */
         ConnectionCreate: {
@@ -1940,6 +2119,20 @@ export type components = {
             /** Expectedtablerevision */
             expectedTableRevision: number;
         };
+        /** DataTableSource */
+        DataTableSource: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "local" | "excel" | "sheets" | "unconfigured";
+            /** Filename */
+            filename?: string | null;
+            /** Sheetname */
+            sheetName?: string | null;
+            /** Importedat */
+            importedAt?: string | null;
+        };
         /** DataTableView */
         DataTableView: {
             /** Projectid */
@@ -1955,6 +2148,7 @@ export type components = {
              * @enum {string}
              */
             sourceKind: "local" | "excel" | "sheets" | "unconfigured";
+            source?: components["schemas"]["DataTableSource"] | null;
             /** Datasetgeneration */
             datasetGeneration: string;
             /** Tablerevision */
@@ -2030,6 +2224,179 @@ export type components = {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ApiError"];
+        };
+        /** ExcelExportCreate */
+        ExcelExportCreate: {
+            /** Selectiontoken */
+            selectionToken: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "all" | "filter";
+            /** Filter */
+            filter?: string | null;
+            /** Orderby */
+            orderBy?: string | null;
+            /** Fieldids */
+            fieldIds: string[];
+            /** Includestatus */
+            includeStatus: boolean;
+        };
+        /** ExcelExportResult */
+        ExcelExportResult: {
+            /** Filename */
+            filename: string;
+            /** Sha256 */
+            sha256: string;
+            /** Recordcount */
+            recordCount: number;
+        };
+        /** ExcelImportResult */
+        ExcelImportResult: {
+            table: components["schemas"]["DataTableView"];
+            /** Importedrecordcount */
+            importedRecordCount: number;
+            /** Previousdatasetgeneration */
+            previousDatasetGeneration?: string | null;
+        };
+        /** ExcelInspectionCreate */
+        ExcelInspectionCreate: {
+            /** Selectiontoken */
+            selectionToken: string;
+        };
+        /** ExcelInspectionResult */
+        ExcelInspectionResult: {
+            operation: components["schemas"]["ProjectOperationView"];
+            inspection: components["schemas"]["ExcelInspectionView"];
+        };
+        /** ExcelInspectionView */
+        ExcelInspectionView: {
+            /** Inspectionid */
+            inspectionId: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Expiresat
+             * Format: date-time
+             */
+            expiresAt: string;
+            /** Sheets */
+            sheets: components["schemas"]["ExcelSheetInspection"][];
+            /** Issues */
+            issues: string[];
+        };
+        /** ExcelMapping */
+        ExcelMapping: {
+            /** Columnindex */
+            columnIndex: number;
+            /** Target */
+            target: components["schemas"]["NewTarget"] | components["schemas"]["ExistingTarget"];
+        };
+        /** ExcelReconcileResult */
+        ExcelReconcileResult: {
+            /** Targetoperationid */
+            targetOperationId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "accepted" | "running" | "reconciling" | "succeeded" | "failed";
+            /** Expectedtargetrevision */
+            expectedTargetRevision?: number | null;
+        };
+        /** ExcelReplaceImpact */
+        ExcelReplaceImpact: {
+            target: components["schemas"]["TableResourceLocator"];
+            /** Impactrevision */
+            impactRevision: number;
+            /** Expectedrevisions */
+            expectedRevisions: {
+                [key: string]: string | number;
+            };
+            /** Recordcount */
+            recordCount: number;
+            /** Blockers */
+            blockers: string[];
+            /**
+             * Calculatedat
+             * Format: date-time
+             */
+            calculatedAt: string;
+        };
+        /** ExcelSheetInspection */
+        ExcelSheetInspection: {
+            /** Sheetid */
+            sheetId: string;
+            /** Name */
+            name: string;
+            /** Headers */
+            headers: string[];
+            /** Sample */
+            sample: (string | number | boolean | components["schemas"]["DataDateScalar"] | null)[][];
+            /** Rowcount */
+            rowCount: number;
+            /** Ignoredemptyrowcount */
+            ignoredEmptyRowCount: number;
+            /** Formularowcount */
+            formulaRowCount: number[];
+            /** Identitycandidates */
+            identityCandidates: number[];
+            /** Issues */
+            issues: string[];
+        };
+        /** ExcelTableImportCreate */
+        ExcelTableImportCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Inspectionid */
+            inspectionId: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Sheetid */
+            sheetId: string;
+            /** Mapping */
+            mapping: components["schemas"]["ExcelMapping"][];
+            /** Identity */
+            identity: components["schemas"]["SystemExcelIdentity"] | components["schemas"]["ColumnExcelIdentity"];
+        };
+        /** ExcelTableReplace */
+        ExcelTableReplace: {
+            /** Inspectionid */
+            inspectionId: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Sheetid */
+            sheetId: string;
+            /** Mapping */
+            mapping: components["schemas"]["ExcelMapping"][];
+            /** Identity */
+            identity: components["schemas"]["SystemExcelIdentity"] | components["schemas"]["ColumnExcelIdentity"];
+            /** Expecteddatasetgeneration */
+            expectedDatasetGeneration: string;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
+        };
+        /** ExistingTarget */
+        ExistingTarget: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "existing";
+            /** Fieldid */
+            fieldId: string;
         };
         /** ExpectedRevision */
         ExpectedRevision: {
@@ -2666,6 +3033,15 @@ export type components = {
             /** Message */
             message: string;
         };
+        /** NewTarget */
+        NewTarget: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "new";
+            definition: components["schemas"]["DataFieldWrite"];
+        };
         /** NoProxy */
         NoProxy: {
             /**
@@ -3039,18 +3415,18 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord";
+            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
             /**
              * Status
-             * @constant
+             * @enum {string}
              */
-            status: "succeeded";
+            status: "accepted" | "running" | "reconciling" | "succeeded" | "failed";
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
             resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["RecordDeleteResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -3262,6 +3638,11 @@ export type components = {
             /** Capabilities */
             capabilities?: components["schemas"]["Capability"][];
         };
+        /** ReconcileOperationCreate */
+        ReconcileOperationCreate: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+        };
         /** RecordDelete */
         RecordDelete: {
             /** Datasetgeneration */
@@ -3306,6 +3687,72 @@ export type components = {
              */
             type: "record";
             recordRef: components["schemas"]["DataRecordRef"];
+        };
+        /** RecordStatusBatchCancel */
+        RecordStatusBatchCancel: {
+            /** Expectedoperationrevision */
+            expectedOperationRevision: number;
+        };
+        /** RecordStatusBatchOutcome */
+        RecordStatusBatchOutcome: {
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "processing" | "completed" | "conflicted" | "cancelled" | "failed";
+            request: components["schemas"]["RecordStatusBatchRequest"];
+            /** Blocks */
+            blocks: components["schemas"]["RecordStatusBlock"][];
+            /** Changedcount */
+            changedCount: number;
+            /** Conflictcount */
+            conflictCount: number;
+            /** Notstartedcount */
+            notStartedCount: number;
+            /** Cancelled */
+            cancelled: boolean;
+        };
+        /** RecordStatusBatchPreview */
+        RecordStatusBatchPreview: {
+            request: components["schemas"]["RecordStatusBatchRequest"];
+            /** Blocks */
+            blocks: components["schemas"]["RecordStatusBlock"][];
+            /** Checkedat */
+            checkedAt: string;
+        };
+        /** RecordStatusBatchRequest */
+        RecordStatusBatchRequest: {
+            /** Statusid */
+            statusId: string | null;
+            /** Targets */
+            targets: components["schemas"]["RecordStatusTarget"][];
+            /**
+             * Blocksize
+             * @default 100
+             */
+            blockSize: number;
+        };
+        /** RecordStatusBlock */
+        RecordStatusBlock: {
+            /** Blockindex */
+            blockIndex: number;
+            /** Targets */
+            targets: components["schemas"]["RecordStatusTarget"][];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "notStarted" | "committed" | "conflicted";
+            /** Blockers */
+            blockers: components["schemas"]["DataMutationBlocker"][];
+            /** Committedrevisions */
+            committedRevisions: components["schemas"]["CommittedStatusRevision"][];
+        };
+        /** RecordStatusTarget */
+        RecordStatusTarget: {
+            recordRef: components["schemas"]["DataRecordRef"];
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
         };
         /** RelocateRequest */
         RelocateRequest: {
@@ -3492,6 +3939,14 @@ export type components = {
             /** Remote Missing Count */
             remote_missing_count: number;
             last_error?: components["schemas"]["ApiError"] | null;
+        };
+        /** SystemExcelIdentity */
+        SystemExcelIdentity: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "system";
         };
         /** SystemTableIdentity */
         SystemTableIdentity: {
@@ -3775,6 +4230,297 @@ export type components = {
 };
 export type $defs = Record<string, never>;
 export interface operations {
+    export_api_v1_projects__projectId__tables__tableId__exports_xlsx_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "x-autoflow-file-window-id": number;
+                "x-autoflow-file-window-token": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcelExportCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reconcile_api_v1_projects__projectId__operations__operationId__reconcile_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileOperationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_v1_projects__projectId__table_imports_excel_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "x-autoflow-file-window-id": number;
+                "x-autoflow-file-window-token": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcelTableImportCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    impact_api_v1_projects__projectId__tables__tableId__imports_excel_impact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExcelReplaceImpact"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_api_v1_projects__projectId__tables__tableId__imports_excel_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "x-autoflow-file-window-id": number;
+                "x-autoflow-file-window-token": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcelTableReplace"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inspect_api_v1_projects__projectId__table_imports_excel_inspect_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "x-autoflow-file-window-id": number;
+                "x-autoflow-file-window-token": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExcelInspectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExcelInspectionResult"] | components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_connections_api_v1_proxy_panel_connections_get: {
         parameters: {
             query?: never;
@@ -8031,7 +8777,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord") | null;
+                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
                 resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
             };
@@ -9588,6 +10334,245 @@ export interface operations {
             };
             /** @description Gone */
             410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_api_v1_projects__projectId__tables__tableId__record_status_batches_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordStatusBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordStatusBatchPreview"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    start_api_v1_projects__projectId__tables__tableId__record_status_batches_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordStatusBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_projects__projectId__tables__tableId__record_status_batches__operationId__cancel_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordStatusBatchCancel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

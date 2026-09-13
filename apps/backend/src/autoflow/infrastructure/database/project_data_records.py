@@ -231,7 +231,9 @@ class SqlAlchemyProjectDataRecords:
         )(session, project_id)
         table = session.scalar(
             select(DataTableRow).where(
-                DataTableRow.project_id == project_id, DataTableRow.id == table_id
+                DataTableRow.published.is_(True),
+                DataTableRow.project_id == project_id,
+                DataTableRow.id == table_id,
             )
         )
         if table is None:

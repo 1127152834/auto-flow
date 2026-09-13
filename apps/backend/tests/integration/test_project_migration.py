@@ -14,7 +14,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     database = tmp_path / "projects.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_status_tombstones"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_excel_exports"]
     preserved = {}
     if existing:
         command.upgrade(config, "0005_workflow_documents")
@@ -32,12 +32,23 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
                 INSERT INTO workflow_documents VALUES
                     ('workflow','工作流','{"nodes":[]}','{}',3,'2026-09-13','2026-09-13');
             """)
-            for table in ("profiles", "proxies", "proxy_pools", "model_providers", "models", "workflow_documents"):
-                preserved[table] = connection.execute(f"SELECT * FROM {table}").fetchall()
+            for table in (
+                "profiles",
+                "proxies",
+                "proxy_pools",
+                "model_providers",
+                "models",
+                "workflow_documents",
+            ):
+                preserved[table] = connection.execute(
+                    f"SELECT * FROM {table}"
+                ).fetchall()
     database_session.migrate_database(database)
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [("pm02_status_tombstones",)]
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall() == [("pm02_excel_exports",)]
         assert connection.execute("SELECT * FROM projects").fetchall() == []
         assert connection.execute("SELECT * FROM project_operations").fetchall() == []
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

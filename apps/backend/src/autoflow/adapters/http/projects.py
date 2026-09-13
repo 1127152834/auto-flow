@@ -141,6 +141,12 @@ def projects_router(service: ProjectService) -> APIRouter:
             "updateRecord",
             "setRecordStatus",
             "deleteRecord",
+            "setRecordStatuses",
+            "cancelRecordStatuses",
+            "inspectExcel",
+            "importExcel",
+            "exportXlsx",
+            "reconcileOperation",
         ]
         | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]

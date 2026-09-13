@@ -132,6 +132,7 @@ def _field_facts(
         raise ProjectError("PROJECT_NOT_FOUND", "Project was not found", 404)
     table = session.scalar(
         select(DataTableRow).where(
+            DataTableRow.published.is_(True),
             DataTableRow.id == ref["tableId"],
             DataTableRow.project_id == project_id,
         )

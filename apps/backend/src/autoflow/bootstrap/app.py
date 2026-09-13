@@ -1,4 +1,5 @@
 import secrets
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
 
@@ -17,6 +18,15 @@ from autoflow.adapters.http.project_data import project_data_router
 from autoflow.adapters.http.project_data_deletions import project_data_deletion_router
 from autoflow.adapters.http.project_data_impacts import project_data_impact_router
 from autoflow.adapters.http.project_data_records import project_records_router
+from autoflow.adapters.http.project_data_status_batches import (
+    record_status_batches_router,
+)
+from autoflow.adapters.http.project_excel import (
+    internal_project_files_router,
+    project_excel_inspection_router,
+)
+from autoflow.adapters.http.project_excel_exports import project_excel_exports_router
+from autoflow.adapters.http.project_excel_imports import project_excel_import_router
 from autoflow.adapters.http.projects import projects_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
@@ -27,8 +37,15 @@ from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
+from autoflow.application.project_data.excel import ProjectExcelService
+from autoflow.application.project_data.excel_export import ProjectExcelExportService
+from autoflow.application.project_data.excel_import import ExcelImportService
 from autoflow.application.project_data.queries import DataRecordQueryService
 from autoflow.application.project_data.records import DataRecordService
+from autoflow.application.project_data.status_batches import (
+    RecordStatusBatchCoordinator,
+    RecordStatusBatchService,
+)
 from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
@@ -68,6 +85,15 @@ from autoflow.infrastructure.database.project_data_queries import (
 )
 from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
+)
+from autoflow.infrastructure.database.project_data_status_batches import (
+    SqlAlchemyRecordStatusBatches,
+)
+from autoflow.infrastructure.database.project_excel_exports import (
+    SqlAlchemyProjectExcelExports,
+)
+from autoflow.infrastructure.database.project_excel_imports import (
+    SqlAlchemyExcelImports,
 )
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
@@ -172,9 +198,55 @@ def create_app(
     model_service.recover_credentials()
 
     app = FastAPI()
+    app.state.config = settings
     configure_openapi(app, api_version=settings.api_version)
     install_error_handlers(app)
     quiesce_gate = QuiesceGate()
+    project_excel = ProjectExcelService(
+        session_factory,
+        workspace_id=str(paths.data_dir),
+        instance_id=settings.instance_id,
+        gate=quiesce_gate,
+    )
+    excel_imports = ExcelImportService(
+        SqlAlchemyExcelImports(
+            session_factory, str(paths.data_dir), settings.instance_id
+        ),
+        quiesce_gate,
+    )
+    excel_export_executor = ThreadPoolExecutor(
+        max_workers=1, thread_name_prefix="project-export"
+    )
+    excel_exports = ProjectExcelExportService(
+        SqlAlchemyProjectExcelExports(
+            session_factory, str(paths.data_dir), settings.instance_id
+        ),
+        quiesce_gate,
+        excel_export_executor,
+    )
+    app.state.excel_exports = excel_exports
+    app.include_router(project_excel_exports_router(excel_exports))
+    app.router.add_event_handler("startup", excel_exports.startup)
+    app.state.excel_imports = excel_imports
+    app.include_router(project_excel_import_router(excel_imports))
+    app.router.add_event_handler("startup", excel_imports.startup)
+    app.state.project_excel_service = project_excel
+    app.router.add_event_handler("startup", project_excel.startup)
+    app.include_router(internal_project_files_router(project_excel))
+    app.include_router(project_excel_inspection_router(project_excel))
+    status_batch_repository = SqlAlchemyRecordStatusBatches(session_factory)
+    status_batch_executor = ThreadPoolExecutor(
+        max_workers=1, thread_name_prefix="project-status"
+    )
+    status_batch_coordinator = RecordStatusBatchCoordinator(
+        status_batch_repository, quiesce_gate, status_batch_executor
+    )
+    status_batch_service = RecordStatusBatchService(
+        status_batch_repository, status_batch_coordinator
+    )
+    app.state.status_batch_service = status_batch_service
+    app.state.status_batch_coordinator = status_batch_coordinator
+    app.router.add_event_handler("startup", status_batch_coordinator.resume)
     proxy_runtime = configure_proxy_management(app, paths.database)
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
@@ -196,6 +268,18 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
+            *(
+                ["project_excel_operation_active"]
+                if project_excel.pending_operations()
+                or excel_imports.pending_operations()
+                or excel_exports.pending_operations()
+                else []
+            ),
+            *(
+                ["project_data_status_batch_active"]
+                if status_batch_repository.pending_operation_ids()
+                else []
+            ),
             *(
                 ["kernel_process_active"]
                 if kernel_worker_manager.active_processes()
@@ -219,6 +303,13 @@ def create_app(
     async def shutdown() -> None:
         try:
             import asyncio
+
+            excel_exports.shutdown()
+            await asyncio.to_thread(excel_export_executor.shutdown, wait=True)
+            excel_imports.shutdown()
+            project_excel.shutdown()
+            status_batch_coordinator.shutdown()
+            await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
 
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
@@ -272,6 +363,7 @@ def create_app(
     )
     app.include_router(project_data_impact_router(data_catalog, data_deletions))
     app.include_router(project_data_deletion_router(data_deletions))
+    app.include_router(record_status_batches_router(status_batch_service))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )

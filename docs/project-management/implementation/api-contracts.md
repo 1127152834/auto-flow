@@ -313,7 +313,7 @@ type RecordStatusBatchOutcome = {outcome:'processing'|'completed'|'conflicted'|'
 
 ### 3.4 Excel、导出与 Sheets 来源
 
-2026-09-13 PM2 修订（confirmed，用户批准）：新建与替换路由分开；新建映射仅 new，替换只复用显式 fieldId。检查结果补齐 issues、ignoredEmptyRowCount、identityCandidates；预览不替代全量检查。候选分段写入不可见，发布时同时检查代次、结构和预览后的相关修改证据；新代次状态全部 null。服务端不得只靠 tableRevision 检测记录修改。
+2026-09-13 PM2 修订（confirmed，用户批准）：新建与替换路由分开；新建映射仅 new，替换允许显式已有 fieldId 或新增字段定义，不按显示名称猜测身份。检查结果补齐 issues、ignoredEmptyRowCount、identityCandidates；预览不替代全量检查。候选分段写入不可见，发布时同时检查代次、结构和预览后的相关修改证据；新代次状态全部 null。服务端不得只靠 tableRevision 检测记录修改。
 
 文件选择由主进程验证 main frame 后通过 hostToken 内部登记，正文为 `{selectionToken,path,projectId,windowId,purpose,expiresAt}`；workspace/instance 由服务配置绑定。Renderer 仅持有受控令牌，公开 HTTP 不接收路径。主窗口另经受控 IPC 获取当前实例的窗口证明；内部登记使用 x-autoflow-file-window-token header，公开文件请求使用 x-autoflow-file-window-id 与 x-autoflow-file-window-token 并校验与原选择一致；不能把 windowId 仅作审计字段。选择/提交前可取消；接受后关闭视图不取消操作，通过原身份查询结果。导出先记录原目标与输出摘要，再无覆盖发布；reconcile 只核验既有事实，不另存或覆盖。
 
@@ -441,7 +441,8 @@ type OperationKind = 'createProject'|'updateProject'|'archiveProject'|'restorePr
 |---|---|
 | create/update Project，archiveProject/restoreProject | `Project` |
 | create/update Automation | `Automation` |
-| create/update Table，importExcel | `DataTable` |
+| create/update Table | `DataTable` |
+| importExcel | `{table:DataTable,importedRecordCount,previousDatasetGeneration?}`；新表接受时resource为project，发布成功后才变为table。 |
 | create/update Record，setRecordStatus/writeRecordSlot/bindRecordEnvironment | `DataRecord` |
 | deleteProject/deleteAutomation/deleteTable/deleteRecord | `{target:ResourceLocator,deleted:true}`；已确认残留另记 cleanup，不冒充外部文件已删除 |
 | mutateField | create/update：`{action,field:FieldDefinition,tableRevision}`；delete：`{action:'delete',target:FieldRef,deleted:true,tableRevision}` |
@@ -546,3 +547,18 @@ main 进程校验调用窗口/主 frame、projectId、扩展名和对话框结�
 ## PM2 实施勘误（2026-09-13）
 
 PM0历史报告不回写。PM2新增表身份策略、写入值形状、Excel创建/替换路由分离、显式映射目标、inspect操作结果及受控文件授权的实施补充，以[PM2执行卡](../../superpowers/plans/2026-09-13-project-management-pm2.md)的“实施契约补充”为准；原正文相冲突的请求形状为superseded。未改变数据复用、独立修订、原子发布和结果未知查询的业务规则。真实OpenAPI随handler交付生成。
+
+
+### PM2 实际文件操作补充（2026-09-13，实施中）
+
+- `POST /api/v1/projects/{projectId}/tables/{tableId}/imports/excel/impact` 返回 `ExcelReplaceImpact`：目标表、记录数、阻断原因、期望代次/表修订及 impactRevision。提交和最终发布均重新核对该确认与相关 DataChange 事实；一般表修订不替代记录/状态变更证据。
+- 当前 importExcel result 统一为 `{table,importedRecordCount,previousDatasetGeneration?}`；create/replace均202接受，终态从原Operation查询。
+- 新表数据先保存为 `published=false` 的内部候选，目录和所有公开表读取/编辑均排除。候选表名使用内部唯一占位，不占用用户名称；发布短事务验证并写入规范名称。重新导入的候选代次不成为当前代次，最终只切换当前指向，不逐行复制大量记录。
+- 中断的检查/未发布导入会收敛原Operation为明确失败，保留旧表；启动恢复不自动读取旧来源文件。已经发布的导出仅核验原目标与发布前摘要。
+- reconcileOperation 的处理中 result 可附 expectedTargetRevision，固定目标并支持重启恢复；终态 result 为 `{targetOperationId,status}`，原导出Operation仍是文件结果权威。
+
+#### PM2 来源展示补充（2026-09-13，已实现）
+
+`DataTableView.source` 可选，兼容已有历史 Operation 快照；本次表查询和新结果返回 `kind`，Excel 表另含 `filename`、`sheetName`、`importedAt`。这些字段来自当前数据代次，不公开文件路径、授权、内部工作表 ID 或指纹。导入原子发布同时保存一条唯一 `DataChange`，重发不重复记账。
+
+新的导入命令必须仍持有当前工作区、当前服务实例的检查授权；重启后的旧检查快照可查询，但不能授权新的文件读取。已接受同键同请求先找回原 Operation，不重新验证旧令牌或读取文件。

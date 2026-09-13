@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID
 
-from sqlalchemy import select, text
+from sqlalchemy import inspect, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.project_data.identity import (
@@ -16,7 +16,7 @@ from autoflow.domain.project_data.identity import (
     encode_record_key,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
-from autoflow.infrastructure.database.models import ProjectRow
+from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_data import (
     _completed,
     _operation,
@@ -42,6 +42,10 @@ from autoflow.infrastructure.database.project_data_records import (
 )
 from autoflow.infrastructure.database.project_data_records import (
     _change as record_change,
+)
+from autoflow.infrastructure.database.project_data_status_batch_models import (
+    DataStatusBatchBlockRow,
+    DataStatusBatchRow,
 )
 
 
@@ -295,6 +299,14 @@ class SqlAlchemyProjectDataDeletions:
             _blocker("STATUS_IN_USE", ref, "A current record uses this status")
             for ref in refs[:20]
         ]
+        if _pending_status_destination(session, project_id, table_id, status_id):
+            blockers.append(
+                _blocker(
+                    "STATUS_BATCH_DESTINATION_PENDING",
+                    target,
+                    "A pending batch status operation uses this status",
+                )
+            )
         revisions = {
             "tableRevision": table.table_revision,
             "statusRevision": status.status_revision,
@@ -341,6 +353,14 @@ class SqlAlchemyProjectDataDeletions:
         project = session.get(ProjectRow, project_id)
         assert project is not None
         blockers = _project_blockers(project, target)
+        if _pending_status_target(session, target["recordRef"]):
+            blockers.append(
+                _blocker(
+                    "RECORD_STATUS_BATCH_PENDING",
+                    target,
+                    "A pending batch status operation references this record",
+                )
+            )
         if row.current_environment_id is not None:
             blockers.append(
                 _blocker(
@@ -521,6 +541,59 @@ def _project_blockers(
             "Project lifecycle does not allow deletion",
         )
     ]
+
+
+def _pending_status_target(session: Session, record_ref: dict[str, Any]) -> bool:
+    if not inspect(session.connection()).has_table(
+        DataStatusBatchBlockRow.__tablename__
+    ):
+        return False
+    blocks = session.scalars(
+        select(DataStatusBatchBlockRow)
+        .join(
+            DataStatusBatchRow,
+            DataStatusBatchRow.operation_id == DataStatusBatchBlockRow.operation_id,
+        )
+        .join(
+            ProjectOperationRow,
+            ProjectOperationRow.id == DataStatusBatchBlockRow.operation_id,
+        )
+        .where(
+            DataStatusBatchBlockRow.state == "notStarted",
+            DataStatusBatchRow.cancel_requested.is_(False),
+            ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+        )
+    ).all()
+    return any(
+        target.get("recordRef") == record_ref
+        for block in blocks
+        for target in block.targets
+    )
+
+
+def _pending_status_destination(
+    session: Session, project_id: str, table_id: str, status_id: str
+) -> bool:
+    if not inspect(session.connection()).has_table(DataStatusBatchRow.__tablename__):
+        return False
+    return (
+        session.scalar(
+            select(DataStatusBatchRow.operation_id)
+            .join(
+                ProjectOperationRow,
+                ProjectOperationRow.id == DataStatusBatchRow.operation_id,
+            )
+            .where(
+                DataStatusBatchRow.project_id == project_id,
+                DataStatusBatchRow.table_id == table_id,
+                DataStatusBatchRow.status_id == status_id,
+                DataStatusBatchRow.cancel_requested.is_(False),
+                ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+            )
+            .limit(1)
+        )
+        is not None
+    )
 
 
 def _status_target(project_id: str, table_id: str, status_id: str) -> dict[str, Any]:

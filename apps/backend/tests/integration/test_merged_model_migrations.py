@@ -10,17 +10,22 @@ from autoflow.infrastructure.database import session as database_session
 
 
 @pytest.mark.parametrize(
-    "revision", [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management"]
+    "revision",
+    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management"],
 )
-def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: str | None):
+def test_merge_upgrade_preserves_each_branch_database(
+    tmp_path: Path, revision: str | None
+):
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_status_tombstones"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["pm02_excel_exports"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
-            connection.execute("INSERT INTO proxy_pools (id,name) VALUES ('existing','Retained group')")
+            connection.execute(
+                "INSERT INTO proxy_pools (id,name) VALUES ('existing','Retained group')"
+            )
             if revision == "0002_proxy_management":
                 connection.execute(
                     "INSERT INTO proxy_group_details (proxy_pool_id,created_at,updated_at) "
@@ -34,15 +39,34 @@ def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: 
     database_session.migrate_database(database)
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("pm02_status_tombstones",)
-        ]
-        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall() == [("pm02_excel_exports",)]
+        tables = {
+            row[0]
+            for row in connection.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+        assert {
+            "profiles",
+            "proxy_projections",
+            "proxy_group_details",
+            "model_providers",
+            "models",
+            "kernel_operations",
+            "workflow_documents",
+        } <= tables
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if revision:
-            assert connection.execute("SELECT name FROM proxy_pools WHERE id='existing'").fetchone() == ("Retained group",)
+            assert connection.execute(
+                "SELECT name FROM proxy_pools WHERE id='existing'"
+            ).fetchone() == ("Retained group",)
         if revision == "0002_proxy_management":
-            assert connection.execute("SELECT proxy_pool_id FROM proxy_group_details").fetchall() == [("existing",)]
+            assert connection.execute(
+                "SELECT proxy_pool_id FROM proxy_group_details"
+            ).fetchall() == [("existing",)]
         if revision == "0002_model_management":
-            assert connection.execute("SELECT secret_ref FROM model_credential_cleanup").fetchall() == [("synthetic-ref",)]
+            assert connection.execute(
+                "SELECT secret_ref FROM model_credential_cleanup"
+            ).fetchall() == [("synthetic-ref",)]

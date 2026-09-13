@@ -46,6 +46,9 @@ class DataTableRow(Base):
     search_text: Mapped[str] = mapped_column(sa.Text(), nullable=False)
     description: Mapped[str] = mapped_column(sa.Text(), nullable=False)
     source_kind: Mapped[str] = mapped_column(sa.String(20), nullable=False)
+    published: Mapped[bool] = mapped_column(
+        sa.Boolean(), nullable=False, default=True, server_default=sa.true()
+    )
     current_generation: Mapped[str] = mapped_column(sa.String(36), nullable=False)
     table_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
     identity: Mapped[dict[str, Any]] = mapped_column(sa.JSON(), nullable=False)

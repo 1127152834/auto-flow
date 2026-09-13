@@ -19,6 +19,7 @@ class DataTable:
     created_at: datetime
     updated_at: datetime
     record_count: int = 0
+    source: dict[str, Any] | None = None
 
     def patched(self, patch: dict[str, Any], now: datetime) -> DataTable:
         name = patch.get("name", self.name)
@@ -41,6 +42,7 @@ def table_to_dict(value: DataTable) -> dict[str, Any]:
         "name": value.name,
         "description": value.description,
         "sourceKind": value.source_kind,
+        "source": value.source or {"kind": value.source_kind},
         "datasetGeneration": value.dataset_generation,
         "tableRevision": value.table_revision,
         "identity": value.identity,
