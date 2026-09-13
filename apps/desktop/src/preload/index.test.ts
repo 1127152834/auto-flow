@@ -1,10 +1,11 @@
 import { EventEmitter } from 'node:events'
 import { beforeEach, expect, it, vi } from 'vitest'
 import type { AutomationStudioBridge } from '../shared/automation-studio'
+import type { ProjectFileBridge } from '../shared/project-files'
 import type { RuntimeBridge } from '../shared/runtime'
 
 let ipc: EventEmitter & { invoke: ReturnType<typeof vi.fn> }
-let bridge: AutomationStudioBridge & RuntimeBridge
+let bridge: AutomationStudioBridge & RuntimeBridge & ProjectFileBridge
 
 beforeEach(async () => {
   vi.resetModules()
@@ -44,4 +45,14 @@ it('exposes runtime notifications with a removable listener and synchronizes pre
   expect(listener).toHaveBeenCalledOnce()
   ipc.emit('autoflow:preferences-changed', {}, { motion: 'reduce', zoom: 100 })
   expect(document.documentElement.dataset.motion).toBe('reduce')
+})
+
+
+it('exposes controlled project file choices and per-window proof without paths', async () => {
+  await bridge.chooseExcelInput('project')
+  await bridge.chooseXlsxOutput('project', '资料.xlsx')
+  await bridge.getProjectFileContext()
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-excel-input', 'project')
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:choose-xlsx-output', 'project', '资料.xlsx')
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:project-files:context')
 })

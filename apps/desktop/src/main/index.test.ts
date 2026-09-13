@@ -161,3 +161,12 @@ it('restores the existing reload menu when focus returns from Studio to the main
   studio.emit('focus')
   expect(reloadMenuItem.enabled).toBe(false)
 })
+
+it('wires project file selection and denies Studio and subframe callers', async () => {
+  const main = FakeWindow.instances[0]!
+  const studioWindow = await openStudio()
+  expect(handlers.has('autoflow:project-files:choose-excel-input')).toBe(true)
+  expect(handlers.has('autoflow:project-files:choose-xlsx-output')).toBe(true)
+  await expect(invoke('autoflow:project-files:choose-excel-input', studioWindow, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+  await expect(handlers.get('autoflow:project-files:choose-excel-input')!({ ...sender(main), senderFrame: {} }, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+})

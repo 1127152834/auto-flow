@@ -25,7 +25,7 @@ export class DataCommandNotAccepted extends Error {
   }
 }
 
-function assertFiniteNumbers(value: unknown): void {
+export function assertFiniteNumbers(value: unknown): void {
   if (typeof value === 'number' && !Number.isFinite(value)) throw new Error('数值必须是有限数字，不能将无效数字写成空值')
   if (Array.isArray(value)) value.forEach(assertFiniteNumbers)
   else if (value && typeof value === 'object') Object.values(value).forEach(assertFiniteNumbers)
