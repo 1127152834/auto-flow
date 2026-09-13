@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { test } from 'node:test'
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs'], { cwd: root })
+const directory = path.join(root, 'docs/migration/studio-frontend-completion')
+const inventory = JSON.parse(fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8'))
+const matrix = fs.readFileSync(path.join(directory, 'contract-matrix.md'), 'utf8')
+const operation = name => inventory.services.find(row => row.operation === name)
+
+test('resource upload keeps multipart body and generated response type in the handoff inventory', () => {
+  assert.equal(operation('imageAssetApi.upload').requests[0].method, 'POST')
+  assert.equal(operation('imageAssetApi.upload').requests[0].body, 'body: formData')
+  assert.match(operation('imageAssetApi.upload').requests[0].responseType, /StudioImageUploadResult/)
+  assert.equal(operation('imageAssetApi.list').requests[0].method, 'GET')
+  assert.equal(operation('imageAssetApi.delete').requests[0].method, 'DELETE')
+})
+test('transport forwarding is marked dynamic instead of inventing a GET contract', () => {
+  const forwarded = inventory.directRequests.find(row => row.file.endsWith('/api/transport.ts'))
+  assert.equal(forwarded.method, 'dynamic')
+  assert.equal(forwarded.endpoint, 'input')
+})
+test('the matrix includes every discovered service and event without treating declarations as passed tests', () => {
+  for (const row of [...inventory.services, ...inventory.events]) assert.ok(matrix.includes(row.id), row.id)
+  assert.match(matrix, /不是全量已冻结合同或验收通过声明/)
+  assert.match(matrix, /静态消费者数为 0 只表示本扫描未发现，不授权删除/)
+})
+test('inventory and matrix regenerate deterministically', () => {
+  const before = fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8')
+  execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs'], { cwd: root })
+  assert.equal(fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8'), before)
+  assert.equal(fs.readFileSync(path.join(directory, 'contract-matrix.md'), 'utf8'), matrix)
+})

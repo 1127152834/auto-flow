@@ -20545,5 +20545,73 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx"
+  },
+  {
+    "id": "INVENTORY.contract-matrix.multipart",
+    "capability": "infrastructure:service-inventory",
+    "preconditions": {
+      "source": "当前正式Studio源码及源文件映射"
+    },
+    "steps": [
+      "执行 AST 盘点脚本",
+      "图像上传 multipart 和生成响应类型被登记"
+    ],
+    "expectedUI": "无UI，生成交接矩阵",
+    "expectedIO": "静态扫描，不发起业务请求",
+    "stateAssertion": "图像上传 multipart 和生成响应类型被登记",
+    "level": "script",
+    "status": "通过",
+    "evidencePath": "scripts/studio-service-inventory.test.mjs"
+  },
+  {
+    "id": "INVENTORY.contract-matrix.dynamic",
+    "capability": "infrastructure:service-inventory",
+    "preconditions": {
+      "source": "当前正式Studio源码及源文件映射"
+    },
+    "steps": [
+      "执行 AST 盘点脚本",
+      "转发请求标记 dynamic，不虚构GET"
+    ],
+    "expectedUI": "无UI，生成交接矩阵",
+    "expectedIO": "静态扫描，不发起业务请求",
+    "stateAssertion": "转发请求标记 dynamic，不虚构GET",
+    "level": "script",
+    "status": "通过",
+    "evidencePath": "scripts/studio-service-inventory.test.mjs"
+  },
+  {
+    "id": "INVENTORY.contract-matrix.coverage",
+    "capability": "infrastructure:service-inventory",
+    "preconditions": {
+      "source": "当前正式Studio源码及源文件映射"
+    },
+    "steps": [
+      "执行 AST 盘点脚本",
+      "矩阵逐项包含所有发现的服务与事件"
+    ],
+    "expectedUI": "无UI，生成交接矩阵",
+    "expectedIO": "静态扫描，不发起业务请求",
+    "stateAssertion": "矩阵逐项包含所有发现的服务与事件",
+    "level": "script",
+    "status": "通过",
+    "evidencePath": "scripts/studio-service-inventory.test.mjs"
+  },
+  {
+    "id": "INVENTORY.contract-matrix.deterministic",
+    "capability": "infrastructure:service-inventory",
+    "preconditions": {
+      "source": "当前正式Studio源码及源文件映射"
+    },
+    "steps": [
+      "执行 AST 盘点脚本",
+      "同一源码重复生成完全一致"
+    ],
+    "expectedUI": "无UI，生成交接矩阵",
+    "expectedIO": "静态扫描，不发起业务请求",
+    "stateAssertion": "同一源码重复生成完全一致",
+    "level": "script",
+    "status": "通过",
+    "evidencePath": "scripts/studio-service-inventory.test.mjs"
   }
 ]
