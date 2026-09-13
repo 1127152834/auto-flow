@@ -1,23 +1,24 @@
 {
   "date": "2026-09-13",
   "baseline": "205fa64",
-  "status": "B0-readyForUserReview",
+  "status": "R1-inProgress",
   "owner": "root",
   "milestones": [
     {
       "id": "B0",
-      "status": "readyForUserReview",
-      "userAcceptance": "notExecuted",
+      "status": "accepted",
+      "userAcceptance": "confirmedByUser",
       "evidence": {
         "automatic": "acceptance/b0/verification.json",
         "visual": "acceptance/b0/review-resolution.md",
         "electron": null,
         "windows": null
-      }
+      },
+      "acceptanceSource": "2026-09-13 用户确认方案并要求实施 R1"
     },
     {
       "id": "R1",
-      "status": "notStarted",
+      "status": "inProgress",
       "dependsOn": [
         "B0-userAcceptance"
       ]
@@ -996,5 +997,6 @@
     "docs/migration/project-data-directory-qa/run-577a57/",
     "docs/migration/project-data-directory-qa/run-VoRvWR/",
     "docs/migration/project-management-regression-qa/run-W6Td3i/"
-  ]
+  ],
+  "executionBaseline": "1e79c7b"
 }

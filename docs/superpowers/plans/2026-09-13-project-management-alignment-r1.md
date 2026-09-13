@@ -54,7 +54,7 @@ const recentConditions = {
 
 ## R1-03：补Popover，复用现有浮层宿主
 
-**Files:** Modify `apps/desktop/package.json`、`package-lock.json`；Create `apps/desktop/src/renderer/shared/components/ui/popover.tsx`、`apps/desktop/src/renderer/shared/components/ui/popover.test.tsx`。Read现有 `apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx`、`apps/desktop/src/renderer/shared/components/ui/select-radix.tsx`、`apps/desktop/src/renderer/shared/components/ui/dialog.tsx`；不创建Drawer文件，现有 `apps/desktop/src/renderer/shared/components/ui/Modal.tsx` 已支持 `placement="drawer"`。
+**Files:** Modify `apps/desktop/package.json`、`package-lock.json`；Create `apps/desktop/src/renderer/shared/components/ui/popover.tsx`、`apps/desktop/src/renderer/shared/components/ui/popover.test.tsx`。Read现有 `apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx`、`apps/desktop/src/renderer/shared/components/ui/select.tsx`、`apps/desktop/src/renderer/shared/components/ui/dialog.tsx`；不创建Drawer文件，现有 `apps/desktop/src/renderer/shared/components/Modal.tsx` 已支持 `placement="drawer"`。
 
 已核对本分支没有Popover，但有菜单、Select和Modal。筛选里有表单，不能用菜单item冒充表单行为。仅新增 `@radix-ui/react-popover`，锁定安装解析版本，不引入整套新UI。Radix支持受控打开、焦点管理和非模态面板，见[官方Popover文档](https://www.radix-ui.com/primitives/docs/components/popover)。
 
@@ -134,3 +134,38 @@ it('limits visible notices and expires an updated operation from its latest upda
 - [ ] 运行R1涉及前端测试、typecheck/lint/build，并真实验收：最近/全部、数据目录、三个查询面板、刷新失败、200%和无横向撑宽。R1报告记录原型ID和截图，未来功能未执行。提交 `fix: bound operation notifications and verify aligned directories`。
 
 R1完成后提交用户验收；不能用R1目录截图宣称独立记录页或字段聚合已完成。
+
+
+## 2026-09-13 执行基线与已确认补充
+
+状态：进行中。用户已确认 B0，并明确要求实施 R1；阶段起点 `1e79c7b`，分支 `codex/project-management-implementation`。原三个未跟踪 QA 目录保留。本阶段不修改后端、HTTP、IPC、迁移或 DTO；R2/R3 未开始。B0 历史核验报告保持不变，当前状态以实施账本为准。
+
+执行顺序：准备 → R1-03 → R1-01/R1-02 → R1-04 → R1-05 → R1 验收。
+
+| 责任人 | 独占文件范围 |
+| --- | --- |
+| 主协调 | 共享 Popover/Toaster、依赖锁、App、ProjectsWorkspace、查询 Hook、数据页面协调、QA 工具与阶段资料 |
+| 目录组件智能体 | ProjectHeader、ProjectTabs、ProjectCard、ProjectDirectory 与组件测试 |
+| 数据查询组件智能体（随后分配） | RecordQueryToolbar、受控查询编辑内容与对应测试 |
+| 独立审查 | 只读规格审查后工程审查，问题由原负责人修正 |
+
+明确实施约束：
+
+- 最近与全部独立查询；稳定工作区保存模式、全部查询、各视图滚动位置，切换工作区不删除浏览偏好。真实切换仍清理活动对象及编辑上下文。
+- 快捷搜索采用指定文本字段：默认首个文本字段，恢复仍有效的选择；输入不查询，Enter/搜索才应用。无文本字段明确禁用。搜索 contains 与高级筛选 AND 组合，最终整体校验；超限拒绝，不删条件。记录与导出共用最终查询。
+- 筛选、排序、选列互斥浮层。取消、Escape、外部点击及切换面板丢弃草稿；应用失败保留面板。筛选/排序回第一页，选列不重查且保留页码；无变更不触发重复请求。
+- 查询面板随结构/代次变化关闭并清理失效引用；业务编辑草稿仍由既有保护管理。
+- 记录工具栏统一新建、批状态、导出，移除重复操作但保留 PM2 真实能力。
+- 通知最多三条，可选 operationId 去重且保持数字返回值；成功溢出汇总，错误不可汇总成成功。2600ms 停留、150ms 退出，清理全部计时器；项目去重身份包含工作区。
+
+验收工具：新增 `scripts/qa-project-alignment-r1.mjs` 自动 smoke 与 `--manual`；仅操作工具标记的隔离目录，支持 52 项目/120 记录分页资料、真实竞争编辑、一次性读取失败及提交后响应丢失、服务/应用重启、截图和安全清理。不得新增生产调试接口。用户手测详见拟新增 `docs/project-management/design-alignment/acceptance/r1/manual-test.md`，逐项 R1-M01–09，执行结果与用户待验收分开。
+
+阶段验证：npm test、openapi:check、typecheck、lint、build、test:scripts、test:structure；既有 smoke-project-data 与 smoke-pm2-detail-flows 保留业务断言；新增 R1 smoke；后端目录排序/组合筛选定向回归；git diff --check。Windows/其他架构/打包未运行如实标记。每包保留失败测试、通过测试、规格及工程审查记录，提交明确文件。
+
+### 完成记录
+
+- [x] 核对基线及文件责任，登记 B0 用户确认。
+- [ ] R1-03 共享浮层。
+- [ ] R1-01/02 组件与真实目录装配。
+- [ ] R1-04 查询工具与数据页面装配。
+- [ ] R1-05 通知、全模块核验及手测交付。
