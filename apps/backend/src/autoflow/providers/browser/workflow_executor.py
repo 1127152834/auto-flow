@@ -25,13 +25,14 @@ class WorkflowExecutor:
         self.context, self.artifacts = context, artifacts
         self.variables, self.emit = variables, emit
         self.page: Any = None
+        self.page_aliases: dict[str, Any] = {}
         self.deadline = 0.0
         self.debug: WorkflowDebug | None = None
         self.inspection: BrowserInspection | None = None
 
     async def run(self, document: dict[str, Any], node_ids: list[str], plan: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         if plan is None:
-            plan = compile_control(document) if document.get("schemaVersion") == 2 else [{"nodeId": identifier} for identifier in node_ids]
+            plan = compile_control(document) if document.get("schemaVersion", 1) >= 2 else [{"nodeId": identifier} for identifier in node_ids]
         scheduler = WorkflowExecution(self.variables, self.emit, self.execute_action, self.check_page, self._error, self.debug)
         return await scheduler.run(document, plan)
 
@@ -45,6 +46,7 @@ class WorkflowExecutor:
         if command['action'] == 'page':
             await self.inspection.command(command)
             self.page = self.inspection.page(command['pageId'])
+            self._bind_alias(command.get('pageAlias') or '', self.page)
         self.inspection.target = next((key for key, page in self.inspection.pages.items() if page is self.page and not page.is_closed()), None)
         return await self.inspection.snapshot()
 
@@ -85,6 +87,28 @@ class WorkflowExecutor:
                 self.page = await self.context.new_page()
             page = self._current()
             await page.goto(config["url"], wait_until=config["waitUntil"], timeout=self._timeout())
+            self._bind_alias(config.get('pageAlias', ''), page)
+            return None
+        if node_type in {'switch_page', 'close_page'}:
+            target = self.page_aliases.get(config['pageAlias'])
+            if target is None or target.is_closed():
+                raise NodeFailure('PAGE_ALIAS_UNAVAILABLE', '页面别名尚未绑定或页面已关闭', ['config', 'pageAlias'])
+            if node_type == 'switch_page':
+                self.page = target
+            else:
+                await target.close()
+                if self.page is target:
+                    self.page = None
+            return None
+        if node_type == 'wait_page':
+            await self._current().wait_for_url(lambda url: url == config['url'], wait_until=config['waitUntil'], timeout=self._timeout())
+            return None
+        if node_type == 'scroll_page':
+            scope = await locate_scope(self._current(), config.get('framePath', []), self._timeout)
+            target = scope.locator(config['selector']).first if config['target'] == 'element' else scope.locator(':root')
+            actual = await target.evaluate("(el,p)=>{ const t=p.target==='page'?el.ownerDocument.scrollingElement:el; t.scrollTo({left:p.x,top:p.y,behavior:'instant'}); return {x:t.scrollLeft,y:t.scrollTop}; }", config, timeout=self._timeout())
+            if actual['x'] != config['x'] or actual['y'] != config['y']:
+                self.emit({'type': 'log', 'level': 'warning', 'nodeId': node_id, 'message': '滚动位置受到页面边界限制'})
             return None
         if self.page is None:
             self.page = await self.context.new_page()
@@ -108,6 +132,22 @@ class WorkflowExecutor:
         locator = await locate_element(page, config, self._timeout)
         if node_type == "click_element":
             await self._click(page, locator, config)
+        elif node_type == 'select_option':
+            options = await locator.locator('option').evaluate_all('els=>els.map(e=>e.value)')
+            for value in config['values']:
+                if options.count(value) != 1:
+                    raise NodeFailure('SELECT_VALUE_AMBIGUOUS', '选项值不存在或重复', ['config', 'values'])
+            multiple = await locator.evaluate('el=>el.tagName==="SELECT" && el.multiple', timeout=self._timeout())
+            if not multiple and len(config['values']) != 1:
+                raise NodeFailure('SELECT_VALUE_INVALID', '单选下拉必须选择一个值', ['config', 'values'])
+            await locator.select_option(value=config['values'], timeout=self._timeout())
+        elif node_type == 'set_checked':
+            kind = await locator.evaluate('el=>el.tagName==="INPUT"?el.type:null', timeout=self._timeout())
+            if kind not in {'checkbox', 'radio'} or kind == 'radio' and not config['checked']:
+                raise NodeFailure('CHECK_TARGET_INVALID', '须为原生勾选控件，单选按钮只能设为选中', ['config', 'checked'])
+            await locator.set_checked(config['checked'], timeout=self._timeout())
+        elif node_type == 'press_key':
+            await self._click(page, locator, {**config, 'clickType': 'key'})
         elif node_type == "input_text":
             await self._input(locator, config)
         elif node_type == "wait_element":
@@ -134,17 +174,34 @@ class WorkflowExecutor:
             raise NodeFailure("workflow_node_unsupported", "不支持的节点类型")
         return None
 
+    def _bind_alias(self, alias: str, page: Any) -> None:
+        if not alias:
+            return
+        existing = self.page_aliases.get(alias)
+        if existing is not None and existing is not page and not existing.is_closed():
+            raise NodeFailure('PAGE_ALIAS_CONFLICT', '页面别名已绑定其他活跃页面', ['config', 'pageAlias'])
+        self.page_aliases[alias] = page
+
     async def _click(self, page: Any, locator: Any, config: dict[str, Any]) -> None:
         popup: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
 
+        pages: list[Any] = []
+
         def on_popup(new_page: Any) -> None:
+            pages.append(new_page)
             if not popup.done():
                 popup.set_result(new_page)
 
         if config["followNewTab"]:
             page.on("popup", on_popup)
         try:
-            if config["clickType"] == "double":
+            if config.get('newPageAlias'):
+                existing = self.page_aliases.get(config['newPageAlias'])
+                if existing is not None and not existing.is_closed():
+                    raise NodeFailure('PAGE_ALIAS_CONFLICT', '新页面别名已被使用', ['config', 'newPageAlias'])
+            if config['clickType'] == 'key':
+                await locator.press(config['key'], timeout=self._timeout())
+            elif config["clickType"] == "double":
                 await locator.dblclick(timeout=self._timeout())
             else:
                 await locator.click(
@@ -157,8 +214,11 @@ class WorkflowExecutor:
                 wait = max(0.0, min(3.0, self._timeout() / 1000 - 0.01))
                 if not popup.done() and wait:
                     await asyncio.wait({popup}, timeout=wait)
+                if config.get('newPageAlias') and len(pages) != 1:
+                    raise NodeFailure('PAGE_POPUP_AMBIGUOUS', '本次操作未产生唯一新标签页', ['config', 'newPageAlias'])
                 if popup.done():
                     self.page = popup.result()
+                    self._bind_alias(config.get('newPageAlias', ''), self.page)
         finally:
             if config["followNewTab"]:
                 page.remove_listener("popup", on_popup)
@@ -175,6 +235,16 @@ class WorkflowExecutor:
         if not direct:
             locator = locator.locator(editable).first
         await locator.wait_for(state="visible", timeout=self._timeout())
+        if config.get('requiresValue'):
+            raise NodeFailure('RECORDING_VALUE_REQUIRED', '此录制输入尚未补值', ['config', 'text'])
+        if config.get('inputMode') == 'sequential':
+            if config['clearBefore']:
+                await locator.fill('', timeout=self._timeout())
+            else:
+                await locator.focus(timeout=self._timeout())
+                await locator.press('End', timeout=self._timeout())
+            await locator.press_sequentially(config['text'], timeout=self._timeout())
+            return
         if config["clearBefore"]:
             await locator.fill(config["text"], timeout=self._timeout())
             return

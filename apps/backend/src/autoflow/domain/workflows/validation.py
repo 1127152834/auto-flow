@@ -9,11 +9,12 @@ from .control import CONTROL_TYPES, compile_control, control_config_issues
 from .models import WorkflowError, WorkflowIssue
 from .references import REFERENCE_PATTERN as _REFERENCE
 from .references import is_variable_name as _name
+from .references import literal_eligible, reference_config
 
 
 def validate_structure(document: dict[str, Any], layout: dict[str, Any]) -> None:
     errors: list[WorkflowIssue] = []
-    extended = document.get("schemaVersion", 1) == 2
+    extended = document.get("schemaVersion", 1) >= 2
 
     def error(
         code: str, message: str, path: list[str], node_id: str | None = None
@@ -26,6 +27,9 @@ def validate_structure(document: dict[str, Any], layout: dict[str, Any]) -> None
         error("INVALID_JSON", "文档必须是有效 JSON", [])
     nodes, edges = document["nodes"], document["edges"]
     for node in nodes:
+        paths = node.get('literalPaths', [])
+        if paths and (document.get('schemaVersion', 1) < 3 or not isinstance(paths, list) or any(not isinstance(p, str) for p in paths) or len(set(paths)) != len(paths) or not set(paths) <= literal_eligible(node)):
+            error('LITERAL_PATH_INVALID', '原文路径须属于格式3的可模板化字符串字段', ['literalPaths'], node['id'])
         if not extended and node['type'] in CONTROL_TYPES:
             error('SCHEMA_VERSION_REQUIRED', '控制节点需要工作流格式版本2', ['schemaVersion'], node['id'])
         for field in ('endNodeId', 'ownerNodeId'):
@@ -162,6 +166,7 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
         check_references(variable["value"], [*path, "value"])
     for node in document["nodes"]:
         config = node["config"]
+        references = reference_config(node)
         if node["type"] not in definitions:
             issue("NODE_NOT_RUNNABLE", "不支持的节点类型", ["type"], node["id"])
             continue
@@ -171,6 +176,22 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
         required = set(schema["required"])
         if node["type"] == "screenshot" and config.get("screenshotType") == "element":
             required.add("selector")
+        if node['type'] == 'scroll_page' and config.get('target') == 'element':
+            required.add('selector')
+        if config.get('requiresValue') is True:
+            issue('RECORDING_VALUE_REQUIRED', '此录制输入需要明确补值或绑定变量', ['config', 'text'], node['id'])
+        for alias_field in ('pageAlias', 'newPageAlias'):
+            if config.get(alias_field) and not _name(config[alias_field]):
+                issue('PAGE_ALIAS_INVALID', '页面别名须为有效标识符', ['config', alias_field], node['id'])
+        if config.get('newPageAlias') and config.get('followNewTab') is not True:
+            issue('PAGE_ALIAS_FOLLOW_REQUIRED', '绑定新页别名须开启跟随新标签页', ['config', 'followNewTab'], node['id'])
+        if node['type'] == 'select_option' and isinstance(config.get('values'), list) and any(not isinstance(v, str) for v in config['values']):
+            issue('SELECT_VALUES_INVALID', '选项值必须是字符串列表', ['config', 'values'], node['id'])
+        if node['type'] == 'scroll_page':
+            for coordinate in ('x', 'y'):
+                value = config.get(coordinate, 0)
+                if not _matches_type(value, 'number') or value < 0:
+                    issue('SCROLL_POSITION_INVALID', '滚动位置须为有限非负数字', ['config', coordinate], node['id'])
         for field in required:
             if (
                 field not in config
@@ -186,7 +207,7 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
                 and node["type"] == "screenshot"
                 and config.get("screenshotType", "fullpage") != "element"
             ):
-                check_references(value, path, node["id"])
+                check_references(references.get(field), path, node["id"])
             definition = schema["properties"].get(field)
             if definition is None:
                 issue(
@@ -267,7 +288,7 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
                         ["edges"],
                         node["id"],
                     )
-    if document.get("schemaVersion", 1) == 2 and not any(i.node_id and i.code not in {"UNKNOWN_VARIABLE", "DUPLICATE_OUTPUT_VARIABLE", "DISCONNECTED_NODE"} for i in issues):
+    if document.get("schemaVersion", 1) >= 2 and not any(i.node_id and i.code not in {"UNKNOWN_VARIABLE", "DUPLICATE_OUTPUT_VARIABLE", "DISCONNECTED_NODE"} for i in issues):
         try:
             compile_control(document, check_variables=False)
         except WorkflowError as error:

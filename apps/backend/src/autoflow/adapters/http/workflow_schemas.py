@@ -13,6 +13,7 @@ NodeType = Literal[
     "wait_element",
     "get_element_info",
     "screenshot",
+    "select_option", "set_checked", "press_key", "scroll_page", "wait_page", "switch_page", "close_page",
     "condition", "condition_end", "loop", "loop_end", "break_loop", "continue_loop", "set_variable",
 ]
 Identifier = Annotated[str, Field(min_length=1, max_length=120, strict=True)]
@@ -23,6 +24,7 @@ class WorkflowNode(ApiModel):
     type: NodeType
     label: str = Field(max_length=120, strict=True)
     config: dict[str, JsonValue]
+    literal_paths: list[str] = Field(default_factory=list, max_length=2000)
 
 
 class WorkflowEdge(ApiModel):
@@ -42,7 +44,7 @@ class WorkflowVariable(ApiModel):
 class WorkflowDocument(ApiModel):
     id: str
     name: str = Field(min_length=1, max_length=120, strict=True)
-    schema_version: Literal[1, 2]
+    schema_version: Literal[1, 2, 3]
     nodes: list[WorkflowNode] = Field(max_length=2000)
     edges: list[WorkflowEdge] = Field(max_length=2000)
     variables: list[WorkflowVariable] = Field(max_length=2000)
@@ -55,7 +57,7 @@ class WorkflowDocument(ApiModel):
     @field_validator("schema_version", mode="before")
     @classmethod
     def exact_schema(cls, value: object) -> object:
-        if type(value) is not int or value not in {1, 2}:
+        if type(value) is not int or value not in {1, 2, 3}:
             raise ValueError("不支持的工作流格式版本")
         return value
 

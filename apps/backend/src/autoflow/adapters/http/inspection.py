@@ -50,7 +50,7 @@ def inspection_router(service: InspectionService) -> APIRouter:
     @router.post('/{session_id}/test-selector', response_model=InspectionTestResult)
     async def test(session_id: str, body: InspectionTest) -> dict:
         return await service.test(session_id, body.page_id, body.selector, body.frame_path,
-                                  [v.model_dump(by_alias=True) for v in body.variables])
+                                  [v.model_dump(by_alias=True) for v in body.variables], body.literal_paths)
 
     @router.post('/{session_id}/close', response_model=InspectionRead)
     async def close(session_id: str) -> dict:

@@ -34,13 +34,14 @@ export function localVariables(content: WorkflowContent, nodeId: string): string
   return content.document.nodes.filter(node => node.type === 'loop' && node.id !== nodeId && blockNodes(content, node.id).includes(nodeId)).flatMap(node => [String(node.config.indexVariable), ...(node.config.mode === 'foreach' ? [String(node.config.itemVariable)] : [])])
 }
 
-export function mapReferences(value: unknown, oldName: string, newName: string, replaceText: (text: string) => string): unknown {
+export function mapReferences(value: unknown, oldName: string, newName: string, replaceText: (text: string) => string, literals = new Set<string>(), path = 'config'): unknown {
+  if (literals.has(path)) return value
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const source = value as Record<string, unknown>
     if (source.kind === 'literal') return value
     if (source.kind === 'variable') return { ...source, name: source.name === oldName ? newName : source.name }
-    return Object.fromEntries(Object.entries(source).map(([key, item]) => [key, mapReferences(item, oldName, newName, replaceText)]))
+    return Object.fromEntries(Object.entries(source).map(([key, item]) => [key, mapReferences(item, oldName, newName, replaceText, literals, `${path}.${key}`)]))
   }
-  if (Array.isArray(value)) return value.map(item => mapReferences(item, oldName, newName, replaceText))
+  if (Array.isArray(value)) return value.map((item, index) => mapReferences(item, oldName, newName, replaceText, literals, `${path}.${index}`))
   return typeof value === 'string' ? replaceText(value) : value
 }

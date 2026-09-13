@@ -178,3 +178,27 @@ class WorkflowDebugCommandRow(Base):
     id: Mapped[str] = mapped_column(String(120), primary_key=True)
     request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowRecordingRow(Base):
+    __tablename__ = 'workflow_recordings'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowRecordingStepRow(Base):
+    __tablename__ = 'workflow_recording_steps'
+    __table_args__ = (UniqueConstraint('recording_id', 'id'),)
+    recording_id: Mapped[str] = mapped_column(ForeignKey('workflow_recordings.id', ondelete='CASCADE'), primary_key=True)
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[str] = mapped_column(String(36), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowRecordingCommandRow(Base):
+    __tablename__ = 'workflow_recording_commands'
+    recording_id: Mapped[str] = mapped_column(ForeignKey('workflow_recordings.id', ondelete='CASCADE'), primary_key=True)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)

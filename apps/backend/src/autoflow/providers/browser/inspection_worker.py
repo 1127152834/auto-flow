@@ -23,6 +23,7 @@ from autoflow.providers.browser.workflow_locator import NodeFailure
 
 def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> int:
     command = _read_command(stdin)
+    recording = command.get("recording", False)
     commands: Queue[dict[str, Any]] = Queue(maxsize=32)
 
     def read() -> None:
@@ -38,10 +39,10 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
             stopped.set()
 
     Thread(target=read, daemon=True).start()
-    return asyncio.run(_run(command, stopped, commands, stdout))
+    return asyncio.run(_run(command, stopped, commands, stdout, recording=recording))
 
 
-async def _run(command: dict[str, Any], stopped: Event, commands: Queue[dict[str, Any]], stdout: TextIO) -> int:
+async def _run(command: dict[str, Any], stopped: Event, commands: Queue[dict[str, Any]], stdout: TextIO, *, recording: bool = False) -> int:
     context = None
     result: dict[str, Any] = {'state': 'succeeded', 'error': None}
     launch = browser_launch_options(command, headless=False)
@@ -54,7 +55,11 @@ async def _run(command: dict[str, Any], stopped: Event, commands: Queue[dict[str
 
         context = await launch_context_async(**launch)
         await context.add_init_script(PICKER_SCRIPT)
-        inspection = BrowserInspection(context)
+        from autoflow.providers.browser.recording import BrowserRecording
+        inspection = BrowserRecording(context) if recording else BrowserInspection(context)
+        if isinstance(inspection, BrowserRecording):
+            await inspection.initialize()
+
         page = await context.new_page()
         inspection.target = next(key for key, value in inspection.pages.items() if value is page)
 
@@ -77,6 +82,8 @@ async def _run(command: dict[str, Any], stopped: Event, commands: Queue[dict[str
                 try:
                     data = await inspection.command(request)
                     response = {'data': data}
+                    if request['action'] == 'ack':
+                        continue
                 except NodeFailure as error:
                     response = {'error': {'code': error.code, 'message': error.message}}
                 except Exception:  # noqa: BLE001 -- normalize browser failures at the process boundary.

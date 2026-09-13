@@ -126,6 +126,14 @@ _DEFINITIONS = [
     ),
 ]
 
+# Recorder output must be executable through the same catalog and scheduler.
+_DEFINITIONS[0]['configSchema']['properties']['pageAlias'] = _TEXT
+_DEFINITIONS[0]['defaultConfig']['pageAlias'] = ''
+_DEFINITIONS[1]['configSchema']['properties']['newPageAlias'] = _TEXT
+_DEFINITIONS[1]['defaultConfig']['newPageAlias'] = ''
+_DEFINITIONS[2]['configSchema']['properties'].update(inputMode=_enum('fill', 'sequential'), requiresValue={'type': 'boolean', 'default': False})
+_DEFINITIONS[2]['defaultConfig'].update(inputMode='fill', requiresValue=False)
+
 _DEFINITIONS[-1]["configSchema"]["allOf"] = [
     {
         "if": {
@@ -159,6 +167,25 @@ for kind, title, properties, defaults, outputs in _CONTROLS:
     definition = _definition(kind, title, title, properties, defaults, ["variableName"] if kind == "set_variable" else [])
     definition.update(category="流程控制", outputPorts=outputs)
     _DEFINITIONS.append(definition)
+
+
+_DEFINITIONS.extend([
+    _definition('select_option', '选择下拉选项', '按原生选项值精确选择。',
+                {'selector': _TEXT, 'values': {'type': 'array', 'items': _TEXT}}, {'selector': '', 'values': []}, ['selector', 'values']),
+    _definition('set_checked', '设置勾选状态', '设置原生复选框或单选按钮状态。',
+                {'selector': _TEXT, 'checked': {'type': 'boolean'}}, {'selector': '', 'checked': True}, ['selector']),
+    _definition('press_key', '按键', '向明确元素发送业务按键。',
+                {'selector': _TEXT, 'key': _enum('Enter', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'),
+                 'followNewTab': {'type': 'boolean'}, 'newPageAlias': _TEXT},
+                {'selector': '', 'key': 'Enter', 'followNewTab': False, 'newPageAlias': ''}, ['selector']),
+    _definition('scroll_page', '滚动页面或元素', '设置当前框架文档或容器的绝对滚动位置。',
+                {'target': _enum('page', 'element'), 'selector': _TEXT, 'x': {'type': 'number'}, 'y': {'type': 'number'}},
+                {'target': 'page', 'selector': '', 'x': 0, 'y': 0}, []),
+    _definition('wait_page', '等待页面', '等待当前页面地址和加载状态，不重新导航。',
+                {'url': _TEXT, 'waitUntil': _enum('domcontentloaded', 'load', 'networkidle')}, {'url': '', 'waitUntil': 'domcontentloaded'}, ['url']),
+    _definition('switch_page', '切换标签页', '切换到运行中已绑定的页面别名。', {'pageAlias': _TEXT}, {'pageAlias': ''}, ['pageAlias']),
+    _definition('close_page', '关闭标签页', '关闭明确别名的页面。', {'pageAlias': _TEXT}, {'pageAlias': ''}, ['pageAlias']),
+])
 
 
 def node_catalog() -> list[dict[str, Any]]:

@@ -16,11 +16,12 @@ from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManage
 
 
 class InspectionWorkerManager(WorkflowWorkerManager):
-    def __init__(self, temp_root: Path) -> None:
+    def __init__(self, temp_root: Path, *, recording: bool = False) -> None:
+        self._recording = recording
         command = (sys.executable, "--inspection-worker") if getattr(sys, "frozen", False) else (
             sys.executable, "-m", "autoflow", "--inspection-worker",
         )
-        super().__init__(temp_root / "inspection", temp_root, command=command)
+        super().__init__(temp_root / ("recording" if recording else "inspection"), temp_root, command=command)
         self._process: asyncio.subprocess.Process | None = None
         self._responses: dict[str, asyncio.Future[dict[str, Any]]] = {}
 
@@ -29,7 +30,7 @@ class InspectionWorkerManager(WorkflowWorkerManager):
         payload = super()._payload(run_id, prepared, profile, proxy, license_key)
         for key in ("document", "nodeIds", "variables", "runsRoot", "executionPlan"):
             payload.pop(key)
-        return {**payload, "headless": False}
+        return {**payload, "headless": False, "recording": self._recording}
 
     async def command(self, session_id: str, command: dict[str, Any]) -> dict[str, Any]:
         process = self._process
@@ -78,6 +79,9 @@ class InspectionWorkerManager(WorkflowWorkerManager):
                 elif event.get("type") == "inspection":
                     timeout = 20  # Heartbeat keeps silent browser/driver failures bounded.
                     await on_event(event)
+                    if self._recording and event.get('steps'):
+                        process.stdin.write((json.dumps({'action': 'ack', 'seq': event['steps'][-1]['seq']}) + '\n').encode())
+                        await process.stdin.drain()
                 else:
                     raise ValueError("Invalid inspection event")
         finally:

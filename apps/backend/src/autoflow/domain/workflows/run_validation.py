@@ -11,7 +11,8 @@ from urllib.parse import urlsplit
 from .catalog import node_catalog
 from .control import compile_control
 from .models import WorkflowError, WorkflowIssue
-from .references import REFERENCE_PATTERN, is_variable_name
+from .pages import validate_page_aliases
+from .references import REFERENCE_PATTERN, TEXT_FIELDS, is_variable_name, reference_config, substitute_text
 from .validation import validate_structure, workflow_issues
 
 
@@ -101,7 +102,7 @@ def initial_values(document: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWorkflow:
+def prepare_run(document: dict[str, Any], layout: dict[str, Any], *, allow_missing_pages: bool = False) -> PreparedWorkflow:
     validate_structure(document, layout)
     effective = deepcopy(document)
     definitions = {definition["type"]: definition for definition in node_catalog()}
@@ -115,8 +116,9 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
     if errors:
         raise WorkflowError("WORKFLOW_RUN_INVALID", "请完成流程配置后再运行", 422, errors)
     variables = initial_values(effective)
-    if effective.get("schemaVersion", 1) == 2:
+    if effective.get("schemaVersion", 1) >= 2:
         plan = compile_control(effective)
+        validate_page_aliases(effective, plan, allow_missing=allow_missing_pages)
         return PreparedWorkflow(effective, [node["id"] for node in effective["nodes"]], variables, warnings, plan)
     nodes = {node["id"]: node for node in effective["nodes"]}
     outgoing = {edge["source"]: edge["target"] for edge in effective["edges"]}
@@ -128,7 +130,7 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
         ordered.append(current)
         node = nodes[current]
         config = node["config"]
-        for field in ("url", "selector", "framePath", "text", "savePath"):
+        for field in TEXT_FIELDS:
             # A hidden element selector is not used by viewport/full-page screenshots.
             if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":
                 continue
@@ -143,22 +145,22 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
 
 def resolve_node_config(node: dict[str, Any], variables: dict[str, Any]) -> dict[str, Any]:
     config = deepcopy(node["config"])
-    for field in ("url", "selector", "framePath", "text", "savePath"):
+    for field in TEXT_FIELDS:
         if field not in config:
             continue
         if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":
             continue
-        for name, path in _references(config[field], ["config", field]):
+        for name, path in _references(reference_config(node).get(field), ["config", field]):
             if name not in variables:
                 _fail("VARIABLE_NOT_AVAILABLE", f"变量 {name} 尚未产生", path, node["id"])
-        config[field] = _substitute(config[field], variables.__getitem__)
+        config[field] = substitute_text(config[field], lambda name: _as_text(variables[name]), set(node.get("literalPaths", [])), "config." + field)
         if field == "framePath":
             for index, step in enumerate(config[field]):
                 if not step.strip():
                     _fail("REQUIRED", "变量解析后框架路径为空", ["config", field, str(index)], node["id"])
         if field in {"url", "selector"} and not config[field].strip():
             _fail("REQUIRED", "变量解析后此字段为空", ["config", field], node["id"])
-    if node["type"] == "open_page":
+    if node["type"] in {"open_page", "wait_page"}:
         try:
             parsed = urlsplit(config["url"])
             valid = parsed.scheme in {"http", "https"} and bool(parsed.hostname) and not any(c.isspace() for c in parsed.netloc)

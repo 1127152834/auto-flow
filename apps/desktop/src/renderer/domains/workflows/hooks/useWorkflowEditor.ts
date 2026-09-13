@@ -41,7 +41,7 @@ export function useWorkflowEditor(api: WorkflowApi, writable: boolean) {
     epoch.current += 1
     setDocumentSession(epoch.current)
     group.current = null
-    const content = record ? { document: { ...record.document, schemaVersion: 2 as const }, layout: record.layout } : createWorkflow()
+    const content = record ? { document: { ...record.document, schemaVersion: 3 as const }, layout: record.layout } : createWorkflow()
     baseline.current = signature(content)
     savedRef.current = record ?? null
     setSaved(record ?? null)
@@ -54,6 +54,7 @@ export function useWorkflowEditor(api: WorkflowApi, writable: boolean) {
     if (pending.current) return pending.current
     if (!canWrite.current) { setMessage('本地服务不可用或工作区正在切换，请恢复连接后保存'); return Promise.resolve(false) }
     const snapshot = structuredClone(historyRef.current.present)
+    snapshot.document.schemaVersion = 3
     const revision = savedRef.current?.revision
     const operationEpoch = epoch.current
     setSaving(true)

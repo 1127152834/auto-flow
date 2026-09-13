@@ -14,7 +14,7 @@ from .validation import validate_structure
 def prepare_debug(document: dict[str, Any], layout: dict[str, Any], options: dict[str, Any]) -> PreparedWorkflow:
     validate_structure(document, layout)
     effective = deepcopy(document)
-    effective['schemaVersion'] = 2
+    effective['schemaVersion'] = max(2, effective.get('schemaVersion', 1))
     definitions = {item['type']: item['defaultConfig'] for item in node_catalog()}
     for node in effective['nodes']:
         node['config'] = {**deepcopy(definitions[node['type']]), **node['config']}
@@ -64,7 +64,7 @@ def prepare_debug(document: dict[str, Any], layout: dict[str, Any], options: dic
     declaration_issues = [i for i in workflow_issues({**effective, 'nodes': [], 'edges': []}) if i.path[:1] == ['variables']]
     if declaration_issues:
         raise WorkflowError('WORKFLOW_RUN_INVALID', '变量声明初值无效', 422, declaration_issues)
-    checked = prepare_run(subset, {**layout, 'breakpoints': [key for key in layout.get('breakpoints', []) if key in selected], 'nodes': {key: value for key, value in layout['nodes'].items() if key in selected}})
+    checked = prepare_run(subset, {**layout, 'breakpoints': [key for key in layout.get('breakpoints', []) if key in selected], 'nodes': {key: value for key, value in layout['nodes'].items() if key in selected}}, allow_missing_pages=options['start'] == 'node')
     return PreparedWorkflow(effective, checked.node_ids, variables, checked.warnings, checked.plan, deepcopy(options))
 
 

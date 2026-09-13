@@ -9,7 +9,7 @@ from .control_values import (
     validate_source,
 )
 from .models import WorkflowError, WorkflowIssue
-from .references import REFERENCE_PATTERN, is_variable_name
+from .references import REFERENCE_PATTERN, TEXT_FIELDS, is_variable_name, reference_config
 
 CONTROL_TYPES = {'condition', 'condition_end', 'loop', 'loop_end', 'break_loop', 'continue_loop', 'set_variable'}
 OPENERS = {'condition': 'condition_end', 'loop': 'loop_end'}
@@ -35,7 +35,7 @@ def source_references(source: dict[str, Any], path: list[str]) -> list[tuple[str
 
 
 def node_references(node: dict[str, Any]) -> list[tuple[str, list[str]]]:
-    kind, c = node['type'], node['config']
+    kind, c = node['type'], reference_config(node)
     refs: list[tuple[str, list[str]]] = []
     if kind == 'set_variable':
         refs += source_references(c['value'], ['config', 'value'])
@@ -55,7 +55,7 @@ def node_references(node: dict[str, Any]) -> list[tuple[str, list[str]]]:
                     if rule['operator'] not in UNARY:
                         refs += source_references(rule['right'], [*path, 'right'])
     elif kind not in CONTROL_TYPES:
-        for field in ('url', 'selector', 'framePath', 'text', 'savePath'):
+        for field in TEXT_FIELDS:
             if field in {'selector', 'framePath'} and kind == 'screenshot' and c.get('screenshotType', 'fullpage') != 'element':
                 continue
             refs += text_references(c.get(field), ['config', field], node['id'])

@@ -30,6 +30,7 @@ class DebugCommand(ApiModel):
     breakpoints: list[str] = Field(default_factory=list, max_length=2000)
     values: dict[str, JsonValue] = Field(default_factory=dict)
     page_id: str | None = None
+    page_alias: str | None = Field(default=None, max_length=120)
     url: str | None = None
     focus: bool = False
 

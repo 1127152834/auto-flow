@@ -24,10 +24,11 @@ class InspectionLauncher(Protocol):
     def busy(self) -> bool: ...
 
 
-def inspection_target(selector: str, frame_path: list[str], variables: list[dict[str, Any]]) -> dict[str, Any]:
+def inspection_target(selector: str, frame_path: list[str], variables: list[dict[str, Any]], literal_paths: list[str] | None = None) -> dict[str, Any]:
     node = {'id': 'inspection', 'type': 'wait_element', 'config': {
         'selector': selector, 'framePath': frame_path, 'timeoutSeconds': 10, 'waitCondition': 'attached',
     }}
+    node['literalPaths'] = literal_paths or []
     document = {'nodes': [node], 'edges': [], 'variables': variables}
     issues = workflow_issues(document)
     if issues:

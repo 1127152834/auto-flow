@@ -21,6 +21,10 @@ from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
 from autoflow.adapters.http.workflow_runs import workflow_runs_router
 from autoflow.adapters.http.workflows import workflows_router
+from autoflow.adapters.http.workflow_recordings import recording_router
+from autoflow.application.workflows.recording import RecordingService
+from autoflow.infrastructure.database.workflow_recordings import RecordingRepository
+from autoflow.infrastructure.filesystem.recording_values import RecordingValues
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
@@ -193,7 +197,15 @@ def create_app(
     inspection = InspectionService(profile_service, catalog_provider.installed, workflow_kernel_guard,
                                    proxy_runtime.resolve_profile, license_store.read, inspection_workers,
                                    workflow_runs.busy)
-    workflow_runs.inspection_busy = inspection.busy
+    recording_repository = RecordingRepository(session_factory)
+    recording_repository.recover()
+    recording_values = RecordingValues(paths.workspace / 'recordings')
+    recording = RecordingService(recording_repository, profile_service, catalog_provider.installed, workflow_kernel_guard,
+                                 proxy_runtime.resolve_profile, license_store.read, InspectionWorkerManager(paths.temp, recording=True),
+                                 lambda: workflow_runs.busy() or inspection.busy(),
+                                 recording_values.write, recording_values.read, recording_values.remove)
+    inspection._run_busy = lambda: workflow_runs.busy() or recording.busy()
+    workflow_runs.inspection_busy = lambda: inspection.busy() or recording.busy()
 
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
@@ -211,6 +223,7 @@ def create_app(
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *(["workflow_run_active"] if workflow_runs.busy() else []),
             *(["workflow_inspection_active"] if inspection.busy() else []),
+            *(["workflow_recording_active"] if recording.busy() else []),
         ],
         quiesce_gate,
     )
@@ -224,6 +237,7 @@ def create_app(
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
+    app.state.workflow_recording_service = recording
     app.state.workflow_inspection_service = inspection
     app.state.inspection_worker_manager = inspection_workers
     app.state.workflow_run_service = workflow_runs
@@ -235,7 +249,7 @@ def create_app(
 
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown(),
-                workflow_runs.shutdown(), inspection.shutdown()
+                workflow_runs.shutdown(), inspection.shutdown(), recording.shutdown()
             )
         finally:
             try:
@@ -259,6 +273,7 @@ def create_app(
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(settings_dashboard_router(settings_runtime))
+    app.include_router(recording_router(recording))
     app.include_router(inspection_router(inspection))
     app.include_router(workflow_runs_router(workflow_runs))
     app.include_router(workflow_events_router(workflow_runs))

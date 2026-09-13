@@ -13,7 +13,7 @@ export function SelectorTools({ api, session, node, documentId, variables, disab
   const [busy, setBusy] = useState(false)
   const framePath = Array.isArray(node.config.framePath) ? node.config.framePath.map(String) : []
   const page = session?.pages.find(item => item.pageId === session.targetPageId)
-  const key = JSON.stringify([documentId, node.id, node.config.selector, framePath, variables, session?.sessionId, page?.pageId, page?.revision])
+  const key = JSON.stringify([documentId, node.id, node.config.selector, framePath, node.literalPaths, variables, session?.sessionId, page?.pageId, page?.revision])
   const latest = useRef(key); latest.current = key
   const generation = useRef(0)
   const request = useRef<{ id: string; sessionId: string; pageId: string; key: string } | null>(null)
@@ -82,7 +82,7 @@ export function SelectorTools({ api, session, node, documentId, variables, disab
     const token = ++generation.current
     visibleKey.current = key; setBusy(true); setMessage(null); setTest(null); setPick(null)
     try {
-      const value = await api.test(session.sessionId, { pageId: page.pageId, selector: String(node.config.selector ?? ''), framePath, variables })
+      const value = await api.test(session.sessionId, { pageId: page.pageId, selector: String(node.config.selector ?? ''), framePath, variables, literalPaths: node.literalPaths ?? [] })
       if (latest.current === key && token === generation.current && value.pageRevision === page.revision) setTest(value)
     } catch (error) { if (latest.current === key && token === generation.current) setMessage(error instanceof Error ? error.message : '定位测试失败') }
     finally { setBusy(false) }

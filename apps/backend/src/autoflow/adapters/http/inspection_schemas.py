@@ -84,6 +84,7 @@ class InspectionPickStart(ApiModel):
 
 
 class InspectionTest(ApiModel):
+    literal_paths: list[str] = Field(default_factory=list, max_length=33)
     page_id: Text
     selector: Text
     frame_path: list[Text] = Field(default_factory=list, max_length=32)

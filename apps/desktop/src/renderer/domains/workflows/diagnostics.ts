@@ -51,6 +51,7 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
     const pending: { value: unknown; path: string[] }[] = [{ value, path }]
     while (pending.length) {
       const current = pending.pop()!
+      if (nodeId && nodes.find(n => n.id === nodeId)?.literalPaths?.includes(current.path.join('.'))) continue
       if (current.value && typeof current.value === 'object') {
         const source = current.value as Record<string, unknown>
         if (nodeId !== null && source.kind === 'literal') continue
@@ -103,6 +104,8 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
     const schema = definition.configSchema as ConfigSchema
     const required = new Set(schema.required ?? [])
     if (node.type === 'screenshot' && node.config.screenshotType === 'element') required.add('selector')
+    if (node.type === 'scroll_page' && node.config.target === 'element') required.add('selector')
+    if (node.config.requiresValue) issue('RECORDING_VALUE_REQUIRED', '此录制输入尚未补值或绑定变量', ['config', 'text'], node.id)
     for (const field of required) {
       const value = node.config[field]
       if (value === undefined || value === null || (typeof value === 'string' && !value.trim())) issue('REQUIRED', '此字段尚未填写', ['config', field], node.id)

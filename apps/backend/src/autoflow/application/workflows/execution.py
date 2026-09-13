@@ -95,7 +95,7 @@ class WorkflowExecution:
             path = ['config', 'rules', str(i)]
             if rule['kind'] == 'page':
                 try:
-                    target = resolve_node_config({'id': node['id'], 'type': 'wait_element', 'config': rule}, self.variables)
+                    target = resolve_node_config({'id': node['id'], 'type': 'wait_element', 'config': rule, 'literalPaths': ['config.' + p.removeprefix(f'config.rules.{i}.') for p in node.get('literalPaths', []) if p.startswith(f'config.rules.{i}.')]}, self.variables)
                     result = await self.page_condition(target, deadline)
                 except Exception as exception:  # noqa: BLE001 -- retain precise rule location, not raw browser details.
                     error = self.error_of(exception, node['id'])

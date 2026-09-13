@@ -197,8 +197,8 @@ class InspectionService:
         return result
 
     async def test(self, session_id: str, page_id: str, selector: str,
-                   frame_path: list[str], variables: list[dict[str, Any]]) -> dict[str, Any]:
-        target = inspection_target(selector, frame_path, variables)
+                   frame_path: list[str], variables: list[dict[str, Any]], literal_paths: list[str] | None = None) -> dict[str, Any]:
+        target = inspection_target(selector, frame_path, variables, literal_paths)
         return await self.command(session_id, {'action': 'test', 'pageId': page_id,
                                               'selector': target['selector'], 'framePath': target['framePath']})
 

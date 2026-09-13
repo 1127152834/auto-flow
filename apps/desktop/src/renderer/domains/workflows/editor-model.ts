@@ -3,7 +3,7 @@ import type { NodeDefinition, Point, WorkflowEdge, WorkflowContent, WorkflowDocu
 
 export function createWorkflow(): WorkflowContent {
   return {
-    document: { id: crypto.randomUUID(), name: '未命名流程', schemaVersion: 2, nodes: [], edges: [], variables: [] },
+    document: { id: crypto.randomUUID(), name: '未命名流程', schemaVersion: 3, nodes: [], edges: [], variables: [] },
     layout: { nodes: {}, viewport: { x: 0, y: 0, zoom: 1 } },
   }
 }
@@ -16,12 +16,12 @@ function ordered(value: unknown): unknown {
 
 /** Camera movement is saved explicitly, but never prompts the user to save. */
 export function signature(content: WorkflowContent): string {
-  return JSON.stringify(ordered({ document: { ...content.document, schemaVersion: 2 }, positions: content.layout.nodes }))
+  return JSON.stringify(ordered({ document: { ...content.document, schemaVersion: 3, nodes: content.document.nodes.map(n => ({ ...n, literalPaths: n.literalPaths ?? [] })) }, positions: content.layout.nodes }))
 }
 
 /** Run markers compare the normalized document only, never saved/dirty state or layout. */
 export function documentSignature(document: WorkflowDocument, catalog: NodeDefinition[]): string {
-  return JSON.stringify(ordered({ ...document, schemaVersion: 2, nodes: document.nodes.map(node => ({ ...node, config: { ...catalog.find(item => item.type === node.type)?.defaultConfig, ...node.config } })) }))
+  return JSON.stringify(ordered({ ...document, schemaVersion: 3, nodes: document.nodes.map(node => ({ ...node, literalPaths: node.literalPaths ?? [], config: { ...catalog.find(item => item.type === node.type)?.defaultConfig, ...node.config } })) }))
 }
 
 export function addNode(content: WorkflowContent, definition: NodeDefinition, point: Point): WorkflowContent {
@@ -33,12 +33,12 @@ export function addNode(content: WorkflowContent, definition: NodeDefinition, po
     const closing: WorkflowNode = { id: end, type: definition.type === 'condition' ? 'condition_end' : 'loop_end', label: definition.type === 'condition' ? '条件结束' : '循环结束', config: { ownerNodeId: id, timeoutSeconds: 60 } }
     const handles: WorkflowEdge['sourceHandle'][] = definition.type === 'condition' ? ['true', 'false'] : ['body']
     const edges: WorkflowEdge[] = handles.map(sourceHandle => ({ id: crypto.randomUUID(), source: id, target: end, sourceHandle, targetHandle: 'in' }))
-    return { document: { ...content.document, schemaVersion: 2, nodes: [...content.document.nodes, node, closing], edges: [...content.document.edges, ...edges] }, layout: { ...content.layout, nodes: { ...content.layout.nodes, [id]: point, [end]: { x: point.x + 330, y: point.y + 180 } } } }
+    return { document: { ...content.document, schemaVersion: 3, nodes: [...content.document.nodes, node, closing], edges: [...content.document.edges, ...edges] }, layout: { ...content.layout, nodes: { ...content.layout.nodes, [id]: point, [end]: { x: point.x + 330, y: point.y + 180 } } } }
   }
-  return { document: { ...content.document, schemaVersion: 2, nodes: [...content.document.nodes, node] }, layout: { ...content.layout, nodes: { ...content.layout.nodes, [id]: point } } }
+  return { document: { ...content.document, schemaVersion: 3, nodes: [...content.document.nodes, node] }, layout: { ...content.layout, nodes: { ...content.layout.nodes, [id]: point } } }
 }
 
-export function patchNode(content: WorkflowContent, id: string, patch: Partial<Pick<WorkflowNode, 'label'>> & { config?: Record<string, unknown> }): WorkflowContent {
+export function patchNode(content: WorkflowContent, id: string, patch: Partial<Pick<WorkflowNode, 'label' | 'literalPaths'>> & { config?: Record<string, unknown> }): WorkflowContent {
   return { ...content, document: { ...content.document, nodes: content.document.nodes.map(node => node.id === id ? { ...node, ...patch, config: { ...node.config, ...patch.config } } as WorkflowNode : node) } }
 }
 
@@ -118,7 +118,7 @@ export function renameVariable(content: WorkflowContent, oldName: string, newNam
   return { ...content, document: { ...content.document,
     nodes: content.document.nodes.map(node => {
       if (localVariables(content, node.id).includes(oldName)) return node
-      const config = mapReferences(node.config, oldName, newName, replace) as WorkflowNode['config']
+      const config = mapReferences(node.config, oldName, newName, replace, new Set(node.literalPaths ?? [])) as WorkflowNode['config']
       if ((node.type === 'get_element_info' || node.type === 'screenshot' || node.type === 'set_variable') && config.variableName === oldName) config.variableName = newName
       return { ...node, config }
     }),
@@ -131,5 +131,5 @@ export function renameLoopVariable(content: WorkflowContent, nodeId: string, fie
   const previous = String(owner.config[field])
   const ids = new Set(blockNodes(content, nodeId))
   const replace = (text: string) => text.replace(referencePattern, (match, standard: string | undefined, short: string | undefined) => (standard ?? short) === previous ? `${standard ? '$' : ''}{${name}}` : match)
-  return { ...content, document: { ...content.document, nodes: content.document.nodes.map(node => node.id === nodeId ? { ...node, config: { ...node.config, [field]: name } } : ids.has(node.id) ? { ...node, config: mapReferences(node.config, previous, name, replace) as WorkflowNode['config'] } : node) } }
+  return { ...content, document: { ...content.document, nodes: content.document.nodes.map(node => node.id === nodeId ? { ...node, config: { ...node.config, [field]: name } } : ids.has(node.id) ? { ...node, config: mapReferences(node.config, previous, name, replace, new Set(node.literalPaths ?? [])) as WorkflowNode['config'] } : node) } }
 }
