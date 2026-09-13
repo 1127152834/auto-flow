@@ -6,7 +6,7 @@
 
 ## Preserved implementation
 
-The original WorkflowEditor, ModuleSidebar, ConfigPanel, Toolbar, graph/block views, grouping/note/subflow geometry, history and clipboard algorithms, specialized node forms, recording generation, Debug UI, logs/data/variables/assets and assistant components live inside AutoFlow's workflows domain. The retained action library has 472 entries after excluded desktop/mobile/SAP categories are filtered; this is a frontend configuration count, not a count of implemented executors.
+The original WorkflowEditor, ModuleSidebar, ConfigPanel, Toolbar, graph/block views, grouping/note/subflow geometry, history and clipboard algorithms, specialized node forms, recording generation, Debug UI, logs/data/variables/assets and assistant components live inside AutoFlow's workflows domain. The retained action library has 284 entries after the user-requested desktop/mobile/SAP, office/file, media and bot categories are filtered; this is a frontend configuration count, not a count of implemented executors.
 
 Original encrypted-file and clipboard identifiers remain unchanged for interchange compatibility. Original source API methods and event payload projections remain recognizable. Source `App`/entrypoint, port discovery, remote collaboration transport, publishing/version management and native desktop recorder are not copied as active application services.
 

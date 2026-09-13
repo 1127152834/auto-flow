@@ -1800,9 +1800,20 @@ const sourceModuleCategories = [
     modules: ['group', 'note'] as ModuleType[],
   },
 ]
-const excludedCategories = new Set(['鼠标操作', '键盘操作', '图像识别与点击', '屏幕与录制', '桌面应用控制', '手机自动化', 'SAP自动化'])
-export const excludedModuleTypes = new Set(sourceModuleCategories.filter(c => excludedCategories.has(c.name)).flatMap(c => c.modules))
-const moduleCategories = sourceModuleCategories.filter(c => !excludedCategories.has(c.name))
+// AutoFlow currently exposes Web automation; retain source definitions for imported documents.
+const excludedCategories = new Set([
+  '鼠标操作', '键盘操作', '图像识别与点击', '屏幕与录制', '桌面应用控制', '手机自动化', 'SAP自动化',
+  'Excel自动化', '文件管理', 'Word自动化', 'PDF处理', '文档转换', '文件对比',
+  '图像编辑', '盲水印', '视频处理', '音频处理', '媒体格式转换', '媒体播放',
+  'QQ机器人', '微信机器人', '飞书自动化', 'WPS多维表格',
+])
+export const excludedModuleTypes = new Set<ModuleType>([
+  ...sourceModuleCategories.filter(c => excludedCategories.has(c.name)).flatMap(c => c.modules),
+  'read_excel', 'notify_feishu',
+])
+const moduleCategories = sourceModuleCategories
+  .filter(c => !excludedCategories.has(c.name))
+  .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))
 
 // 模块项预设颜色 - 模块外定义，避免每次渲染重建数组
 const PRESET_COLORS = [
@@ -2148,7 +2159,7 @@ function ModuleSidebarRaw() {
   // 从 store 中获取所有收藏的模块
   const favoriteModules = useMemo(() => {
     return Object.entries(stats)
-      .filter(([_, stat]) => stat.isFavorite)
+      .filter(([type, stat]) => stat.isFavorite && !excludedModuleTypes.has(type as ModuleType))
       .map(([type, _]) => type as ModuleType)
   }, [stats])
 
@@ -2170,7 +2181,7 @@ function ModuleSidebarRaw() {
   const [frequentModules] = useState<ModuleType[]>(() => {
     const s = useModuleStatsStore.getState().stats
     return (Object.entries(s) as [ModuleType, { usageCount: number; lastUsed: number }][])
-      .filter(([, st]) => (st?.usageCount || 0) > 0)
+      .filter(([type, st]) => !excludedModuleTypes.has(type) && (st?.usageCount || 0) > 0)
       .sort((a, b) => (b[1].usageCount - a[1].usageCount) || (b[1].lastUsed - a[1].lastUsed))
       .slice(0, 8)
       .map(([type]) => type)
