@@ -1,0 +1,63 @@
+studio-schema-backend-tests.log
+........................................................................ [ 17%]
+........................................................................ [ 35%]
+........................................................................ [ 53%]
+........................................................................ [ 71%]
+........................................................................ [ 89%]
+..........................................                               [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/fastapi/testclient.py:1
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+402 passed, 2 warnings in 52.29s
+
+studio-schema-backend-checks.log
+All checks passed!
+Success: no issues found in 126 source files
+
+studio-schema-generated.log
+> openapi:check
+> node scripts/generate-api.mjs --check
+
+studio-schema-scripts.log
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.05075ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.116084ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.127875ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.147916ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.115458ms)
+✔ browser management smoke creates the platform kernel layout (0.168041ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.188833ms)
+✔ profile test browser smoke validates a public kernel directory (6.654125ms)
+✔ profile test browser smoke finds a session below the manager root (1.524333ms)
+✔ packaged smoke cannot silently select external health mode (0.723333ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.240625ms)
+✔ cleanup observes close without requiring exit (0.241792ms)
+✔ cleanup rejects a child process error (0.165208ms)
+✔ required path exists: apps/desktop/package.json (0.518417ms)
+✔ required path exists: apps/backend/pyproject.toml (0.085042ms)
+✔ root scripts expose the foundation checks (0.1755ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 809.703917
+
+studio-schema-types.log
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit

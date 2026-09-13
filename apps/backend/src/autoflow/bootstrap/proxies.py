@@ -8,16 +8,14 @@ from fastapi import FastAPI
 
 from autoflow.adapters.http.internal_proxy_credentials import (
     CopyCredentialRequest,
-    internal_proxy_credentials_router,
 )
-from autoflow.adapters.http.proxies import proxy_router
-from autoflow.adapters.http.proxy_remote import proxy_remote_router
 from autoflow.adapters.http.proxy_validation import configure_proxy_validation
 from autoflow.application.proxies.credential_loader import ProxyCredentialLoader
 from autoflow.application.proxies.credentials import format_proxy_credential
 from autoflow.application.proxies.facade import ProxyApplication
 from autoflow.application.proxies.groups import ResolveProxyForProfile
 from autoflow.application.proxies.remote_controls import ProxyRemoteControls
+from autoflow.bootstrap.http_routes import ProxyHttpServices, register_proxy_routes
 from autoflow.domain.profiles.errors import (
     ProxyUnavailable,
 )
@@ -70,12 +68,10 @@ def configure_proxy_management(app: FastAPI, database: Path) -> ProxyManagementR
         provider=provider,
         probe=probe,
     )
-    app.include_router(proxy_router(application=application))
     operations = SqlAlchemyProxyOperations(session_factory)
     operations.recover()
     remote = ProxyRemoteControls(lambda: SqlAlchemyProxyUnitOfWork(session_factory), operations, credentials, provider)
     app.state.proxy_remote_controls = remote
-    app.include_router(proxy_remote_router(remote))
 
     async def resolve(body: CopyCredentialRequest) -> str:
         projection = application.get_projection(str(body.proxy_id))
@@ -84,7 +80,7 @@ def configure_proxy_management(app: FastAPI, database: Path) -> ProxyManagementR
             projection, value.username, value.password, protocol=body.protocol, format=body.format,
         )
 
-    app.include_router(internal_proxy_credentials_router(resolve))
+    register_proxy_routes(app, ProxyHttpServices(application, remote, resolve))
     configure_proxy_validation(app)
 
     async def resolve_profile(

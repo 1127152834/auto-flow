@@ -6,21 +6,18 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
-from autoflow.adapters.http.health import health_router
-from autoflow.adapters.http.kernels import internal_kernel_paths_router, kernels_router
-from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
-from autoflow.adapters.http.profiles import profiles_router
-from autoflow.adapters.http.proxy_options import proxy_options_router
-from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.bootstrap.config import Settings
+from autoflow.bootstrap.http_routes import (
+    ManagementHttpServices,
+    register_management_routes,
+)
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
     configure_proxy_management,
@@ -190,19 +187,21 @@ def create_app(
                 session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
-    app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
-    app.include_router(
-        profiles_router(
-            profile_service, read_profile_environment_options, profile_test_browser
-        )
-    )
-    app.include_router(proxy_options_router(proxy_options))
-    app.include_router(models_router(model_service))
-    app.include_router(kernels_router(kernel_service))
-    app.include_router(internal_kernel_paths_router(kernel_service))
-    app.include_router(settings_dashboard_router(settings_runtime))
-    app.include_router(
-        kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
+    register_management_routes(
+        app,
+        ManagementHttpServices(
+            profiles=profile_service,
+            environment_options=read_profile_environment_options,
+            test_browsers=profile_test_browser,
+            proxy_options=proxy_options,
+            models=model_service,
+            kernels=kernel_service,
+            settings=settings_runtime,
+            kernel_events=kernel_events,
+            kernel_snapshot=kernel_worker_manager.snapshot,
+        ),
+        api_version=settings.api_version,
+        instance_id=settings.instance_id,
     )
 
     @app.middleware("http")
