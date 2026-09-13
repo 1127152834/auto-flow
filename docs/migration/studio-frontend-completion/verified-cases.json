@@ -22632,5 +22632,451 @@
     "level": "http integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
+  },
+  {
+    "id": "F2.number-input.invalid-1abc",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1abc",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.invalid-Infinity",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "Infinity",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.invalid-NaN",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "NaN",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.invalid-1e999",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1e999",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.invalid--",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "-",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.invalid-0x10",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "0x10",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "原文保留，aria-invalid=true",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原文保留，aria-invalid=true",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.empty",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "",
+      "initialValue": 5
+    },
+    "steps": [
+      "清空后失焦"
+    ],
+    "expectedUI": "存储空字符串，不补默认值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "存储空字符串，不补默认值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.range--1",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": -1,
+      "initialValue": 5,
+      "min": 0,
+      "max": 10
+    },
+    "steps": [
+      "在min0/max10字段输入并失焦"
+    ],
+    "expectedUI": "原值保留，越界提示",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原值保留，越界提示",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.range-11",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": 11,
+      "initialValue": 5,
+      "min": 0,
+      "max": 10
+    },
+    "steps": [
+      "在min0/max10字段输入并失焦"
+    ],
+    "expectedUI": "原值保留，越界提示",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "原值保留，越界提示",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.decimal-edit",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1. → 1.25",
+      "initialValue": 0
+    },
+    "steps": [
+      "逐步键入并失焦"
+    ],
+    "expectedUI": "小数点输入时保留，最终数值1.25",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "小数点输入时保留，最终数值1.25",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.reference-{duration}",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "{duration}",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "引用字符串原样保留",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "引用字符串原样保留",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.reference-${duration}",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "${duration}",
+      "initialValue": 5
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "引用字符串原样保留",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "引用字符串原样保留",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.blur-callback",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1abc",
+      "initialValue": 5
+    },
+    "steps": [
+      "提供外部onBlur后输入并失焦"
+    ],
+    "expectedUI": "回调一次，内部非法提示保留",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "回调一次，内部非法提示保留",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.wait-invalid-1abc",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1abc",
+      "initialValue": 5
+    },
+    "steps": [
+      "挂载WaitConfig，输入duration"
+    ],
+    "expectedUI": "onChange收到原始字符串",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "onChange收到原始字符串",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.wait-invalid-Infinity",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "Infinity",
+      "initialValue": 5
+    },
+    "steps": [
+      "挂载WaitConfig，输入duration"
+    ],
+    "expectedUI": "onChange收到原始字符串",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "onChange收到原始字符串",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.wait-invalid-1e999",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1e999",
+      "initialValue": 5
+    },
+    "steps": [
+      "挂载WaitConfig，输入duration"
+    ],
+    "expectedUI": "onChange收到原始字符串",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "onChange收到原始字符串",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite-0",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "0",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite--2",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "-2",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite-+2",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "+2",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite-.5",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": ".5",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite-1e2",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1e2",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.finite-2.5",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": " 2.5 ",
+      "initialValue": 7
+    },
+    "steps": [
+      "输入后失焦"
+    ],
+    "expectedUI": "完整转换为对应有限数字，显示规范数值",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "完整转换为对应有限数字，显示规范数值",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.external",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1abc → 8",
+      "initialValue": 5
+    },
+    "steps": [
+      "本地非法编辑后外部修改value为8"
+    ],
+    "expectedUI": "显示8，旧错误消失",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "显示8，旧错误消失",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.roundtrip-1abc",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "1abc",
+      "initialValue": 5
+    },
+    "steps": [
+      "等待节点输入→撤销→重做→Mock保存→清空→load/import"
+    ],
+    "expectedUI": "撤销恢复5，重做及保存重开恢复原文",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "撤销恢复5，重做及保存重开恢复原文",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.roundtrip-empty",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "",
+      "initialValue": 5
+    },
+    "steps": [
+      "等待节点输入→撤销→重做→Mock保存→清空→load/import"
+    ],
+    "expectedUI": "撤销恢复5，重做及保存重开恢复原文",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "撤销恢复5，重做及保存重开恢复原文",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F2.number-input.roundtrip-{duration}",
+    "capability": "数字参数保真与变量引用",
+    "preconditions": {
+      "value": "{duration}",
+      "initialValue": 5
+    },
+    "steps": [
+      "等待节点输入→撤销→重做→Mock保存→清空→load/import"
+    ],
+    "expectedUI": "撤销恢复5，重做及保存重开恢复原文",
+    "expectedIO": "组件onChange；roundtrip用例另经Mock save-to-folder/load传输",
+    "stateAssertion": "撤销恢复5，重做及保存重开恢复原文",
+    "level": "component/document rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
   }
 ]

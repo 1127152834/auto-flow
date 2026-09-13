@@ -305,16 +305,10 @@ export function WaitConfig({
       {(data.waitType as string) === 'time' || !data.waitType ? (
         <div className="space-y-2">
           <Label htmlFor="duration">等待时长(秒)</Label>
-          <VariableInput
-            value={String(data.duration ?? '')}
-            onChange={(v) => {
-              if (v === '' || v.includes('{')) {
-                onChange('duration', v)
-              } else {
-                const num = parseFloat(v)
-                onChange('duration', isNaN(num) ? v : num)
-              }
-            }}
+          <NumberInput
+            id="duration"
+            value={(data.duration as number | string) ?? ''}
+            onChange={(value) => onChange('duration', value)}
             placeholder="例如: 1 或 2.5"
           />
         </div>

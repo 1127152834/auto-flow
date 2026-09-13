@@ -107,3 +107,15 @@ TypeScript、ESLint、renderer/main/preload 构建通过；证据 f0-scheduled-t
 本轮已经完成画布脏状态、SSE完整帧补读、命令响应身份、图片资源受控读取/上传/重命名，以及确定执行轨迹的局部修复与验收。详见 graph-dirty-validation.md、sse-framing-validation.md、command-identity-validation.md、image-resource-validation.md、image-command-validation.md、execution-order-validation.md。
 
 最近前端全量125文件/1453用例通过；其后公共命令schema接入的定向前端36通过、后端全量421通过，类型/lint/构建与OpenAPI、17脚本检查通过。浏览器实际链路分别有记录，全部明确Mock边界。正式Electron、各平台打包及F0–F6完整退出门槛仍未完成。不要用这些通过数量代替全部能力覆盖。
+
+## 2026-09-14 输入、调试与参数链路增量
+
+- 输入13种模式验证、稳定命令回执、丢响应查询、历史输入请求状态核验、停止回收：input-command-protocol.md、input-recovery-validation.md。
+- 文件/目录配套选择的取消兼容、错误显示和迟到结果保护：input-path-validation.md。
+- 调试条等待事件确认、停止优先、拒绝/未知提示和其他工作流事件过滤：debug-bar-validation.md。
+- 单条/批量日志原始时间及重放：log-timestamps-validation.md。
+- 数字原文保留、错误提示与等待节点保存重开：number-input-validation.md。
+
+最新全量136文件1648项通过，类型/lint、renderer/main/preload构建与21脚本通过。输入状态schema30项、Ruff/mypy/OpenAPI在对应批次通过。实际浏览器操作证据已分别记录，全部保留Mock边界。
+
+F0仍需完整字段/动态工具依赖核对；F1仍需全部操作schema和独立运行/会话合同；F2仍需全图预检与全部284节点分支；F3仍缺服务端暂停身份、命令幂等、运行历史与其它交互命令；F4仍缺全局拾取/录制会话所有权与完整生命周期；F5宿主与权限/离开协调未收口；F6正式Electron及打包/跨平台未验收。没有任何整批因此标为完成。

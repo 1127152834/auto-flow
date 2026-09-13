@@ -23,6 +23,8 @@ export interface NumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInp
 const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
   ({ className, value, onChange, defaultValue = 0, min, max, step: _step, ...props }, ref) => {
     const [displayValue, setDisplayValue] = React.useState<string>(String(value ?? defaultValue))
+    const lastEmitted = React.useRef<{value: number | string} | null>(null)
+    const errorId = React.useId()
     const [showSuggestions, setShowSuggestions] = React.useState(false)
     const [selectedIndex, setSelectedIndex] = React.useState(0)
     const [searchText, setSearchText] = React.useState('')
@@ -108,11 +110,32 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
 
     // 当外部 value 变化时同步
     React.useEffect(() => {
+      if (lastEmitted.current && Object.is(value, lastEmitted.current.value)) {
+        lastEmitted.current = null
+        return
+      }
+      lastEmitted.current = null
       setDisplayValue(String(value ?? defaultValue))
     }, [value, defaultValue])
 
     // 检查是否包含变量引用
     const hasVariableRef = (val: string) => val.includes('{')
+    const parseNumber = (text: string): number | null => {
+      const trimmed = text.trim()
+      if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) return null
+      const parsed = Number(trimmed)
+      return Number.isFinite(parsed) ? parsed : null
+    }
+    const parsedNumber = parseNumber(displayValue)
+    const validationError = hasVariableRef(displayValue) || displayValue === '' ? ''
+      : parsedNumber === null ? '请输入有效的有限数字或变量引用'
+      : min !== undefined && parsedNumber < min ? `数值不能小于 ${min}`
+      : max !== undefined && parsedNumber > max ? `数值不能大于 ${max}` : ''
+    React.useEffect(() => { inputRef.current?.setCustomValidity(validationError) }, [validationError])
+    const emitValue = (next: number | string) => {
+      lastEmitted.current = {value: next}
+      if (!Object.is(next, value)) onChange(next)
+    }
 
     // 过滤变量列表
     const filteredVariables = React.useMemo(() => {
@@ -157,64 +180,18 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       // 检查是否在输入变量
       checkVariableInput(inputValue, pos)
 
-      // 如果包含变量引用，直接传递字符串
-      if (hasVariableRef(inputValue)) {
-        onChange(inputValue)
-      } else {
-        // 尝试解析为数字
-        const num = parseFloat(inputValue)
-        if (!isNaN(num)) {
-          onChange(num)
-        } else if (inputValue === '' || inputValue === '-') {
-          // 允许空字符串和负号
-          onChange(inputValue)
-        }
-      }
+      // Preserve partial/invalid text in the document; never parse only its numeric prefix.
+      const parsed = hasVariableRef(inputValue) ? null : parseNumber(inputValue)
+      emitValue(parsed === null ? inputValue : parsed)
     }
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      // 延迟关闭建议，以便点击建议项
-      setTimeout(() => {
-        setShowSuggestions(false)
-      }, 150)
-
-      // 如果包含变量引用，不做数字处理
-      if (hasVariableRef(displayValue)) {
-        props.onBlur?.(e)
-        return
+      setTimeout(() => setShowSuggestions(false), 150)
+      const parsed = parseNumber(displayValue)
+      if (!validationError && parsed !== null && !hasVariableRef(displayValue)) {
+        setDisplayValue(String(parsed))
+        emitValue(parsed)
       }
-
-      // 如果为空字符串或负号，使用默认值
-      if (displayValue === '' || displayValue === '-') {
-        setDisplayValue(String(defaultValue))
-        onChange(defaultValue)
-        props.onBlur?.(e)
-        return
-      }
-
-      let finalValue: number | string = parseFloat(displayValue)
-      
-      // 如果不是有效数字，使用默认值
-      if (isNaN(finalValue)) {
-        setDisplayValue(String(defaultValue))
-        onChange(defaultValue)
-        props.onBlur?.(e)
-        return
-      }
-      
-      // 应用 min/max 限制
-      if (typeof finalValue === 'number') {
-        if (min !== undefined && finalValue < min) {
-          finalValue = min
-        }
-        if (max !== undefined && finalValue > max) {
-          finalValue = max
-        }
-      }
-      
-      setDisplayValue(String(finalValue))
-      onChange(finalValue)
-      
       props.onBlur?.(e)
     }
 
@@ -236,7 +213,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
         const after = displayValue.slice(cursorPosition)
         const newValue = before + varName + '}' + after
         setDisplayValue(newValue)
-        onChange(newValue)
+        emitValue(newValue)
         
         // 设置光标位置到变量名后面
         setTimeout(() => {
@@ -284,6 +261,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       const cursorPos = e.currentTarget.selectionStart || 0
       setCursorPosition(cursorPos)
       checkVariableInput(displayValue, cursorPos)
+      props.onClick?.(e)
     }
 
     // 格式化变量值显示
@@ -349,6 +327,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
     return (
       <div className="relative">
         <input
+          {...props}
           type="text"
           inputMode={hasVariableRef(displayValue) ? 'text' : 'numeric'}
           className={cn(
@@ -361,8 +340,10 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           onClick={handleClick}
-          {...props}
+          aria-invalid={validationError ? true : props['aria-invalid']}
+          aria-describedby={[props['aria-describedby'], validationError ? errorId : ''].filter(Boolean).join(' ') || undefined}
         />
+        {validationError && <p id={errorId} role="alert" className="mt-1 text-xs text-[hsl(var(--danger-600))]">{validationError}</p>}
         
         {/* 变量提示下拉框 */}
         {showSuggestions && filteredVariables.length > 0 && (

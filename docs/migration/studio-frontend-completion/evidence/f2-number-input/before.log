@@ -1,0 +1,259 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/number-input-validation.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:21064) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx (16 tests | 13 failed) 201ms
+   × preserves invalid numeric draft 1abc instead of coercing it 93ms
+   × preserves invalid numeric draft Infinity instead of coercing it 8ms
+   × preserves invalid numeric draft NaN instead of coercing it 5ms
+   × preserves invalid numeric draft 1e999 instead of coercing it 4ms
+   × preserves invalid numeric draft - instead of coercing it 5ms
+   × preserves invalid numeric draft 0x10 instead of coercing it 3ms
+   × reports out-of-range -1 without silently clamping the document 3ms
+   × reports out-of-range 11 without silently clamping the document 3ms
+   × allows decimal entry without erasing its trailing decimal point mid-edit 3ms
+   × runs internal blur validation together with the caller blur callback 3ms
+   × keeps invalid wait duration 1abc in its document field 31ms
+   × keeps invalid wait duration Infinity in its document field 15ms
+   × keeps invalid wait duration 1e999 in its document field 14ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft 1abc instead of coercing it
+AssertionError: expected '1' to be '1abc' // Object.is equality
+
+Expected: "1abc"
+Received: "1"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:14:44
+     12|  render(<Controlled />);const input=screen.getByRole('textbox',{name:'…
+     13|  fireEvent.change(input,{target:{value}});fireEvent.blur(input)
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+       |                                            ^
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft Infinity instead of coercing it
+AssertionError: expected 'null' to be '"Infinity"' // Object.is equality
+
+Expected: ""Infinity""
+Received: "null"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:15:51
+     13|  fireEvent.change(input,{target:{value}});fireEvent.blur(input)
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+       |                                                   ^
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+     17| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft NaN instead of coercing it
+AssertionError: expected '5' to be '"NaN"' // Object.is equality
+
+Expected: ""NaN""
+Received: "5"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:15:51
+     13|  fireEvent.change(input,{target:{value}});fireEvent.blur(input)
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+       |                                                   ^
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+     17| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft 1e999 instead of coercing it
+AssertionError: expected 'Infinity' to be '1e999' // Object.is equality
+
+Expected: "1e999"
+Received: "Infinity"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:14:44
+     12|  render(<Controlled />);const input=screen.getByRole('textbox',{name:'…
+     13|  fireEvent.change(input,{target:{value}});fireEvent.blur(input)
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+       |                                            ^
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft - instead of coercing it
+AssertionError: expected null to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+null
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:16:45
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+       |                                             ^
+     17| })
+     18| it('preserves an unfinished empty value after blur',()=>{
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > preserves invalid numeric draft 0x10 instead of coercing it
+AssertionError: expected '0' to be '0x10' // Object.is equality
+
+Expected: "0x10"
+Received: "0"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:14:44
+     12|  render(<Controlled />);const input=screen.getByRole('textbox',{name:'…
+     13|  fireEvent.change(input,{target:{value}});fireEvent.blur(input)
+     14|  expect((input as HTMLInputElement).value).toBe(value)
+       |                                            ^
+     15|  expect(screen.getByTestId('stored').textContent).toBe(JSON.stringify(…
+     16|  expect(input.getAttribute('aria-invalid')).toBe('true')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > reports out-of-range -1 without silently clamping the document
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > reports out-of-range 11 without silently clamping the document
+AssertionError: expected null to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+null
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:29:45
+     27|  expect(screen.getByTestId('stored').textContent).toBe(String(value))
+     28|  expect((input as HTMLInputElement).value).toBe(String(value))
+     29|  expect(input.getAttribute('aria-invalid')).toBe('true')
+       |                                             ^
+     30| })
+     31| it('allows decimal entry without erasing its trailing decimal point mi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > allows decimal entry without erasing its trailing decimal point mid-edit
+AssertionError: expected '1' to be '1.' // Object.is equality
+
+Expected: "1."
+Received: "1"
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:34:44
+     32|  render(<Controlled initial={0}/>);const input=screen.getByRole('textb…
+     33|  fireEvent.change(input,{target:{value:'1.'}})
+     34|  expect((input as HTMLInputElement).value).toBe('1.')
+       |                                            ^
+     35|  fireEvent.change(input,{target:{value:'1.25'}});fireEvent.blur(input)
+     36|  expect(screen.getByTestId('stored').textContent).toBe('1.25')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > runs internal blur validation together with the caller blur callback
+AssertionError: expected null to be 'true' // Object.is equality
+
+- Expected:
+"true"
+
++ Received:
+null
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:48:45
+     46|  fireEvent.change(input,{target:{value:'1abc'}});fireEvent.blur(input)
+     47|  expect(blur).toHaveBeenCalledOnce()
+     48|  expect(input.getAttribute('aria-invalid')).toBe('true')
+       |                                             ^
+     49| })
+     50| it.each(['1abc','Infinity','1e999'])('keeps invalid wait duration %s i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > keeps invalid wait duration 1abc in its document field
+AssertionError: expected last "vi.fn()" call to have been called with [ 'duration', '1abc' ]
+
+- Expected
++ Received
+
+  [
+    "duration",
+-   "1abc",
++   1,
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:54:17
+     52|  render(<WaitConfig data={{moduleType:'wait',duration:5}} onChange={ch…
+     53|  fireEvent.change(screen.getByRole('textbox'),{target:{value}})
+     54|  expect(change).toHaveBeenLastCalledWith('duration',value)
+       |                 ^
+     55| })
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > keeps invalid wait duration Infinity in its document field
+AssertionError: expected last "vi.fn()" call to have been called with [ 'duration', 'Infinity' ]
+
+- Expected
++ Received
+
+  [
+    "duration",
+-   "Infinity",
++   Infinity,
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:54:17
+     52|  render(<WaitConfig data={{moduleType:'wait',duration:5}} onChange={ch…
+     53|  fireEvent.change(screen.getByRole('textbox'),{target:{value}})
+     54|  expect(change).toHaveBeenLastCalledWith('duration',value)
+       |                 ^
+     55| })
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/number-input-validation.test.tsx > keeps invalid wait duration 1e999 in its document field
+AssertionError: expected last "vi.fn()" call to have been called with [ 'duration', '1e999' ]
+
+- Expected
++ Received
+
+  [
+    "duration",
+-   "1e999",
++   Infinity,
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/number-input-validation.test.tsx:54:17
+     52|  render(<WaitConfig data={{moduleType:'wait',duration:5}} onChange={ch…
+     53|  fireEvent.change(screen.getByRole('textbox'),{target:{value}})
+     54|  expect(change).toHaveBeenLastCalledWith('duration',value)
+       |                 ^
+     55| })
+     56|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  13 failed | 3 passed (16)
+   Start at  05:43:07
+   Duration  1.39s (transform 377ms, setup 97ms, import 572ms, tests 201ms, environment 390ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/number-input-validation.test.tsx
