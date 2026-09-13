@@ -2677,6 +2677,40 @@ export type components = {
             /** @default null */
             similar: components["schemas"]["StudioSimilarElements"] | null;
         };
+        /** StudioVariableTrackingCleared */
+        StudioVariableTrackingCleared: {
+            /** Message */
+            message: string;
+        };
+        /** StudioVariableTrackingRecord */
+        StudioVariableTrackingRecord: {
+            /** Timestamp */
+            timestamp: string;
+            /** Variable Name */
+            variable_name: string;
+            old_value: components["schemas"]["JsonValue"];
+            new_value: components["schemas"]["JsonValue"];
+            /** Node Id */
+            node_id: string;
+            /** Node Name */
+            node_name: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "create" | "update";
+            /** Value Type */
+            value_type: string;
+        };
+        /** StudioVariableTrackingResult */
+        StudioVariableTrackingResult: {
+            /** Tracking */
+            tracking: components["schemas"]["StudioVariableTrackingRecord"][];
+            /** Count */
+            count: number;
+        } & {
+            [key: string]: unknown;
+        };
     };
     responses: never;
     parameters: never;

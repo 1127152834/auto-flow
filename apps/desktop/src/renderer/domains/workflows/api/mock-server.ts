@@ -424,7 +424,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (action === '' && method === 'PUT') {
         persist({ ...db, workflows: { ...db.workflows, [id]: { ...body, id } } }); return response({ ...body, id })
       }
-      if (action === '/variable-tracking') { if(method === 'DELETE') tracking.delete(id); return response({tracking:tracking.get(id) || [], mock:true}) }
+      if (action === '/variable-tracking') {
+        if (method === 'DELETE') { tracking.set(id, []); return response({message:'变量追踪记录已清空'}) }
+        if (method !== 'GET') return failure('变量追踪只接受 GET 或 DELETE 请求',405)
+        const records = tracking.get(id) || []
+        return response({tracking:records,count:records.length,mock:true})
+      }
       if (action === '/export-playwright' || action === '/export-script') return response({ code: '# Mock 导出：本文件用于校验下载交互，并非可运行脚本\n# Workflow: ' + String(db.workflows[id]?.name), filename: 'mock-workflow.txt', target: 'mock' })
       if (action === '/execute') return startRun(id, db.workflows[id], body)
       if (action === '/stop') return stopRun(id)

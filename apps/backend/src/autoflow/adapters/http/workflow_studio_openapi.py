@@ -28,6 +28,8 @@ STUDIO_SCHEMAS = (
     schemas.StudioJsScriptState,
     schemas.StudioJsScriptClaim,
     schemas.StudioJsScriptResult,
+    schemas.StudioVariableTrackingResult,
+    schemas.StudioVariableTrackingCleared,
 )
 
 

@@ -631,3 +631,30 @@ export const jsScriptApi = {
     return result
   },
 }
+
+
+export type VariableTrackingRecord = components['schemas']['StudioVariableTrackingRecord']
+export const variableTrackingApi = {
+  list: async (workflowId: string, signal?: AbortSignal) => {
+    const result = await apiRequest<components['schemas']['StudioVariableTrackingResult']>(
+      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {signal})
+    if (!result.success) return result
+    const data = result.data
+    if (!data || !Array.isArray(data.tracking) || !Number.isSafeInteger(data.count) || data.count !== data.tracking.length
+      || !data.tracking.every(record => record && typeof record === 'object'
+        && ['timestamp','variable_name','node_id','node_name','value_type'].every(key => typeof record[key as keyof VariableTrackingRecord] === 'string')
+        && ['create','update'].includes(record.operation) && Object.hasOwn(record,'old_value') && Object.hasOwn(record,'new_value'))) {
+      return {success:false,error:'变量追踪响应格式错误，保留最后确认记录'}
+    }
+    return result
+  },
+  clear: async (workflowId: string, signal?: AbortSignal) => {
+    const result = await apiRequest<components['schemas']['StudioVariableTrackingCleared']>(
+      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {method:'DELETE',signal})
+    if (!result.success) return result
+    if (!result.data || typeof result.data.message !== 'string' || !result.data.message.trim()) {
+      return {success:false,error:'服务未确认清空变量追踪记录，请刷新确认'}
+    }
+    return result
+  },
+}

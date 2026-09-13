@@ -26120,5 +26120,365 @@
     "level": "browser E2E / Mock coordination",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-js-script/browser-ui.md"
+  },
+  {
+    "id": "F3.variable-tracking.clear-failure",
+    "capability": "清空失败保留，重试确认后清空",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "清空失败保留，重试确认后清空",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "清空失败保留，重试确认后清空",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.late-read",
+    "capability": "清空期间旧读取失效且不重复提交",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "清空期间旧读取失效且不重复提交",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "清空期间旧读取失效且不重复提交",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.switch-document",
+    "capability": "换流程后旧读取失效",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "换流程后旧读取失效",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "换流程后旧读取失效",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.close",
+    "capability": "关闭后旧读取失效",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "关闭后旧读取失效",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "关闭后旧读取失效",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.read-recovery",
+    "capability": "畸形刷新保留及恢复",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "畸形刷新保留及恢复",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "畸形刷新保留及恢复",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.refresh",
+    "capability": "不重叠读取与重开加载",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "不重叠读取与重开加载",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "不重叠读取与重开加载",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.memory",
+    "capability": "内存读清空及405",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "内存读清空及405",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "内存读清空及405",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.http",
+    "capability": "HTTP读清空及405",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "HTTP读清空及405",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "HTTP读清空及405",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.null",
+    "capability": "拒绝null响应",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "拒绝null响应",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "拒绝null响应",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.missing-count",
+    "capability": "拒绝缺count",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "拒绝缺count",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "拒绝缺count",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.wrong-count",
+    "capability": "拒绝错误count",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "拒绝错误count",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "拒绝错误count",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.wrong-operation",
+    "capability": "拒绝非法operation",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "拒绝非法operation",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "拒绝非法operation",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.ack",
+    "capability": "必须确认清空及编码路径",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "必须确认清空及编码路径",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "必须确认清空及编码路径",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.late-clear",
+    "capability": "旧流程清空响应不影响新流程",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "旧流程清空响应不影响新流程",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "旧流程清空响应不影响新流程",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.json-search",
+    "capability": "嵌套JSON搜索及零匹配提示",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "嵌套JSON搜索及零匹配提示",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "嵌套JSON搜索及零匹配提示",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.null-old",
+    "capability": "展示null旧值",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "展示null旧值",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "展示null旧值",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-delivery.test.tsx"
+  },
+  {
+    "id": "F3.variable-tracking.active-memory",
+    "capability": "活跃内存运行清空后继续记录",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "活跃内存运行清空后继续记录",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "活跃内存运行清空后继续记录",
+    "level": "component/protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.variable-tracking.active-http",
+    "capability": "活跃HTTP运行清空后继续记录",
+    "preconditions": {
+      "workflow": "独立workflow/old/new或js-run",
+      "record": "result 或脚本count/answer；完整前置值见对应测试"
+    },
+    "steps": [
+      "通过面板刷新/清空/搜索，或通过HTTP确认脚本结果",
+      "按对应具名用例延迟响应/返回错误/切换流程",
+      "核对保留内容、错误提示、数量和请求次数"
+    ],
+    "expectedUI": "活跃HTTP运行清空后继续记录",
+    "expectedIO": "GET/DELETE /api/workflows/{workflowId}/variable-tracking；错误及未确认不能当作成功",
+    "stateAssertion": "活跃HTTP运行清空后继续记录",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.variable-tracking.browser-search",
+    "capability": "实际对象搜索与筛选",
+    "preconditions": {
+      "document": "F3 脚本回传验收"
+    },
+    "steps": [
+      "打开保存文档并运行",
+      "更多→变量追踪",
+      "搜索对象内中文内容，搜索未命中，筛选更新"
+    ],
+    "expectedUI": "匹配一条或明确筛选无匹配；原记录保留",
+    "expectedIO": "Mock追踪读取；实际Worker结果",
+    "stateAssertion": "搜索不修改诊断和流程",
+    "level": "browser E2E / Mock coordination",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-variable-tracking/browser-ui.md"
   }
 ]

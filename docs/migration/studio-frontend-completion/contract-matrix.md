@@ -144,6 +144,8 @@
 | service:systemApi.setClipboard | POST '/system/set-clipboard' | body: JSON.stringify({ text }) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:132 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.setCustomHotkeys | POST '/system/custom-hotkeys' | body: JSON.stringify({ shortcuts }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:128 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.takeScreenshot | POST '/system/screenshot' | body: JSON.stringify(params &#124;&#124; {}) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:134 | 待逐项核对；局部已验证项见上表 |
+| service:variableTrackingApi.clear | DELETE &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingCleared'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:651 | 待逐项核对；局部已验证项见上表 |
+| service:variableTrackingApi.list | GET &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingResult'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:638 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.create | POST '/workflows' | body: JSON.stringify(data) | 未显式声明 | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:146 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.debugBreakpoints | POST &#96;/workflows/${id}/debug/breakpoints&#96; | body: JSON.stringify({ breakpoints }) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:163 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.debugResume | POST &#96;/workflows/${id}/debug/resume&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:157 | 待逐项核对；局部已验证项见上表 |
@@ -276,8 +278,6 @@
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:617 | POST &#96;${API_BASE}/api/system/screenshot-tool&#96; | body: JSON.stringify({ saveToAssets: true }) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:777 | PUT &#96;${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:886 | GET &#96;${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx:57 | GET &#96;${backendUrl}/api/workflows/${workflowId}/variable-tracking&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx:93 | DELETE &#96;${backendUrl}/api/workflows/${workflowId}/variable-tracking&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:30 | GET &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-config&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:42 | POST &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-config&#96; | body: JSON.stringify(cfg) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:54 | POST &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-test&#96; | body: JSON.stringify(cfg) | 需核对鉴权、取消、错误及资源读取 |
@@ -304,4 +304,4 @@
 
 对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。
 
-当前扫描：144 个服务方法、82 个事件、45 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
+当前扫描：146 个服务方法、82 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。

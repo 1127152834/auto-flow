@@ -3640,6 +3640,62 @@
       "status": "待核对"
     },
     {
+      "id": "service:variableTrackingApi.clear",
+      "operation": "variableTrackingApi.clear",
+      "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
+      "line": 651,
+      "source": "frontend/src/services/api.ts",
+      "requests": [
+        {
+          "endpoint": "`/workflows/${encodeURIComponent(workflowId)}/variable-tracking`",
+          "method": "DELETE",
+          "body": null,
+          "responseType": "components['schemas']['StudioVariableTrackingCleared']",
+          "call": "apiRequest<components['schemas']['StudioVariableTrackingCleared']>(\n      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {method:'DELETE',signal})",
+          "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
+          "line": 652,
+          "source": "frontend/src/services/api.ts"
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
+          "line": 78,
+          "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
+          "call": "variableTrackingApi.clear(workflowId,current.controller.signal)"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
+      "id": "service:variableTrackingApi.list",
+      "operation": "variableTrackingApi.list",
+      "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
+      "line": 638,
+      "source": "frontend/src/services/api.ts",
+      "requests": [
+        {
+          "endpoint": "`/workflows/${encodeURIComponent(workflowId)}/variable-tracking`",
+          "method": "GET",
+          "body": null,
+          "responseType": "components['schemas']['StudioVariableTrackingResult']",
+          "call": "apiRequest<components['schemas']['StudioVariableTrackingResult']>(\n      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {signal})",
+          "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
+          "line": 639,
+          "source": "frontend/src/services/api.ts"
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
+          "line": 50,
+          "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
+          "call": "variableTrackingApi.list(workflowId,current.controller.signal)"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
       "id": "service:workflowApi.create",
       "operation": "workflowApi.create",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
@@ -6780,26 +6836,6 @@
       "line": 886,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
-    },
-    {
-      "endpoint": "`${backendUrl}/api/workflows/${workflowId}/variable-tracking`",
-      "method": "GET",
-      "body": null,
-      "responseType": null,
-      "file": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
-      "line": 57,
-      "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
-      "call": "studioFetch(`${backendUrl}/api/workflows/${workflowId}/variable-tracking`)"
-    },
-    {
-      "endpoint": "`${backendUrl}/api/workflows/${workflowId}/variable-tracking`",
-      "method": "DELETE",
-      "body": null,
-      "responseType": null,
-      "file": "apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx",
-      "line": 93,
-      "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
-      "call": "studioFetch(`${backendUrl}/api/workflows/${workflowId}/variable-tracking`, {\n        method: 'DELETE'\n      })"
     },
     {
       "endpoint": "`${getBackendBaseUrl()}/api/local-workflows/webdav-config`",

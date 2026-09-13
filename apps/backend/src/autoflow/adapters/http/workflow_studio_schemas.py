@@ -229,3 +229,34 @@ class StudioJsScriptResult(StudioJsScriptClaim):
         if not self.success and not (self.error and self.error.strip()):
             raise ValueError("失败结果必须包含错误")
         return self
+
+
+class StudioVariableTrackingRecord(ApiModel):
+    # Keep the frozen WebRPA wire names for this existing endpoint.
+    model_config = ConfigDict(alias_generator=None, strict=True, allow_inf_nan=False)
+
+    timestamp: str
+    variable_name: str
+    old_value: JsonValue
+    new_value: JsonValue
+    node_id: str
+    node_name: str
+    operation: Literal["create", "update"]
+    value_type: str
+
+
+class StudioVariableTrackingResult(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    tracking: list[StudioVariableTrackingRecord]
+    count: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def check_count(self) -> Self:
+        if self.count != len(self.tracking):
+            raise ValueError("count must equal the number of tracking records")
+        return self
+
+
+class StudioVariableTrackingCleared(ApiModel):
+    message: str = Field(min_length=1, pattern=r"\S")

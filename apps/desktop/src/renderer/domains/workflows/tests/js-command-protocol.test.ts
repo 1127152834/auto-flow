@@ -44,6 +44,17 @@ describe.each(['memory','http'] as const)('JavaScript request over %s',mode=>{
   ]))
   expect(await(await request('/events/commands/result')).json()).toMatchObject({commandId:'result',success:true,httpStatus:200})
  })
+ it('continues tracking new changes after clearing an active run',async()=>{
+  const event=await start();const payload={requestId:event.requestId,claimId:'clear-owner'}
+  const url=`${server?.origin??'http://autoflow-studio.mock'}/api/workflows/js-run/variable-tracking`
+  expect((await (server?fetch:mock.mockRequest)(url,{method:'DELETE'})).status).toBe(200)
+  expect(await(await request('/workflows/js-run/variable-tracking')).json()).toMatchObject({tracking:[],count:0})
+  await command('js_script_claim',payload,'clear-claim')
+  await command('js_script_result',{...payload,success:true,result:2,variables:{count:2}},'clear-result')
+  const result=await(await request('/workflows/js-run/variable-tracking')).json()
+  expect(result.count).toBe(2)
+  expect(result.tracking.map((row:{variable_name:string})=>row.variable_name)).toEqual(['count','answer'])
+ })
  it('rejects malformed results and foreign claims without consuming the waiting request',async()=>{
   const event=await start();const payload={requestId:event.requestId,claimId:'owner'}
   await command('js_script_claim',payload,'claim')

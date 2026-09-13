@@ -1,20 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/VariableTrackingPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from '../api/transport'
-import React, { useState, useEffect, useMemo } from 'react'
+import { variableTrackingApi, type VariableTrackingRecord } from '../api'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { SelectNative } from './controls/select-native'
 import { X, Search, Filter, RefreshCw, Download, Trash2, Clock, Tag, TrendingUp, Eye, EyeOff, Activity } from 'lucide-react'
-
-interface VariableTrackingRecord {
-  timestamp: string
-  variable_name: string
-  old_value: any
-  new_value: any
-  node_id: string
-  node_name: string
-  operation: 'create' | 'update'
-  value_type: string
-}
 
 interface VariableTrackingPanelProps {
   workflowId: string
@@ -30,7 +19,10 @@ interface VariableStats {
   value_type: string
 }
 
-export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
+export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = props =>
+  props.isOpen ? <VariableTrackingContent key={props.workflowId} {...props} /> : null
+
+const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
   workflowId,
   isOpen,
   onClose
@@ -45,60 +37,50 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [expandedRecords, setExpandedRecords] = useState<Set<number>>(new Set())
 
-  // 获取变量追踪数据
-  const fetchTrackingData = async () => {
-    if (!workflowId) return
-    
-    try {
-      setLoading(true)
-      // 使用动态端口配置
-      const { getBackendBaseUrl } = await import('../api/config')
-      const backendUrl = getBackendBaseUrl()
-      const response = await studioFetch(`${backendUrl}/api/workflows/${workflowId}/variable-tracking`)
-      const data = await response.json()
-      
-      if (data.tracking) {
-        setTrackingRecords(data.tracking)
-      }
-    } catch (error) {
-      console.error('获取变量追踪数据失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [readError, setReadError] = useState('')
+  const [clearError, setClearError] = useState('')
+  const [clearing, setClearing] = useState(false)
+  const request = useRef<{controller:AbortController; kind:'read'|'clear'} | null>(null)
 
-  // 自动刷新
+  const fetchTrackingData = useCallback(async () => {
+    if (!workflowId || request.current) return
+    const current = {controller:new AbortController(),kind:'read' as const}
+    request.current = current
+    setLoading(true)
+    const result = await variableTrackingApi.list(workflowId,current.controller.signal)
+    if (request.current !== current || current.controller.signal.aborted) return
+    request.current = null
+    setLoading(false)
+    if (result.success && result.data) { setTrackingRecords(result.data.tracking); setReadError('') }
+    else setReadError(result.error || '获取变量追踪记录失败')
+  }, [workflowId])
+
   useEffect(() => {
-    if (!isOpen || !autoRefresh) return
+    void fetchTrackingData()
+    return () => { request.current?.controller.abort(); request.current = null }
+  }, [fetchTrackingData])
 
-    fetchTrackingData()
-    const interval = setInterval(fetchTrackingData, 1000) // 每秒刷新一次
-
+  useEffect(() => {
+    if (!autoRefresh) return
+    const interval = setInterval(() => { void fetchTrackingData() },1000)
     return () => clearInterval(interval)
-  }, [isOpen, workflowId, autoRefresh])
+  }, [autoRefresh,fetchTrackingData])
 
-  // 手动刷新
-  const handleRefresh = () => {
-    fetchTrackingData()
-  }
+  const handleRefresh = () => { void fetchTrackingData() }
 
-  // 清空追踪记录
   const handleClear = async () => {
-    if (!workflowId) return
-    
-    try {
-      // 调用后端API清空记录
-      const { getBackendBaseUrl } = await import('../api/config')
-      const backendUrl = getBackendBaseUrl()
-      await studioFetch(`${backendUrl}/api/workflows/${workflowId}/variable-tracking`, {
-        method: 'DELETE'
-      })
-      
-      // 清空本地显示
-      setTrackingRecords([])
-    } catch (error) {
-      console.error('清空变量追踪记录失败:', error)
-    }
+    if (!workflowId || request.current?.kind === 'clear') return
+    request.current?.controller.abort()
+    const current = {controller:new AbortController(),kind:'clear' as const}
+    request.current = current
+    setLoading(false)
+    setClearing(true)
+    const result = await variableTrackingApi.clear(workflowId,current.controller.signal)
+    if (request.current !== current || current.controller.signal.aborted) return
+    request.current = null
+    setClearing(false)
+    if (result.success) { setTrackingRecords([]); setExpandedRecords(new Set()); setClearError(''); setReadError('') }
+    else setClearError(result.error || '清空变量追踪记录失败，已保留显示内容')
   }
 
   // 导出为JSON
@@ -134,7 +116,7 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
         const matchesSearch = 
           record.variable_name.toLowerCase().includes(searchLower) ||
           record.node_name.toLowerCase().includes(searchLower) ||
-          String(record.new_value).toLowerCase().includes(searchLower)
+          JSON.stringify(record.new_value).toLowerCase().includes(searchLower)
         
         if (!matchesSearch) return false
       }
@@ -252,7 +234,7 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
             {/* 手动刷新 */}
             <button
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={loading || clearing}
               className="px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 
                 transition-all duration-200 disabled:opacity-50"
               title="手动刷新"
@@ -274,7 +256,7 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
             {/* 清空 */}
             <button
               onClick={handleClear}
-              disabled={trackingRecords.length === 0}
+              disabled={trackingRecords.length === 0 || clearing}
               className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 
                 transition-all duration-200 disabled:opacity-50"
               title="清空记录"
@@ -293,6 +275,8 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
           </div>
         </div>
 
+        {(readError || clearError) && <div role="alert" className="px-6 py-3 text-red-700 bg-red-50">{clearError || readError}</div>}
+        {clearing && <div role="status" className="px-6 py-2">正在等待服务确认清空记录…</div>}
         {/* 工具栏 */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
@@ -415,8 +399,8 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
             {filteredRecords.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <TrendingUp className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-lg font-medium">暂无追踪记录</p>
-                <p className="text-sm mt-2">运行工作流后将显示变量变化</p>
+                <p className="text-lg font-medium">{trackingRecords.length ? '没有匹配的追踪记录' : '暂无追踪记录'}</p>
+                <p className="text-sm mt-2">{trackingRecords.length ? '请调整搜索内容或筛选条件' : '运行工作流后将显示变量变化'}</p>
               </div>
             ) : (
               <div className="p-6 space-y-3">
@@ -480,7 +464,7 @@ export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = ({
 
                         {/* 值变化 */}
                         <div className="space-y-2">
-                          {record.operation === 'update' && record.old_value !== null && (
+                          {record.operation === 'update' && (
                             <div className="bg-red-50 rounded-lg p-3 border border-red-100">
                               <div className="text-xs font-medium text-red-700 mb-1">旧值</div>
                               <pre className={`text-sm text-red-800 font-mono whitespace-pre-wrap break-all ${
