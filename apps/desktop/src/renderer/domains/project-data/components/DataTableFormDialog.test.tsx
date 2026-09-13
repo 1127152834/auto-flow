@@ -7,6 +7,18 @@ import { DataTableFormDialog } from './DataTableFormDialog'
 
 afterEach(cleanup)
 
+it('renders the gallery create-table structure without changing the data limits', () => {
+  render(<DataTableFormDialog open mode="create" sessionKey="gallery" onOpenChange={vi.fn()} onSubmit={vi.fn()} />)
+  const dialog=screen.getByRole('dialog',{name:'新建数据表'})
+  expect(dialog).toHaveClass('max-w-[32.5rem]')
+  expect(dialog).toHaveClass('[&_[data-slot=dialog-title]]:text-[28px]')
+  expect(screen.getByText('*')).toHaveAttribute('aria-hidden','true')
+  expect(screen.getByLabelText('数据表名称')).toHaveAttribute('maxlength','120')
+  expect(screen.getByLabelText('用途说明（可选）')).toHaveAttribute('maxlength','1000')
+  expect(screen.getByText('创建后即可维护本地记录，后续可按需配置数据来源。')).toBeVisible()
+  expect(screen.queryByText(/来源未配置|不能新增/)).not.toBeInTheDocument()
+})
+
 it('validates, trims, submits once, and leaves closing to the parent', async () => {
   let finish!: () => void
   const pending = new Promise<void>(resolve => { finish = resolve })

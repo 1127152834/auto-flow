@@ -16,6 +16,7 @@ export type ModalProps = PropsWithChildren<{
   variant?: 'default' | 'form' | 'split'
   closeDisabled?: boolean
   bodyClassName?: string
+  className?: string
 }>
 
 const sizes = {
@@ -24,7 +25,7 @@ const sizes = {
   large: 'max-w-5xl',
 }
 
-export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, placement = 'dialog', closeLabel = '关闭' }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, className, placement = 'dialog', closeLabel = '关闭' }: ModalProps) {
   const descriptionId = useId()
   const focusReturn = useRef<{ opener: HTMLElement | null; container: HTMLElement | null; content: HTMLElement | null }>({ opener: null, container: null, content: null })
 
@@ -40,7 +41,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
       busy={closeDisabled}
       data-placement={placement}
       aria-describedby={description ? descriptionId : undefined}
-      className={cn('max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0', sizes[size], placement === 'drawer' && 'left-auto right-0 top-0 h-dvh max-h-dvh w-[min(94vw,44rem)] translate-x-0 translate-y-0 rounded-r-none')}
+      className={cn('max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0', sizes[size], placement === 'drawer' && 'left-auto right-0 top-0 h-dvh max-h-dvh w-[min(94vw,44rem)] translate-x-0 translate-y-0 rounded-r-none', className)}
       onFocusCapture={(event) => captureReturnTarget(event.relatedTarget, event.currentTarget)}
       onOpenAutoFocus={(event) => {
         if (event.target instanceof HTMLElement) captureReturnTarget(document.activeElement, event.target)
