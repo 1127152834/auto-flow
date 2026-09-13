@@ -1,0 +1,36 @@
+{
+  "checks": {
+    "platform": {
+      "ok": true,
+      "text": "Darwin 26.4.1 / arm64"
+    },
+    "binary": {
+      "ok": true,
+      "text": "/Users/zhangtiancheng/Documents/projects/autoflow/reference/vphone-cli/.build/vphone-cli.app/Contents/MacOS/vphone-cli"
+    },
+    "research": {
+      "ok": false,
+      "code": 0,
+      "text": "Allow Research Guests status: disabled"
+    },
+    "sip": {
+      "ok": null,
+      "code": 0,
+      "text": "System Integrity Protection status: enabled."
+    },
+    "xcode": {
+      "ok": true,
+      "code": 0,
+      "text": "Xcode 26.2\nBuild version 17C52"
+    },
+    "host": {
+      "ok": true,
+      "text": "物理 Mac 宿主",
+      "code": 0
+    }
+  },
+  "root": "/Users/zhangtiancheng/.vphone-autoflow-demo",
+  "freeGiB": 278.0,
+  "canAttemptLaunch": false,
+  "note": "前置检查通过不代表 iOS 已就绪；AMFI 与实际启动由上游 preflight 和画面回读验证。"
+}

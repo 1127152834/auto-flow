@@ -154,8 +154,10 @@ reference/
 | `packages/ui/src/layouts/` | 跨领域工作台布局基元；不包含业务导航配置。 |
 | `packages/ui/src/styles/` | 计划中的 Tailwind 主题、设计令牌和组件样式。 |
 | `packages/ui/tests/` | 组件交互、可访问性和状态测试。 |
-| `reference/` | 上游源码保持只读，不作为运行时依赖；`redroid-demo/` 是用户授权的独立 Python + React 管理 Demo，自有源码由主仓库跟踪；Android / Windows / root 实机验收状态见其 `VERIFICATION.md`。 |
+| `reference/` | 上游源码保持只读，不作为正式应用的运行时依赖；`redroid-demo/` 和 `vphone-demo/` 是用户授权的独立 Python + React 实验，自有源码由主仓库跟踪；各平台实机验收状态见各自的 `VERIFICATION.md`。 |
 | `reference/redroid-demo/scripts/native_monitor.py` | 2026-09-13 新增的 Mac 原生窗口验证启动器；配合 React `/native` 页面和固定版 scrcpy，运行文件在被忽略的 `.data/native-monitor/`。小闭环与输入限制见 `NATIVE_MAC_TEST.md`，不属于正式工作流执行器。 |
+| `reference/vphone-aio/`、`reference/vphone-cli/` | 2026-09-13 用户授权克隆的 iOS 上游参考仓库，独立 Git、固定 commit；aio 镜像保留 LFS 指针，CLI 递归子模块已初始化并生成本机编译产物。源码不纳入主仓库。 |
+| `reference/vphone-demo/` | 用户授权的独立 Python + React iOS 实验：宿主诊断、设备管理、截图触控与步骤回放；当前实际 iOS 启动受宿主研究虚拟机策略阻塞，见 `VERIFICATION.md`。未接入正式工作流。 |
 | `scripts/` | 现有构建、类型生成、冒烟和仓库验证脚本。 |
 
 ## 依赖与维护规则
