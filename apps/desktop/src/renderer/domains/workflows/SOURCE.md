@@ -25,3 +25,7 @@ Documents, virtual folders, modules, assets and settings persist in browser-loca
 File uploads retain bytes (2 MiB per file, explicit failure on limits/quota). Excel parsing, generated backend scripts, model answers and connection probes are fixtures. Credentials retain masked metadata only. Unknown endpoints return 501 and external network targets are rejected; native tools and external integrations require the later backend adapter. Virtual folders are not AutoFlow workspace SQLite storage. No mock records are silently migrated to production.
 
 Validation and remaining integration work: `docs/migration/studio-frontend-mock-validation.md`.
+
+## F0 2026-09-13 follow-up
+
+Source ModuleSidebar category data was extracted to lib/moduleCatalog.ts without changing the 284-entry scope. The shared catalog guards assistant additions and Mock execution. Imported excluded nodes retain data and can be saved/exported, while their dedicated configuration panel displays JSON instead of removed tools. Obsolete Excel assets, publishing/version and screensaver assistant execution branches were removed; user-stored resource/configuration data was not purged. The existing bundle import handler is also exposed in the wide toolbar.

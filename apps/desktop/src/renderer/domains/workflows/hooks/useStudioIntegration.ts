@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { dataAssetApi, imageAssetApi } from '../api'
+import { imageAssetApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
@@ -15,9 +15,8 @@ export function useStudioIntegration() {
   useEffect(()=>{
     let disposed=false
     socketService.connect()
-    void Promise.all([dataAssetApi.list(),imageAssetApi.list()]).then(([data,images])=>{
+    void imageAssetApi.list().then(images=>{
       if(disposed)return
-      if(Array.isArray(data.data))useWorkflowStore.getState().setDataAssets(data.data)
       if(Array.isArray(images.data))useWorkflowStore.getState().setImageAssets(images.data)
     })
     return ()=>{disposed=true;socketService.disconnect()}

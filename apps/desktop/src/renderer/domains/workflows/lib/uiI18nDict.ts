@@ -4129,3 +4129,9 @@ Object.assign(PHRASES, {
   '全部模块不存在或已排除，已拒绝创建：': 'All modules are unknown or excluded; creation rejected: ',
   ' 个不存在或已排除的模块：': ' unknown or excluded modules: ',
 })
+
+Object.assign(PHRASES, {
+  '工作流包含已排除节点；请移除这些节点后运行，原文档仍可保存或导出。': 'This workflow contains excluded nodes. Remove them before running; the original can still be saved or exported.',
+  '此节点已排除，保留原配置，仅供查看和导出': 'Excluded node: original configuration retained for viewing and export',
+  '工作流包含已排除节点': 'This workflow contains excluded nodes',
+})

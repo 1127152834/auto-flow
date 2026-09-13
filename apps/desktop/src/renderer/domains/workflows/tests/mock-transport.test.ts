@@ -121,3 +121,12 @@ describe('source-compatible mock HTTP boundary',()=>{
     expect(await(await request('/image-assets')).json()).toEqual([])
   })
 })
+
+it('keeps excluded legacy configuration readable but refuses to run it', async () => {
+  const content = { id: 'legacy', name: 'Legacy', nodes: [{ id: 'old', type: 'excel_create', data: { path: '/original.xlsx', custom: 'preserve' } }], edges: [] }
+  expect((await request('/workflows', content)).ok).toBe(true)
+  expect(await (await request('/workflows/legacy')).json()).toMatchObject(content)
+  expect((await request('/workflows/legacy/execute', {})).status).toBe(422)
+  expect(server.mockSnapshot().run).toBe(null)
+  expect(await (await request('/workflows/legacy')).json()).toMatchObject(content)
+})

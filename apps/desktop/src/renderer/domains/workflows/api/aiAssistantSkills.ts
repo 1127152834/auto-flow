@@ -1,6 +1,5 @@
 // Source: WebRPA@5ccb900e, services/aiAssistantSkills.ts; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from './transport'
-import { excludedModuleTypes } from '../components/ModuleSidebar'
+import { excludedModuleTypes } from '../lib/moduleCatalog'
 /**
  * 前端 Skills 派发器
  *
@@ -13,7 +12,7 @@ import { excludedModuleTypes } from '../components/ModuleSidebar'
 import { useWorkflowStore, moduleTypeLabels } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { useDialogRegistry, getDialogInfoForAI } from '../hooks/stores/dialogRegistry'
-import { localWorkflowApi, workflowApi, screensaverApi, dataAssetApi, imageAssetApi, scheduledTaskApi, workflowVersionsApi } from '../api'
+import { localWorkflowApi, workflowApi, imageAssetApi, scheduledTaskApi } from '../api'
 import { socketService } from '../events'
 import { useAiActionLogStore } from '../hooks/stores/aiActionLogStore'
 import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissionStore'
@@ -22,14 +21,14 @@ import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissi
 const MUTATING_ACTIONS = new Set<string>([
   'new_workflow', 'load_workflow_from_data', 'add_nodes', 'delete_node', 'delete_nodes',
   'update_node_config', 'toggle_node_disabled', 'align_nodes', 'paste_nodes', 'move_node',
-  'rename_node', 'connect_nodes', 'disconnect_edge', 'rename_workflow', 'restore_version',
+  'rename_node', 'connect_nodes', 'disconnect_edge', 'rename_workflow',
 ])
 const AI_ACTION_LABELS: Record<string, string> = {
   new_workflow: '新建工作流', load_workflow_from_data: '装载工作流到画布', add_nodes: '添加节点',
   delete_node: '删除节点', delete_nodes: '批量删除节点', update_node_config: '修改节点配置',
   toggle_node_disabled: '启用/禁用节点', align_nodes: '对齐节点', paste_nodes: '粘贴节点',
   move_node: '移动节点', rename_node: '重命名节点', connect_nodes: '连接节点',
-  disconnect_edge: '删除连线', rename_workflow: '重命名工作流', restore_version: '恢复历史版本',
+  disconnect_edge: '删除连线', rename_workflow: '重命名工作流',
 }
 
 /**
@@ -240,8 +239,6 @@ const EDITOR_ONLY_ACTIONS = new Set<string>([
   'run_workflow', 'run_workflow_headless', 'stop_workflow', 'save_workflow', 'save_workflow_to_folder',
   'export_workflow', 'rename_workflow', 'new_workflow', 'load_workflow', 'load_workflow_from_data',
   'get_workflow_detail', 'undo', 'redo',
-  // 版本历史（绑定画布快照）
-  'commit_version', 'list_versions', 'restore_version',
   // 画布变量
   'add_variable', 'update_variable', 'delete_variable', 'rename_variable', 'change_variable_type',
   'list_variables', 'get_variable', 'clear_variables',
@@ -250,8 +247,6 @@ const EDITOR_ONLY_ACTIONS = new Set<string>([
   'add_data_column', 'delete_data_row', 'delete_data_column', 'clear_data', 'download_data',
   'get_logs', 'clear_logs', 'export_logs', 'set_verbose_log', 'set_max_log_count',
   'get_node_runtime_errors', 'switch_bottom_panel',
-  // 仓库（操作当前画布）
-  'hub_publish_workflow', 'hub_download_workflow',
 ])
 
 // ===== client_action 执行者选举（防多窗口重复执行同一动作） =====
@@ -972,10 +967,7 @@ export async function executeClientAction(
         return { success: true, message: '已发起数据下载' }
       }
 
-      case 'upload_excel': {
-        emitAssistantUiEvent('upload_excel', {})
-        return { success: true, message: '已触发 Excel 上传文件选择' }
-      }
+
 
       case 'upload_image': {
         emitAssistantUiEvent('upload_image', {})
@@ -1125,68 +1117,15 @@ export async function executeClientAction(
       // ============================================================
       // Excel 资源底栏（数据资产）
       // ============================================================
-      case 'list_data_assets': {
-        try {
-          const res = await dataAssetApi.list()
-          return { success: true, data: res?.data ?? res }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'delete_data_asset': {
-        const id = payload.id as string
-        if (!id) return { success: false, error: '缺少 id' }
-        try {
-          await dataAssetApi.delete(id)
-          // 同步前端 store
-          useWorkflowStore.getState().deleteDataAsset(id)
-          return { success: true, message: `已删除 Excel 资源 ${id}` }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'rename_data_asset': {
-        const id = payload.id as string
-        const newName = payload.new_name as string
-        if (!id || !newName) return { success: false, error: '缺少 id 或 new_name' }
-        try {
-          await dataAssetApi.rename(id, newName)
-          return { success: true, message: `已重命名 Excel 资源 ${id} → ${newName}` }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'preview_data_asset': {
-        // payload.id, payload.sheet?, payload.max_rows?, payload.max_cols?
-        const id = payload.id as string
-        if (!id) return { success: false, error: '缺少 id' }
-        try {
-          const sheet = payload.sheet as string | undefined
-          const res = await dataAssetApi.preview(
-            id,
-            sheet,
-            Number(payload.max_rows) || undefined,
-            Number(payload.max_cols) || undefined
-          )
-          return { success: true, data: res?.data ?? res }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'get_data_asset_sheets': {
-        const id = payload.id as string
-        if (!id) return { success: false, error: '缺少 id' }
-        try {
-          const res = await dataAssetApi.getSheets(id)
-          return { success: true, data: res?.data ?? res }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
+
+
+
+
+
 
       // ============================================================
       // 图像资源底栏
@@ -1332,179 +1271,26 @@ export async function executeClientAction(
       // ============================================================
       // 版本历史（Git 式本地快照：含节点/连线/全局变量，可恢复/对比）
       // ============================================================
-      case 'commit_version': {
-        try {
-          const s = useWorkflowStore.getState()
-          const name = s.name
-          if (!name) return { success: false, error: '请先给工作流命名再提交版本' }
-          const folder = useGlobalConfigStore.getState().config.workflow?.localFolder || undefined
-          const content = JSON.parse(s.exportWorkflow())
-          const message = (payload.message as string) || ''
-          const res: any = await workflowVersionsApi.commit(name, content, message, folder)
-          if (res?.data?.success) {
-            return { success: true, message: `已提交版本 ${res.data.version}`, data: { version: res.data.version } }
-          }
-          return { success: false, error: res?.data?.error || res?.error || '提交失败' }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'list_versions': {
-        try {
-          const s = useWorkflowStore.getState()
-          const name = s.name
-          if (!name) return { success: false, error: '工作流未命名' }
-          const folder = useGlobalConfigStore.getState().config.workflow?.localFolder || undefined
-          const res: any = await workflowVersionsApi.list(name, folder)
-          return { success: true, data: res?.data?.versions ?? [] }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'restore_version': {
-        try {
-          const version = payload.version as string
-          if (!version) return { success: false, error: '缺少 version' }
-          const s = useWorkflowStore.getState()
-          const name = s.name
-          const folder = useGlobalConfigStore.getState().config.workflow?.localFolder || undefined
-          const res: any = await workflowVersionsApi.get(name, version, folder)
-          if (res?.data?.success && res.data.content) {
-            const ok = s.importWorkflow(res.data.content)
-            if (ok) return { success: true, message: `已恢复到版本 ${version}` }
-            return { success: false, error: '恢复失败：版本内容无法解析' }
-          }
-          return { success: false, error: res?.data?.error || res?.error || '恢复失败' }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
+
+
+
 
       // ============================================================
       // 工作流仓库（远程 Hub）
       // ============================================================
-      case 'hub_list_workflows': {
-        // payload.keyword?, payload.category?, payload.page?(1), payload.limit?(20), payload.sort_by?(latest|popular|hot)
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const params = new URLSearchParams()
-          if (payload.keyword) params.set('keyword', String(payload.keyword))
-          if (payload.category) params.set('category', String(payload.category))
-          if (payload.page) params.set('page', String(payload.page))
-          if (payload.limit) params.set('limit', String(payload.limit))
-          if (payload.sort_by) params.set('sort_by', String(payload.sort_by))
-          const resp = await studioFetch(`${hubUrl}/api/workflows?${params}`)
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          const data = await resp.json()
-          return { success: true, data }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'hub_get_categories': {
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const resp = await studioFetch(`${hubUrl}/api/workflows/categories`)
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          const data = await resp.json()
-          return { success: true, data }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'hub_download_workflow': {
-        // 下载 hub 上的一个工作流并直接装入画布
-        const workflowId = payload.workflow_id as string
-        if (!workflowId) return { success: false, error: '缺少 workflow_id' }
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const resp = await studioFetch(`${hubUrl}/api/workflows/${workflowId}/download`, { method: 'POST' })
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          const data = await resp.json()
-          const wf = data?.workflow || data
-          if (!wf?.nodes) return { success: false, error: 'Hub 返回格式异常' }
-          if (payload.load_into_canvas !== false) {
-            useWorkflowStore.getState().loadWorkflow({
-              nodes: wf.nodes || [],
-              edges: wf.edges || [],
-              name: wf.name || workflowId,
-            })
-          }
-          return { success: true, message: `已下载并装入：${wf.name || workflowId}`, data: wf }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'hub_publish_workflow': {
-        // 把当前画布发布到 hub。payload: name?, description?, category?, tags?, author?
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const s = useWorkflowStore.getState()
-          const body = {
-            name: (payload.name as string) || s.name || '未命名工作流',
-            description: payload.description || '',
-            category: payload.category || '其他',
-            tags: payload.tags || [],
-            author: payload.author || '匿名',
-            workflow: {
-              nodes: s.nodes,
-              edges: s.edges,
-              variables: s.variables,
-            },
-            clientId: (typeof window !== 'undefined' && (window.localStorage?.getItem('webrpa.clientId') || '')) || '',
-          }
-          const resp = await studioFetch(`${hubUrl}/api/workflows`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          })
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          const data = await resp.json()
-          return { success: true, message: `已发布到工作流仓库：${body.name}`, data }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'hub_get_my_workflows': {
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const clientId = (typeof window !== 'undefined' && (window.localStorage?.getItem('webrpa.clientId') || '')) || ''
-          const resp = await studioFetch(`${hubUrl}/api/workflows/my-workflows`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId }),
-          })
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          const data = await resp.json()
-          return { success: true, data }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
 
-      case 'hub_delete_my_workflow': {
-        const workflowId = payload.workflow_id as string
-        if (!workflowId) return { success: false, error: '缺少 workflow_id' }
-        try {
-          const hubUrl = (typeof window !== 'undefined' && (window.localStorage?.getItem('workflow_hub_url') || '')) || 'https://hub.pmhs.top'
-          const clientId = (typeof window !== 'undefined' && (window.localStorage?.getItem('webrpa.clientId') || '')) || ''
-          const resp = await studioFetch(`${hubUrl}/api/workflows/${workflowId}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId }),
-          })
-          if (!resp.ok) return { success: false, error: `Hub 返回 ${resp.status}` }
-          return { success: true, message: `已从 hub 删除工作流 ${workflowId}` }
-        } catch (e: any) {
-          return { success: false, error: e?.message || String(e) }
-        }
-      }
+
+
+
+
+
+
 
       // ============================================================
       // 计划任务（完整 CRUD + 启停 + 日志）
@@ -1783,13 +1569,9 @@ export async function executeClientAction(
         emitAssistantUiEvent('close_documentation', payload)
         return { success: true, message: '已关闭使用文档' }
 
-      case 'open_workflow_hub':
-        emitAssistantUiEvent('open_workflow_hub', payload)
-        return { success: true, message: '已打开工作流仓库' }
 
-      case 'close_workflow_hub':
-        emitAssistantUiEvent('close_workflow_hub', payload)
-        return { success: true, message: '已关闭工作流仓库' }
+
+
 
       case 'open_auto_browser':
         emitAssistantUiEvent('open_auto_browser', payload)
@@ -1818,37 +1600,15 @@ export async function executeClientAction(
       // ============================================================
       // 屏保弹幕：UI 控制 + 真生效启动/停止
       // ============================================================
-      case 'open_screensaver':
-        emitAssistantUiEvent('open_screensaver', payload)
-        return { success: true, message: '已打开屏保弹幕配置面板' }
 
-      case 'close_screensaver':
-        emitAssistantUiEvent('close_screensaver', payload)
-        return { success: true, message: '已关闭屏保弹幕配置面板' }
 
-      case 'start_screensaver': {
-        // 直接调后端 API 真启动子进程（无需打开 UI）；payload 即为完整 config
-        const cfg = (payload && typeof payload === 'object') ? payload as Record<string, unknown> : {}
-        const res = await screensaverApi.start(cfg)
-        if (res.success) {
-          return { success: true, message: '屏保已启动', data: res.data }
-        }
-        return { success: false, error: res.error || '启动屏保失败' }
-      }
 
-      case 'stop_screensaver': {
-        const res = await screensaverApi.stop()
-        if (res.success) {
-          return { success: true, message: '屏保已停止', data: res.data }
-        }
-        return { success: false, error: res.error || '停止屏保失败' }
-      }
 
-      case 'get_screensaver_status': {
-        const res = await screensaverApi.status()
-        if (res.success) return { success: true, data: res.data }
-        return { success: false, error: res.error || '获取屏保状态失败' }
-      }
+
+
+
+
+
 
       case 'open_export_dialog':
         emitAssistantUiEvent('open_export_dialog', payload)

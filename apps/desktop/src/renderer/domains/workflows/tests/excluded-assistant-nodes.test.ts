@@ -30,3 +30,9 @@ it('rejects AI attempts to reopen the removed Excel panel', async () => {
   expect((await executeClientAction('switch_bottom_panel', { tab: 'assets' })).success).toBe(false)
   expect(useWorkflowStore.getState().bottomPanelTab).toBe(previous)
 })
+
+it.each(['commit_version', 'hub_publish_workflow', 'start_screensaver'])('does not dispatch removed service action %s', async action => {
+  const result = await executeClientAction(action, {})
+  expect(result.success).toBe(false)
+  expect(result.error).toContain('未知 action')
+})

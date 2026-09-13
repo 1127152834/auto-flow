@@ -5,7 +5,7 @@ import { cn } from '../lib/utils'
 import type { NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { Globe, ExternalLink, Play } from 'lucide-react'
-import { moduleIcons } from './ModuleSidebar'
+import { moduleIcons, excludedModuleTypes } from './ModuleSidebar'
 import { getNodeColorClass } from './moduleColors'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { useDebugStore } from '../hooks/stores/debugStore'
@@ -142,6 +142,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
       }
       onDoubleClick={isSubflow && nodeData.subflowName ? handleSubflowDoubleClick : undefined}
     >
+      {excludedModuleTypes.has(nodeData.moduleType) && <div role="status" className="text-xs bg-amber-50 text-amber-800 px-2 py-1">此节点已排除，保留原配置，仅供查看和导出</div>}
       {/* 断点圆点：点击切换。命中时实心红，未命中时悬停才显形 */}
       <button
         className={cn(

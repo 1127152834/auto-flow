@@ -1,3 +1,4 @@
+import { excludedModuleTypes } from '../lib/moduleCatalog'
 import { mockSettingsRequest } from './mock-settings'
 import { mockAssetRequest } from './mock-assets'
 import { mockAssistantRequest } from './mock-assistant'
@@ -200,6 +201,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
         if (!doc) return failure('工作流不存在', 404)
         // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
         const nodes = structuredClone(doc.nodes) as ObjectValue[]
+        if (nodes.some(node => excludedModuleTypes.has(String((node.data as ObjectValue | undefined)?.moduleType || node.type) as never))) return failure('工作流包含已排除节点', 422)
         const index = body.startNodeId ? nodes.findIndex(n => n.id === body.startNodeId) : 0
         if (index < 0) return failure('起点不存在')
         runRows.set(id, [])

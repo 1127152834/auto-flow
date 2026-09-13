@@ -16,27 +16,27 @@ export const HIGH_RISK_ACTIONS = new Set<string>([
   'delete_node', 'delete_nodes', 'new_workflow', 'load_workflow_from_data',
   'delete_local_workflow', 'save_local_workflow', 'save_workflow_to_folder',
   'delete_scheduled_task', 'create_scheduled_task', 'update_scheduled_task', 'execute_scheduled_task',
-  'restore_version', 'reset_global_config', 'update_global_config',
+  'reset_global_config', 'update_global_config',
   'clear_data', 'clear_logs', 'clear_variables', 'delete_variable',
-  'run_workflow', 'run_workflow_headless', 'delete_data_asset', 'delete_image_asset',
-  'hub_publish_workflow', 'hub_delete_my_workflow',
+  'run_workflow', 'run_workflow_headless', 'delete_image_asset',
+
 ])
 
 // 只读 / 纯查询类 client_action：任何模式都不需要授权
 export const READONLY_ACTIONS = new Set<string>([
   'get_workflow_detail', 'get_logs', 'get_collected_data', 'list_variables', 'get_variable',
-  'find_nodes_by_type', 'list_open_dialogs', 'get_global_config', 'list_versions',
+  'find_nodes_by_type', 'list_open_dialogs', 'get_global_config',
   'get_local_workflow_content', 'list_local_workflows', 'get_local_workflow_default_folder',
-  'list_data_assets', 'list_image_assets', 'preview_data_asset', 'get_data_asset_sheets',
+  'list_image_assets',
   'list_scheduled_tasks_full', 'get_scheduled_task_detail', 'get_scheduled_task_logs',
   'get_scheduled_task_statistics', 'get_node_runtime_errors', 'fit_view', 'focus_node',
-  'hub_list_workflows', 'hub_get_categories', 'hub_get_my_workflows',
+
   // 纯 UI 开关（打开/关闭面板）不算"操作"，不打扰用户
   'open_global_config', 'close_global_config', 'open_local_workflow_dialog', 'close_local_workflow_dialog',
   'open_scheduled_tasks', 'close_scheduled_tasks', 'open_documentation', 'close_documentation',
-  'open_workflow_hub', 'close_workflow_hub', 'open_auto_browser', 'close_auto_browser',
-  'open_phone_mirror', 'close_phone_mirror', 'open_variable_tracking', 'close_variable_tracking',
-  'open_screensaver', 'close_screensaver', 'open_export_dialog', 'open_module_search',
+  'open_auto_browser', 'close_auto_browser',
+  'open_variable_tracking', 'close_variable_tracking',
+  'open_export_dialog', 'open_module_search',
   'switch_bottom_panel', 'show_toast', 'select_all_nodes', 'clear_selection',
 ])
 

@@ -1,3 +1,4 @@
+import { excludedModuleTypes } from './ModuleSidebar'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, components/workflow/Toolbar.tsx; see SOURCE.md for license and adaptation boundaries.
@@ -195,6 +196,11 @@ export function Toolbar() {
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
     if (nodes.length === 0) {
       addLog({ level: 'warning', message: '工作流没有任何节点' })
+      return
+    }
+
+    if (nodes.some(node => excludedModuleTypes.has(node.data.moduleType))) {
+      addLog({ level: 'error', message: '工作流包含已排除节点；请移除这些节点后运行，原文档仍可保存或导出。' })
       return
     }
 
@@ -1530,6 +1536,9 @@ export function Toolbar() {
         >
           <Code className="w-4 h-4 mr-1" />
           导出
+        </Button>
+        <Button variant="tonal-info" size="sm" onClick={handleImportBundle}>
+          <Package className="w-4 h-4 mr-1" />导入整包
         </Button>
       </div>
 

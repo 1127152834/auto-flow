@@ -331,12 +331,6 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     offs.push(onAssistantUiEvent('download_data', () => {
       handleDownloadData()
     }))
-    offs.push(onAssistantUiEvent('upload_excel', () => {
-      // ExcelAssetsPanel 通过 window.__excelUploadTrigger 暴露上传函数
-      if ((window as any).__excelUploadTrigger) {
-        (window as any).__excelUploadTrigger()
-      }
-    }))
     offs.push(onAssistantUiEvent('upload_image', () => {
       if ((window as any).__imageUploadTrigger) {
         (window as any).__imageUploadTrigger()

@@ -1,3 +1,4 @@
+import { excludedModuleTypes } from '../lib/moduleCatalog'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, type NodeData, type ErrorPolicy } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -1187,6 +1188,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
   // 渲染模块配置
   const renderModuleConfig = () => {
+    if (excludedModuleTypes.has(nodeData.moduleType)) {
+      return <div role="status">此节点已排除，保留原配置，仅供查看和导出<pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(nodeData, null, 2)}</pre></div>
+    }
     const props = { data: nodeData, onChange: handleChange, renderSelectorInput }
 
     // Excel 自动化模块（openpyxl）统一走 schema 驱动的通用配置面板
