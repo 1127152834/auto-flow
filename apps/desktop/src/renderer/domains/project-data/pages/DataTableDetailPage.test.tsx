@@ -377,7 +377,7 @@ it('keeps the original gallery table heading, tabs and record form inside one co
   const heading=await screen.findByRole('heading',{name:'新增记录',level:1});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'数据记录'})).toBeVisible()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'字段与校验'})).toBeVisible()
-  expect(within(frame as HTMLElement).getByRole('form',{name:'新建记录表单'})).toBeVisible()
+  expect(await within(frame as HTMLElement).findByRole('form',{name:'新建记录表单'})).toBeVisible()
   expect(within(frame as HTMLElement).queryByRole('complementary')).not.toBeInTheDocument()
 })
 
