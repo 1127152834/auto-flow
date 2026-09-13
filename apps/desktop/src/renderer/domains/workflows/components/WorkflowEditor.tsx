@@ -20,7 +20,7 @@ import { useWorkflowStore, type NodeData } from '../editor-store'
 import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { isEncryptedEnvelope, decryptWorkflow } from '../lib/workflowCrypto'
+import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
 import { ModuleNode } from './ModuleNode'
@@ -410,7 +410,7 @@ export function WorkflowEditor() {
   const pasteNodes = useWorkflowStore((s) => s.pasteNodes)
   const pasteNodesFromClipboard = useWorkflowStore((s) => s.pasteNodesFromClipboard)
   const addLog = useWorkflowStore((s) => s.addLog)
-  const mergeWorkflow = useWorkflowStore((s) => s.mergeWorkflow)
+  const fileImportPending = useRef(false)
   const toggleNodesDisabled = useWorkflowStore((s) => s.toggleNodesDisabled)
   const undo = useWorkflowStore((s) => s.undo)
   const redo = useWorkflowStore((s) => s.redo)
@@ -1195,51 +1195,13 @@ export function WorkflowEditor() {
             y: event.clientY,
           })
           
-          // 读取并导入所有JSON文件
-          jsonFiles.forEach((file, index) => {
-            const reader = new FileReader()
-            reader.onload = async (e) => {
-              const content = e.target?.result as string
-              if (!content) return
-              let payload = content
-              // 加密分享包：检测信封并提示输入密码解密
-              try {
-                const parsed = JSON.parse(content)
-                if (isEncryptedEnvelope(parsed)) {
-                  const pwd = await promptPassword({
-                    title: '导入加密分享包',
-                    message: `「${parsed.name || file.name}」是加密分享包，请输入密码`,
-                    confirmText: '解密导入',
-                  })
-                  if (!pwd) { addLog({ level: 'warning', message: `已取消导入加密包: ${file.name}` }); return }
-                  try {
-                    payload = await decryptWorkflow(parsed, pwd)
-                  } catch {
-                    addLog({ level: 'error', message: `解密失败：密码错误或文件已损坏（${file.name}）` })
-                    alertDialog(`无法解密「${file.name}」。\n密码错误或文件已损坏，请确认密码后重试。`, {
-                      title: '解密失败',
-                      confirmText: '我知道了',
-                    })
-                    return
-                  }
-                }
-              } catch { /* 非 JSON 信封，按原内容处理 */ }
-              // 每个文件在Y方向上偏移一些，避免重叠
-              const success = mergeWorkflow(payload, {
-                x: position.x,
-                y: position.y + index * 150
-              })
-              if (success) {
-                addLog({ level: 'success', message: `已导入工作流: ${file.name}` })
-              } else {
-                addLog({ level: 'error', message: `导入失败: ${file.name}，文件格式无效` })
-              }
-            }
-            reader.onerror = () => {
-              addLog({ level: 'error', message: `读取文件失败: ${file.name}` })
-            }
-            reader.readAsText(file)
-          })
+          if (fileImportPending.current) {
+            addLog({ level: 'warning', message: '文件正在导入，请完成或取消当前导入后再拖入。' })
+            return
+          }
+          fileImportPending.current = true
+          void importDroppedWorkflows(jsonFiles, position, { promptPassword, alert: alertDialog })
+            .finally(() => { fileImportPending.current = false })
         }
         return
       }
@@ -1282,7 +1244,7 @@ export function WorkflowEditor() {
       // 普通模块
       addNode(dataStr as ModuleType, position)
     },
-    [addNode, mergeWorkflow, addLog]
+    [addNode, addLog, promptPassword, alertDialog]
   )
 
   // 注：原来还定义了 handleFileDragOver/Leave/Drop 一组函数，但实际未绑定到任何 React Flow 元素，

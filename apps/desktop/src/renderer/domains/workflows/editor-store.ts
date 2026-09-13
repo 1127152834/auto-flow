@@ -3362,12 +3362,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         (v: Variable) => !existingVarNames.has(v.name)
       )
 
-      set({
+      const merged = {
         nodes: [...state.nodes, ...sanitizeNodes(newNodes)] as any,
         edges: [...state.edges, ...sanitizeEdges(newEdges)] as any,
         variables: [...state.variables, ...newVariables],
-        selectedNodeId: null,
-      })
+      }
+      get().pushHistory()
+      set({ ...merged, selectedNodeId: null, hasUnsavedChanges: true })
       
       return true
     } catch {

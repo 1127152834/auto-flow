@@ -14288,5 +14288,181 @@
     "level": "browser-e2e",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f0-chinese-doc-scope/browser.md"
+  },
+  {
+    "id": "DOC.drop.ordered-merge",
+    "capability": "按顺序合并并保留同文档编辑和撤销",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "按顺序合并并保留同文档编辑和撤销"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.stale-read",
+    "capability": "读取期间换文档",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "读取期间换文档"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.stale-password",
+    "capability": "密码输入期间换文档",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "密码输入期间换文档"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.stale-decrypt",
+    "capability": "解密期间换文档",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "解密期间换文档"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.reopened-origin",
+    "capability": "换文档再回原文档仍取消",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "换文档再回原文档仍取消"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.ordered-prompts",
+    "capability": "多加密文件顺序提示和取消",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "多加密文件顺序提示和取消"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.read-error",
+    "capability": "读取失败不改草稿",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "读取失败不改草稿"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.json-error",
+    "capability": "损坏 JSON 不改草稿",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "损坏 JSON 不改草稿"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.decrypt-error",
+    "capability": "解密失败不改草稿",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "解密失败不改草稿"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.password-unmount",
+    "capability": "卸载取消密码等待",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "卸载取消密码等待"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
+  },
+  {
+    "id": "DOC.drop.password-replaced",
+    "capability": "替换取消原密码等待",
+    "preconditions": {
+      "document": "空文档；夹具文件和延迟 Promise"
+    },
+    "steps": [
+      "替换取消原密码等待"
+    ],
+    "expectedUI": "使用现有密码提示；取消/失败/过期返回明确日志",
+    "expectedIO": "本地读取/解密，不请求保存接口",
+    "stateAssertion": "有效合并记录历史和 dirty；取消、失败、过期不修改文档",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-dropped-workflows/target.log"
   }
 ]

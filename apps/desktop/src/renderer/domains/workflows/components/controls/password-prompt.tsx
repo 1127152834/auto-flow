@@ -30,10 +30,17 @@ export function usePasswordPrompt() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const promptPassword = useCallback((opts: PromptOptions = {}) => {
+    // A replaced prompt must resolve its original caller instead of leaving it suspended.
+    resolveRef.current?.(null)
     setValue('')
     setShow(false)
     setState({ open: true, opts })
     return new Promise<string | null>((resolve) => { resolveRef.current = resolve })
+  }, [])
+
+  useEffect(() => () => {
+    resolveRef.current?.(null)
+    resolveRef.current = null
   }, [])
 
   useEffect(() => {
