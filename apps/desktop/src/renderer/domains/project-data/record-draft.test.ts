@@ -50,3 +50,11 @@ it('does not reinterpret omitted edits as null or send unchanged empty strings',
   drafts.missing = scalarDraft(null)
   expect(recordValues(fields, drafts, initial)).toEqual([{ fieldId: 'missing', value: null }])
 })
+it('applies submitted display values only to writable readable business fields',()=>{
+  const fields=[field('text'),field('zero',{type:'number'}),field('flag',{type:'boolean'}),field('nil'),field('formula',{formula:true}),field('locked',{writable:false}),field('secret')]
+  const initial=record([cell('text','old'),cell('zero',9),cell('flag',true),cell('nil','old'),cell('formula','safe'),cell('locked','safe'),cell('secret','hidden',false)])
+  const submitted:Schema['DataCellWrite'][]=[{fieldId:'text',value:'sent'},{fieldId:'zero',value:0},{fieldId:'flag',value:false},{fieldId:'nil',value:null},{fieldId:'formula',value:'leak'},{fieldId:'locked',value:'leak'},{fieldId:'secret',value:'leak'},{fieldId:'unknown',value:'leak'}]
+  const drafts=createRecordDraft(fields,initial,submitted)
+  expect(drafts.text).toEqual(scalarDraft('sent'));expect(drafts.zero).toEqual(scalarDraft(0));expect(drafts.flag).toEqual(scalarDraft(false));expect(drafts.nil).toEqual(scalarDraft(null))
+  expect(drafts.formula).toEqual(scalarDraft('safe'));expect(drafts.locked).toEqual(scalarDraft('safe'));expect(drafts.secret).toEqual(scalarDraft(undefined));expect(drafts).not.toHaveProperty('unknown')
+})

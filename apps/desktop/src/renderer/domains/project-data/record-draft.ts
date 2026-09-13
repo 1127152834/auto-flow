@@ -9,11 +9,12 @@ export class RecordDraftError extends Error {
   constructor(readonly fieldId: string, message: string, readonly control: ScalarDraftControl = 'value') { super(message); this.name = 'RecordDraftError' }
 }
 
-export function createRecordDraft(fields: Field[], record?: RecordView): RecordDraft {
+export function createRecordDraft(fields: Field[], record?: RecordView, submittedValues?: components['schemas']['DataCellWrite'][]): RecordDraft {
   const cells = new Map(record?.values.map(cell => [cell.fieldId, cell]))
+  const submitted = new Map(submittedValues?.map(value => [value.fieldId, value.value]))
   return Object.fromEntries(fields.map(field => {
-    const cell = cells.get(field.ref.fieldId)
-    return [field.ref.fieldId, scalarDraft(cell?.readable ? cell.value : undefined)]
+    const fieldId=field.ref.fieldId,cell = cells.get(fieldId),mayOverride=!field.formula&&field.writable&&cell?.readable!==false&&submitted.has(fieldId)
+    return [fieldId, scalarDraft(mayOverride?submitted.get(fieldId):cell?.readable ? cell.value : undefined)]
   }))
 }
 

@@ -11,7 +11,7 @@ type RecordView = Schema['DataRecordView']
 type CellWrite = Schema['DataCellWrite']
 type FormContext = { fields: Field[]; initialRecord?: RecordView; identityFieldId?: string }
 export type RecordEditorFormProps = {
-  id: string; mode: 'create' | 'edit'; presentation?: 'dialog' | 'page'; sessionKey: string; fields: Field[]; initialRecord?: RecordView; identityFieldId?: string; submissionEpoch?: string | number
+  id: string; mode: 'create' | 'edit'; presentation?: 'dialog' | 'page'; sessionKey: string; fields: Field[]; initialRecord?: RecordView; initialSubmittedValues?: CellWrite[]; identityFieldId?: string; submissionEpoch?: string | number
   saving?: boolean; recoveryPending?: boolean; readonly?: boolean; error?: string | null; errorActions?: ReactNode; footerClassName?: string
   externalActions?: boolean
   onCancel?(): void; onSubmitAttempt?(): void; onSubmit(values: CellWrite[]): Promise<unknown>; onRecover?(): Promise<unknown>; onDirtyChange?(dirty: boolean): void; onSavingChange?(saving: boolean): void
@@ -19,11 +19,12 @@ export type RecordEditorFormProps = {
 
 const equalDraft = (left: RecordDraft, right: RecordDraft) => JSON.stringify(left) === JSON.stringify(right)
 
-export function RecordEditorForm({ id, mode, presentation='dialog', sessionKey, fields, initialRecord, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmitAttempt, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
-  const [drafts,setDrafts]=useState(()=>createRecordDraft(fields,initialRecord)),[context,setContext]=useState<FormContext>(()=>({fields,initialRecord,identityFieldId}))
+export function RecordEditorForm({ id, mode, presentation='dialog', sessionKey, fields, initialRecord, initialSubmittedValues, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmitAttempt, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
+  const submittedDraft=()=>createRecordDraft(fields,initialRecord,initialSubmittedValues?.filter(value=>value.fieldId!==identityFieldId))
+  const [drafts,setDrafts]=useState(submittedDraft),[context,setContext]=useState<FormContext>(()=>({fields,initialRecord,identityFieldId}))
   const [fieldErrors,setFieldErrors]=useState<Record<string,{message:string;control:ScalarDraftControl}>>({}),[submitError,setSubmitError]=useState<string|null>(null)
   const [submitting,setSubmitting]=useState(false),[recovering,setRecovering]=useState(false)
-  const baseline=useRef(drafts),activeSession=useRef(sessionKey),activeSubmission=useRef(submissionEpoch),requestEpoch=useRef(0),submitLock=useRef(false),recoverLock=useRef(false)
+  const baseline=useRef(createRecordDraft(fields,initialRecord)),activeSession=useRef(sessionKey),activeSubmission=useRef(submissionEpoch),requestEpoch=useRef(0),submitLock=useRef(false),recoverLock=useRef(false)
   const guardRef=useRef({readonly,saving,recoveryPending}),lastInitial=useRef(initialRecord),lastFields=useRef(fields),dirtyCallback=useRef(onDirtyChange),savingCallback=useRef(onSavingChange)
   const fieldContainers=useRef(new Map<string,HTMLDivElement>())
   const hasChanges=mode==='create'?!equalDraft(drafts,baseline.current):(()=>{try{return recordValues(context.fields,drafts,context.initialRecord,context.identityFieldId).length>0}catch{return true}})()
@@ -33,9 +34,9 @@ export function RecordEditorForm({ id, mode, presentation='dialog', sessionKey, 
     const newSession=activeSession.current!==sessionKey,reconnect=activeSubmission.current!==submissionEpoch,refreshed=lastInitial.current!==initialRecord||lastFields.current!==fields
     activeSession.current=sessionKey;activeSubmission.current=submissionEpoch;lastInitial.current=initialRecord;lastFields.current=fields
     if(reconnect){requestEpoch.current++;submitLock.current=false;recoverLock.current=false;setSubmitting(false);setRecovering(false);setFieldErrors({});setSubmitError(null)}
-    if(newSession){requestEpoch.current++;submitLock.current=false;recoverLock.current=false;setSubmitting(false);setRecovering(false);const next=createRecordDraft(fields,initialRecord);baseline.current=next;setDrafts(next);setContext({fields,initialRecord,identityFieldId});setFieldErrors({});setSubmitError(null);return}
-    if(refreshed&&!hasChanges){const next=createRecordDraft(fields,initialRecord);baseline.current=next;setDrafts(next);setContext({fields,initialRecord,identityFieldId});setFieldErrors({})}
-  },[fields,hasChanges,identityFieldId,initialRecord,sessionKey,submissionEpoch])
+    if(newSession){requestEpoch.current++;submitLock.current=false;recoverLock.current=false;setSubmitting(false);setRecovering(false);const next=submittedDraft();baseline.current=createRecordDraft(fields,initialRecord);setDrafts(next);setContext({fields,initialRecord,identityFieldId});setFieldErrors({});setSubmitError(null);return}
+    if(refreshed&&!hasChanges&&!initialSubmittedValues){const next=createRecordDraft(fields,initialRecord);baseline.current=next;setDrafts(next);setContext({fields,initialRecord,identityFieldId});setFieldErrors({})}
+  },[fields,hasChanges,identityFieldId,initialRecord,initialSubmittedValues,sessionKey,submissionEpoch])
   useLayoutEffect(()=>{dirtyCallback.current=onDirtyChange;savingCallback.current=onSavingChange;guardRef.current={readonly,saving,recoveryPending}},[onDirtyChange,onSavingChange,readonly,recoveryPending,saving])
   useEffect(()=>{onDirtyChange?.(hasChanges)},[hasChanges,onDirtyChange,sessionKey])
   useEffect(()=>{onSavingChange?.(busy)},[busy,onSavingChange])

@@ -37,3 +37,17 @@ it('renders the page identity in Chinese and keeps the shared footer actions',()
   expect(screen.getByText('记录身份：文本 · 001（只读）')).toBeVisible();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
   expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument();expect(screen.getByRole('button',{name:'保存修改'}).closest('footer')).toBeInTheDocument()
 })
+
+it('shows submitted recovery values without replacing the record baseline or leaking identity',async()=>{
+  const user=userEvent.setup(),submit=vi.fn().mockResolvedValue(undefined),fields=[field('identity'),field('value')],initial=record([cell('identity','001'),cell('value','before')])
+  const props={id:'editor',mode:'edit' as const,sessionKey:'recovery',fields,initialRecord:initial,identityFieldId:'identity',initialSubmittedValues:[{fieldId:'identity',value:'leak'},{fieldId:'value',value:'submitted'}] as Schema['DataCellWrite'][],onSubmit:submit}
+  const view=render(<RecordEditorForm {...props} recoveryPending/>);expect(screen.getByLabelText('identity')).toHaveValue('001');expect(screen.getByLabelText('value')).toHaveValue('submitted')
+  view.rerender(<RecordEditorForm {...props} initialSubmittedValues={[{fieldId:'value',value:'later'}]} recoveryPending/>);expect(screen.getByLabelText('value')).toHaveValue('submitted')
+  view.rerender(<RecordEditorForm {...props}/>);await user.click(screen.getByRole('button',{name:'保存修改'}));expect(submit).toHaveBeenCalledWith([{fieldId:'value',value:'submitted'}])
+})
+
+it('keeps an unchanged submitted recovery value across a same-session record refresh',()=>{
+  const fields=[field('value')],submitted=[{fieldId:'value',value:'before'}] as Schema['DataCellWrite'][],props={id:'editor',mode:'edit' as const,sessionKey:'recovery-same',fields,initialSubmittedValues:submitted,recoveryPending:true,onSubmit:vi.fn()}
+  const view=render(<RecordEditorForm {...props} initialRecord={record([cell('value','before')])}/>);view.rerender(<RecordEditorForm {...props} initialRecord={record([cell('value','server-refresh')])}/>)
+  expect(screen.getByLabelText('value')).toHaveValue('before')
+})
