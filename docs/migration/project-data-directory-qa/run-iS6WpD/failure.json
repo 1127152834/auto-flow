@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI creates a field and confirms a real field mutation impact before editing",
+    "UI creates and edits a business status without changing any record status"
+  ],
+  "error": "control obscured: 新增记录: {\"x\":1291,\"y\":750,\"innerHeight\":992,\"disabled\":false,\"hit\":false,\"obstruction\":\"<div class=\\\"toast-enter pointer-events-auto flex items-center justify-between gap-4 rounded-control border border-line bg-surface px-4 py-3 text-sm text-ink shadow-lg\\\" role=\\\"status\\\" data-tone=\\\"success\\\"><span class=\\\"min-w-0 break-words\\\">保存已确认</span><button aria-label=\\\"关闭通知\\\" type=\\\"button\\\" class=\\\"af-button relative inline-flex items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-\"}\n\nfalse !== true\n",
+  "checkedAt": "2026-09-13T04:25:57.937Z"
+}

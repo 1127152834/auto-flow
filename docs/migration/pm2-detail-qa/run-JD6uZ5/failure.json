@@ -1,0 +1,13 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:53:57.330Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export",
+    "replaced through sheet selection, mapping and impact review; generation advanced while the original source workbook stayed byte-identical",
+    "a fresh Electron and sidecar instance returned the durable replacement and export-era table facts"
+  ],
+  "error": "timed out waiting for 详情流程表: false"
+}

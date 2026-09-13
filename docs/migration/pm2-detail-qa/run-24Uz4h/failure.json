@@ -1,0 +1,9 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:41:21.137Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET"
+  ],
+  "error": "renderer evaluation failed: Uncaught"
+}

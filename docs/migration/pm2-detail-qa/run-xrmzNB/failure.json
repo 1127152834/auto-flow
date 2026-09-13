@@ -1,0 +1,8 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:40:15.973Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status"
+  ],
+  "error": "timed out waiting for clickable 选择本页记录: null"
+}

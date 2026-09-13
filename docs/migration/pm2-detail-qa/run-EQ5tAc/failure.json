@@ -1,0 +1,9 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:41:48.642Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET"
+  ],
+  "error": "export-200-percent dialog has no internal vertical scrolling at 200%"
+}

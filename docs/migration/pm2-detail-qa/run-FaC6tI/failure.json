@@ -1,0 +1,11 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:51:10.400Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export"
+  ],
+  "error": "The expression evaluated to a falsy value:\n\n  assert.ok(records.every(value=>value.statusId))\n"
+}

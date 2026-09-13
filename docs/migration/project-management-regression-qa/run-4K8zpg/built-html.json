@@ -1,0 +1,41 @@
+{
+  "scope": "PM1 project entry and existing-module regression; PM2 data entry only; detailed data behavior not tested",
+  "result": "passed",
+  "entry": "built-html",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkedAt": "2026-09-13T04:39:41.351Z",
+  "checks": [
+    "UI creates A/B and edits A using persisted project revisions",
+    "overview tabs expose only available capability; returning preserves search",
+    "real 55-row query paginates, retains sorting/page and restores contained scroll",
+    "real competing PATCH yields 409, preserves draft and explicitly rebases",
+    "same-workspace service restart preserves draft; Escape cancellation and later save work",
+    "200% Electron zoom and open dropdown preserve application width",
+    "two real workspaces isolate projects and switch back to saved data",
+    "browser/proxy/model/settings/dashboard and Studio M1 entries regress successfully",
+    "full Electron restart retains projects and last-opened timestamps, then reopens A"
+  ],
+  "measurements": {
+    "zoom": {
+      "factor": 2,
+      "before": {
+        "inner": 720,
+        "root": 708,
+        "doc": 708
+      },
+      "after": {
+        "inner": 720,
+        "root": 708,
+        "doc": 720
+      },
+      "popup": {
+        "top": 12,
+        "bottom": 240,
+        "height": 228,
+        "viewportHeight": 512
+      }
+    }
+  },
+  "windows": "not-run"
+}
