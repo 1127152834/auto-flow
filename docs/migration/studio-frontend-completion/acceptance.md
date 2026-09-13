@@ -119,3 +119,7 @@ TypeScript、ESLint、renderer/main/preload 构建通过；证据 f0-scheduled-t
 最新全量136文件1648项通过，类型/lint、renderer/main/preload构建与21脚本通过。输入状态schema30项、Ruff/mypy/OpenAPI在对应批次通过。实际浏览器操作证据已分别记录，全部保留Mock边界。
 
 F0仍需完整字段/动态工具依赖核对；F1仍需全部操作schema和独立运行/会话合同；F2仍需全图预检与全部284节点分支；F3仍缺服务端暂停身份、命令幂等、运行历史与其它交互命令；F4仍缺全局拾取/录制会话所有权与完整生命周期；F5宿主与权限/离开协调未收口；F6正式Electron及打包/跨平台未验收。没有任何整批因此标为完成。
+
+## 定位协议增量
+
+定位测试成功响应运行时校验、生成schema和显式Mock场景已接通，详见 selector-protocol-validation.md。新增前端28、后端18项通过，正式页面组件的预览点击已记录；全量138文件1690项、类型/lint、Ruff/mypy、构建、21脚本及OpenAPI通过。F0–F6整体缺口仍按上述清单保留。

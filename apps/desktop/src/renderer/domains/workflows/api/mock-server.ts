@@ -26,6 +26,7 @@ const encoder = new TextEncoder()
 let offline = false
 let failNextSave = false
 let failNextRun = false
+let selectorTest: 'none' | 'single' | 'multiple' | 'error' = 'single'
 let nextExecutionOrder: string[] | null = null
 const runRows = new Map<string, ObjectValue[]>()
 const tracking = new Map<string, ObjectValue[]>()
@@ -51,7 +52,8 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
-export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; disconnect?: boolean; executionOrder?: string[] | null }) {
+export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+  if (options.selectorTest !== undefined) selectorTest = options.selectorTest
   if (options.executionOrder !== undefined) nextExecutionOrder = options.executionOrder === null ? null : [...options.executionOrder]
   if (options.offline !== undefined) offline = options.offline
   if (options.failNextRun !== undefined) failNextRun = options.failNextRun
@@ -402,7 +404,19 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })
     if (['/element-picker/result','/element-picker/selected'].includes(path)) return response({ success:true, active:picking, selected:picked !== null, data:picked, element:picked, ...picked })
     if (path === '/element-picker/similar') return response({ success:true, elements:[] })
-    if (path === '/element-picker/test-selector') return response({ success:true, matched:!!body.selector, count:body.selector ? 1:0, matchedSelector:body.selector, isPrimary:true, element:{tag:'button',text:'Mock 定位结果（未查询网页）'} })
+    if (path === '/element-picker/test-selector') {
+      if (method !== 'POST') return failure('定位测试仅支持 POST', 405)
+      if (typeof body.selector !== 'string' || !body.selector.trim() ||
+          (body.highlight !== undefined && typeof body.highlight !== 'boolean') ||
+          (body.hints != null && (typeof body.hints !== 'object' || Array.isArray(body.hints)))) return failure('定位测试参数格式错误', 422)
+      if (!browser) return failure('浏览器未打开，请先启动浏览器或元素拾取后再测试', 200)
+      if (selectorTest === 'error') return failure('Mock 定位失败（显式服务失败场景，未查询网页）', 200)
+      const count = selectorTest === 'none' ? 0 : selectorTest === 'multiple' ? 4 : 1
+      return response({ success: true, matched: count > 0, count,
+        tried: [{ selector: body.selector, count }],
+        ...(count ? { matchedSelector: body.selector, isPrimary: true, element: { tag: 'button', text: 'Mock 定位结果（未查询网页）' } } : {}),
+      })
+    }
     if (path === '/custom-modules' || path === '/custom-modules/import') {
       if (method === 'GET') return response({ success:true, modules:Object.values(db.modules), total:Object.keys(db.modules).length })
       const id = String(body.id || crypto.randomUUID()); const module = {...body,id}; persist({...db,modules:{...db.modules,[id]:module}}); return response(module)

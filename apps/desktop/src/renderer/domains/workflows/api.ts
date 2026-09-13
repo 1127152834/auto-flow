@@ -321,19 +321,28 @@ export const elementPickerApi = {
   getSimilar: () => apiRequest('/element-picker/similar'),
   getStatus: () => apiRequest('/element-picker/status'),
   /** 在当前浏览器页面上测试选择器是否命中并高亮匹配项 */
-  testSelector: (selector: string, hints?: Record<string, unknown>, highlight = true) =>
-    apiRequest<{
-      success: boolean
-      matched?: boolean
-      count?: number
-      matchedSelector?: string
-      isPrimary?: boolean
-      element?: { tag?: string; text?: string }
-      error?: string
-    }>('/element-picker/test-selector', {
-      method: 'POST',
-      body: JSON.stringify({ selector, hints: hints || null, highlight }),
-    }),
+  testSelector: async (selector: string, hints?: Record<string, unknown>, highlight = true) => {
+    type Wire = components['schemas']['StudioSelectorTestResult']
+    type Result = Pick<Wire, 'success' | 'matched' | 'count'> & Partial<Omit<Wire, 'success' | 'matched' | 'count'>>
+    const result = await apiRequest<Result>('/element-picker/test-selector', {
+      method: 'POST', body: JSON.stringify({ selector, hints: hints || null, highlight }),
+    })
+    if (!result.success) return result
+    const data = result.data
+    const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
+    const optionalString = (value: unknown) => value === undefined || value === null || typeof value === 'string'
+    const validCount = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+    if (!record(data) || data.success !== true || typeof data.matched !== 'boolean' ||
+        !validCount(data.count) || data.matched !== (data.count > 0) ||
+        !optionalString(data.matchedSelector) || !optionalString(data.error) ||
+        (data.isPrimary != null && typeof data.isPrimary !== 'boolean') ||
+        (data.element != null && (!record(data.element) || !optionalString(data.element.tag) || !optionalString(data.element.text))) ||
+        (data.tried != null && (!Array.isArray(data.tried) || !data.tried.every(attempt => record(attempt) &&
+          typeof attempt.selector === 'string' && (attempt.count == null || validCount(attempt.count)) && optionalString(attempt.error))))) {
+      return { success: false, error: '定位测试响应格式错误，请重试或检查服务连接' } as ApiResponse<Result>
+    }
+    return result
+  },
 }
 
 // ==================== 网页智能录制器 API ====================

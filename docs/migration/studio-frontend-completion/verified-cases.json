@@ -23404,5 +23404,509 @@
     "level": "memory protocol",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.closed",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "closed",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "业务失败浏览器未打开",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.none",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "none",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=0 matched=false",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.single",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "single",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=1 matched=true",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.multiple",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "multiple",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=4 matched=true",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.error",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "error",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "显式业务错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.selector-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "selector-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.highlight-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "highlight-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.hints-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "hints-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.empty",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "empty",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.memory.method",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "method",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "405",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.closed",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "closed",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "业务失败浏览器未打开",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.none",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "none",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=0 matched=false",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.single",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "single",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=1 matched=true",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.multiple",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "multiple",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "count=4 matched=true",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.error",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "error",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "显式业务错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.selector-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "selector-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.highlight-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "highlight-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.hints-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "hints-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.empty",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "empty",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "422",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.http.method",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "method",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "405",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.negative",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "negative",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.fraction",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "fraction",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.string",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "string",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.true-zero",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "true-zero",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.false-positive",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "false-positive",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.missing-count",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "missing-count",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.element-text",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "element-text",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
+  },
+  {
+    "id": "F4.selector-protocol.response.tried-type",
+    "capability": "selector-test",
+    "preconditions": {
+      "fixture": "tried-type",
+      "service": "明确Mock；HTTP模式使用真实本地网络"
+    },
+    "steps": [
+      "调用实际 elementPickerApi 或发送对应协议请求",
+      "检查响应与状态"
+    ],
+    "expectedUI": "已有面板显示返回结果；本协议例不单独证明DOM",
+    "expectedIO": "success=false，定位测试响应格式错误",
+    "stateAssertion": "失败不能转换成定位成功或改写节点",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/selector-test-protocol.test.ts"
   }
 ]

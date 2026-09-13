@@ -23,6 +23,8 @@ export function StudioMockTools() {
       <button onClick={() => action(() => addMockRecordingEvent({type:'input',selector:'#name',value:'AutoFlow'}))}>录制：输入</button>
       <button onClick={() => action(() => addMockRecordingEvent({type:'click',selector:'#submit'}))}>录制：点击</button>
       <button onClick={() => action(() => selectMockElement('#submit'))}>拾取：提交元素</button>
+      {([['none', '零匹配'], ['single', '单匹配'], ['multiple', '多匹配'], ['error', '服务失败']] as const).map(([scenario, label]) =>
+        <button key={scenario} onClick={() => action(() => configureMock({ selectorTest: scenario }))}>定位：{label}</button>)}
       <label>下次 Mock 节点轨迹 <input aria-label="下次 Mock 节点轨迹" value={executionOrder} onChange={event => setExecutionOrder(event.target.value)} placeholder="节点ID，用逗号分隔；重复ID表示重复调度" /></label>
       <button onClick={() => action(() => {
         if (!executionOrder.trim()) throw new Error('请输入节点 ID；不会执行表达式或推断分支')

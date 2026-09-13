@@ -20,6 +20,8 @@ STUDIO_SCHEMAS = (
     schemas.StudioInputPromptRequest,
     schemas.StudioInputPromptResult,
     schemas.StudioInputPromptState,
+    schemas.StudioSelectorTestRequest,
+    schemas.StudioSelectorTestResult,
 )
 
 

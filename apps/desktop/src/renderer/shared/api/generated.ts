@@ -2489,6 +2489,85 @@ export type components = {
              */
             status: "pending" | "answered" | "cancelled" | "expired";
         };
+        /** StudioSelectorAttempt */
+        StudioSelectorAttempt: {
+            /** Selector */
+            selector: string;
+            /**
+             * Count
+             * @default null
+             */
+            count: number | null;
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
+        };
+        /** StudioSelectorElement */
+        StudioSelectorElement: {
+            /**
+             * Tag
+             * @default null
+             */
+            tag: string | null;
+            /**
+             * Text
+             * @default null
+             */
+            text: string | null;
+        };
+        /** StudioSelectorTestRequest */
+        StudioSelectorTestRequest: {
+            /** Selector */
+            selector: string;
+            /**
+             * Hints
+             * @default null
+             */
+            hints: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Highlight
+             * @default true
+             */
+            highlight: boolean;
+        };
+        /** StudioSelectorTestResult */
+        StudioSelectorTestResult: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Matched */
+            matched: boolean;
+            /** Count */
+            count: number;
+            /**
+             * Matchedselector
+             * @default null
+             */
+            matchedSelector: string | null;
+            /**
+             * Isprimary
+             * @default null
+             */
+            isPrimary: boolean | null;
+            /** @default null */
+            element: components["schemas"]["StudioSelectorElement"] | null;
+            /**
+             * Tried
+             * @default null
+             */
+            tried: components["schemas"]["StudioSelectorAttempt"][] | null;
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
+        };
     };
     responses: never;
     parameters: never;

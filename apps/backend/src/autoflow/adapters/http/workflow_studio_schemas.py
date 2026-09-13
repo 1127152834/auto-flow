@@ -1,8 +1,8 @@
 """Shared Studio command envelopes; command-specific payloads remain separate contracts."""
 
-from typing import Literal
+from typing import Any, Literal, Self
 
-from pydantic import ConfigDict, Field
+from pydantic import ConfigDict, Field, model_validator
 
 from .schemas import ApiModel
 
@@ -102,3 +102,41 @@ class StudioInputPromptState(ApiModel):
     workflow_id: str
     node_id: str
     status: Literal["pending", "answered", "cancelled", "expired"]
+
+
+class StudioSelectorTestRequest(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    selector: str = Field(min_length=1, pattern=r"\S")
+    hints: dict[str, Any] | None = None
+    highlight: bool = True
+
+
+class StudioSelectorElement(ApiModel):
+    tag: str | None = None
+    text: str | None = None
+
+
+class StudioSelectorAttempt(ApiModel):
+    selector: str
+    count: int | None = Field(default=None, strict=True, ge=0, le=9007199254740991)
+    error: str | None = None
+
+
+class StudioSelectorTestResult(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    success: Literal[True]
+    matched: bool
+    count: int = Field(ge=0, le=9007199254740991)
+    matched_selector: str | None = None
+    is_primary: bool | None = None
+    element: StudioSelectorElement | None = None
+    tried: list[StudioSelectorAttempt] | None = None
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def check_match_count(self) -> Self:
+        if self.matched != (self.count > 0):
+            raise ValueError("matched must agree with count")
+        return self
