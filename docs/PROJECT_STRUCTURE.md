@@ -359,3 +359,16 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ## 项目管理B0视觉交付（2026-09-13）
 
 `docs/project-management/design-alignment/prototypes/`保存5组imagegen PNG、manifest与提示记录；`prototype-briefs.md`保存原图和旧代码复用映射；`prototype-interactions.md`保存精确交互规则；`implementation-ledger.json`记录B0及未来18任务，业务证据不由静态检查填充。`acceptance/b0/`保存图稿审阅入口、manual-test.md、只读资产验证脚本、核验与审查报告。B0待用户确认，业务源码与原始图库不在该包修改范围。
+
+
+### R1 对齐实际落点（2026-09-13 confirmed）
+
+以下更新覆盖上文阶段历史中“Popover 尚未存在、纠偏业务代码尚未开始”的旧状态；R2/R3 仍为计划。
+
+- `renderer/shared/components/ui/popover.tsx`：Radix 非模态 Popover，复用 OverlayHost；焦点恢复、视口碰撞及内部滚动。未复制已有 Dialog/Select。
+- `domains/projects/components/ProjectCard.tsx` 与 ProjectDirectory：最近卡片/全部条目；ProjectsWorkspace 负责独立真实查询、稳定工作区偏好与请求隔离；ProjectHeader 提供 compact 上下文。
+- `domains/project-data/components/RecordQueryToolbar.tsx`：三个互斥查询草稿、指定文本字段搜索；RecordFilterEditor 提供原语法的受控筛选/排序内容。DataTableDetailPage 统一有效查询、分页与导出；DataRecordsTable 的旧工具栏可关闭以消除重复入口。
+- `shared/components/Toaster.tsx`：可选 operationId、三条上限及更新计时；调用方仍负责原请求作用域校验。
+- `scripts/qa-project-alignment-r1.mjs`：隔离 Electron/CDP 验收与手测辅助；只使用工具创建的工作区，不增加生产调试接口。`docs/project-management/design-alignment/acceptance/r1/` 保存报告、截图、审查、手测和静态覆盖核验。
+
+来源：R1 提交与本机验收；HTTP/IPC/数据库/生成 DTO 未变。记录整页和字段整体草稿尚未实施。

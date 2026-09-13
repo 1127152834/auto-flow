@@ -1,0 +1,284 @@
+[
+  {
+    "run": "run-0k6dgl",
+    "result": "failed",
+    "checkedAt": "2026-09-13T10:44:23.988Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2"
+    ],
+    "injections": [],
+    "error": "timed out waiting for 温室资料001: false",
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-XmDfbN",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-I4fCYP",
+    "result": "passed",
+    "checkedAt": "2026-09-13T10:56:09.598Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2",
+      "指定文本字段输入不查询，提交后筛选实际记录",
+      "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+      "选列取消不生效、应用后隐藏字段",
+      "1440×1024及200%三个查询浮层无应用横向撑宽",
+      "测试服务完整重启，等待新实例ready",
+      "Electron完整重启后最近访问事实持久化",
+      "切换到工具创建的另一工作区",
+      "切换到工具创建的另一工作区",
+      "两个真实工作区隔离并切回恢复54个项目",
+      "一次读取故障由现有自动重试恢复，保留旧目录内容",
+      "一次读取失败保留旧目录；提交响应丢失后用原操作核验，只有一个项目事实",
+      "隔离API真实竞争编辑已提交；保留当前表单草稿后点击保存验证冲突",
+      "真实竞争编辑发生409，保留输入，基于最新内容重新编辑后保存"
+    ],
+    "injections": [
+      {
+        "kind": "save-dialog-selection",
+        "at": "2026-09-13T10:55:47.048Z",
+        "scope": "系统保存面板返回测试路径；真实文件IPC与写出"
+      },
+      {
+        "kind": "read",
+        "at": "2026-09-13T10:56:01.242Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      },
+      {
+        "kind": "read-error",
+        "at": "2026-09-13T10:56:04.899Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      },
+      {
+        "kind": "lost",
+        "at": "2026-09-13T10:56:08.243Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      }
+    ],
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-2olUDF",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-JK6cmZ",
+    "result": "manual-session-ended",
+    "checkedAt": "2026-09-13T11:09:29.435Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "manual-tool",
+    "checks": [],
+    "injections": [],
+    "commandErrors": [],
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-XH0H6g",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-YzJJee",
+    "result": "failed",
+    "checkedAt": "2026-09-13T10:43:09.081Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [],
+    "injections": [],
+    "error": "renderer evaluation failed: Uncaught",
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-QJYE3H",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-ev5Ci8",
+    "result": "passed",
+    "checkedAt": "2026-09-13T10:48:09.803Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2",
+      "指定文本字段输入不查询，提交后筛选实际记录",
+      "选列取消不生效、应用后隐藏字段",
+      "1440×1024及200%三个查询浮层无应用横向撑宽",
+      "测试服务完整重启，等待新实例ready",
+      "Electron完整重启后最近访问事实持久化",
+      "切换到工具创建的另一工作区",
+      "切换到工具创建的另一工作区",
+      "两个真实工作区隔离并切回恢复54个项目"
+    ],
+    "injections": [],
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-WRH0QP",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-lCoBGE",
+    "result": "failed",
+    "checkedAt": "2026-09-13T10:52:03.062Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2",
+      "指定文本字段输入不查询，提交后筛选实际记录",
+      "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+      "选列取消不生效、应用后隐藏字段",
+      "1440×1024及200%三个查询浮层无应用横向撑宽",
+      "测试服务完整重启，等待新实例ready",
+      "Electron完整重启后最近访问事实持久化",
+      "切换到工具创建的另一工作区",
+      "切换到工具创建的另一工作区",
+      "两个真实工作区隔离并切回恢复54个项目"
+    ],
+    "injections": [
+      {
+        "kind": "save-dialog-selection",
+        "at": "2026-09-13T10:51:33.262Z",
+        "scope": "系统保存面板返回测试路径；真实文件IPC与写出"
+      },
+      {
+        "kind": "read",
+        "at": "2026-09-13T10:51:47.816Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      }
+    ],
+    "error": "timed out waiting for 刷新最近项目失败: false",
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-fgUygm",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-mb5jSP",
+    "result": "passed",
+    "checkedAt": "2026-09-13T10:59:58.162Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2",
+      "指定文本字段输入不查询，提交后筛选实际记录",
+      "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+      "选列取消不生效、应用后隐藏字段",
+      "1440×1024及200%三个查询浮层无应用横向撑宽",
+      "测试服务完整重启，等待新实例ready",
+      "Electron完整重启后最近访问事实持久化",
+      "切换到工具创建的另一工作区",
+      "切换到工具创建的另一工作区",
+      "两个真实工作区隔离并切回恢复54个项目",
+      "一次读取故障由现有自动重试恢复，保留旧目录内容",
+      "一次读取失败保留旧目录；提交响应丢失后用原操作核验，只有一个项目事实",
+      "隔离API真实竞争编辑已提交；保留当前表单草稿后点击保存验证冲突",
+      "真实竞争编辑发生409，保留输入，基于最新内容重新编辑后保存"
+    ],
+    "injections": [
+      {
+        "kind": "save-dialog-selection",
+        "at": "2026-09-13T10:59:36.186Z",
+        "scope": "系统保存面板返回测试路径；真实文件IPC与写出"
+      },
+      {
+        "kind": "read",
+        "at": "2026-09-13T10:59:49.856Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      },
+      {
+        "kind": "read-error",
+        "at": "2026-09-13T10:59:53.488Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      },
+      {
+        "kind": "lost",
+        "at": "2026-09-13T10:59:56.799Z",
+        "scope": "仅当前隔离renderer，fetch测试注入"
+      }
+    ],
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-dCw1Y9",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-wRgcri",
+    "result": "failed",
+    "checkedAt": "2026-09-13T10:46:13.176Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [
+      "UI创建A/B并依次打开，最近B在A之前",
+      "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+      "真实目录服务端分页50/2",
+      "指定文本字段输入不查询，提交后筛选实际记录",
+      "选列取消不生效、应用后隐藏字段",
+      "1440×1024及200%三个查询浮层无应用横向撑宽"
+    ],
+    "injections": [],
+    "error": "renderer evaluation failed: Uncaught",
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-CSfwhs",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  },
+  {
+    "run": "run-zM5318",
+    "result": "failed",
+    "checkedAt": "2026-09-13T10:54:24.764Z",
+    "platform": "darwin",
+    "arch": "arm64",
+    "mode": "automatic",
+    "checks": [],
+    "injections": [],
+    "error": "timed out waiting for 返回项目目录: null",
+    "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-WZwSLx",
+    "excluded": [
+      "Windows",
+      "其他架构",
+      "打包应用",
+      "用户手动执行结果"
+    ]
+  }
+]

@@ -1,0 +1,34 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ history output guard resolves symlinks before any nested directory is created (11.413625ms)
+✔ containment handles Windows separators and sibling prefixes (0.321917ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (9.832041ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.102292ms)
+✔ browser management smoke creates the platform kernel layout (0.159166ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.286666ms)
+✔ profile test browser smoke validates a public kernel directory (6.667958ms)
+✔ profile test browser smoke finds a session below the manager root (1.813042ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (52.171875ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (49.898916ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (44.866ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (47.32425ms)
+✔ packaged smoke cannot silently select external health mode (1.815208ms)
+✔ cleanup rejects after the final deadline if the child never exits (12.184167ms)
+✔ cleanup observes close without requiring exit (0.772542ms)
+✔ cleanup rejects a child process error (0.541958ms)
+✔ required path exists: apps/desktop/package.json (0.544584ms)
+✔ required path exists: apps/backend/pyproject.toml (0.086584ms)
+✔ root scripts expose the foundation checks (0.690834ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (3.257667ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.766292ms)
+✔ a green machine report cannot substitute for real application evidence (0.274375ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 264.581292

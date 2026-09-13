@@ -1,0 +1,21 @@
+{
+  "result": "manual-session-ended",
+  "checkedAt": "2026-09-13T11:12:28.485Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "manual-tool",
+  "checks": [
+    "测试服务完整重启，等待新实例ready",
+    "切换到工具创建的另一工作区",
+    "切换到工具创建的另一工作区"
+  ],
+  "injections": [],
+  "commandErrors": [],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-HydlCs",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}
