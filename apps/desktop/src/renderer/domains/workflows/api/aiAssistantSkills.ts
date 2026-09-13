@@ -16,7 +16,7 @@ import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { useDialogRegistry, getDialogInfoForAI } from '../hooks/stores/dialogRegistry'
 import { localWorkflowApi, workflowApi, imageAssetApi, scheduledTaskApi } from '../api'
 import { socketService } from '../events'
-import { useAiActionLogStore } from '../hooks/stores/aiActionLogStore'
+import { useAiActionLogStore, type AiActionEntry } from '../hooks/stores/aiActionLogStore'
 import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissionStore'
 
 // 会改动画布、需要记入「AI 操作时间线」并可一键回退的 client_action
@@ -331,11 +331,12 @@ export async function executeClientAction(
         }
       }
     }
-    // 记录「AI 操作时间线」：会改动画布的操作，先存一份操作前快照，供一键回退
+    // 捕获操作前快照，只在操作成功后记入时间线。
+    let actionEntry: AiActionEntry | undefined
     if (MUTATING_ACTIONS.has(action)) {
       try {
         const ws = useWorkflowStore.getState()
-        useAiActionLogStore.getState().record({
+        actionEntry = {
           id: `aiact-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           ts: Date.now(),
           action,
@@ -344,10 +345,12 @@ export async function executeClientAction(
             nodes: JSON.parse(JSON.stringify(ws.nodes)),
             edges: JSON.parse(JSON.stringify(ws.edges)),
             name: ws.name,
+            variables: structuredClone(ws.variables),
           },
-        })
+        }
       } catch { /* 快照失败不影响主流程 */ }
     }
+    const result = await (async (): Promise<ClientActionResult> => {
     switch (action) {
       // ============================================================
       // 画布操作
@@ -1720,6 +1723,9 @@ export async function executeClientAction(
       default:
         return { success: false, error: `未知 action：${action}` }
     }
+    })()
+    if (result.success && actionEntry) useAiActionLogStore.getState().record(actionEntry)
+    return result
   } catch (err) {
     return {
       success: false,

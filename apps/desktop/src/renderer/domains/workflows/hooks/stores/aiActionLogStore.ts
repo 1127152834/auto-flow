@@ -1,6 +1,7 @@
 // Source: WebRPA@5ccb900e, store/aiActionLogStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
 import type { Node, Edge } from '@xyflow/react'
+import type { Variable } from '../../types/index'
 import type { NodeData } from '../../editor-store'
 
 /** AI 会话操作时间线：记录小助手每次「会改动画布」的操作，并保存操作前快照，支持一键回退。 */
@@ -14,6 +15,7 @@ export interface AiActionEntry {
     nodes: Node<NodeData>[]
     edges: Edge[]
     name: string
+    variables?: Variable[]
   }
 }
 

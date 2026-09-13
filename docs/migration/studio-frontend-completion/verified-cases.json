@@ -13236,5 +13236,89 @@
     "level": "component interaction",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "AI.snapshot.history",
+    "capability": "快照恢复完整历史",
+    "preconditions": {
+      "document": "已修改名称并声明变量的草稿"
+    },
+    "steps": [
+      "恢复快照后修改传入值",
+      "撤销、重做和继续撤销"
+    ],
+    "expectedUI": "画布名称和变量按历史恢复",
+    "expectedIO": "本地 AI/Store 操作；取消不发起文档替换，未调用真实自动化后端",
+    "stateAssertion": "恢复作为一次可撤销编辑；不共享变量引用",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/workflowStore.test.ts"
+  },
+  {
+    "id": "AI.snapshot.module-boundary",
+    "capability": "模块退出历史边界",
+    "preconditions": {
+      "document": "模块编辑画布存在历史"
+    },
+    "steps": [
+      "显式 resetHistory 恢复主画布后撤销"
+    ],
+    "expectedUI": "仍显示主画布",
+    "expectedIO": "本地 AI/Store 操作；取消不发起文档替换，未调用真实自动化后端",
+    "stateAssertion": "不能撤销进入已退出模块",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/hooks/stores/__tests__/workflowStore.test.ts"
+  },
+  {
+    "id": "AI.timeline.cancel-new",
+    "capability": "AI 新建取消不记账",
+    "preconditions": {
+      "document": "已挂载工具栏且有未保存变量"
+    },
+    "steps": [
+      "执行 AI new_workflow 并在真实确认框取消"
+    ],
+    "expectedUI": "原草稿保留",
+    "expectedIO": "本地 AI/Store 操作；取消不发起文档替换，未调用真实自动化后端",
+    "stateAssertion": "命令失败返回，时间线为空",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "AI.timeline.cancel-load",
+    "capability": "AI 替换取消不记账",
+    "preconditions": {
+      "document": "已挂载工具栏且有未保存变量"
+    },
+    "steps": [
+      "执行 AI load_workflow_from_data 并取消"
+    ],
+    "expectedUI": "原草稿保留",
+    "expectedIO": "本地 AI/Store 操作；取消不发起文档替换，未调用真实自动化后端",
+    "stateAssertion": "命令失败返回，时间线为空",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "AI.timeline.variable-snapshot",
+    "capability": "成功 AI 操作保留完整快照",
+    "preconditions": {
+      "document": "草稿变量 draft=keep"
+    },
+    "steps": [
+      "AI 添加节点",
+      "修改变量",
+      "恢复操作前快照",
+      "撤销"
+    ],
+    "expectedUI": "恢复包含变量；撤销恢复新节点和后续变量",
+    "expectedIO": "本地 AI/Store 操作；取消不发起文档替换，未调用真实自动化后端",
+    "stateAssertion": "仅成功记录一次；快照不受后续变量编辑影响",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
   }
 ]

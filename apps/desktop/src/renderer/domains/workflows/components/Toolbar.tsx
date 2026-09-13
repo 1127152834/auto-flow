@@ -1365,7 +1365,7 @@ export function Toolbar() {
           edges: backup.edges || [],
           name: backup.name,
           variables: backup.variables,
-        })
+        }, { resetHistory: true })
         addLog({ level: 'info', message: '已退出编辑模式，画布已恢复' })
       } catch (e) {
         console.warn('[Toolbar] 恢复主工作流失败，清空画布:', e)

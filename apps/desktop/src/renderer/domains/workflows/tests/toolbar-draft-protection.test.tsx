@@ -1,3 +1,4 @@
+import { useAiActionLogStore } from '../hooks/stores/aiActionLogStore'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 vi.hoisted(() => {
@@ -16,6 +17,7 @@ import { mockRequest } from '../api/mock-server'
 let saved: Record<string, unknown>[]
 beforeEach(() => {
   confirm.mockClear(); saved = []
+  useAiActionLogStore.getState().clear()
   useWorkflowStore.getState().clearWorkflow()
   useWorkflowStore.getState().addVariable({ name: 'draft', value: 'keep', type: 'string', scope: 'global' })
   useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, localFolder: 'mock://draft-tests', showOverwriteConfirm: false } } }))
@@ -152,6 +154,7 @@ it.each(['new_workflow', 'load_workflow_from_data'])('the actual AI %s command w
   expect(resolved).toBe(false)
   fireEvent.click(screen.getByRole('button', { name: '取消' }))
   expect((await result).success).toBe(false)
+  expect(useAiActionLogStore.getState().entries).toEqual([])
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
 })
 it('rejects direct AI document replacement without a mounted editor', async () => {
@@ -265,4 +268,20 @@ it('does not report success for an invalid workflow returned by bundle import', 
   fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
   await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('整包中的工作流格式无效'))).toBe(true))
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})
+
+it('successful AI edits record an independent complete before snapshot', async () => {
+  const result = await executeClientAction('add_nodes', { nodes: [{ id: 'web', type: 'open_page' }] })
+  expect(result.success).toBe(true)
+  const entries = useAiActionLogStore.getState().entries
+  expect(entries).toHaveLength(1)
+  expect(entries[0].before.variables).toMatchObject([{ name: 'draft', value: 'keep' }])
+  useWorkflowStore.getState().updateVariable('draft', 'later')
+  expect(entries[0].before.variables?.[0].value).toBe('keep')
+  useWorkflowStore.getState().restoreSnapshot(entries[0].before)
+  expect(useWorkflowStore.getState().nodes).toEqual([])
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+  useWorkflowStore.getState().undo()
+  expect(useWorkflowStore.getState().nodes[0].id).toBe('web')
+  expect(useWorkflowStore.getState().variables[0].value).toBe('later')
 })

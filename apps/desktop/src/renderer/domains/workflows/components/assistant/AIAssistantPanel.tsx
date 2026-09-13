@@ -720,10 +720,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     const list = useAiActionLogStore.getState().entries
     const entry = list.find((e) => e.id === entryId)
     if (!entry) return
-    const ws = useWorkflowStore.getState()
-    ws.pushHistory()
-    ws.setGraph(entry.before.nodes as any, entry.before.edges as any)
-    ws.setWorkflowName(entry.before.name)
+    useWorkflowStore.getState().restoreSnapshot(entry.before)
   }
 
   async function handleSelectSession(id: string) {

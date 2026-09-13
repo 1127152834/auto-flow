@@ -10260,142 +10260,158 @@
         "expression": "res.error || !res.data?.bundle"
       },
       {
-        "line": 1072,
-        "expression": "!file"
+        "line": 1074,
+        "expression": "!file || importingBundle.current"
       },
       {
-        "line": 1076,
+        "line": 1080,
+        "expression": "snapshotKey(exportWorkflow()) !== original"
+      },
+      {
+        "line": 1084,
+        "expression": "!(await confirmLeave())"
+      },
+      {
+        "line": 1087,
         "expression": "res.error || !res.data?.success || !res.data.workflow"
       },
       {
-        "line": 1098,
-        "expression": "nodes.length === 0"
+        "line": 1091,
+        "expression": "snapshotKey(exportWorkflow()) !== accepted"
+      },
+      {
+        "line": 1102,
+        "expression": "!imported"
       },
       {
         "line": 1118,
-        "expression": "v === undefined || v === null"
-      },
-      {
-        "line": 1119,
-        "expression": "typeof v === 'string'"
-      },
-      {
-        "line": 1120,
-        "expression": "v === ''"
-      },
-      {
-        "line": 1122,
-        "expression": "v.includes('\\n')"
-      },
-      {
-        "line": 1125,
-        "expression": "typeof v === 'number' || typeof v === 'boolean'"
-      },
-      {
-        "line": 1128,
-        "expression": "s.length > 200"
-      },
-      {
-        "line": 1142,
-        "expression": "variables.length > 0"
-      },
-      {
-        "line": 1147,
-        "expression": "v.value === undefined || v.value === null || v.value === ''"
-      },
-      {
-        "line": 1149,
-        "expression": "typeof v.value === 'object'"
-      },
-      {
-        "line": 1166,
-        "expression": "data.remark"
-      },
-      {
-        "line": 1172,
-        "expression": "META_FIELDS.has(k)"
-      },
-      {
-        "line": 1173,
-        "expression": "v === undefined || v === null || v === ''"
-      },
-      {
-        "line": 1174,
-        "expression": "typeof v === 'function'"
-      },
-      {
-        "line": 1178,
-        "expression": "configEntries.length > 0"
-      },
-      {
-        "line": 1188,
-        "expression": "edges.length > 0"
-      },
-      {
-        "line": 1255,
-        "expression": "!editingCustomModuleId"
-      },
-      {
-        "line": 1260,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1291,
+        "line": 1138,
+        "expression": "v === undefined || v === null"
+      },
+      {
+        "line": 1139,
+        "expression": "typeof v === 'string'"
+      },
+      {
+        "line": 1140,
+        "expression": "v === ''"
+      },
+      {
+        "line": 1142,
+        "expression": "v.includes('\\n')"
+      },
+      {
+        "line": 1145,
+        "expression": "typeof v === 'number' || typeof v === 'boolean'"
+      },
+      {
+        "line": 1148,
+        "expression": "s.length > 200"
+      },
+      {
+        "line": 1162,
+        "expression": "variables.length > 0"
+      },
+      {
+        "line": 1167,
+        "expression": "v.value === undefined || v.value === null || v.value === ''"
+      },
+      {
+        "line": 1169,
+        "expression": "typeof v.value === 'object'"
+      },
+      {
+        "line": 1186,
+        "expression": "data.remark"
+      },
+      {
+        "line": 1192,
+        "expression": "META_FIELDS.has(k)"
+      },
+      {
+        "line": 1193,
+        "expression": "v === undefined || v === null || v === ''"
+      },
+      {
+        "line": 1194,
+        "expression": "typeof v === 'function'"
+      },
+      {
+        "line": 1198,
+        "expression": "configEntries.length > 0"
+      },
+      {
+        "line": 1208,
+        "expression": "edges.length > 0"
+      },
+      {
+        "line": 1275,
+        "expression": "!editingCustomModuleId"
+      },
+      {
+        "line": 1280,
+        "expression": "nodes.length === 0"
+      },
+      {
+        "line": 1311,
         "expression": "result.error"
       },
       {
-        "line": 1297,
+        "line": 1317,
         "expression": "result.data"
       },
       {
-        "line": 1300,
+        "line": 1320,
         "expression": "m.id === editingCustomModuleId"
       },
       {
-        "line": 1318,
+        "line": 1338,
         "expression": "!shouldContinue"
       },
       {
-        "line": 1340,
+        "line": 1360,
         "expression": "backupRaw"
       },
       {
-        "line": 1399,
+        "line": 1419,
         "expression": "shouldExit"
       },
       {
-        "line": 1418,
+        "line": 1438,
         "expression": "isRunning"
-      },
-      {
-        "line": 1420,
-        "expression": "hasUnsavedChanges"
-      },
-      {
-        "line": 1424,
-        "expression": "isRunning"
-      },
-      {
-        "line": 1424,
-        "expression": "hasUnsavedChanges"
       },
       {
         "line": 1440,
+        "expression": "hasUnsavedChanges"
+      },
+      {
+        "line": 1444,
+        "expression": "isRunning"
+      },
+      {
+        "line": 1444,
+        "expression": "hasUnsavedChanges"
+      },
+      {
+        "line": 1460,
         "expression": "!isRunning"
       },
       {
-        "line": 1578,
+        "line": 1598,
         "expression": "isAutoLayouting"
       }
     ],
     "bindings": [
       {
-        "line": 1427,
+        "line": 1447,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 1428,
+        "line": 1448,
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }
@@ -11767,179 +11783,187 @@
         "expression": "!entry"
       },
       {
-        "line": 734,
+        "line": 731,
         "expression": "res.success && res.data"
       },
       {
-        "line": 745,
+        "line": 742,
         "expression": "res.success"
       },
       {
-        "line": 747,
+        "line": 744,
         "expression": "id === currentSessionId"
       },
       {
+        "line": 754,
+        "expression": "text === undefined"
+      },
+      {
+        "line": 755,
+        "expression": "text === undefined"
+      },
+      {
+        "line": 756,
+        "expression": "text === undefined"
+      },
+      {
         "line": 757,
-        "expression": "text === undefined"
-      },
-      {
-        "line": 758,
-        "expression": "text === undefined"
-      },
-      {
-        "line": 759,
-        "expression": "text === undefined"
-      },
-      {
-        "line": 760,
         "expression": "!messageText && images.length === 0 && docs.length === 0"
       },
       {
-        "line": 761,
+        "line": 758,
         "expression": "!configReady"
       },
       {
-        "line": 766,
+        "line": 763,
         "expression": "text === undefined && attachedDocs.some((d) => d.status === 'loading')"
       },
       {
-        "line": 772,
+        "line": 769,
         "expression": "isSending"
       },
       {
-        "line": 781,
+        "line": 778,
         "expression": "docs.length > 0"
       },
       {
-        "line": 789,
+        "line": 786,
         "expression": "images.length > 0"
       },
       {
-        "line": 790,
+        "line": 787,
         "expression": "docNames.length > 0"
       },
       {
-        "line": 817,
+        "line": 814,
         "expression": "!currentSessionId"
       },
       {
-        "line": 832,
+        "line": 829,
         "expression": "images.length > 0"
       },
       {
-        "line": 833,
+        "line": 830,
         "expression": "fallbackCfgs.length > 0"
       },
       {
-        "line": 835,
+        "line": 832,
         "expression": "!res.success || !res.data"
       },
       {
-        "line": 836,
+        "line": 833,
         "expression": "ac.signal.aborted"
       },
       {
-        "line": 844,
+        "line": 841,
         "expression": "full.success && full.data"
       },
       {
-        "line": 848,
+        "line": 845,
         "expression": "images.length > 0 || docNames.length > 0 || messageText"
       },
       {
-        "line": 850,
+        "line": 847,
         "expression": "serverMsgs[i].role === 'user'"
       },
       {
-        "line": 854,
+        "line": 851,
         "expression": "(serverMsgs[i].images && serverMsgs[i].images!.length > 0)"
       },
       {
-        "line": 854,
+        "line": 851,
         "expression": "images.length > 0"
       },
       {
-        "line": 855,
+        "line": 852,
         "expression": "docNames.length > 0"
       },
       {
-        "line": 863,
+        "line": 860,
         "expression": "preSnapshot"
       },
       {
-        "line": 865,
+        "line": 862,
         "expression": "lastUser?.id"
       },
       {
-        "line": 872,
+        "line": 869,
         "expression": "full.success"
       },
       {
-        "line": 874,
+        "line": 871,
         "expression": "ac.signal.aborted || (e && (e.name === 'AbortError' || /aborted/i.test(String(e.message))))"
       },
       {
-        "line": 878,
+        "line": 875,
         "expression": "e instanceof Error"
       },
       {
-        "line": 884,
+        "line": 881,
         "expression": "res.success && Array.isArray(res.data)"
       },
       {
-        "line": 889,
+        "line": 886,
         "expression": "autoScreenshotInFlightRef.current"
       },
       {
-        "line": 893,
+        "line": 890,
         "expression": "pendingScreenshotRef.current"
       },
       {
-        "line": 909,
+        "line": 906,
         "expression": "sid"
       },
       {
-        "line": 922,
+        "line": 919,
         "expression": "!allMessages || allMessages.length === 0"
       },
       {
-        "line": 927,
+        "line": 924,
         "expression": "msg.role !== 'assistant' || !msg.tool_calls || !msg.tool_calls.length"
       },
       {
-        "line": 930,
+        "line": 927,
         "expression": "(msg as any)[flagKey]"
       },
       {
-        "line": 933,
+        "line": 930,
         "expression": "tc.name === 'build_workflow' && tc.status === 'success' && tc.result"
       },
       {
-        "line": 936,
+        "line": 933,
         "expression": "Array.isArray(built?.nodes) && Array.isArray(built?.edges)"
       },
       {
-        "line": 951,
+        "line": 948,
         "expression": "e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing"
       },
       {
-        "line": 963,
+        "line": 960,
         "expression": "!isOpen && !standalone"
       },
       {
-        "line": 968,
+        "line": 965,
         "expression": "standalone"
       },
       {
-        "line": 978,
+        "line": 975,
         "expression": "standalone"
       },
       {
-        "line": 982,
+        "line": 979,
         "expression": "draftWidth === null"
       },
       {
-        "line": 1009,
+        "line": 1006,
+        "expression": "standalone && isAgentWindow()"
+      },
+      {
+        "line": 1008,
+        "expression": "standalone && isAgentWindow()"
+      },
+      {
+        "line": 1010,
         "expression": "standalone && isAgentWindow()"
       },
       {
@@ -11947,16 +11971,16 @@
         "expression": "standalone && isAgentWindow()"
       },
       {
-        "line": 1013,
+        "line": 1018,
         "expression": "standalone && isAgentWindow()"
       },
       {
-        "line": 1014,
+        "line": 1019,
         "expression": "standalone && isAgentWindow()"
       },
       {
-        "line": 1021,
-        "expression": "standalone && isAgentWindow()"
+        "line": 1020,
+        "expression": "standalone"
       },
       {
         "line": 1022,
@@ -11964,143 +11988,139 @@
       },
       {
         "line": 1023,
-        "expression": "standalone"
-      },
-      {
-        "line": 1025,
-        "expression": "standalone && isAgentWindow()"
-      },
-      {
-        "line": 1026,
         "expression": "configReady"
       },
       {
-        "line": 1027,
+        "line": 1024,
         "expression": "configReady"
       },
       {
-        "line": 1036,
+        "line": 1033,
         "expression": "showSessions"
       },
       {
-        "line": 1045,
+        "line": 1042,
         "expression": "showTimeline"
       },
       {
-        "line": 1057,
+        "line": 1054,
         "expression": "agentPinned"
       },
       {
-        "line": 1059,
+        "line": 1056,
         "expression": "agentPinned"
       },
       {
-        "line": 1100,
+        "line": 1097,
         "expression": "sessions.length === 0"
       },
       {
-        "line": 1115,
+        "line": 1112,
         "expression": "s.id === currentSessionId"
       },
       {
-        "line": 1158,
+        "line": 1155,
         "expression": "aiActions.length === 0"
+      },
+      {
+        "line": 1204,
+        "expression": "standalone"
       },
       {
         "line": 1207,
         "expression": "standalone"
       },
       {
-        "line": 1210,
+        "line": 1225,
         "expression": "standalone"
       },
       {
-        "line": 1228,
-        "expression": "standalone"
-      },
-      {
-        "line": 1293,
+        "line": 1290,
         "expression": "!snap"
       },
       {
-        "line": 1298,
+        "line": 1295,
         "expression": "!ok"
       },
       {
-        "line": 1300,
+        "line": 1297,
         "expression": "isSending"
       },
       {
-        "line": 1308,
+        "line": 1305,
         "expression": "idx >= 0"
       },
       {
-        "line": 1317,
+        "line": 1314,
         "expression": "currentSessionId"
       },
       {
-        "line": 1320,
+        "line": 1317,
         "expression": "res.success && Array.isArray(res.data)"
       },
       {
-        "line": 1338,
+        "line": 1335,
         "expression": "currentActivity"
       },
       {
+        "line": 1433,
+        "expression": "d.status === 'error'"
+      },
+      {
+        "line": 1434,
+        "expression": "d.status === 'error'"
+      },
+      {
         "line": 1436,
-        "expression": "d.status === 'error'"
-      },
-      {
-        "line": 1437,
-        "expression": "d.status === 'error'"
-      },
-      {
-        "line": 1439,
         "expression": "d.status === 'loading'"
       },
       {
-        "line": 1460,
+        "line": 1457,
         "expression": "isDragOver"
       },
       {
-        "line": 1461,
+        "line": 1458,
         "expression": "e.dataTransfer.types.includes('Files')"
       },
       {
-        "line": 1462,
+        "line": 1459,
         "expression": "!e.currentTarget.contains(e.relatedTarget as Node)"
       },
       {
-        "line": 1463,
+        "line": 1460,
         "expression": "e.dataTransfer.files && e.dataTransfer.files.length > 0"
       },
       {
-        "line": 1476,
+        "line": 1473,
         "expression": "configReady"
       },
       {
-        "line": 1476,
+        "line": 1473,
         "expression": "isSending"
       },
       {
-        "line": 1487,
+        "line": 1484,
         "expression": "e.target.files"
       },
       {
-        "line": 1495,
+        "line": 1492,
         "expression": "voiceState === 'recording'"
       },
       {
-        "line": 1496,
+        "line": 1493,
         "expression": "voiceState === 'recording'"
       },
       {
-        "line": 1496,
+        "line": 1493,
         "expression": "voiceState === 'transcribing'"
       },
       {
-        "line": 1497,
+        "line": 1494,
         "expression": "voiceState === 'recording'"
+      },
+      {
+        "line": 1509,
+        "expression": "isSending"
       },
       {
         "line": 1512,
@@ -12111,67 +12131,63 @@
         "expression": "isSending"
       },
       {
-        "line": 1518,
-        "expression": "isSending"
-      },
-      {
-        "line": 1528,
+        "line": 1525,
         "expression": "resolvedConfig.enable_tools"
       },
       {
-        "line": 1530,
+        "line": 1527,
         "expression": "resolvedConfig.enable_tools"
       },
       {
-        "line": 1542,
+        "line": 1539,
         "expression": "autoSceneRoute && assistantModels.length > 0"
       },
       {
-        "line": 1544,
+        "line": 1541,
         "expression": "activeModel"
       },
       {
-        "line": 1546,
+        "line": 1543,
         "expression": "showModelMenu"
       },
       {
-        "line": 1553,
+        "line": 1550,
         "expression": "assistantModels.length === 0"
       },
       {
-        "line": 1567,
+        "line": 1564,
         "expression": "on"
       },
       {
-        "line": 1572,
+        "line": 1569,
         "expression": "m.scenes && m.scenes.length > 0"
       },
       {
-        "line": 1572,
+        "line": 1569,
         "expression": "s === 'vision'"
       },
       {
-        "line": 1572,
+        "line": 1569,
         "expression": "s === 'thinking'"
       },
       {
-        "line": 1584,
+        "line": 1581,
         "expression": "autoSceneRoute"
       }
     ],
     "bindings": [
       {
-        "line": 1472,
+        "line": 1469,
         "attribute": "value",
         "expression": "{input}"
       },
       {
-        "line": 1473,
+        "line": 1470,
         "attribute": "onChange",
         "expression": "{(e) => setInput(e.target.value)}"
       },
       {
-        "line": 1487,
+        "line": 1484,
         "attribute": "onChange",
         "expression": "{(e) => { if (e.target.files) { void addFiles(e.target.files); e.target.value = '' } }}"
       }

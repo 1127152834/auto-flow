@@ -79,6 +79,37 @@ describe('workflowStore 快照恢复（回滚 / 自定义模块退出编辑复�
     expect(store.getState().variables.find((v) => v.name === 'keep')).toBeTruthy()
   })
 
+  it('回退作为一次编辑，撤销重做包含变量并保留更早历史', () => {
+    store.getState().clearWorkflow()
+    const originalName = store.getState().name
+    store.getState().setWorkflowNameWithHistory('回退前')
+    store.getState().addVariable({ name: 'total', value: 2, type: 'number', scope: 'global' })
+    const snapshot = { nodes: [], edges: [], name: '目标快照', variables: [{ name: 'total', value: 1, type: 'number' as const, scope: 'global' as const }] }
+    store.getState().restoreSnapshot(snapshot)
+    snapshot.variables[0].value = 999
+    expect(store.getState().variables[0].value).toBe(1)
+    store.getState().undo()
+    expect(store.getState().name).toBe('回退前')
+    expect(store.getState().variables[0].value).toBe(2)
+    store.getState().redo()
+    expect(store.getState().name).toBe('目标快照')
+    expect(store.getState().variables[0].value).toBe(1)
+    store.getState().undo()
+    store.getState().undo()
+    expect(store.getState().variables).toEqual([])
+    store.getState().undo()
+    expect(store.getState().name).toBe(originalName)
+  })
+
+  it('退出模块可显式建立历史基线，不能撤销回模块画布', () => {
+    store.getState().clearWorkflow()
+    store.getState().setWorkflowNameWithHistory('模块画布')
+    store.getState().restoreSnapshot({ nodes: [], edges: [], name: '主画布' }, { resetHistory: true })
+    expect(store.getState().canUndo()).toBe(false)
+    store.getState().undo()
+    expect(store.getState().name).toBe('主画布')
+  })
+
   it('restoreSnapshot 对脏节点兜底不崩溃（缺 position）', () => {
     expect(() => {
       store.getState().restoreSnapshot({
