@@ -1,13 +1,19 @@
-import { ArrowLeft, PencilSimple } from '@phosphor-icons/react'
+import { Folder, PencilSimple } from '@phosphor-icons/react'
 import { Button } from '../../../shared/components/ui/button'
 import type { ProjectView } from '../types'
 
 type HeaderDensity = 'default' | 'compact'
 
-export function ProjectHeader({ project, density = 'default', disabled, onBack, onEdit }: { project: ProjectView; density?: HeaderDensity; disabled: boolean; onBack(): void; onEdit(): void }) {
-  const title = density === 'compact' ? <p className="m-0 truncate text-base font-semibold text-ink" title={project.name}>{project.name}</p> : <h1 className="m-0 truncate text-2xl font-semibold text-ink" title={project.name}>{project.name}</h1>
-  return <header data-project-header-density={density} className={`flex min-w-0 flex-wrap items-start justify-between gap-3 border-b border-line ${density === 'compact' ? 'pb-3' : 'pb-5'}`}>
-    <div className="flex min-w-0 flex-1 gap-3"><Button variant="ghost" className="h-9 w-9 shrink-0 p-0" aria-label="返回项目目录" onClick={onBack}><ArrowLeft /></Button><div className="min-w-0"><div className="flex min-w-0 items-center gap-2">{title}{project.lifecycleState !== 'active' ? <span className="shrink-0 rounded-full bg-surface-subtle px-2 py-1 text-xs text-muted">{project.lifecycleState === 'archived' ? '已归档' : '处理中'}</span> : null}</div>{density === 'default' ? <p className="mb-0 mt-1 break-all text-sm text-muted">{project.description || '暂无项目描述'}</p> : null}</div></div>
-    <Button variant="ghost" disabled={disabled || project.lifecycleState !== 'active'} onClick={onEdit}><PencilSimple />编辑项目</Button>
+export function ProjectHeader({ project, density = 'default', disabled, onEdit }: { project: ProjectView; density?: HeaderDensity; disabled: boolean; onBack(): void; onEdit(): void }) {
+  const titleClassName = 'm-0 break-all text-2xl font-semibold text-ink'
+  const title = density === 'compact'
+    ? <h2 className={titleClassName} title={project.name}>{project.name}</h2>
+    : <h1 className={titleClassName} title={project.name}>{project.name}</h1>
+  return <header data-project-header-density={density} className="flex min-w-0 flex-wrap items-start justify-between gap-5">
+    <div className="flex min-w-0 flex-1 items-start gap-5">
+      <span data-testid="project-header-icon" className="grid h-16 w-16 shrink-0 place-items-center rounded-card border border-clay/10 bg-clay-soft text-clay" aria-hidden="true"><Folder size={30} weight="duotone" /></span>
+      <div className="min-w-0"><div className="flex min-w-0 flex-wrap items-center gap-2">{title}{project.lifecycleState !== 'active' ? <span className="shrink-0 rounded-full bg-surface-subtle px-2 py-1 text-xs text-muted">{project.lifecycleState === 'archived' ? '已归档' : '处理中'}</span> : null}</div><p className="mb-0 mt-1 break-all text-sm text-muted">{project.description || '暂无项目描述'}</p>{density === 'default' && project.updatedAt ? <p className="mb-0 mt-1 text-xs text-muted">最近修改：{new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(project.updatedAt))}</p> : null}</div>
+    </div>
+    {density === 'default' ? <Button variant="secondary" disabled={disabled || project.lifecycleState !== 'active'} onClick={onEdit}><PencilSimple />编辑项目</Button> : null}
   </header>
 }
