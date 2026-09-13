@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "baseline": "09b56f6",
+  "status": "planned",
+  "requirements": [
+    {
+      "id": "G01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "G02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "G03",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "G04",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "G05",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "A01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "A02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "A03",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "A04",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "A05",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "B01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "B02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "B03",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C03",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C04",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C05",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "C06",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "D01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "D02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T01",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T02",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T03",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T04",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T05",
+      "status": "notExecuted",
+      "evidence": null
+    },
+    {
+      "id": "T06",
+      "status": "notExecuted",
+      "evidence": null
+    }
+  ],
+  "future": {
+    "R2": "notStarted",
+    "R3": "notStarted"
+  },
+  "visualReview": "pending",
+  "userAcceptance": "pending"
+}

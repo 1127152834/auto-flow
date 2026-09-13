@@ -187,3 +187,7 @@ R1完成后提交用户验收；不能用R1目录截图宣称独立记录页或�
 [机器报告](../../project-management/design-alignment/acceptance/r1/verification.json)、[审查闭合](../../project-management/design-alignment/acceptance/r1/review-resolution.md)、[手动验收方案](../../project-management/design-alignment/acceptance/r1/manual-test.md)。前端 115 文件 865 项、后端定向 21 项及计划中构建/静态检查通过；两个 PM2 smoke 通过，R1 使用提交后的最新真实应用报告。用户 R1-M01–09、Windows、其他架构、打包验收未执行。
 
 只有 R1 开发和本机自动验收完成；R1 用户验收待执行，R2/R3 未开始。R2 完整记录页面、R3 聚合字段保存不在本次结果内。
+
+## 用户视觉复审后的整改（2026-09-13）
+
+此前开发/自动测试完成记录为历史事实，整体视觉对齐结论由09b56f6审查撤回。当前执行 [整改规格和计划](2026-09-13-project-management-visual-remediation.md)，真实E2E和逐图比对双门槛；R1用户验收pending，R2/R3未开始。
