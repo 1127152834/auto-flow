@@ -338,3 +338,36 @@ it('does not mount record A pending status controls inside record B detail',asyn
   expect(screen.queryByRole('combobox',{name:'记录业务状态'})).not.toBeInTheDocument()
   expect(await screen.findByRole('region',{name:'业务状态'})).toHaveTextContent('进行中')
 })
+
+it('compares a conflicted record draft with fetched current facts in the page without replacing input',async()=>{
+  let changed=false;const {client,request}=api(),original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'){changed=true;throw new ApiClientError('changed',409,'REVISION_CONFLICT')}if(path.includes('/records/'))return changed?{...record,values:[{fieldId:'f',value:'最新内容',readable:true,source:'local' as const}],contentRevision:2}:record;return original(path,init)})
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  const input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}))
+  expect(await screen.findByRole('region',{name:'最新内容'})).toHaveTextContent('最新内容')
+  expect(screen.getByLabelText('姓名')).toHaveValue('我的修改')
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button',{name:'保留当前草稿'}))
+  expect(screen.getByLabelText('姓名')).toHaveValue('我的修改')
+})
+
+it('revokes a late conflict comparison when navigating to another typed record',async()=>{
+  let changed=false,release:((value:typeof table)=>void)|undefined
+  const {client,request}=api(),original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'){changed=true;throw new ApiClientError('changed',409,'REVISION_CONFLICT')}if(changed&&path.endsWith('/tables/t'))return new Promise(resolve=>{release=resolve});if(path.includes('/records/'))return {...record,ref:{...record.ref,recordKey:{type:'text',value:path.includes('/Qg?')?'B':'001'}}};return original(path,init)})
+  const options=props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})
+  const view=renderPage(<DataTableDetailPage {...options}/>);const input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}));await waitFor(()=>expect(release).toBeTypeOf('function'))
+  view.rerender(<DataTableDetailPage {...options} record={{mode:'edit',datasetGeneration:'g',recordKey:{type:'text',value:'B'}}}/>);release!(table)
+  await waitFor(()=>expect(request.mock.calls.some(([path])=>path.includes('/Qg?'))).toBe(true))
+  expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument();expect(screen.queryByRole('button',{name:'重新编辑'})).not.toBeInTheDocument()
+})
+
+it('adopts the latest record revision explicitly and clears comparison after successful save',async()=>{
+  let changed=false,saved=false;const {client,request}=api(),original=request.getMockImplementation()!
+  const latest={...record,values:[{fieldId:'f',value:'最新内容',readable:true,source:'local' as const}],contentRevision:2}
+  request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'){if(!changed){changed=true;throw new ApiClientError('changed',409,'REVISION_CONFLICT')}saved=true;return {...latest,contentRevision:3}}if(path.includes('/records/'))return changed?latest:record;return original(path,init)})
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>);let input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'我的修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await userEvent.click(await screen.findByRole('button',{name:'载入最新资料'}));await screen.findByRole('region',{name:'最新内容'});await userEvent.click(screen.getByRole('button',{name:'重新编辑'}))
+  input=await screen.findByLabelText('姓名');expect(input).toHaveValue('最新内容');expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument();await userEvent.clear(input);await userEvent.type(input,'确认的新修改');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await waitFor(()=>expect(saved).toBe(true))
+  const patch=request.mock.calls.filter(([,init])=>init?.method==='PATCH').at(-1)![1]!.body as {expectedContentRevision:number};expect(patch.expectedContentRevision).toBe(2)
+  expect(screen.queryByRole('region',{name:'最新内容'})).not.toBeInTheDocument()
+})

@@ -161,7 +161,7 @@ function DataTableDetail({
     [discardTarget, setDiscardTarget] = useState<"editor" | "all">("all"),
     [editorDirty, setEditorDirty] = useState(false),
     [workflow, setWorkflow] = useState<{ kind: "batch" | "replace" | "export"; session: string } | null>(null),
-    [conflictLatest, setConflictLatest] = useState<{ context: EditingContext; input: Parameters<ReturnType<typeof useDataTableEditing>["replaceEditor"]>[1]; summary: string } | null>(null),
+    [conflictLatest, setConflictLatest] = useState<{ session: string; context: EditingContext; input: Parameters<ReturnType<typeof useDataTableEditing>["replaceEditor"]>[1]; summary: string } | null>(null),
     [conflictLoading, setConflictLoading] = useState(false),
     [conflictError, setConflictError] = useState<string | null>(null);
   const leaveResolve = useRef<((allowed: boolean) => void) | null>(null),
@@ -392,7 +392,7 @@ function DataTableDetail({
   }, [recordLocation, generation, context, detailQuery.data, editing, disabled, generationWarning]);
   const stableWorkflowScope = JSON.stringify([workspaceKey, projectId, tableId]);
   const workflowContext = JSON.stringify([workspaceKey, instanceId, projectId, tableId]);
-  useLayoutEffect(() => { workflowScope.current = { workspaceKey, projectId, tableId, instanceId, client, disabled: disabled || Boolean(generationWarning) }; conflictTicket.current += 1; setConflictLoading(false); setConflictLatest(null); setConflictError(null) }, [client, disabled, generationWarning, instanceId, projectId, tableId, workspaceKey]);
+  useLayoutEffect(() => { workflowScope.current = { workspaceKey, projectId, tableId, instanceId, client, disabled: disabled || Boolean(generationWarning) }; conflictTicket.current += 1; setConflictLoading(false); setConflictLatest(null); setConflictError(null) }, [client, disabled, generationWarning, instanceId, projectId, tableId, workspaceKey, editing.editor?.session, routeIdentity]);
   const files = useMemo(() => createProjectFileClient(client, window.autoflow, projectId, () => {
     const current = workflowScope.current;
     return current.workspaceKey === workspaceKey && current.projectId === projectId && current.tableId === tableId && current.instanceId === instanceId && current.client === client && !current.disabled;
@@ -483,7 +483,7 @@ function DataTableDetail({
   const workflowSettled = () => { selection.clear(); void cache.invalidateQueries({ queryKey: [...prefix, generation, "records"] }); void cache.invalidateQueries({ queryKey: [...prefix, generation, "catalog"] }) };
   const loadConflictLatest = async () => {
     const editor = editing.editor;
-    if (!editor || !editing.conflict || disabled || conflictLoading) return;
+    if (!editor || !editing.conflict || disabled || conflictLoading || editing.busy || editing.recoveryPending) return;
     const ticket = ++conflictTicket.current, usedClient = client, usedInstance = instanceId;
     setConflictLoading(true); setConflictError(null); setConflictLatest(null);
     try {
@@ -506,7 +506,7 @@ function DataTableDetail({
       } else { input = { kind: editor.kind }; summary = "数据表的最新结构已载入" }
       const current = workflowScope.current;
       if (ticket !== conflictTicket.current || current.client !== usedClient || current.instanceId !== usedInstance || current.workspaceKey !== workspaceKey || current.projectId !== projectId || current.tableId !== tableId) return;
-      setConflictLatest({ context: latestContext, input, summary });
+      setConflictLatest({ session: editor.session, context: latestContext, input, summary });
     } catch (caught) { if (ticket === conflictTicket.current) setConflictError(errorMessage(caught)) }
     finally { if (ticket === conflictTicket.current) setConflictLoading(false) }
   };
@@ -558,7 +558,9 @@ function DataTableDetail({
     onEdit={() => { if (recordLocation.mode === "detail") onRecordNavigate?.({ ...recordLocation, mode: "edit" }) }}
     onDelete={() => { if (routeRecord && editing.canLeave()) void askDiscardOnce("editor", () => { editing.close(); editing.open({ kind: "recordDelete", record: routeRecord }) }) }}
     onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }} />
-    : recordLocation ? <RecordEditPage mode={recordLocation.mode === "create" ? "create" : "edit"}
+    : recordLocation ? <RecordEditPage
+      conflictView={recordLocation.mode === "edit" && conflictLatest?.session === editing.editor?.session && conflictLatest?.input.kind === "recordEdit" && matchesRoute(conflictLatest.input.record.ref) ? <section aria-label="最新内容" className="grid min-w-0 gap-4 rounded-card border border-line bg-surface p-5"><h2 className="text-base font-semibold">最新内容</h2><p className="text-sm text-muted">左侧输入仍保留。重新编辑将采用这里的最新内容，不会自动合并或覆盖。</p><RecordFieldsView fields={conflictLatest.context.fields.items} record={conflictLatest.input.record} /><div className="flex flex-wrap gap-2"><Button variant="ghost" onClick={() => { setConflictLatest(null); setConflictError(null) }}>保留当前草稿</Button><Button variant="primary" disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></div></section> : undefined}
+      mode={recordLocation.mode === "create" ? "create" : "edit"}
       loading={!recordEditor && !routeError && !editing.recoveryBlocked && !foreignRecovery} error={routeError} disabled={disabled || editing.busy || editing.recoveryPending} onBack={backToRecords}
       onStatus={recordLocation.mode === "edit" ? () => onRecordNavigate?.({ ...recordLocation, mode: "detail" }) : undefined}
       statusName={routeRecord?.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}
@@ -567,7 +569,7 @@ function DataTableDetail({
       editorForm={recordEditor ? <RecordEditorForm key={recordEditor.session} id="record" presentation="page" externalActions mode={recordEditor.kind === "recordCreate" ? "create" : "edit"}
         sessionKey={recordEditor.session} submissionEpoch={instanceId} initialSubmittedValues={recordEditor.submittedValues} fields={recordEditor.fields.items} initialRecord={recordEditor.kind === "recordEdit" ? recordEditor.record : undefined}
         identityFieldId={recordEditor.table.identity.mode === "field" ? recordEditor.table.identity.fieldId : undefined}
-        saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.error} errorActions={errorActions}
+        saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.conflict ? "数据已更新，你的输入已保留。请载入最新资料后核对。" : editing.error} errorActions={errorActions}
         footerClassName="sticky bottom-0 z-10 -mx-6 -mb-6 mt-4 flex justify-end gap-2 border-t border-line bg-surface p-4"
         onCancel={backToRecords} onSubmit={editing.submitRecord} onRecover={editing.recover}
         onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : undefined} /> : null;
@@ -1099,7 +1101,7 @@ function DataTableDetail({
         filter={base64url(effectiveQuery.filter)} orderBy={base64url(effectiveQuery.orderBy)} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
         onCompleted={operation => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
-      <AlertDialog open={Boolean(conflictLatest || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button onClick={() => { editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
+      <AlertDialog open={Boolean((conflictLatest && !(recordLocation?.mode === "edit" && conflictLatest.input.kind === "recordEdit")) || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
       <AlertDialog
         open={leaveOpen}
         onOpenChange={(next) => {
