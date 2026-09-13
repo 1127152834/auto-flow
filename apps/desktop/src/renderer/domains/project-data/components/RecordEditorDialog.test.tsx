@@ -143,3 +143,21 @@ it('rechecks guards after an asynchronous close approval', async () => {
   view.rerender(<RecordEditorDialog {...props} saving/>); approve(true); await act(async()=>{})
   expect(close).not.toHaveBeenCalled()
 })
+
+it('revokes an asynchronous close approval when the record session changes', async()=>{
+  let approve!:(allowed:boolean)=>void;const close=vi.fn(),requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve})),props={open:true,mode:'create' as const,fields:[],onOpenChange:close,onRequestClose:requestClose,onSubmit:vi.fn()}
+  const view=render(<RecordEditorDialog {...props} sessionKey="A" submissionEpoch="one"/>);await userEvent.click(screen.getByRole('button',{name:'取消'}))
+  view.rerender(<RecordEditorDialog {...props} sessionKey="B" submissionEpoch="two"/>);await act(async()=>approve(true));expect(close).not.toHaveBeenCalled()
+})
+
+it('removes an open discard confirmation when recovery becomes pending',async()=>{
+  const user=userEvent.setup(),props={open:true,mode:'edit' as const,sessionKey:'A',fields:[field('x')],initialRecord:record([cell('x','a')]),onOpenChange:vi.fn(),onSubmit:vi.fn()}
+  const view=render(<RecordEditorDialog {...props}/>);await user.type(screen.getByLabelText('x'),'dirty');await user.click(screen.getByRole('button',{name:'取消'}));expect(screen.getByRole('alertdialog')).toBeVisible()
+  view.rerender(<RecordEditorDialog {...props} recoveryPending/>);expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+it('keeps legacy dialog actions in the modal footer',()=>{
+  render(<RecordEditorDialog open mode="create" sessionKey="fixed-footer" fields={[]} onOpenChange={vi.fn()} onSubmit={vi.fn()}/>)
+  expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument()
+  expect(screen.getByRole('button',{name:'创建记录'}).closest('footer')).toBe(screen.getByRole('button',{name:'取消'}).closest('footer'))
+})

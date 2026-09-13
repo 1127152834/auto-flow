@@ -13,12 +13,13 @@ type FormContext = { fields: Field[]; initialRecord?: RecordView; identityFieldI
 export type RecordEditorFormProps = {
   id: string; mode: 'create' | 'edit'; sessionKey: string; fields: Field[]; initialRecord?: RecordView; identityFieldId?: string; submissionEpoch?: string | number
   saving?: boolean; recoveryPending?: boolean; readonly?: boolean; error?: string | null; errorActions?: ReactNode; footerClassName?: string
+  externalActions?: boolean
   onCancel?(): void; onSubmit(values: CellWrite[]): Promise<unknown>; onRecover?(): Promise<unknown>; onDirtyChange?(dirty: boolean): void; onSavingChange?(saving: boolean): void
 }
 
 const equalDraft = (left: RecordDraft, right: RecordDraft) => JSON.stringify(left) === JSON.stringify(right)
 
-export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, onCancel, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
+export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
   const [drafts,setDrafts]=useState(()=>createRecordDraft(fields,initialRecord)),[context,setContext]=useState<FormContext>(()=>({fields,initialRecord,identityFieldId}))
   const [fieldErrors,setFieldErrors]=useState<Record<string,{message:string;control:ScalarDraftControl}>>({}),[submitError,setSubmitError]=useState<string|null>(null)
   const [submitting,setSubmitting]=useState(false),[recovering,setRecovering]=useState(false)
@@ -42,7 +43,7 @@ export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, 
 
   const focusField=(fieldId:string,control:ScalarDraftControl)=>{const suffix=control==='presence'?'-presence':control==='offset'?'-offset':'';fieldContainers.current.get(fieldId)?.querySelector<HTMLElement>(`#${id}-${fieldId}${suffix}`)?.focus()}
   const submit=(event:FormEvent<HTMLFormElement>)=>{
-    event.preventDefault();if(submitLock.current||busy||recoveryPending||readonly||(mode==='edit'&&!hasChanges))return
+    event.preventDefault();if((event.nativeEvent as SubmitEvent).submitter instanceof HTMLElement&&(event.nativeEvent as SubmitEvent).submitter?.dataset.recordAction==='recover'){recover();return}if(submitLock.current||busy||recoveryPending||readonly||(mode==='edit'&&!hasChanges))return
     requestEpoch.current++;submitLock.current=true;const ticket=requestEpoch.current,target=context;let values:CellWrite[]
     try{values=recordValues(target.fields,drafts,target.initialRecord,target.identityFieldId)}catch(caught){submitLock.current=false;if(caught instanceof RecordDraftError){setFieldErrors({[caught.fieldId]:{message:caught.message,control:caught.control}});focusField(caught.fieldId,caught.control)}else setSubmitError(caught instanceof Error?caught.message:'记录值无效');return}
     if(mode==='edit'&&!values.length){submitLock.current=false;return}
@@ -56,6 +57,6 @@ export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, 
     {error||submitError?<div role="alert" className="m-0 rounded-control border border-clay/30 bg-clay/10 p-3 text-sm text-ink"><p className="m-0">{submitError??error}</p>{errorActions?<div className="mt-3">{errorActions}</div>:null}</div>:null}
     {!context.fields.length?<p className="text-sm text-muted">当前表没有业务字段，将创建一条系统身份记录。</p>:null}
     {context.fields.map(field=>{const fieldId=field.ref.fieldId,cell=context.initialRecord?.values.find(value=>value.fieldId===fieldId);const protectedReason=field.formula?'公式字段由系统计算':!field.writable?'此字段只读':cell?.readable===false?'此值不可读取，因此不能编辑':mode==='edit'&&fieldId===context.identityFieldId?'记录身份字段不能在编辑时修改':null;return <div key={fieldId} ref={node=>{if(node)fieldContainers.current.set(fieldId,node);else fieldContainers.current.delete(fieldId)}} className="grid min-w-0 gap-2"><ScalarValueEditor id={`${id}-${fieldId}`} label={field.name} type={field.type} draft={drafts[fieldId]??createRecordDraft([field])[fieldId]} allowMissing={!field.required} presenceDisplay="contextual" disabled={frozen} readOnly={readonly||Boolean(protectedReason)} error={fieldErrors[fieldId]?.message} errorTarget={fieldErrors[fieldId]?.control} onChange={draft=>{setDrafts(current=>({...current,[fieldId]:draft}));setFieldErrors(current=>{const next={...current};delete next[fieldId];return next})}}/>{protectedReason?<p className="text-xs text-muted">{protectedReason}</p>:null}</div>})}
-    <footer className={footerClassName??'flex justify-end gap-2'}>{onCancel?<Button type="button" variant="ghost" disabled={busy} onClick={onCancel}>取消</Button>:null}{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" variant="primary" disabled={busy||readonly||(mode==='edit'&&!hasChanges)}>{busy?'正在保存…':mode==='create'?'创建记录':'保存修改'}</Button>}</footer>
+    {externalActions?null:<footer className={footerClassName??'flex justify-end gap-2'}>{onCancel?<Button type="button" variant="ghost" disabled={busy} onClick={onCancel}>取消</Button>:null}{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" variant="primary" disabled={busy||readonly||(mode==='edit'&&!hasChanges)}>{busy?'正在保存…':mode==='create'?'创建记录':'保存修改'}</Button>}</footer>}
   </form>
 }
