@@ -180,3 +180,9 @@ DELETE的202结果与原操作查询使用相同identity/kind/succeeded及领域
 ## C2c Task2 删除客户端（2026-09-13）
 
 两真实客户端增加status/record预检及DELETE；7个原写方法透传policy。每个删除强制accepted投影，验证完整resource与result身份、动作、deleted和状态tableRevision安全范围。25项缺方法/策略RED，另2项revision边界RED修复后61项定向通过。pm2_deletion_client_review独立规格→工程通过，61测试、四文件ESLint、按项目配置检查入口及传递依赖无类型错误；99项仓外边界探针通过。最终与目录5文件102测试通过。三Editor并行编辑导致全仓tsc的临时缺props错误已明确区分，未冒充全仓通过。
+
+## C2c Task5 单行状态与删除确认（2026-09-13）
+
+root实现两受控组件，复用Modal/Select，不发网络请求。删除必须展示真实impact/blockers，未知结果只核对；单行状态使用statusId|null，保留原业务状态和typed身份，无变化禁提交。
+
+独立审查发现并经RED修复：删除失败后旧取消许可仍能关窗（1fail7pass），改为新动作撤销旧关闭票据；新状态会话baseline等于上一dirty选择时不重渲染（2fail5pass），改为baseline/selection原子state。重连无须等待旧Promise即可核对，旧结果不覆盖新会话。最终两组件15测试、11独立探针、四文件ESLint和全项目typecheck通过。pm2_delete_dialog_review规格→工程→两次修复复核闭合。正式页面挂载及真实写入验收仍在Task6，不提升完整PM2。

@@ -402,7 +402,7 @@ FieldEditor 使用其 `field-editor-form/actionChanged/blocked/protectedField`�
 
 **Files:** 新建 `components/RecordStatusDialog.tsx/.test.tsx`、`components/DataDeletionDialog.tsx/.test.tsx`。
 
-- [ ] RED 测试先写：status初始来自record.statusId，Select显示“未设置”，未改变不能发、选择null返回null；目录缺旧status不得自动选首项；删除必须先preview，展示所有返回blockers，blockers时无confirm；预检过期后不能确认旧report；两组件busy和recovery禁止close并可只读核对。
+- [x] RED 测试先写：status初始来自record.statusId，Select显示“未设置”，未改变不能发、选择null返回null；目录缺旧status不得自动选首项；删除必须先preview，展示所有返回blockers，blockers时无confirm；预检过期后不能确认旧report；两组件busy和recovery禁止close并可只读核对。
 
 ```tsx
 // RecordStatusDialog 的公开接口；只 own 一项 raw selection 和 dirty，没有网络。
@@ -434,7 +434,7 @@ type DataDeletionDialogProps = {
 
 真实状态 ID 是规范 UUID，因此 `__unset__` 不与合法 ID 碰撞；不把空字符串传后端。当前状态不在目录时显示“原状态已不可用，请载入最新资料”，保留原值，禁提交。
 
-- [ ] 删除组件用一个 Modal 展示“删除记录/删除状态”、目标名称/typed身份、impacts.message 与 blockers.message/code；仅 `impact && blockers.length===0 && !saving && !readonly && !recoveryPending` 可点“确认删除”。无impact显示“检查删除影响”；恢复时只显示核对按钮。组件没有API、不暗改任何引用。busy 由controller同步锁兜底，关闭调用统一 onRequestClose，不自带第二个放弃确认层。
+- [x] 删除组件用一个 Modal 展示“删除记录/删除状态”、目标名称/typed身份、impacts.message 与 blockers.message/code；仅 `impact && blockers.length===0 && !saving && !readonly && !recoveryPending` 可点“确认删除”。无impact显示“检查删除影响”；恢复时只显示核对按钮。组件没有API、不暗改任何引用。busy 由controller同步锁兜底，关闭调用统一 onRequestClose，不自带第二个放弃确认层。
 
 ```tsx
 {impact?.blockers.map((blocker, index) => <p key={`${blocker.code}:${index}`} role="alert">{blocker.message}（{blocker.code}）</p>)}
@@ -444,7 +444,7 @@ type DataDeletionDialogProps = {
   onClick={() => void (impact ? onConfirm() : onPreview())}>{impact ? '确认删除' : '检查删除影响'}</Button>
 ```
 
-- [ ] 运行 `npm test -- src/renderer/domains/project-data/components/RecordStatusDialog.test.tsx src/renderer/domains/project-data/components/DataDeletionDialog.test.tsx`，从 missing module/behavior RED 到 PASS；执行typecheck。提交 `feat(project-data): add explicit status and deletion confirmation dialogs`。
+- [x] 运行 `npm test -- src/renderer/domains/project-data/components/RecordStatusDialog.test.tsx src/renderer/domains/project-data/components/DataDeletionDialog.test.tsx`，从 missing module/behavior RED 到 PASS；执行typecheck。提交 `feat(project-data): add explicit status and deletion confirmation dialogs`。
 
 ## Task 6：在现有详情页组合写入、刷新与统一离开保护
 
@@ -580,3 +580,5 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q tests/contract/test_proj
 - 新建两个小组件分别对应不同真实业务输入：记录状态选择与删除影响确认。没有复用状态目录编辑器去发记录状态，没有给记录列表新增批量选择。
 - C2b现有leave/query修复是输入依赖。本文实现者先读最终文件再做增量修改；同一 Detail 文件由一个实施者维护，API与组件可按文件责任分工但不可并行修改controller/page。
 - 无需root新增业务决策。剩余执行协调仅为等待C2b复审最终落点、分配唯一Detail/controller写入者、统一记录验收证据；不重新向用户索要已有授权。
+
+Task5实际API补充：DataDeletionDialog新增可选submissionEpoch以在同会话重连时撤销旧busy；父层按editor.session设置React key。RecordStatusDialog的submissionEpoch支持string|number，onRecover可省略以明确禁用连接不可用时的核对；其余接口同计划。最终两组件15测试、11独立探针及类型/lint通过，详见审查记录；页面挂载另属Task6。
