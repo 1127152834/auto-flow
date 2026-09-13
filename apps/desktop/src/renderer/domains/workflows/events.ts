@@ -308,10 +308,12 @@ class SocketService {
 
     // 调试：命中断点/单步 → 暂停
     this.socket.on('execution:paused', (data: { workflowId: string; node_id: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => {
+      if (data.workflowId !== useWorkflowStore.getState().currentExecutionWorkflowId) return
       useDebugStore.getState().setPaused({ nodeId: data.node_id, label: data.label, variables: data.variables, reason: data.reason })
     })
     // 调试：恢复
-    this.socket.on('execution:resumed', () => {
+    this.socket.on('execution:resumed', (data: {workflowId: string}) => {
+      if (data.workflowId !== useWorkflowStore.getState().currentExecutionWorkflowId) return
       useDebugStore.getState().clearPaused()
     })
 
@@ -566,8 +568,8 @@ class SocketService {
       
       // 添加完成日志
       store.addLog({
-        level: status === 'completed' ? 'success' : 'error',
-        message: `执行${status === 'completed' ? '完成' : '失败'}，共执行 ${data.result.executedNodes} 个节点，失败 ${data.result.failedNodes} 个`,
+        level: status === 'completed' ? 'success' : status === 'stopped' ? 'info' : 'error',
+        message: `执行${status === 'completed' ? '完成' : status === 'stopped' ? '已停止' : '失败'}，共执行 ${data.result.executedNodes} 个节点，失败 ${data.result.failedNodes} 个`,
       })
       
       console.log('[Socket] 前端状态已全部更新完成！')

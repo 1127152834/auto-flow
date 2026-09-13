@@ -8,6 +8,7 @@ import { create } from 'zustand'
 interface DebugState {
   breakpoints: Set<string>
   stepMode: boolean            // 是否以单步模式启动下次运行
+  pauseRevision: number         // Local UI generation; never substitutes for a server pause identity.
   isPaused: boolean
   pausedNodeId: string | null
   pausedLabel: string | null
@@ -26,6 +27,7 @@ interface DebugState {
 export const useDebugStore = create<DebugState>((set, get) => ({
   breakpoints: new Set<string>(),
   stepMode: false,
+  pauseRevision: 0,
   isPaused: false,
   pausedNodeId: null,
   pausedLabel: null,
@@ -41,12 +43,13 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   hasBreakpoint: (nodeId) => get().breakpoints.has(nodeId),
   setStepMode: (v) => set({ stepMode: v }),
 
-  setPaused: (info) => set({
+  setPaused: (info) => set((state) => ({
+    pauseRevision: state.pauseRevision + 1,
     isPaused: true,
     pausedNodeId: info.nodeId,
     pausedLabel: info.label || info.nodeId,
     pausedVariables: info.variables || {},
     pausedReason: info.reason || 'breakpoint',
-  }),
+  })),
   clearPaused: () => set({ isPaused: false, pausedNodeId: null, pausedLabel: null, pausedReason: null }),
 }))

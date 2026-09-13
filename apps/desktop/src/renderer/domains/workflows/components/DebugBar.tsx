@@ -1,27 +1,56 @@
 // Source: WebRPA@5ccb900e, components/workflow/DebugBar.tsx; see SOURCE.md for license and adaptation boundaries.
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Play, StepForward, Square, Bug, ChevronDown, ChevronUp } from 'lucide-react'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { useWorkflowStore } from '../editor-store'
-import { workflowApi } from '../api'
+import { workflowApi, type ApiResponse } from '../api'
 
 /** 调试控制条：命中断点/单步暂停时浮现，提供 继续 / 单步 / 停止 + 当前变量快照 */
 export function DebugBar() {
+  const pauseRevision = useDebugStore((s) => s.pauseRevision)
   const isPaused = useDebugStore((s) => s.isPaused)
   const pausedLabel = useDebugStore((s) => s.pausedLabel)
   const pausedReason = useDebugStore((s) => s.pausedReason)
   const pausedVariables = useDebugStore((s) => s.pausedVariables)
   const wfId = useWorkflowStore((s) => s.currentExecutionWorkflowId)
   const [showVars, setShowVars] = useState(false)
-  const [busy, setBusy] = useState(false)
+  type Pending = 'control' | 'stop' | null
+  const [busy, setBusy] = useState<Pending>(null)
+  const busyRef = useRef<Pending>(null)
+  const requestSequence = useRef(0)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    requestSequence.current++
+    busyRef.current = null; setBusy(null); setError('')
+  }, [wfId, isPaused, pauseRevision])
+  useEffect(() => () => { requestSequence.current++ }, [])
 
   if (!isPaused) return null
 
-  const call = async (fn: (id: string) => Promise<any>) => {
-    if (!wfId || busy) return
-    setBusy(true)
-    try { await fn(wfId) } catch {} finally { setBusy(false) }
+  const call = async (fn: (id: string) => Promise<ApiResponse>, kind: Exclude<Pending, null> = 'control') => {
+    if (!wfId || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
+    const sequence = ++requestSequence.current
+    const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId
+    busyRef.current = kind; setBusy(kind); setError('')
+    try {
+      const result = await fn(wfId)
+      if (!isCurrent()) return
+      if (!result.success) {
+        if (!result.httpStatus && kind === 'control') {
+          setError(`请求结果尚未确认：${result.error || '连接异常'}。请等待状态同步，或停止运行。`)
+          return
+        }
+        setError(result.error || '调试操作被拒绝')
+        busyRef.current = null; setBusy(null)
+      }
+      // HTTP acceptance does not confirm a transition. SSE owns the pause state.
+    } catch (cause) {
+      if (!isCurrent()) return
+      setError(`请求结果尚未确认：${cause instanceof Error ? cause.message : String(cause)}。可停止运行。`)
+      if (kind === 'stop') { busyRef.current = null; setBusy(null) }
+    }
   }
 
   const varEntries = Object.entries(pausedVariables || {}).filter(([k]) => k !== 'ERROR')
@@ -55,28 +84,30 @@ export function DebugBar() {
 
       <div className="flex items-center gap-2 px-4 py-2.5">
         <button
-          disabled={busy}
+          disabled={!wfId || !!busy}
           onClick={() => call(workflowApi.debugResume)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
         >
           <Play className="w-3.5 h-3.5 fill-current" /> 继续
         </button>
         <button
-          disabled={busy}
+          disabled={!wfId || !!busy}
           onClick={() => call(workflowApi.debugStep)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[hsl(var(--brand-600))] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           <StepForward className="w-3.5 h-3.5" /> 单步
         </button>
         <button
-          disabled={busy}
-          onClick={() => call(workflowApi.stop)}
+          disabled={!wfId || busy === 'stop'}
+          onClick={() => call(workflowApi.stop, 'stop')}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-600 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50"
         >
           <Square className="w-3.5 h-3.5 fill-current" /> 停止
         </button>
-        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">命中断点已暂停</span>
+        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : pausedReason === 'step' ? '单步执行已暂停' : '命中断点已暂停'}</span>
       </div>
+
+      {error && <div role="alert" className="px-4 pb-3 text-sm text-[hsl(var(--danger-600))]">{error}</div>}
 
       {showVars && (
         <div className="max-h-[220px] overflow-y-auto border-t border-[hsl(var(--border))] px-3 py-2 text-xs">

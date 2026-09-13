@@ -22366,5 +22366,227 @@
     "level": "component/transport",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.rejection",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "单步返回409和暂停上下文已过期"
+    ],
+    "expectedUI": "显示原错误，仍暂停，允许修正后操作",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "显示原错误，仍暂停，允许修正后操作",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.stop-priority",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "单步请求保持未返回，再点击停止"
+    ],
+    "expectedUI": "停止可用，向原工作流提交停止请求",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "停止可用，向原工作流提交停止请求",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.http-acceptance",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "单步HTTP成功，尚无SSE恢复"
+    ],
+    "expectedUI": "等待执行状态确认，不能再发单步",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "等待执行状态确认，不能再发单步",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.late-pause",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "发单步后同一节点进入下一轮暂停，再收到旧409"
+    ],
+    "expectedUI": "旧错误不显示，新暂停可操作",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "旧错误不显示，新暂停可操作",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.uncertain",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "单步返回网络未知错误"
+    ],
+    "expectedUI": "显示请求结果尚未确认，禁用单步，停止可用",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "显示请求结果尚未确认，禁用单步，停止可用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.stop-rejected",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "停止返回503清理尚未完成"
+    ],
+    "expectedUI": "保留暂停并显示错误，停止允许重试",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "保留暂停并显示错误，停止允许重试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.next-pause",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "HTTP接受后发送恢复和下一暂停状态"
+    ],
+    "expectedUI": "旧暂停消失，新暂停允许控制",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "旧暂停消失，新暂停允许控制",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.superseded",
+    "capability": "调试条异步命令",
+    "preconditions": {
+      "workflowId": "debug-ui",
+      "nodeId": "first",
+      "variables": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "挂载实际DebugBar",
+      "单步等待中发停止，再收到旧单步拒绝"
+    ],
+    "expectedUI": "旧错误忽略，停止仍等待确认",
+    "expectedIO": "调用原workflowApi控制接口，不由HTTP成功自行clearPaused",
+    "stateAssertion": "旧错误忽略，停止仍等待确认",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.http-lost-false",
+    "capability": "HTTP调试控制与SSE状态",
+    "preconditions": {
+      "workflowId": "debug-http",
+      "nodes": [
+        "first",
+        "next"
+      ],
+      "breakpoints": [
+        "first"
+      ],
+      "dropStepResponse": false
+    },
+    "steps": [
+      "运行至first暂停",
+      "发送其他workflowId的暂停和恢复",
+      "点击单步",
+      "收到next暂停后停止"
+    ],
+    "expectedUI": "其他工作流事件不影响调试条；next暂停可操作；停止后关闭调试条",
+    "expectedIO": "只发一次step，SSE确认下一暂停，停止返回后接收completed",
+    "stateAssertion": "单步POST计数1；Mock活跃run为空；最后日志info且为执行已停止1节点0失败",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-http.test.tsx"
+  },
+  {
+    "id": "F3.debug-bar.http-lost-true",
+    "capability": "HTTP调试控制与SSE状态",
+    "preconditions": {
+      "workflowId": "debug-http",
+      "nodes": [
+        "first",
+        "next"
+      ],
+      "breakpoints": [
+        "first"
+      ],
+      "dropStepResponse": true
+    },
+    "steps": [
+      "运行至first暂停",
+      "发送其他workflowId的暂停和恢复",
+      "点击单步",
+      "收到next暂停后停止"
+    ],
+    "expectedUI": "其他工作流事件不影响调试条；next暂停可操作；停止后关闭调试条",
+    "expectedIO": "只发一次step，SSE确认下一暂停，停止返回后接收completed",
+    "stateAssertion": "单步POST计数1；Mock活跃run为空；最后日志info且为执行已停止1节点0失败",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-http.test.tsx"
   }
 ]

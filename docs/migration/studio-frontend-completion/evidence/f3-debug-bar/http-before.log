@@ -1,0 +1,74 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/debug-bar-http.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:19722) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=false
+[Socket] 连接到后端: http://127.0.0.1:62834
+
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=false
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=false
+Execution started: debug-http
+
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=true
+[Socket] 连接到后端: http://127.0.0.1:62839
+
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=true
+Execution started: debug-http
+
+ ❯ src/renderer/domains/workflows/tests/debug-bar-http.test.tsx (2 tests | 2 failed) 348ms
+   × controls a real HTTP fixture and rejects foreign pause events; lostResponse=false 198ms
+   × controls a real HTTP fixture and rejects foreign pause events; lostResponse=true 150ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=false
+ FAIL  src/renderer/domains/workflows/tests/debug-bar-http.test.tsx > controls a real HTTP fixture and rejects foreign pause events; lostResponse=true
+AssertionError: expected <span …(2)></span> to be null
+
+- Expected:
+null
+
++ Received:
+<span
+  class="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[180px]"
+  title="别的流程"
+>
+  @
+  别的流程
+</span>
+
+ ❯ src/renderer/domains/workflows/tests/debug-bar-http.test.tsx:28:40
+     26|   emitMockEvent('execution:paused',{workflowId:'other',node_id:'foreig…
+     27|   await new Promise(resolve=>setTimeout(resolve,30))
+     28|   expect(screen.queryByText('@ 别的流程')).toBeNull()
+       |                                        ^
+     29|   emitMockEvent('execution:resumed',{workflowId:'other'})
+     30|   await new Promise(resolve=>setTimeout(resolve,30))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  05:32:47
+   Duration  1.29s (transform 218ms, setup 92ms, import 356ms, tests 348ms, environment 392ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/debug-bar-http.test.tsx
