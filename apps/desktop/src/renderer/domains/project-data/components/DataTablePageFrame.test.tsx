@@ -14,6 +14,8 @@ it('keeps the table header, tabs, notice, and page content inside one surface', 
 
   const frame = screen.getByTestId('data-table-page-frame')
   expect(frame).toHaveAttribute('data-table-page-frame')
+  expect(frame).toHaveClass('overflow-clip')
+  expect(frame).not.toHaveClass('overflow-hidden')
   expect(within(frame).getByRole('heading', { name: '新增记录' })).toBeVisible()
   expect(within(frame).getByRole('navigation', { name: '数据表功能' })).toBeVisible()
   expect(within(frame).getByRole('alert')).toBeVisible()
