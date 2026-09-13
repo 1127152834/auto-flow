@@ -11,11 +11,11 @@ import stat
 import tempfile
 import time
 import zipfile
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path, PurePosixPath
-from typing import Any, Self, TypeAlias
+from typing import Any, Literal, Self, TypeAlias
 from xml.etree.ElementTree import ParseError
 
 from defusedxml.common import DefusedXmlException
@@ -600,9 +600,46 @@ def _cleanup_writer_files(workbook: Any, existing_files: set[str]) -> None:
                     ALL_TEMP_FILES.remove(output)
 
 
+@dataclass(frozen=True)
+class WorkbookPublication:
+    sha256: str
+    size_bytes: int
+    record_count: int
+
+
+def verify_workbook_publication(
+    path: Path, expected_digest: str
+) -> Literal["missing", "matches", "conflict"]:
+    """Read the original target only; never follow replacements or publish a second file."""
+    try:
+        path.lstat()
+    except FileNotFoundError:
+        return "missing"
+    except OSError as exc:
+        raise _error(
+            "EXCEL_FILE_UNAVAILABLE", "Export target cannot be inspected"
+        ) from exc
+    try:
+        _, digest, _ = _read_file(path, time.monotonic() + MAX_SECONDS)
+    except ProjectError as exc:
+        if exc.code in {
+            "EXCEL_SYMLINK_FORBIDDEN",
+            "EXCEL_INVALID_WORKBOOK",
+            "EXCEL_SOURCE_CHANGED",
+            "EXCEL_FILE_TOO_LARGE",
+        }:
+            return "conflict"
+        raise
+    return "matches" if digest == expected_digest else "conflict"
+
+
 def write_workbook(
-    path: Path, headers: Sequence[str], rows: Iterable[Sequence[ScalarValue]]
-) -> None:
+    path: Path,
+    headers: Sequence[str],
+    rows: Iterable[Sequence[ScalarValue]],
+    *,
+    before_publish: Callable[[WorkbookPublication], None] | None = None,
+) -> WorkbookPublication:
     deadline = time.monotonic() + MAX_SECONDS
     if path.suffix.lower() != ".xlsx":
         raise _error("EXCEL_INVALID_OUTPUT", "Output must end in .xlsx")
@@ -621,6 +658,7 @@ def write_workbook(
             header_cells.append(cell)
         sheet.append(header_cells)
         cells = len(names)
+        row_count = 0
         for row_count, row in enumerate(rows, start=1):
             _check(deadline)
             if row_count > MAX_ROWS:
@@ -650,10 +688,17 @@ def write_workbook(
         _check(deadline)
         if temporary.stat().st_size > MAX_FILE_BYTES:
             raise _error("EXCEL_FILE_TOO_LARGE", "Export exceeds 64 MiB")
+        with temporary.open("rb") as output_file:
+            os.fsync(output_file.fileno())
+            digest = hashlib.file_digest(output_file, "sha256").hexdigest()
+        publication = WorkbookPublication(digest, temporary.stat().st_size, row_count)
+        if before_publish is not None:
+            before_publish(publication)
         try:
             os.link(temporary, path)
         except FileExistsError as exc:
             raise _error("EXCEL_OUTPUT_EXISTS", "Output exists") from exc
+        return publication
     except ProjectError:
         raise
     except OSError as exc:
