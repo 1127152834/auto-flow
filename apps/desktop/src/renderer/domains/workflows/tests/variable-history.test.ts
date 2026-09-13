@@ -1,0 +1,58 @@
+import { beforeEach, expect, it } from 'vitest'
+import { useWorkflowStore } from '../editor-store'
+beforeEach(() => useWorkflowStore.getState().clearWorkflow())
+const variable = { name: 'count', value: 1, type: 'number' as const, scope: 'global' as const }
+it('marks variable CRUD dirty and restores each edit through undo/redo', () => {
+  const store = useWorkflowStore.getState()
+  store.addVariable(variable)
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  store.undo(); expect(useWorkflowStore.getState().variables).toEqual([])
+  store.redo(); expect(useWorkflowStore.getState().variables).toEqual([variable])
+  store.markAsSaved(); store.updateVariable('count', 2)
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  store.undo(); expect(useWorkflowStore.getState().variables[0].value).toBe(1)
+  store.redo(); expect(useWorkflowStore.getState().variables[0].value).toBe(2)
+  store.markAsSaved(); store.deleteVariable('count')
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  store.undo(); expect(useWorkflowStore.getState().variables[0].value).toBe(2)
+})
+it('keeps auto-created variables in the same history operation as their node', () => {
+  const store = useWorkflowStore.getState()
+  store.addNode('get_element_info', { x: 0, y: 0 })
+  const created = structuredClone(useWorkflowStore.getState().variables)
+  expect(created.length).toBeGreaterThan(0)
+  store.undo(); expect(useWorkflowStore.getState().nodes).toEqual([])
+  expect(useWorkflowStore.getState().variables).toEqual([])
+  store.redo(); expect(useWorkflowStore.getState().variables).toEqual(created)
+})
+it('does not leak variables between documents and preserves imported variables through history', () => {
+  const store = useWorkflowStore.getState()
+  store.addVariable(variable)
+  store.loadWorkflow({ name: 'empty document', nodes: [], edges: [] })
+  expect(useWorkflowStore.getState().variables).toEqual([])
+  store.importWorkflow({ name: 'imported', nodes: [], edges: [], variables: [variable] })
+  store.addNode('open_page', { x: 0, y: 0 })
+  store.undo(); expect(useWorkflowStore.getState().variables).toEqual([variable])
+})
+it('renames a declaration and nested references atomically without changing longer variable names', () => {
+  const store = useWorkflowStore.getState()
+  store.addVariable(variable)
+  store.addNode('input_text', { x: 0, y: 0 })
+  const id = useWorkflowStore.getState().nodes[0].id
+  store.updateNodeData(id, { text: '{count} ${count} {counter}', nested: [{ value: '{count[0]}' }] })
+  expect(store.findVariableUsages('count').map(use => use.field)).toEqual(['text', 'nested.0.value'])
+  store.renameVariable('count', 'total', true)
+  expect(useWorkflowStore.getState().nodes[0].data).toMatchObject({ text: '{total} ${total} {counter}', nested: [{ value: '{total[0]}' }] })
+  store.undo()
+  expect(useWorkflowStore.getState().variables[0].name).toBe('count')
+  expect(useWorkflowStore.getState().nodes[0].data.text).toBe('{count} ${count} {counter}')
+  store.redo(); expect(useWorkflowStore.getState().variables[0].name).toBe('total')
+})
+it('rejects a duplicate rename without changing references or history', () => {
+  const store = useWorkflowStore.getState()
+  store.addVariable(variable); store.addVariable({ ...variable, name: 'taken' })
+  const before = useWorkflowStore.getState().historyIndex
+  expect(() => store.renameVariable('count', 'taken', true)).toThrow('变量名为空或已存在')
+  expect(useWorkflowStore.getState().variables.map(v => v.name)).toEqual(['count', 'taken'])
+  expect(useWorkflowStore.getState().historyIndex).toBe(before)
+})

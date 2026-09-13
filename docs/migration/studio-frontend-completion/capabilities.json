@@ -660,7 +660,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1595,
+        "line": 1615,
         "condition": "type === 'get_element_info'",
         "fields": [],
         "components": []
@@ -922,7 +922,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1710,
+        "line": 1730,
         "condition": "type === 'screenshot'",
         "fields": [],
         "components": []
@@ -1046,7 +1046,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1755,
+        "line": 1775,
         "condition": "type === 'network_capture'",
         "fields": [],
         "components": []
@@ -1521,7 +1521,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1735,
+        "line": 1755,
         "condition": "type === 'run_command'",
         "fields": [],
         "components": []
@@ -1599,7 +1599,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1725,
+        "line": 1745,
         "condition": "type === 'get_clipboard'",
         "fields": [],
         "components": []
@@ -1668,7 +1668,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1579,
+        "line": 1599,
         "condition": "type === 'loop'",
         "fields": [],
         "components": []
@@ -1732,7 +1732,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1589,
+        "line": 1609,
         "condition": "type === 'foreach'",
         "fields": [],
         "components": []
@@ -2026,7 +2026,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1615,
+        "line": 1635,
         "condition": "type === 'input_prompt'",
         "fields": [],
         "components": []
@@ -2071,7 +2071,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2031,
+        "line": 2051,
         "condition": "type === 'webhook_trigger'",
         "fields": [],
         "components": []
@@ -2118,7 +2118,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2036,
+        "line": 2056,
         "condition": "type === 'hotkey_trigger'",
         "fields": [],
         "components": []
@@ -2156,7 +2156,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2041,
+        "line": 2061,
         "condition": "type === 'file_watcher_trigger'",
         "fields": [],
         "components": []
@@ -2204,7 +2204,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2046,
+        "line": 2066,
         "condition": "type === 'email_trigger'",
         "fields": [],
         "components": []
@@ -2247,7 +2247,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2051,
+        "line": 2071,
         "condition": "type === 'api_trigger'",
         "fields": [],
         "components": []
@@ -2291,7 +2291,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2056,
+        "line": 2076,
         "condition": "type === 'mouse_trigger'",
         "fields": [],
         "components": []
@@ -2334,7 +2334,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2061,
+        "line": 2081,
         "condition": "type === 'image_trigger'",
         "fields": [],
         "components": []
@@ -2388,7 +2388,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2066,
+        "line": 2086,
         "condition": "type === 'sound_trigger'",
         "fields": [],
         "components": []
@@ -2431,7 +2431,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2071,
+        "line": 2091,
         "condition": "type === 'face_trigger'",
         "fields": [],
         "components": []
@@ -2480,7 +2480,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1502,
+        "line": 1522,
         "condition": "type === 'gesture_trigger'",
         "fields": [],
         "components": []
@@ -2548,7 +2548,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2076,
+        "line": 2096,
         "condition": "type === 'element_change_trigger'",
         "fields": [],
         "components": []
@@ -2618,7 +2618,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1600,
+        "line": 1620,
         "condition": "type === 'set_variable'",
         "fields": [],
         "components": []
@@ -2693,7 +2693,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1630,
+        "line": 1650,
         "condition": "type === 'json_parse'",
         "fields": [],
         "components": []
@@ -2735,7 +2735,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1705,
+        "line": 1725,
         "condition": "type === 'base64'",
         "fields": [],
         "components": []
@@ -2782,7 +2782,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1605,
+        "line": 1625,
         "condition": "type === 'random_number'",
         "fields": [],
         "components": []
@@ -2824,7 +2824,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1610,
+        "line": 1630,
         "condition": "type === 'get_time'",
         "fields": [],
         "components": []
@@ -2866,7 +2866,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1675,
+        "line": 1695,
         "condition": "type === 'string_concat'",
         "fields": [],
         "components": []
@@ -2907,7 +2907,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1680,
+        "line": 1700,
         "condition": "type === 'string_replace'",
         "fields": [],
         "components": []
@@ -2951,7 +2951,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1670,
+        "line": 1690,
         "condition": "type === 'string_split'",
         "fields": [],
         "components": []
@@ -2992,7 +2992,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1685,
+        "line": 1705,
         "condition": "type === 'string_join'",
         "fields": [],
         "components": []
@@ -3034,7 +3034,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1690,
+        "line": 1710,
         "condition": "type === 'string_trim'",
         "fields": [],
         "components": []
@@ -3076,7 +3076,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1695,
+        "line": 1715,
         "condition": "type === 'string_case'",
         "fields": [],
         "components": []
@@ -3118,7 +3118,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1700,
+        "line": 1720,
         "condition": "type === 'string_substring'",
         "fields": [],
         "components": []
@@ -3159,7 +3159,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1635,
+        "line": 1655,
         "condition": "type === 'regex_extract'",
         "fields": [],
         "components": []
@@ -3203,7 +3203,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1640,
+        "line": 1660,
         "condition": "type === 'list_operation'",
         "fields": [],
         "components": []
@@ -3246,7 +3246,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1645,
+        "line": 1665,
         "condition": "type === 'list_get'",
         "fields": [],
         "components": []
@@ -3288,7 +3288,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1650,
+        "line": 1670,
         "condition": "type === 'list_length'",
         "fields": [],
         "components": []
@@ -3964,7 +3964,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1655,
+        "line": 1675,
         "condition": "type === 'dict_operation'",
         "fields": [],
         "components": []
@@ -4005,7 +4005,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1660,
+        "line": 1680,
         "condition": "type === 'dict_get'",
         "fields": [],
         "components": []
@@ -4047,7 +4047,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1665,
+        "line": 1685,
         "condition": "type === 'dict_keys'",
         "fields": [],
         "components": []
@@ -5050,7 +5050,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1745,
+        "line": 1765,
         "condition": "type === 'table_get_cell'",
         "fields": [],
         "components": []
@@ -5295,7 +5295,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1750,
+        "line": 1770,
         "condition": "type === 'db_query'",
         "fields": [],
         "components": []
@@ -6695,7 +6695,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1510,
+        "line": 1530,
         "condition": "type === 'ai_chat'",
         "fields": [],
         "components": []
@@ -6740,7 +6740,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1818,
+        "line": 1838,
         "condition": "type === 'ai_vision'",
         "fields": [],
         "components": []
@@ -6842,7 +6842,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_extract'",
         "fields": [],
         "components": []
@@ -6850,7 +6850,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1542,
+        "line": 1562,
         "condition": "type === 'ai_extract'",
         "fields": [],
         "components": []
@@ -6897,7 +6897,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_classify'",
         "fields": [],
         "components": []
@@ -6905,7 +6905,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1541,
+        "line": 1561,
         "condition": "type === 'ai_classify'",
         "fields": [],
         "components": []
@@ -6953,7 +6953,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_summarize'",
         "fields": [],
         "components": []
@@ -6961,7 +6961,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1543,
+        "line": 1563,
         "condition": "type === 'ai_summarize'",
         "fields": [],
         "components": []
@@ -7008,7 +7008,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_translate'",
         "fields": [],
         "components": []
@@ -7016,7 +7016,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1544,
+        "line": 1564,
         "condition": "type === 'ai_translate'",
         "fields": [],
         "components": []
@@ -7048,7 +7048,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_sentiment'",
         "fields": [],
         "components": []
@@ -7094,7 +7094,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_normalize'",
         "fields": [],
         "components": []
@@ -7102,7 +7102,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1545,
+        "line": 1565,
         "condition": "type === 'ai_normalize'",
         "fields": [],
         "components": []
@@ -7152,7 +7152,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_dedup_semantic'",
         "fields": [],
         "components": []
@@ -7160,7 +7160,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1540,
+        "line": 1560,
         "condition": "type === 'ai_dedup_semantic'",
         "fields": [],
         "components": []
@@ -7211,7 +7211,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1520,
+        "line": 1540,
         "condition": "type === 'ai_route'",
         "fields": [],
         "components": []
@@ -7219,7 +7219,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1546,
+        "line": 1566,
         "condition": "type === 'ai_route'",
         "fields": [],
         "components": []
@@ -7386,7 +7386,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1548,
+        "line": 1568,
         "condition": "type === 'ai_smart_scraper'",
         "fields": [],
         "components": []
@@ -7430,7 +7430,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1561,
+        "line": 1581,
         "condition": "type === 'ai_element_selector'",
         "fields": [],
         "components": []
@@ -7582,7 +7582,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1720,
+        "line": 1740,
         "condition": "type === 'ocr_captcha'",
         "fields": [],
         "components": []
@@ -7649,7 +7649,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1871,
+        "line": 1891,
         "condition": "type === 'face_recognition'",
         "fields": [],
         "components": []
@@ -7696,7 +7696,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1877,
+        "line": 1897,
         "condition": "type === 'image_ocr'",
         "fields": [],
         "components": []
@@ -7747,7 +7747,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1625,
+        "line": 1645,
         "condition": "type === 'api_request'",
         "fields": [],
         "components": []
@@ -7848,7 +7848,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1574,
+        "line": 1594,
         "condition": "type === 'send_email'",
         "fields": [],
         "components": []
@@ -8644,7 +8644,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1996,
+        "line": 2016,
         "condition": "type === 'md5_encrypt'",
         "fields": [],
         "components": []
@@ -8686,7 +8686,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2001,
+        "line": 2021,
         "condition": "type === 'sha_encrypt'",
         "fields": [],
         "components": []
@@ -8728,7 +8728,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1991,
+        "line": 2011,
         "condition": "type === 'url_encode_decode'",
         "fields": [],
         "components": []
@@ -8770,7 +8770,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1986,
+        "line": 2006,
         "condition": "type === 'random_password_generator'",
         "fields": [],
         "components": []
@@ -8813,7 +8813,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2026,
+        "line": 2046,
         "condition": "type === 'uuid_generator'",
         "fields": [],
         "components": []
@@ -8857,7 +8857,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2011,
+        "line": 2031,
         "condition": "type === 'rgb_to_hsv'",
         "fields": [],
         "components": []
@@ -8898,7 +8898,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2016,
+        "line": 2036,
         "condition": "type === 'rgb_to_cmyk'",
         "fields": [],
         "components": []
@@ -8939,7 +8939,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2021,
+        "line": 2041,
         "condition": "type === 'hex_to_cmyk'",
         "fields": [],
         "components": []
@@ -8980,7 +8980,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2006,
+        "line": 2026,
         "condition": "type === 'timestamp_converter'",
         "fields": [],
         "components": []
@@ -9180,7 +9180,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1620,
+        "line": 1640,
         "condition": "type === 'js_script'",
         "fields": [],
         "components": []
@@ -9511,7 +9511,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2417,
+        "line": 2437,
         "condition": "type === 'group'",
         "fields": [],
         "components": []
@@ -9519,7 +9519,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2507,
+        "line": 2527,
         "condition": "type === 'group'",
         "fields": [],
         "components": []
@@ -9527,7 +9527,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3219,
+        "line": 3235,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -9535,7 +9535,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3308,
+        "line": 3324,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -9575,7 +9575,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2418,
+        "line": 2438,
         "condition": "type === 'note'",
         "fields": [],
         "components": []
@@ -9583,7 +9583,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2508,
+        "line": 2528,
         "condition": "type === 'note'",
         "fields": [],
         "components": []
@@ -9591,7 +9591,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3222,
+        "line": 3238,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []
@@ -9599,7 +9599,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3311,
+        "line": 3327,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []

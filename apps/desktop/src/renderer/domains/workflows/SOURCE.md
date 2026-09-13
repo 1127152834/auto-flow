@@ -45,3 +45,5 @@ Recording reads now use session IDs and monotonically increasing sequence cursor
 F0 removed 32 unreferenced Windows-only configuration exports from the mixed AdvancedModuleConfigs file, the unused phone coordinate component and three exclusive API groups. Shared declarations and user data remain intact. File provenance and symbol boundaries are recorded in excluded-source-files.json and excluded-source-symbols.json.
 
 Drag and explicit resize history captures the first gesture state, not the final pointer event. Keyboard position changes also mark the document unsaved.
+
+Global variables now participate in document dirty state and undo history, including node-created defaults. Document loading clears omitted variables; confirmed variable renames can update nested references atomically. Invalid typed input is preserved with an error instead of coerced to an empty/default value.

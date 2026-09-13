@@ -2,6 +2,9 @@
 /* WebRPA 编辑器界面文案中→英字典（高频界面 chrome）。
    键为渲染后可见文本 trim 值；未收录的保持中文，可持续补充。 */
 export const UI_DICT: Record<string, string> = {
+  '请输入有限数字': 'Enter a finite number', '布尔值必须是 true 或 false': 'Boolean values must be true or false',
+  '列表值必须是 JSON 数组': 'List values must be JSON arrays', '字典值必须是 JSON 对象': 'Dictionary values must be JSON objects',
+  '确认添加变量': 'Confirm variable', '取消添加变量': 'Cancel variable',
   // 工具栏
   '新建': 'New', '保存': 'Save', '打开': 'Open', '导出': 'Export',
   '运行': 'Run', '停止': 'Stop', '设置': 'Settings', '文档': 'Docs', '教学文档': 'Tutorials',

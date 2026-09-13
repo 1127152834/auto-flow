@@ -23,10 +23,28 @@ function historyEdges(edges: Edge[]): Edge[] {
   return edges.map(edge => { const copy = { ...edge }; delete copy.selected; return copy })
 }
 
-function matchesHistory(state: { nodes: Node<NodeData>[]; edges: Edge[]; name: string }, snapshot?: HistorySnapshot): boolean {
-  return !!snapshot && state.name === snapshot.name &&
+function matchesHistory(state: { nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables: Variable[] }, snapshot?: HistorySnapshot): boolean {
+  return !!snapshot && state.name === snapshot.name && JSON.stringify(state.variables) === JSON.stringify(snapshot.variables) &&
     JSON.stringify(historyNodes(state.nodes)) === JSON.stringify(historyNodes(snapshot.nodes)) &&
     JSON.stringify(historyEdges(state.edges)) === JSON.stringify(historyEdges(snapshot.edges))
+}
+
+// Walk configuration values only; object keys are not variable references.
+function mapConfigStrings(value: unknown, map: (text: string, path: string) => string, path = ''): unknown {
+  if (typeof value === 'string') return map(value, path)
+  if (Array.isArray(value)) return value.map((item, index) => mapConfigStrings(item, map, `${path}.${index}`))
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) =>
+    [key, mapConfigStrings(item, map, path ? `${path}.${key}` : key)]))
+  return value
+}
+function variablePattern(name: string): RegExp {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`\\{${escaped}(\\[[^\\]]*\\])?\\}`, 'g')
+}
+function renamedNodeReferences(nodes: Node<NodeData>[], oldName: string, newName: string): Node<NodeData>[] {
+  const pattern = variablePattern(oldName)
+  return nodes.map(node => ({ ...node, data: mapConfigStrings(node.data, text =>
+    text.replace(pattern, (_match, indexPart) => `{${newName}${indexPart || ''}}`)) as NodeData }))
 }
 
 // ============================================================================
@@ -121,6 +139,7 @@ export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
 // 历史记录快照类型
 interface HistorySnapshot {
+  variables: Variable[]
   nodes: Node<NodeData>[]
   edges: Edge[]
   name: string  // 工作流名称也纳入历史记录
@@ -245,7 +264,7 @@ interface WorkflowState {
   ensureGlobalVariables: (names: string[]) => void
   updateVariable: (name: string, value: unknown) => void
   deleteVariable: (name: string) => void
-  renameVariable: (oldName: string, newName: string) => void
+  renameVariable: (oldName: string, newName: string, updateReferences?: boolean) => void
   
   // 变量引用扫描和替换
   findVariableUsages: (varName: string) => { nodeId: string; field: string; value: string }[]
@@ -303,7 +322,7 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void
   setWorkflowNameWithHistory: (name: string) => void  // 设置名称并保存历史
   clearWorkflow: () => void
-  loadWorkflow: (workflow: { nodes: Node<NodeData>[]; edges: Edge[]; name: string }) => void
+  loadWorkflow: (workflow: { nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
   // 回滚：把画布完整恢复到某个快照（含节点、连线、名称、全局变量）
   restoreSnapshot: (snapshot: { nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }) => void
   
@@ -1352,7 +1371,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   imageAssets: [],
   bottomPanelTab: 'logs',
   hasUnsavedChanges: false,
-  history: [{ nodes: [], edges: [], name: '未命名工作流' }],
+  history: [{ nodes: [], edges: [], variables: [], name: '未命名工作流' }],
   historyIndex: 0,
 
   onNodesChange: (changes) => {
@@ -2785,7 +2804,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       get().updateVariable(variable.name, variable.value)
       return
     }
+    get().pushHistory()
     set({
+      hasUnsavedChanges: true,
       variables: [...get().variables, variable],
     })
   },
@@ -2806,7 +2827,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   updateVariable: (name, value) => {
+    const variable = get().variables.find(v => v.name === name)
+    if (!variable || JSON.stringify(variable.value) === JSON.stringify(value)) return
+    get().pushHistory()
     set({
+      hasUnsavedChanges: true,
       variables: get().variables.map((v) =>
         v.name === name ? { ...v, value } : v
       ),
@@ -2814,14 +2839,21 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   deleteVariable: (name) => {
+    if (!get().variables.some(v => v.name === name)) return
+    get().pushHistory()
     set({
+      hasUnsavedChanges: true,
       variables: get().variables.filter((v) => v.name !== name),
     })
   },
 
-  renameVariable: (oldName, newName) => {
-    if (oldName === newName) return
+  renameVariable: (oldName, newName, updateReferences = false) => {
+    if (oldName === newName || !get().variables.some(v => v.name === oldName)) return
+    if (!newName.trim() || get().variables.some(v => v.name === newName)) throw new Error('变量名为空或已存在')
+    get().pushHistory()
     set({
+      hasUnsavedChanges: true,
+      nodes: updateReferences ? renamedNodeReferences(get().nodes, oldName, newName) : get().nodes,
       variables: get().variables.map((v) =>
         v.name === oldName ? { ...v, name: newName } : v
       ),
@@ -2829,44 +2861,20 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   findVariableUsages: (varName) => {
-    const nodes = get().nodes
     const usages: { nodeId: string; field: string; value: string }[] = []
-    const pattern = new RegExp(`\\{${varName}(\\[[^\\]]*\\])?\\}`, 'g')
-    
-    for (const node of nodes) {
-      const data = node.data as NodeData
-      for (const [key, value] of Object.entries(data)) {
-        if (typeof value === 'string' && pattern.test(value)) {
-          usages.push({ nodeId: node.id, field: key, value })
-          pattern.lastIndex = 0
-        }
-      }
-    }
+    const pattern = variablePattern(varName)
+    for (const node of get().nodes) mapConfigStrings(node.data, (value, field) => {
+      pattern.lastIndex = 0
+      if (pattern.test(value)) usages.push({ nodeId: node.id, field, value })
+      return value
+    })
     return usages
   },
 
   replaceVariableReferences: (oldName, newName) => {
-    const nodes = get().nodes
-    const pattern = new RegExp(`\\{${oldName}(\\[[^\\]]*\\])?\\}`, 'g')
-    
-    const updatedNodes = nodes.map(node => {
-      const data = { ...node.data } as NodeData
-      let hasChanges = false
-      
-      for (const [key, value] of Object.entries(data)) {
-        if (typeof value === 'string' && pattern.test(value)) {
-          pattern.lastIndex = 0
-          data[key] = value.replace(pattern, (_match, indexPart) => {
-            return `{${newName}${indexPart || ''}}`
-          })
-          hasChanges = true
-        }
-      }
-      
-      return hasChanges ? { ...node, data } : node
-    })
-    
-    set({ nodes: updatedNodes })
+    if (oldName === newName || get().findVariableUsages(oldName).length === 0) return
+    get().pushHistory()
+    set({ nodes: renamedNodeReferences(get().nodes, oldName, newName), hasUnsavedChanges: true })
   },
 
   addLogs: (logs) => {
@@ -2992,6 +3000,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: JSON.parse(JSON.stringify(historyNodes(state.nodes))),
       edges: JSON.parse(JSON.stringify(historyEdges(state.edges))),
       name: state.name,
+      variables: structuredClone(state.variables),
     }
     
     // 检查是否与当前历史记录相同（避免重复）
@@ -2999,7 +3008,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     if (currentSnapshot && 
         JSON.stringify(historyNodes(currentSnapshot.nodes)) === JSON.stringify(snapshot.nodes) &&
         JSON.stringify(historyEdges(currentSnapshot.edges)) === JSON.stringify(snapshot.edges) &&
-        currentSnapshot.name === snapshot.name) {
+        currentSnapshot.name === snapshot.name &&
+        JSON.stringify(currentSnapshot.variables) === JSON.stringify(snapshot.variables)) {
       return // 没有变化，不保存
     }
     
@@ -3028,6 +3038,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         nodes: JSON.parse(JSON.stringify(snapshot.nodes)),
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
+        variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
         selectedNodeId: null,
@@ -3044,6 +3055,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         nodes: JSON.parse(JSON.stringify(snapshot.nodes)),
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
+        variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
         selectedNodeId: null,
@@ -3090,7 +3102,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       currentExecutionWorkflowId: null,
       variables: [],
       hasUnsavedChanges: false,  // 清空后标记为已保存
-      history: [{ nodes: [], edges: [], name: '未命名工作流' }],
+      history: [{ nodes: [], edges: [], variables: [], name: '未命名工作流' }],
       historyIndex: 0,
     })
   },
@@ -3103,11 +3115,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: JSON.parse(JSON.stringify(safeNodes)),
       edges: JSON.parse(JSON.stringify(safeEdges)),
       name: workflow.name,
+      variables: structuredClone(workflow.variables ?? []),
     }
     set({
       nodes: safeNodes as any,
       edges: safeEdges as any,
       name: workflow.name,
+      variables: structuredClone(workflow.variables ?? []),
       selectedNodeId: null,
       clipboard: [],
       clipboardEdges: [],
@@ -3134,6 +3148,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: JSON.parse(JSON.stringify(safeNodes)),
       edges: JSON.parse(JSON.stringify(safeEdges)),
       name: snapshot.name ?? state.name,
+      variables: structuredClone(snapshot.variables ?? state.variables),
     }
     set({
       nodes: safeNodes as any,
@@ -3257,7 +3272,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         variables: importedVariables,  // 恢复变量
         selectedNodeId: null,
         hasUnsavedChanges: false,  // 导入后标记为已保存
-        history: [{ nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流' }],
+        history: [{ nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流', variables: structuredClone(importedVariables) }],
         historyIndex: 0,
       })
       return true

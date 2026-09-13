@@ -12177,5 +12177,204 @@
     "level": "editor rule",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/editor-roundtrip.test.ts"
+  },
+  {
+    "id": "VAR.history.crud",
+    "capability": "变量增改删",
+    "preconditions": "空文档",
+    "steps": [
+      "新增count=1",
+      "撤销重做",
+      "更新为2",
+      "撤销重做",
+      "删除",
+      "撤销"
+    ],
+    "expectedUI": "变量数量和值逐次恢复",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "每个编辑标脏，历史包含变量",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-history.test.ts"
+  },
+  {
+    "id": "VAR.history.node-default",
+    "capability": "节点默认变量历史",
+    "preconditions": "空文档",
+    "steps": [
+      "添加get_element_info",
+      "撤销",
+      "重做"
+    ],
+    "expectedUI": "节点和自动变量共同恢复",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "节点与默认变量一次撤销",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-history.test.ts"
+  },
+  {
+    "id": "VAR.history.document-isolation",
+    "capability": "跨文档变量",
+    "preconditions": "当前有count变量",
+    "steps": [
+      "loadWorkflow空文档",
+      "导入含变量文档",
+      "添加节点后撤销"
+    ],
+    "expectedUI": "前一文档变量不泄漏，导入变量仍存在",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量基线与文档一致",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-history.test.ts"
+  },
+  {
+    "id": "VAR.history.rename",
+    "capability": "变量原子重命名",
+    "preconditions": "count声明，节点有普通及嵌套引用",
+    "steps": [
+      "重命名为total并更新引用",
+      "撤销重做"
+    ],
+    "expectedUI": "所有识别引用与声明一起恢复，counter不变化",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "一次历史包括引用与变量",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-history.test.ts"
+  },
+  {
+    "id": "VAR.rename.duplicate",
+    "capability": "重名拒绝",
+    "preconditions": "count和taken存在",
+    "steps": [
+      "尝试重命名count为taken"
+    ],
+    "expectedUI": "明确错误",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "原变量和历史不变",
+    "level": "editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-history.test.ts"
+  },
+  {
+    "id": "VAR.ui.history",
+    "capability": "变量表单历史",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "点击添加",
+      "输入title=hello",
+      "确认",
+      "撤销重做"
+    ],
+    "expectedUI": "hello消失后恢复",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "真实面板提交影响文档历史",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.1",
+    "capability": "number类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择number",
+      "输入12no",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.2",
+    "capability": "number类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择number",
+      "输入Infinity",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.3",
+    "capability": "array类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择array",
+      "输入{broken",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.4",
+    "capability": "array类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择array",
+      "输入{}",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.5",
+    "capability": "object类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择object",
+      "输入[]",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
+  },
+  {
+    "id": "VAR.ui.invalid.6",
+    "capability": "object类型校验",
+    "preconditions": "空文档变量页",
+    "steps": [
+      "添加test_value",
+      "选择object",
+      "输入null",
+      "确认"
+    ],
+    "expectedUI": "显示错误并保留原始输入",
+    "expectedIO": "本地编辑不请求后端；不模拟本地编辑结果",
+    "stateAssertion": "变量不新增、文档不标脏",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-panel.test.tsx"
   }
 ]

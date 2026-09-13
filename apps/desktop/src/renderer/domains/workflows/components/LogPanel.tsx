@@ -52,7 +52,6 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const deleteVariable = useWorkflowStore((state) => state.deleteVariable)
   const renameVariable = useWorkflowStore((state) => state.renameVariable)
   const findVariableUsages = useWorkflowStore((state) => state.findVariableUsages)
-  const replaceVariableReferences = useWorkflowStore((state) => state.replaceVariableReferences)
   const { 
     collectedData, 
     setCollectedData,
@@ -343,38 +342,45 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   }, [handleDownloadData])
 
   // 变量相关方法
+  const [variableError, setVariableError] = useState<string | null>(null)
   const parseVariableValue = (value: string, type: VariableType): unknown => {
-    try {
-      switch (type) {
-        case 'number':
-          const num = parseFloat(value)
-          return isNaN(num) ? 0 : num
-        case 'boolean':
-          return value.toLowerCase() === 'true' || value === '1'
-        case 'array':
-          if (!value.trim()) return []
-          return JSON.parse(value)
-        case 'object':
-          if (!value.trim()) return {}
-          return JSON.parse(value)
-        default:
-          return value
+    switch (type) {
+      case 'number': {
+        const number = value.trim() ? Number(value) : 0
+        if (!Number.isFinite(number)) throw new Error('请输入有限数字')
+        return number
       }
-    } catch {
-      if (type === 'array') return []
-      if (type === 'object') return {}
-      return value
+      case 'boolean':
+        if (!['', 'true', 'false', '1', '0'].includes(value.toLowerCase())) throw new Error('布尔值必须是 true 或 false')
+        return value.toLowerCase() === 'true' || value === '1'
+      case 'array': {
+        const result: unknown = JSON.parse(value.trim() || '[]')
+        if (!Array.isArray(result)) throw new Error('列表值必须是 JSON 数组')
+        return result
+      }
+      case 'object': {
+        const result: unknown = JSON.parse(value.trim() || '{}')
+        if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('字典值必须是 JSON 对象')
+        return result
+      }
+      default: return value
     }
   }
 
   const handleAddVariable = () => {
-    if (!newVarName.trim()) return
-    const parsedValue = parseVariableValue(newVarValue, newVarType)
-    addVariable({ name: newVarName.trim(), value: parsedValue, type: newVarType, scope: 'global' })
-    setNewVarName('')
-    setNewVarValue('')
-    setNewVarType('string')
-    setIsAddingVar(false)
+    try {
+      if (!newVarName.trim()) throw new Error('请输入变量名')
+      if (variables.some(variable => variable.name === newVarName.trim())) throw new Error('变量名已存在')
+      const parsedValue = parseVariableValue(newVarValue, newVarType)
+      addVariable({ name: newVarName.trim(), value: parsedValue, type: newVarType, scope: 'global' })
+      setVariableError(null)
+      setNewVarName('')
+      setNewVarValue('')
+      setNewVarType('string')
+      setIsAddingVar(false)
+    } catch (error) {
+      setVariableError(error instanceof Error ? error.message : String(error))
+    }
   }
 
   const formatVariableValue = (value: unknown, type: VariableType): string => {
@@ -390,6 +396,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   }
 
   const startEditVar = (name: string, value: unknown, type: VariableType) => {
+    setVariableError(null)
     setEditingVar(name)
     setEditVarValue(formatVariableValue(value, type))
   }
@@ -398,8 +405,14 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     if (editingVar) {
       const variable = variables.find(v => v.name === editingVar)
       if (variable) {
-        const parsedValue = parseVariableValue(editVarValue, variable.type)
-        updateVariable(editingVar, parsedValue)
+        try {
+          const parsedValue = parseVariableValue(editVarValue, variable.type)
+          updateVariable(editingVar, parsedValue)
+          setVariableError(null)
+        } catch (error) {
+          setVariableError(error instanceof Error ? error.message : String(error))
+          return
+        }
       }
       setEditingVar(null)
       setEditVarValue('')
@@ -446,8 +459,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
 
   const handleConfirmRename = () => {
     if (!renameDialog) return
-    replaceVariableReferences(renameDialog.oldName, renameDialog.newName)
-    renameVariable(renameDialog.oldName, renameDialog.newName)
+    renameVariable(renameDialog.oldName, renameDialog.newName, true)
     setRenameDialog(null)
     setEditingVarName(null)
   }
@@ -665,6 +677,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                   <Input value={newVarName} onChange={(e) => setNewVarName(e.target.value)}
                     placeholder="变量名" className="w-20 h-7 text-xs" />
                   <Select 
+                    aria-label="变量类型"
                     value={newVarType} 
                     onChange={(e) => setNewVarType(e.target.value as VariableType)}
                     className="w-16 h-7 text-xs"
@@ -690,8 +703,8 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                       className="w-20 h-7 text-xs" 
                       onKeyDown={(e) => e.key === 'Enter' && handleAddVariable()} />
                   )}
-                  <Button size="icon" variant="tonal-success" className="h-7 w-7" onClick={handleAddVariable}><Check className="w-3.5 h-3.5" /></Button>
-                  <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setIsAddingVar(false)}><X className="w-3.5 h-3.5" /></Button>
+                  <Button size="icon" variant="tonal-success" className="h-7 w-7" aria-label="确认添加变量" onClick={handleAddVariable}><Check className="w-3.5 h-3.5" /></Button>
+                  <Button size="icon" variant="outline" className="h-7 w-7" aria-label="取消添加变量" onClick={() => { setIsAddingVar(false); setVariableError(null) }}><X className="w-3.5 h-3.5" /></Button>
                 </div>
               ) : (
                 <Button variant="default" size="sm" className="h-7 text-xs" onClick={() => setIsAddingVar(true)}>
@@ -991,7 +1004,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             </td>
                             <td className="border px-2 py-1 text-muted-foreground">{v.type}</td>
                             <td className="border px-2 py-1 text-center">
-                              <Button variant="ghost" size="icon" className="w-5 h-5" onClick={() => deleteVariable(v.name)}>
+                              <Button variant="ghost" size="icon" className="w-5 h-5" aria-label={`删除变量 ${v.name}`} onClick={() => deleteVariable(v.name)}>
                                 <Trash2 className="w-3 h-3 text-destructive" />
                               </Button>
                             </td>
@@ -1079,6 +1092,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
       )}
       
       {/* 确认对话框 */}
+      {activeTab === 'variables' && variableError && <div role="alert" className="px-3 py-1 text-xs text-destructive">{variableError}</div>}
       <ConfirmDialog />
     </motion.footer>
   )

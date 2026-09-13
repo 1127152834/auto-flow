@@ -7072,514 +7072,526 @@
     ],
     "conditions": [
       {
-        "line": 72,
+        "line": 71,
         "expression": "storedTab === 'assets'"
       },
       {
-        "line": 107,
+        "line": 106,
         "expression": "newFilters.has(level)"
       },
       {
-        "line": 118,
+        "line": 117,
         "expression": "logLevelFilters.size === 5"
       },
       {
-        "line": 130,
+        "line": 129,
         "expression": "!logLevelFilters.has(log.level)"
       },
       {
-        "line": 134,
+        "line": 133,
         "expression": "logSearchQuery.trim()"
       },
       {
-        "line": 147,
+        "line": 146,
         "expression": "logEndRef.current && activeTab === 'logs' && filteredLogs.length > 0"
       },
       {
-        "line": 172,
+        "line": 171,
         "expression": "bad.length > 0"
       },
       {
-        "line": 193,
+        "line": 192,
         "expression": "nodeId"
       },
       {
-        "line": 198,
+        "line": 197,
         "expression": "onLogClick"
       },
       {
-        "line": 208,
+        "line": 207,
         "expression": "columns.length === 0"
       },
       {
-        "line": 215,
+        "line": 214,
         "expression": "!newColumnName.trim()"
       },
       {
-        "line": 220,
+        "line": 219,
         "expression": "updatedData.length > 0"
       },
       {
-        "line": 240,
+        "line": 239,
         "expression": "value.includes(',') || value.includes('\"') || value.includes('\\n')"
       },
       {
-        "line": 265,
+        "line": 264,
         "expression": "serverColumns"
       },
       {
-        "line": 269,
+        "line": 268,
         "expression": "!seen.has(k)"
       },
       {
-        "line": 281,
+        "line": 280,
         "expression": "currentExecutionWorkflowId"
       },
       {
-        "line": 284,
+        "line": 283,
         "expression": "result.success && result.data && result.data.total > 0"
       },
       {
-        "line": 288,
+        "line": 287,
         "expression": "result.data?.total === 0"
       },
       {
-        "line": 290,
+        "line": 289,
         "expression": "e instanceof Error"
       },
       {
-        "line": 297,
+        "line": 296,
         "expression": "latest.success && latest.data && latest.data.total > 0"
       },
       {
-        "line": 306,
+        "line": 305,
         "expression": "collectedData.length === 0"
       },
       {
-        "line": 308,
+        "line": 307,
         "expression": "backendError && backendError !== 'empty'"
       },
       {
-        "line": 318,
+        "line": 317,
         "expression": "!ok"
       },
       {
-        "line": 335,
+        "line": 334,
         "expression": "(window as any).__imageUploadTrigger"
       },
       {
-        "line": 351,
-        "expression": "isNaN(num)"
+        "line": 349,
+        "expression": "value.trim()"
       },
       {
-        "line": 355,
-        "expression": "!value.trim()"
+        "line": 350,
+        "expression": "!Number.isFinite(number)"
+      },
+      {
+        "line": 354,
+        "expression": "!['', 'true', 'false', '1', '0'].includes(value.toLowerCase())"
       },
       {
         "line": 358,
-        "expression": "!value.trim()"
+        "expression": "!Array.isArray(result)"
       },
       {
-        "line": 364,
-        "expression": "type === 'array'"
+        "line": 363,
+        "expression": "!result || typeof result !== 'object' || Array.isArray(result)"
       },
       {
-        "line": 365,
-        "expression": "type === 'object'"
-      },
-      {
-        "line": 371,
+        "line": 372,
         "expression": "!newVarName.trim()"
       },
       {
-        "line": 381,
-        "expression": "value === null || value === undefined"
+        "line": 373,
+        "expression": "variables.some(variable => variable.name === newVarName.trim())"
       },
       {
         "line": 382,
+        "expression": "error instanceof Error"
+      },
+      {
+        "line": 387,
+        "expression": "value === null || value === undefined"
+      },
+      {
+        "line": 388,
         "expression": "type === 'array' || type === 'object' || typeof value === 'object'"
       },
       {
-        "line": 398,
+        "line": 405,
         "expression": "editingVar"
       },
       {
-        "line": 400,
+        "line": 407,
         "expression": "variable"
       },
       {
-        "line": 415,
-        "expression": "!editingVarName || !editVarNameValue"
-      },
-      {
-        "line": 423,
-        "expression": "!newName || oldName === newName"
+        "line": 413,
+        "expression": "error instanceof Error"
       },
       {
         "line": 428,
+        "expression": "!editingVarName || !editVarNameValue"
+      },
+      {
+        "line": 436,
+        "expression": "!newName || oldName === newName"
+      },
+      {
+        "line": 441,
         "expression": "variables.some(v => v.name === newName)"
       },
       {
-        "line": 435,
+        "line": 448,
         "expression": "usages.length > 0"
       },
       {
-        "line": 448,
+        "line": 461,
         "expression": "!renameDialog"
       },
       {
-        "line": 456,
+        "line": 468,
         "expression": "!renameDialog"
       },
       {
-        "line": 477,
+        "line": 489,
         "expression": "isCollapsed"
       },
       {
-        "line": 478,
+        "line": 490,
         "expression": "draftBottomHeight === null"
       },
       {
-        "line": 507,
+        "line": 519,
         "expression": "activeTab === 'logs'"
       },
       {
-        "line": 518,
+        "line": 530,
         "expression": "activeTab === 'logs'"
       },
       {
-        "line": 527,
+        "line": 539,
         "expression": "activeTab === 'data'"
       },
       {
-        "line": 538,
+        "line": 550,
         "expression": "activeTab === 'data'"
       },
       {
-        "line": 547,
+        "line": 559,
         "expression": "activeTab === 'variables'"
       },
       {
-        "line": 558,
+        "line": 570,
         "expression": "activeTab === 'variables'"
       },
       {
-        "line": 567,
+        "line": 579,
         "expression": "activeTab === 'images'"
       },
       {
-        "line": 578,
+        "line": 590,
         "expression": "activeTab === 'images'"
       },
       {
-        "line": 592,
+        "line": 604,
         "expression": "verboseLog"
       },
       {
-        "line": 597,
+        "line": 609,
         "expression": "verboseLog"
       },
       {
-        "line": 599,
+        "line": 611,
         "expression": "verboseLog"
       },
       {
-        "line": 635,
+        "line": 647,
         "expression": "isAddingColumn"
       },
       {
-        "line": 657,
+        "line": 669,
         "expression": "downloading"
       },
       {
-        "line": 663,
+        "line": 675,
         "expression": "isAddingVar"
       },
       {
-        "line": 678,
+        "line": 691,
         "expression": "newVarType === 'boolean'"
       },
       {
-        "line": 689,
+        "line": 702,
         "expression": "newVarType === 'number'"
       },
       {
-        "line": 689,
+        "line": 702,
         "expression": "newVarType === 'array'"
       },
       {
-        "line": 689,
+        "line": 702,
         "expression": "newVarType === 'object'"
       },
       {
-        "line": 720,
+        "line": 733,
         "expression": "(window as any).__imageUploadTrigger"
       },
       {
-        "line": 730,
+        "line": 743,
         "expression": "isCollapsed"
       },
       {
-        "line": 731,
+        "line": 744,
         "expression": "isCollapsed"
       },
       {
-        "line": 767,
+        "line": 780,
         "expression": "showFilterDropdown"
       },
       {
-        "line": 777,
+        "line": 790,
         "expression": "showFilterDropdown"
       },
       {
-        "line": 869,
+        "line": 882,
         "expression": "filteredLogs.length === 0"
       },
       {
-        "line": 871,
+        "line": 884,
         "expression": "logs.length === 0"
       },
       {
-        "line": 903,
+        "line": 916,
         "expression": "collectedData.length === 0 && columns.length === 0"
       },
       {
-        "line": 932,
+        "line": 945,
         "expression": "variables.length === 0"
       },
       {
-        "line": 962,
+        "line": 975,
         "expression": "editingVarName === v.name"
       },
       {
-        "line": 969,
+        "line": 982,
         "expression": "e.key === 'Enter'"
       },
       {
-        "line": 970,
+        "line": 983,
         "expression": "e.key === 'Escape'"
       },
       {
-        "line": 982,
+        "line": 995,
         "expression": "editingVar === v.name"
       },
       {
-        "line": 984,
+        "line": 997,
         "expression": "e.key === 'Enter'"
       },
       {
-        "line": 984,
+        "line": 997,
         "expression": "e.key === 'Escape'"
       }
     ],
     "bindings": [
       {
-        "line": 637,
+        "line": 649,
         "attribute": "value",
         "expression": "{newColumnName}"
       },
       {
-        "line": 637,
+        "line": 649,
         "attribute": "onChange",
         "expression": "{(e) => setNewColumnName(e.target.value)}"
       },
       {
-        "line": 665,
+        "line": 677,
         "attribute": "value",
         "expression": "{newVarName}"
       },
       {
-        "line": 665,
+        "line": 677,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarName(e.target.value)}"
       },
       {
-        "line": 668,
+        "line": 681,
         "attribute": "value",
         "expression": "{newVarType}"
       },
       {
-        "line": 669,
+        "line": 682,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarType(e.target.value as VariableType)}"
       },
       {
-        "line": 672,
+        "line": 685,
         "attribute": "value",
         "expression": "\"string\""
       },
       {
-        "line": 673,
+        "line": 686,
         "attribute": "value",
         "expression": "\"number\""
       },
       {
-        "line": 674,
+        "line": 687,
         "attribute": "value",
         "expression": "\"boolean\""
       },
       {
-        "line": 675,
+        "line": 688,
         "attribute": "value",
         "expression": "\"array\""
       },
       {
-        "line": 676,
+        "line": 689,
         "attribute": "value",
         "expression": "\"object\""
       },
       {
-        "line": 680,
+        "line": 693,
         "attribute": "value",
         "expression": "{newVarValue || 'false'}"
       },
       {
-        "line": 681,
+        "line": 694,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarValue(e.target.value)}"
       },
       {
-        "line": 684,
+        "line": 697,
         "attribute": "value",
         "expression": "\"true\""
       },
       {
-        "line": 685,
+        "line": 698,
         "attribute": "value",
         "expression": "\"false\""
       },
       {
-        "line": 688,
+        "line": 701,
         "attribute": "value",
         "expression": "{newVarValue}"
       },
       {
-        "line": 688,
+        "line": 701,
         "attribute": "onChange",
         "expression": "{(e) => setNewVarValue(e.target.value)}"
       },
       {
-        "line": 748,
+        "line": 761,
         "attribute": "value",
         "expression": "{logSearchQuery}"
       },
       {
-        "line": 749,
+        "line": 762,
         "attribute": "onChange",
         "expression": "{(e) => setLogSearchQuery(e.target.value)}"
       },
       {
-        "line": 789,
+        "line": 802,
         "attribute": "checked",
         "expression": "{logLevelFilters.size === 5}"
       },
       {
-        "line": 790,
+        "line": 803,
         "attribute": "onCheckedChange",
         "expression": "{toggleAllFilters}"
       },
       {
-        "line": 797,
+        "line": 810,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('debug')}"
       },
       {
-        "line": 798,
+        "line": 811,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('debug')}"
       },
       {
-        "line": 805,
+        "line": 818,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('info')}"
       },
       {
-        "line": 806,
+        "line": 819,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('info')}"
       },
       {
-        "line": 813,
+        "line": 826,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('success')}"
       },
       {
-        "line": 814,
+        "line": 827,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('success')}"
       },
       {
-        "line": 821,
+        "line": 834,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('warning')}"
       },
       {
-        "line": 822,
+        "line": 835,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('warning')}"
       },
       {
-        "line": 829,
+        "line": 842,
         "attribute": "checked",
         "expression": "{logLevelFilters.has('error')}"
       },
       {
-        "line": 830,
+        "line": 843,
         "attribute": "onCheckedChange",
         "expression": "{() => toggleLogLevelFilter('error')}"
       },
       {
-        "line": 843,
+        "line": 856,
         "attribute": "value",
         "expression": "{String(maxLogCount)}"
       },
       {
-        "line": 844,
+        "line": 857,
         "attribute": "onChange",
         "expression": "{(e) => setMaxLogCount(Number(e.target.value))}"
       },
       {
-        "line": 847,
+        "line": 860,
         "attribute": "value",
         "expression": "\"100\""
       },
       {
-        "line": 848,
+        "line": 861,
         "attribute": "value",
         "expression": "\"200\""
       },
       {
-        "line": 849,
+        "line": 862,
         "attribute": "value",
         "expression": "\"300\""
       },
       {
-        "line": 850,
+        "line": 863,
         "attribute": "value",
         "expression": "\"400\""
       },
       {
-        "line": 851,
+        "line": 864,
         "attribute": "value",
         "expression": "\"500\""
       },
       {
-        "line": 964,
+        "line": 977,
         "attribute": "value",
         "expression": "{editVarNameValue}"
       },
       {
-        "line": 965,
+        "line": 978,
         "attribute": "onChange",
         "expression": "{(e) => setEditVarNameValue(e.target.value.replace(/[^a-zA-Z0-9_\\u4e00-\\u9fa5]/g, ''))}"
       },
       {
-        "line": 983,
+        "line": 996,
         "attribute": "value",
         "expression": "{editVarValue}"
       },
       {
-        "line": 983,
+        "line": 996,
         "attribute": "onChange",
         "expression": "{(e) => setEditVarValue(e.target.value)}"
       }

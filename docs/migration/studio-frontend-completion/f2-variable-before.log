@@ -1,0 +1,106 @@
+
+> test
+> npm --workspace @autoflow/desktop test --run src/renderer/domains/workflows/tests/variable-history.test.ts
+
+npm warn "src/renderer/domains/workflows/tests/variable-history.test.ts" is being parsed as a normal command line argument.
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/variable-history.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:5483) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/variable-history.test.ts (3 tests | 3 failed) 10ms
+   × marks variable CRUD dirty and restores each edit through undo/redo 5ms
+   × keeps auto-created variables in the same history operation as their node 3ms
+   × does not leak variables between documents and preserves imported variables through history 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/variable-history.test.ts > marks variable CRUD dirty and restores each edit through undo/redo
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/variable-history.test.ts:8:57
+      6|   const store = useWorkflowStore.getState()
+      7|   store.addVariable(variable)
+      8|   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+       |                                                         ^
+      9|   store.undo(); expect(useWorkflowStore.getState().variables).toEqual(…
+     10|   store.redo(); expect(useWorkflowStore.getState().variables).toEqual(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/variable-history.test.ts > keeps auto-created variables in the same history operation as their node
+AssertionError: expected [ { name: 'element_value', …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "name": "element_value",
++     "scope": "global",
++     "type": "string",
++     "value": undefined,
++   },
++ ]
+
+ ❯ src/renderer/domains/workflows/tests/variable-history.test.ts:25:49
+     23|   expect(created.length).toBeGreaterThan(0)
+     24|   store.undo(); expect(useWorkflowStore.getState().nodes).toEqual([])
+     25|   expect(useWorkflowStore.getState().variables).toEqual([])
+       |                                                 ^
+     26|   store.redo(); expect(useWorkflowStore.getState().variables).toEqual(…
+     27| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/variable-history.test.ts > does not leak variables between documents and preserves imported variables through history
+AssertionError: expected [ { name: 'count', value: 1, …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "name": "count",
++     "scope": "global",
++     "type": "number",
++     "value": 1,
++   },
++ ]
+
+ ❯ src/renderer/domains/workflows/tests/variable-history.test.ts:32:49
+     30|   store.addVariable(variable)
+     31|   store.loadWorkflow({ name: 'empty document', nodes: [], edges: [] })
+     32|   expect(useWorkflowStore.getState().variables).toEqual([])
+       |                                                 ^
+     33|   store.importWorkflow({ name: 'imported', nodes: [], edges: [], varia…
+     34|   store.addNode('open_page', { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  23:03:36
+   Duration  931ms (transform 119ms, setup 0ms, import 245ms, tests 10ms, environment 555ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/variable-history.test.ts
