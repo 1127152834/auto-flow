@@ -21,6 +21,7 @@ it('keeps the table header, tabs, notice, and page content inside one surface', 
   expect(within(frame).getByRole('alert')).toBeVisible()
   expect(within(frame).getByRole('form', { name: '记录表单' })).toBeVisible()
   expect(frame.querySelector('[data-table-page-frame-header]')).toHaveClass('flex-wrap', 'min-w-0', 'items-start')
+  expect(frame.querySelector('[data-table-page-frame-header] > :first-child')).toHaveClass('basis-80', 'flex-1')
   expect(frame.querySelector('footer')).not.toBeInTheDocument()
 })
 
