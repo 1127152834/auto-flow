@@ -9,3 +9,5 @@
 通过冻结 schema、状态机、契约测试及非内存 HTTP/SSE 夹具验证前端独立性。后端接入不应再要求补页面/Store/工具功能；真实联调缺陷或新需求走明确变更。前端验收与真实执行/进程/持久化验收分别记账。
 
 正式设计与 F0–F6 计划：`docs/superpowers/specs/2026-09-13-studio-frontend-completion-design.md`。
+
+- 文档已拆分：specs/2026-09-13-studio-frontend-completion-design.md 为正式规格；plans/2026-09-13-studio-frontend-completion-implementation.md 为逐任务计划。当前仅交付文档，F0–F6 均未开始。
