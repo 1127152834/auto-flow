@@ -21,14 +21,17 @@ export class StudioEventClient {
     return this
   }
   removeAllListeners() { this.listeners.clear() }
-  emit(event: string, data: unknown, commandId = crypto.randomUUID()) {
+  emit(event: string, data: unknown, commandId: string = crypto.randomUUID()) {
     void this.sendCommand(commandId, event, data)
     return commandId
   }
   async queryCommand(commandId: string): Promise<Record<string, unknown>> {
     const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
     const result = await response.json() as Record<string, unknown>
-    if (!response.ok || result.commandId !== commandId || typeof result.httpStatus !== 'number') throw new Error('Command result is unavailable')
+    if (!response.ok || !result || Array.isArray(result) || result.commandId !== commandId || typeof result.success !== 'boolean'
+      || typeof result.httpStatus !== 'number' || !Number.isInteger(result.httpStatus) || result.httpStatus < 200 || result.httpStatus > 599) {
+      throw new Error('命令查询结果无效或身份不匹配')
+    }
     return result
   }
   private async sendCommand(commandId: string, event: string, data: unknown) {
@@ -39,7 +42,10 @@ export class StudioEventClient {
       })
       const result = await response.json()
       if (this.controller.signal.aborted) return
-      this.dispatch(response.ok && result.success !== false ? 'command_result' : 'command_error', { ...result, commandId })
+      if (response.ok && (!result || Array.isArray(result) || result.commandId !== commandId || typeof result.success !== 'boolean')) {
+        throw new Error('命令响应无效或身份不匹配')
+      }
+      this.dispatch(response.ok && result.success === true ? 'command_result' : 'command_error', { ...result, commandId })
     } catch (error) {
       if (this.controller.signal.aborted) return
       // Query identity after a lost response; never repeat a possibly-applied action.

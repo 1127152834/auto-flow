@@ -34,7 +34,7 @@ it('does not query an applied command again when a command-result subscriber thr
   setStudioTransport(async input => {
     const url = String(input)
     requests.push(url)
-    if (url.endsWith('/commands')) return Response.json({ success: true })
+    if (url.endsWith('/commands')) return Response.json({ success: true, commandId: '00000000-0000-4000-8000-000000000001' })
     return new Response('', { headers: { 'Content-Type': 'text/event-stream' } })
   })
   const error = vi.spyOn(console, 'error').mockImplementation(() => {})

@@ -1,0 +1,171 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/command-response-identity.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:90401) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts (13 tests | 10 failed) 10186ms
+   × queries the original command after a malformed successful response: wrong identity 1008ms
+   × queries the original command after a malformed successful response: missing identity 1003ms
+   × queries the original command after a malformed successful response: missing success 1002ms
+   × queries the original command after a malformed successful response: nonboolean success 1003ms
+   × queries the original command after a malformed successful response: array 1002ms
+   × keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":0} 1002ms
+   × keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":200.5} 1002ms
+   × keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":700} 1002ms
+   × keeps an invalid lookup unconfirmed: {"commandId":"original","httpStatus":200} 1003ms
+   × keeps an invalid lookup unconfirmed: {"commandId":"original","success":"true","httpStatus":200} 1003ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > queries the original command after a malformed successful response: wrong identity
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > queries the original command after a malformed successful response: missing identity
+AssertionError: expected "vi.fn()" to be called with arguments: [ { commandId: 'original', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
+      "commandId": "original",
+-     "httpStatus": 200,
+      "success": true,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts:27:41
+     25|   client.on('command_result', result); client.on('command_error', erro…
+     26|   client.emit('set_verbose_log', { enabled: true }, 'original')
+     27|   await vi.waitFor(() => expect(result).toHaveBeenCalledWith({ command…
+       |                                         ^
+     28|   expect(result).toHaveBeenCalledOnce(); expect(error).not.toHaveBeenC…
+     29|   expect(calls).toEqual(['http://autoflow-studio.mock/api/events/comma…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > queries the original command after a malformed successful response: missing success
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > queries the original command after a malformed successful response: array
+AssertionError: expected "vi.fn()" to be called with arguments: [ { commandId: 'original', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
+      "commandId": "original",
+-     "httpStatus": 200,
+-     "success": true,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts:27:41
+     25|   client.on('command_result', result); client.on('command_error', erro…
+     26|   client.emit('set_verbose_log', { enabled: true }, 'original')
+     27|   await vi.waitFor(() => expect(result).toHaveBeenCalledWith({ command…
+       |                                         ^
+     28|   expect(result).toHaveBeenCalledOnce(); expect(error).not.toHaveBeenC…
+     29|   expect(calls).toEqual(['http://autoflow-studio.mock/api/events/comma…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > queries the original command after a malformed successful response: nonboolean success
+AssertionError: expected "vi.fn()" to be called with arguments: [ { commandId: 'original', …(2) } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
+      "commandId": "original",
+-     "httpStatus": 200,
+-     "success": true,
++     "success": "yes",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts:27:41
+     25|   client.on('command_result', result); client.on('command_error', erro…
+     26|   client.emit('set_verbose_log', { enabled: true }, 'original')
+     27|   await vi.waitFor(() => expect(result).toHaveBeenCalledWith({ command…
+       |                                         ^
+     28|   expect(result).toHaveBeenCalledOnce(); expect(error).not.toHaveBeenC…
+     29|   expect(calls).toEqual(['http://autoflow-studio.mock/api/events/comma…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":0}
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":200.5}
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > keeps an invalid lookup unconfirmed: {"commandId":"original","httpStatus":200}
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > keeps an invalid lookup unconfirmed: {"commandId":"original","success":"true","httpStatus":200}
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts:51:40
+     49|   client.on('command_result', result); client.on('command_error', erro…
+     50|   client.emit('set_verbose_log', { enabled: true }, 'original')
+     51|   await vi.waitFor(() => expect(error).toHaveBeenCalledWith(expect.obj…
+       |                                        ^
+     52|   expect(result).not.toHaveBeenCalled(); expect(post).toHaveBeenCalled…
+     53| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/command-response-identity.test.ts > keeps an invalid lookup unconfirmed: {"commandId":"original","success":true,"httpStatus":700}
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   ObjectContaining {
++   {
+      "commandId": "original",
+-     "status": "unconfirmed",
++     "httpStatus": 700,
++     "success": true,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/command-response-identity.test.ts:51:40
+     49|   client.on('command_result', result); client.on('command_error', erro…
+     50|   client.emit('set_verbose_log', { enabled: true }, 'original')
+     51|   await vi.waitFor(() => expect(error).toHaveBeenCalledWith(expect.obj…
+       |                                        ^
+     52|   expect(result).not.toHaveBeenCalled(); expect(post).toHaveBeenCalled…
+     53| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 3 passed (13)
+   Start at  03:23:25
+   Duration  10.79s (transform 86ms, setup 86ms, import 19ms, tests 10.19s, environment 392ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/command-response-identity.test.ts

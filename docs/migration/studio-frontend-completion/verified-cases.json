@@ -17095,5 +17095,213 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-sse-framing/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-wrong-id",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-wrong-id"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-missing-id",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-missing-id"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-missing-success",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-missing-success"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-invalid-success",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-invalid-success"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-array",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-array"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.post-null",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "post-null"
+    ],
+    "expectedUI": "只查询原命令，确认后回传结果，不重发POST",
+    "expectedIO": "只查询原命令，确认后回传结果，不重发POST",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-wrong-id",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-wrong-id"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-status-zero",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-status-zero"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-status-fraction",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-status-fraction"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-status-outside",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-status-outside"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-missing-success",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-missing-success"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.query-invalid-success",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "query-invalid-success"
+    ],
+    "expectedUI": "查询结果无效则报告unconfirmed，不伪造成功",
+    "expectedIO": "查询结果无效则报告unconfirmed，不伪造成功",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "TRANSPORT.command-identity.http-rejection",
+    "capability": "命令响应身份保护",
+    "preconditions": {
+      "transport": "受控命令响应与只读查询"
+    },
+    "steps": [
+      "http-rejection"
+    ],
+    "expectedUI": "明确409直接报告错误，不重试或查询",
+    "expectedIO": "明确409直接报告错误，不重试或查询",
+    "stateAssertion": "命令POST仅一次，结果不能借用另一ID",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
   }
 ]
