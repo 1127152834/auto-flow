@@ -15372,5 +15372,53 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "EDITOR.alignment.bottom",
+    "capability": "画布对齐和撤销",
+    "preconditions": {
+      "nodes": "三节点，其中两节点选中，180/20 像素不同高度"
+    },
+    "steps": [
+      "选中两个高度不同节点并下对齐，再撤销重做"
+    ],
+    "expectedUI": "底边相等，未选节点不变，单次撤销恢复位置",
+    "expectedIO": "本地 Store，无 HTTP/SSE",
+    "stateAssertion": "底边相等，未选节点不变，单次撤销恢复位置",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-alignment/target.log"
+  },
+  {
+    "id": "EDITOR.alignment.horizontal-noop",
+    "capability": "画布对齐和撤销",
+    "preconditions": {
+      "nodes": "三节点，其中两节点选中，180/20 像素不同高度"
+    },
+    "steps": [
+      "两节点水平分布后撤销"
+    ],
+    "expectedUI": "恢复之前真实参数编辑",
+    "expectedIO": "本地 Store，无 HTTP/SSE",
+    "stateAssertion": "恢复之前真实参数编辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-alignment/target.log"
+  },
+  {
+    "id": "EDITOR.alignment.vertical-noop",
+    "capability": "画布对齐和撤销",
+    "preconditions": {
+      "nodes": "三节点，其中两节点选中，180/20 像素不同高度"
+    },
+    "steps": [
+      "两节点垂直分布后撤销"
+    ],
+    "expectedUI": "恢复之前真实参数编辑",
+    "expectedIO": "本地 Store，无 HTTP/SSE",
+    "stateAssertion": "恢复之前真实参数编辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-alignment/target.log"
   }
 ]

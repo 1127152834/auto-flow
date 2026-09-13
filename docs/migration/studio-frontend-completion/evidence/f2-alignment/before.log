@@ -1,0 +1,46 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/alignment-history.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:72227) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/alignment-history.test.ts (3 tests | 1 failed) 56ms
+   × aligns bottom edges with different measured heights and supports one undo/redo 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/alignment-history.test.ts > aligns bottom edges with different measured heights and supports one undo/redo
+AssertionError: expected 280 to be 120 // Object.is equality
+
+- Expected
++ Received
+
+- 120
++ 280
+
+ ❯ src/renderer/domains/workflows/tests/alignment-history.test.ts:14:37
+     12|   store.getState().alignNodes('bottom')
+     13|   const after = store.getState().nodes
+     14|   expect(after[0].position.y + 180).toBe(after[1].position.y + 20)
+       |                                     ^
+     15|   expect(after[2]).toEqual(before[2])
+     16|   expect(store.getState().hasUnsavedChanges).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  02:41:51
+   Duration  2.38s (transform 720ms, setup 288ms, import 725ms, tests 56ms, environment 1.09s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/alignment-history.test.ts

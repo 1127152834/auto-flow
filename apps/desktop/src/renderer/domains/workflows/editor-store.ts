@@ -3515,11 +3515,12 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         break
       }
       case 'bottom': {
-        // 下对齐：所有节点的y坐标对齐到最下边的节点
-        const maxY = Math.max(...selectedNodes.map(n => n.position.y))
+        // 下对齐使用实际底边，兼容模块条与不同高度的节点。
+        const getH = (n: typeof selectedNodes[number]) => n.height || n.measured?.height || 0
+        const maxBottom = Math.max(...selectedNodes.map(n => n.position.y + getH(n)))
         updatedNodes = updatedNodes.map(node => {
           if (node.selected) {
-            return { ...node, position: { ...node.position, y: maxY } }
+            return { ...node, position: { ...node.position, y: maxBottom - getH(node) } }
           }
           return node
         })
