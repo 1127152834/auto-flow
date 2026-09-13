@@ -2568,6 +2568,41 @@ export type components = {
              */
             error: string | null;
         };
+        /** StudioSimilarElements */
+        StudioSimilarElements: {
+            /** Pattern */
+            pattern: string;
+            /** Count */
+            count: number;
+            /** Minindex */
+            minIndex: number;
+            /** Maxindex */
+            maxIndex: number;
+            /**
+             * Indices
+             * @default null
+             */
+            indices: number[] | null;
+            /**
+             * Selector1
+             * @default null
+             */
+            selector1: string | null;
+            /**
+             * Selector2
+             * @default null
+             */
+            selector2: string | null;
+        };
+        /** StudioSimilarPickerResult */
+        StudioSimilarPickerResult: {
+            /** Selected */
+            selected: boolean;
+            /** Active */
+            active: boolean;
+            /** @default null */
+            similar: components["schemas"]["StudioSimilarElements"] | null;
+        };
     };
     responses: never;
     parameters: never;

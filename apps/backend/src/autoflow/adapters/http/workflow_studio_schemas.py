@@ -140,3 +140,39 @@ class StudioSelectorTestResult(ApiModel):
         if self.matched != (self.count > 0):
             raise ValueError("matched must agree with count")
         return self
+
+
+class StudioSimilarElements(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    pattern: str = Field(min_length=1, pattern=r"\{index\}")
+    count: int = Field(ge=1, le=9007199254740991)
+    min_index: int = Field(ge=0, le=9007199254740991)
+    max_index: int = Field(ge=0, le=9007199254740991)
+    indices: list[int] | None = None
+    selector1: str | None = None
+    selector2: str | None = None
+
+    @model_validator(mode="after")
+    def check_indices(self) -> Self:
+        if self.max_index < self.min_index:
+            raise ValueError("maxIndex must not precede minIndex")
+        if self.indices is not None and any(
+            index < self.min_index or index > self.max_index for index in self.indices
+        ):
+            raise ValueError("indices must be within the reported range")
+        return self
+
+
+class StudioSimilarPickerResult(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    selected: bool
+    active: bool
+    similar: StudioSimilarElements | None = None
+
+    @model_validator(mode="after")
+    def check_selection(self) -> Self:
+        if self.selected and self.similar is None:
+            raise ValueError("selected results must contain similar elements")
+        return self

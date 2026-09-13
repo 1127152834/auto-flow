@@ -43,34 +43,34 @@
 | service:browserApi.open | POST '/browser/open' | body: JSON.stringify({ url, browserConfig }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:292 | 待逐项核对；局部已验证项见上表 |
 | service:browserApi.startPicker | POST '/element-picker/start' | body: JSON.stringify({}) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:302 | 待逐项核对；局部已验证项见上表 |
 | service:browserApi.stopPicker | POST '/element-picker/stop' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:303 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.delete | DELETE &#96;/credentials/${encodeURIComponent(name)}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:416 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.list | GET '/credentials' | 未显式声明 | { success: boolean; credentials: CredentialItem[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:404 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.names | GET '/credentials/names' | 未显式声明 | { success: boolean; names: string[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:405 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.rename | POST '/credentials/rename' | body: JSON.stringify({ old_name: oldName, new_name: newName }) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:411 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.upsert | POST '/credentials' | body: JSON.stringify({ name, fields, description: description &#124;&#124; '' }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:406 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.create | POST '/custom-modules' | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:374 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.delete | DELETE &#96;/custom-modules/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:378 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.duplicate | POST &#96;/custom-modules/${id}/duplicate&#96; | body: JSON.stringify(newName ? { new_name: newName } : {}) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:380 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.get | GET &#96;/custom-modules/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:373 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.importModule | POST &#96;/custom-modules/import&#96; | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:385 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.incrementUsage | POST &#96;/custom-modules/${id}/increment-usage&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:390 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.list | GET &#96;/custom-modules${params ? &#96;?${new URLSearchParams(params as any).toString()}&#96; : ''}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:371 | 待逐项核对；局部已验证项见上表 |
-| service:customModulesApi.update | PUT &#96;/custom-modules/${id}&#96; | body: JSON.stringify(data) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:376 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.delete | DELETE &#96;/credentials/${encodeURIComponent(name)}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:432 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.list | GET '/credentials' | 未显式声明 | { success: boolean; credentials: CredentialItem[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:420 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.names | GET '/credentials/names' | 未显式声明 | { success: boolean; names: string[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:421 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.rename | POST '/credentials/rename' | body: JSON.stringify({ old_name: oldName, new_name: newName }) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:427 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.upsert | POST '/credentials' | body: JSON.stringify({ name, fields, description: description &#124;&#124; '' }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:422 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.create | POST '/custom-modules' | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:390 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.delete | DELETE &#96;/custom-modules/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:394 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.duplicate | POST &#96;/custom-modules/${id}/duplicate&#96; | body: JSON.stringify(newName ? { new_name: newName } : {}) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:396 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.get | GET &#96;/custom-modules/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:389 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.importModule | POST &#96;/custom-modules/import&#96; | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:401 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.incrementUsage | POST &#96;/custom-modules/${id}/increment-usage&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:406 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.list | GET &#96;/custom-modules${params ? &#96;?${new URLSearchParams(params as any).toString()}&#96; : ''}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:387 | 待逐项核对；局部已验证项见上表 |
+| service:customModulesApi.update | PUT &#96;/custom-modules/${id}&#96; | body: JSON.stringify(data) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:392 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.getResult | GET '/element-picker/result' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:319 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.getSelected | GET '/element-picker/selected' | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:320 | 待逐项核对；局部已验证项见上表 |
-| service:elementPickerApi.getSimilar | GET '/element-picker/similar' | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:321 | 待逐项核对；局部已验证项见上表 |
-| service:elementPickerApi.getStatus | GET '/element-picker/status' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:322 | 待逐项核对；局部已验证项见上表 |
+| service:elementPickerApi.getSimilar | GET '/element-picker/similar' | 未显式声明 | Result | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:321 | 待逐项核对；局部已验证项见上表 |
+| service:elementPickerApi.getStatus | GET '/element-picker/status' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:338 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.start | POST '/element-picker/start' | body: JSON.stringify({ url: url &#124;&#124; null, browserConfig: browserConfig &#124;&#124; null }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:313 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.stop | POST '/element-picker/stop' | 未显式声明 | 未显式声明 | 4 | apps/desktop/src/renderer/domains/workflows/api.ts:318 | 待逐项核对；局部已验证项见上表 |
-| service:elementPickerApi.testSelector | POST '/element-picker/test-selector' | body: JSON.stringify({ selector, hints: hints &#124;&#124; null, highlight }) | Result | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:324 | 待逐项核对；局部已验证项见上表 |
+| service:elementPickerApi.testSelector | POST '/element-picker/test-selector' | body: JSON.stringify({ selector, hints: hints &#124;&#124; null, highlight }) | Result | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:340 | 待逐项核对；局部已验证项见上表 |
 | service:executorApi.execute | POST '/executor/execute' | body: JSON.stringify(data) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:230 | 待逐项核对；局部已验证项见上表 |
 | service:executorApi.getTypes | GET '/executor/types' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:232 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.installFromPath | POST '/feature-packs/install-path' | body: JSON.stringify({ path }) | { success: boolean; id?: string; name?: string; installed_files?: number; warning?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:564 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.installUpload | POST '/feature-packs/install' | body: formData | { success: boolean; id?: string; name?: string; installed_files?: number; warning?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:569 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.list | GET '/feature-packs' | 未显式声明 | { success: boolean; packs: FeaturePackInfo[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:562 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.moduleHint | GET &#96;/feature-packs/module-hint/${encodeURIComponent(moduleType)}&#96; | 未显式声明 | { success: boolean; pack: { id: string; name: string; installed: boolean } &#124; null } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:587 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.preflight | POST '/feature-packs/preflight' | body: JSON.stringify({ module_types: moduleTypes }) | { success: boolean; ok: boolean; missing: Array&lt;{ alternatives: Array&lt;{ id: string; name: string; size_mb: number; download_url?: string }&gt;; module_types: string[] }&gt;; message: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:577 | 待逐项核对；局部已验证项见上表 |
-| service:featurePackApi.uninstall | POST '/feature-packs/uninstall' | body: JSON.stringify({ id }) | { success: boolean; removed?: number } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:582 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.installFromPath | POST '/feature-packs/install-path' | body: JSON.stringify({ path }) | { success: boolean; id?: string; name?: string; installed_files?: number; warning?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:580 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.installUpload | POST '/feature-packs/install' | body: formData | { success: boolean; id?: string; name?: string; installed_files?: number; warning?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:585 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.list | GET '/feature-packs' | 未显式声明 | { success: boolean; packs: FeaturePackInfo[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:578 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.moduleHint | GET &#96;/feature-packs/module-hint/${encodeURIComponent(moduleType)}&#96; | 未显式声明 | { success: boolean; pack: { id: string; name: string; installed: boolean } &#124; null } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:603 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.preflight | POST '/feature-packs/preflight' | body: JSON.stringify({ module_types: moduleTypes }) | { success: boolean; ok: boolean; missing: Array&lt;{ alternatives: Array&lt;{ id: string; name: string; size_mb: number; download_url?: string }&gt;; module_types: string[] }&gt;; message: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:593 | 待逐项核对；局部已验证项见上表 |
+| service:featurePackApi.uninstall | POST '/feature-packs/uninstall' | body: JSON.stringify({ id }) | { success: boolean; removed?: number } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:598 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.createFolder | POST '/image-assets/folders' | body: JSON.stringify({ name, parentPath }) | components['schemas']['StudioImageFolderCreated'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:247 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.delete | DELETE &#96;/image-assets/${id}&#96; | 未显式声明 | components['schemas']['StudioImageMutationResult'] | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:246 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.deleteFolder | DELETE '/image-assets/folders' | body: JSON.stringify({ folderPath }) | components['schemas']['StudioImageFolderDeleted'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:251 | 待逐项核对；局部已验证项见上表 |
@@ -81,7 +81,7 @@
 | service:imageAssetApi.rename | PUT &#96;/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}&#96; | 未显式声明 | components['schemas']['StudioImageRenameResult'] | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:253 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.renameFolder | PUT '/image-assets/folders/rename' | body: JSON.stringify({ oldPath, newName }) | components['schemas']['StudioImageFolderRenamed'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:249 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.upload | POST '/image-assets/upload' | body: formData | components['schemas']['StudioImageUploadResult'] | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:240 | 待逐项核对；局部已验证项见上表 |
-| service:inputPromptApi.getState | GET &#96;/events/input-prompts/${encodeURIComponent(requestId)}&#96; | 未显式声明 | components['schemas']['StudioInputPromptState'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:594 | 待逐项核对；局部已验证项见上表 |
+| service:inputPromptApi.getState | GET &#96;/events/input-prompts/${encodeURIComponent(requestId)}&#96; | 未显式声明 | components['schemas']['StudioInputPromptState'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:610 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.delete | DELETE &#96;/local-workflows/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:203 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.export | GET &#96;/local-workflows/${id}/export&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:207 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.get | GET &#96;/local-workflows/load/${encodeURIComponent(filename)}&#96; | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:199 | 待逐项核对；局部已验证项见上表 |
@@ -93,26 +93,26 @@
 | service:localWorkflowApi.save | POST '/local-workflows/save-to-folder' | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:201 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.setActiveFolder | POST '/local-workflows/active-folder' | body: JSON.stringify({ folder }) | { success: boolean; folder: string } | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:212 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.setSelfHeal | POST '/local-workflows/self-heal' | body: JSON.stringify({ filename, enabled, folder }) | { success: boolean; enabled: boolean; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:222 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.addReview | POST &#96;/plugins/${encodeURIComponent(pluginId)}/reviews&#96; | body: JSON.stringify({ rating, comment: comment &#124;&#124; '', user: user &#124;&#124; '匿名用户' }) | { success: boolean; review?: PluginReview; summary?: { count: number; average: number }; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:512 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.exportPackage | GET &#96;/plugins/${encodeURIComponent(pluginId)}/export&#96; | 未显式声明 | { success: boolean; package?: unknown; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:500 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.getMarketUrl | GET '/plugins/market-url' | 未显式声明 | { success: boolean; url: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:485 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.getReviews | GET &#96;/plugins/${encodeURIComponent(pluginId)}/reviews&#96; | 未显式声明 | { success: boolean; reviews: PluginReview[]; summary: { count: number; average: number } } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:508 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.installed | GET '/plugins/installed' | 未显式声明 | { success: boolean; plugins: PluginInfo[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:481 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.installFromMarket | POST &#96;/plugins/install-from-market/${encodeURIComponent(pluginId)}&#96; | 未显式声明 | { success: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:492 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.installPackage | POST '/plugins/install' | body: JSON.stringify({ package: pkg }) | { success: boolean; id?: string; moduleCount?: number; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:488 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.market | GET '/plugins/market' | 未显式声明 | { success: boolean; source?: string; plugins: PluginInfo[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:483 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.publish | POST &#96;/plugins/${encodeURIComponent(pluginId)}/publish&#96; | body: JSON.stringify({ hubUrl: hubUrl &#124;&#124; '' }) | { success: boolean; published?: boolean; package?: unknown; exportedPath?: string; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:504 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.setEnabled | POST &#96;/plugins/${encodeURIComponent(pluginId)}/enable&#96; | body: JSON.stringify({ enabled }) | { success: boolean; enabled?: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:494 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.setMarketUrl | POST '/plugins/market-url' | body: JSON.stringify({ url }) | { success: boolean } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:486 | 待逐项核对；局部已验证项见上表 |
-| service:pluginApi.uninstall | DELETE &#96;/plugins/${encodeURIComponent(pluginId)}&#96; | 未显式声明 | { success: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:498 | 待逐项核对；局部已验证项见上表 |
-| service:recorderApi.events | GET &#96;/recorder/events?afterSeq=${afterSeq}${sessionId ? &#96;&amp;sessionId=${encodeURIComponent(sessionId)}&#96; : ''}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:352 | 待逐项核对；局部已验证项见上表 |
-| service:recorderApi.start | POST '/recorder/start' | body: JSON.stringify({ sessionId }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:350 | 待逐项核对；局部已验证项见上表 |
-| service:recorderApi.status | GET '/recorder/status' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:353 | 待逐项核对；局部已验证项见上表 |
-| service:recorderApi.stop | POST '/recorder/stop' | body: JSON.stringify({ sessionId, afterSeq }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:351 | 待逐项核对；局部已验证项见上表 |
-| service:retentionApi.cleanup | POST '/retention/cleanup' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:441 | 待逐项核对；局部已验证项见上表 |
-| service:retentionApi.getConfig | GET '/retention/config' | 未显式声明 | { success: boolean; config: RetentionConfig; usage: RetentionUsage } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:434 | 待逐项核对；局部已验证项见上表 |
-| service:retentionApi.setConfig | POST '/retention/config' | body: JSON.stringify(config) | { success: boolean; config: RetentionConfig } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:436 | 待逐项核对；局部已验证项见上表 |
-| service:retentionApi.usage | GET '/retention/usage' | 未显式声明 | { success: boolean; usage: RetentionUsage } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:442 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.addReview | POST &#96;/plugins/${encodeURIComponent(pluginId)}/reviews&#96; | body: JSON.stringify({ rating, comment: comment &#124;&#124; '', user: user &#124;&#124; '匿名用户' }) | { success: boolean; review?: PluginReview; summary?: { count: number; average: number }; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:528 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.exportPackage | GET &#96;/plugins/${encodeURIComponent(pluginId)}/export&#96; | 未显式声明 | { success: boolean; package?: unknown; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:516 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.getMarketUrl | GET '/plugins/market-url' | 未显式声明 | { success: boolean; url: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:501 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.getReviews | GET &#96;/plugins/${encodeURIComponent(pluginId)}/reviews&#96; | 未显式声明 | { success: boolean; reviews: PluginReview[]; summary: { count: number; average: number } } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:524 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.installed | GET '/plugins/installed' | 未显式声明 | { success: boolean; plugins: PluginInfo[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:497 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.installFromMarket | POST &#96;/plugins/install-from-market/${encodeURIComponent(pluginId)}&#96; | 未显式声明 | { success: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:508 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.installPackage | POST '/plugins/install' | body: JSON.stringify({ package: pkg }) | { success: boolean; id?: string; moduleCount?: number; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:504 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.market | GET '/plugins/market' | 未显式声明 | { success: boolean; source?: string; plugins: PluginInfo[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:499 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.publish | POST &#96;/plugins/${encodeURIComponent(pluginId)}/publish&#96; | body: JSON.stringify({ hubUrl: hubUrl &#124;&#124; '' }) | { success: boolean; published?: boolean; package?: unknown; exportedPath?: string; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:520 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.setEnabled | POST &#96;/plugins/${encodeURIComponent(pluginId)}/enable&#96; | body: JSON.stringify({ enabled }) | { success: boolean; enabled?: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:510 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.setMarketUrl | POST '/plugins/market-url' | body: JSON.stringify({ url }) | { success: boolean } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:502 | 待逐项核对；局部已验证项见上表 |
+| service:pluginApi.uninstall | DELETE &#96;/plugins/${encodeURIComponent(pluginId)}&#96; | 未显式声明 | { success: boolean; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:514 | 待逐项核对；局部已验证项见上表 |
+| service:recorderApi.events | GET &#96;/recorder/events?afterSeq=${afterSeq}${sessionId ? &#96;&amp;sessionId=${encodeURIComponent(sessionId)}&#96; : ''}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:368 | 待逐项核对；局部已验证项见上表 |
+| service:recorderApi.start | POST '/recorder/start' | body: JSON.stringify({ sessionId }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:366 | 待逐项核对；局部已验证项见上表 |
+| service:recorderApi.status | GET '/recorder/status' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:369 | 待逐项核对；局部已验证项见上表 |
+| service:recorderApi.stop | POST '/recorder/stop' | body: JSON.stringify({ sessionId, afterSeq }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:367 | 待逐项核对；局部已验证项见上表 |
+| service:retentionApi.cleanup | POST '/retention/cleanup' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:457 | 待逐项核对；局部已验证项见上表 |
+| service:retentionApi.getConfig | GET '/retention/config' | 未显式声明 | { success: boolean; config: RetentionConfig; usage: RetentionUsage } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:450 | 待逐项核对；局部已验证项见上表 |
+| service:retentionApi.setConfig | POST '/retention/config' | body: JSON.stringify(config) | { success: boolean; config: RetentionConfig } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:452 | 待逐项核对；局部已验证项见上表 |
+| service:retentionApi.usage | GET '/retention/usage' | 未显式声明 | { success: boolean; usage: RetentionUsage } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:458 | 待逐项核对；局部已验证项见上表 |
 | service:scheduledTaskApi.clearAllLogs | DELETE '/scheduled-tasks/logs/all' | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:281 | 待逐项核对；局部已验证项见上表 |
 | service:scheduledTaskApi.clearTaskLogs | DELETE &#96;/scheduled-tasks/${id}/logs&#96; | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:279 | 待逐项核对；局部已验证项见上表 |
 | service:scheduledTaskApi.create | POST '/scheduled-tasks' | body: JSON.stringify(data) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:263 | 待逐项核对；局部已验证项见上表 |
@@ -126,12 +126,12 @@
 | service:scheduledTaskApi.stop | POST &#96;/scheduled-tasks/${id}/stop&#96; | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:273 | 待逐项核对；局部已验证项见上表 |
 | service:scheduledTaskApi.toggle | POST &#96;/scheduled-tasks/${id}/toggle&#96; | body: JSON.stringify({ enabled }) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:269 | 待逐项核对；局部已验证项见上表 |
 | service:scheduledTaskApi.update | PUT &#96;/scheduled-tasks/${id}&#96; | body: JSON.stringify(data) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:265 | 待逐项核对；局部已验证项见上表 |
-| service:securityApi.regenerate | POST '/security/regenerate' | 未显式声明 | { success: boolean; token?: string; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:363 | 待逐项核对；局部已验证项见上表 |
-| service:securityApi.status | GET '/security/status' | 未显式声明 | { enabled: boolean; isLocal: boolean; token: string &#124; null } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:358 | 待逐项核对；局部已验证项见上表 |
-| service:securityApi.toggle | POST '/security/toggle' | body: JSON.stringify({ enabled }) | { success: boolean; enabled?: boolean; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:359 | 待逐项核对；局部已验证项见上表 |
-| service:sponsorApi.list | GET '/sponsors/list' | 未显式声明 | { sponsors: SponsorItem[]; count: number } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:536 | 待逐项核对；局部已验证项见上表 |
-| service:sponsorApi.qrUrl |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:540 | 待逐项核对；局部已验证项见上表 |
-| service:sponsorApi.status | GET '/sponsors/status' | 未显式声明 | { wechat: boolean; alipay: boolean } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:538 | 待逐项核对；局部已验证项见上表 |
+| service:securityApi.regenerate | POST '/security/regenerate' | 未显式声明 | { success: boolean; token?: string; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:379 | 待逐项核对；局部已验证项见上表 |
+| service:securityApi.status | GET '/security/status' | 未显式声明 | { enabled: boolean; isLocal: boolean; token: string &#124; null } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:374 | 待逐项核对；局部已验证项见上表 |
+| service:securityApi.toggle | POST '/security/toggle' | body: JSON.stringify({ enabled }) | { success: boolean; enabled?: boolean; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:375 | 待逐项核对；局部已验证项见上表 |
+| service:sponsorApi.list | GET '/sponsors/list' | 未显式声明 | { sponsors: SponsorItem[]; count: number } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:552 | 待逐项核对；局部已验证项见上表 |
+| service:sponsorApi.qrUrl |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:556 | 待逐项核对；局部已验证项见上表 |
+| service:sponsorApi.status | GET '/sponsors/status' | 未显式声明 | { wechat: boolean; alipay: boolean } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:554 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.getBrowserConfig | GET '/system/browser-config' | 未显式声明 | { success: boolean; config: Record&lt;string, unknown&gt; } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:110 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.getConfig | GET '/system/config' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:108 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.getMousePosition | GET '/system/mouse-position' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:130 | 待逐项核对；局部已验证项见上表 |
@@ -157,8 +157,8 @@
 | service:workflowApi.list | GET '/workflows' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:144 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.stop | POST &#96;/workflows/${id}/stop&#96; | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:154 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.update | PUT &#96;/workflows/${id}&#96; | body: JSON.stringify(data) | 未显式声明 | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:148 | 待逐项核对；局部已验证项见上表 |
-| service:workflowBundleApi.export | POST '/workflow-bundle/export' | body: JSON.stringify({ name, content }) | { success: boolean; bundle?: unknown; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:447 | 待逐项核对；局部已验证项见上表 |
-| service:workflowBundleApi.import | POST '/workflow-bundle/import' | body: JSON.stringify({ bundle }) | {       success: boolean       name?: string       workflow?: { nodes: unknown[]; edges: unknown[]; variables: unknown[] }       restored?: { customModules: number; images: number }       error?: string     } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:452 | 待逐项核对；局部已验证项见上表 |
+| service:workflowBundleApi.export | POST '/workflow-bundle/export' | body: JSON.stringify({ name, content }) | { success: boolean; bundle?: unknown; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:463 | 待逐项核对；局部已验证项见上表 |
+| service:workflowBundleApi.import | POST '/workflow-bundle/import' | body: JSON.stringify({ bundle }) | {       success: boolean       name?: string       workflow?: { nodes: unknown[]; edges: unknown[]; variables: unknown[] }       restored?: { customModules: number; images: number }       error?: string     } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:468 | 待逐项核对；局部已验证项见上表 |
 
 ## 事件订阅与发送
 
@@ -179,38 +179,38 @@
 | event:download_data | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:330 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:994 | 字段/关联身份/恢复语义仍需核对 |
 | event:editingModuleChanged | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:193 | apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:50; apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:100 | 字段/关联身份/恢复语义仍需核对 |
 | event:editor_screenshot_captured | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:441 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1622 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:764 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:completed | apps/desktop/src/renderer/domains/workflows/events.ts:508 | apps/desktop/src/renderer/domains/workflows/events.ts:560 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:587 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:598 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:input_prompt | apps/desktop/src/renderer/domains/workflows/events.ts:454 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:js_script | apps/desktop/src/renderer/domains/workflows/events.ts:471 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:log | apps/desktop/src/renderer/domains/workflows/events.ts:389 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:log_batch | apps/desktop/src/renderer/domains/workflows/events.ts:423 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:node_complete | apps/desktop/src/renderer/domains/workflows/events.ts:310 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:node_start | apps/desktop/src/renderer/domains/workflows/events.ts:304 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:paused | apps/desktop/src/renderer/domains/workflows/events.ts:316 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:play_music | apps/desktop/src/renderer/domains/workflows/events.ts:480 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:play_video | apps/desktop/src/renderer/domains/workflows/events.ts:489 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:resumed | apps/desktop/src/renderer/domains/workflows/events.ts:321 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:started | apps/desktop/src/renderer/domains/workflows/events.ts:286 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:609 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:tts_request | apps/desktop/src/renderer/domains/workflows/events.ts:459 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:view_image | apps/desktop/src/renderer/domains/workflows/events.ts:498 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:775 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:completed | apps/desktop/src/renderer/domains/workflows/events.ts:517 | apps/desktop/src/renderer/domains/workflows/events.ts:570 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:597 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:608 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:input_prompt | apps/desktop/src/renderer/domains/workflows/events.ts:463 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:js_script | apps/desktop/src/renderer/domains/workflows/events.ts:480 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:log | apps/desktop/src/renderer/domains/workflows/events.ts:398 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:log_batch | apps/desktop/src/renderer/domains/workflows/events.ts:432 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:node_complete | apps/desktop/src/renderer/domains/workflows/events.ts:318 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:node_start | apps/desktop/src/renderer/domains/workflows/events.ts:311 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:paused | apps/desktop/src/renderer/domains/workflows/events.ts:325 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:play_music | apps/desktop/src/renderer/domains/workflows/events.ts:489 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:play_video | apps/desktop/src/renderer/domains/workflows/events.ts:498 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:resumed | apps/desktop/src/renderer/domains/workflows/events.ts:330 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:started | apps/desktop/src/renderer/domains/workflows/events.ts:293 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:619 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:tts_request | apps/desktop/src/renderer/domains/workflows/events.ts:468 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:view_image | apps/desktop/src/renderer/domains/workflows/events.ts:507 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:export_logs | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:327 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:989 | 字段/关联身份/恢复语义仍需核对 |
 | event:export_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:733 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:570; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:28 | 字段/关联身份/恢复语义仍需核对 |
 | event:fit_view | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1074 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:516; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:684; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:853; apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx:379; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:487 | 字段/关联身份/恢复语义仍需核对 |
 | event:focus_node | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1079 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:656 | 字段/关联身份/恢复语义仍需核对 |
 | event:highlight-node | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx:92 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:659; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:51 | apps/desktop/src/renderer/domains/workflows/events.ts:661 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:638 | apps/desktop/src/renderer/domains/workflows/events.ts:640 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:645 | apps/desktop/src/renderer/domains/workflows/events.ts:647 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:633 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:694 | apps/desktop/src/renderer/domains/workflows/events.ts:621 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:618 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:138; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:696; apps/desktop/src/renderer/domains/workflows/events.ts:652 | apps/desktop/src/renderer/domains/workflows/events.ts:654 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:695 | apps/desktop/src/renderer/domains/workflows/events.ts:628 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:626 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:670; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:51 | apps/desktop/src/renderer/domains/workflows/events.ts:672 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:649 | apps/desktop/src/renderer/domains/workflows/events.ts:651 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:656 | apps/desktop/src/renderer/domains/workflows/events.ts:658 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:644 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:694 | apps/desktop/src/renderer/domains/workflows/events.ts:632 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:629 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:138; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:696; apps/desktop/src/renderer/domains/workflows/events.ts:663 | apps/desktop/src/renderer/domains/workflows/events.ts:665 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:695 | apps/desktop/src/renderer/domains/workflows/events.ts:639 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:637 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:js_script_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:130 | 字段/关联身份/恢复语义仍需核对 |
 | event:keydown | apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx:285; apps/desktop/src/renderer/domains/workflows/components/QuickModulePicker.tsx:69; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:543; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:189; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1033; apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx:45; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx:216; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx:255; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:35 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:keyup | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1034 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
@@ -234,9 +234,9 @@
 | event:run-from-node | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:358 | apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx:165 | 字段/关联身份/恢复语义仍需核对 |
 | event:save_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:713 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:544; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:23 | 字段/关联身份/恢复语义仍需核对 |
 | event:scroll | apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts:250 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:selector:healed | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1067 | apps/desktop/src/renderer/domains/workflows/events.ts:569 | 字段/关联身份/恢复语义仍需核对 |
-| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:270; apps/desktop/src/renderer/domains/workflows/events.ts:779 | 字段/关联身份/恢复语义仍需核对 |
-| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:266; apps/desktop/src/renderer/domains/workflows/events.ts:771 | 字段/关联身份/恢复语义仍需核对 |
+| event:selector:healed | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1067 | apps/desktop/src/renderer/domains/workflows/events.ts:579 | 字段/关联身份/恢复语义仍需核对 |
+| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:270; apps/desktop/src/renderer/domains/workflows/events.ts:790 | 字段/关联身份/恢复语义仍需核对 |
+| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:266; apps/desktop/src/renderer/domains/workflows/events.ts:782 | 字段/关联身份/恢复语义仍需核对 |
 | event:show_toast | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:428 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1454; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1527; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1637 | 字段/关联身份/恢复语义仍需核对 |
 | event:socket:reconnected | apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:41 | apps/desktop/src/renderer/domains/workflows/events.ts:259 | 字段/关联身份/恢复语义仍需核对 |
 | event:stop_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:725 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:563; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:22 | 字段/关联身份/恢复语义仍需核对 |

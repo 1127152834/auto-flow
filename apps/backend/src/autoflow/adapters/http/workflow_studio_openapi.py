@@ -22,6 +22,7 @@ STUDIO_SCHEMAS = (
     schemas.StudioInputPromptState,
     schemas.StudioSelectorTestRequest,
     schemas.StudioSelectorTestResult,
+    schemas.StudioSimilarPickerResult,
 )
 
 

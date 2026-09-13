@@ -318,7 +318,23 @@ export const elementPickerApi = {
   stop: () => apiRequest('/element-picker/stop', { method: 'POST' }),
   getResult: () => apiRequest('/element-picker/result'),
   getSelected: () => apiRequest('/element-picker/selected'),
-  getSimilar: () => apiRequest('/element-picker/similar'),
+  getSimilar: async () => {
+    type Wire = components['schemas']['StudioSimilarPickerResult']
+    type Similar = components['schemas']['StudioSimilarElements']
+    type Result = Omit<Partial<Wire>, 'similar'> & {similar?: (Pick<Similar, 'pattern' | 'count' | 'minIndex' | 'maxIndex'> & Partial<Similar>) | null}
+    const result = await apiRequest<Result>('/element-picker/similar')
+    if (!result.success) return result
+    const data = result.data
+    const similar = data?.similar
+    const integer = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+    if (!data || typeof data.selected !== 'boolean' || typeof data.active !== 'boolean' ||
+        (data.selected && (!similar || typeof similar.pattern !== 'string' || !similar.pattern.includes('{index}') ||
+          !integer(similar.count) || similar.count < 1 || !integer(similar.minIndex) || !integer(similar.maxIndex) || similar.maxIndex < similar.minIndex ||
+          (similar.indices != null && (!Array.isArray(similar.indices) || similar.indices.some(index => !integer(index) || index < similar.minIndex || index > similar.maxIndex)))))) {
+      return {success: false, error: '相似元素响应格式错误，未应用定位结果'} as ApiResponse<Result>
+    }
+    return result
+  },
   getStatus: () => apiRequest('/element-picker/status'),
   /** 在当前浏览器页面上测试选择器是否命中并高亮匹配项 */
   testSelector: async (selector: string, hints?: Record<string, unknown>, highlight = true) => {

@@ -24212,5 +24212,167 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/execution-event-ownership.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.memory",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "memory",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.http",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "http",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.missing-result",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "missing-result",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.missing-template",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "missing-template",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.zero-count",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "zero-count",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.reversed-range",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "reversed-range",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.outside-indices",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "outside-indices",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.invalid-active",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "invalid-active",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts"
+  },
+  {
+    "id": "F4.similar-picker.poll-error-recovery",
+    "capability": "similar-element-picker",
+    "preconditions": {
+      "scenario": "poll-error-recovery",
+      "session": "独立Mock或组件服务夹具"
+    },
+    "steps": [
+      "开启拾取并触发显式结果或错误响应",
+      "查询/恢复/停止再开启，或检查拒绝结果"
+    ],
+    "expectedUI": "有效结果进入相似元素确认；无效结果不应用；业务错误可见",
+    "expectedIO": "selected/active/similar源包络；错误响应不冒充匹配",
+    "stateAssertion": "旧结果不跨重开，查询不消费；坏数据不写字段",
+    "level": "component-or-protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
   }
 ]

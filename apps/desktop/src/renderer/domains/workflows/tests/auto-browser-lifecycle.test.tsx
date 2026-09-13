@@ -96,7 +96,7 @@ it('ignores a similar-element response after the panel closes', async () => {
   await act(async () => { vi.advanceTimersByTime(500) })
   expect(elementPickerApi.getSimilar).toHaveBeenCalledOnce()
   view.rerender(<AutoBrowserDialog isOpen={false} onClose={vi.fn()} onLog={log} />)
-  await act(async () => release({ success: true, data: { selected: true, similar: { pattern: '.row-{index}', count: 4 } } }))
+  await act(async () => release({ success: true, data: { selected: true, similar: { pattern: '.row-{index}', count: 4, minIndex: 1, maxIndex: 4 } } }))
   expect(copy).not.toHaveBeenCalled()
   expect(log).not.toHaveBeenCalled()
 })

@@ -447,6 +447,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
           const similarRes = await elementPickerApi.getSimilar()
           if (!isCurrent()) return
+          if (similarRes.error) throw new Error(similarRes.error)
           if (similarRes.data?.selected && similarRes.data.similar) {
             const similar = similarRes.data.similar
             addLog({ level: 'success', message: `找到 ${similar.count} 个相似元素` })

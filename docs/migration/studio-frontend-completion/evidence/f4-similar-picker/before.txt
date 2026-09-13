@@ -1,0 +1,45 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:26539) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts (2 tests | 2 failed) 33ms
+   × exposes stable similar-element results only within a picker session over memory 10ms
+   × exposes stable similar-element results only within a picker session over http 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts > exposes stable similar-element results only within a picker session over memory
+ FAIL  src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts > exposes stable similar-element results only within a picker session over http
+AssertionError: expected [Function] to throw error including '请先开启元素拾取' but got 'mock.selectMockSimilarElements is not…'
+
+Expected: "请先开启元素拾取"
+Received: "mock.selectMockSimilarElements is not a function"
+
+ ❯ src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts:10:48
+      8|  const restore=configureStudioConnection(server?.origin??'http://autof…
+      9|  try{
+     10|   expect(()=>mock.selectMockSimilarElements()).toThrow('请先开启元素拾取')
+       |                                                ^
+     11|   expect(await elementPickerApi.getSimilar()).toMatchObject({success:t…
+     12|   await elementPickerApi.start();mock.selectMockSimilarElements()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  06:25:48
+   Duration  634ms (transform 104ms, setup 92ms, import 34ms, tests 33ms, environment 368ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts

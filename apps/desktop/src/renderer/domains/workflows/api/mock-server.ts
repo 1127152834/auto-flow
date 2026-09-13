@@ -40,6 +40,7 @@ let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
+let similarPicked: ObjectValue | null = null
 let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
@@ -70,7 +71,13 @@ export function addMockRecordingEvent(event: ObjectValue) {
 }
 export function selectMockElement(selector: string) {
   if (!picking) throw new Error('请先开启元素拾取')
+  similarPicked = null
   picked = { selector, tag: 'button', tagName:'BUTTON', attributes:{id:selector.replace(/^#/, '')}, text: 'Mock 目标', hints: { selectors: [selector] } }
+}
+export function selectMockSimilarElements() {
+  if (!picking) throw new Error('请先开启元素拾取')
+  picked = null
+  similarPicked = { pattern: '.item:nth-child({index})', count: 4, indices: [1, 2, 3, 4], minIndex: 1, maxIndex: 4, selector1: '.item:nth-child(1)', selector2: '.item:nth-child(2)' }
 }
 const finishedWorkflows = new Set<string>()
 function finish(status: string) {
@@ -399,11 +406,11 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
     }
     if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
-    if (path === '/element-picker/start') { if (run || recording) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; return response({success:true}) }
-    if (path === '/element-picker/stop') { picking = false; return response({success:true}) }
+    if (path === '/element-picker/start') { if (run || recording) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; similarPicked = null; return response({success:true}) }
+    if (path === '/element-picker/stop') { picking = false; picked = null; similarPicked = null; return response({success:true}) }
     if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })
     if (['/element-picker/result','/element-picker/selected'].includes(path)) return response({ success:true, active:picking, selected:picked !== null, data:picked, element:picked, ...picked })
-    if (path === '/element-picker/similar') return response({ success:true, elements:[] })
+    if (path === '/element-picker/similar') return method === 'GET' ? response({ selected: picking && similarPicked !== null, active: picking, ...(picking && similarPicked ? { similar: similarPicked } : {}) }) : failure('相似元素查询仅支持 GET', 405)
     if (path === '/element-picker/test-selector') {
       if (method !== 'POST') return failure('定位测试仅支持 POST', 405)
       if (typeof body.selector !== 'string' || !body.selector.trim() ||
