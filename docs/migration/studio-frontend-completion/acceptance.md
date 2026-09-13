@@ -101,3 +101,9 @@ TypeScript、ESLint、renderer/main/preload 构建通过；证据 f0-scheduled-t
 ## 2026-09-14 范围调整
 
 用户明确取消界面国际化；历史 i18n 记录保留，但不再构成后续门槛。中文单语言实现及测试见 [中文单语言验收](chinese-only.md)。完整回归 99 文件 / 1,167 项通过；F0–F6 全量验收仍未完成。
+
+## 2026-09-14 连续实施增量
+
+本轮已经完成画布脏状态、SSE完整帧补读、命令响应身份、图片资源受控读取/上传/重命名，以及确定执行轨迹的局部修复与验收。详见 graph-dirty-validation.md、sse-framing-validation.md、command-identity-validation.md、image-resource-validation.md、image-command-validation.md、execution-order-validation.md。
+
+最近前端全量125文件/1453用例通过；其后公共命令schema接入的定向前端36通过、后端全量421通过，类型/lint/构建与OpenAPI、17脚本检查通过。浏览器实际链路分别有记录，全部明确Mock边界。正式Electron、各平台打包及F0–F6完整退出门槛仍未完成。不要用这些通过数量代替全部能力覆盖。

@@ -1,5 +1,15 @@
 import { parseServerSentEvents } from '../../../shared/api/events'
 import { studioFetch } from './transport'
+import type { components } from '../../../shared/api/generated'
+
+type StudioCommandReceipt = components['schemas']['StudioCommandReceipt']
+type StudioCommandLookup = components['schemas']['StudioCommandLookup']
+
+function isCommandReceipt(value: unknown, commandId: string): value is StudioCommandReceipt {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    && 'commandId' in value && typeof value.commandId === 'string' && !!value.commandId.trim()
+    && value.commandId === commandId && 'success' in value && typeof value.success === 'boolean'
+}
 
 // The source handlers retain their payload types. Only this compatibility boundary is erased.
 type Listener = (...args: never[]) => void
@@ -25,14 +35,14 @@ export class StudioEventClient {
     void this.sendCommand(commandId, event, data)
     return commandId
   }
-  async queryCommand(commandId: string): Promise<Record<string, unknown>> {
+  async queryCommand(commandId: string): Promise<StudioCommandLookup> {
     const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
-    const result = await response.json() as Record<string, unknown>
-    if (!response.ok || !result || Array.isArray(result) || result.commandId !== commandId || typeof result.success !== 'boolean'
+    const result: unknown = await response.json()
+    if (!response.ok || !isCommandReceipt(result, commandId)
       || typeof result.httpStatus !== 'number' || !Number.isInteger(result.httpStatus) || result.httpStatus < 200 || result.httpStatus > 599) {
       throw new Error('命令查询结果无效或身份不匹配')
     }
-    return result
+    return result as StudioCommandLookup
   }
   private async sendCommand(commandId: string, event: string, data: unknown) {
     try {
@@ -40,12 +50,15 @@ export class StudioEventClient {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commandId, event, data }), signal: this.controller.signal,
       })
-      const result = await response.json()
+      const result: unknown = await response.json()
       if (this.controller.signal.aborted) return
-      if (response.ok && (!result || Array.isArray(result) || result.commandId !== commandId || typeof result.success !== 'boolean')) {
-        throw new Error('命令响应无效或身份不匹配')
+      if (!response.ok) {
+        this.dispatch('command_error', { ...(typeof result === 'object' && result !== null ? result : {}), commandId })
+        return
       }
-      this.dispatch(response.ok && result.success === true ? 'command_result' : 'command_error', { ...result, commandId })
+      if (!isCommandReceipt(result, commandId)) throw new Error('命令响应无效或身份不匹配')
+      this.dispatch(result.success ? 'command_result' : 'command_error', result)
+
     } catch (error) {
       if (this.controller.signal.aborted) return
       // Query identity after a lost response; never repeat a possibly-applied action.

@@ -2336,6 +2336,26 @@ export type components = {
             /** Height */
             height: number;
         };
+        /** StudioCommandLookup */
+        StudioCommandLookup: {
+            /** Commandid */
+            commandId: string;
+            /** Success */
+            success: boolean;
+            /** Httpstatus */
+            httpStatus: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioCommandReceipt */
+        StudioCommandReceipt: {
+            /** Commandid */
+            commandId: string;
+            /** Success */
+            success: boolean;
+        } & {
+            [key: string]: unknown;
+        };
     };
     responses: never;
     parameters: never;

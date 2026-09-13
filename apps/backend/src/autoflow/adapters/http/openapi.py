@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 from .proxy_openapi import add_proxy_schemas
+from .workflow_studio_openapi import add_workflow_studio_schemas
 
 
 def configure_openapi(app: FastAPI, *, api_version: str) -> None:
@@ -15,6 +16,7 @@ def configure_openapi(app: FastAPI, *, api_version: str) -> None:
                 routes=app.routes,
             )
             add_proxy_schemas(app.openapi_schema)
+            add_workflow_studio_schemas(app.openapi_schema)
         return app.openapi_schema
 
     app.openapi = custom_openapi  # type: ignore[method-assign]
