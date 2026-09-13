@@ -15,23 +15,24 @@ export type ScalarValueEditorProps = {
   allowMissing?: boolean
   error?: string
   errorTarget?: ScalarDraftControl
+  compact?: boolean
 }
 
-export function ScalarValueEditor({ id, label, type, draft, onChange, disabled = false, readOnly = false, allowMissing = false, error, errorTarget }: ScalarValueEditorProps) {
+export function ScalarValueEditor({ id, label, type, draft, onChange, disabled = false, readOnly = false, allowMissing = false, error, errorTarget, compact = false }: ScalarValueEditorProps) {
   const update = (change: Partial<ScalarDraft>) => onChange({ ...draft, ...change })
   const presenceOptions = [
     ...(allowMissing ? [{ value: 'missing', label: '不填写' }] : draft.presence === 'missing' ? [{ value: 'missing', label: '未填写', disabled: true }] : []),
     { value: 'null', label: '清空' },
     { value: 'value', label: '填写值' },
   ]
-  return <fieldset className="grid min-w-0 gap-3">
-    <legend className="mb-1 text-sm font-medium text-ink">{label}</legend>
+  return <fieldset className={`grid min-w-0 ${compact ? 'gap-2' : 'gap-3'}`}>
+    <legend className={compact ? 'sr-only' : 'mb-1 text-sm font-medium text-ink'}>{label}</legend>
     <FormField label="值状态" htmlFor={`${id}-presence`} error={errorTarget === 'presence' ? error : undefined}>
       <Select aria-label={`${label}值状态`} value={draft.presence} options={presenceOptions} disabled={disabled} readOnly={readOnly} clearable={false}
         onValueChange={value => { if (value) update({ presence: value as ScalarDraft['presence'] }) }} />
     </FormField>
     {draft.presence === 'value' && type === 'string' ? <FormField label={label} htmlFor={id} error={errorTarget === 'value' ? error : undefined}>
-      <Textarea value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />
+      {compact ? <Input size="sm" value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} /> : <Textarea value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />}
     </FormField> : null}
     {draft.presence === 'value' && type === 'number' ? <FormField label={label} htmlFor={id} error={errorTarget === 'value' ? error : undefined}>
       <Input inputMode="decimal" value={draft.text} disabled={disabled} readOnly={readOnly} onChange={event => update({ text: event.target.value })} />

@@ -78,3 +78,10 @@ it('connects every visible label to its real control', async () => {
   await user.click(screen.getByText('时区偏移', { selector: 'label' }))
   expect(screen.getByLabelText('执行日期时区偏移')).toHaveFocus()
 })
+
+it('uses one compact comparison label and a single-line text input for filters', () => {
+  render(<ScalarValueEditor id="filter-value" label="比较值" type="string" draft={scalarDraft('温室')} onChange={vi.fn()} compact />)
+  expect(screen.getByLabelText('比较值')).toHaveProperty('tagName', 'INPUT')
+  expect(screen.getAllByText('比较值').filter(node => !node.classList.contains('sr-only'))).toHaveLength(1)
+  expect(screen.getByRole('combobox', { name: '比较值值状态' })).toBeVisible()
+})

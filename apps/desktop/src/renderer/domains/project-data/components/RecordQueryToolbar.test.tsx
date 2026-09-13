@@ -58,6 +58,9 @@ it('orders record actions and gives every query panel a title, close control, an
     expect(within(panel).getByRole('heading',{name:panelName})).toBeVisible()
     expect(within(panel).getByRole('button',{name:`关闭${panelName}`})).toBeVisible()
     expect(panel).toHaveAttribute('data-query-panel-size',size)
+    const body=panel.querySelector('[data-query-panel-body]'),footer=panel.querySelector('[data-query-panel-footer]')
+    expect(body).toBeTruthy(); expect(footer).toBeTruthy(); expect(body?.nextElementSibling).toBe(footer)
+    expect(within(footer as HTMLElement).getByRole('button',{name:'取消'})).toBeVisible()
     await user.click(within(panel).getByRole('button',{name:`关闭${panelName}`}))
   }
 })
