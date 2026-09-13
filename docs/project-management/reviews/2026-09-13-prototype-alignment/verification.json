@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-13",
+  "scope": "prototype alignment audit; no business implementation",
+  "checks": {
+    "jsonParse": "passed",
+    "reportLinks": "passed",
+    "uniqueReferenceIds": 112,
+    "visuallyInspectedReferenceImages": 20,
+    "currentScreenshots": 7,
+    "copiedReferenceHashes": "passed"
+  },
+  "freshCaptureRuns": [
+    {
+      "file": "docs/migration/project-management-regression-qa/run-W6Td3i/built-html.json",
+      "result": "passed"
+    },
+    {
+      "file": "docs/migration/project-data-directory-qa/run-VoRvWR/result.json",
+      "result": "passed"
+    },
+    {
+      "file": "docs/migration/project-data-directory-qa/run-577a57/result.json",
+      "result": "passed"
+    }
+  ],
+  "limitations": [
+    "No full visual review of all 91 current reference images",
+    "No pixel similarity measurement",
+    "Legacy tests not rerun",
+    "No business redesign implemented",
+    "No Windows or packaged acceptance"
+  ]
+}

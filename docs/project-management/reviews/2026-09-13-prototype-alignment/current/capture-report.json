@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-09-13T05:51:40.520Z",
+  "runs": [
+    {
+      "id": "run-W6Td3i",
+      "kind": "project-management",
+      "status": "passed",
+      "checkedAt": "2026-09-13T05:48:48.663Z",
+      "screenshots": ["01-project-directory.png", "02-project-overview.png"]
+    },
+    {
+      "id": "run-577a57",
+      "kind": "project-data-first-capture",
+      "status": "passed",
+      "checkedAt": "2026-09-13T05:50:11.565Z",
+      "reasonForAdditionalRun": "The run captured fields, statuses, records, and editing states but did not capture the populated table directory."
+    },
+    {
+      "id": "run-VoRvWR",
+      "kind": "project-data-directory-supplement",
+      "status": "passed",
+      "checkedAt": "2026-09-13T05:51:40.520Z",
+      "screenshots": ["03-data-table-directory.png", "04-records.png", "05-record-editor.png", "06-fields.png", "07-statuses.png"]
+    }
+  ],
+  "captureStates": {
+    "01-project-directory.png": "Filtered 55-project result; list was scrolled when captured.",
+    "03-data-table-directory.png": "One table card with zero records at capture time."
+  },
+  "pixelAlignmentEligible": false,
+  "pixelAlignmentReason": "The captured item counts and scroll positions differ from the target prototype."
+}
