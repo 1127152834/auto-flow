@@ -1,0 +1,16 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/picker-result-context.test.tsx src/renderer/domains/workflows/tests/selector-test-context.test.tsx src/renderer/domains/workflows/tests/config-panel-context.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:6315) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6334) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  25 passed (25)
+   Start at  04:18:52
+   Duration  4.87s (transform 1.24s, setup 108ms, import 2.16s, tests 1.45s, environment 940ms)

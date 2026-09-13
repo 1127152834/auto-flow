@@ -1,0 +1,136 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/picker-result-context.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:4824) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx (11 tests | 11 failed) 714ms
+   × does not start polling after a late startup response following node change 260ms
+   × does not start polling after a late startup response following document change 107ms
+   × does not start polling after a late startup response following unmount change 48ms
+   × ignores an in-flight selected result after field change 43ms
+   × ignores an in-flight selected result after node change 51ms
+   × ignores an in-flight selected result after document change 49ms
+   × ignores an in-flight selected result after delete change 29ms
+   × ignores an in-flight selected result after cancel change 36ms
+   × ignores an in-flight selected result after unmount change 26ms
+   × never overlaps selection polls while a response is pending 27ms
+   × applies selector and hints as one undoable edit 36ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > does not start polling after a late startup response following node change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > does not start polling after a late startup response following document change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > does not start polling after a late startup response following unmount change
+AssertionError: expected "getSelected" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st getSelected call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:37:20
+     35|   await act(async () => release({ success: true, data: {success: true}…
+     36|   await act(async () => vi.advanceTimersByTimeAsync(1000))
+     37|   expect(poll).not.toHaveBeenCalled()
+       |                    ^
+     38|   expect(store.getState().nodes.find(node => node.id===nodeId)?.data.s…
+     39| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after field change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after node change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after document change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after cancel change
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after unmount change
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:52:82
+     50|   if (change==='unmount') view.unmount()
+     51|   await act(async () => release(selected))
+     52|   expect(store.getState().nodes.every(node => node.data.selector !== '…
+       |                                                                                  ^
+     53|   expect(systemApi.setClipboard).not.toHaveBeenCalled()
+     54|   expect(store.getState().logs.some(log => log.message==='已选择元素: #pick…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > ignores an in-flight selected result after delete change
+AssertionError: expected "setClipboard" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st setClipboard call:
+
+    Array [
+      "#picked",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:53:38
+     51|   await act(async () => release(selected))
+     52|   expect(store.getState().nodes.every(node => node.data.selector !== '…
+     53|   expect(systemApi.setClipboard).not.toHaveBeenCalled()
+       |                                      ^
+     54|   expect(store.getState().logs.some(log => log.message==='已选择元素: #pick…
+     55| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > never overlaps selection polls while a response is pending
+AssertionError: expected "getSelected" to be called 1 times, but got 4 times
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:60:40
+     58|   render(<ConfigPanel selectedNodeId={nodeId} />); await start()
+     59|   await act(async () => vi.advanceTimersByTimeAsync(2000))
+     60|   expect(elementPickerApi.getSelected).toHaveBeenCalledTimes(1)
+       |                                        ^
+     61| })
+     62| it('applies selector and hints as one undoable edit', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > applies selector and hints as one undoable edit
+AssertionError: expected '#picked' to be '#before' // Object.is equality
+
+Expected: "#before"
+Received: "#picked"
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:68:51
+     66|   expect(store.getState().nodes[0].data).toMatchObject({selector:'#pic…
+     67|   act(() => store.getState().undo())
+     68|   expect(store.getState().nodes[0].data.selector).toBe('#before')
+       |                                                   ^
+     69|   expect(store.getState().nodes[0].data.selectorHints).toBeUndefined()
+     70| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed (11)
+   Start at  04:15:07
+   Duration  2.78s (transform 1.12s, setup 88ms, import 1.50s, tests 714ms, environment 371ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/picker-result-context.test.tsx

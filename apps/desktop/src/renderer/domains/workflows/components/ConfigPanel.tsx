@@ -235,6 +235,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const [pickingField, setPickingField] = useState<string | null>(null)
   const [testingField, setTestingField] = useState<string | null>(null)
   const selectorTestSequence = useRef(0)
+  const pickerSequence = useRef(0)
+  const pickerActive = useRef(false)
+  const pickerContext = useRef<(() => boolean) | null>(null)
   useEffect(() => {
     selectorTestSequence.current += 1
     setTestingField(null)
@@ -282,40 +285,22 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
   const nodeData = selectedNode?.data as NodeData | undefined
 
-  // 清理轮询
+  // Invalidate every awaited picker response when the owning document/panel changes.
   useEffect(() => {
+    setIsPicking(false)
+    setPickingField(null)
+    setShowSimilarDialog(false)
+    setSimilarResult(null)
+    setShowUrlDialog(false)
+    setPendingField(null)
+    setSelectorTypeOverride({})
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current)
-      }
+      pickerSequence.current += 1
+      pickerContext.current = null
+      if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
+      if (pickerActive.current) { pickerActive.current = false; void elementPickerApi.stop().catch(() => {}) }
     }
-  }, [])
-
-  // 切换选中节点时，停止已激活的元素选择器，避免选中结果写入到错误的节点字段
-  const lastSelectedNodeIdRef = useRef<string | null | undefined>(selectedNodeId)
-  useEffect(() => {
-    if (lastSelectedNodeIdRef.current !== selectedNodeId) {
-      // 节点真正变化时，关闭还在运行的选择器及相关 UI
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current)
-        pollingRef.current = null
-      }
-      if (isPicking) {
-        elementPickerApi.stop().catch(() => {})
-        setIsPicking(false)
-        setPickingField(null)
-      }
-      // 无条件关闭相似元素弹窗（即使 isPicking 已为 false）
-      setShowSimilarDialog(false)
-      setSimilarResult(null)
-      // 关闭可能残留的 URL 输入对话框
-      setShowUrlDialog(false)
-      setPendingField(null)
-      // 切换节点时重置选择器类型偏好，避免上一个节点的偏好串到新节点
-      setSelectorTypeOverride({})
-      lastSelectedNodeIdRef.current = selectedNodeId
-    }
-  }, [selectedNodeId, isPicking])
+  }, [selectedNodeId, documentId])
 
   const handleChange = useCallback((key: string, value: unknown) => {
     if (selectedNodeId) {
@@ -373,6 +358,20 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
   // 启动元素选择器
   const startElementPicker = useCallback(async (fieldName: string, url: string) => {
+    const request = ++pickerSequence.current
+    const state = useWorkflowStore.getState()
+    const originNode = state.nodes.find(node => node.id === selectedNodeId)
+    if (!originNode) return
+    const originDocument = state.id
+    const target = JSON.stringify([originNode.data[fieldName], originNode.data.selectorHints ?? null])
+    const isCurrent = () => {
+      const current = useWorkflowStore.getState()
+      const node = current.nodes.find(node => node.id === originNode.id)
+      return request === pickerSequence.current && current.id === originDocument && !!node &&
+        JSON.stringify([node.data[fieldName], node.data.selectorHints ?? null]) === target
+    }
+    pickerContext.current = isCurrent
+    pickerActive.current = true
     const resolvedUrl = url ? resolveVariables(url) : ''
     setIsPicking(true)
     setPickingField(fieldName)
@@ -387,7 +386,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     try {
       // 传递浏览器配置
       const result = await elementPickerApi.start(resolvedUrl || undefined, browserConfig)
-      if (result.error) {
+      if (!isCurrent()) return
+      if (result.error || !result.success) {
+        pickerActive.current = false
         addLog({ level: 'error', message: `启动失败: ${result.error}` })
         setIsPicking(false)
         setPickingField(null)
@@ -396,79 +397,97 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
       addLog({ level: 'success', message: '元素选择器已启动：Ctrl+点击单选，Alt+点击选择相似元素' })
 
+      let polling = false
       pollingRef.current = window.setInterval(async () => {
-        const selectedResult = await elementPickerApi.getSelected()
-        
-        if (selectedResult.data?.active === false) {
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current)
-            pollingRef.current = null
+        if (polling || !isCurrent()) return
+        polling = true
+        try {
+          const selectedResult = await elementPickerApi.getSelected()
+          if (!isCurrent()) return
+
+          if (selectedResult.data?.active === false) {
+            pickerActive.current = false
+            if (pollingRef.current) {
+              clearInterval(pollingRef.current)
+              pollingRef.current = null
+            }
+            setIsPicking(false)
+            setPickingField(null)
+            return
           }
-          setIsPicking(false)
-          setPickingField(null)
-          return
-        }
-        
-        if (selectedResult.data?.selected && selectedResult.data.element) {
-          const el = selectedResult.data.element
-          const selector = el.selector
-          handleChange(fieldName, selector)
-          // 选择器自愈：保存元素提示（标签/文本/属性），运行时主选择器失效可锚点重定位
-          if (fieldName === 'selector') {
-            const attrs = (el.attributes || {}) as Record<string, unknown>
-            handleChange('selectorHints', {
-              tag: el.tagName || '',
-              text: el.text || '',
-              attributes: attrs,
+
+          if (selectedResult.data?.selected && selectedResult.data.element) {
+            const el = selectedResult.data.element
+            const selector = el.selector
+            if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
+            updateNodeData(originNode.id, {
+              [fieldName]: selector,
+              ...(fieldName === 'selector' ? { selectorHints: {
+                tag: el.tagName || '', text: el.text || '', attributes: (el.attributes || {}) as Record<string, unknown>,
+              } } : {}),
             })
+            addLog({ level: 'success', message: `已选择元素: ${selector}` })
+            // 自动复制选择器到剪贴板（全局配置，默认开启）
+            if (selector && browserConfig?.autoCopySelector !== false) {
+              const ok = await writeSelectorToClipboard(selector)
+              if (request !== pickerSequence.current) return
+              addLog({ level: ok ? 'success' : 'warning', message: ok ? '选择器已复制到剪贴板' : '选择器复制到剪贴板失败' })
+            }
+
+            await elementPickerApi.stop()
+            if (request !== pickerSequence.current) return
+            pickerActive.current = false
+            if (pollingRef.current) {
+              clearInterval(pollingRef.current)
+              pollingRef.current = null
+            }
+            setIsPicking(false)
+            setPickingField(null)
+            return
           }
-          addLog({ level: 'success', message: `已选择元素: ${selector}` })
-          // 自动复制选择器到剪贴板（全局配置，默认开启）
-          if (selector && browserConfig?.autoCopySelector !== false) {
-            const ok = await writeSelectorToClipboard(selector)
-            addLog({ level: ok ? 'success' : 'warning', message: ok ? '选择器已复制到剪贴板' : '选择器复制到剪贴板失败' })
+
+          const similarRes = await elementPickerApi.getSimilar()
+          if (!isCurrent()) return
+          if (similarRes.data?.selected && similarRes.data.similar) {
+            const similar = similarRes.data.similar
+            addLog({ level: 'success', message: `找到 ${similar.count} 个相似元素` })
+
+            setSimilarResult({
+              pattern: similar.pattern,
+              count: similar.count,
+              minIndex: similar.minIndex,
+              maxIndex: similar.maxIndex,
+            })
+            setShowSimilarDialog(true)
+
+            if (pollingRef.current) {
+              clearInterval(pollingRef.current)
+              pollingRef.current = null
+            }
           }
-          
-          await elementPickerApi.stop()
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current)
-            pollingRef.current = null
-          }
-          setIsPicking(false)
-          setPickingField(null)
-          return
-        }
-        
-        const similarRes = await elementPickerApi.getSimilar()
-        if (similarRes.data?.selected && similarRes.data.similar) {
-          const similar = similarRes.data.similar
-          addLog({ level: 'success', message: `找到 ${similar.count} 个相似元素` })
-          
-          setSimilarResult({
-            pattern: similar.pattern,
-            count: similar.count,
-            minIndex: similar.minIndex,
-            maxIndex: similar.maxIndex,
-          })
-          setShowSimilarDialog(true)
-          
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current)
-            pollingRef.current = null
-          }
-        }
+        } catch (error) {
+          if (isCurrent()) addLog({ level: 'error', message: `读取拾取结果失败: ${error}` })
+        } finally { polling = false }
       }, 500)
 
     } catch (error) {
+      if (!isCurrent()) return
+      pickerActive.current = false
       addLog({ level: 'error', message: `启动元素选择器失败: ${error}` })
       setIsPicking(false)
       setPickingField(null)
     }
-  }, [addLog, handleChange, resolveVariables, browserConfig])
+  }, [addLog, updateNodeData, selectedNodeId, resolveVariables, browserConfig])
 
   // 确认相似元素选择
   const handleSimilarConfirm = useCallback(async (variableName: string) => {
     if (!similarResult || !pickingField) return
+    if (!pickerContext.current?.()) {
+      setShowSimilarDialog(false); setSimilarResult(null)
+      addLog({ level: 'warning', message: '拾取目标已变化，请重新拾取。' })
+      return
+    }
+    const request = pickerSequence.current
     
     const finalSelector = similarResult.pattern.replace('{index}', `{${variableName}}`)
     handleChange(pickingField, finalSelector)
@@ -487,23 +506,30 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     // 自动复制选择器到剪贴板（全局配置，默认开启）
     if (browserConfig?.autoCopySelector !== false) {
       const ok = await writeSelectorToClipboard(finalSelector)
+      if (request !== pickerSequence.current) return
       addLog({ level: ok ? 'success' : 'warning', message: ok ? '选择器已复制到剪贴板' : '选择器复制到剪贴板失败' })
     }
     
     setShowSimilarDialog(false)
     setSimilarResult(null)
     await elementPickerApi.stop()
+    if (request !== pickerSequence.current) return
+    pickerActive.current = false
     setIsPicking(false)
     setPickingField(null)
   }, [similarResult, pickingField, handleChange, addVariable, addLog, browserConfig])
 
   // 停止元素选择器
   const stopElementPicker = useCallback(async () => {
+    const request = ++pickerSequence.current
+    pickerContext.current = null
     if (pollingRef.current) {
       clearInterval(pollingRef.current)
       pollingRef.current = null
     }
     await elementPickerApi.stop()
+    if (request !== pickerSequence.current) return
+    pickerActive.current = false
     setIsPicking(false)
     setPickingField(null)
     setShowSimilarDialog(false)

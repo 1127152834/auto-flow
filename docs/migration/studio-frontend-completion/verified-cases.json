@@ -19344,5 +19344,346 @@
     "level": "HTTP integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-command-validation.test.ts"
+  },
+  {
+    "id": "PICKER.context.start-node",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "启动响应迟到：node",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "启动响应迟到：node",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.start-document",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "启动响应迟到：document",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "启动响应迟到：document",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.start-unmount",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "启动响应迟到：unmount",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "启动响应迟到：unmount",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-field",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：field",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：field",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-node",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：node",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：node",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-document",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：document",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：document",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-delete",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：delete",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：delete",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-cancel",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：cancel",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：cancel",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.selected-unmount",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择结果迟到：unmount",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择结果迟到：unmount",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.poll-overlap",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "请求未完成时不重叠轮询",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "请求未完成时不重叠轮询",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.atomic-undo",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "选择器及提示一次撤销",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "选择器及提示一次撤销",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.similar-field",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "相似结果迟到：field",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "相似结果迟到：field",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.similar-node",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "相似结果迟到：node",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "相似结果迟到：node",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.similar-document",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "相似结果迟到：document",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "相似结果迟到：document",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.similar-confirm",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "字段修改后拒绝旧相似元素确认",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "字段修改后拒绝旧相似元素确认",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.context.poll-recovery",
+    "capability": "picker:editing-context",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "response": "可延迟的拾取响应"
+    },
+    "steps": [
+      "轮询异常记录并允许恢复",
+      "释放响应或推进定时器",
+      "检查真实 ConfigPanel/Store"
+    ],
+    "expectedUI": "有效结果写回，失效结果不显示为当前结果",
+    "expectedIO": "失效结果不复制到剪贴板；轮询不重叠",
+    "stateAssertion": "轮询异常记录并允许恢复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "E2E.picker-context.save-reopen",
+    "capability": "picker:apply-save-reopen",
+    "preconditions": {
+      "document": "空画布",
+      "service": "明确标注的 Mock"
+    },
+    "steps": [
+      "拖拽点击节点并配置 #before",
+      "启动拾取并从测试入口提交",
+      "一次撤销/重做",
+      "定位测试并保存",
+      "刷新并从列表重开"
+    ],
+    "expectedUI": "重开后节点选择器为 #submit，状态空闲",
+    "expectedIO": "拾取、测试、保存和加载接口被真实 UI 消费；没有真实网页动作",
+    "stateAssertion": "一次撤销恢复 #before，重做和重开恢复 #submit",
+    "level": "browser UI with mock service",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-picker-context/browser-ui.md"
   }
 ]
