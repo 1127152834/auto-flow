@@ -172,3 +172,21 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - [页面接入清单](pm2-page-integration-handoff.md)列出依赖、真实消费者和仍需执行的验收。当前不是PM2完整交付，未进入PM3。
 
 本轮独立提交：`32e424e`后台，`a9c0b75`批量选择/状态组件，`747395b`Excel组件与目录真实导入。原任务六处文件未提交；SHA-256保护核对见docs/project-management/implementation/pm2-worktree-isolation.json。等待原编辑任务提交后，按pm2-page-integration-handoff.md继续详情页接入和完整验收。
+
+
+## PM2 最终执行记录（2026-09-13）
+
+| 项目 | 结果 | 证据与边界 |
+|---|---|---|
+| P0–P5 | verified | [pm2-revised-delivery.json](pm2-revised-delivery.json)；交付状态passed，用户验收pending |
+| 自动回归 | passed | pytest 760；Vitest 833/112文件；ruff；mypy 195文件；desktop type/lint/build；OpenAPI；脚本21；结构3，汇总见[pm2-verification.json](pm2-verification.json) |
+| 本地数据真实应用 | passed | macOS arm64源码构建；[run-3HOD1Y](../../migration/project-data-directory-qa/run-3HOD1Y/result.json) |
+| Excel、批状态及10000行 | passed | macOS arm64源码构建；[run-Z9O6af](../../migration/pm2-detail-qa/run-Z9O6af/result.json) |
+| 原生文件面板 | passed | 真实macOS open取消/选择与save取消；[run-Lr9nj8](../../migration/pm2-native-picker-qa/run-Lr9nj8/result.json) |
+| 全局回归 | passed | 构建HTML；[run-4K8zpg](../../migration/project-management-regression-qa/run-4K8zpg/built-html.json) |
+| Windows / packaged | notExecuted | 不以macOS源码构建结果替代 |
+| 用户PM2验收 | pending | 当前停在用户验收点；不自动进入PM3 |
+
+本记录取代本文件较早的PM2“进行中”结论，但保留过程历史。PM2未实现的Sheets、项目Run/Task/lease、归档生命周期及PM3–PM9能力仍按原计划为空，未伪造成功。
+
+最终实施提交：`7ad1033` 页面及耐久编辑恢复、`79230f0` 实际应用脚本/证据、`d05bbe1` 数据能力状态及生成契约。最后重跑760后端/833前端全量和全部工程检查通过；修订文档另独立提交。

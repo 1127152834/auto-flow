@@ -339,3 +339,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `domains/project-data`新增excel-api、use-excel-inspection/import/export、status-batch-api、use-record-selection及其测试；components新增ExcelImportWizard/Mapping/InspectionPanel、ExcelExportWorkflow/Dialog、RecordStatusBatchDialog、DataOperationStatus、DataTableSourcePanel。DataRecordsTable提供可选选择工具，DataTableDirectoryPage接通真实新表Excel导入。记录批量选择、批量状态、重新导入、导出和来源事实仍需待原编辑任务提交后装配，不能视为已接入。
 
 `scripts/smoke-pm2-excel.mjs`只操纵隔离工作区并记录native picker注入边界；`scripts/measure-pm2-data.py`执行临时文件/DB测量；`scripts/verify-pm2-delivery.mjs`独立核对阶段覆盖，`--require-complete`要求真实全模块验收，当前应失败。历史PM0/PM1报告保留。
+
+### PM2 最终页面装配（2026-09-13，confirmed）
+
+此前“等待原编辑任务”描述为历史状态，已被本节替代。DataTableDetailPage 现组合五页签与真实记录/字段/状态/表资料编辑、冻结选择批量状态、Excel重新导入/导出、来源事实；use-data-table-editing 负责显式写入、稳定作用域的持久原命令恢复、CAS和草稿保护，不在页面重写事务。表查询/列显示/滚动位置按工作区/项目/表保存。
+
+三个新/扩展 smoke 脚本：smoke-project-data.mjs 覆盖编辑与双工作区/重启恢复；smoke-pm2-detail-flows.mjs 覆盖文件和批状态含10000行；smoke-pm2-native-picker.mjs 需实际原生面板操作，不注入其结果。pm2-verification.json 汇总本机证据及未执行平台。verify-pm2-delivery.mjs --require-complete 在完整交付报告后应通过。主线迁移分叉仍未合并，PM3尚未开始。

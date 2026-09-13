@@ -1,3 +1,5 @@
+> 当前状态：接入已完成（2026-09-13）。以下保留原交接清单；本轮已接管并按此落实，最新验收见 [PM2核验](pm2-verification.json)。
+
 # PM2 编辑任务提交后的接入清单
 
 - 日期：2026-09-13；状态：confirmed / awaitingOwnerCommit。

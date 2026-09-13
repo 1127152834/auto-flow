@@ -102,3 +102,9 @@ e58877d/2cded8e/32c3395/f4e1d08交付历史状态墓碑、删除影响/原子命
 实现工作区后端提交32e424e；迁移唯一head为pm02_excel_exports，顺序为status_tombstones→status_batches→excel_inspections→excel_imports→excel_exports。主线Studio的0006分叉未在本工作区合并。
 
 批量状态、文件授权、Excel检查、隐藏分段导入/替换、一致快照导出和原文件结果核验已有真实HTTP与持久实现；唯一generated类型已同步。前端新表目录导入已在隔离Electron运行；详情页批量操作、重新导入、导出与来源组件接入等待原编辑任务提交。证据见pm2-backend-verification.json、pm2-frontend-verification.json，不用组件测试代替最终真实页面验收。
+
+## PM2 最终实施基线（2026-09-13，confirmed）
+
+用户确认原任务结束后接管页面/Hook等六处WIP。前述“详情页等待接入/完整PM2未完成”是历史检查点；当前真实页面已接通所有修订PM2能力。后端760、前端833全量及工程检查通过，详情编辑/批状态/导入替换导出/重连重启/双工作区和本机native选择取消有实际证据，见pm2-verification.json。用户里程碑验收仍pending；不把未来场景或平台标绿。当前迁移仍pm02_excel_exports，主线0006分叉待后续正式集成，不合并主线WIP。
+
+2026-09-13最终只读核对主项目HEAD为2b5365e（Studio条件/循环/变量等已继续推进），并有其他任务WIP；此实施分支未合并这些内容。后续主线集成须重新核对实际迁移/共享类型/Studio能力，不把旧M2快照作为现状。数据能力契约最终仅data=available，其余五项未实现；修正提交d05bbe1。

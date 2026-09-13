@@ -1,6 +1,6 @@
 # 项目管理里程碑覆盖表
 
-- 日期：2026-09-13；状态：confirmed（计划已获实施授权），PM0用户已授权进入PM1；PM1已交付，本轮实施停于PM2验收点；PM2修订包进行中。完整PM2验收尚未通过，原编号和未来业务证据保持不变。
+- 日期：2026-09-13；状态：PM2 P0–P5实现与机器/真实macOS应用验收通过，用户验收pending。Windows与packaged未执行；原编号及PM3–PM9未来业务证据保持不变。
 - 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
 - “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
@@ -152,3 +152,17 @@ DT-01/02/10/12登记部分自动与macOS arm64实际应用证据，详见pm2-dir
 - [修订包状态](pm2-revised-delivery.json)保持inProgress，静态核验11项首次可用功能及34项首次实施验收编号；不改变完整规格的48/178/18/7编号集合。
 - 原编辑任务仍在进行；六个原WIP文件哈希与起点一致，未由本任务提交。全量lint仅在原任务测试文件的未使用参数处失败。
 - [页面接入清单](pm2-page-integration-handoff.md)列出依赖、真实消费者和仍需执行的验收。当前不是PM2完整交付，未进入PM3。
+
+
+## PM2 最终机器与真实应用验收（2026-09-13）
+
+此前“进行中”“等待详情页接入”的检查点为历史过程记录，现由本节取代。P0–P5均为verified，PM2交付状态passed，用户验收仍pending。[最终机器报告](pm2-verification.json)汇总：pytest 760项、Vitest 833项/112文件、ruff、mypy 195文件、desktop类型检查/lint/build、OpenAPI、脚本21项及结构3项全部通过。
+
+真实macOS arm64证据按实际范围登记：
+
+- [本地数据详情流程](../../migration/project-data-directory-qa/run-3HOD1Y/result.json)：表、字段、状态、记录命令，冲突/丢响应恢复、设置、重启、工作区隔离及200%缩放。
+- [Excel与批状态详情流程](../../migration/pm2-detail-qa/run-Z9O6af/result.json)：批量状态设置/清空、筛选选列导出、重复目标拒绝、显式映射重新导入、代次隔离、冷重启和真实10000行分页性能。
+- [原生文件面板](../../migration/pm2-native-picker-qa/run-Lr9nj8/result.json)：真实macOS open取消、选择文件及save取消；文件发布由注入面板结果的完整流程覆盖。
+- [构建HTML回归](../../migration/project-management-regression-qa/run-4K8zpg/built-html.json)：全局入口与既有模块回归。
+
+coverage.json仅提升PM2首次实施范围。DT-12在PM2完整验收后为verified；其余需要PM4/PM6/PM7/PM8补足运行占用、Sheets公式/来源、摘要或生命周期的功能保持partially_verified。PM3–PM9场景、Windows、packaged及用户验收没有被上述结果替代。

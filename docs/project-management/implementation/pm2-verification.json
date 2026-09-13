@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-13",
+  "status": "passed",
+  "userAcceptance": "pending",
+  "milestone": "PM2",
+  "baseline": "c1de1f1",
+  "scope": "完整修订PM2本机开发态交付；停在PM2验收点",
+  "commands": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "result": "passed",
+      "evidence": "760 passed; 128.40s; final capability contract included"
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check .",
+      "result": "passed",
+      "evidence": "All checks passed"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "result": "passed",
+      "evidence": "195 source files"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "evidence": "112 files; 833 tests passed; 48.21s; final generated types included"
+    },
+    {
+      "command": "npm run openapi:check",
+      "result": "passed",
+      "evidence": "generated contract matches"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed",
+      "evidence": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "evidence": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "evidence": "passed; existing Zod PURE annotation warnings"
+    },
+    {
+      "command": "npm run test:scripts",
+      "result": "passed",
+      "evidence": "21 passed"
+    },
+    {
+      "command": "npm run test:structure",
+      "result": "passed",
+      "evidence": "3 passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "realApplication": [
+    "docs/migration/project-data-directory-qa/run-3HOD1Y/result.json",
+    "docs/migration/pm2-detail-qa/run-Z9O6af/result.json",
+    "docs/migration/pm2-native-picker-qa/run-Lr9nj8/result.json",
+    "docs/migration/project-management-regression-qa/run-4K8zpg/built-html.json"
+  ],
+  "reviews": {
+    "specification": "passed; excel_services independent read-only final review",
+    "engineering": "passed; file_bridge editing recovery review and excel_services page review",
+    "targetedRecheck": "57 editing/page/mapping/status tests + 19 batch/selection tests; desktop typecheck",
+    "capabilityCorrection": "file_bridge independent specification and engineering review passed; project contract 5/5"
+  },
+  "resolvedIssues": [
+    "持久编辑请求在HTTP前写入恢复证据，原键查询；渲染重载丢ACK不重复新增",
+    "畸形恢复证据阻断写入；NaN/Infinity在JSON序列化前拒绝",
+    "以稳定工作区身份核对原操作；实例/作用域/客户端迟到响应撤权",
+    "记录冲突真实载入最新事实；旧代次记录禁止按相同键跳到新代次",
+    "脏编辑器/向导阻止后台静默切代；明确放弃后刷新",
+    "批状态终态刷新事实并清理旧版本选择；显式null清空仍提交",
+    "替换映射新增字段键与已有字段冲突提前提示，显式选择已有身份",
+    "200%记录弹窗失败为动画中间帧测量，脚本等待布局收敛，未改共享UI",
+    "项目目录和概览统一返回data=available，其余五项notImplemented；同步真实HTTP schema和唯一生成类型"
+  ],
+  "platforms": {
+    "macOS_arm64_development": "passed",
+    "Windows": "notExecuted",
+    "macOS_x64": "notExecuted",
+    "packaged": "notExecuted"
+  },
+  "limitations": [
+    "真实桌面导入/导出主流程注入系统面板选择结果；另独立使用实际macOS面板验证取消/文件选择授权，未手工完成native保存发布",
+    "文件写入失败、并发导出快照、发布边界进程故障和批块取消竞争由临时DB/文件自动测试覆盖；未用UI逐项注入全部故障",
+    "导出工作簿用openpyxl独立读取核对，未在Excel或WPS GUI中逐单元格验收",
+    "10000行本机开发态单次实测不是吞吐承诺",
+    "主线Studio M2未合并；后续集成需处理0006_workflow_runs与pm02迁移分叉",
+    "Sheets、工作流数据节点、真实任务占用、环境关联、字段/整表删除、生命周期未交付"
+  ],
+  "ownership": "用户确认原任务已结束后接管六处WIP；本任务只写实施工作区，主项目及其他工作区只读。历史报告保持历史范围。",
+  "commits": {
+    "pageAndRecovery": "7ad1033",
+    "realApplicationEvidence": "79230f0",
+    "dataCapability": "d05bbe1"
+  },
+  "staticVerification": {
+    "command": "node scripts/verify-pm2-delivery.mjs --require-complete",
+    "status": "passed",
+    "features": 48,
+    "acceptanceScenarios": 178,
+    "executionContracts": 18,
+    "capabilityGates": 7,
+    "pm2FirstUsableFeatures": 11,
+    "pm2FirstImplementedScenarios": 34,
+    "futureEntries": "unchanged against pre-finalization HEAD"
+  },
+  "readOnlyMainHead": "2b5365eedba96618176dc42ec8e945eb88219130",
+  "readOnlyMainNote": "主项目已继续推进Studio，并有其他任务未提交文件；本轮未合并、复制或修改。后续集成重新盘点最新迁移和能力，不能沿用旧HEAD假定。"
+}
