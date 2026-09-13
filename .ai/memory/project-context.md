@@ -55,3 +55,7 @@
 来源：`docs/project-management/design-alignment/`及完整prototype-alignment-design规格。confirmed：已看最新阅读集91张和同日候选2张，19历史排除；前轮20图审阅是历史记录，不再代表累计覆盖。顶部全局导航保留；目录卡片、独立记录详情/编辑、字段统一草稿为对齐方向。环境“删除影响预览”原图实际是完成页，不能替代预检。PM2已实现文件/批状态能力保留，字段删除仍未实现；当前外链桥仍需补。
 
 proposed：本轮完整规格尚未确认，6组补图未生成；参数定义归Studio/core、聚合字段提交及其有界回填预算是建议，不得当已批准能力。R1–R3纠偏可独立于参数裁定；R4/PM3须先裁定稳定参数身份/快照/覆盖并同步PM0 DTO。未知操作先查询由已批准PM1/PM2规则明确，本轮只勘误PM0旧文案，不改历史报告。没有新增业务实现或跨平台验证。
+
+## 对齐设计批准与执行计划（2026-09-13，confirmed）
+
+来源：用户“ok没问题，开始设计后续实施计划”及 `.ai/decisions/2026-09-13-project-alignment-design-approved.md`。4688353设计的推荐参数权威和有界聚合回填已确认，旧“待用户确认”当前状态superseded；缺图/业务实现不因此完成。已形成B0+R1/R2/R3三个切片计划，主入口`docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`。本轮仅文档；PM3保留工程准入，参数归属不再阻塞用户决策。

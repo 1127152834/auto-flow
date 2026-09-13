@@ -4,6 +4,7 @@
 - 状态：**paused / 原型对齐复审中，尚未开发；不能据此直接实施**。
 - 2026-09-13用户要求重新以指定图库和旧实现审查项目管理；随后确认保留顶部导航。见[对齐审查与纠偏建议](../../project-management/reviews/2026-09-13-prototype-alignment/README.md)。本文业务提案保留历史，不代表参数归属等新建议已获批准；后续需补旧自动化管理复用与逐画板验收。
 - 后续完整对齐规格见[项目管理原型对齐设计](2026-09-13-project-management-prototype-alignment-design.md)。本稿继续paused；R4/PM3恢复前须确认参数权威、稳定身份及快照/覆盖边界，先同步PM0 DTO，并重新核验最新主线能力。
+- 2026-09-13后续确认：用户已批准完整对齐规格及参数定义归Studio/core方案，见[批准记录](../../../.ai/decisions/2026-09-13-project-alignment-design-approved.md)。旧“参数归属待用户裁定”状态已被本条替代；DTO勘误、真实核心能力与迁移汇合尚未完成，所以开发仍paused。
 - 依据：用户“继续完成pm3，先设计再开发”；已确认完整设计906deda、PM0提交9c361f4，以及[完整里程碑计划](../plans/2026-09-13-project-management-milestones.md)的PM3。
 - 项目实施基线：`codex/project-management-implementation@d02dde4`，工作区干净；PM2本机交付见[核验报告](../../project-management/implementation/pm2-verification.json)。用户继续PM3作为阶段推进授权，不改写PM2历史平台证据。
 - 核心参考基线：主项目正式提交`2b5365e`，通过`git show`读取；主目录有Studio/debug等其他任务WIP，不能复制为交付依赖。本设计不修改业务代码、主目录或其WIP。

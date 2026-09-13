@@ -1,7 +1,7 @@
 # 项目管理完整原型对齐设计
 
 - 日期：2026-09-13。
-- 状态：**proposed / 待用户确认**。顶部导航已确认；本轮完成图像审阅和设计规格，没有实施页面。
+- 当前状态：**设计已获用户确认；实施计划已编写，业务未开始**。批准依据见[决策记录](../../../.ai/decisions/2026-09-13-project-alignment-design-approved.md)，实施入口见[总计划](../../superpowers/plans/2026-09-13-project-management-alignment-implementation.md)。本目录其余proposed与历史核验记录保留原成稿语境，6组缺图仍未生成。
 - 工作区：`autoflow-project-management-implementation`，基线 `88efe07`。主项目图库与旧仓只读。
 
 先读[完整设计规格](../../superpowers/specs/2026-09-13-project-management-prototype-alignment-design.md)，其中包含页面结构、路由、草稿、状态、恢复、组件落点和分阶段验收边界。前轮[7组应用对照报告](../reviews/2026-09-13-prototype-alignment/README.md)说明已经确认的实现偏差，本轮不以新增源码测试替代视觉验收。
@@ -36,3 +36,7 @@
 - 上一轮20张图审阅报告、PM0/PM1/PM2机器报告均保留为历史证据；新增93张覆盖记录在本目录，不改写旧报告。
 - 本轮没有业务开发、业务测试、新的应用运行截图或Windows验收。已知PM2功能通过不等于原型视觉通过。
 - 本规格确认后编写R1–R3详细实施卡、补图并逐包纠偏；完成相关纠偏和真实核心依赖核对后恢复PM3。当前PM3保持暂停。
+
+## 已确认设计后的实施计划
+
+[总计划](../../superpowers/plans/2026-09-13-project-management-alignment-implementation.md)拆成R1页面与目录、R2记录整页与恢复、R3聚合字段与完整数据回归，共18项实施任务；B0先补对应图稿，G1定义恢复PM3的工程门槛。文件责任/来源映射见[机器索引](implementation-plan-index.json)，计划自审见[审查记录](implementation-plan-review.md)，只读及静态结果见[计划核验](implementation-plan-verification.json)。本轮未开始业务实现。

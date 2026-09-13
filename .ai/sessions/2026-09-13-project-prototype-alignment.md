@@ -15,3 +15,11 @@
 - 旧代码按324748a读取，当前主线能力观察固定c657073b，不把Studio WIP当已交付依赖。主项目及旧项目只读；历史未跟踪QA目录保留原样。
 - 设计状态proposed：尚未生成6组缺失高保真画板，尚未开始业务代码；参数权威和字段聚合提交需确认。PM3仍paused；确认后先writing-plans细化纠偏切片。
 - 独立审查闭合与静态核验见design-alignment/review-resolution.md和verification.json。验证只涉及图像哈希、ID、链接、JSON与文档diff，不声称业务/Windows通过。
+
+## 用户确认后编写实施计划
+
+- 用户批准完整规格，参数归属和有界回填取舍不再重复确认；本轮只编写B0、R1–R3与G1准入计划。
+- 实际实施HEAD4688353、主线只读HEAD25273d5、旧仓324748a；只读alembic核对head为pm02_excel_exports。
+- 代码盘点补清：Modal已有drawer，Popover没有；impactRevision是DataImpactRow身份，聚合需独立数据变更守卫；UUID恢复前端校验有补齐用例。
+- 计划包含失败反例、文件责任、接口形状、迁移/事务、原型ID、命令及真实验收。参数PM0 DTO修订和主线迁移汇合仍是恢复PM3的工程门槛。
+- 本轮未跑业务测试/未启动应用/未生成原型图；计划核验结果单独记录，不覆盖旧图像/业务报告。

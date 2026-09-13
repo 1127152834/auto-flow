@@ -1,0 +1,1508 @@
+{
+  "date": "2026-09-13",
+  "status": "plan-only-not-implementation",
+  "baseline": "4688353be07e06d08aa2319c3195086983768ad0",
+  "tasks": [
+    {
+      "id": "R1-01",
+      "title": "项目和对象页头",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "stepCount": 4,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectTabs.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.test.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "B0"
+      ]
+    },
+    {
+      "id": "R1-02",
+      "title": "最近卡片与全部目录",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/hooks.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/projects/components/ProjectCard.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R1-01"
+      ]
+    },
+    {
+      "id": "R1-03",
+      "title": "补Popover，复用现有浮层宿主",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "stepCount": 4,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/package.json"
+        },
+        {
+          "action": "Modify",
+          "path": "package-lock.json"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/popover.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/popover.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/overlay-host.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/select-radix.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/shared/components/ui/dialog.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "B0"
+      ]
+    },
+    {
+      "id": "R1-04",
+      "title": "数据卡片与按需查询工具",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableDirectory.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFilterEditor.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R1-01",
+        "R1-03"
+      ]
+    },
+    {
+      "id": "R1-05",
+      "title": "反馈去重与R1验收",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "stepCount": 4,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/components/Toaster.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/components/Toaster.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r1/README.md"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r1/verification.json"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R1-02",
+        "R1-04"
+      ]
+    },
+    {
+      "id": "R2-01",
+      "title": "规范键编码与路由",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-route.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-route.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/types.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/records-api.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/records-api.test.ts"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "B0"
+      ]
+    },
+    {
+      "id": "R2-02",
+      "title": "表单内容从Modal中提取",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.test.tsx"
+        },
+        {
+          "action": "Read",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-draft.ts"
+        },
+        {
+          "action": "Read",
+          "path": "apps/desktop/src/renderer/domains/project-data/scalar-draft.ts"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "B0"
+      ]
+    },
+    {
+      "id": "R2-03",
+      "title": "记录详情与编辑页面装配",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "stepCount": 6,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordDetailPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordEditPage.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R1-05",
+        "R2-01",
+        "R2-02"
+      ]
+    },
+    {
+      "id": "R2-04",
+      "title": "受控外链桥",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/shared/external-links.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/main/ipc/external-links.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/main/ipc/external-links.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/main/index.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/main/index.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/preload/index.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/preload/index.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/api/types.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R2-03"
+      ]
+    },
+    {
+      "id": "R2-05",
+      "title": "返回、草稿与恢复完整回归",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "stepCount": 6,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/app/navigation.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/record-return-state.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-project-data.mjs"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R2-03",
+        "R2-04"
+      ]
+    },
+    {
+      "id": "R3-01",
+      "title": "冻结聚合DTO与失败语义",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_schema_schemas.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/domain/project_data/schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/unit/test_project_data_schema.py"
+        },
+        {
+          "action": "Modify",
+          "path": "docs/project-management/implementation/api-contracts.md"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "B0"
+      ]
+    },
+    {
+      "id": "R3-02",
+      "title": "守卫迁移与预览证据",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 8,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_models.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm02_schema_drafts.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_migration.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_preview.py"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-01"
+      ]
+    },
+    {
+      "id": "R3-03",
+      "title": "原子提交与幂等恢复",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 7,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/application/project_data/schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/test_project_data_schema_commit.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/project_data_catalog.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/project_data_impacts.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/projects.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/integration/domain/projects/models.py"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-02"
+      ]
+    },
+    {
+      "id": "R3-04",
+      "title": "HTTP装配、生成类型与前端命令",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 6,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/contract/test_project_data_schema.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-api.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-api.test.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/bootstrap/app.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_schemas.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/shared/api/generated.ts"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-03"
+      ]
+    },
+    {
+      "id": "R3-05",
+      "title": "真实状态引用投影",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 5,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/application/project_data/catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/domain/project_data/catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/infrastructure/database/project_data_catalog.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/backend/src/autoflow/adapters/http/project_data_catalog_schemas.py"
+        },
+        {
+          "action": "Create",
+          "path": "apps/backend/tests/contract/test_project_data_status_usage.py"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.ts"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/catalog-api.test.ts"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-02",
+        "R3-04"
+      ]
+    },
+    {
+      "id": "R3-06",
+      "title": "字段表格、Drawer与整体草稿",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 7,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/schema-draft.test.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.ts"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/use-schema-draft.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaFieldDrawer.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/SchemaImpactDrawer.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/FieldEditorDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R2-05",
+        "R3-04"
+      ]
+    },
+    {
+      "id": "R3-07",
+      "title": "状态、来源、设置和文件/批状态画板接入",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 6,
+      "files": [
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.test.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.tsx"
+        },
+        {
+          "action": "Create",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/TableSettingsForm.test.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelImportWizard.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/ExcelExportDialog.tsx"
+        },
+        {
+          "action": "Modify",
+          "path": "apps/desktop/src/renderer/domains/project-data/components/RecordStatusBatchDialog.tsx"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-05",
+        "R3-06"
+      ]
+    },
+    {
+      "id": "R3-08",
+      "title": "故障、性能与全模块退出",
+      "plan": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "stepCount": 6,
+      "files": [
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-project-data.mjs"
+        },
+        {
+          "action": "Modify",
+          "path": "scripts/smoke-pm2-detail-flows.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/smoke-project-alignment.mjs"
+        },
+        {
+          "action": "Create",
+          "path": "scripts/measure-schema-commit.py"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r3/README.md"
+        },
+        {
+          "action": "Create",
+          "path": "docs/project-management/design-alignment/acceptance/r3/verification.json"
+        },
+        {
+          "action": "Modify",
+          "path": "docs/PROJECT_STRUCTURE.md"
+        }
+      ],
+      "status": "notStarted",
+      "evidence": {
+        "automatic": null,
+        "electron": null,
+        "windows": null
+      },
+      "dependsOn": [
+        "R3-07"
+      ]
+    }
+  ],
+  "sourceCoverage": [
+    {
+      "id": "PMUI-b0f8a7e37858",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-0abed164d263",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-3b3e7f19d784",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-57f2c715e8e3",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-20a9a703fa18",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-1af273f703b9",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-1f4f1ec24e0a",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6e270723b6f4",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-01b3a6f6aef7",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-98375cc235a1",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-dc2bfc41368c",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-3df851823455",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-503f2214106d",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-83b10b064f66",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-00c31ca3bf0d",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-3f90c71cb67e",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-2c41533b7561",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-5777b7aff7b5",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-2f7ea6eb13fa",
+      "target": "excluded-history",
+      "detailSource": null,
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-5238b479f001",
+      "target": "R1-02",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-cd10948e1923",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b960a779ac4f",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-734910769df0",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-c2947aa44aa7",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-e8dc42b85f0e",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6d99f9db578a",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-cae7e1c3cb38",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-7d3ff7ccac9d",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-bfd624d1cf4d",
+      "target": "R1-01/PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-a4520177a6d5",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-7bda3913caea",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-79f558a4954d",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-54c9040c9b1e",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-eb1bd069a3ca",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-695f71d9b872",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8f42cb699f7b",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-95c1cb5850e9",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b0e31b952e74",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-46a6a4f5d0b5",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6939c71803c5",
+      "target": "G1/PM3/PM8",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-2cd367411306",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-9a81f19297bf",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-09ab4db96ce3",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-459f2512d622",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-510347fcb949",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-7af0aa5dbf06",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-559ddf21e9c4",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d5f491b409df",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-cfe619a5fc06",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-7c122b5f3cb6",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-a916def01912",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8f158b0e642b",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b84d0ee17963",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-28344b2ccafd",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-e79f810a29f4",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-00d61e05c305",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d5287cb18c62",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-85b8b563e5b4",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-919ab528c908",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-98016b070643",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-f523b7905fd4",
+      "target": "PM3/PM4/PM5/PM7",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-14eafdf1b443",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-eaef3ad61726",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-9160590b9793",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6704bb14fe85",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-ba31478a35ac",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-2a8897564195",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-00b0dbc56af2",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-e9114406e7a0",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-dde8efe76b2d",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8036c5ce20b2",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b18988a89e35",
+      "target": "PM7",
+      "detailSource": "overview-automation-statistics.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-ca940d758b68",
+      "target": "R1-04/R3-07",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-c496e3859302",
+      "target": "R1-04/R3-07",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d3f6c5774ec4",
+      "target": "R2-01..R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-72de4a568a24",
+      "target": "R2-01..R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-421c549596d2",
+      "target": "R2-01..R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-94895605c22f",
+      "target": "R2-01..R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-76a0e5a3361b",
+      "target": "R2-01..R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-378eb24a5f9c",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-c3de19602511",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d59f5568efae",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8e6927321b98",
+      "target": "PM6",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-cf611c443491",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d81799ae026b",
+      "target": "excluded-external-sqlite-source",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-070d7f52a4ae",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-2b8a64ed274c",
+      "target": "PM8",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-73d061eba024",
+      "target": "R1-04/R3-07",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6729305d756d",
+      "target": "R1-04/R3-07",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-eb086d4107db",
+      "target": "R3-01..R3-08",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d6ac8c03659a",
+      "target": "PM6",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-f757d2d1a115",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-9ff896ee6a9f",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-3a0ed24d0238",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-9f9960189c44",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-70a735e4d748",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-4455876cef6d",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b6a666548c7a",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8598c1dcd25f",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-47ae56bb3331",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-8eb31da6c89c",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-ea61357bb97a",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-3a2ef6f57afe",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b15079893dbc",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b144be36f3ca",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-eaa49aead521",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-da12148a156c",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6a82d660e25b",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6c0606a45f0f",
+      "target": "G1/PM3/PM5/PM8",
+      "detailSource": "runs-environments.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-b3bf4542690d",
+      "target": "R1-01/R1-03/R1-05/R2-05",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-6fd26487657c",
+      "target": "alternative-not-recommended-layout",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    },
+    {
+      "id": "PMUI-d7724054d211",
+      "target": "PM4",
+      "detailSource": "projects-data-shared.md",
+      "businessEvidence": null
+    }
+  ],
+  "specSections": {
+    "1": "B0",
+    "2": "R1-01/R1-03/R1-05",
+    "3": "R1/R2/R3 + G1 + PM4–PM9",
+    "4": "R2-01/R2-05",
+    "5": "R2-02/R2-05/R3-04/R3-06",
+    "6": "R1-04/R2/R3",
+    "7": "G1",
+    "8": "G1/PM3–PM8 (unchanged contracts)",
+    "9": "B0/G1/PM8",
+    "10": "all task file responsibility rows",
+    "11": "R1-05/R2-05/R3-08"
+  }
+}

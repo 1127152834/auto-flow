@@ -351,3 +351,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `docs/project-management/design-alignment/`保存全模块逐图事实、自动化四页签旧实现补充、93张审阅/112张来源覆盖、独立审查与仅文档核验脚本；不含新业务原型代码。完整目标规格为`docs/superpowers/specs/2026-09-13-project-management-prototype-alignment-design.md`，现状顶部导航为已确认约束，新增聚合字段合同和参数权威仍待设计确认。
 
 前一轮`docs/project-management/reviews/2026-09-13-prototype-alignment/`的20图审阅及7组应用截图保留历史范围。本轮没有修改页面、数据库或Studio。PM3继续暂停；恢复前需参数身份/覆盖合同裁定及主线能力与迁移分叉核验。
+
+### 原型纠偏实施计划（2026-09-13，planned）
+
+`docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`统筹B0图稿与R1–R3独立切片，三个同日前缀r1/r2/r3计划分别定义页面层级、记录路由编辑、字段聚合与数据回归。批准依据在`.ai/decisions/2026-09-13-project-alignment-design-approved.md`；旧“设计待确认”当前描述由此替代，业务代码尚未开始。Popover为计划新增，Drawer已由Modal placement提供；聚合schema/守卫迁移/状态引用为计划目标，不算已存在目录能力。
