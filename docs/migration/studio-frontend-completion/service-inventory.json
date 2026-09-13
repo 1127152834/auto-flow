@@ -1988,8 +1988,8 @@
           "call": "localWorkflowApi.getDefaultFolder()"
         },
         {
-          "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 32,
+          "file": "apps/desktop/src/renderer/domains/workflows/development/StudioMockTools.tsx",
+          "line": 16,
           "source": null,
           "call": "localWorkflowApi.getDefaultFolder()"
         }
@@ -4093,7 +4093,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 25,
+          "line": 19,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -5614,7 +5614,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/transport.ts",
-          "line": 16,
+          "line": 17,
           "source": null,
           "via": "CustomEvent",
           "call": "new CustomEvent('studio:connection-error')"

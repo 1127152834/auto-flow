@@ -1,3 +1,4 @@
+import { File as NodeFile, Blob as NodeBlob } from 'node:buffer'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { parseServerSentEvents } from '../../../shared/api/events'
 import { startHttpStudioFixture } from './fixtures/http-studio-server'
@@ -8,6 +9,9 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
   let request: (path: string, init?: RequestInit) => Promise<Response>
   const aborts: AbortController[] = []
   beforeEach(async () => {
+    // The HTTP parser uses Node Web API files; jsdom File is a different realm.
+    vi.stubGlobal('File', NodeFile)
+    vi.stubGlobal('Blob', NodeBlob)
     const data = new Map<string, string>()
     vi.stubGlobal('localStorage', { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => data.set(key, value), removeItem: (key: string) => data.delete(key) })
     vi.resetModules()
@@ -45,6 +49,25 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     expect(await (await request(`/scheduled-tasks/${task.id}/logs`)).json()).toEqual([])
     expect((await request(`/scheduled-tasks/${task.id}`, { method: 'DELETE' })).ok).toBe(true)
     expect(await (await request('/scheduled-tasks/list')).json()).toEqual([])
+  })
+  it('preserves multipart binary bytes and Unicode filenames over the actual upload contract', async () => {
+    const boundary = 'autoflow-test-boundary'
+    const bytes = Uint8Array.from({ length: 70000 }, (_, i) => i % 256)
+    const encoder = new TextEncoder()
+    const head = encoder.encode(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="测试.bin"\r\nContent-Type: application/octet-stream\r\n\r\n`)
+    const tail = encoder.encode(`\r\n--${boundary}--\r\n`)
+    const payload = new Uint8Array(head.length + bytes.length + tail.length)
+    payload.set(head); payload.set(bytes, head.length); payload.set(tail, head.length + bytes.length)
+    const response = await request('/image-assets/upload', { method: 'POST', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: payload })
+    expect(response.status, await response.clone().text()).toBe(200)
+    const asset = await response.json()
+    expect(asset.name).toBe('测试.bin')
+    expect(asset.size).toBe(bytes.length)
+    const decoded = Uint8Array.from(atob(asset.dataUrl.split(',')[1]), c => c.charCodeAt(0))
+    expect(decoded).toEqual(bytes)
+    expect(await (await request('/image-assets')).json()).toHaveLength(1)
+    expect((await request('/image-assets/upload', { method: 'POST', headers: { 'content-type': 'multipart/form-data' }, body: 'broken' })).status).toBe(400)
+    expect(await (await request('/image-assets')).json()).toHaveLength(1)
   })
   it('keeps command identity stable across retries and rejects changed payloads', async () => {
     const command = { commandId: 'stable', event: 'set_verbose_log', data: { enabled: true } }

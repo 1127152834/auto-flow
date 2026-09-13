@@ -16,3 +16,12 @@ transport-parity.test.ts 使用同一组断言分别运行 memory/http：
 运行：npm test --workspace @autoflow/desktop -- src/renderer/domains/workflows/tests/transport-parity.test.ts。8 项通过（4 个场景×2 个传输），证据记录到本批全量测试输出。
 
 目前只验证 JSON 命令和 SSE；multipart、鉴权/权限、启动响应丢失查询、真实工作区、全部 API 语义、持久历史及正式 Electron 主链未因此通过。服务器仅为测试夹具，不能作为生产后端。
+
+## F1 传输跟进
+
+- HTTP 夹具现在保留原请求头和二进制 body，以 Request 交给相同处理器；不再先将上传字节解码为 UTF-8。
+- mockRequest 支持 Request/URL 两种输入、JSON 对象、multipart 与 Request.signal。主动取消不会显示连接故障。
+- HTTP-UPLOAD-001.memory/http：构造 70,000 字节（含 0–255）、中文文件名的 multipart；上传后逐字节核对 dataUrl、size、name；损坏 boundary 返回400且库不变。此用例验证二进制协议，不声称该测试二进制是可解码图片。
+- HTTP 解析使用 Node Web API File；测试显式替换 jsdom 的不同 File realm。首次原生解析失败来自测试环境类型混用，修复后没有放宽字节断言。
+- 现有六组协议分别运行 memory/http，共12项通过；全量90文件、1,097项通过。鉴权、全量合同和原生Electron仍待后续。
+- Mock 场景控制迁到 workflows/development/StudioMockTools，由 studio.tsx 明确装配；StudioApp 不再直接导入 Mock 服务。当前 transport 的默认 Mock 和固定服务地址仍需后续正式连接装配，不宣称生产链路已完成切换。

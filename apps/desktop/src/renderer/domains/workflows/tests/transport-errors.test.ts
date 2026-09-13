@@ -13,6 +13,8 @@ it('notifies for each network failure including direct callers, but not intentio
     controller.abort()
     await expect(studioFetch('/save', { signal: controller.signal })).rejects.toThrow()
     expect(listener).toHaveBeenCalledTimes(2)
+    await expect(studioFetch(new Request('http://autoflow-studio.mock/save', { signal: controller.signal }))).rejects.toThrow()
+    expect(listener).toHaveBeenCalledTimes(2)
   } finally { restore(); window.removeEventListener('studio:connection-error', listener) }
 })
 

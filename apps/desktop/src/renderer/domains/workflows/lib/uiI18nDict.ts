@@ -4155,3 +4155,14 @@ Object.assign(PHRASES, { '模块不存在或已排除：': 'Unknown or excluded 
 
 Object.assign(PHRASES, { '该媒体节点已排除，不支持执行': 'This media node is excluded and cannot run' })
 Object.assign(PHRASES, { '自愈固化': 'Persist selector healing' })
+Object.assign(PHRASES, {
+  '已发送 Mock 场景': 'Mock scenario sent',
+  '· 浏览器、运行、录制为模拟事件，未执行真实网页操作': '· Browser, runs and recording are simulated; no real web actions are performed',
+  '断开 SSE 并补读': 'Disconnect SSE and replay',
+  '服务离线': 'Take service offline',
+  '下次保存失败': 'Fail next save',
+  '下次节点失败': 'Fail next node',
+  '拾取：提交元素': 'Picker: submit element',
+  '请求不是合法 JSON 对象': 'Request is not a valid JSON object',
+  '请求不是合法 JSON 或 multipart 数据': 'Request is not valid JSON or multipart data',
+})

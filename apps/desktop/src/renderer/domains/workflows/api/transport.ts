@@ -12,7 +12,8 @@ export const studioFetch: StudioTransport = async (input, init) => {
   try {
     return await transport(input, init)
   } catch (error) {
-    if (!init?.signal?.aborted && error instanceof TypeError && /fetch|network/i.test(error.message)) {
+    const signal = init?.signal ?? (input instanceof Request ? input.signal : undefined)
+    if (!signal?.aborted && error instanceof TypeError && /fetch|network/i.test(error.message)) {
       window.dispatchEvent(new CustomEvent('studio:connection-error'))
     }
     throw error

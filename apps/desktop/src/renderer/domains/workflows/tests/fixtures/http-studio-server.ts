@@ -15,10 +15,12 @@ export async function startHttpStudioFixture(handler: StudioTransport) {
       if (!request.url?.startsWith('/api/')) { response.writeHead(404).end(); return }
       const chunks: Buffer[] = []
       for await (const chunk of request) chunks.push(Buffer.from(chunk))
-      const body = Buffer.concat(chunks).toString('utf8')
-      const result = await handler(`http://autoflow-studio.mock${request.url}`, {
-        method: request.method, ...(body ? { body } : {}), signal: abort.signal,
-      })
+      const bytes = Buffer.concat(chunks)
+      const headers = new Headers()
+      for (const [key, value] of Object.entries(request.headers)) if (value !== undefined) headers.set(key, Array.isArray(value) ? value.join(', ') : value)
+      const result = await handler(new Request(`http://autoflow-studio.mock${request.url}`, {
+        method: request.method, headers, ...(bytes.length ? { body: bytes } : {}), signal: abort.signal,
+      }))
       response.writeHead(result.status, Object.fromEntries(result.headers.entries()))
       response.flushHeaders()
       if (!result.body) { response.end(); return }

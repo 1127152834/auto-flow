@@ -31,9 +31,14 @@ export async function mockAssetRequest(path: string, method: string, params: URL
   }
   if (action === 'upload') {
     const file=form?.get('file')
-    if (!(file instanceof Blob)) return json({success:false,error:'请选择文件'},400)
+    if (!file || typeof file === 'string') return json({success:false,error:'请选择文件'},400)
     if (file.size > 2 * 1024 * 1024) return json({success:false,error:'Mock 单文件上限 2 MiB；真实后端接入后使用文件存储'},413)
-    const dataUrl = await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)})
+    const dataUrl = typeof file.arrayBuffer === 'function' ? await (async () => {
+      const bytes = new Uint8Array(await file.arrayBuffer())
+      let binary = ''
+      for (let offset = 0; offset < bytes.length; offset += 32768) binary += String.fromCharCode(...bytes.subarray(offset, offset + 32768))
+      return `data:${file.type || 'application/octet-stream'};base64,${btoa(binary)}`
+    })() : await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)})
     const id=crypto.randomUUID(),name=(file as File).name || id
     const asset={id,name,originalName:name,filename:name,folder:String(form?.get('folder') || ''),path:dataUrl,url:dataUrl,dataUrl,size:file.size,createdAt:new Date().toISOString(),uploadedAt:new Date().toISOString(),extension:name.split('.').at(-1) || ''}
     library.assets.push(asset);save(kind,library);return json(asset)

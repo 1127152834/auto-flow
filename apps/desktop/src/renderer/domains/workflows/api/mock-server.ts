@@ -138,22 +138,34 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         return response({ success: true, workflowId: id, mock: true })
 }
 export async function mockRequest(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
-  if (init.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+  const signal = init.signal ?? (input instanceof Request ? input.signal : undefined)
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   if (offline) throw new TypeError('Mock network offline')
   const target = new URL(input instanceof Request ? input.url : String(input), 'http://autoflow-studio.mock')
   if (target.hostname !== 'autoflow-studio.mock') return failure('Mock 模式禁止访问外部服务', 403)
   const path = decodeURIComponent(target.pathname.replace(/^\/api/, ''))
   const method = init.method ?? (input instanceof Request ? input.method : 'GET')
   let body: ObjectValue = {}
-  if (typeof init.body === 'string' && init.body) {
-    try { body = JSON.parse(init.body) } catch { return failure('请求不是合法 JSON') }
-  }
+  let form: FormData | undefined
   try {
-    const assetResult = await mockAssetRequest(path, method, target.searchParams, body, init.body instanceof FormData ? init.body : undefined)
+    const raw = init.body ?? (input instanceof Request && input.body ? new Uint8Array(await input.clone().arrayBuffer()) : undefined)
+    const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined))
+    if (raw instanceof FormData) form = raw
+    else if (headers.get('content-type')?.includes('multipart/form-data')) {
+      form = await new Response(raw, { headers }).formData()
+    } else if ((typeof raw === 'string' && raw) || raw instanceof Uint8Array) {
+      const parsed: unknown = JSON.parse(typeof raw === 'string' ? raw : new TextDecoder().decode(raw))
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return failure('请求不是合法 JSON 对象')
+      body = parsed as ObjectValue
+    }
+  } catch { return failure('请求不是合法 JSON 或 multipart 数据') }
+  if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+  try {
+    const assetResult = await mockAssetRequest(path, method, target.searchParams, body, form)
     if (assetResult) return assetResult
     const settingsResult = mockSettingsRequest(path, method, body)
     if (settingsResult) return settingsResult
-    const assistantResult = await mockAssistantRequest(path,method,body,init.signal,emitMockEvent)
+    const assistantResult = await mockAssistantRequest(path,method,body,signal,emitMockEvent)
     if (assistantResult) return assistantResult
     // Another preview/renderer may have saved since this module was loaded.
     db = readDatabase()
@@ -168,7 +180,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       },
     })
     if (scheduledResult) return scheduledResult
-    if (path === '/events/stream') return streamResponse(Number(target.searchParams.get('afterSeq') || 0), init.signal)
+    if (path === '/events/stream') return streamResponse(Number(target.searchParams.get('afterSeq') || 0), signal)
     if (path === '/events/commands') {
       const id = String(body.commandId)
       const fingerprint = JSON.stringify(body)
