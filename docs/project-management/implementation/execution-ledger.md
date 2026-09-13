@@ -1,6 +1,6 @@
 # 项目管理执行账本
 
-- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered；用户已授权持续实施，PM2 inProgress，PM3–PM9 planned。
+- 日期：2026-09-13；状态：PM0 accepted（用户授权PM1）；PM1 delivered；本轮用户授权仅执行至PM2验收点，PM2 inProgress，PM3–PM9 planned。
 - 规格：[完整设计](../design/README.md)；[总里程碑](../../superpowers/plans/2026-09-13-project-management-milestones.md)；[PM0执行卡](../../superpowers/plans/2026-09-13-project-management-pm0.md)。
 - 机器映射：[coverage.json](coverage.json)；领域/传输：[contracts.md](contracts.md)、[api-contracts.md](api-contracts.md)；合成样例：[fixtures.json](fixtures.json)。
 
@@ -161,3 +161,14 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 - C1g/C2a组件由pm2_excel_adapter_impl、目录与App由主协调、C2b由pm2_excel_adapter_impl完成；pm2_rules_spec_review独立审查并闭合4个作用域/竞争探针。
 - 719后端、606前端，macOS arm64真实目录和既有模块回归证据见pm2-directory-deletions-verification.json。仅DT-01/02/10/12对应子范围登记部分证据，不提升完整验收。
 - 下一责任：C2c共享命令准入/编辑器/页面、A2h批状态、B2文件发布；PM2退出条件不变。
+
+## PM2 修订交付检查点（2026-09-13）
+
+- 后台提交 `32e424e`：批量状态、受控检查、隐藏分段导入/替换、快照导出与核验；[后台核验](pm2-backend-verification.json)记录759项全量测试。
+- [前端核验](pm2-frontend-verification.json)：803项全量测试，目录新表导入真实Electron通过；重新导入、导出、批量状态组件与选择工具已准备，尚未接入原任务负责的详情页。
+- [一万行测量](pm2-data-volume-verification.json)是后台与真实文件实测，不代表大表界面性能。
+- [修订包状态](pm2-revised-delivery.json)保持inProgress，静态核验11项首次可用功能及34项首次实施验收编号；不改变完整规格的48/178/18/7编号集合。
+- 原编辑任务仍在进行；六个原WIP文件哈希与起点一致，未由本任务提交。全量lint仅在原任务测试文件的未使用参数处失败。
+- [页面接入清单](pm2-page-integration-handoff.md)列出依赖、真实消费者和仍需执行的验收。当前不是PM2完整交付，未进入PM3。
+
+本轮独立提交：`32e424e`后台，`a9c0b75`批量选择/状态组件，`747395b`Excel组件与目录真实导入。原任务六处文件未提交；SHA-256保护核对见docs/project-management/implementation/pm2-worktree-isolation.json。等待原编辑任务提交后，按pm2-page-integration-handoff.md继续详情页接入和完整验收。

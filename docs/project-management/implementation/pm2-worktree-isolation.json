@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-13",
+  "verifiedAt": "2026-09-13T03:30:12.017828+00:00",
+  "status": "passedForProtectedFiles",
+  "originalTask": "active per user confirmation; awaiting its own commit",
+  "checks": [
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "sha256": "0c44df9575a4046e728bf5e0e39ebb8aa59a02a90ac84aa15b1a125451db7766",
+      "matchesStart": true,
+      "committedByThisTask": false
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "sha256": "6b5c10aa52d82636ad02fe4784c53f3dc0b4a998a21ba4646de991cc0f38bb1a",
+      "matchesStart": true,
+      "committedByThisTask": false
+    },
+    {
+      "path": "scripts/smoke-project-data.mjs",
+      "sha256": "61391bc6622b3c84170ede242ae47a0b1feb24b1e9e5fea712f9aa4dff354452",
+      "matchesStart": true,
+      "committedByThisTask": false
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx",
+      "sha256": "8700b76763c8da3fdaee1f3b5fd66f4cc3128e9ad5a8a82b710f00401b62797f",
+      "matchesStart": true,
+      "committedByThisTask": false
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts",
+      "sha256": "d64314a569f42762316b1eb03678bd8ee72f1f337de7abb7808920873d0976be",
+      "matchesStart": true,
+      "committedByThisTask": false
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-data-bulk-status.md",
+      "sha256": "bd3f4b27f5fab067db5282404575921dc2a7ca99d0371c9add7591b6275b92f0",
+      "matchesStart": true,
+      "committedByThisTask": false
+    }
+  ],
+  "mainProjectPolicy": "Read-only throughout this task; no merge into main",
+  "completePm2": "notAccepted"
+}

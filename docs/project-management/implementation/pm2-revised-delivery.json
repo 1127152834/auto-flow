@@ -1,0 +1,140 @@
+{
+  "date": "2026-09-13",
+  "status": "inProgress",
+  "coverage": "docs/project-management/implementation/coverage.json",
+  "featureIds": [
+    "OV-03",
+    "DT-01",
+    "DT-02",
+    "DT-03",
+    "DT-04",
+    "DT-05",
+    "DT-06",
+    "DT-07",
+    "DT-10",
+    "DT-12",
+    "DT-13"
+  ],
+  "acceptanceIds": [
+    "DATA-ID-01",
+    "DATA-ID-02",
+    "DATA-ID-03",
+    "DATA-ID-04",
+    "DATA-OBJ-01",
+    "DATA-OBJ-02",
+    "DATA-STATE-01",
+    "DATA-STATE-02",
+    "DATA-STATE-03",
+    "DATA-STATE-04",
+    "DATA-STATE-05",
+    "DATA-STATE-06",
+    "DATA-STATE-07",
+    "DATA-STATE-08",
+    "DATA-TABLE-01",
+    "DATA-TABLE-02",
+    "DATA-TABLE-03",
+    "DATA-TABLE-04",
+    "DATA-TABLE-05",
+    "DATA-TABLE-06",
+    "DATA-TABLE-07",
+    "DATA-TABLE-08",
+    "DATA-VER-01",
+    "DATA-VER-02",
+    "DATA-WRITE-01",
+    "DATA-WRITE-03",
+    "DATA-WRITE-07",
+    "DATA-XLS-01",
+    "DATA-XLS-02",
+    "DATA-XLS-03",
+    "DATA-XLS-04",
+    "DATA-XLS-05",
+    "DATA-XLS-06",
+    "DATA-XLS-07"
+  ],
+  "packages": [
+    {
+      "id": "P0",
+      "status": "verified",
+      "files": [
+        "docs/superpowers/plans/2026-09-13-project-management-pm2.md"
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm2-revision-baseline.json"
+      ]
+    },
+    {
+      "id": "P1",
+      "status": "waitingForOwnerCommit",
+      "files": [
+        "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "P2",
+      "status": "awaitingIntegration",
+      "files": [
+        "apps/backend/src/autoflow/application/project_data/status_batches.py"
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm2-backend-verification.json",
+        "docs/project-management/implementation/pm2-frontend-verification.json"
+      ]
+    },
+    {
+      "id": "P3",
+      "status": "awaitingIntegration",
+      "files": [
+        "apps/backend/src/autoflow/application/project_data/excel_import.py"
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm2-file-bridge-verification.json",
+        "docs/project-management/implementation/pm2-backend-verification.json",
+        "docs/project-management/implementation/pm2-frontend-verification.json",
+        "docs/migration/pm2-excel-qa/run-BHSroO/result.json"
+      ]
+    },
+    {
+      "id": "P4",
+      "status": "awaitingIntegration",
+      "files": [
+        "apps/backend/src/autoflow/application/project_data/excel_export.py"
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm2-export-publication-verification.json",
+        "docs/project-management/implementation/pm2-backend-verification.json",
+        "docs/project-management/implementation/pm2-data-volume-verification.json"
+      ]
+    },
+    {
+      "id": "P5",
+      "status": "awaitingIntegration",
+      "files": [
+        "docs/superpowers/plans/2026-09-13-project-management-pm2.md"
+      ],
+      "evidence": [
+        "docs/project-management/implementation/pm2-frontend-verification.json"
+      ]
+    }
+  ],
+  "realApplication": {
+    "status": "partialPassed",
+    "evidence": [
+      "docs/migration/pm2-excel-qa/run-BHSroO/result.json"
+    ],
+    "scope": "directory Excel create only; complete PM2 application acceptance pending"
+  },
+  "platforms": {
+    "macOS_arm64": "partialPassed",
+    "Windows": "notExecuted",
+    "packaged": "notExecuted"
+  },
+  "commits": {
+    "baseline": "5e254a6",
+    "desktopFileBridge": "7e46835",
+    "filePublication": "6b794ce",
+    "backend": "32e424e",
+    "batchControls": "a9c0b75",
+    "excelUiAndDirectory": "747395b"
+  }
+}

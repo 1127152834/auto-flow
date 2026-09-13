@@ -333,3 +333,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `filesystem/project_excel.py`：工作簿安全读取、新文件无覆盖发布、发布前摘要回调及只读核验；不会修改来源文件。
 - 迁移依次为 `pm02_status_batches` → `pm02_excel_inspections` → `pm02_excel_imports` → `pm02_excel_exports`，均追加在已交付 `pm02_status_tombstones` 后。主线Studio `0006_workflow_runs`分叉仍需后续统一集成。
 - 上述文件存在不代表完整PM2已验收；原编辑页面任务仍在进行，真实UI接入和全模块验收单独登记。
+
+### PM2 前端组件与验收资产（2026-09-13）
+
+`domains/project-data`新增excel-api、use-excel-inspection/import/export、status-batch-api、use-record-selection及其测试；components新增ExcelImportWizard/Mapping/InspectionPanel、ExcelExportWorkflow/Dialog、RecordStatusBatchDialog、DataOperationStatus、DataTableSourcePanel。DataRecordsTable提供可选选择工具，DataTableDirectoryPage接通真实新表Excel导入。记录批量选择、批量状态、重新导入、导出和来源事实仍需待原编辑任务提交后装配，不能视为已接入。
+
+`scripts/smoke-pm2-excel.mjs`只操纵隔离工作区并记录native picker注入边界；`scripts/measure-pm2-data.py`执行临时文件/DB测量；`scripts/verify-pm2-delivery.mjs`独立核对阶段覆盖，`--require-complete`要求真实全模块验收，当前应失败。历史PM0/PM1报告保留。

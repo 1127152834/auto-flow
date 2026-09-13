@@ -18,7 +18,8 @@
     "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
     "test:scripts": "node --test scripts/*.test.mjs",
     "smoke:desktop": "node scripts/smoke-desktop.mjs",
-    "smoke:studio": "node scripts/smoke-workflow-studio.mjs"
+    "smoke:studio": "node scripts/smoke-workflow-studio.mjs",
+    "test:pm2": "node scripts/verify-pm2-delivery.mjs"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0"

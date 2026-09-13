@@ -96,3 +96,9 @@ bc3aa24/8c25641/113f0c7/d37cb1c/ad8a5d7/dc9ddf2/737ce3e已交付记录客户端�
 e58877d/2cded8e/32c3395/f4e1d08交付历史状态墓碑、删除影响/原子命令及18项数据HTTP；迁移head为pm02_status_tombstones。2813980/c1339f7及C2b接入真实数据目录、表单、筛选和五页签读取。此前“没有正式数据页”的当前描述由本节替代。最终719后端/606前端及工程检查通过；macOS arm64隔离Electron验证目录创建/编辑、真实冲突、重连草稿、200%下拉和重启持久化，另回归两工作区及已有模块入口。
 
 详见pm2-directory-deletions-verification.json。该UI证据不覆盖字段/状态/记录编辑界面；这些仍为C2c，后续需补每次HTTP重发的动态准入。批状态、Excel文件发布、Sheets和项目运行仍未完成，PM2不完整。主线只读再次核实9490924，未复制其他任务WIP。
+
+## 2026-09-13 修订实现检查点（confirmed）
+
+实现工作区后端提交32e424e；迁移唯一head为pm02_excel_exports，顺序为status_tombstones→status_batches→excel_inspections→excel_imports→excel_exports。主线Studio的0006分叉未在本工作区合并。
+
+批量状态、文件授权、Excel检查、隐藏分段导入/替换、一致快照导出和原文件结果核验已有真实HTTP与持久实现；唯一generated类型已同步。前端新表目录导入已在隔离Electron运行；详情页批量操作、重新导入、导出与来源组件接入等待原编辑任务提交。证据见pm2-backend-verification.json、pm2-frontend-verification.json，不用组件测试代替最终真实页面验收。
