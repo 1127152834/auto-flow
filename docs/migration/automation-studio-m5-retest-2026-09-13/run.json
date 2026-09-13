@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-09-13T05:45:45.739910+00:00",
+  "commit": "d18cc82ac556eee790bd7da298b16263c3037ae0",
+  "cases": [
+    {
+      "name": "packaged",
+      "command": [
+        "node",
+        "scripts/smoke-workflow-debug-studio.mjs",
+        "--executable",
+        "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-09-13T05:46:10.696833+00:00"
+    },
+    {
+      "name": "frozen",
+      "command": [
+        "node",
+        "scripts/smoke-workflow-debug.mjs",
+        "--executable",
+        "apps/backend/dist/autoflow-backend/autoflow-backend"
+      ],
+      "exitCode": 0,
+      "finishedAt": "2026-09-13T05:47:33.812322+00:00"
+    }
+  ]
+}

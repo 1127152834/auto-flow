@@ -1,0 +1,17 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "frozen",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "real cross-origin iframe loop: entry pause, 12s heartbeat, duplicate single-step once, per-iteration breakpoint and manual variable edits produce modified/second",
+    "failed action retains real browser, forbids resume, never schedules successor, ending debug preserves failed outcome and closes processes",
+    "top-level direct entry skips invalid upstream configuration; explicit initial variable and manual navigation support independent real execution",
+    "70KiB variable stored outside protocol; result ZIP/diagnostic JSON, server-side filtered log pagination and restart persistence",
+    "1000 real debug loop iterations use incremental append diagnostics, preserve browser result, count 1000 executions and paginate diagnostics",
+    "run-until nested node keeps real first-iteration context; pure-variable debug loop accepts pause and stop with resource cleanup",
+    "every dispatch single-stepped through two nested loops and both conditional paths; actual browser click count is two, paired ends and loop heads each count independently",
+    "real sidecar SIGKILL during pause cleans owned browsers, recovers interrupted history without replay and releases resources for a fresh debug session"
+  ],
+  "complete": true
+}

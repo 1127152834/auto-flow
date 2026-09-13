@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-13T05:49:15.432624+00:00",
+  "testedCommit": "d18cc82ac556eee790bd7da298b16263c3037ae0",
+  "platform": "macOS arm64",
+  "kernelVersion": "145.0.7632.109.2",
+  "backend": {
+    "pytestPassed": 571,
+    "durationSeconds": 85.1,
+    "ruff": "passed",
+    "mypy": "passed; 162 source files"
+  },
+  "frontend": {
+    "vitestPassed": 427,
+    "testFiles": 66,
+    "durationSeconds": 20.31,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "openapiConsistency": "passed"
+  },
+  "packagedUiGroups": 4,
+  "frozenBrowserGroups": 8,
+  "packageConsistency": {
+    "rendererMainPreloadFilesCompared": 9,
+    "backendExecutableMatchesFrozenBuild": true
+  },
+  "businessSourceModified": false,
+  "unverifiedPlatforms": [
+    "Windows",
+    "macOS Intel"
+  ]
+}
