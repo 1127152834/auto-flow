@@ -31,8 +31,33 @@ it('rejects AI attempts to reopen the removed Excel panel', async () => {
   expect(useWorkflowStore.getState().bottomPanelTab).toBe(previous)
 })
 
-it.each(['commit_version', 'hub_publish_workflow', 'start_screensaver'])('does not dispatch removed service action %s', async action => {
+it.each(['commit_version', 'hub_publish_workflow', 'start_screensaver', 'open_phone_mirror', 'close_phone_mirror', 'capture_screen_for_agent'])('does not dispatch removed service action %s', async action => {
   const result = await executeClientAction(action, {})
   expect(result.success).toBe(false)
   expect(result.error).toContain('未知 action')
+})
+
+it.each(['replace_module_type', 'update_node_config', 'bulk_update_nodes'])('blocks excluded types introduced through %s without partial edits', async action => {
+  useWorkflowStore.getState().addNode('open_page', { x: 0, y: 0 })
+  const before = structuredClone(useWorkflowStore.getState().nodes)
+  const nodeId = before[0].id
+  const result = await executeClientAction(action, {
+    node_id: nodeId, new_type: 'excel_create', config: { moduleType: 'excel_create' },
+    patches: [{ node_id: nodeId, config: { url: 'changed' } }, { node_id: nodeId, config: { moduleType: 'excel_create' } }],
+  })
+  expect(result.success).toBe(false)
+  expect(useWorkflowStore.getState().nodes).toEqual(before)
+})
+
+it('replaces the business type without corrupting React Flow rendering or restoring stale data, and supports undo', async () => {
+  useWorkflowStore.getState().addNode('open_page', { x: 120, y: 80 })
+  const before = structuredClone(useWorkflowStore.getState().nodes)
+  const result = await executeClientAction('replace_module_type', { node_id: before[0].id, new_type: 'click_element' })
+  expect(result.success).toBe(true)
+  expect(useWorkflowStore.getState().nodes[0]).toMatchObject({
+    id: before[0].id, type: 'moduleNode', position: { x: 120, y: 80 }, data: { moduleType: 'click_element' },
+  })
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  useWorkflowStore.getState().undo()
+  expect(useWorkflowStore.getState().nodes).toEqual(before)
 })

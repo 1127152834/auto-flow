@@ -1,7 +1,7 @@
 # WebRPA frontend provenance and boundaries
 
 - Frozen source: `reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`.
-- `source-manifest.json` records 275 retained source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
+- `source-manifest.json` records 276 source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
 - The user authorized frontend-first migration with replaceable mock APIs on 2026-09-13. This supersedes the earlier sequencing requirement to finish a real backend before migrating the full frontend.
 
 ## Preserved implementation
@@ -29,3 +29,7 @@ Validation and remaining integration work: `docs/migration/studio-frontend-mock-
 ## F0 2026-09-13 follow-up
 
 Source ModuleSidebar category data was extracted to lib/moduleCatalog.ts without changing the 284-entry scope. The shared catalog guards assistant additions and Mock execution. Imported excluded nodes retain data and can be saved/exported, while their dedicated configuration panel displays JSON instead of removed tools. Obsolete Excel assets, publishing/version and screensaver assistant execution branches were removed; user-stored resource/configuration data was not purged. The existing bundle import handler is also exposed in the wide toolbar.
+
+The source globalTooltip implementation is now mounted with Studio. AutoFlow theme tokens replace its blue gradient; cleanup restores titles, preserves accessible icon names, cancels delayed display and supports remounts. Source checksum is recorded in the manifest.
+
+AI UI dispatch now distinguishes a missing/failed synchronous consumer from accepted delivery. This is not an acknowledgment that an asynchronous save/run has completed; that distinction remains part of F1/F3 contracts. Phone mirror and system-screen Agent actions are excluded, while editor screenshots remain available. Unreferenced version-management and screensaver API wrappers were removed after caller search.

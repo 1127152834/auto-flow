@@ -1373,5 +1373,10 @@
     "source": "frontend/src/components/workflow/config-panels/ControlModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
     "sha256": "551e3dac26adda40bd8f1654567edb1c308cc5ef83560733d1f5714b72355e62"
+  },
+  {
+    "source": "frontend/src/lib/globalTooltip.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts",
+    "sha256": "f651ed29ad11db1819dfafa084c7da13ca51cf9d2e53f4d5153994d8ff538d35"
   }
 ]

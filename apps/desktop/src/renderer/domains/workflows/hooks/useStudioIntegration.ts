@@ -1,3 +1,4 @@
+import { installGlobalTooltip } from '../lib/globalTooltip'
 import { useEffect } from 'react'
 import { imageAssetApi, systemApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
@@ -6,6 +7,7 @@ import { useGlobalConfigStore } from './stores/globalConfigStore'
 import { eventToCombo, SHORTCUT_ACTION_MAP } from '../lib/customShortcuts'
 
 export function useStudioIntegration() {
+  useEffect(installGlobalTooltip, [])
   const shortcuts=useGlobalConfigStore(s=>s.config.shortcuts)
   const theme=useGlobalConfigStore(s=>s.config.display?.theme || 'default')
   useEffect(()=>{

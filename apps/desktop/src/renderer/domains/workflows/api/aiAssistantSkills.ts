@@ -21,7 +21,7 @@ import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissi
 const MUTATING_ACTIONS = new Set<string>([
   'new_workflow', 'load_workflow_from_data', 'add_nodes', 'delete_node', 'delete_nodes',
   'update_node_config', 'toggle_node_disabled', 'align_nodes', 'paste_nodes', 'move_node',
-  'rename_node', 'connect_nodes', 'disconnect_edge', 'rename_workflow',
+  'rename_node', 'connect_nodes', 'disconnect_edge', 'rename_workflow', 'replace_module_type', 'bulk_update_nodes', 'duplicate_node',
 ])
 const AI_ACTION_LABELS: Record<string, string> = {
   new_workflow: '新建工作流', load_workflow_from_data: '装载工作流到画布', add_nodes: '添加节点',
@@ -210,14 +210,17 @@ function partitionValidAiNodes(nodes: any[]): { valid: any[]; invalidTypes: stri
 
 export function emitAssistantUiEvent(event: string, payload: any) {
   const set = listeners.get(event)
-  if (!set) return
+  if (!set?.size) return false
+  let delivered = false
   set.forEach((h) => {
     try {
       h(payload)
+      delivered = true
     } catch (err) {
       console.error('[AssistantUiEvent]', event, err)
     }
   })
+  return delivered
 }
 
 /**
@@ -290,6 +293,15 @@ export async function executeClientAction(
   try {
     if (['upload_excel', 'list_data_assets', 'delete_data_asset', 'rename_data_asset', 'preview_data_asset', 'get_data_asset_sheets'].includes(action) || (action === 'switch_bottom_panel' && payload.tab === 'assets')) {
       return { success: false, error: 'Excel 资源功能已从 AutoFlow Studio 移除' }
+    }
+    const requestedTypes: unknown[] = action === 'replace_module_type' ? [payload.new_type]
+      : action === 'update_node_config' ? [payload.config?.moduleType]
+      : action === 'bulk_update_nodes' && Array.isArray(payload.patches) ? payload.patches.map(p => p?.config?.moduleType)
+      : []
+    const invalidTypes = partitionValidAiNodes(requestedTypes.filter(type => type !== undefined).map(type => ({ type }))).invalidTypes
+    if (invalidTypes.length) return { success: false, error: `模块不存在或已排除：${invalidTypes.join('、')}` }
+    if (action === 'paste_nodes' && useWorkflowStore.getState().clipboard.some(node => excludedModuleTypes.has(node.data.moduleType))) {
+      return { success: false, error: '工作流包含已排除节点' }
     }
     // 独立窗口（系统级 Agent）模式：没有可视画布，画布/版本/变量/数据面板类动作无效，
     // 直接返回明确指引，让小助手改用后端「真生效」能力，避免误以为画布被改动。
@@ -515,17 +527,17 @@ export async function executeClientAction(
       }
 
       case 'save_workflow': {
-        emitAssistantUiEvent('save_workflow', { filename: payload.filename })
+        if (!emitAssistantUiEvent('save_workflow', { filename: payload.filename })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起保存' }
       }
 
       case 'run_workflow': {
-        emitAssistantUiEvent('run_workflow', { headless: false })
+        if (!emitAssistantUiEvent('run_workflow', { headless: false })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起运行（有头模式）' }
       }
 
       case 'run_workflow_headless': {
-        emitAssistantUiEvent('run_workflow', { headless: true })
+        if (!emitAssistantUiEvent('run_workflow', { headless: true })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起运行（无头模式）' }
       }
 
@@ -534,14 +546,14 @@ export async function executeClientAction(
         if (id) {
           await workflowApi.stop(id)
         }
-        emitAssistantUiEvent('stop_workflow', {})
+        if (!emitAssistantUiEvent('stop_workflow', {})) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起停止' }
       }
 
       case 'export_workflow': {
         // payload.format: 'json' | 'playwright' | 'markdown'
         const format = (payload.format as string) || 'json'
-        emitAssistantUiEvent('export_workflow', { format })
+        if (!emitAssistantUiEvent('export_workflow', { format })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: `已发起导出（${format}）` }
       }
 
@@ -567,7 +579,7 @@ export async function executeClientAction(
 
       case 'update_node_config': {
         const nodeId = payload.node_id as string
-        const config = (payload.config as Record<string, any>) || {}
+        const config = { ...((payload.config as Record<string, any>) || {}) }
         if (!nodeId) return { success: false, error: '缺少 node_id' }
         // 保护：label 是模块原名，AI 不允许通过 update_node_config 修改它
         // 如果 AI 想改"显示名"，应该改 name（节点备注）字段
@@ -627,7 +639,7 @@ export async function executeClientAction(
         const nodeId = payload.node_id as string
         if (!nodeId) return { success: false, error: '缺少 node_id' }
         useWorkflowStore.getState().selectNode(nodeId)
-        emitAssistantUiEvent('focus_node', { node_id: nodeId })
+        if (!emitAssistantUiEvent('focus_node', { node_id: nodeId })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: `已聚焦节点 ${nodeId}` }
       }
 
@@ -824,14 +836,14 @@ export async function executeClientAction(
       }
 
       case 'fit_view': {
-        emitAssistantUiEvent('fit_view', payload)
+        if (!emitAssistantUiEvent('fit_view', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已请求适配视图' }
       }
 
       case 'run_single_node': {
         const nodeId = payload.node_id as string
         if (!nodeId) return { success: false, error: '缺少 node_id' }
-        emitAssistantUiEvent('run_single_node', { node_id: nodeId })
+        if (!emitAssistantUiEvent('run_single_node', { node_id: nodeId })) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: `已请求单节点运行：${nodeId}` }
       }
 
@@ -843,11 +855,12 @@ export async function executeClientAction(
         const s = useWorkflowStore.getState()
         const exists = s.nodes.find((n: any) => n.id === nodeId)
         if (!exists) return { success: false, error: `节点 ${nodeId} 不存在` }
-        s.updateNodeData(nodeId, { moduleType: newType } as any)
-        // 同时改 react-flow 的 type 字段
+        s.pushHistory()
+        const converted = convertAiNodeToReactFlow({ ...exists, type: newType, data: { ...exists.data, moduleType: newType, label: moduleTypeLabels[newType as keyof typeof moduleTypeLabels] } })
         useWorkflowStore.setState({
-          nodes: s.nodes.map((n: any) => (n.id === nodeId ? { ...n, type: newType } : n)),
-        } as any)
+          nodes: s.nodes.map(node => node.id === nodeId ? converted : node),
+          hasUnsavedChanges: true,
+        })
         return { success: true, message: `节点 ${nodeId} 的类型已改为 ${newType}` }
       }
 
@@ -858,6 +871,7 @@ export async function executeClientAction(
         const s = useWorkflowStore.getState()
         const src = s.nodes.find((n: any) => n.id === nodeId)
         if (!src) return { success: false, error: `节点 ${nodeId} 不存在` }
+        if (excludedModuleTypes.has(src.data.moduleType)) return { success: false, error: '工作流包含已排除节点' }
         s.copyNodes([nodeId])
         s.pasteNodes({
           x: (src.position?.x || 0) + 60,
@@ -958,19 +972,17 @@ export async function executeClientAction(
       }
 
       case 'export_logs': {
-        emitAssistantUiEvent('export_logs', {})
+        if (!emitAssistantUiEvent('export_logs', {})) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起日志下载' }
       }
 
       case 'download_data': {
-        emitAssistantUiEvent('download_data', {})
+        if (!emitAssistantUiEvent('download_data', {})) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起数据下载' }
       }
 
-
-
       case 'upload_image': {
-        emitAssistantUiEvent('upload_image', {})
+        if (!emitAssistantUiEvent('upload_image', {})) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已触发图像上传文件选择' }
       }
 
@@ -1118,15 +1130,6 @@ export async function executeClientAction(
       // Excel 资源底栏（数据资产）
       // ============================================================
 
-
-
-
-
-
-
-
-
-
       // ============================================================
       // 图像资源底栏
       // ============================================================
@@ -1272,25 +1275,9 @@ export async function executeClientAction(
       // 版本历史（Git 式本地快照：含节点/连线/全局变量，可恢复/对比）
       // ============================================================
 
-
-
-
-
-
       // ============================================================
       // 工作流仓库（远程 Hub）
       // ============================================================
-
-
-
-
-
-
-
-
-
-
-
 
       // ============================================================
       // 计划任务（完整 CRUD + 启停 + 日志）
@@ -1538,88 +1525,67 @@ export async function executeClientAction(
       // 弹窗 / 面板 打开/关闭
       // ============================================================
       case 'open_global_config':
-        emitAssistantUiEvent('open_global_config', payload)
+        if (!emitAssistantUiEvent('open_global_config', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开全局配置' }
 
       case 'close_global_config':
-        emitAssistantUiEvent('close_global_config', payload)
+        if (!emitAssistantUiEvent('close_global_config', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭全局配置' }
 
       case 'open_local_workflow_dialog':
-        emitAssistantUiEvent('open_local_workflow', payload)
+        if (!emitAssistantUiEvent('open_local_workflow', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开本地工作流对话框' }
 
       case 'close_local_workflow_dialog':
-        emitAssistantUiEvent('close_local_workflow', payload)
+        if (!emitAssistantUiEvent('close_local_workflow', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭本地工作流对话框' }
 
       case 'open_scheduled_tasks':
-        emitAssistantUiEvent('open_scheduled_tasks', payload)
+        if (!emitAssistantUiEvent('open_scheduled_tasks', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开计划任务面板' }
 
       case 'close_scheduled_tasks':
-        emitAssistantUiEvent('close_scheduled_tasks', payload)
+        if (!emitAssistantUiEvent('close_scheduled_tasks', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭计划任务面板' }
 
       case 'open_documentation':
-        emitAssistantUiEvent('open_documentation', payload)
+        if (!emitAssistantUiEvent('open_documentation', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开使用文档' }
 
       case 'close_documentation':
-        emitAssistantUiEvent('close_documentation', payload)
+        if (!emitAssistantUiEvent('close_documentation', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭使用文档' }
 
-
-
-
-
       case 'open_auto_browser':
-        emitAssistantUiEvent('open_auto_browser', payload)
+        if (!emitAssistantUiEvent('open_auto_browser', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开自动化浏览器对话框' }
 
       case 'close_auto_browser':
-        emitAssistantUiEvent('close_auto_browser', payload)
+        if (!emitAssistantUiEvent('close_auto_browser', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭自动化浏览器对话框' }
 
-      case 'open_phone_mirror':
-        emitAssistantUiEvent('open_phone_mirror', payload)
-        return { success: true, message: '已打开手机投屏' }
-
-      case 'close_phone_mirror':
-        emitAssistantUiEvent('close_phone_mirror', payload)
-        return { success: true, message: '已关闭手机投屏' }
-
       case 'open_variable_tracking':
-        emitAssistantUiEvent('open_variable_tracking', payload)
+        if (!emitAssistantUiEvent('open_variable_tracking', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开变量追踪面板' }
 
       case 'close_variable_tracking':
-        emitAssistantUiEvent('close_variable_tracking', payload)
+        if (!emitAssistantUiEvent('close_variable_tracking', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已关闭变量追踪面板' }
 
       // ============================================================
       // 屏保弹幕：UI 控制 + 真生效启动/停止
       // ============================================================
 
-
-
-
-
-
-
-
-
-
       case 'open_export_dialog':
-        emitAssistantUiEvent('open_export_dialog', payload)
+        if (!emitAssistantUiEvent('open_export_dialog', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开导出对话框' }
 
       case 'open_module_search':
-        emitAssistantUiEvent('open_module_search', payload)
+        if (!emitAssistantUiEvent('open_module_search', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已打开画布模块搜索框' }
 
       case 'take_screenshot':
-        emitAssistantUiEvent('take_screenshot', payload)
+        if (!emitAssistantUiEvent('take_screenshot', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已发起截图' }
 
       case 'capture_editor_screenshot': {
@@ -1650,30 +1616,11 @@ export async function executeClientAction(
         }
       }
 
-      case 'capture_screen_for_agent': {
-        // 系统级 Agent「看屏」：截取整个桌面屏幕，作为图片喂给视觉模型
-        try {
-          const { systemApi } = await import('../api')
-          const res = await systemApi.screenshotBase64()
-          if (!res.data?.success || !res.data.dataUrl) {
-            return { success: false, error: res.data?.error || '屏幕截图失败' }
-          }
-          emitAssistantUiEvent('editor_screenshot_captured', { dataUrl: res.data.dataUrl, caption: '这是当前整个电脑屏幕的截图，请查看屏幕内容后据此判断与操作。' })
-          return {
-            success: true,
-            message: '已截取整个屏幕，将在下一条消息中作为图片提供给你查看',
-            data: { captured: true, width: res.data.width, height: res.data.height },
-          }
-        } catch (e: any) {
-          return { success: false, error: `屏幕截图失败：${e?.message || e}` }
-        }
-      }
-
       // ============================================================
       // 通知 / 提示
       // ============================================================
       case 'show_toast':
-        emitAssistantUiEvent('show_toast', payload)
+        if (!emitAssistantUiEvent('show_toast', payload)) return { success: false, error: '当前界面未接通此操作' }
         return { success: true, message: '已显示提示' }
 
       case 'add_log': {

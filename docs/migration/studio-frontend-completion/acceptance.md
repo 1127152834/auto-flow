@@ -58,3 +58,19 @@ capabilities.json 和 test-cases.json 由 scripts/inventory-studio-completion.mj
 - INT-UI-002：在线导入一节点测试包并确认节点可见，修改名称为 F0 离线节点草稿；服务离线→保存，记录 Mock network offline，节点保留；恢复连接→重试→保存，提示工作流已保存: F0 离线节点草稿.json。真实浏览器 UI + Mock，不是原生 Electron/后端执行。首次尝试导入时仍离线而失败、空流程保存被拒绝，这些失败没有记作通过。
 
 全量回归 82 文件/776 项通过，TypeScript/ESLint/renderer-main-preload 构建通过。见 evidence/f0-integration-tests.txt 和 f0-integration-build.txt。全局 Tooltip、原浮动 AI 入口、全局热键真实宿主注册及其它 F2.1 项仍待完成。
+
+## F0 注册和服务调用台账扩展
+
+- service-inventory.json：当前 187 个 API 方法、83 个事件、105 个 AI 动作、62 处直接请求候选；记录源/目标路径和具体调用代码。数量包含死代码和未实现服务，不是完成数。移除无人消费的版本/屏保 API 前为 197 个方法。
+- component-tools.json 现在包括箭头函数、memo/forwardRef 声明及 value/checked/onChange 等绑定。动态别名与同名组件可能有候选歧义，不能当完全人工核对过的合同。
+- catalog-panel-registration.test.tsx：284 个真实 ConfigPanel 挂载，类型显示正确，无错误空态/排除提示。首次运行 284 项通过。该测试不包含每个表单的全部分支，不替代 F2 配置验收。
+- verified-cases.json：将 284 个注册、284 个 Store 往返及 11 个配套规则测试写成有前置、步骤、UI/IO/状态断言和证据路径的窄范围用例。原 test-cases.json 仍是待细化模板。
+- global-tooltip.test.ts：动态标题、安全文本展示、可访问名称、清理与重挂载通过；不伪称已完成全部鼠标/键盘 E2E。
+- assistant-ui-delivery.test.ts：无消费者/同步异常返回失败，有消费者只调用一次，卸载不继续接收。
+- excluded-assistant-nodes.test.ts：新增手机/桌面残留拒绝、替换/单项/批量排除类型阻止、合法替换保持 moduleNode/配置并可撤销。
+
+新增测试曾发现测试存储环境缺失、keydown 的 Window target 不支持 closest、beforeEach 误返回 mock、源 Tooltip 短路表达式不符合 lint；分别修正测试设施或代码，没有放宽功能断言。
+
+本批工程结果：85 文件、1,071 项测试通过，TypeScript/ESLint/构建通过，见 evidence/f0-registry-tests.txt、evidence/f0-registry-build.txt。类型/构建在删除无消费者 API 后再次通过。
+
+AST 核对发现早期扫描将查询回调中的 open_page 比较扩展为整个 ConfigPanel，错误地拉入所有表单依赖。已在函数边界停止扩展，区分 reference 与 branch，并重新生成。没有使用旧候选图作为删除依据。共享 UrlInputDialog/SimilarSelectorDialog/CustomModuleConfig 在专属节点分支之外，仍需单独注册，不能因节点候选未引用而删除。

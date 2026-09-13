@@ -482,59 +482,6 @@ export const desktopRecorderApi = {
   status: () => apiRequest('/desktop-recorder/status'),
 }
 
-// ==================== 工作流版本管理 API（Git 式本地版本历史） ====================
-export interface WorkflowVersionInfo {
-  version: string
-  message: string
-  createdAt: string
-  summary?: { nodeCount?: number; edgeCount?: number; variableCount?: number }
-}
-export interface WorkflowDiff {
-  nodesAdded: { id: string; label: string }[]
-  nodesRemoved: { id: string; label: string }[]
-  nodesModified: { id: string; label: string; typeChanged: boolean; configChanged: boolean; moved: boolean }[]
-  edgesAdded: number
-  edgesRemoved: number
-  hasChanges: boolean
-}
-export const workflowVersionsApi = {
-  commit: (workflow: string, content: unknown, message?: string, folder?: string) =>
-    apiRequest<{ success: boolean; version?: string; createdAt?: string; error?: string }>(
-      '/workflow-versions/commit',
-      { method: 'POST', body: JSON.stringify({ workflow, content, message, folder }) }
-    ),
-  list: (workflow: string, folder?: string) =>
-    apiRequest<{ success: boolean; versions: WorkflowVersionInfo[]; error?: string }>(
-      '/workflow-versions/list',
-      { method: 'POST', body: JSON.stringify({ workflow, folder }) }
-    ),
-  get: (workflow: string, versionId: string, folder?: string) =>
-    apiRequest<{ success: boolean; version?: string; content?: any; message?: string; createdAt?: string; error?: string }>(
-      '/workflow-versions/get',
-      { method: 'POST', body: JSON.stringify({ workflow, versionId, folder }) }
-    ),
-  remove: (workflow: string, versionId: string, folder?: string) =>
-    apiRequest<{ success: boolean; error?: string }>(
-      '/workflow-versions/delete',
-      { method: 'POST', body: JSON.stringify({ workflow, versionId, folder }) }
-    ),
-  diff: (workflow: string, opts: { fromVersionId?: string; toVersionId?: string; content?: unknown; folder?: string }) =>
-    apiRequest<{ success: boolean; diff?: WorkflowDiff; error?: string }>(
-      '/workflow-versions/diff',
-      { method: 'POST', body: JSON.stringify({ workflow, ...opts }) }
-    ),
-  exportBundle: (workflow: string, folder?: string) =>
-    apiRequest<{ success: boolean; bundle?: any; error?: string }>(
-      '/workflow-versions/export',
-      { method: 'POST', body: JSON.stringify({ workflow, folder }) }
-    ),
-  importBundle: (workflow: string, bundle: unknown, folder?: string) =>
-    apiRequest<{ success: boolean; imported?: number; error?: string }>(
-      '/workflow-versions/import',
-      { method: 'POST', body: JSON.stringify({ workflow, bundle, folder }) }
-    ),
-}
-
 // ==================== 桌面元素选择器 API ====================
 export const desktopPickerApi = {
   start: (params?: any) =>
@@ -577,17 +524,6 @@ export const customModulesApi = {
     apiRequest(`/custom-modules/${id}/increment-usage`, { method: 'POST' }),
 }
 
-
-// ==================== 屏保弹幕 API ====================
-export const screensaverApi = {
-  start: (config: Record<string, unknown>) =>
-    apiRequest('/screensaver/start', {
-      method: 'POST',
-      body: JSON.stringify({ config }),
-    }),
-  stop: () => apiRequest('/screensaver/stop', { method: 'POST' }),
-  status: () => apiRequest<{ running: boolean; pid?: number }>('/screensaver/status'),
-}
 
 // ==================== 凭据库 API ====================
 export interface CredentialItem {

@@ -35,13 +35,15 @@ for(const file of files){const tree=parse(file);walk(tree,node=>{
   if(!literal || !ts.isStringLiteral(literal))return
   if(!literal || !evidence.has(literal.text))return
   let scope=node
-  while(scope.parent && !ts.isCaseClause(scope) && !ts.isIfStatement(scope) && !ts.isConditionalExpression(scope) && !ts.isJsxExpression(scope))scope=scope.parent
+  while(scope.parent && !ts.isFunctionLike(scope) && !ts.isCaseClause(scope) && !ts.isIfStatement(scope) && !ts.isConditionalExpression(scope) && !ts.isJsxExpression(scope))scope=scope.parent
+  // A lookup callback mentioning a type is not a configuration dispatch. Never expand it to the enclosing panel.
+  if(ts.isFunctionLike(scope))scope=node
   const fields=new Set(),tools=new Set()
   walk(scope,n=>{
-    if(ts.isPropertyAccessExpression(n)&&/^(config|data|node\.data)$/.test(n.expression.getText(tree)))fields.add(n.name.text)
+    if(ts.isPropertyAccessExpression(n)&&/^(config|data|nodeData|node\.data)$/.test(n.expression.getText(tree)))fields.add(n.name.text)
     if(ts.isJsxOpeningElement(n)||ts.isJsxSelfClosingElement(n))tools.add(n.tagName.getText(tree))
   })
-  evidence.get(literal.text).push({file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,condition:node.getText(tree),fields:[...fields].sort(),components:[...tools].sort()})
+  evidence.get(literal.text).push({kind:scope===node&&!caseClause?'reference':'branch',file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,condition:node.getText(tree),fields:[...fields].sort(),components:[...tools].sort()})
 })}
 // Resolve named JSX tools to their implementations; keep candidate branches for human review.
 const definitions = new Map()
@@ -51,14 +53,17 @@ function componentFiles(dir) {
 for (const file of componentFiles(`${domain}/components`)) {
   const tree=parse(file)
   walk(tree,node=>{
-    if(!ts.isFunctionDeclaration(node) || !node.name || !/^[A-Z]/.test(node.name.text))return
-    const fields=new Set(),tools=new Set(),conditions=[]
+    const namedFunction=ts.isFunctionDeclaration(node) && node.name && /^[A-Z]/.test(node.name.text)
+    const namedComponent=ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^[A-Z]/.test(node.name.text) && node.initializer && (ts.isArrowFunction(node.initializer) || ts.isCallExpression(node.initializer))
+    if(!namedFunction && !namedComponent)return
+    const fields=new Set(),tools=new Set(),conditions=[],bindings=[]
     walk(node,n=>{
       if(ts.isPropertyAccessExpression(n)&&/^(config|data|nodeData|node\.data)$/.test(n.expression.getText(tree)))fields.add(n.name.text)
       if(ts.isJsxOpeningElement(n)||ts.isJsxSelfClosingElement(n)) {const tag=n.tagName.getText(tree);if(/^[A-Z]/.test(tag))tools.add(tag)}
+      if(ts.isJsxAttribute(n) && ['value','checked','defaultValue','onChange','onValueChange','onCheckedChange'].includes(n.name.getText(tree)) && n.initializer)bindings.push({line:tree.getLineAndCharacterOfPosition(n.getStart(tree)).line+1,attribute:n.name.getText(tree),expression:n.initializer.getText(tree)})
       if(ts.isConditionalExpression(n) || ts.isIfStatement(n))conditions.push({line:tree.getLineAndCharacterOfPosition(n.getStart(tree)).line+1,expression:(ts.isIfStatement(n)?n.expression:n.condition).getText(tree)})
     })
-    const row={component:node.name.text,file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,fields:[...fields].sort(),tools:[...tools].sort(),conditions}
+    const row={component:node.name.text,file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,fields:[...fields].sort(),tools:[...tools].sort(),conditions,bindings}
     if(!definitions.has(node.name.text))definitions.set(node.name.text,[])
     definitions.get(node.name.text).push(row)
   })

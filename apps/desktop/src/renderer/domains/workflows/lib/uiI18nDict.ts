@@ -4148,3 +4148,7 @@ Object.assign(PHRASES, {
   '框架路径需要在目标页面中验证': 'Frame paths must be verified on the target page',
   '页面状态和登录步骤需要实际核对': 'Page state and login steps need to be checked',
 })
+
+Object.assign(PHRASES, { '当前界面未接通此操作': 'This action is not connected to the current interface' })
+
+Object.assign(PHRASES, { '模块不存在或已排除：': 'Unknown or excluded modules: ' })
