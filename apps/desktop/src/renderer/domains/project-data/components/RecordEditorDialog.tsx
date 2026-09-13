@@ -4,7 +4,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from '../../../shared/components/ui/button'
 import { RecordEditorForm, type RecordEditorFormProps } from './RecordEditorForm'
 
-export type RecordEditorDialogProps = Omit<RecordEditorFormProps, 'id' | 'onCancel'> & {
+export type RecordEditorDialogProps = Omit<RecordEditorFormProps, 'id' | 'onCancel' | 'onSubmitAttempt'> & {
   open: boolean
   onOpenChange(open: boolean): void
   onRequestClose?(): boolean | void | Promise<boolean | void>
@@ -26,7 +26,7 @@ export function RecordEditorDialog({ open, onOpenChange, onRequestClose, saving=
   }
   return <>
     <Modal open={open} onOpenChange={next=>{if(!next)requestClose()}} closeDisabled={busy} variant="form" size="large" title={props.mode==='create'?'新建记录':'编辑记录'} description="填写记录的业务字段值。" bodyClassName="grid gap-5" footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="submit" form="record-editor-form" data-record-action="recover" variant="primary" disabled={busy||!props.onRecover}>核对保存结果</Button>:<Button type="submit" form="record-editor-form" variant="primary" disabled={busy||readonly||(props.mode==='edit'&&!dirty)}>{busy?'正在保存…':props.mode==='create'?'创建记录':'保存修改'}</Button>}</>}>
-      <RecordEditorForm {...props} id="record-editor-form" externalActions saving={saving} recoveryPending={recoveryPending} readonly={readonly} onCancel={requestClose} onDirtyChange={value=>{setDirty(value);onDirtyChange?.(open&&value)}} onSavingChange={value=>{if(value){requestEpoch.current++;closeLock.current=false}setFormSaving(value);onSavingChange?.(value)}} />
+      <RecordEditorForm {...props} id="record-editor-form" externalActions saving={saving} recoveryPending={recoveryPending} readonly={readonly} onCancel={requestClose} onSubmitAttempt={()=>{requestEpoch.current++;closeLock.current=false}} onDirtyChange={value=>{setDirty(value);onDirtyChange?.(open&&value)}} onSavingChange={value=>{if(value){requestEpoch.current++;closeLock.current=false}setFormSaving(value);onSavingChange?.(value)}} />
     </Modal>
     <AlertDialog open={confirmClose} onOpenChange={next=>{if(!busy||next)setConfirmClose(next)}}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>关闭后，本次记录修改不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus disabled={busy}>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" disabled={busy} onClick={()=>{if(busy)return;setConfirmClose(false);onOpenChange(false)}}>放弃修改</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
   </>

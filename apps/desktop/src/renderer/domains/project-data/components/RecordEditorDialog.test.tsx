@@ -129,6 +129,14 @@ it('revokes a pending close approval when a newer submit fails', async () => {
   await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
 })
 
+it('revokes a pending close approval before a newer submit fails validation', async () => {
+  let approve!: (approved: boolean) => void
+  const close=vi.fn(), requestClose=vi.fn(()=>new Promise<boolean>(resolve=>{approve=resolve}))
+  render(<RecordEditorDialog open mode="create" sessionKey="close-invalid-submit" fields={[field('required',{required:true})]} onOpenChange={close} onRequestClose={requestClose} onSubmit={vi.fn()}/>)
+  await userEvent.click(screen.getByRole('button',{name:'取消'})); await userEvent.click(screen.getByRole('button',{name:'创建记录'})); expect(await screen.findByText('请填写必填字段')).toBeVisible()
+  await act(async()=>approve(true)); expect(close).not.toHaveBeenCalled()
+})
+
 it('clears a pending recovery lock when a new session starts', async () => {
   let finish!:()=>void
   const recover=vi.fn(()=>new Promise<void>(resolve=>{finish=resolve})), props={open:true,mode:'create' as const,fields:[],onOpenChange:vi.fn(),onSubmit:vi.fn(),onRecover:recover}

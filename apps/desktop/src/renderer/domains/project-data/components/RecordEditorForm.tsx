@@ -14,12 +14,12 @@ export type RecordEditorFormProps = {
   id: string; mode: 'create' | 'edit'; sessionKey: string; fields: Field[]; initialRecord?: RecordView; identityFieldId?: string; submissionEpoch?: string | number
   saving?: boolean; recoveryPending?: boolean; readonly?: boolean; error?: string | null; errorActions?: ReactNode; footerClassName?: string
   externalActions?: boolean
-  onCancel?(): void; onSubmit(values: CellWrite[]): Promise<unknown>; onRecover?(): Promise<unknown>; onDirtyChange?(dirty: boolean): void; onSavingChange?(saving: boolean): void
+  onCancel?(): void; onSubmitAttempt?(): void; onSubmit(values: CellWrite[]): Promise<unknown>; onRecover?(): Promise<unknown>; onDirtyChange?(dirty: boolean): void; onSavingChange?(saving: boolean): void
 }
 
 const equalDraft = (left: RecordDraft, right: RecordDraft) => JSON.stringify(left) === JSON.stringify(right)
 
-export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
+export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmitAttempt, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
   const [drafts,setDrafts]=useState(()=>createRecordDraft(fields,initialRecord)),[context,setContext]=useState<FormContext>(()=>({fields,initialRecord,identityFieldId}))
   const [fieldErrors,setFieldErrors]=useState<Record<string,{message:string;control:ScalarDraftControl}>>({}),[submitError,setSubmitError]=useState<string|null>(null)
   const [submitting,setSubmitting]=useState(false),[recovering,setRecovering]=useState(false)
@@ -44,7 +44,7 @@ export function RecordEditorForm({ id, mode, sessionKey, fields, initialRecord, 
   const focusField=(fieldId:string,control:ScalarDraftControl)=>{const suffix=control==='presence'?'-presence':control==='offset'?'-offset':'';fieldContainers.current.get(fieldId)?.querySelector<HTMLElement>(`#${id}-${fieldId}${suffix}`)?.focus()}
   const submit=(event:FormEvent<HTMLFormElement>)=>{
     event.preventDefault();if((event.nativeEvent as SubmitEvent).submitter instanceof HTMLElement&&(event.nativeEvent as SubmitEvent).submitter?.dataset.recordAction==='recover'){recover();return}if(submitLock.current||busy||recoveryPending||readonly||(mode==='edit'&&!hasChanges))return
-    requestEpoch.current++;submitLock.current=true;const ticket=requestEpoch.current,target=context;let values:CellWrite[]
+    onSubmitAttempt?.();requestEpoch.current++;submitLock.current=true;const ticket=requestEpoch.current,target=context;let values:CellWrite[]
     try{values=recordValues(target.fields,drafts,target.initialRecord,target.identityFieldId)}catch(caught){submitLock.current=false;if(caught instanceof RecordDraftError){setFieldErrors({[caught.fieldId]:{message:caught.message,control:caught.control}});focusField(caught.fieldId,caught.control)}else setSubmitError(caught instanceof Error?caught.message:'记录值无效');return}
     if(mode==='edit'&&!values.length){submitLock.current=false;return}
     savingCallback.current?.(true);setFieldErrors({});setSubmitError(null);setSubmitting(true);const snapshot=values.map(value=>({...value}))
