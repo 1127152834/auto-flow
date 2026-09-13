@@ -14,93 +14,18 @@ import { VariableInput } from './controls/variable-input'
 import { Trash2, Crosshair, Loader2, Ban, ChevronLeft, ChevronRight, Settings, Sparkles, ScanSearch } from 'lucide-react'
 import { moduleIcons } from './ModuleSidebar'
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { elementPickerApi, desktopPickerApi, systemApi } from '../api'
+import { elementPickerApi, systemApi } from '../api'
 
 // 导入拆分的配置组件
 import {
   DpOpenPageConfig, DpClickConfig, DpInputConfig, DpGetTextConfig, DpGetHtmlConfig,
   DpRunJsConfig, DpWaitElementConfig, DpScrollConfig, DpCloseConfig,
 } from './config-panels/DrissionPageConfigs'
-import { ExcelModuleConfig } from './config-panels/ExcelModuleConfig'
-import { WordModuleConfig } from './config-panels/WordModuleConfig'
 import { RunWorkflowFileConfig } from './config-panels/RunWorkflowFileConfig'
 import { SimilarSelectorDialog } from './config-panels/SimilarSelectorDialog'
 import { UrlInputDialog } from './config-panels/UrlInputDialog'
-import {
-  OpenPageConfig,
-  UseOpenedPageConfig,
-  ClickElementConfig,
-  HoverElementConfig,
-  InputTextConfig,
-  GetElementInfoConfig,
-  WaitConfig,
-  WaitElementConfig,
-  WaitImageConfig,
-  WaitPageLoadConfig,
-  PageLoadCompleteConfig,
-  SetVariableConfig,
-  IncrementDecrementConfig,
-  PrintLogConfig,
-  PlaySoundConfig,
-  SystemNotificationConfig,
-  PlayMusicConfig,
-  PlayVideoConfig,
-  ViewImageConfig,
-  InputPromptConfig,
-  TextToSpeechConfig,
-  JsScriptConfig,
-  PythonScriptConfig,
-  ExtractTableDataConfig,
-  SwitchTabConfig,
-  GroupConfig,
-  SubflowHeaderConfig,
-  RefreshPageConfig,
-  GoBackConfig,
-  GoForwardConfig,
-  HandleDialogConfig,
-  InjectJavaScriptConfig,
-  SwitchIframeConfig,
-  SwitchToMainConfig,
-} from './config-panels/BasicModuleConfigs'
-import {
-  SelectDropdownConfig,
-  SetCheckboxConfig,
-  DragElementConfig,
-  ScrollPageConfig,
-  UploadFileConfig,
-  DownloadFileConfig,
-  SaveImageConfig,
-  GetChildElementsConfig,
-  GetSiblingElementsConfig,
-  ScreenshotConfig,
-  OCRCaptchaConfig,
-  SliderCaptchaConfig,
-  SendEmailConfig,
-  SetClipboardConfig,
-  GetClipboardConfig,
-  KeyboardActionConfig,
-  RealMouseScrollConfig,
-  ShutdownSystemConfig,
-  LockScreenConfig,
-  WindowFocusConfig,
-  RealMouseClickConfig,
-  RealMouseMoveConfig,
-  RealMouseDragConfig,
-  RealKeyboardConfig,
-  RunCommandConfig,
-  ClickImageConfig,
-  ImageExistsConfig,
-  GetMousePositionConfig,
-  ScreenshotScreenConfig,
-  RenameFileConfig,
-  NetworkCaptureConfig,
-  MacroRecorderConfig,
-  ElementExistsConfig,
-  ElementVisibleConfig,
-  NetworkMonitorStartConfig,
-  NetworkMonitorWaitConfig,
-  NetworkMonitorStopConfig,
-} from './config-panels/AdvancedModuleConfigs'
+import { OpenPageConfig, UseOpenedPageConfig, ClickElementConfig, HoverElementConfig, InputTextConfig, GetElementInfoConfig, WaitConfig, WaitElementConfig, WaitPageLoadConfig, PageLoadCompleteConfig, SetVariableConfig, IncrementDecrementConfig, PrintLogConfig, PlaySoundConfig, SystemNotificationConfig, InputPromptConfig, TextToSpeechConfig, JsScriptConfig, PythonScriptConfig, ExtractTableDataConfig, SwitchTabConfig, GroupConfig, SubflowHeaderConfig, RefreshPageConfig, GoBackConfig, GoForwardConfig, HandleDialogConfig, InjectJavaScriptConfig, SwitchIframeConfig, SwitchToMainConfig } from './config-panels/BasicModuleConfigs'
+import { SelectDropdownConfig, SetCheckboxConfig, DragElementConfig, ScrollPageConfig, UploadFileConfig, DownloadFileConfig, SaveImageConfig, GetChildElementsConfig, GetSiblingElementsConfig, ScreenshotConfig, OCRCaptchaConfig, SliderCaptchaConfig, SendEmailConfig, SetClipboardConfig, GetClipboardConfig, ShutdownSystemConfig, LockScreenConfig, RunCommandConfig, NetworkCaptureConfig, ElementExistsConfig, ElementVisibleConfig, NetworkMonitorStartConfig, NetworkMonitorWaitConfig, NetworkMonitorStopConfig } from './config-panels/AdvancedModuleConfigs'
 import {
   AIChatConfig,
   AITaskConfig,
@@ -113,50 +38,6 @@ import {
   FirecrawlMapConfig,
   FirecrawlCrawlConfig,
 } from './config-panels/AIModuleConfigs'
-import {
-  DesktopAppStartConfig,
-  DesktopAppConnectConfig,
-  DesktopAppCloseConfig,
-  DesktopAppGetInfoConfig,
-  DesktopAppWaitReadyConfig,
-  DesktopWindowActivateConfig,
-  DesktopWindowStateConfig,
-  DesktopWindowMoveConfig,
-  DesktopWindowResizeConfig,
-  DesktopWindowTopmostConfig,
-  DesktopWindowListConfig,
-  DesktopWindowCaptureConfig,
-  DesktopFindControlConfig,
-  DesktopControlInfoConfig,
-  DesktopControlTreeConfig,
-  DesktopWaitControlConfig,
-  DesktopClickControlConfig,
-  DesktopInputControlConfig,
-  DesktopGetTextConfig,
-  DesktopSetValueConfig,
-  DesktopSelectComboConfig,
-  DesktopCheckboxConfig,
-  DesktopRadioConfig,
-  DesktopDragControlConfig,
-  DesktopMenuClickConfig,
-  DesktopListOperateConfig,
-  DesktopSendKeysConfig,
-  DesktopGetPropertyConfig,
-  DesktopDialogHandleConfig,
-  DesktopScrollControlConfig,
-  DesktopGetControlInfoConfig,
-  DesktopGetControlTreeConfig,
-  // 现代桌面应用增强（仅热键 - OCR/图像/区域 OCR 已由通用模块覆盖）
-  DesktopHotkeyConfig,
-  // 影刀级桌面增强
-  DesktopFindControlSmartConfig,
-  DesktopExtractTableConfig,
-  DesktopGetAppStateConfig,
-  DesktopQueryWithXpathConfig,
-  DesktopSelectTextConfig,
-  DesktopGetFocusedControlConfig,
-  DesktopAssertControlConfig,
-} from './config-panels/DesktopModuleConfigs'
 import {
   ConditionConfig,
   LoopConfig,
@@ -284,159 +165,9 @@ import {
   DbDeleteConfig,
   DbCloseConfig,
 } from './config-panels/DatabaseModuleConfigs'
-import {
-  FormatConvertConfig,
-  CompressImageConfig,
-  CompressVideoConfig,
-  ExtractAudioConfig,
-  TrimVideoConfig,
-  MergeMediaConfig,
-  AddWatermarkConfig,
-  FaceRecognitionConfig,
-  ImageOCRConfig,
-  DownloadM3U8Config,
-  RotateVideoConfig,
-  VideoSpeedConfig,
-  ExtractFrameConfig,
-  AddSubtitleConfig,
-  AdjustVolumeConfig,
-  ResizeVideoConfig,
-  ImageGrayscaleConfig,
-  ImageRoundCornersConfig,
-  AudioToTextConfig,
-  QRGenerateConfig,
-  QRDecodeConfig,
-  ScreenRecordConfig,
-  CameraCaptureConfig,
-  CameraRecordConfig,
-} from './config-panels/MediaModuleConfigs'
-import {
-  YtDlpDownloadConfig,
-  YtDlpDownloadAudioConfig,
-  YtDlpGetInfoConfig,
-  YtDlpListFormatsConfig,
-  YtDlpDownloadSubtitleConfig,
-  YtDlpDownloadPlaylistConfig,
-} from './config-panels/YtDlpModuleConfigs'
-import {
-  ListFilesConfig,
-  CopyFileConfig,
-  MoveFileConfig,
-  DeleteFileConfig,
-  CreateFolderConfig,
-  FileExistsConfig,
-  GetFileInfoConfig,
-  ReadTextFileConfig,
-  WriteTextFileConfig,
-  RenameFolderConfig,
-} from './config-panels/FileModuleConfigs'
-import {
-  QQSendMessageConfig,
-  QQSendImageConfig,
-  QQSendFileConfig,
-  QQGetFriendsConfig,
-  QQGetGroupsConfig,
-  QQGetGroupMembersConfig,
-  QQGetLoginInfoConfig,
-  QQWaitMessageConfig,
-} from './config-panels/QQModuleConfigs'
-
-import {
-  WeChatSendMessageConfig,
-  WeChatSendFileConfig,
-} from './config-panels/WeChatModuleConfigs'
-import {
-  NotifyDiscordConfig,
-  NotifyTelegramConfig,
-  NotifyDingTalkConfig,
-  NotifyWeComConfig,
-  NotifyFeishuConfig,
-  NotifyBarkConfig,
-  NotifySlackConfig,
-  NotifyMSTeamsConfig,
-  NotifyPushoverConfig,
-  NotifyPushBulletConfig,
-  NotifyGotifyConfig,
-  NotifyServerChanConfig,
-  NotifyPushPlusConfig,
-  NotifyWebhookConfig,
-  NotifyNtfyConfig,
-  NotifyMatrixConfig,
-  NotifyRocketChatConfig,
-} from './config-panels/NotifyModuleConfigs'
-import {
-  WebhookRequestConfig,
-  FeishuBitableWriteConfig,
-  FeishuBitableReadConfig,
-  FeishuSheetWriteConfig,
-  FeishuSheetReadConfig,
-  OracleConnectConfig,
-  OracleQueryConfig,
-  OracleExecuteConfig,
-  PostgreSQLConnectConfig,
-  PostgreSQLQueryConfig,
-  PostgreSQLExecuteConfig,
-  MongoDBConnectConfig,
-  MongoDBFindConfig,
-  MongoDBInsertConfig,
-  MongoDBUpdateConfig,
-  MongoDBDeleteConfig,
-  SQLServerConnectConfig,
-  SQLServerQueryConfig,
-  SQLServerExecuteConfig,
-  SQLiteConnectConfig,
-  SQLiteQueryConfig,
-  SQLiteExecuteConfig,
-  RedisConnectConfig,
-  RedisGetConfig,
-  RedisSetConfig,
-  RedisDelConfig,
-  RedisHGetConfig,
-  RedisHSetConfig,
-  OracleInsertConfig,
-  OracleUpdateConfig,
-  OracleDeleteConfig,
-  PostgreSQLInsertConfig,
-  PostgreSQLUpdateConfig,
-  PostgreSQLDeleteConfig,
-  SQLServerInsertConfig,
-  SQLServerUpdateConfig,
-  SQLServerDeleteConfig,
-  SQLiteInsertConfig,
-  SQLiteUpdateConfig,
-  SQLiteDeleteConfig,
-  OracleDisconnectConfig,
-  PostgreSQLDisconnectConfig,
-  MongoDBDisconnectConfig,
-  SQLServerDisconnectConfig,
-  SQLiteDisconnectConfig,
-  RedisDisconnectConfig,
-  SSHConnectConfig,
-  SSHExecuteCommandConfig,
-  SSHUploadFileConfig,
-  SSHDownloadFileConfig,
-  SSHDisconnectConfig,
-  AIGenerateImageConfig,
-  AIGenerateVideoConfig,
-  ProbabilityTriggerConfig,
-  SapLoginConfig,
-  SapLogoutConfig,
-  SapRunTcodeConfig,
-  SapSetFieldValueConfig,
-  SapGetFieldValueConfig,
-  SapClickButtonConfig,
-  SapSendVKeyConfig,
-  SapGetStatusMessageConfig,
-  SapGetTitleConfig,
-  SapCloseWarningConfig,
-  SapSetCheckboxConfig,
-  SapSelectComboBoxConfig,
-  SapReadGridViewConfig,
-  SapExportGridViewExcelConfig,
-  SapSetFocusConfig,
-  SapSelectTabConfig,
-  SapMaximizeWindowConfig,
-} from './config-panels/index'
+import { FaceRecognitionConfig, ImageOCRConfig } from './config-panels/MediaModuleConfigs'
+import { NotifyDiscordConfig, NotifyTelegramConfig, NotifyDingTalkConfig, NotifyWeComConfig, NotifyBarkConfig, NotifySlackConfig, NotifyMSTeamsConfig, NotifyPushoverConfig, NotifyPushBulletConfig, NotifyGotifyConfig, NotifyServerChanConfig, NotifyPushPlusConfig, NotifyWebhookConfig, NotifyNtfyConfig, NotifyMatrixConfig, NotifyRocketChatConfig } from './config-panels/NotifyModuleConfigs'
+import { WebhookRequestConfig, OracleConnectConfig, OracleQueryConfig, OracleExecuteConfig, PostgreSQLConnectConfig, PostgreSQLQueryConfig, PostgreSQLExecuteConfig, MongoDBConnectConfig, MongoDBFindConfig, MongoDBInsertConfig, MongoDBUpdateConfig, MongoDBDeleteConfig, SQLServerConnectConfig, SQLServerQueryConfig, SQLServerExecuteConfig, SQLiteConnectConfig, SQLiteQueryConfig, SQLiteExecuteConfig, RedisConnectConfig, RedisGetConfig, RedisSetConfig, RedisDelConfig, RedisHGetConfig, RedisHSetConfig, OracleInsertConfig, OracleUpdateConfig, OracleDeleteConfig, PostgreSQLInsertConfig, PostgreSQLUpdateConfig, PostgreSQLDeleteConfig, SQLServerInsertConfig, SQLServerUpdateConfig, SQLServerDeleteConfig, SQLiteInsertConfig, SQLiteUpdateConfig, SQLiteDeleteConfig, OracleDisconnectConfig, PostgreSQLDisconnectConfig, MongoDBDisconnectConfig, SQLServerDisconnectConfig, SQLiteDisconnectConfig, RedisDisconnectConfig, SSHConnectConfig, SSHExecuteCommandConfig, SSHUploadFileConfig, SSHDownloadFileConfig, SSHDisconnectConfig, AIGenerateImageConfig, AIGenerateVideoConfig, ProbabilityTriggerConfig } from './config-panels/index'
 import {
   AllureInitConfig,
   AllureStartTestConfig,
@@ -445,125 +176,9 @@ import {
   AllureStopTestConfig,
   AllureGenerateReportConfig,
 } from './config-panels/TestAllureConfigs'
-import {
-  PhoneTapConfig,
-  PhoneSwipeConfig,
-  PhoneLongPressConfig,
-  PhoneInputTextConfig,
-  PhonePressKeyConfig,
-  PhoneScreenshotConfig,
-  PhoneStartMirrorConfig,
-  PhoneStopMirrorConfig,
-  PhoneInstallAppConfig,
-  PhoneStartAppConfig,
-  PhoneStopAppConfig,
-  PhoneUninstallAppConfig,
-  PhonePushFileConfig,
-  PhonePullFileConfig,
-  PhoneClickImageConfig,
-  PhoneClickTextConfig,
-  PhoneWaitImageConfig,
-  PhoneImageExistsConfig,
-  PhoneSetVolumeConfig,
-  PhoneSetBrightnessConfig,
-  PhoneSetClipboardConfig,
-  PhoneGetClipboardConfig,
-} from './config-panels/PhoneModuleConfigs'
-import {
-  PDFToImagesConfig,
-  ImagesToPDFConfig,
-  PDFMergeConfig,
-  PDFSplitConfig,
-  PDFExtractTextConfig,
-  PDFExtractImagesConfig,
-  PDFEncryptConfig,
-  PDFDecryptConfig,
-  PDFAddWatermarkConfig,
-  PDFRotateConfig,
-  PDFDeletePagesConfig,
-  PDFGetInfoConfig,
-  PDFCompressConfig,
-  PDFInsertPagesConfig,
-  PDFReorderPagesConfig,
-  PDFToWordConfig,
-} from './config-panels/PDFModuleConfigs'
-import {
-  MarkdownToHTMLConfig,
-  HTMLToMarkdownConfig,
-  MarkdownToPDFConfig,
-  MarkdownToDocxConfig,
-  DocxToMarkdownConfig,
-  HTMLToDocxConfig,
-  DocxToHTMLConfig,
-  MarkdownToEPUBConfig,
-  EPUBToMarkdownConfig,
-  LaTeXToPDFConfig,
-  RSTToHTMLConfig,
-  OrgToHTMLConfig,
-  UniversalDocConvertConfig,
-} from './config-panels/DocumentConvertConfigs'
-import {
-  ImageResizeConfig,
-  ImageCropConfig,
-  ImageRotateConfig,
-  ImageFlipConfig,
-  ImageBlurConfig,
-  ImageSharpenConfig,
-  ImageBrightnessConfig,
-  ImageContrastConfig,
-  ImageColorBalanceConfig,
-  ImageConvertFormatConfig,
-  ImageAddTextConfig,
-  ImageMergeConfig,
-  ImageThumbnailConfig,
-  ImageFilterConfig,
-  ImageGetInfoConfig,
-  ImageRemoveBgConfig,
-} from './config-panels/PillowImageConfigs'
-import {
-  BwmEmbedTextConfig,
-  BwmExtractTextConfig,
-  BwmEmbedImageConfig,
-  BwmExtractImageConfig,
-} from './config-panels/BlindWatermarkConfigs'
-import {
-  ExportLogConfig,
-  ClickTextConfig,
-  HoverImageConfig,
-  HoverTextConfig,
-  DragImageConfig,
-  ShareFolderConfig,
-  ShareFileConfig,
-  StopShareConfig,
-  StartScreenShareConfig,
-  StopScreenShareConfig,
-} from './config-panels/AdvancedModuleConfigs'
-import {
-  ImageFormatConvertConfig,
-  VideoFormatConvertConfig,
-  AudioFormatConvertConfig,
-  VideoToAudioConfig,
-  VideoToGIFConfig,
-  BatchFormatConvertConfig,
-} from './config-panels/FormatFactoryConfigs'
-import {
-  FileHashCompareConfig,
-  FileDiffCompareConfig,
-  FolderHashCompareConfig,
-  FolderDiffCompareConfig,
-  RandomPasswordGeneratorConfig,
-  URLEncodeDecodeConfig,
-  MD5EncryptConfig,
-  SHAEncryptConfig,
-  TimestampConverterConfig,
-  RGBToHSVConfig,
-  RGBToCMYKConfig,
-  HEXToCMYKConfig,
-  UUIDGeneratorConfig,
-  PrinterCallConfig,
-} from './config-panels/UtilityToolsConfigs'
+import { ExportLogConfig, ShareFolderConfig, ShareFileConfig, StopShareConfig, StartScreenShareConfig, StopScreenShareConfig } from './config-panels/AdvancedModuleConfigs'
+import { RandomPasswordGeneratorConfig, URLEncodeDecodeConfig, MD5EncryptConfig, SHAEncryptConfig, TimestampConverterConfig, RGBToHSVConfig, RGBToCMYKConfig, HEXToCMYKConfig, UUIDGeneratorConfig, PrinterCallConfig } from './config-panels/UtilityToolsConfigs'
 import { CustomModuleConfig } from './config-panels/CustomModuleConfig'
-import { WpsBitableWriteConfig, WpsBitableReadConfig } from './config-panels/WPSModuleConfigs'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 
@@ -657,11 +272,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     maxIndex: number
   } | null>(null)
 
-  // 桌面元素选择器状态
-  const [isDesktopPicking, setIsDesktopPicking] = useState(false)
-  const [desktopPickingField, setDesktopPickingField] = useState<string | null>(null)
-  const desktopPollingRef = useRef<number | null>(null)
-
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
   const nodeData = selectedNode?.data as NodeData | undefined
 
@@ -670,9 +280,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     return () => {
       if (pollingRef.current) {
         clearInterval(pollingRef.current)
-      }
-      if (desktopPollingRef.current) {
-        clearInterval(desktopPollingRef.current)
       }
     }
   }, [])
@@ -685,10 +292,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       if (pollingRef.current) {
         clearInterval(pollingRef.current)
         pollingRef.current = null
-      }
-      if (desktopPollingRef.current) {
-        clearInterval(desktopPollingRef.current)
-        desktopPollingRef.current = null
       }
       if (isPicking) {
         elementPickerApi.stop().catch(() => {})
@@ -703,14 +306,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       setPendingField(null)
       // 切换节点时重置选择器类型偏好，避免上一个节点的偏好串到新节点
       setSelectorTypeOverride({})
-      if (isDesktopPicking) {
-        desktopPickerApi.stop().catch(() => {})
-        setIsDesktopPicking(false)
-        setDesktopPickingField(null)
-      }
       lastSelectedNodeIdRef.current = selectedNodeId
     }
-  }, [selectedNodeId, isPicking, isDesktopPicking])
+  }, [selectedNodeId, isPicking])
 
   const handleChange = useCallback((key: string, value: unknown) => {
     if (selectedNodeId) {
@@ -906,77 +504,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     addLog({ level: 'info', message: '元素选择器已停止' })
   }, [addLog])
 
-  // 启动桌面元素选择器
-  const startDesktopPicker = useCallback(async (fieldName: string) => {
-    setIsDesktopPicking(true)
-    setDesktopPickingField(fieldName)
-    
-    addLog({ level: 'info', message: '正在启动桌面元素选择器...' })
-
-    try {
-      const result = await desktopPickerApi.start()
-      if (result.error || !result.data?.success) {
-        addLog({ level: 'error', message: `启动失败: ${result.error || result.data?.message}` })
-        setIsDesktopPicking(false)
-        setDesktopPickingField(null)
-        return
-      }
-
-      addLog({ level: 'success', message: '桌面元素选择器已启动：将鼠标移动到目标元素上，按Ctrl+点击捕获' })
-
-      // 轮询检查是否捕获到元素
-      desktopPollingRef.current = window.setInterval(async () => {
-        const capturedResult = await desktopPickerApi.getCaptured()
-        
-        if (capturedResult.data?.success && capturedResult.data.element) {
-          const element = capturedResult.data.element
-          
-          // 构建控件路径字符串
-          const controlPath = element.control_path || ''
-          
-          // 保存到配置
-          handleChange(fieldName, controlPath)
-          
-          // 显示捕获信息
-          const info = [
-            `控件类型: ${element.control_type}`,
-            element.name ? `名称: ${element.name}` : '',
-            element.automation_id ? `自动化ID: ${element.automation_id}` : '',
-            element.class_name ? `类名: ${element.class_name}` : '',
-          ].filter(Boolean).join(', ')
-          
-          addLog({ level: 'success', message: `已捕获桌面元素: ${info}` })
-          
-          // 停止选择器
-          await desktopPickerApi.stop()
-          if (desktopPollingRef.current) {
-            clearInterval(desktopPollingRef.current)
-            desktopPollingRef.current = null
-          }
-          setIsDesktopPicking(false)
-          setDesktopPickingField(null)
-        }
-      }, 500)
-
-    } catch (error) {
-      addLog({ level: 'error', message: `启动桌面元素选择器失败: ${error}` })
-      setIsDesktopPicking(false)
-      setDesktopPickingField(null)
-    }
-  }, [addLog, handleChange])
-
-  // 停止桌面元素选择器
-  const stopDesktopPicker = useCallback(async () => {
-    if (desktopPollingRef.current) {
-      clearInterval(desktopPollingRef.current)
-      desktopPollingRef.current = null
-    }
-    await desktopPickerApi.stop()
-    setIsDesktopPicking(false)
-    setDesktopPickingField(null)
-    addLog({ level: 'info', message: '桌面元素选择器已停止' })
-  }, [addLog])
-
   if (!selectedNode || !nodeData) {
     return (
       <aside
@@ -1154,37 +681,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     )
   }
 
-  // 渲染桌面元素选择器输入框
-  const renderDesktopSelectorInput = (id: string, label: string, placeholder: string) => (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <div className="flex gap-2">
-        <VariableInput
-          value={(nodeData[id] as string) || ''}
-          onChange={(v) => handleChange(id, v)}
-          placeholder={placeholder}
-          className="flex-1"
-        />
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => isDesktopPicking && desktopPickingField === id ? stopDesktopPicker() : startDesktopPicker(id)}
-          title={isDesktopPicking && desktopPickingField === id ? '停止选择' : '捕获桌面元素'}
-          disabled={isDesktopPicking && desktopPickingField !== id}
-        >
-          {isDesktopPicking && desktopPickingField === id ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Crosshair className="w-4 h-4" />
-          )}
-        </Button>
-      </div>
-      {isDesktopPicking && desktopPickingField === id && (
-        <p className="text-xs text-orange-500">将鼠标移动到目标元素上，按Ctrl+点击捕获</p>
-      )}
-    </div>
-  )
-
   // 渲染模块配置
   const renderModuleConfig = () => {
     if (excludedModuleTypes.has(nodeData.moduleType)) {
@@ -1192,15 +688,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     }
     const props = { data: nodeData, onChange: handleChange, renderSelectorInput }
 
-    // Excel 自动化模块（openpyxl）统一走 schema 驱动的通用配置面板
-    const mt = String(nodeData.moduleType)
-    if (mt.startsWith('excel_')) {
-      return <ExcelModuleConfig moduleType={mt} data={nodeData} onChange={handleChange} />
-    }
-    // Word 自动化模块（Word COM）同样走 schema 驱动的通用配置面板
-    if (mt.startsWith('word_')) {
-      return <WordModuleConfig moduleType={mt} data={nodeData} onChange={handleChange} />
-    }
 
     switch (nodeData.moduleType) {
       case 'open_page':
@@ -1237,8 +724,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <WaitConfig {...props} />
       case 'wait_element':
         return <WaitElementConfig {...props} />
-      case 'wait_image':
-        return <WaitImageConfig data={nodeData} onChange={handleChange} />
       case 'refresh_page':
         return <RefreshPageConfig data={nodeData} onChange={handleChange} />
       case 'go_back':
@@ -1269,12 +754,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <PlaySoundConfig data={nodeData} onChange={handleChange} />
       case 'system_notification':
         return <SystemNotificationConfig data={nodeData} onChange={handleChange} />
-      case 'play_music':
-        return <PlayMusicConfig data={nodeData} onChange={handleChange} />
-      case 'play_video':
-        return <PlayVideoConfig data={nodeData} onChange={handleChange} />
-      case 'view_image':
-        return <ViewImageConfig data={nodeData} onChange={handleChange} />
       case 'input_prompt':
         return <InputPromptConfig data={nodeData} onChange={handleChange} />
       case 'text_to_speech':
@@ -1317,44 +796,18 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <SetClipboardConfig data={nodeData} onChange={handleChange} />
       case 'get_clipboard':
         return <GetClipboardConfig data={nodeData} onChange={handleChange} />
-      case 'keyboard_action':
-        return <KeyboardActionConfig {...props} />
-      case 'real_mouse_scroll':
-        return <RealMouseScrollConfig data={nodeData} onChange={handleChange} />
       case 'shutdown_system':
         return <ShutdownSystemConfig data={nodeData} onChange={handleChange} />
       case 'lock_screen':
         return <LockScreenConfig />
-      case 'window_focus':
-        return <WindowFocusConfig data={nodeData} onChange={handleChange} />
-      case 'real_mouse_click':
-        return <RealMouseClickConfig data={nodeData} onChange={handleChange} />
-      case 'real_mouse_move':
-        return <RealMouseMoveConfig data={nodeData} onChange={handleChange} />
-      case 'real_mouse_drag':
-        return <RealMouseDragConfig data={nodeData} onChange={handleChange} />
-      case 'real_keyboard':
-        return <RealKeyboardConfig data={nodeData} onChange={handleChange} />
       case 'run_command':
         return <RunCommandConfig data={nodeData} onChange={handleChange} />
-      case 'click_image':
-        return <ClickImageConfig data={nodeData} onChange={handleChange} />
-      case 'image_exists':
-        return <ImageExistsConfig data={nodeData} onChange={handleChange} />
       case 'element_exists':
         return <ElementExistsConfig {...props} />
       case 'element_visible':
         return <ElementVisibleConfig {...props} />
-      case 'get_mouse_position':
-        return <GetMousePositionConfig data={nodeData} onChange={handleChange} />
-      case 'screenshot_screen':
-        return <ScreenshotScreenConfig data={nodeData} onChange={handleChange} />
-      case 'rename_file':
-        return <RenameFileConfig data={nodeData} onChange={handleChange} />
       case 'network_capture':
         return <NetworkCaptureConfig data={nodeData} onChange={handleChange} />
-      case 'macro_recorder':
-        return <MacroRecorderConfig data={nodeData} onChange={handleChange} />
       case 'ai_chat':
         return <AIChatConfig data={nodeData} onChange={handleChange} />
       case 'ai_extract':
@@ -1633,282 +1086,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <DbDeleteConfig data={nodeData} onChange={handleChange} />
       case 'db_close':
         return <DbCloseConfig data={nodeData} onChange={handleChange} />
-      case 'format_convert':
-        return <FormatConvertConfig data={nodeData} onChange={handleChange} />
-      case 'compress_image':
-        return <CompressImageConfig data={nodeData} onChange={handleChange} />
-      case 'compress_video':
-        return <CompressVideoConfig data={nodeData} onChange={handleChange} />
-      case 'extract_audio':
-        return <ExtractAudioConfig data={nodeData} onChange={handleChange} />
-      
-      // 格式工厂模块
-      case 'image_format_convert':
-        return <ImageFormatConvertConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      case 'video_format_convert':
-        return <VideoFormatConvertConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      case 'audio_format_convert':
-        return <AudioFormatConvertConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      case 'video_to_audio':
-        return <VideoToAudioConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      case 'video_to_gif':
-        return <VideoToGIFConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      case 'batch_format_convert':
-        return <BatchFormatConvertConfig config={nodeData} onChange={(newConfig) => handleChange('config', newConfig)} />
-      
-      case 'trim_video':
-        return <TrimVideoConfig data={nodeData} onChange={handleChange} />
-      case 'merge_media':
-        return <MergeMediaConfig data={nodeData} onChange={handleChange} />
-      case 'add_watermark':
-        return <AddWatermarkConfig data={nodeData} onChange={handleChange} />
       case 'face_recognition':
         return <FaceRecognitionConfig data={nodeData} onChange={handleChange} />
       case 'image_ocr':
         return <ImageOCRConfig data={nodeData} onChange={handleChange} />
-      case 'download_m3u8':
-        return <DownloadM3U8Config data={nodeData} onChange={handleChange} />
-      case 'ytdlp_download':
-        return <YtDlpDownloadConfig data={nodeData} onChange={handleChange} />
-      case 'ytdlp_download_audio':
-        return <YtDlpDownloadAudioConfig data={nodeData} onChange={handleChange} />
-      case 'ytdlp_get_info':
-        return <YtDlpGetInfoConfig data={nodeData} onChange={handleChange} />
-      case 'ytdlp_list_formats':
-        return <YtDlpListFormatsConfig data={nodeData} onChange={handleChange} />
-      case 'ytdlp_download_subtitle':
-        return <YtDlpDownloadSubtitleConfig data={nodeData} onChange={handleChange} />
-      case 'ytdlp_download_playlist':
-        return <YtDlpDownloadPlaylistConfig data={nodeData} onChange={handleChange} />
-      case 'rotate_video':
-        return <RotateVideoConfig data={nodeData} onChange={handleChange} />
-      case 'video_speed':
-        return <VideoSpeedConfig data={nodeData} onChange={handleChange} />
-      case 'extract_frame':
-        return <ExtractFrameConfig data={nodeData} onChange={handleChange} />
-      case 'add_subtitle':
-        return <AddSubtitleConfig data={nodeData} onChange={handleChange} />
-      case 'adjust_volume':
-        return <AdjustVolumeConfig data={nodeData} onChange={handleChange} />
-      case 'resize_video':
-        return <ResizeVideoConfig data={nodeData} onChange={handleChange} />
-      case 'image_grayscale':
-        return <ImageGrayscaleConfig data={nodeData} onChange={handleChange} />
-      case 'image_round_corners':
-        return <ImageRoundCornersConfig data={nodeData} onChange={handleChange} />
-      case 'audio_to_text':
-        return <AudioToTextConfig data={nodeData} onChange={handleChange} />
-      case 'qr_generate':
-        return <QRGenerateConfig data={nodeData} onChange={handleChange} />
-      case 'qr_decode':
-        return <QRDecodeConfig data={nodeData} onChange={handleChange} />
-      case 'screen_record':
-        return <ScreenRecordConfig data={nodeData} onChange={handleChange} />
-      case 'camera_capture':
-        return <CameraCaptureConfig data={nodeData} onChange={handleChange} />
-      case 'camera_record':
-        return <CameraRecordConfig data={nodeData} onChange={handleChange} />
-      case 'list_files':
-        return <ListFilesConfig data={nodeData} onChange={handleChange} />
-      case 'copy_file':
-        return <CopyFileConfig data={nodeData} onChange={handleChange} />
-      case 'move_file':
-        return <MoveFileConfig data={nodeData} onChange={handleChange} />
-      case 'delete_file':
-        return <DeleteFileConfig data={nodeData} onChange={handleChange} />
-      case 'create_folder':
-        return <CreateFolderConfig data={nodeData} onChange={handleChange} />
-      case 'file_exists':
-        return <FileExistsConfig data={nodeData} onChange={handleChange} />
-      case 'get_file_info':
-        return <GetFileInfoConfig data={nodeData} onChange={handleChange} />
-      case 'read_text_file':
-        return <ReadTextFileConfig data={nodeData} onChange={handleChange} />
-      case 'write_text_file':
-        return <WriteTextFileConfig data={nodeData} onChange={handleChange} />
-      case 'rename_folder':
-        return <RenameFolderConfig data={nodeData} onChange={handleChange} />
-      
-      // QQ机器人模块
-      case 'qq_send_message':
-        return <QQSendMessageConfig data={nodeData} onChange={handleChange} />
-      case 'qq_send_image':
-        return <QQSendImageConfig data={nodeData} onChange={handleChange} />
-      case 'qq_send_file':
-        return <QQSendFileConfig data={nodeData} onChange={handleChange} />
-      case 'qq_get_friends':
-        return <QQGetFriendsConfig data={nodeData} onChange={handleChange} />
-      case 'qq_get_groups':
-        return <QQGetGroupsConfig data={nodeData} onChange={handleChange} />
-      case 'qq_get_group_members':
-        return <QQGetGroupMembersConfig data={nodeData} onChange={handleChange} />
-      case 'qq_get_login_info':
-        return <QQGetLoginInfoConfig data={nodeData} onChange={handleChange} />
-      case 'qq_wait_message':
-        return <QQWaitMessageConfig data={nodeData} onChange={handleChange} />
-      // 微信自动化模块
-      case 'wechat_send_message':
-        return <WeChatSendMessageConfig data={nodeData} onChange={handleChange} />
-      case 'wechat_send_file':
-        return <WeChatSendFileConfig data={nodeData} onChange={handleChange} />
-      // 手机自动化模块
-      case 'phone_tap':
-        return <PhoneTapConfig data={nodeData} onChange={handleChange} />
-      case 'phone_swipe':
-        return <PhoneSwipeConfig data={nodeData} onChange={handleChange} />
-      case 'phone_long_press':
-        return <PhoneLongPressConfig data={nodeData} onChange={handleChange} />
-      case 'phone_input_text':
-        return <PhoneInputTextConfig data={nodeData} onChange={handleChange} />
-      case 'phone_press_key':
-        return <PhonePressKeyConfig data={nodeData} onChange={handleChange} />
-      case 'phone_screenshot':
-        return <PhoneScreenshotConfig data={nodeData} onChange={handleChange} />
-      case 'phone_start_mirror':
-        return <PhoneStartMirrorConfig data={nodeData} onChange={handleChange} />
-      case 'phone_stop_mirror':
-        return <PhoneStopMirrorConfig />
-      case 'phone_install_app':
-        return <PhoneInstallAppConfig data={nodeData} onChange={handleChange} />
-      case 'phone_start_app':
-        return <PhoneStartAppConfig data={nodeData} onChange={handleChange} />
-      case 'phone_stop_app':
-        return <PhoneStopAppConfig data={nodeData} onChange={handleChange} />
-      case 'phone_uninstall_app':
-        return <PhoneUninstallAppConfig data={nodeData} onChange={handleChange} />
-      case 'phone_push_file':
-        return <PhonePushFileConfig data={nodeData} onChange={handleChange} />
-      case 'phone_pull_file':
-        return <PhonePullFileConfig data={nodeData} onChange={handleChange} />
-      case 'phone_click_image':
-        return <PhoneClickImageConfig data={nodeData} onChange={handleChange} />
-      case 'phone_click_text':
-        return <PhoneClickTextConfig data={nodeData} onChange={handleChange} />
-      case 'phone_wait_image':
-        return <PhoneWaitImageConfig data={nodeData} onChange={handleChange} />
-      case 'phone_image_exists':
-        return <PhoneImageExistsConfig data={nodeData} onChange={handleChange} />
-      case 'phone_set_volume':
-        return <PhoneSetVolumeConfig data={nodeData} onChange={handleChange} />
-      case 'phone_set_brightness':
-        return <PhoneSetBrightnessConfig data={nodeData} onChange={handleChange} />
-      case 'phone_set_clipboard':
-        return <PhoneSetClipboardConfig data={nodeData} onChange={handleChange} />
-      case 'phone_get_clipboard':
-        return <PhoneGetClipboardConfig data={nodeData} onChange={handleChange} />
-      // PDF处理模块
-      case 'pdf_to_images':
-        return <PDFToImagesConfig config={nodeData} updateConfig={handleChange} />
-      case 'images_to_pdf':
-        return <ImagesToPDFConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_merge':
-        return <PDFMergeConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_split':
-        return <PDFSplitConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_extract_text':
-        return <PDFExtractTextConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_extract_images':
-        return <PDFExtractImagesConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_encrypt':
-        return <PDFEncryptConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_decrypt':
-        return <PDFDecryptConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_add_watermark':
-        return <PDFAddWatermarkConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_rotate':
-        return <PDFRotateConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_delete_pages':
-        return <PDFDeletePagesConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_get_info':
-        return <PDFGetInfoConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_compress':
-        return <PDFCompressConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_insert_pages':
-        return <PDFInsertPagesConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_reorder_pages':
-        return <PDFReorderPagesConfig config={nodeData} updateConfig={handleChange} />
-      case 'pdf_to_word':
-        return <PDFToWordConfig config={nodeData} updateConfig={handleChange} />
-      // 文档转换模块
-      case 'markdown_to_html':
-        return <MarkdownToHTMLConfig config={nodeData} updateConfig={handleChange} />
-      case 'html_to_markdown':
-        return <HTMLToMarkdownConfig config={nodeData} updateConfig={handleChange} />
-      case 'markdown_to_pdf':
-        return <MarkdownToPDFConfig config={nodeData} updateConfig={handleChange} />
-      case 'markdown_to_docx':
-        return <MarkdownToDocxConfig config={nodeData} updateConfig={handleChange} />
-      case 'docx_to_markdown':
-        return <DocxToMarkdownConfig config={nodeData} updateConfig={handleChange} />
-      case 'html_to_docx':
-        return <HTMLToDocxConfig config={nodeData} updateConfig={handleChange} />
-      case 'docx_to_html':
-        return <DocxToHTMLConfig config={nodeData} updateConfig={handleChange} />
-      case 'markdown_to_epub':
-        return <MarkdownToEPUBConfig config={nodeData} updateConfig={handleChange} />
-      case 'epub_to_markdown':
-        return <EPUBToMarkdownConfig config={nodeData} updateConfig={handleChange} />
-      case 'latex_to_pdf':
-        return <LaTeXToPDFConfig config={nodeData} updateConfig={handleChange} />
-      case 'rst_to_html':
-        return <RSTToHTMLConfig config={nodeData} updateConfig={handleChange} />
-      case 'org_to_html':
-        return <OrgToHTMLConfig config={nodeData} updateConfig={handleChange} />
-      case 'universal_doc_convert':
-        return <UniversalDocConvertConfig config={nodeData} updateConfig={handleChange} />
-      // Pillow图像处理模块
-      case 'image_resize':
-        return <ImageResizeConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_crop':
-        return <ImageCropConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_rotate':
-        return <ImageRotateConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_flip':
-        return <ImageFlipConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_blur':
-        return <ImageBlurConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_sharpen':
-        return <ImageSharpenConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_brightness':
-        return <ImageBrightnessConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_contrast':
-        return <ImageContrastConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_color_balance':
-        return <ImageColorBalanceConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_convert_format':
-        return <ImageConvertFormatConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_add_text':
-        return <ImageAddTextConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_merge':
-        return <ImageMergeConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_thumbnail':
-        return <ImageThumbnailConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_filter':
-        return <ImageFilterConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_get_info':
-        return <ImageGetInfoConfig config={nodeData} updateConfig={handleChange} />
-      case 'image_remove_bg':
-        return <ImageRemoveBgConfig config={nodeData} updateConfig={handleChange} />
-      // 盲水印（blind_watermark）
-      case 'bwm_embed_text':
-        return <BwmEmbedTextConfig config={nodeData} updateConfig={handleChange} />
-      case 'bwm_extract_text':
-        return <BwmExtractTextConfig config={nodeData} updateConfig={handleChange} />
-      case 'bwm_embed_image':
-        return <BwmEmbedImageConfig config={nodeData} updateConfig={handleChange} />
-      case 'bwm_extract_image':
-        return <BwmExtractImageConfig config={nodeData} updateConfig={handleChange} />
       // 高级模块
       case 'export_log':
         return <ExportLogConfig data={nodeData} onChange={handleChange} />
-      case 'click_text':
-        return <ClickTextConfig data={nodeData} onChange={handleChange} />
-      case 'hover_image':
-        return <HoverImageConfig data={nodeData} onChange={handleChange} />
-      case 'hover_text':
-        return <HoverTextConfig data={nodeData} onChange={handleChange} />
-      case 'drag_image':
-        return <DragImageConfig data={nodeData} onChange={handleChange} />
       case 'share_folder':
         return <ShareFolderConfig data={nodeData} onChange={handleChange} />
       case 'share_file':
@@ -1919,15 +1103,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <StartScreenShareConfig data={nodeData} onChange={handleChange} />
       case 'stop_screen_share':
         return <StopScreenShareConfig data={nodeData} onChange={handleChange} />
-      // 实用工具模块
-      case 'file_hash_compare':
-        return <FileHashCompareConfig config={nodeData} updateConfig={handleChange} />
-      case 'file_diff_compare':
-        return <FileDiffCompareConfig config={nodeData} updateConfig={handleChange} />
-      case 'folder_hash_compare':
-        return <FolderHashCompareConfig config={nodeData} updateConfig={handleChange} />
-      case 'folder_diff_compare':
-        return <FolderDiffCompareConfig config={nodeData} updateConfig={handleChange} />
       case 'random_password_generator':
         return <RandomPasswordGeneratorConfig config={nodeData} updateConfig={handleChange} />
       case 'url_encode_decode':
@@ -1961,89 +1136,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <AllureStopTestConfig data={nodeData} onChange={handleChange} />
       case 'allure_generate_report':
         return <AllureGenerateReportConfig data={nodeData} onChange={handleChange} />
-      // 桌面应用自动化模块
-      case 'desktop_app_start':
-        return <DesktopAppStartConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_app_connect':
-        return <DesktopAppConnectConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_app_close':
-        return <DesktopAppCloseConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_app_get_info':
-        return <DesktopAppGetInfoConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_app_wait_ready':
-        return <DesktopAppWaitReadyConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_activate':
-        return <DesktopWindowActivateConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_state':
-        return <DesktopWindowStateConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_move':
-        return <DesktopWindowMoveConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_resize':
-        return <DesktopWindowResizeConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_list':
-        return <DesktopWindowListConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_topmost':
-        return <DesktopWindowTopmostConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_window_capture':
-        return <DesktopWindowCaptureConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_find_control':
-        return <DesktopFindControlConfig data={nodeData} onChange={handleChange} renderDesktopSelectorInput={renderDesktopSelectorInput} />
-      case 'desktop_control_info':
-        return <DesktopControlInfoConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_control_tree':
-        return <DesktopControlTreeConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_wait_control':
-        return <DesktopWaitControlConfig data={nodeData} onChange={handleChange} renderDesktopSelectorInput={renderDesktopSelectorInput} />
-      case 'desktop_click_control':
-        return <DesktopClickControlConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_input_control':
-        return <DesktopInputControlConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_text':
-        return <DesktopGetTextConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_set_value':
-        return <DesktopSetValueConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_select_combo':
-        return <DesktopSelectComboConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_checkbox':
-        return <DesktopCheckboxConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_radio':
-        return <DesktopRadioConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_drag_control':
-        return <DesktopDragControlConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_menu_click':
-        return <DesktopMenuClickConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_list_operate':
-        return <DesktopListOperateConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_send_keys':
-        return <DesktopSendKeysConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_property':
-        return <DesktopGetPropertyConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_dialog_handle':
-        return <DesktopDialogHandleConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_scroll_control':
-        return <DesktopScrollControlConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_control_info':
-        return <DesktopGetControlInfoConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_control_tree':
-        return <DesktopGetControlTreeConfig data={nodeData} onChange={handleChange} />
-      // 现代桌面应用增强（仅热键 - OCR/图像/区域 OCR 已由 click_text/click_image/image_ocr 通用模块覆盖）
-      case 'desktop_hotkey':
-        return <DesktopHotkeyConfig data={nodeData} onChange={handleChange} />
-      // 影刀级桌面增强
-      case 'desktop_find_control_smart':
-        return <DesktopFindControlSmartConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_extract_table':
-        return <DesktopExtractTableConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_app_state':
-        return <DesktopGetAppStateConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_query_with_xpath':
-        return <DesktopQueryWithXpathConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_select_text':
-        return <DesktopSelectTextConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_get_focused_control':
-        return <DesktopGetFocusedControlConfig data={nodeData} onChange={handleChange} />
-      case 'desktop_assert_control':
-        return <DesktopAssertControlConfig data={nodeData} onChange={handleChange} />
       // Apprise多渠道通知模块
       case 'notify_discord':
         return <NotifyDiscordConfig data={nodeData} onChange={handleChange} />
@@ -2053,8 +1145,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <NotifyDingTalkConfig data={nodeData} onChange={handleChange} />
       case 'notify_wecom':
         return <NotifyWeComConfig data={nodeData} onChange={handleChange} />
-      case 'notify_feishu':
-        return <NotifyFeishuConfig data={nodeData} onChange={handleChange} />
       case 'notify_bark':
         return <NotifyBarkConfig data={nodeData} onChange={handleChange} />
       case 'notify_slack':
@@ -2083,22 +1173,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       // Webhook请求模块
       case 'webhook_request':
         return <WebhookRequestConfig data={nodeData} onChange={handleChange} />
-      
-      // 飞书自动化模块
-      case 'feishu_bitable_write':
-        return <FeishuBitableWriteConfig data={nodeData} onChange={handleChange} />
-      case 'feishu_bitable_read':
-        return <FeishuBitableReadConfig data={nodeData} onChange={handleChange} />
-      case 'feishu_sheet_write':
-        return <FeishuSheetWriteConfig data={nodeData} onChange={handleChange} />
-      case 'feishu_sheet_read':
-        return <FeishuSheetReadConfig data={nodeData} onChange={handleChange} />
-
-      // WPS 多维表格模块
-      case 'wps_bitable_write':
-        return <WpsBitableWriteConfig data={nodeData} onChange={handleChange} />
-      case 'wps_bitable_read':
-        return <WpsBitableReadConfig data={nodeData} onChange={handleChange} />
       
       // Oracle数据库模块
       case 'oracle_connect':
@@ -2207,42 +1281,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <SSHDownloadFileConfig data={nodeData} onChange={handleChange} />
       case 'ssh_disconnect':
         return <SSHDisconnectConfig data={nodeData} onChange={handleChange} />
-      
-      // SAP GUI 自动化模块
-      case 'sap_login':
-        return <SapLoginConfig data={nodeData} onChange={handleChange} />
-      case 'sap_logout':
-        return <SapLogoutConfig data={nodeData} onChange={handleChange} />
-      case 'sap_run_tcode':
-        return <SapRunTcodeConfig data={nodeData} onChange={handleChange} />
-      case 'sap_set_field_value':
-        return <SapSetFieldValueConfig data={nodeData} onChange={handleChange} />
-      case 'sap_get_field_value':
-        return <SapGetFieldValueConfig data={nodeData} onChange={handleChange} />
-      case 'sap_click_button':
-        return <SapClickButtonConfig data={nodeData} onChange={handleChange} />
-      case 'sap_send_vkey':
-        return <SapSendVKeyConfig data={nodeData} onChange={handleChange} />
-      case 'sap_get_status_message':
-        return <SapGetStatusMessageConfig data={nodeData} onChange={handleChange} />
-      case 'sap_get_title':
-        return <SapGetTitleConfig data={nodeData} onChange={handleChange} />
-      case 'sap_close_warning':
-        return <SapCloseWarningConfig data={nodeData} onChange={handleChange} />
-      case 'sap_set_checkbox':
-        return <SapSetCheckboxConfig data={nodeData} onChange={handleChange} />
-      case 'sap_select_combobox':
-        return <SapSelectComboBoxConfig data={nodeData} onChange={handleChange} />
-      case 'sap_select_tab':
-        return <SapSelectTabConfig data={nodeData} onChange={handleChange} />
-      case 'sap_read_gridview':
-        return <SapReadGridViewConfig data={nodeData} onChange={handleChange} />
-      case 'sap_export_gridview_excel':
-        return <SapExportGridViewExcelConfig data={nodeData} onChange={handleChange} />
-      case 'sap_set_focus':
-        return <SapSetFocusConfig data={nodeData} onChange={handleChange} />
-      case 'sap_maximize_window':
-        return <SapMaximizeWindowConfig data={nodeData} onChange={handleChange} />
       // 自定义模块
       case 'custom_module':
         return <CustomModuleConfig data={nodeData} onChange={handleChange} />

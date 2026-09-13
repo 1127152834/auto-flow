@@ -4152,3 +4152,5 @@ Object.assign(PHRASES, {
 Object.assign(PHRASES, { '当前界面未接通此操作': 'This action is not connected to the current interface' })
 
 Object.assign(PHRASES, { '模块不存在或已排除：': 'Unknown or excluded modules: ' })
+
+Object.assign(PHRASES, { '该媒体节点已排除，不支持执行': 'This media node is excluded and cannot run' })

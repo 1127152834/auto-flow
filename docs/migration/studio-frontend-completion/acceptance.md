@@ -83,3 +83,12 @@ AST 核对发现早期扫描将查询回调中的 open_page 比较扩展为整�
 - HTTP-DOC/CMD/SSE/CLIENT 四场景分别通过 memory/http，共 8 项；完整数据/操作/边界见 http-fixture.md。
 - 全量 87 文件、1,082 项测试通过，TypeScript/ESLint/renderer-main-preload 构建通过，见 evidence/f0-http-tests.txt 和 evidence/f0-http-build.txt。
 - 284 属性面板和既有保存/编辑测试通过。F0 仍有其它专属配置源码/字段用例未关闭；F1 只有局部 HTTP 夹具，不能标完整合同已冻结。
+
+## F0 专属配置与媒体服务清理
+
+- 通过导入关系与 284 个保留节点分发逐项核对，移除 16 个已排除类别的专属配置文件；删除 ConfigPanel 的排除分支及桌面拾取状态/轮询。共享网页定位、相似元素、自定义模块配置保留。
+- 移除六个专属音乐/视频/图片播放容器及弹窗。旧媒体执行事件返回失败回执，不启动播放器、不发转换请求；保留 text_to_speech 及停止时语音清理，图片资源不变。
+- 删除的源文件路径、冻结 checksum、原因保留于 excluded-source-files.json；已有工作流及资源数据未删除。源注册表现在为 250 文件。
+- 284 面板注册与 284 保存往返通过；新增三个过期媒体事件回执及一个语音取消测试通过。
+- 首次全量回归发现新增失败文案缺英文词条，补入原字典后重跑，未削弱断言。逐字段交互、Electron 原生 E2E 尚未据此宣称通过。
+- 重跑全量结果：88 文件、1,086 项通过；TypeScript、ESLint、renderer/main/preload 构建通过。证据：evidence/f0-exclusive-tests.txt 与 evidence/f0-exclusive-build.txt。

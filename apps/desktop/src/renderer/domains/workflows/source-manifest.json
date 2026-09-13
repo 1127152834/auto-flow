@@ -505,11 +505,6 @@
     "sha256": "451cbf3fbefe929e51be94617e3f6d7c3c1c7f789f8a7dc16c2d0a27c27265da"
   },
   {
-    "source": "frontend/src/components/workflow/MusicPlayerContainer.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerContainer.tsx",
-    "sha256": "4add27aa68dfc47d0f87303629f80b6782af98aa34b57878d22b8634cac0134d"
-  },
-  {
     "source": "frontend/src/components/workflow/RemoteCursor.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/RemoteCursor.tsx",
     "sha256": "7fb657b011cedd661462deb29f880603322eb08f0ab09a67192b1a584fa1659e"
@@ -555,19 +550,9 @@
     "sha256": "035e6f5bdf1ba7498c74cabef51b133d7785cfbcc5c235792753041569cad0f3"
   },
   {
-    "source": "frontend/src/components/workflow/VideoPlayerContainer.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerContainer.tsx",
-    "sha256": "45949e79b281c753c3674139c22896f53022d814073a52a941c652c3e0447f6e"
-  },
-  {
     "source": "frontend/src/components/workflow/ScreenshotNameDialog.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/ScreenshotNameDialog.tsx",
     "sha256": "69d948edd0bba7d7e252eb2bda746c1af31b2ec261bf17d4614341d36686407e"
-  },
-  {
-    "source": "frontend/src/components/workflow/MusicPlayerDialog.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerDialog.tsx",
-    "sha256": "9b1a0456f5128f2d9395b1689d945f60db460b44de4b4f099a35a3fbba666da2"
   },
   {
     "source": "frontend/src/components/workflow/GroupNode.tsx",
@@ -625,11 +610,6 @@
     "sha256": "1c266822f0c39502bf30980e0e6531aba8b0014fff349e930865763e1fdc1ebe"
   },
   {
-    "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
-    "sha256": "c7e68194fbab7c60b016b8236d09c6b9ddd6b9b80d754894bf5ad6b02ff1f23d"
-  },
-  {
     "source": "frontend/src/components/workflow/LogList.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/LogList.tsx",
     "sha256": "c222f69aaa6b69e1fbd66b0fd5007954ba3e946ed10e52c084ae5896c115e5d6"
@@ -655,11 +635,6 @@
     "sha256": "757ead55928982631800747d848a9fa76f73a4b16c473c7369624e17e4503b8d"
   },
   {
-    "source": "frontend/src/components/workflow/VideoPlayerDialog.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerDialog.tsx",
-    "sha256": "7c484c5b26609ae5bd718bd594efbf6e079deef53c6c1b8dc4d6688d456abaa7"
-  },
-  {
     "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
     "sha256": "e8061d498db9870ed419c6569affa131e0305623d6f7aac026cc587bee309ed0"
@@ -668,11 +643,6 @@
     "source": "frontend/src/components/workflow/AICodeAssistant.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/AICodeAssistant.tsx",
     "sha256": "408085e166d7d22750c938199d44b8baa062a8645dd7f9eaf87c15cf96af426a"
-  },
-  {
-    "source": "frontend/src/components/workflow/ImageViewerContainer.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerContainer.tsx",
-    "sha256": "4dc89660a66b90ae9ddf15d299877925c8722173adc3dca2680f7335ea7a559f"
   },
   {
     "source": "frontend/src/components/workflow/blockFlowModel.ts",
@@ -1160,11 +1130,6 @@
     "sha256": "009af936c4a916947439ccf7384bcb0465eff3e1a69d01cf2d124c4e3ede8913"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
-    "sha256": "b5d3686f46beb3252f57874cfe3d53f88b769aaf3417dc71fc91800a0d9676ca"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/AIMediaConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIMediaConfigs.tsx",
     "sha256": "084c8779ab8c0cc62313409b9e96d1da6b4f8e0edf752e8740e92ce00b01a73c"
@@ -1185,16 +1150,6 @@
     "sha256": "e828e09099a0732fdf5b96bf83d78cc4b83868a2e48596cb071b82ab83aac5c0"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-    "sha256": "44c2297420bbb4845e6b98f94d8d88cfa701613c5946be8e9b2bead04f86f277"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/PillowImageConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PillowImageConfigs.tsx",
-    "sha256": "4b3b829eca5017f7555a5dbbad02253d3ec5857b2dace75bd32108b87714664b"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/DrissionPageConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DrissionPageConfigs.tsx",
     "sha256": "6dc8fafcf6b22c1788bb6e66efddbd05eb5d40151a11d81b7a733c3ef3c90f3d"
@@ -1210,44 +1165,14 @@
     "sha256": "92c240a5f8211e2e7e8b5538e06a6445cefd4bd1efa733f15b194745a00fcf9f"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/YtDlpModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/YtDlpModuleConfigs.tsx",
-    "sha256": "e9b5f565c3a7f08a90ee4478969caaa882bca04261a2480d5ca469156e81b4a3"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/BlindWatermarkConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BlindWatermarkConfigs.tsx",
-    "sha256": "b0b14aa85b8455226f68e384263e376b9cba1005134848de16e7691c441cdf6f"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/WPSModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WPSModuleConfigs.tsx",
-    "sha256": "7c7f18d3b9b097d4600fbd8be7ab57270cccfda1563afa171d71e27c1335f721"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
-    "sha256": "fc8e19e5505507498c1d3ec8efd28868647e4116a4b43e0016eee2a841082546"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/BasicModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
     "sha256": "2e3adb0370a3cc72736a958f958c31ea8fd07fa6c94c563cea956e3316e09587"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/SAPModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SAPModuleConfigs.tsx",
-    "sha256": "1e8d0700151d92efd2486d97c7703d769855f2235bd44329eca45a0240a9983c"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/TestAllureConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TestAllureConfigs.tsx",
     "sha256": "5162a40ff9c377ab994b4bde7c24bb33e011d23a8f40a512f71342850de9fc1f"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-    "sha256": "eb4153d228b8e98c06d099f239babab5ba8b561514353870972ef5a901918e14"
   },
   {
     "source": "frontend/src/components/workflow/config-panels/CustomModuleConfig.tsx",
@@ -1275,16 +1200,6 @@
     "sha256": "7af1c047e88be57ddeedcfa10c59954acbf1453b8f95c8328ba79051ecedc11c"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/FormatFactoryConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FormatFactoryConfigs.tsx",
-    "sha256": "21308dab806f728eda45c2c64b97922adc3e53143ee6571872af219aedf0e43a"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/WordModuleConfig.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WordModuleConfig.tsx",
-    "sha256": "d7dfffea3335810e959fdd763287fd70687793892944964bd26c916ad449f230"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/UrlInputDialog.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UrlInputDialog.tsx",
     "sha256": "167571672f468e8f25abe5de40d41605e8335fc30d5df1dcd02d0b0f599d88c2"
@@ -1293,11 +1208,6 @@
     "source": "frontend/src/components/workflow/config-panels/MathListConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/MathListConfigs.tsx",
     "sha256": "7951766f4433050c6f20d8c7d78ec95ab0732d6f1e67a6e73e77e3b5763d25ba"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/ExcelModuleConfig.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelModuleConfig.tsx",
-    "sha256": "4d2d69792ec019cf075f855c0886027c9ba6373be1a9ec3d75cbb34bbcf1f182"
   },
   {
     "source": "frontend/src/components/workflow/config-panels/RunWorkflowFileConfig.tsx",
@@ -1315,34 +1225,14 @@
     "sha256": "94ef3887e574302d07e3d6b6540bf162d75fedc8a9922f838ea3e5518eab500f"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/DesktopModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DesktopModuleConfigs.tsx",
-    "sha256": "62bf5dbb940bceae1b8ff7ec7c0c1a7ba9097547762cb153f483d180ea061ab2"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/FileModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FileModuleConfigs.tsx",
-    "sha256": "ab8577cd28e964b1b5af218c1b466b770c6068608a86b1b6b8d3270eebbfaff6"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/DataModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DataModuleConfigs.tsx",
     "sha256": "49c059b4790a206c26f6990e8eb19d864960a45f12f88dbcba8b1278e8a2cc5d"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/FeishuModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FeishuModuleConfigs.tsx",
-    "sha256": "ee938ccdd062b1511437ba1821dd858fe164a47d38e75809e35997c706a98d96"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/AdvancedModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
     "sha256": "055999828e018a1fd599b5c42bd4c0b10f188657c82b5ba359b3927d25b04158"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/WeChatModuleConfigs.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WeChatModuleConfigs.tsx",
-    "sha256": "5a4090bbdf6c1fab63728c02a3258a5ece054dc71251497b4e8986b14ef84f71"
   },
   {
     "source": "frontend/src/components/workflow/config-panels/StatisticsConfigs.tsx",

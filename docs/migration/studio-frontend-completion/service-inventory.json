@@ -927,14 +927,7 @@
           "source": "frontend/src/services/api.ts"
         }
       ],
-      "consumers": [
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 929,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "desktopPickerApi.getCaptured()"
-        }
-      ],
+      "consumers": [],
       "status": "待核对"
     },
     {
@@ -1002,14 +995,7 @@
           "source": "frontend/src/services/api.ts"
         }
       ],
-      "consumers": [
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 917,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "desktopPickerApi.start()"
-        }
-      ],
+      "consumers": [],
       "status": "待核对"
     },
     {
@@ -1050,26 +1036,7 @@
           "source": "frontend/src/services/api.ts"
         }
       ],
-      "consumers": [
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 707,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "desktopPickerApi.stop()"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 951,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "desktopPickerApi.stop()"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 974,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "desktopPickerApi.stop()"
-        }
-      ],
+      "consumers": [],
       "status": "待核对"
     },
     {
@@ -1255,7 +1222,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 795,
+          "line": 393,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSelected()"
         }
@@ -1285,7 +1252,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 837,
+          "line": 435,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSimilar()"
         }
@@ -1326,7 +1293,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 784,
+          "line": 382,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.start(resolvedUrl || undefined, browserConfig)"
         }
@@ -1350,25 +1317,25 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 694,
+          "line": 297,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 827,
+          "line": 425,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 890,
+          "line": 488,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 901,
+          "line": 499,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         }
@@ -1392,7 +1359,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 1060,
+          "line": 587,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.testSelector(selector, hints)"
         }
@@ -2010,7 +1977,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 35,
+          "line": 32,
           "source": null,
           "call": "localWorkflowApi.getDefaultFolder()"
         }
@@ -2258,12 +2225,6 @@
         }
       ],
       "consumers": [
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-          "line": 37,
-          "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-          "call": "phoneApi.getDevices()"
-        },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/controls/phone-coordinate-input.tsx",
           "line": 50,
@@ -3436,34 +3397,10 @@
           "call": "systemApi.selectFile('选择浏览器可执行文件', undefined, [\n                            ['可执行文件', '*.exe']\n                          ])"
         },
         {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
-          "line": 27,
-          "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
-          "call": "systemApi.selectFile('选择文件', undefined, fileTypes)"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
-          "line": 41,
-          "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
-          "call": "systemApi.selectFile('选择文件', undefined, fileTypes)"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-          "line": 809,
-          "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-          "call": "systemApi.selectFile('选择文件', undefined, [\n                  ['所有文件', '*.*']\n                ])"
-        },
-        {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UtilityToolsConfigs.tsx",
           "line": 26,
           "source": "frontend/src/components/workflow/config-panels/UtilityToolsConfigs.tsx",
           "call": "systemApi.selectFile('选择文件', undefined, fileTypes)"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WeChatModuleConfigs.tsx",
-          "line": 96,
-          "source": "frontend/src/components/workflow/config-panels/WeChatModuleConfigs.tsx",
-          "call": "systemApi.selectFile('选择文件', undefined, [\n                  ['图片文件', '*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp'],\n                  ['文档文件', '*.doc;*.docx;*.pdf;*.xls;*.xlsx;*.ppt;*.pptx'],\n                  ['压缩文件', '*.zip;*.rar;*.7z'],\n                  ['所有文件', '*.*']\n                ])"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx",
@@ -3518,18 +3455,6 @@
           "line": 2192,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择默认监控路径')"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
-          "line": 40,
-          "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
-          "call": "systemApi.selectFolder('选择保存文件夹')"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
-          "line": 21,
-          "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
-          "call": "systemApi.selectFolder('选择文件夹')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/UtilityToolsConfigs.tsx",
@@ -3605,7 +3530,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 580,
+          "line": 195,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "systemApi.setClipboard(text)"
         }
@@ -4034,7 +3959,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 748,
+          "line": 346,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "emitAssistantUiEvent"
         },
@@ -4058,7 +3983,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 28,
+          "line": 25,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -4209,7 +4134,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 411,
+          "line": 213,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4222,7 +4147,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 415,
+          "line": 217,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4235,7 +4160,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 434,
+          "line": 236,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4317,7 +4242,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 940,
+          "line": 724,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4329,7 +4254,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 675,
+          "line": 477,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4337,7 +4262,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 721,
+          "line": 523,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('execution:completed', { \n        detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } \n      })"
@@ -4350,7 +4275,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 748,
+          "line": 550,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4363,7 +4288,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 759,
+          "line": 561,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4376,7 +4301,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 609,
+          "line": 411,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4389,7 +4314,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 638,
+          "line": 440,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4402,7 +4327,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 546,
+          "line": 348,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4415,7 +4340,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 579,
+          "line": 381,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4428,7 +4353,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 469,
+          "line": 271,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4441,7 +4366,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 463,
+          "line": 265,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4454,7 +4379,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 475,
+          "line": 277,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4467,7 +4392,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 647,
+          "line": 449,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4480,7 +4405,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 656,
+          "line": 458,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4493,7 +4418,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 479,
+          "line": 281,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4506,7 +4431,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 445,
+          "line": 247,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4519,7 +4444,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 770,
+          "line": 572,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4532,7 +4457,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 626,
+          "line": 428,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4545,7 +4470,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 665,
+          "line": 467,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4682,7 +4607,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 820,
+          "line": 622,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         },
@@ -4696,7 +4621,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 822,
+          "line": 624,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:custom_action', { detail: data })"
@@ -4715,7 +4640,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 799,
+          "line": 601,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4723,7 +4648,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 801,
+          "line": 603,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_start')"
@@ -4742,7 +4667,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 806,
+          "line": 608,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4750,7 +4675,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 808,
+          "line": 610,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_stop')"
@@ -4763,7 +4688,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 794,
+          "line": 596,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4784,7 +4709,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 782,
+          "line": 584,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:run')"
@@ -4797,7 +4722,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 779,
+          "line": 581,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4822,7 +4747,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 813,
+          "line": 615,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4830,7 +4755,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 815,
+          "line": 617,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:screenshot')"
@@ -4851,7 +4776,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 789,
+          "line": 591,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:stop')"
@@ -4864,7 +4789,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 787,
+          "line": 589,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4878,7 +4803,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 86,
+          "line": 82,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4891,7 +4816,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 100,
+          "line": 96,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5177,7 +5102,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 107,
+          "line": 103,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5190,7 +5115,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 114,
+          "line": 110,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5251,7 +5176,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 647,
+          "line": 262,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "window.addEventListener"
         },
@@ -5402,7 +5327,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 730,
+          "line": 532,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('selector:healed', { detail: { heals } })"
@@ -5416,13 +5341,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 429,
+          "line": 231,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 955,
+          "line": 739,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5435,13 +5360,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 425,
+          "line": 227,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 947,
+          "line": 731,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5493,7 +5418,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 418,
+          "line": 220,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('socket:reconnected')"
@@ -5587,7 +5512,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 93,
+          "line": 89,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5620,7 +5545,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 121,
+          "line": 117,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6507,12 +6432,6 @@
       "call": "studioFetch(`${getBackendBaseUrl()}/api/system/screenshot`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ folder: currentPath || undefined })\n        })"
     },
     {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
-      "line": 54,
-      "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/system/convert-image`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ imageUrl: url })\n      })"
-    },
-    {
       "file": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
       "line": 153,
       "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
@@ -6579,12 +6498,6 @@
       "call": "studioFetch(`${base}/api/ai-assistant/mcp/reload`, { method: 'POST' })"
     },
     {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerDialog.tsx",
-      "line": 62,
-      "source": "frontend/src/components/workflow/MusicPlayerDialog.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/system/convert-audio`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ audioUrl })\n        })"
-    },
-    {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
       "line": 152,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
@@ -6643,12 +6556,6 @@
       "line": 93,
       "source": "frontend/src/components/workflow/VariableTrackingPanel.tsx",
       "call": "studioFetch(`${backendUrl}/api/workflows/${workflowId}/variable-tracking`, {\n        method: 'DELETE'\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerDialog.tsx",
-      "line": 70,
-      "source": "frontend/src/components/workflow/VideoPlayerDialog.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/system/convert-video`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ videoUrl: url })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
@@ -6717,84 +6624,6 @@
       "call": "studioFetch(`${getBackendUrl()}/api/system/pick-mouse-position`, {\n        method: 'POST',\n      })"
     },
     {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 291,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/check-adbkeyboard`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 311,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/install-adbkeyboard`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' }\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 1381,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/check-clipper`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 1401,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/install-clipper`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' }\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 1560,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/check-clipper`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
-      "line": 1580,
-      "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
-      "call": "studioFetch(`${getBackendUrl()}/api/phone/install-clipper`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' }\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 69,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(testUrl, { method: 'GET' })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 97,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${API_BASE}/api/system/napcat/refresh-qrcode`, {\n        method: 'POST'\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 134,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${API_BASE}/api/system/napcat/status`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 308,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${url}/get_login_info`, {\n        method: 'POST',\n        headers,\n        body: JSON.stringify({})\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 364,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${API_BASE}/api/system/napcat/status`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 388,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${API_BASE}/api/system/napcat/start`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ qq_number: qqNumber })\n      })"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
-      "line": 415,
-      "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
-      "call": "studioFetch(`${API_BASE}/api/system/napcat/stop`, {\n        method: 'POST'\n      })"
-    },
-    {
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
       "line": 1572,
       "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
@@ -6835,12 +6664,6 @@
       "line": 35,
       "source": "frontend/src/components/ui/window-title-input.tsx",
       "call": "studioFetch(`${getBackendBaseUrl()}/api/desktop-picker/windows`)"
-    },
-    {
-      "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-      "line": 187,
-      "source": "frontend/src/services/socket.ts",
-      "call": "studioFetch(`${getBackendBaseUrl()}/api/system/convert-audio`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ audioUrl: data.audioUrl }),\n        })"
     }
   ]
 }

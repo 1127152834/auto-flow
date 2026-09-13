@@ -1,5 +1,4 @@
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from './api/transport'
 import { StudioEventClient as Socket } from './api/event-client'
 import { useWorkflowStore } from './editor-store'
 import { useNodeRunStore } from './hooks/stores/nodeRunStore'
@@ -31,9 +30,6 @@ export type SubflowEventName =
   | 'subflow:node_complete'
   | 'subflow:log'
   | 'subflow:completed'
-
-// 全局音频播放器（用于管理播放状态）
-let currentAudio: HTMLAudioElement | null = null
 
 // 数据行批量处理缓冲区 - 已移除，不再使用
 // let dataRowBuffer: Record<string, unknown>[] = []
@@ -126,200 +122,6 @@ class SocketService {
   emit(event: string, data?: unknown) {
     if (this.socket?.connected) {
       this.socket.emit(event, data)
-    }
-  }
-
-  // 播放音乐：等待播放完成=是 → 弹播放器并等它播完；=否 → 不弹窗，后台直接播放
-  private playMusic(data: {
-    requestId: string
-    audioUrl: string
-    waitForEnd: boolean
-  }) {
-    try {
-      // 停止之前的音频
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio = null
-      }
-
-      // 兜底：不等待播放完成时不弹播放器，后台直接播放。
-      // 正常情况下后端已按 waitForEnd 改走原生播放通道、根本不会派发本事件，
-      // 这里保留是为了「事件仍以某种路径到达」时不再出现弹窗（历史缺陷的双重防线）。
-      if (!data.waitForEnd) {
-        this.playMusicBackground(data)
-        return
-      }
-
-      // 使用播放器弹窗
-      import('./components/MusicPlayerDialog').then(({ showMusicPlayer }) => {
-        showMusicPlayer(
-          {
-            audioUrl: data.audioUrl,
-            requestId: data.requestId,
-            waitForEnd: data.waitForEnd
-          },
-          (success, error) => {
-            this.sendPlayMusicResult(data.requestId, success, error)
-          }
-        )
-      }).catch(err => {
-        // 如果导入失败，回退到简单播放
-        console.error('加载播放器失败，使用简单播放:', err)
-        this.playMusicSimple(data)
-      })
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      this.sendPlayMusicResult(data.requestId, false, errorMsg)
-    }
-  }
-
-  // 后台播放（不弹窗、不阻塞）：先让后端把音频转成浏览器可播放的地址，再静默播放
-  private async playMusicBackground(data: {
-    requestId: string
-    audioUrl: string
-    waitForEnd: boolean
-  }) {
-    try {
-      let url = data.audioUrl
-      // 本地文件路径（如 E:\music\a.mp3）浏览器无法直接播放，必须经后端转换取回可访问 URL。
-      // 这一步是播放器弹窗里原本就有的处理，后台播放同样需要，否则本地文件一律播不出声。
-      try {
-        const resp = await studioFetch(`${getBackendBaseUrl()}/api/system/convert-audio`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audioUrl: data.audioUrl }),
-        })
-        const result = await resp.json()
-        if (result?.success && result.audioPath) {
-          url = `${getBackendBaseUrl()}${result.audioPath}`
-        }
-      } catch (convErr) {
-        // 转换失败不算致命：网络 URL 仍可直接播放，交给下面的 Audio 处理
-        console.warn('[socket] 音频转换失败，尝试直接播放原地址:', convErr)
-      }
-
-      const audio = new Audio(url)
-      currentAudio = audio
-      audio.onended = () => {
-        if (currentAudio === audio) currentAudio = null
-      }
-      audio.play().catch((err) => {
-        // 播放失败只记日志：此时工作流已经继续往下走，不应再回一个失败结果
-        console.error('[socket] 后台播放音乐失败:', err)
-      })
-
-      // 立刻回结果，让工作流继续执行后续模块（音频在后台继续播）
-      this.sendPlayMusicResult(data.requestId, true)
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      this.sendPlayMusicResult(data.requestId, false, errorMsg)
-    }
-  }
-
-  // 简单播放（备用方案）
-  private playMusicSimple(data: {
-    requestId: string
-    audioUrl: string
-    waitForEnd: boolean
-  }) {
-    try {
-      const audio = new Audio(data.audioUrl)
-      currentAudio = audio
-
-      if (data.waitForEnd) {
-        audio.onended = () => {
-          this.sendPlayMusicResult(data.requestId, true)
-          currentAudio = null
-        }
-        audio.onerror = () => {
-          this.sendPlayMusicResult(data.requestId, false, '音频加载或播放失败')
-          currentAudio = null
-        }
-        audio.play().catch((err) => {
-          this.sendPlayMusicResult(data.requestId, false, err.message)
-          currentAudio = null
-        })
-      } else {
-        audio.play().catch((err) => {
-          console.error('播放音乐失败:', err)
-        })
-        this.sendPlayMusicResult(data.requestId, true)
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      this.sendPlayMusicResult(data.requestId, false, errorMsg)
-    }
-  }
-
-  // 播放视频：等待播放完成=是 → 等它播完再继续；=否 → 播放器照常打开，但工作流立刻往下走
-  //
-  // 与音乐的区别：视频没有画面就失去意义，所以「不等待」时不能不显示播放器，
-  // 而是解除阻塞——播放器留在页面上继续播，用户可随时手动关闭。
-  private playVideo(data: {
-    requestId: string
-    videoUrl: string
-    waitForEnd: boolean
-  }) {
-    // 不等待时是否已经回过结果，避免播放器关闭时重复回一次
-    let answered = false
-    const answerOnce = (success: boolean, error?: string) => {
-      if (answered) return
-      answered = true
-      this.sendPlayVideoResult(data.requestId, success, error)
-    }
-    try {
-      import('./components/VideoPlayerDialog').then(({ showVideoPlayer }) => {
-        showVideoPlayer(
-          {
-            videoUrl: data.videoUrl,
-            requestId: data.requestId,
-            waitForEnd: data.waitForEnd
-          },
-          (success, error) => {
-            answerOnce(success, error)
-          }
-        )
-        // 播放器已打开：不等待播放完成时立刻放行工作流
-        if (!data.waitForEnd) {
-          answerOnce(true)
-        }
-      }).catch(err => {
-        const errorMsg = err instanceof Error ? err.message : String(err)
-        answerOnce(false, `加载播放器失败: ${errorMsg}`)
-      })
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      answerOnce(false, errorMsg)
-    }
-  }
-
-  // 查看图片 - 显示图片查看器弹窗
-  private viewImage(data: {
-    requestId: string
-    imageUrl: string
-    autoClose: boolean
-    displayTime: number
-  }) {
-    try {
-      import('./components/ImageViewerDialog').then(({ showImageViewer }) => {
-        showImageViewer(
-          {
-            imageUrl: data.imageUrl,
-            requestId: data.requestId,
-            autoClose: data.autoClose,
-            displayTime: data.displayTime
-          },
-          (success, error) => {
-            this.sendViewImageResult(data.requestId, success, error)
-          }
-        )
-      }).catch(err => {
-        const errorMsg = err instanceof Error ? err.message : String(err)
-        this.sendViewImageResult(data.requestId, false, `加载图片查看器失败: ${errorMsg}`)
-      })
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      this.sendViewImageResult(data.requestId, false, errorMsg)
     }
   }
 
@@ -649,7 +451,7 @@ class SocketService {
       audioUrl: string
       waitForEnd: boolean
     }) => {
-      this.playMusic(data)
+      this.sendPlayMusicResult(data.requestId, false, '该媒体节点已排除，不支持执行')
     })
 
     // 播放视频请求
@@ -658,7 +460,7 @@ class SocketService {
       videoUrl: string
       waitForEnd: boolean
     }) => {
-      this.playVideo(data)
+      this.sendPlayVideoResult(data.requestId, false, '该媒体节点已排除，不支持执行')
     })
 
     // 查看图片请求
@@ -668,7 +470,7 @@ class SocketService {
       autoClose: boolean
       displayTime: number
     }) => {
-      this.viewImage(data)
+      this.sendViewImageResult(data.requestId, false, '该媒体节点已排除，不支持执行')
     })
 
     // 执行完成
@@ -909,27 +711,9 @@ class SocketService {
     }
   }
 
-  // 停止所有音频/视频播放
+  // 保留通知节点的语音合成清理。
   private stopAllAudio() {
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio.currentTime = 0
-      currentAudio = null
-    }
-    // 同时停止语音合成
-    window.speechSynthesis.cancel()
-    // 关闭音乐播放器弹窗
-    import('./components/MusicPlayerDialog').then(({ hideMusicPlayer }) => {
-      hideMusicPlayer()
-    }).catch(() => {})
-    // 关闭视频播放器弹窗
-    import('./components/VideoPlayerDialog').then(({ hideVideoPlayer }) => {
-      hideVideoPlayer()
-    }).catch(() => {})
-    // 关闭图片查看器弹窗
-    import('./components/ImageViewerDialog').then(({ hideImageViewer }) => {
-      hideImageViewer()
-    }).catch(() => {})
+    window.speechSynthesis?.cancel()
   }
 
   // 发送停止执行请求

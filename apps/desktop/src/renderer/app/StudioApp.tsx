@@ -7,9 +7,6 @@ import { useLayoutStore } from '../domains/workflows/hooks/stores/layoutStore'
 import { useAIAssistantStore } from '../domains/workflows/hooks/stores/aiAssistantStore'
 import { WorkflowEditor } from '../domains/workflows/components/WorkflowEditor'
 import { InputPromptDialog } from '../domains/workflows/components/InputPromptDialog'
-import { MusicPlayerContainer } from '../domains/workflows/components/MusicPlayerContainer'
-import { VideoPlayerContainer } from '../domains/workflows/components/VideoPlayerContainer'
-import { ImageViewerContainer } from '../domains/workflows/components/ImageViewerContainer'
 import { useStudioIntegration } from '../domains/workflows/hooks/useStudioIntegration'
 import { useWorkflowStore } from '../domains/workflows/editor-store'
 import { configureMock, addMockRecordingEvent, selectMockElement } from '../domains/workflows/api/mock-server'
@@ -45,6 +42,6 @@ export function StudioApp() {
     </div>}
     <StudioConnectionNotice />
     <div className="studio-editor @container"><WorkflowEditor /></div>
-    <AIAssistantPanel />{mockPage && <MockBrowserSurface onClose={()=>setMockPage(false)} />}<InputPromptDialog /><MusicPlayerContainer /><VideoPlayerContainer /><ImageViewerContainer />
+    <AIAssistantPanel />{mockPage && <MockBrowserSurface onClose={()=>setMockPage(false)} />}<InputPromptDialog />
   </main>
 }

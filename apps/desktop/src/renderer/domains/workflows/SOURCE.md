@@ -1,7 +1,7 @@
 # WebRPA frontend provenance and boundaries
 
 - Frozen source: `reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`.
-- `source-manifest.json` records 272 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
+- `source-manifest.json` records 250 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
 - The user authorized frontend-first migration with replaceable mock APIs on 2026-09-13. This supersedes the earlier sequencing requirement to finish a real backend before migrating the full frontend.
 
 ## Preserved implementation
@@ -35,3 +35,5 @@ The source globalTooltip implementation is now mounted with Studio. AutoFlow the
 AI UI dispatch now distinguishes a missing/failed synchronous consumer from accepted delivery. This is not an acknowledgment that an asynchronous save/run has completed; that distinction remains part of F1/F3 contracts. Phone mirror and system-screen Agent actions are excluded, while editor screenshots remain available. Unreferenced version-management and screensaver API wrappers were removed after caller search.
 
 F0 removed the unreferenced Excel resource component chain (four files), its configuration dispatch and API wrapper. Checksums for removed files remain in docs/migration/studio-frontend-completion/excluded-source-files.json. Mock data-assets requests return 410 without reading or deleting old library data; image resources retain the existing implementation. Nested custom-module definitions are also checked for excluded node types before a fixture run starts.
+
+F0 additionally removed 16 exclusively excluded configuration files and six media playback containers/dialogs after import and retained-node dispatch checks. Legacy media requests receive explicit failure acknowledgments. Retained speech notifications, image assets and shared web selectors remain. No persisted user data was deleted.

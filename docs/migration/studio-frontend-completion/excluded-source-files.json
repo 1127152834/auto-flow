@@ -22,5 +22,137 @@
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ReadExcelConfig.tsx",
     "sha256": "45f43d43830295a48be16f14ff7a26055f46ed7f2489bdd0c4e64e461946a9a2",
     "reason": "F0: 已排除 Excel 资源专属消费者，无保留节点引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
+    "sha256": "b5d3686f46beb3252f57874cfe3d53f88b769aaf3417dc71fc91800a0d9676ca",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/QQModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/QQModuleConfigs.tsx",
+    "sha256": "44c2297420bbb4845e6b98f94d8d88cfa701613c5946be8e9b2bead04f86f277",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PillowImageConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PillowImageConfigs.tsx",
+    "sha256": "4b3b829eca5017f7555a5dbbad02253d3ec5857b2dace75bd32108b87714664b",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/YtDlpModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/YtDlpModuleConfigs.tsx",
+    "sha256": "e9b5f565c3a7f08a90ee4478969caaa882bca04261a2480d5ca469156e81b4a3",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/BlindWatermarkConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BlindWatermarkConfigs.tsx",
+    "sha256": "b0b14aa85b8455226f68e384263e376b9cba1005134848de16e7691c441cdf6f",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WPSModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WPSModuleConfigs.tsx",
+    "sha256": "7c7f18d3b9b097d4600fbd8be7ab57270cccfda1563afa171d71e27c1335f721",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DocumentConvertConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DocumentConvertConfigs.tsx",
+    "sha256": "fc8e19e5505507498c1d3ec8efd28868647e4116a4b43e0016eee2a841082546",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/SAPModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/SAPModuleConfigs.tsx",
+    "sha256": "1e8d0700151d92efd2486d97c7703d769855f2235bd44329eca45a0240a9983c",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/PhoneModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PhoneModuleConfigs.tsx",
+    "sha256": "eb4153d228b8e98c06d099f239babab5ba8b561514353870972ef5a901918e14",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FormatFactoryConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FormatFactoryConfigs.tsx",
+    "sha256": "21308dab806f728eda45c2c64b97922adc3e53143ee6571872af219aedf0e43a",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WordModuleConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WordModuleConfig.tsx",
+    "sha256": "d7dfffea3335810e959fdd763287fd70687793892944964bd26c916ad449f230",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ExcelModuleConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelModuleConfig.tsx",
+    "sha256": "4d2d69792ec019cf075f855c0886027c9ba6373be1a9ec3d75cbb34bbcf1f182",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/DesktopModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DesktopModuleConfigs.tsx",
+    "sha256": "62bf5dbb940bceae1b8ff7ec7c0c1a7ba9097547762cb153f483d180ea061ab2",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FileModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FileModuleConfigs.tsx",
+    "sha256": "ab8577cd28e964b1b5af218c1b466b770c6068608a86b1b6b8d3270eebbfaff6",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/FeishuModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/FeishuModuleConfigs.tsx",
+    "sha256": "ee938ccdd062b1511437ba1821dd858fe164a47d38e75809e35997c706a98d96",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/WeChatModuleConfigs.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/WeChatModuleConfigs.tsx",
+    "sha256": "5a4090bbdf6c1fab63728c02a3258a5ece054dc71251497b4e8986b14ef84f71",
+    "reason": "F0: 专属排除节点配置；ConfigPanel/index 是仅有活跃导入方，284 保留节点无引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/MusicPlayerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerContainer.tsx",
+    "sha256": "4add27aa68dfc47d0f87303629f80b6782af98aa34b57878d22b8634cac0134d",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/workflow/VideoPlayerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerContainer.tsx",
+    "sha256": "45949e79b281c753c3674139c22896f53022d814073a52a941c652c3e0447f6e",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/workflow/MusicPlayerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/MusicPlayerDialog.tsx",
+    "sha256": "9b1a0456f5128f2d9395b1689d945f60db460b44de4b4f099a35a3fbba666da2",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
+    "sha256": "c7e68194fbab7c60b016b8236d09c6b9ddd6b9b80d754894bf5ad6b02ff1f23d",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/workflow/VideoPlayerDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/VideoPlayerDialog.tsx",
+    "sha256": "7c484c5b26609ae5bd718bd594efbf6e079deef53c6c1b8dc4d6688d456abaa7",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
+  },
+  {
+    "source": "frontend/src/components/workflow/ImageViewerContainer.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerContainer.tsx",
+    "sha256": "4dc89660a66b90ae9ddf15d299877925c8722173adc3dca2680f7335ea7a559f",
+    "reason": "F0: 已排除媒体播放节点专属容器；保留语音通知与图片资源工具"
   }
 ]
