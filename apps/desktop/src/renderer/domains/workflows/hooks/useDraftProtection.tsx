@@ -1,3 +1,4 @@
+import { registerDocumentLeaveHandler } from '../lib/documentLeave'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '../components/controls/confirm-dialog'
 import { useWorkflowStore } from '../editor-store'
@@ -59,6 +60,8 @@ export function useDraftProtection(save: () => Promise<boolean>) {
       return false
     } finally { busy.current = false }
   }, [save])
+
+  useEffect(() => registerDocumentLeaveHandler(confirmLeave), [confirmLeave])
 
   return {
     confirmLeave,

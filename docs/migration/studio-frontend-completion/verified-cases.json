@@ -12981,5 +12981,124 @@
     "level": "unit",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "F5.ai-document.new-cancel",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "实际 AI new_workflow → 取消"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "等待决定后返回失败，原变量保留",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.data-load-cancel",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "实际 AI load_workflow_from_data → 取消"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "不载入生成文档，不报告成功",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.no-editor",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "不挂载编辑器时调用 AI new_workflow"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "拒绝替换",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.file-variables",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "实际 AI load_workflow → 放弃修改"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "完整恢复目标声明变量",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.late-file",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "AI 文件请求期间修改变量 → 返回文件"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "拒绝迟到响应",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.generated-dirty",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "AI 载入生成数据 → 放弃原草稿"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "生成文档保留声明变量并标脏",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
+  },
+  {
+    "id": "F5.ai-document.append-history",
+    "capability": "AI 文档命令保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "service": "协议夹具，无真实 AI"
+    },
+    "steps": [
+      "AI add_nodes → 撤销 → 重做"
+    ],
+    "expectedUI": "替换操作需要三选项；追加操作保持编辑器历史",
+    "expectedIO": "AI 操作返回真实前端结果，不提前报告成功",
+    "stateAssertion": "既有变量保持，节点一次恢复",
+    "level": "component + editor rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/assistant-document-protection.md"
   }
 ]

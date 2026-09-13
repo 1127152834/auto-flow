@@ -1,3 +1,5 @@
+import { requestDocumentLeave } from '../lib/documentLeave'
+import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, services/aiAssistantSkills.ts; see SOURCE.md for license and adaptation boundaries.
 import { excludedModuleTypes } from '../lib/moduleCatalog'
 /**
@@ -351,6 +353,7 @@ export async function executeClientAction(
       // 画布操作
       // ============================================================
       case 'new_workflow': {
+        if (!(await requestDocumentLeave())) return { success: false, error: '已取消替换工作流，当前草稿保持不变' }
         useWorkflowStore.getState().clearWorkflow()
         return { success: true, message: '已新建空白工作流' }
       }
@@ -377,10 +380,11 @@ export async function executeClientAction(
           sourceHandle: e.sourceHandle,
           targetHandle: e.targetHandle,
         }))
-        store.loadWorkflow({
+        store.pushHistory()
+        useWorkflowStore.setState({
           nodes: [...store.nodes, ...xyNodes] as any,
           edges: [...store.edges, ...xyEdges] as any,
-          name: store.name,
+          hasUnsavedChanges: true,
         })
         const warn = invalidTypes.length ? `（已丢弃 ${invalidTypes.length} 个不存在或已排除的模块：${invalidTypes.join(', ')}）` : ''
         return { success: true, message: `已添加 ${xyNodes.length} 个节点${warn}` }
@@ -401,6 +405,7 @@ export async function executeClientAction(
           edges = edges.filter((e: any) => keepIds.has(e.source) && keepIds.has(e.target))
         }
         const xyNodes = nodes.map(convertAiNodeToReactFlow)
+        if (!(await requestDocumentLeave())) return { success: false, error: '已取消替换工作流，当前草稿保持不变' }
 
         const store = useWorkflowStore.getState()
 
@@ -410,13 +415,16 @@ export async function executeClientAction(
             nodes: xyNodes as any,
             edges: edges as any,
             name,
+            variables: Array.isArray(payload.variables) ? payload.variables : [],
           })
+          useWorkflowStore.setState({ hasUnsavedChanges: true })
           return { success: true, message: `已载入工作流「${name}」（${nodes.length} 节点）` }
         }
 
         // === 可视化逐步搭建：让用户亲眼看着 AI 把节点一个个画出来 ===
         // 1) 先清空画布、设置工作流名
-        store.loadWorkflow({ nodes: [], edges: [], name })
+        store.loadWorkflow({ nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
+        useWorkflowStore.setState({ hasUnsavedChanges: true })
 
         // 2) 节点排序：先便签（zIndex=-1），再按 position 从左上到右下
         // 便签是上下文，应该最先出现；之后节点按"自然阅读顺序"涌入画布
@@ -513,16 +521,19 @@ export async function executeClientAction(
         const filename = payload.filename as string
         if (!filename) return { success: false, error: '缺少 filename' }
         const fileWithExt = filename.endsWith('.json') ? filename : `${filename}.json`
+        const original = snapshotKey(useWorkflowStore.getState().exportWorkflow())
         const res: any = await localWorkflowApi.get(fileWithExt)
         const content = res?.data?.content
         if (!content) {
           return { success: false, error: res?.error || '文件不存在或读取失败' }
         }
-        useWorkflowStore.getState().loadWorkflow({
-          nodes: content.nodes || [],
-          edges: content.edges || [],
-          name: content.name || filename,
-        })
+        if (snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original) {
+          return { success: false, error: '加载期间草稿已修改，请重新打开工作流' }
+        }
+        if (!(await requestDocumentLeave())) return { success: false, error: '已取消替换工作流，当前草稿保持不变' }
+        if (!useWorkflowStore.getState().importWorkflow(JSON.stringify({ ...content, name: content.name || filename }))) {
+          return { success: false, error: '工作流格式无效' }
+        }
         return { success: true, message: `已载入工作流：${filename}` }
       }
 

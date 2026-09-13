@@ -330,7 +330,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1033,
+          "line": 1013,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "aiAssistantApi.testConnection(payload)"
         }
@@ -402,7 +402,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 486,
+          "line": 484,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "browserApi.chromiumStatus()"
         }
@@ -633,7 +633,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 223,
+          "line": 222,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "credentialApi.delete(name)"
         }
@@ -657,7 +657,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 193,
+          "line": 192,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "credentialApi.list()"
         }
@@ -715,7 +715,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 214,
+          "line": 213,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "credentialApi.upsert(editing.name.trim(), fields, editing.description)"
         }
@@ -900,7 +900,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1290,
+          "line": 1287,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "customModulesApi.update(editingCustomModuleId, {\n        workflow: workflowData\n      })"
         },
@@ -1309,7 +1309,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1149,
+          "line": 1160,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "imageAssetApi.delete(id)"
         },
@@ -1386,7 +1386,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1138,
+          "line": 1149,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "imageAssetApi.list()"
         },
@@ -1518,7 +1518,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1162,
+          "line": 1173,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "imageAssetApi.rename(id, newName)"
         },
@@ -1608,7 +1608,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1236,
+          "line": 1247,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.delete(fileWithExt)"
         }
@@ -1649,13 +1649,13 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 516,
+          "line": 525,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.get(fileWithExt)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1224,
+          "line": 1235,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.get(fileWithExt)"
         }
@@ -1696,13 +1696,13 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1267,
+          "line": 1278,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.getDefaultFolder()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 372,
+          "line": 373,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "localWorkflowApi.getDefaultFolder()"
         },
@@ -1785,7 +1785,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1212,
+          "line": 1223,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.list(folder)"
         },
@@ -1827,7 +1827,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1258,
+          "line": 1269,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "localWorkflowApi.save(data)"
         }
@@ -1851,19 +1851,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 447,
+          "line": 445,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(folder)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 454,
+          "line": 452,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(latestFolderRef.current)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 582,
+          "line": 580,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(cfg.workflow?.localFolder || '')"
         }
@@ -2204,7 +2204,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 321,
+          "line": 320,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.cleanup()"
         }
@@ -2228,7 +2228,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 303,
+          "line": 302,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.getConfig()"
         }
@@ -2252,7 +2252,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 313,
+          "line": 312,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.setConfig(cfg)"
         }
@@ -2293,7 +2293,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1390,
+          "line": 1401,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.clearAllLogs()"
         },
@@ -2323,7 +2323,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1389,
+          "line": 1400,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.clearTaskLogs(id)"
         },
@@ -2353,7 +2353,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1308,
+          "line": 1319,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.create(payload || {})"
         },
@@ -2383,7 +2383,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1332,
+          "line": 1343,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.delete(id)"
         },
@@ -2413,7 +2413,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1355,
+          "line": 1366,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.execute(id)"
         },
@@ -2443,7 +2443,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1298,
+          "line": 1309,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.get(id)"
         }
@@ -2467,7 +2467,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1379,
+          "line": 1390,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.getAllLogs(limit)"
         },
@@ -2497,7 +2497,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1399,
+          "line": 1410,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.getStatistics()"
         },
@@ -2527,7 +2527,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1378,
+          "line": 1389,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.getTaskLogs(id, limit)"
         },
@@ -2557,7 +2557,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1287,
+          "line": 1298,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.list()"
         },
@@ -2587,7 +2587,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1366,
+          "line": 1377,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.stop(id)"
         },
@@ -2617,7 +2617,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1344,
+          "line": 1355,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.toggle(id, enabled)"
         },
@@ -2647,7 +2647,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1321,
+          "line": 1332,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.update(id, data)"
         },
@@ -2677,7 +2677,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 129,
+          "line": 128,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.regenerate()"
         }
@@ -2701,7 +2701,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 114,
+          "line": 113,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.status()"
         }
@@ -2725,7 +2725,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 125,
+          "line": 124,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.toggle(v)"
         }
@@ -2891,7 +2891,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1772,
+          "line": 1752,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFile('选择浏览器可执行文件', undefined, [\n                            ['可执行文件', '*.exe']\n                          ])"
         },
@@ -2933,25 +2933,25 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1444,
+          "line": 1424,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择工作流保存文件夹')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1824,
+          "line": 1804,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择浏览器数据缓存目录')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1912,
+          "line": 1892,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择浏览器扩展目录（含 manifest.json）')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 2192,
+          "line": 2172,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择默认监控路径')"
         },
@@ -2987,19 +2987,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 466,
+          "line": 464,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(b as unknown as Record<string, unknown>)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 473,
+          "line": 471,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(latestBrowserRef.current as unknown as Record<string, unknown>)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 581,
+          "line": 579,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(cfg.browser as unknown as Record<string, unknown>)"
         }
@@ -3094,19 +3094,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 229,
+          "line": 230,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 816,
+          "line": 813,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 915,
+          "line": 912,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create(payload)"
         }
@@ -3198,7 +3198,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 307,
+          "line": 308,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.execute(currentWorkflowId, { \n        headless,\n        browserConfig,\n        breakpoints: Array.from(useDebugStore.getState().breakpoints),\n        stepMode: useDebugStore.getState().stepMode,\n        startNodeId: startNodeId || undefined,\n      })"
         }
@@ -3222,7 +3222,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 925,
+          "line": 922,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.exportScript(currentWorkflowId!, target)"
         }
@@ -3345,13 +3345,13 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 547,
+          "line": 558,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "workflowApi.stop(id)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 357,
+          "line": 358,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.stop(workflowId)"
         }
@@ -3375,19 +3375,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 262,
+          "line": 263,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 849,
+          "line": 846,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 923,
+          "line": 920,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, payload)"
         }
@@ -3411,7 +3411,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1048,
+          "line": 1045,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.export(name, content)"
         }
@@ -3435,7 +3435,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1078,
+          "line": 1075,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.import(bundle)"
         }
@@ -3476,7 +3476,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 548,
+          "line": 545,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -3496,19 +3496,19 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 445,
+          "line": 453,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 482,
+          "line": 490,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 507,
+          "line": 515,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3520,7 +3520,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 740,
+          "line": 737,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3528,7 +3528,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1564,
+          "line": 1575,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3540,7 +3540,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 738,
+          "line": 735,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3548,7 +3548,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1556,
+          "line": 1567,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3560,7 +3560,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 732,
+          "line": 729,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3568,7 +3568,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1532,
+          "line": 1543,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3580,7 +3580,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 736,
+          "line": 733,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3588,7 +3588,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1540,
+          "line": 1551,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3600,7 +3600,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 734,
+          "line": 731,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3608,7 +3608,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1548,
+          "line": 1559,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3620,7 +3620,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 742,
+          "line": 739,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -3628,7 +3628,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1572,
+          "line": 1583,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3687,7 +3687,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 980,
+          "line": 991,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3699,7 +3699,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 189,
+          "line": 190,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -3707,14 +3707,14 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-          "line": 2227,
+          "line": 2225,
           "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('editingModuleChanged')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1339,
+          "line": 1336,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('editingModuleChanged')"
@@ -3735,7 +3735,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1608,
+          "line": 1619,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -3997,7 +3997,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 975,
+          "line": 986,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4009,7 +4009,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 723,
+          "line": 720,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4017,7 +4017,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 556,
+          "line": 567,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4043,19 +4043,19 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 505,
+          "line": 513,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 670,
+          "line": 681,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 839,
+          "line": 850,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4067,7 +4067,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 477,
+          "line": 474,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -4087,7 +4087,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 642,
+          "line": 653,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4207,7 +4207,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 684,
+          "line": 681,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4247,7 +4247,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 686,
+          "line": 683,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4274,7 +4274,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 685,
+          "line": 682,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4346,7 +4346,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 533,
+          "line": 530,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4364,7 +4364,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
-          "line": 41,
+          "line": 45,
           "source": "frontend/src/components/ui/confirm-dialog.tsx",
           "via": "window.addEventListener"
         },
@@ -4434,7 +4434,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 720,
+          "line": 717,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4454,7 +4454,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 739,
+          "line": 736,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4462,7 +4462,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1560,
+          "line": 1571,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4474,7 +4474,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 737,
+          "line": 734,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4482,7 +4482,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1552,
+          "line": 1563,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4494,7 +4494,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 726,
+          "line": 723,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4502,7 +4502,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1580,
+          "line": 1591,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4514,7 +4514,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 731,
+          "line": 728,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4522,7 +4522,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1528,
+          "line": 1539,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4534,7 +4534,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 735,
+          "line": 732,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4542,7 +4542,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1536,
+          "line": 1547,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4568,7 +4568,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1584,
+          "line": 1595,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4586,7 +4586,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 733,
+          "line": 730,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4594,7 +4594,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1544,
+          "line": 1555,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4606,7 +4606,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 741,
+          "line": 738,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4614,7 +4614,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1568,
+          "line": 1579,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4660,35 +4660,35 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 575,
+          "line": 572,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 775,
+          "line": 772,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 780,
+          "line": 777,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 786,
+          "line": 783,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 798,
+          "line": 795,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
@@ -4707,7 +4707,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-          "line": 1805,
+          "line": 1803,
           "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
           "via": "window.addEventListener"
         },
@@ -4734,7 +4734,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 846,
+          "line": 857,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4746,7 +4746,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 706,
+          "line": 703,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4754,13 +4754,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 535,
+          "line": 546,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 540,
+          "line": 551,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4784,7 +4784,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 345,
+          "line": 346,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4805,7 +4805,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 703,
+          "line": 700,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4813,7 +4813,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 530,
+          "line": 541,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4911,19 +4911,19 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1440,
+          "line": 1451,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1513,
+          "line": 1524,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1623,
+          "line": 1634,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -4956,7 +4956,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 715,
+          "line": 712,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4964,7 +4964,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 549,
+          "line": 560,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         },
@@ -4982,7 +4982,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 186,
+          "line": 187,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5003,7 +5003,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/transport.ts",
-          "line": 17,
+          "line": 15,
           "source": null,
           "via": "CustomEvent",
           "call": "new CustomEvent('studio:connection-error')"
@@ -5016,7 +5016,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 745,
+          "line": 742,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5024,7 +5024,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 1588,
+          "line": 1599,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -5057,7 +5057,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-          "line": 985,
+          "line": 996,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "via": "emitAssistantUiEvent"
         }
@@ -5082,7 +5082,7 @@
       "id": "assistant:new_workflow",
       "action": "new_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 353,
+      "line": 355,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5090,7 +5090,7 @@
       "id": "assistant:add_nodes",
       "action": "add_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 358,
+      "line": 361,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5098,7 +5098,7 @@
       "id": "assistant:load_workflow_from_data",
       "action": "load_workflow_from_data",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 389,
+      "line": 393,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5106,7 +5106,7 @@
       "id": "assistant:load_workflow",
       "action": "load_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 512,
+      "line": 520,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5114,7 +5114,7 @@
       "id": "assistant:save_workflow",
       "action": "save_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 529,
+      "line": 540,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5122,7 +5122,7 @@
       "id": "assistant:run_workflow",
       "action": "run_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 534,
+      "line": 545,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5130,7 +5130,7 @@
       "id": "assistant:run_workflow_headless",
       "action": "run_workflow_headless",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 539,
+      "line": 550,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5138,7 +5138,7 @@
       "id": "assistant:stop_workflow",
       "action": "stop_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 544,
+      "line": 555,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5146,7 +5146,7 @@
       "id": "assistant:export_workflow",
       "action": "export_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 553,
+      "line": 564,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5154,7 +5154,7 @@
       "id": "assistant:delete_node",
       "action": "delete_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 563,
+      "line": 574,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5162,7 +5162,7 @@
       "id": "assistant:delete_nodes",
       "action": "delete_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 570,
+      "line": 581,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5170,7 +5170,7 @@
       "id": "assistant:update_node_config",
       "action": "update_node_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 580,
+      "line": 591,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5178,7 +5178,7 @@
       "id": "assistant:bulk_update_nodes",
       "action": "bulk_update_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 598,
+      "line": 609,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5186,7 +5186,7 @@
       "id": "assistant:get_node_runtime_errors",
       "action": "get_node_runtime_errors",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 623,
+      "line": 634,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5194,7 +5194,7 @@
       "id": "assistant:focus_node",
       "action": "focus_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 638,
+      "line": 649,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5202,7 +5202,7 @@
       "id": "assistant:toggle_node_disabled",
       "action": "toggle_node_disabled",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 646,
+      "line": 657,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5210,7 +5210,7 @@
       "id": "assistant:align_nodes",
       "action": "align_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 653,
+      "line": 664,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5218,7 +5218,7 @@
       "id": "assistant:auto_layout",
       "action": "auto_layout",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 661,
+      "line": 672,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5226,7 +5226,7 @@
       "id": "assistant:copy_nodes",
       "action": "copy_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 678,
+      "line": 689,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5234,7 +5234,7 @@
       "id": "assistant:paste_nodes",
       "action": "paste_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 685,
+      "line": 696,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5242,7 +5242,7 @@
       "id": "assistant:move_node",
       "action": "move_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 691,
+      "line": 702,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5250,7 +5250,7 @@
       "id": "assistant:rename_node",
       "action": "rename_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 706,
+      "line": 717,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5258,7 +5258,7 @@
       "id": "assistant:find_nodes_by_type",
       "action": "find_nodes_by_type",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 717,
+      "line": 728,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5266,7 +5266,7 @@
       "id": "assistant:connect_nodes",
       "action": "connect_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 727,
+      "line": 738,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5274,7 +5274,7 @@
       "id": "assistant:disconnect_edge",
       "action": "disconnect_edge",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 748,
+      "line": 759,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5282,7 +5282,7 @@
       "id": "assistant:auto_connect_chain",
       "action": "auto_connect_chain",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 758,
+      "line": 769,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5290,7 +5290,7 @@
       "id": "assistant:connect_branches",
       "action": "connect_branches",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 786,
+      "line": 797,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5298,7 +5298,7 @@
       "id": "assistant:select_all_nodes",
       "action": "select_all_nodes",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 821,
+      "line": 832,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5306,7 +5306,7 @@
       "id": "assistant:clear_selection",
       "action": "clear_selection",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 829,
+      "line": 840,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5314,7 +5314,7 @@
       "id": "assistant:fit_view",
       "action": "fit_view",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 838,
+      "line": 849,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5322,7 +5322,7 @@
       "id": "assistant:run_single_node",
       "action": "run_single_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 843,
+      "line": 854,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5330,7 +5330,7 @@
       "id": "assistant:replace_module_type",
       "action": "replace_module_type",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 850,
+      "line": 861,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5338,7 +5338,7 @@
       "id": "assistant:duplicate_node",
       "action": "duplicate_node",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 867,
+      "line": 878,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5346,7 +5346,7 @@
       "id": "assistant:undo",
       "action": "undo",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 883,
+      "line": 894,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5354,7 +5354,7 @@
       "id": "assistant:redo",
       "action": "redo",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 890,
+      "line": 901,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5362,7 +5362,7 @@
       "id": "assistant:rename_workflow",
       "action": "rename_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 900,
+      "line": 911,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5370,7 +5370,7 @@
       "id": "assistant:add_variable",
       "action": "add_variable",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 910,
+      "line": 921,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5378,7 +5378,7 @@
       "id": "assistant:update_variable",
       "action": "update_variable",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 920,
+      "line": 931,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5386,7 +5386,7 @@
       "id": "assistant:delete_variable",
       "action": "delete_variable",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 928,
+      "line": 939,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5394,7 +5394,7 @@
       "id": "assistant:rename_variable",
       "action": "rename_variable",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 935,
+      "line": 946,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5402,7 +5402,7 @@
       "id": "assistant:list_variables",
       "action": "list_variables",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 943,
+      "line": 954,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5410,7 +5410,7 @@
       "id": "assistant:clear_logs",
       "action": "clear_logs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 951,
+      "line": 962,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5418,7 +5418,7 @@
       "id": "assistant:clear_data",
       "action": "clear_data",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 956,
+      "line": 967,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5426,7 +5426,7 @@
       "id": "assistant:set_verbose_log",
       "action": "set_verbose_log",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 961,
+      "line": 972,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5434,7 +5434,7 @@
       "id": "assistant:set_max_log_count",
       "action": "set_max_log_count",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 967,
+      "line": 978,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5442,7 +5442,7 @@
       "id": "assistant:export_logs",
       "action": "export_logs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 974,
+      "line": 985,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5450,7 +5450,7 @@
       "id": "assistant:download_data",
       "action": "download_data",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 979,
+      "line": 990,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5458,7 +5458,7 @@
       "id": "assistant:upload_image",
       "action": "upload_image",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 984,
+      "line": 995,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5466,7 +5466,7 @@
       "id": "assistant:switch_bottom_panel",
       "action": "switch_bottom_panel",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 992,
+      "line": 1003,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5474,7 +5474,7 @@
       "id": "assistant:get_workflow_detail",
       "action": "get_workflow_detail",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1002,
+      "line": 1013,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5482,7 +5482,7 @@
       "id": "assistant:get_logs",
       "action": "get_logs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1023,
+      "line": 1034,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5490,7 +5490,7 @@
       "id": "assistant:get_collected_data",
       "action": "get_collected_data",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1032,
+      "line": 1043,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5498,7 +5498,7 @@
       "id": "assistant:set_collected_data",
       "action": "set_collected_data",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1043,
+      "line": 1054,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5506,7 +5506,7 @@
       "id": "assistant:add_data_rows",
       "action": "add_data_rows",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1051,
+      "line": 1062,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5514,7 +5514,7 @@
       "id": "assistant:add_data_row",
       "action": "add_data_row",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1071,
+      "line": 1082,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5522,7 +5522,7 @@
       "id": "assistant:add_data_column",
       "action": "add_data_column",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1084,
+      "line": 1095,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5530,7 +5530,7 @@
       "id": "assistant:delete_data_row",
       "action": "delete_data_row",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1095,
+      "line": 1106,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5538,7 +5538,7 @@
       "id": "assistant:delete_data_column",
       "action": "delete_data_column",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1102,
+      "line": 1113,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5546,7 +5546,7 @@
       "id": "assistant:set_data_cell",
       "action": "set_data_cell",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1115,
+      "line": 1126,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5554,7 +5554,7 @@
       "id": "assistant:list_image_assets",
       "action": "list_image_assets",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1136,
+      "line": 1147,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5562,7 +5562,7 @@
       "id": "assistant:delete_image_asset",
       "action": "delete_image_asset",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1145,
+      "line": 1156,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5570,7 +5570,7 @@
       "id": "assistant:rename_image_asset",
       "action": "rename_image_asset",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1157,
+      "line": 1168,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5578,7 +5578,7 @@
       "id": "assistant:clear_variables",
       "action": "clear_variables",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1172,
+      "line": 1183,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5586,7 +5586,7 @@
       "id": "assistant:get_variable",
       "action": "get_variable",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1179,
+      "line": 1190,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5594,7 +5594,7 @@
       "id": "assistant:change_variable_type",
       "action": "change_variable_type",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1187,
+      "line": 1198,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5602,7 +5602,7 @@
       "id": "assistant:list_local_workflows",
       "action": "list_local_workflows",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1209,
+      "line": 1220,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5610,7 +5610,7 @@
       "id": "assistant:get_local_workflow_content",
       "action": "get_local_workflow_content",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1219,
+      "line": 1230,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5618,7 +5618,7 @@
       "id": "assistant:delete_local_workflow",
       "action": "delete_local_workflow",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1231,
+      "line": 1242,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5626,7 +5626,7 @@
       "id": "assistant:save_workflow_to_folder",
       "action": "save_workflow_to_folder",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1243,
+      "line": 1254,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5634,7 +5634,7 @@
       "id": "assistant:get_local_workflow_default_folder",
       "action": "get_local_workflow_default_folder",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1265,
+      "line": 1276,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5642,7 +5642,7 @@
       "id": "assistant:list_scheduled_tasks_full",
       "action": "list_scheduled_tasks_full",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1285,
+      "line": 1296,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5650,7 +5650,7 @@
       "id": "assistant:get_scheduled_task_detail",
       "action": "get_scheduled_task_detail",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1294,
+      "line": 1305,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5658,7 +5658,7 @@
       "id": "assistant:create_scheduled_task",
       "action": "create_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1305,
+      "line": 1316,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5666,7 +5666,7 @@
       "id": "assistant:update_scheduled_task",
       "action": "update_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1315,
+      "line": 1326,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5674,7 +5674,7 @@
       "id": "assistant:delete_scheduled_task",
       "action": "delete_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1328,
+      "line": 1339,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5682,7 +5682,7 @@
       "id": "assistant:toggle_scheduled_task",
       "action": "toggle_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1339,
+      "line": 1350,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5690,7 +5690,7 @@
       "id": "assistant:execute_scheduled_task",
       "action": "execute_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1351,
+      "line": 1362,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5698,7 +5698,7 @@
       "id": "assistant:stop_scheduled_task",
       "action": "stop_scheduled_task",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1362,
+      "line": 1373,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5706,7 +5706,7 @@
       "id": "assistant:get_scheduled_task_logs",
       "action": "get_scheduled_task_logs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1373,
+      "line": 1384,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5714,7 +5714,7 @@
       "id": "assistant:clear_scheduled_task_logs",
       "action": "clear_scheduled_task_logs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1386,
+      "line": 1397,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5722,7 +5722,7 @@
       "id": "assistant:get_scheduled_task_statistics",
       "action": "get_scheduled_task_statistics",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1397,
+      "line": 1408,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5730,7 +5730,7 @@
       "id": "assistant:get_global_config",
       "action": "get_global_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1409,
+      "line": 1420,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5738,7 +5738,7 @@
       "id": "assistant:reset_global_config",
       "action": "reset_global_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1436,
+      "line": 1447,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5746,7 +5746,7 @@
       "id": "assistant:update_global_config",
       "action": "update_global_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1455,
+      "line": 1466,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5754,7 +5754,7 @@
       "id": "assistant:open_global_config",
       "action": "open_global_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1527,
+      "line": 1538,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5762,7 +5762,7 @@
       "id": "assistant:close_global_config",
       "action": "close_global_config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1531,
+      "line": 1542,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5770,7 +5770,7 @@
       "id": "assistant:open_local_workflow_dialog",
       "action": "open_local_workflow_dialog",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1535,
+      "line": 1546,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5778,7 +5778,7 @@
       "id": "assistant:close_local_workflow_dialog",
       "action": "close_local_workflow_dialog",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1539,
+      "line": 1550,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5786,7 +5786,7 @@
       "id": "assistant:open_scheduled_tasks",
       "action": "open_scheduled_tasks",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1543,
+      "line": 1554,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5794,7 +5794,7 @@
       "id": "assistant:close_scheduled_tasks",
       "action": "close_scheduled_tasks",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1547,
+      "line": 1558,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5802,7 +5802,7 @@
       "id": "assistant:open_documentation",
       "action": "open_documentation",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1551,
+      "line": 1562,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5810,7 +5810,7 @@
       "id": "assistant:close_documentation",
       "action": "close_documentation",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1555,
+      "line": 1566,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5818,7 +5818,7 @@
       "id": "assistant:open_auto_browser",
       "action": "open_auto_browser",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1559,
+      "line": 1570,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5826,7 +5826,7 @@
       "id": "assistant:close_auto_browser",
       "action": "close_auto_browser",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1563,
+      "line": 1574,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5834,7 +5834,7 @@
       "id": "assistant:open_variable_tracking",
       "action": "open_variable_tracking",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1567,
+      "line": 1578,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5842,7 +5842,7 @@
       "id": "assistant:close_variable_tracking",
       "action": "close_variable_tracking",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1571,
+      "line": 1582,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5850,7 +5850,7 @@
       "id": "assistant:open_export_dialog",
       "action": "open_export_dialog",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1579,
+      "line": 1590,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5858,7 +5858,7 @@
       "id": "assistant:open_module_search",
       "action": "open_module_search",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1583,
+      "line": 1594,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5866,7 +5866,7 @@
       "id": "assistant:take_screenshot",
       "action": "take_screenshot",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1587,
+      "line": 1598,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5874,7 +5874,7 @@
       "id": "assistant:capture_editor_screenshot",
       "action": "capture_editor_screenshot",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1591,
+      "line": 1602,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5882,7 +5882,7 @@
       "id": "assistant:show_toast",
       "action": "show_toast",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1622,
+      "line": 1633,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5890,7 +5890,7 @@
       "id": "assistant:add_log",
       "action": "add_log",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1626,
+      "line": 1637,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5898,7 +5898,7 @@
       "id": "assistant:list_open_dialogs",
       "action": "list_open_dialogs",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1636,
+      "line": 1647,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5906,7 +5906,7 @@
       "id": "assistant:respond_to_dialog",
       "action": "respond_to_dialog",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1651,
+      "line": 1662,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     },
@@ -5914,7 +5914,7 @@
       "id": "assistant:dismiss_dialog",
       "action": "dismiss_dialog",
       "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
-      "line": 1683,
+      "line": 1694,
       "source": "frontend/src/services/aiAssistantSkills.ts",
       "status": "待核对"
     }
@@ -5934,9 +5934,15 @@
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/api/event-client.ts",
-      "line": 62,
+      "line": 65,
       "source": null,
-      "call": "studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: this.controller.signal })"
+      "call": "studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: connection.signal })"
+    },
+    {
+      "file": "apps/desktop/src/renderer/domains/workflows/api/transport.ts",
+      "line": 3,
+      "source": null,
+      "call": "fetch(input, init)"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
@@ -5946,13 +5952,13 @@
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/AICodeAssistant.tsx",
-      "line": 388,
+      "line": 386,
       "source": "frontend/src/components/workflow/AICodeAssistant.tsx",
       "call": "studioFetch(globalConfig.ai.apiUrl, {\n        method: 'POST',\n        headers: headers,\n        body: JSON.stringify(requestBody)\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-      "line": 429,
+      "line": 427,
       "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/default-folder`)"
     },
@@ -5976,31 +5982,31 @@
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-      "line": 43,
+      "line": 52,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/default-folder`)"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-      "line": 58,
+      "line": 67,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/list`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        cache: 'no-store',\n        body: JSON.stringify({ folder })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-      "line": 85,
+      "line": 98,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(\n        `${API_BASE}/api/local-workflows/load/${encodeURIComponent(workflow.filename)}?folder=${encodeURIComponent(currentFolder)}`\n      )"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-      "line": 115,
+      "line": 134,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(\n          `${API_BASE}/api/local-workflows/delete?filename=${encodeURIComponent(workflow.filename)}&folder=${encodeURIComponent(currentFolder)}`,\n          { method: 'POST' }\n        )"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx",
-      "line": 142,
+      "line": 161,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/open-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ folder })\n      })"
     },
@@ -6030,43 +6036,43 @@
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 155,
+      "line": 156,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/default-folder`)"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 391,
+      "line": 392,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${getBackendBaseUrl()}/api/local-workflows/check-exists`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ filename, content: { _folder: currentFolder } })\n        })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 421,
+      "line": 422,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/save-to-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({\n          filename,\n          content: { ...workflowData, _folder: currentFolder }\n        })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 565,
+      "line": 562,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/save-clipboard-image`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ name })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 607,
+      "line": 604,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/screenshot-tool`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ saveToAssets: true })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 767,
+      "line": 764,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}`, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application/json' }\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 876,
+      "line": 873,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
     },

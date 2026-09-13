@@ -9,7 +9,8 @@ vi.mock('../components/controls/confirm-dialog', async importOriginal => ({ ...(
 import { Toolbar } from '../components/Toolbar'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
+vi.mock('../hooks/stores/aiPermissionStore', () => ({ actionNeedsApproval: () => false, requestApproval: async () => true }))
+import { executeClientAction, emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { setStudioTransport } from '../api/transport'
 import { mockRequest } from '../api/mock-server'
 let saved: Record<string, unknown>[]
@@ -142,4 +143,51 @@ it('protects a name-only edit even before the name input loses focus', async () 
   fireEvent.keyDown(window, { key: 'n', altKey: true })
   fireEvent.click(await screen.findByRole('button', { name: '取消' }))
   expect(useWorkflowStore.getState().name).toBe('name-only draft')
+})
+it.each(['new_workflow', 'load_workflow_from_data'])('the actual AI %s command waits for and respects the draft decision', async action => {
+  render(<Toolbar />)
+  let resolved = false
+  const result = executeClientAction(action, { nodes: [{ id: 'web', type: 'open_page' }], animate: false }).then(value => { resolved = true; return value })
+  await screen.findByRole('button', { name: '取消' })
+  expect(resolved).toBe(false)
+  fireEvent.click(screen.getByRole('button', { name: '取消' }))
+  expect((await result).success).toBe(false)
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})
+it('rejects direct AI document replacement without a mounted editor', async () => {
+  expect((await executeClientAction('new_workflow')).success).toBe(false)
+  expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})
+it('AI file loading keeps all saved variables after an explicit discard decision', async () => {
+  const content = { name: 'loaded variables', nodes: [], edges: [], variables: [{ name: 'restored', type: 'string', value: 'from file', scope: 'global' }] }
+  setStudioTransport(async (input, init) => String(input).includes('/local-workflows/load/')
+    ? Response.json({ success: true, content }) : mockRequest(input, init))
+  render(<Toolbar />)
+  const result = executeClientAction('load_workflow', { filename: 'target' })
+  fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
+  expect((await result).success).toBe(true)
+  expect(useWorkflowStore.getState().variables).toEqual(content.variables)
+  expect(useWorkflowStore.getState().name).toBe('loaded variables')
+})
+it('AI file loading cannot replace edits made during its request', async () => {
+  let release!: (response: Response) => void
+  setStudioTransport(async (input, init) => String(input).includes('/local-workflows/load/')
+    ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  render(<Toolbar />)
+  const result = executeClientAction('load_workflow', { filename: 'target' })
+  await waitFor(() => expect(release).toBeDefined())
+  act(() => useWorkflowStore.getState().updateVariable('draft', 'changed during AI request'))
+  await act(async () => release(Response.json({ success: true, content: { name: 'late', nodes: [], edges: [], variables: [] } })))
+  expect((await result).success).toBe(false)
+  expect(useWorkflowStore.getState().variables[0].value).toBe('changed during AI request')
+  expect(screen.queryByRole('dialog', { name: '保存当前工作流？' })).toBeNull()
+})
+it('marks an AI-generated document dirty and preserves its declared variables', async () => {
+  render(<Toolbar />)
+  const variables = [{ name: 'generated', value: 'initial', type: 'string', scope: 'global' }]
+  const result = executeClientAction('load_workflow_from_data', { name: 'AI generated', nodes: [{ id: 'web', type: 'open_page' }], variables, animate: false })
+  fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
+  expect((await result).success).toBe(true)
+  expect(useWorkflowStore.getState().variables).toEqual(variables)
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
