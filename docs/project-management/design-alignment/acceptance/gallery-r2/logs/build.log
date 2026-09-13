@@ -1,0 +1,43 @@
+
+> build
+> npm --workspace @autoflow/desktop run build
+
+
+> @autoflow/desktop@0.1.0 build
+> electron-vite build
+
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 14 modules transformed.
+rendering chunks...
+out/main/index.js  61.49 kB
+✓ built in 122ms
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+out/preload/index.js  3.78 kB
+✓ built in 8ms
+vite v7.3.6 building client environment for production...
+transforming...
+../../node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../node_modules/zod/v4/core/regexes.js (72:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 6163 modules transformed.
+rendering chunks...
+../../out/renderer/index.html                      0.40 kB
+../../out/renderer/assets/ollama-Cko46lRu.svg      6.87 kB
+../../out/renderer/assets/gemini-BYkEpiWr.svg     27.79 kB
+../../out/renderer/assets/qwen-AEXkUelR.png       74.25 kB
+../../out/renderer/assets/index-BSYPQ_Ia.css     114.15 kB
+../../out/renderer/assets/index-N6KKGR5m.js    3,081.10 kB
+✓ built in 4.32s

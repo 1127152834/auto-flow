@@ -1,0 +1,278 @@
+[
+  {
+    "id": "R2-E01",
+    "title": "新增与编辑",
+    "fixture": "UI建表/字段/记录",
+    "steps": [
+      "记录页新增",
+      "输入",
+      "保存",
+      "详情",
+      "编辑",
+      "保存"
+    ],
+    "expected": "持久字段正确，完整typed身份，值0/false/null不混同",
+    "actual": "持久字段正确，完整typed身份，值0/false/null不混同",
+    "status": "passed",
+    "screenshot": "r2-detail-normal.png",
+    "source": "003",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-detail-normal.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E02",
+    "title": "字段校验",
+    "fixture": "已保存数字字段记录",
+    "steps": [
+      "数字填非法值",
+      "保存",
+      "修正"
+    ],
+    "expected": "非法零写请求且首错聚焦，其他草稿保留",
+    "actual": "非法零写请求且首错聚焦，其他草稿保留",
+    "status": "passed",
+    "screenshot": "r2-edit-validation.png",
+    "source": "005",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-edit-validation.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E03",
+    "title": "未保存保护",
+    "fixture": "编辑脏草稿",
+    "steps": [
+      "返回记录列表",
+      "继续编辑"
+    ],
+    "expected": "居中确认，继续不覆盖草稿",
+    "actual": "居中确认，继续不覆盖草稿",
+    "status": "passed",
+    "screenshot": "r2-edit-leave-confirm.png",
+    "source": "006",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-edit-leave-confirm.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E04",
+    "title": "状态设置与清空",
+    "fixture": "已定义真实业务状态",
+    "steps": [
+      "详情状态下拉选择",
+      "保存",
+      "清空"
+    ],
+    "expected": "状态修订分别推进，内容不变",
+    "actual": "状态修订分别推进，内容不变",
+    "status": "passed",
+    "screenshot": "r2-detail-normal.png",
+    "source": "003",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-detail-normal.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E05",
+    "title": "加载、读取失败、不存在",
+    "fixture": "真实GET延迟/失败注入及不存在typed地址",
+    "steps": [
+      "加载",
+      "释放",
+      "失败",
+      "重试",
+      "不存在",
+      "返回有效记录"
+    ],
+    "expected": "加载独立状态，失败保留可用事实，不存在中文提示且禁止编辑",
+    "actual": "加载独立状态，失败保留可用事实，不存在中文提示且禁止编辑",
+    "status": "passed",
+    "screenshot": "r2-detail-404.png",
+    "source": "003",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-detail-404.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E06",
+    "title": "真实409竞争",
+    "fixture": "真实HTTP竞争当前记录",
+    "steps": [
+      "保存",
+      "比较最新",
+      "取消",
+      "显式采用最新后修改保存"
+    ],
+    "expected": "输入保留，比较取消不覆盖，正确CAS后保存一次",
+    "actual": "输入保留，比较取消不覆盖，正确CAS后保存一次",
+    "status": "passed",
+    "screenshot": "r2-edit-conflict.png",
+    "source": "005",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-edit-conflict.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E07",
+    "title": "丢响应与完整重启",
+    "fixture": "提交成功后fetch响应注入丢失",
+    "steps": [
+      "保存",
+      "未知",
+      "整应用重启",
+      "原地址",
+      "核验"
+    ],
+    "expected": "找回原操作，同修订未二次增加",
+    "actual": "找回原操作，同修订未二次增加",
+    "status": "passed",
+    "screenshot": "r2-edit-unknown.png",
+    "source": "005",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-edit-unknown.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E08",
+    "title": "重连与工作区",
+    "fixture": "A工作区脏记录表单",
+    "steps": [
+      "服务重启",
+      "检查草稿",
+      "丢弃",
+      "B",
+      "A"
+    ],
+    "expected": "重连保留草稿、丢弃不写，两个工作区隔离",
+    "actual": "重连保留草稿、丢弃不写，两个工作区隔离",
+    "status": "passed",
+    "screenshot": "r2-detail-normal.png",
+    "source": "003",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-detail-normal.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E09",
+    "title": "真实删除",
+    "fixture": "同表多记录",
+    "steps": [
+      "删除影响",
+      "取消",
+      "再次影响",
+      "确认"
+    ],
+    "expected": "取消不变，确认只删除目标且其他记录不变",
+    "actual": "取消不变，确认只删除目标且其他记录不变",
+    "status": "passed",
+    "screenshot": "r2-reference-delete.png",
+    "source": "007",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-reference-delete.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E10",
+    "title": "键盘与200%",
+    "fixture": "真实详情状态下拉",
+    "steps": [
+      "Enter打开",
+      "Esc",
+      "200%",
+      "Tab",
+      "100%"
+    ],
+    "expected": "内层焦点推进归还，无全页横向溢出",
+    "actual": "内层焦点推进归还，无全页横向溢出",
+    "status": "passed",
+    "screenshot": "r2-detail-200.png",
+    "source": "003",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-detail-200.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E11",
+    "title": "原图四业务字段与日历",
+    "fixture": "UI建四字段标题/链接/日期/摘要",
+    "steps": [
+      "填写",
+      "日历方向键Enter",
+      "多行",
+      "保存",
+      "错误摘要",
+      "未保存",
+      "删除取消"
+    ],
+    "expected": "003–007结构一致，日历真实选择，摘要语义保留",
+    "actual": "003–007结构一致，日历真实选择，摘要语义保留",
+    "status": "passed",
+    "screenshot": "r2-reference-create.png",
+    "source": "004",
+    "runVersion": "a08c2fe",
+    "evidenceType": "E1 UI; competing HTTP and fact reads E2; restart/workspace bridge E3; explicit read/lost injection E4",
+    "userStatus": "not-run",
+    "evidence": "runs/run-msXqcI/r2-reference-create.png",
+    "runReport": "runs/run-msXqcI/result.json"
+  },
+  {
+    "id": "R2-E12",
+    "title": "浏览器历史取消",
+    "fixture": "UI建立的真实表与多条记录；仅DELETE请求派发前做E4延迟",
+    "steps": [
+      "记录编辑脏草稿",
+      "后退→继续编辑",
+      "后退→丢弃",
+      "详情状态脏草稿",
+      "前进→继续编辑"
+    ],
+    "expected": "取消时URL和当前草稿保持一致，丢弃仅放弃当前草稿",
+    "actual": "取消时URL和当前草稿保持一致，丢弃仅放弃当前草稿",
+    "status": "passed",
+    "evidence": "runs/run-NpRXl4/r2-history-forward-cancel.png",
+    "source": "003/006/007继承状态",
+    "runVersion": "a08c2fe (same build7; additive QA boundary cases)",
+    "evidenceType": "E1 UI; native browser history E3; delete delay E4",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "R2-E13",
+    "title": "删除进行中",
+    "fixture": "UI建立的真实表与多条记录；仅DELETE请求派发前做E4延迟",
+    "steps": [
+      "真实影响确认",
+      "延迟真实DELETE",
+      "确认→Escape",
+      "释放请求"
+    ],
+    "expected": "忙碌期间取消和重复提交禁用，Escape不能关闭；释放后只删除目标",
+    "actual": "忙碌期间取消和重复提交禁用，Escape不能关闭；释放后只删除目标",
+    "status": "passed",
+    "evidence": "runs/run-NpRXl4/r2-delete-saving.png",
+    "source": "003/006/007继承状态",
+    "runVersion": "a08c2fe (same build7; additive QA boundary cases)",
+    "evidenceType": "E1 UI; native browser history E3; delete delay E4",
+    "userStatus": "not-run"
+  }
+]

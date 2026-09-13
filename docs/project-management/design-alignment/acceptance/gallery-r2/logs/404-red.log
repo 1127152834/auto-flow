@@ -1,0 +1,282 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+ ❯ src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx (42 tests | 1 failed | 41 skipped) 1033ms
+   × shows a Chinese missing-record message while keeping the return action available 1032ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx > shows a Chinese missing-record message while keeping the return action available
+TestingLibraryElementError: Unable to find an element with the text: 记录不存在，可能已被删除。请返回记录列表查看当前数据。. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-table-detail[39m=[32m"true"[39m
+      [33mdir[39m=[32m"ltr"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"min-w-0 overflow-clip rounded-card border border-line bg-surface"[39m
+        [33mdata-table-page-frame[39m=[32m"true"[39m
+        [33mdata-testid[39m=[32m"data-table-page-frame"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex min-w-0 w-full flex-wrap items-start justify-between gap-x-8 gap-y-4 px-5 pt-5"[39m
+          [33mdata-table-page-frame-header[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 basis-80 flex-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex min-w-0 gap-5"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mfill[39m=[32m"currentColor"[39m
+                  [33mheight[39m=[32m"32"[39m
+                  [33mviewBox[39m=[32m"0 0 256 256"[39m
+                  [33mwidth[39m=[32m"32"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</span>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"m-0 break-words text-2xl font-semibold"[39m
+                [36m>[39m
+                  [0m客户表[0m
+                [36m</h2>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mb-0 mt-1 break-words text-base text-muted"[39m
+                [36m>[39m
+                  [0m真实说明[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mb-0 mt-2 text-sm text-muted"[39m
+                [36m>[39m
+                  [0m本地数据[0m
+                  [0m　|　[0m
+                  [0m本地可维护[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 max-w-full overflow-x-auto"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-orientation[39m=[32m"horizontal"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1 border-b border-line w-full justify-start overflow-x-auto"[39m
+              [33mdata-orientation[39m=[32m"horizontal"[39m
+              [33mrole[39m=[32m"tablist"[39m
+              [33mstyle[39m=[32m"outline: none;"[39m
+              [33mtabindex[39m=[32m"0"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-records"[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"active"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-records"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m数据记录[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-fields"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-fields"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m字段与校验[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-statuses"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-statuses"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m业务状态[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-source"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-source"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+        ...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-table-detail[39m=[32m"true"[39m
+      [33mdir[39m=[32m"ltr"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"min-w-0 overflow-clip rounded-card border border-line bg-surface"[39m
+        [33mdata-table-page-frame[39m=[32m"true"[39m
+        [33mdata-testid[39m=[32m"data-table-page-frame"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex min-w-0 w-full flex-wrap items-start justify-between gap-x-8 gap-y-4 px-5 pt-5"[39m
+          [33mdata-table-page-frame-header[39m=[32m"true"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 basis-80 flex-1"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex min-w-0 gap-5"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mfill[39m=[32m"currentColor"[39m
+                  [33mheight[39m=[32m"32"[39m
+                  [33mviewBox[39m=[32m"0 0 256 256"[39m
+                  [33mwidth[39m=[32m"32"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</span>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"m-0 break-words text-2xl font-semibold"[39m
+                [36m>[39m
+                  [0m客户表[0m
+                [36m</h2>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mb-0 mt-1 break-words text-base text-muted"[39m
+                [36m>[39m
+                  [0m真实说明[0m
+                [36m</p>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mb-0 mt-2 text-sm text-muted"[39m
+                [36m>[39m
+                  [0m本地数据[0m
+                  [0m　|　[0m
+                  [0m本地可维护[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0 max-w-full overflow-x-auto"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-orientation[39m=[32m"horizontal"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1 border-b border-line w-full justify-start overflow-x-auto"[39m
+              [33mdata-orientation[39m=[32m"horizontal"[39m
+              [33mrole[39m=[32m"tablist"[39m
+              [33mstyle[39m=[32m"outline: none;"[39m
+              [33mtabindex[39m=[32m"0"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-records"[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"active"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-records"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m数据记录[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-fields"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-fields"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m字段与校验[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-statuses"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-statuses"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m业务状态[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-controls[39m=[32m"radix-_r_0_-content-source"[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+                [33mdata-orientation[39m=[32m"horizontal"[39m
+                [33mdata-radix-collection-item[39m=[32m""[39m
+                [33mdata-state[39m=[32m"inactive"[39m
+                [33mid[39m=[32m"radix-_r_0_-trigger-source"[39m
+                [33mrole[39m=[32m"tab"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+                [33mtype[39m=[32m"button"[39m
+        ...
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx:433:23
+    431|   request.mockImplementation(async(path,init)=>{if(path.includes('/rec…
+    432|   renderPage(<DataTableDetailPage {...props(client,{record:{mode:'deta…
+    433|   expect(await screen.findByText('记录不存在，可能已被删除。请返回记录列表查看当前数据。')).toBeV…
+       |                       ^
+    434|   expect(screen.queryByText('Record was not found')).not.toBeInTheDocu…
+    435|   expect(screen.getByRole('button',{name:'返回记录列表'})).toBeEnabled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 41 skipped (42)
+   Start at  02:51:20
+   Duration  5.00s (transform 440ms, setup 0ms, import 3.48s, tests 1.03s, environment 386ms)
+

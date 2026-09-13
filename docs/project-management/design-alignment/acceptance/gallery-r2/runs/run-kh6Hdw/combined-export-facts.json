@@ -1,0 +1,24 @@
+{
+  "rows": [
+    [
+      "标题",
+      "文章链接",
+      "发布日期",
+      "已检查",
+      "优先级",
+      "状态"
+    ],
+    [
+      "温室管理清单",
+      "https://example.com/article/1",
+      "2026-09-13 00:00:00",
+      true,
+      0,
+      "已核对"
+    ]
+  ],
+  "expectedTitle": "温室管理清单",
+  "screenRows": [
+    "\t\nUUID · 845c9392-0e63-40f7-b375-a75be45e07da\n\t\n温室管理清单\n\t\nhttps://example.com/article/1\n\t\n2026-09-13\n\t\n是\n\t\n0\n\t\n已核对\n\t\n9/14 02:52\n\t\n查看\n编辑"
+  ]
+}

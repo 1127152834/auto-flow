@@ -380,3 +380,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ### Gallery R1验收资产（2026-09-14）
 
 `docs/project-management/design-alignment/acceptance/gallery-r1/`保存逐页原图映射、未修改来源PNG副本、真实Electron截图/运行出处、独立审查、机器结果、逐项用例及用户手册。`scripts/verify-gallery-baseline.mjs`仅核验来源hash/尺寸/证据引用，不代替业务或人工视觉验收。`qa-project-alignment-r1.mjs --manual`只在有专属标记的隔离工作区运行，可注入竞争与响应丢失，不新增生产调试接口。
+
+### Gallery R2 组件责任（2026-09-14，confirmed）
+
+`renderer/domains/project-data/components/RecordEditorForm`维护已有数据草稿/校验与可见错误通知；页面负责路由、外层保存栏和会话隔离。`RecordUnsavedDialog`只呈现真实修改字段和离开选择，`DataDeletionDialog`复用真实删除预检/原操作恢复。`shared/components/ui/calendar-date-input`基于DayPicker与现有Popover提供本地日期选择，保持原文输入和日期时间业务语义，禁止系统默认日期面板。实际文件以apps/desktop/src为前缀。R3字段聚合仍未实施。

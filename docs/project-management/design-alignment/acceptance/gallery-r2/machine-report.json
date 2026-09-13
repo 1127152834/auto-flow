@@ -1,0 +1,76 @@
+{
+  "status": "passed",
+  "stage": "Gallery R2",
+  "sourceRevision": "a08c2fe",
+  "checkedAt": "2026-09-13T19:12:27.590040+00:00",
+  "runs": [
+    "runs/run-msXqcI/result.json",
+    "runs/run-NpRXl4/result.json"
+  ],
+  "frontend": {
+    "files": 127,
+    "tests": 1030,
+    "status": "passed"
+  },
+  "backendContractTests": 38,
+  "scriptTests": 29,
+  "structureTests": 3,
+  "checks": [
+    "typecheck",
+    "lint",
+    "openapi:check",
+    "build",
+    "git diff --check"
+  ],
+  "visualScores": {
+    "record-detail": 86,
+    "record-create": 88,
+    "record-edit": 89,
+    "record-unsaved": 91,
+    "record-delete": 88
+  },
+  "pm2Regression": {
+    "directory": {
+      "cases": 14,
+      "result": "../../../../migration/project-data-directory-qa/run-syjRpA/result.json"
+    },
+    "excelBatch": {
+      "cases": 7,
+      "result": "../../../../migration/pm2-detail-qa/run-P4C7xM/result.json",
+      "largeTableRows": 10000,
+      "importMs": 5916,
+      "nextPageMs": 176
+    }
+  },
+  "nativeExternalLink": {
+    "result": "../r2/external-link/run-TRJwrL/result.json",
+    "observation": "../r2/external-link/run-TRJwrL/native-observation.json",
+    "scope": "Native CUA clicked real http/https controls; earlier build hash explicitly retained. External-link implementation unchanged since that run."
+  },
+  "sourceProvenance": "source-manifest.json includes tracked and new source, build files; run contains original source head plus dirty tree/build hash, reconciled to a08c2fe commit",
+  "unexecuted": [
+    "Windows",
+    "其他架构",
+    "打包版本",
+    "用户手动验收",
+    "原生文件选择面板完整闭环（R3）"
+  ],
+  "futureStages": {
+    "R3": "not-implemented",
+    "PM3": "out-of-scope"
+  },
+  "readOnlyReferenceWorkspaces": [
+    "autoflow",
+    "browser-automation"
+  ],
+  "limitations": [
+    "Visual scores are independent qualitative review, not pixel similarity or user approval",
+    "Existing fallback backend blocker messages are preserved; no fabricated reference counts",
+    "Actual local data source differs from unavailable Sheets prototype notices"
+  ],
+  "supplementalVerification": {
+    "browserHistoryCancel": "passed",
+    "deleteBusyScreenshot": "passed",
+    "statusOptionsScreenshot": "passed"
+  }
+}

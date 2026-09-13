@@ -1,13 +1,72 @@
 {
-  "status": "implementation-started-not-accepted",
+  "status": "passed-local-not-user-accepted",
   "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest",
   "pages": [
-    {"id":"record-create","source":"05-data/004-record-create-72de4a.png","route":"#/projects/{projectId}/data/{tableId}/records/new","layout":"single outer table card, title and tabs in header, full-width field rows and footer","evidence":null},
-    {"id":"record-edit","source":"05-data/005-record-edit-validation-421c54.png","route":"#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}/edit","layout":"single outer table card, inline validation summary, full-width field rows and footer","evidence":null},
-    {"id":"record-detail","source":"05-data/003-record-detail-d3f6c5.png","route":"#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}","layout":"outer table card, record heading and edit/more actions, left fields and right project state","evidence":null}
+    {
+      "id": "record-create",
+      "source": "05-data/004-record-create-72de4a.png",
+      "route": "#/projects/{projectId}/data/{tableId}/records/new",
+      "layout": "single outer table card, title and tabs in header, full-width field rows and footer",
+      "evidence": "runs/run-msXqcI/r2-reference-create.png",
+      "visualScore": 88
+    },
+    {
+      "id": "record-edit",
+      "source": "05-data/005-record-edit-validation-421c54.png",
+      "route": "#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}/edit",
+      "layout": "single outer table card, inline validation summary, full-width field rows and footer",
+      "evidence": "runs/run-msXqcI/r2-reference-edit-validation.png",
+      "visualScore": 89
+    },
+    {
+      "id": "record-detail",
+      "source": "05-data/003-record-detail-d3f6c5.png",
+      "route": "#/projects/{projectId}/data/{tableId}/records/{generation}/{type}/{key}",
+      "layout": "outer table card, record heading and edit/more actions, left fields and right project state",
+      "evidence": "runs/run-msXqcI/r2-reference-detail.png",
+      "visualScore": 86
+    },
+    {
+      "id": "record-unsaved",
+      "source": "05-data/006-unsaved-changes-948956.png",
+      "route": "record create/edit dirty leave",
+      "layout": "centered AlertDialog with record and actual dirty field names; discard secondary, continue primary",
+      "evidence": "runs/run-msXqcI/r2-reference-unsaved.png",
+      "visualScore": 91
+    },
+    {
+      "id": "record-delete",
+      "source": "05-data/007-record-delete-confirm-76a0e5.png",
+      "route": "record detail more/delete",
+      "layout": "centered Modal with actual record/table/impact, cancel focus and danger confirm",
+      "evidence": "runs/run-msXqcI/r2-reference-delete.png",
+      "visualScore": 88
+    }
   ],
   "supplementalStates": [
-    {"id":"record-conflict","source":null,"parent":"record-edit","placement":"full-width existing form alert; load latest opens existing centered confirmation with current facts, retain session safeguards; no additional page column","reason":"No original conflict art; follows original 006 centered confirmation and existing recovery semantics","evidence":null},
-    {"id":"record-recovery","source":null,"parent":"record-edit","placement":"full-width alert, original input frozen, existing footer action queries original operation","reason":"Unknown result cannot be treated as failure or blind resubmission","evidence":null}
+    {
+      "id": "record-conflict",
+      "source": null,
+      "parent": "record-edit",
+      "placement": "full-width existing form alert; load latest opens existing centered confirmation with current facts, retain session safeguards; no additional page column",
+      "reason": "No original conflict art; follows original 006 centered confirmation and existing recovery semantics",
+      "evidence": "runs/run-msXqcI/r2-edit-conflict.png"
+    },
+    {
+      "id": "record-recovery",
+      "source": null,
+      "parent": "record-edit",
+      "placement": "full-width alert, original input frozen, existing footer action queries original operation",
+      "reason": "Unknown result cannot be treated as failure or blind resubmission",
+      "evidence": "runs/run-msXqcI/r2-edit-unknown.png"
+    }
+  ],
+  "authorizedDifferences": [
+    "Global sidebar becomes existing top navigation",
+    "Local source facts replace unavailable Sheets sync notice; no fake cloud failure",
+    "System-created UUID identity remains truthful; field-identity rows use real configured identity",
+    "Null/missing/empty-string controls are hidden under explicit value options without changing stored semantics",
+    "No stored multiline field metadata: user explicitly chooses multiline, not inference from the field name",
+    "Status clear/cancel remain available; no future occupancy counts fabricated"
   ]
 }

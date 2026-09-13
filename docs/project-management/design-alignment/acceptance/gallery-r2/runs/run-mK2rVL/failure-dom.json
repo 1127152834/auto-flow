@@ -1,0 +1,635 @@
+{
+  "bodyStyle": "",
+  "buttons": [
+    {
+      "name": "总览",
+      "disabled": false,
+      "rect": {
+        "x": 196.203125,
+        "y": -113.5,
+        "w": 36,
+        "h": 56
+      }
+    },
+    {
+      "name": "项目",
+      "disabled": false,
+      "rect": {
+        "x": 252.203125,
+        "y": -113.5,
+        "w": 36,
+        "h": 56
+      }
+    },
+    {
+      "name": "浏览器配置",
+      "disabled": false,
+      "rect": {
+        "x": 308.203125,
+        "y": -113.5,
+        "w": 78,
+        "h": 56
+      }
+    },
+    {
+      "name": "代理管理",
+      "disabled": false,
+      "rect": {
+        "x": 406.203125,
+        "y": -113.5,
+        "w": 64,
+        "h": 56
+      }
+    },
+    {
+      "name": "模型管理",
+      "disabled": false,
+      "rect": {
+        "x": 490.203125,
+        "y": -113.5,
+        "w": 64,
+        "h": 56
+      }
+    },
+    {
+      "name": "设置",
+      "disabled": false,
+      "rect": {
+        "x": 1208,
+        "y": -113.5,
+        "w": 57,
+        "h": 56
+      }
+    },
+    {
+      "name": "返回记录列表",
+      "disabled": false,
+      "rect": {
+        "x": 98,
+        "y": -24,
+        "w": 22,
+        "h": 32
+      }
+    },
+    {
+      "name": "返回项目目录",
+      "disabled": false,
+      "rect": {
+        "x": 132,
+        "y": -18,
+        "w": 28,
+        "h": 20
+      }
+    },
+    {
+      "name": "概览",
+      "disabled": false,
+      "rect": {
+        "x": 98,
+        "y": 145,
+        "w": 64,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">概览</span>"
+    },
+    {
+      "name": "自动化",
+      "disabled": false,
+      "rect": {
+        "x": 186,
+        "y": 145,
+        "w": 80,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">自动化</span>"
+    },
+    {
+      "name": "运行记录",
+      "disabled": false,
+      "rect": {
+        "x": 290,
+        "y": 145,
+        "w": 96,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">运行记录</span>"
+    },
+    {
+      "name": "统计",
+      "disabled": false,
+      "rect": {
+        "x": 410,
+        "y": 145,
+        "w": 64,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">统计</span>"
+    },
+    {
+      "name": "数据",
+      "disabled": false,
+      "rect": {
+        "x": 498,
+        "y": 145,
+        "w": 64,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">数据</span>"
+    },
+    {
+      "name": "环境",
+      "disabled": false,
+      "rect": {
+        "x": 586,
+        "y": 145,
+        "w": 64,
+        "h": 58
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">环境</span>"
+    },
+    {
+      "name": "数据记录",
+      "disabled": false,
+      "rect": {
+        "x": 741,
+        "y": 241,
+        "w": 104,
+        "h": 50
+      },
+      "hit": "<button type=\"button\" role=\"tab\" aria-selected=\"true\" aria-controls=\"radix-_r_69_-content-records\" data-state=\"active\" id=\"radix-_r_69_-trigger-records\" class=\"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-contro"
+    },
+    {
+      "name": "字段与校验",
+      "disabled": false,
+      "rect": {
+        "x": 849,
+        "y": 242,
+        "w": 120,
+        "h": 48
+      },
+      "hit": "<button type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"radix-_r_69_-content-fields\" data-state=\"inactive\" id=\"radix-_r_69_-trigger-fields\" class=\"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-contr"
+    },
+    {
+      "name": "业务状态",
+      "disabled": false,
+      "rect": {
+        "x": 973,
+        "y": 242,
+        "w": 104,
+        "h": 48
+      },
+      "hit": "<button type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"radix-_r_69_-content-statuses\" data-state=\"inactive\" id=\"radix-_r_69_-trigger-statuses\" class=\"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-c"
+    },
+    {
+      "name": "来源设置",
+      "disabled": false,
+      "rect": {
+        "x": 1081,
+        "y": 242,
+        "w": 104,
+        "h": 48
+      },
+      "hit": "<button type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"radix-_r_69_-content-source\" data-state=\"inactive\" id=\"radix-_r_69_-trigger-source\" class=\"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-contr"
+    },
+    {
+      "name": "数据表设置",
+      "disabled": false,
+      "rect": {
+        "x": 1189,
+        "y": 242,
+        "w": 120,
+        "h": 48
+      },
+      "hit": "<button type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"radix-_r_69_-content-settings\" data-state=\"inactive\" id=\"radix-_r_69_-trigger-settings\" class=\"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-c"
+    },
+    {
+      "name": "值选项",
+      "disabled": false,
+      "rect": {
+        "x": 1247,
+        "y": 478,
+        "w": 62,
+        "h": 32
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">值选项</span>"
+    },
+    {
+      "name": "值选项",
+      "disabled": false,
+      "rect": {
+        "x": 1247,
+        "y": 587,
+        "w": 62,
+        "h": 32
+      },
+      "hit": "<span class=\"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2\">值选项</span>"
+    },
+    {
+      "name": "选择发布日期",
+      "disabled": false,
+      "rect": {
+        "x": 1265,
+        "y": 648,
+        "w": 40,
+        "h": 40
+      },
+      "hit": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"21\" height=\"21\" fill=\"currentColor\" viewBox=\"0 0 256 256\"><path d=\"M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,2"
+    },
+    {
+      "name": "值选项",
+      "disabled": false,
+      "rect": {
+        "x": 1247,
+        "y": 696,
+        "w": 62,
+        "h": 32
+      },
+      "hit": "<button type=\"button\" class=\"rdp-button_next\" aria-label=\"前往下个月\"><svg class=\"rdp-chevron\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20\"></polygon></svg></button>"
+    },
+    {
+      "name": "值选项",
+      "disabled": false,
+      "rect": {
+        "x": 1247,
+        "y": 805,
+        "w": 62,
+        "h": 32
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月6日 星期日\">6</button>"
+    },
+    {
+      "name": "取消",
+      "disabled": false,
+      "rect": {
+        "x": 1057,
+        "y": 931,
+        "w": 112,
+        "h": 48
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月30日 星期三\">30</button>"
+    },
+    {
+      "name": "保存到本地",
+      "disabled": false,
+      "rect": {
+        "x": 1181,
+        "y": 931,
+        "w": 128,
+        "h": 48
+      },
+      "hit": "<table role=\"grid\" aria-multiselectable=\"false\" aria-label=\"2026年9月\" class=\"rdp-month_grid\"><thead aria-hidden=\"true\"><tr class=\"rdp-weekdays\"><th aria-label=\"星期一\" class=\"rdp-weekday\" scope=\"col\">一</th><th aria-label=\"星期二\" class=\"rdp-weekday\" scope=\""
+    },
+    {
+      "name": "前往上个月",
+      "disabled": false,
+      "rect": {
+        "x": 1220,
+        "y": 711,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<svg class=\"rdp-chevron\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"16 18.112 9.81111111 12 16 5.87733333 14.0888889 4 6 12 14.0888889 20\"></polygon></svg>"
+    },
+    {
+      "name": "前往下个月",
+      "disabled": false,
+      "rect": {
+        "x": 1256,
+        "y": 711,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<svg class=\"rdp-chevron\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><polygon points=\"8 18.112 14.18888889 12 8 5.87733333 9.91111111 4 18 12 9.91111111 20\"></polygon></svg>"
+    },
+    {
+      "name": "2026年9月1日 星期二",
+      "disabled": false,
+      "rect": {
+        "x": 1064,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月1日 星期二\">1</button>"
+    },
+    {
+      "name": "2026年9月2日 星期三",
+      "disabled": false,
+      "rect": {
+        "x": 1102,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月2日 星期三\">2</button>"
+    },
+    {
+      "name": "2026年9月3日 星期四",
+      "disabled": false,
+      "rect": {
+        "x": 1140,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月3日 星期四\">3</button>"
+    },
+    {
+      "name": "2026年9月4日 星期五",
+      "disabled": false,
+      "rect": {
+        "x": 1178,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月4日 星期五\">4</button>"
+    },
+    {
+      "name": "2026年9月5日 星期六",
+      "disabled": false,
+      "rect": {
+        "x": 1216,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月5日 星期六\">5</button>"
+    },
+    {
+      "name": "2026年9月6日 星期日",
+      "disabled": false,
+      "rect": {
+        "x": 1254,
+        "y": 785.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月6日 星期日\">6</button>"
+    },
+    {
+      "name": "2026年9月7日 星期一",
+      "disabled": false,
+      "rect": {
+        "x": 1026,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月7日 星期一\">7</button>"
+    },
+    {
+      "name": "2026年9月8日 星期二",
+      "disabled": false,
+      "rect": {
+        "x": 1064,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月8日 星期二\">8</button>"
+    },
+    {
+      "name": "2026年9月9日 星期三",
+      "disabled": false,
+      "rect": {
+        "x": 1102,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月9日 星期三\">9</button>"
+    },
+    {
+      "name": "2026年9月10日 星期四",
+      "disabled": false,
+      "rect": {
+        "x": 1140,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月10日 星期四\">10</button>"
+    },
+    {
+      "name": "2026年9月11日 星期五",
+      "disabled": false,
+      "rect": {
+        "x": 1178,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月11日 星期五\">11</button>"
+    },
+    {
+      "name": "2026年9月12日 星期六",
+      "disabled": false,
+      "rect": {
+        "x": 1216,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月12日 星期六\">12</button>"
+    },
+    {
+      "name": "2026年9月13日 星期日，已选择",
+      "disabled": false,
+      "rect": {
+        "x": 1254,
+        "y": 823.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月13日 星期日，已选择\">13</button>"
+    },
+    {
+      "name": "今天，2026年9月14日 星期一",
+      "disabled": false,
+      "rect": {
+        "x": 1026,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"0\" aria-label=\"今天，2026年9月14日 星期一\">14</button>"
+    },
+    {
+      "name": "2026年9月15日 星期二",
+      "disabled": false,
+      "rect": {
+        "x": 1064,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月15日 星期二\">15</button>"
+    },
+    {
+      "name": "2026年9月16日 星期三",
+      "disabled": false,
+      "rect": {
+        "x": 1102,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月16日 星期三\">16</button>"
+    },
+    {
+      "name": "2026年9月17日 星期四",
+      "disabled": false,
+      "rect": {
+        "x": 1140,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月17日 星期四\">17</button>"
+    },
+    {
+      "name": "2026年9月18日 星期五",
+      "disabled": false,
+      "rect": {
+        "x": 1178,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月18日 星期五\">18</button>"
+    },
+    {
+      "name": "2026年9月19日 星期六",
+      "disabled": false,
+      "rect": {
+        "x": 1216,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月19日 星期六\">19</button>"
+    },
+    {
+      "name": "2026年9月20日 星期日",
+      "disabled": false,
+      "rect": {
+        "x": 1254,
+        "y": 861.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月20日 星期日\">20</button>"
+    },
+    {
+      "name": "2026年9月21日 星期一",
+      "disabled": false,
+      "rect": {
+        "x": 1026,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月21日 星期一\">21</button>"
+    },
+    {
+      "name": "2026年9月22日 星期二",
+      "disabled": false,
+      "rect": {
+        "x": 1064,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月22日 星期二\">22</button>"
+    },
+    {
+      "name": "2026年9月23日 星期三",
+      "disabled": false,
+      "rect": {
+        "x": 1102,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月23日 星期三\">23</button>"
+    },
+    {
+      "name": "2026年9月24日 星期四",
+      "disabled": false,
+      "rect": {
+        "x": 1140,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月24日 星期四\">24</button>"
+    },
+    {
+      "name": "2026年9月25日 星期五",
+      "disabled": false,
+      "rect": {
+        "x": 1178,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月25日 星期五\">25</button>"
+    },
+    {
+      "name": "2026年9月26日 星期六",
+      "disabled": false,
+      "rect": {
+        "x": 1216,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月26日 星期六\">26</button>"
+    },
+    {
+      "name": "2026年9月27日 星期日",
+      "disabled": false,
+      "rect": {
+        "x": 1254,
+        "y": 899.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月27日 星期日\">27</button>"
+    },
+    {
+      "name": "2026年9月28日 星期一",
+      "disabled": false,
+      "rect": {
+        "x": 1026,
+        "y": 937.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月28日 星期一\">28</button>"
+    },
+    {
+      "name": "2026年9月29日 星期二",
+      "disabled": false,
+      "rect": {
+        "x": 1064,
+        "y": 937.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月29日 星期二\">29</button>"
+    },
+    {
+      "name": "2026年9月30日 星期三",
+      "disabled": false,
+      "rect": {
+        "x": 1102,
+        "y": 937.4921875,
+        "w": 36,
+        "h": 36
+      },
+      "hit": "<button class=\"rdp-day_button\" type=\"button\" tabindex=\"-1\" aria-label=\"2026年9月30日 星期三\">30</button>"
+    }
+  ]
+}

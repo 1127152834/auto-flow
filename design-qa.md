@@ -11,3 +11,14 @@ final result: passed
 无未闭合P0/P1/P2。剩余P3：弹窗留白与字符提示对齐、边框深度、动态表格列比例、筛选箭头和辅助文字细节。按skill不为P3继续循环。文件来源条件未实现的Sheets/外部SQLite不伪造；所需业务能力与额外操作位置均已在page-map登记。
 
 详见 [R1审查](docs/project-management/design-alignment/acceptance/gallery-r1/review.md)、[原图与实图](docs/project-management/design-alignment/acceptance/gallery-r1/comparison.html)、[机器结果](docs/project-management/design-alignment/acceptance/gallery-r1/machine-report.json)。
+
+
+# Gallery R2 Design QA
+
+final result: passed
+
+实现a08c2fe；原003–007与run-msXqcI每对同工具调用查看。004/005带底部补图，非遮挡修图。逐页86/88/89/91/88，适用GF全部通过。前轮004/005/007因Toast污染、校验按钮外观和英文影响而失败（84/84/80），修正后重新E2E/截图，保留历史。剩余仅辅助字号、边框和局部间距P3。
+
+实际1440×1024/DPR1与200%720×512/DPR2；原生窗口大小、字体与构建哈希在逐图report。真本地来源/UUID与顶部导航为已登记差异，未添加虚构Sheets状态。无未闭合P0/P1/P2；用户未签收基线，Windows/打包未执行。R3尚未验收。
+
+详见[原图对照](docs/project-management/design-alignment/acceptance/gallery-r2/comparison.html)、[审查](docs/project-management/design-alignment/acceptance/gallery-r2/review.md)、[机器报告](docs/project-management/design-alignment/acceptance/gallery-r2/machine-report.json)。
