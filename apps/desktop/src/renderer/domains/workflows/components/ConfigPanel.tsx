@@ -225,7 +225,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
   const deleteNode = useWorkflowStore((state) => state.deleteNode)
   const addLog = useWorkflowStore((state) => state.addLog)
-  const addVariable = useWorkflowStore((state) => state.addVariable)
   const toggleNodesDisabled = useWorkflowStore((state) => state.toggleNodesDisabled)
   
   // 获取浏览器配置
@@ -490,15 +489,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     const request = pickerSequence.current
     
     const finalSelector = similarResult.pattern.replace('{index}', `{${variableName}}`)
-    handleChange(pickingField, finalSelector)
-    
-    addVariable({
-      name: variableName,
-      value: similarResult.minIndex,
-      type: 'number',
-      scope: 'global'
-    })
-    
+    const state = useWorkflowStore.getState()
+    const existing = state.variables.some(variable => variable.name === variableName)
+    const variables = existing
+      ? state.variables.map(variable => variable.name === variableName ? { ...variable, value: similarResult.minIndex } : variable)
+      : [...state.variables, { name: variableName, value: similarResult.minIndex, type: 'number' as const, scope: 'global' as const }]
+    state.updateNodesData([{ nodeId: selectedNodeId!, data: { [pickingField]: finalSelector } }], variables)
+
     addLog({ 
       level: 'success', 
       message: `已设置相似元素选择器，变量 ${variableName} 范围: ${similarResult.minIndex}-${similarResult.maxIndex}` 
@@ -517,7 +514,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     pickerActive.current = false
     setIsPicking(false)
     setPickingField(null)
-  }, [similarResult, pickingField, handleChange, addVariable, addLog, browserConfig])
+  }, [similarResult, pickingField, selectedNodeId, addLog, browserConfig])
 
   // 停止元素选择器
   const stopElementPicker = useCallback(async () => {

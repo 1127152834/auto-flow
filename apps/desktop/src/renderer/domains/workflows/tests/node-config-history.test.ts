@@ -31,3 +31,23 @@ it('merges repeated patches to one node and restores removed optional fields', (
   expect(store.getState().nodes[0].data.errorPolicy).toEqual({ mode: 'continue' })
   expect(store.getState().nodes[0].data.url).not.toBe('last')
 })
+it('keeps combined variable edits isolated from caller mutation and preserves selection', () => {
+  const id=store.getState().nodes[0].id
+  store.getState().selectNode(id)
+  const variables=[{name:'items',value:[1],type:'array' as const,scope:'global' as const}]
+  store.getState().updateNodesData([{nodeId:id,data:{url:'changed'}}],variables)
+  variables[0].value.push(2)
+  expect(store.getState().variables[0].value).toEqual([1])
+  expect(store.getState().selectedNodeId).toBe(id)
+  store.getState().undo()
+  expect(store.getState().variables).toEqual([])
+  expect(store.getState().nodes[0].data.url).not.toBe('changed')
+})
+it('skips an identical combined patch without consuming history or dirtying the draft', () => {
+  store.getState().addVariable({name:'index',value:1,type:'number',scope:'global'})
+  store.getState().markAsSaved()
+  const before=store.getState(); const node=before.nodes[0]
+  store.getState().updateNodesData([{nodeId:node.id,data:{...node.data}}],structuredClone(before.variables))
+  expect(store.getState().history).toBe(before.history)
+  expect(store.getState().hasUnsavedChanges).toBe(false)
+})

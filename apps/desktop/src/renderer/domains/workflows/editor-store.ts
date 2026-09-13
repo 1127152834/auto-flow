@@ -267,7 +267,7 @@ interface WorkflowState {
   
   // 更新节点数据
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void
-  updateNodesData: (patches: { nodeId: string; data: Partial<NodeData> }[]) => void
+  updateNodesData: (patches: { nodeId: string; data: Partial<NodeData> }[], variables?: Variable[]) => void
   
   // 删除节点
   deleteNode: (nodeId: string) => void
@@ -2525,7 +2525,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     get().updateNodesData([{ nodeId, data }])
   },
 
-  updateNodesData: (patches) => {
+  updateNodesData: (patches, variables) => {
     const patchMap = new Map<string, Partial<NodeData>>()
     for (const patch of patches) patchMap.set(patch.nodeId, { ...patchMap.get(patch.nodeId), ...patch.data })
     const nodes = get().nodes.map(node => {
@@ -2533,9 +2533,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       if (!patch || Object.entries(patch).every(([key, value]) => Object.is(node.data[key], value))) return node
       return { ...node, data: { ...node.data, ...patch } }
     })
-    if (nodes.every((node, index) => node === get().nodes[index])) return
+    const variablesChanged = variables !== undefined && JSON.stringify(variables) !== JSON.stringify(get().variables)
+    if (nodes.every((node, index) => node === get().nodes[index]) && !variablesChanged) return
     get().pushHistory()
-    set({ nodes, hasUnsavedChanges: true })
+    set({ nodes, ...(variablesChanged ? { variables: structuredClone(variables) } : {}), hasUnsavedChanges: true })
   },
 
   deleteNode: (nodeId) => {

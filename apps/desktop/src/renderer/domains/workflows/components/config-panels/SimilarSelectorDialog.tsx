@@ -56,6 +56,7 @@ export function SimilarSelectorDialog({
               onChange={(v) => setVariableName(v)}
               placeholder="index"
               isStorageVariable={true}
+              enableRenameDetection={false}
             />
             <p className="text-xs text-gray-500">
               变量名将用于循环遍历，如 <code className="bg-gray-100 px-1 rounded">{'{' + variableName + '}'}</code>

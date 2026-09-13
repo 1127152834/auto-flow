@@ -1,0 +1,69 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/picker-result-context.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:8076) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx (19 tests | 3 failed) 1055ms
+   × applies a similar selector and its index variable in one undo with existing=false 50ms
+   × applies a similar selector and its index variable in one undo with existing=true 49ms
+   × naming a new similar index does not rename references to an existing variable 64ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > applies a similar selector and its index variable in one undo with existing=false
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > applies a similar selector and its index variable in one undo with existing=true
+AssertionError: expected '.item-{index}' to be '#before' // Object.is equality
+
+Expected: "#before"
+Received: ".item-{index}"
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:113:51
+    111|   expect(store.getState().variables).toEqual([{name:'index',value:1,ty…
+    112|   act(() => store.getState().undo())
+    113|   expect(store.getState().nodes[0].data.selector).toBe('#before')
+       |                                                   ^
+    114|   expect(store.getState().variables).toEqual(existing?[{name:'index',v…
+    115|   act(() => store.getState().redo())
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-result-context.test.tsx > naming a new similar index does not rename references to an existing variable
+AssertionError: expected <h3 …(1)></h3> to be null
+
+- Expected:
+null
+
++ Received:
+<h3
+  class="text-lg font-semibold text-gray-900"
+>
+  变量重命名
+</h3>
+
+ ❯ src/renderer/domains/workflows/tests/picker-result-context.test.tsx:129:39
+    127|   fireEvent.focus(input);fireEvent.change(input,{target:{value:'rowInd…
+    128|   await act(async () => vi.advanceTimersByTimeAsync(300))
+    129|   expect(screen.queryByText('变量重命名')).toBeNull()
+       |                                       ^
+    130|   await act(async () => fireEvent.click(screen.getByText('确认使用')))
+    131|   expect(store.getState().nodes[0].data.name).toBe('引用 {index}')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 16 passed (19)
+   Start at  04:25:43
+   Duration  3.56s (transform 1.19s, setup 94ms, import 1.72s, tests 1.06s, environment 584ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/picker-result-context.test.tsx

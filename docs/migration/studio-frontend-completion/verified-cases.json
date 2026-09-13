@@ -19685,5 +19685,105 @@
     "level": "browser UI with mock service",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-picker-context/browser-ui.md"
+  },
+  {
+    "id": "PICKER.similar-atomic.new-index",
+    "capability": "picker:similar-selector",
+    "preconditions": {
+      "selector": "#before",
+      "pattern": ".item-{index}",
+      "minIndex": 1
+    },
+    "steps": [
+      "新索引变量和选择器一次撤销并重做",
+      "检查编辑后的变量及节点",
+      "撤销/重做或检查空操作"
+    ],
+    "expectedUI": "选择器与索引配置一致，不显示无关重命名对话框",
+    "expectedIO": "组件测试使用受控拾取结果，无真实采集",
+    "stateAssertion": "新索引变量和选择器一次撤销并重做",
+    "level": "component/editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.similar-atomic.existing-index",
+    "capability": "picker:similar-selector",
+    "preconditions": {
+      "selector": "#before",
+      "pattern": ".item-{index}",
+      "minIndex": 1
+    },
+    "steps": [
+      "同名索引旧值与原选择器一次恢复",
+      "检查编辑后的变量及节点",
+      "撤销/重做或检查空操作"
+    ],
+    "expectedUI": "选择器与索引配置一致，不显示无关重命名对话框",
+    "expectedIO": "组件测试使用受控拾取结果，无真实采集",
+    "stateAssertion": "同名索引旧值与原选择器一次恢复",
+    "level": "component/editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.similar-atomic.no-rename",
+    "capability": "picker:similar-selector",
+    "preconditions": {
+      "selector": "#before",
+      "pattern": ".item-{index}",
+      "minIndex": 1
+    },
+    "steps": [
+      "新索引名称不触发已有变量引用重命名",
+      "检查编辑后的变量及节点",
+      "撤销/重做或检查空操作"
+    ],
+    "expectedUI": "选择器与索引配置一致，不显示无关重命名对话框",
+    "expectedIO": "组件测试使用受控拾取结果，无真实采集",
+    "stateAssertion": "新索引名称不触发已有变量引用重命名",
+    "level": "component/editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "PICKER.similar-atomic.clone-selection",
+    "capability": "picker:similar-selector",
+    "preconditions": {
+      "selector": "#before",
+      "pattern": ".item-{index}",
+      "minIndex": 1
+    },
+    "steps": [
+      "原子编辑不共享调用方变量且保持选择",
+      "检查编辑后的变量及节点",
+      "撤销/重做或检查空操作"
+    ],
+    "expectedUI": "选择器与索引配置一致，不显示无关重命名对话框",
+    "expectedIO": "组件测试使用受控拾取结果，无真实采集",
+    "stateAssertion": "原子编辑不共享调用方变量且保持选择",
+    "level": "component/editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/node-config-history.test.ts"
+  },
+  {
+    "id": "PICKER.similar-atomic.noop",
+    "capability": "picker:similar-selector",
+    "preconditions": {
+      "selector": "#before",
+      "pattern": ".item-{index}",
+      "minIndex": 1
+    },
+    "steps": [
+      "相同原子编辑不消耗历史或标脏",
+      "检查编辑后的变量及节点",
+      "撤销/重做或检查空操作"
+    ],
+    "expectedUI": "选择器与索引配置一致，不显示无关重命名对话框",
+    "expectedIO": "组件测试使用受控拾取结果，无真实采集",
+    "stateAssertion": "相同原子编辑不消耗历史或标脏",
+    "level": "component/editor rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/node-config-history.test.ts"
   }
 ]
