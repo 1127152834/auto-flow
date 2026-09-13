@@ -1,6 +1,8 @@
 /** Mock file resource endpoints. Imported bytes stay in this browser's local mock storage. */
 interface Asset { id: string; name: string; originalName: string; filename: string; folder: string; path: string; url: string; dataUrl: string; size: number; createdAt: string }
 interface Library { assets: Asset[]; folders: string[] }
+const validName = (value: unknown): value is string => typeof value === 'string' && !!value.trim() && !/[\/\\]/.test(value) && value !== '.' && value !== '..'
+const validFolder = (value: string) => value === '' || value.split('/').every(validName)
 function read(kind: string): Library { return JSON.parse(localStorage.getItem(`autoflow:studio:mock:${kind}`) || '{"assets":[],"folders":[]}') }
 function save(kind: string, library: Library) { localStorage.setItem(`autoflow:studio:mock:${kind}`, JSON.stringify(library)) }
 export async function mockAssetRequest(path: string, method: string, params: URLSearchParams, body: Record<string, unknown>, form?: FormData): Promise<Response | undefined> {
@@ -15,19 +17,29 @@ export async function mockAssetRequest(path: string, method: string, params: URL
     if (method === 'GET') return json(library.folders)
     if (method === 'POST') {
       const folder=[body.parentPath,body.name].filter(Boolean).join('/')
-      if (!body.name || library.folders.includes(folder)) return json({success:false,error:'文件夹名称为空或已存在'},409)
+      if (!validName(body.name) || !validFolder(String(body.parentPath || ''))) return json({success:false,error:'文件夹名称无效'},400)
+      if (library.folders.includes(folder)) return json({success:false,error:'文件夹已存在'},400)
       library.folders.push(folder)
+      save(kind,library); return json({success:true,path:folder})
     } else if (method === 'DELETE') {
-      const folder=String(body.folderPath)
+      const folder=String(body.folderPath ?? '')
+      if (!folder || !validFolder(folder)) return json({success:false,error:'不能删除根目录或无效目录'},400)
+      if (!library.folders.includes(folder)) return json({success:false,error:'文件夹不存在'},404)
+      const before = library.assets.length
       library.folders=library.folders.filter(f=>f!==folder&&!f.startsWith(folder+'/'))
       library.assets=library.assets.filter(a=>a.folder!==folder&&!a.folder.startsWith(folder+'/'))
+      save(kind,library); return json({success:true,deletedCount:before-library.assets.length})
     }
     save(kind,library); return json({success:true})
   }
   if (action === 'folders/rename') {
-    const old=String(body.oldPath), renamed=old.split('/').slice(0,-1).concat(String(body.newName)).join('/')
+    const old=String(body.oldPath ?? '')
+    if (!old || !validFolder(old) || !validName(body.newName)) return json({success:false,error:'文件夹名称无效'},400)
+    if (!library.folders.includes(old)) return json({success:false,error:'文件夹不存在'},404)
+    const renamed=old.split('/').slice(0,-1).concat(body.newName).join('/')
+    if (library.folders.includes(renamed)) return json({success:false,error:'目标文件夹已存在'},400)
     const rename=(p:string)=>p===old||p.startsWith(old+'/') ? renamed+p.slice(old.length):p
-    library.folders=library.folders.map(rename); library.assets=library.assets.map(a=>({...a,folder:rename(a.folder)}));save(kind,library);return json({success:true})
+    library.folders=library.folders.map(rename); library.assets=library.assets.map(a=>({...a,folder:rename(a.folder)}));save(kind,library);return json({success:true,newPath:renamed})
   }
   if (action === 'upload') {
     const file=form?.get('file')
@@ -44,7 +56,14 @@ export async function mockAssetRequest(path: string, method: string, params: URL
     library.assets.push(asset);save(kind,library);return json({ asset })
   }
   if (action === 'move') {
-    library.assets=library.assets.map(a=>a.id===body.assetId?{...a,folder:String(body.targetFolder||'')}:a);save(kind,library);return json({success:true})
+    if (!library.assets.some(a=>a.id===body.assetId)) return json({success:false,error:'资源不存在'},404)
+    const folder=String(body.targetFolder || '')
+    if (!validFolder(folder)) return json({success:false,error:'目标文件夹无效'},400)
+    for (let i=1; i<=folder.split('/').length && folder; i++) {
+      const parent=folder.split('/').slice(0,i).join('/')
+      if (!library.folders.includes(parent)) library.folders.push(parent)
+    }
+    library.assets=library.assets.map(a=>a.id===body.assetId?{...a,folder}:a);save(kind,library);return json({success:true,newFolder:folder})
   }
   const [id,operation]=action.split('/')
   const asset=library.assets.find(a=>a.id===id)
@@ -58,6 +77,11 @@ export async function mockAssetRequest(path: string, method: string, params: URL
     } catch { return json({ success: false, error: '图片内容已损坏' }, 422) }
   }
   if (method === 'DELETE') {library.assets=library.assets.filter(a=>a.id!==id);save(kind,library);return json({success:true})}
-  if (operation === 'rename') {asset.name=params.get('newName')||asset.name;asset.originalName=asset.name;asset.filename=asset.name;save(kind,library);return json({success:true,...asset})}
+  if (operation === 'rename') {
+    const name=params.get('newName')
+    if (!validName(name)) return json({success:false,error:'文件名无效'},400)
+    if (library.assets.some(other=>other.id!==asset.id && other.folder===asset.folder && other.name===name)) return json({success:false,error:'文件名已存在'},400)
+    asset.name=name;asset.originalName=name;asset.filename=name;save(kind,library);return json({success:true,asset})
+  }
   return json(asset)
 }

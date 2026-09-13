@@ -17495,5 +17495,485 @@
     "level": "component/transport",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.create-move",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "create-move"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.image-name-empty",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-empty"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.image-name-parent",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-parent"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.image-name-backslash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-backslash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.rename-envelope",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "rename-envelope"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-empty",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-empty"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-dot",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-dot"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-parent",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-parent"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-slash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-slash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-backslash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-backslash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.folder-space",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-space"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.move-missing",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "move-missing"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.delete-root",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "delete-root"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.rename-folder-missing-conflict",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "rename-folder-missing-conflict"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.memory.subtree-prefix",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "subtree-prefix"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.create-move",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "create-move"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.image-name-empty",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-empty"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.image-name-parent",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-parent"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.image-name-backslash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "image-name-backslash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.rename-envelope",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "rename-envelope"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-empty",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-empty"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-dot",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-dot"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-parent",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-parent"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-slash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-slash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-backslash",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-backslash"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.folder-space",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "folder-space"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.move-missing",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "move-missing"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.delete-root",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "delete-root"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.rename-folder-missing-conflict",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "rename-folder-missing-conflict"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RESOURCE.image-command.http.subtree-prefix",
+    "capability": "图像资源命令合同",
+    "preconditions": {
+      "library": "独立a、a/child、ab目录和两张测试图片"
+    },
+    "steps": [
+      "subtree-prefix"
+    ],
+    "expectedUI": "确认响应包含消费者需要的资源和位置字段，拒绝时保留原状态",
+    "expectedIO": "合法200，无效400，不存在404；两种传输同一断言",
+    "stateAssertion": "目标修改正确，失败不写库，相邻前缀目录不受影响",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
   }
 ]

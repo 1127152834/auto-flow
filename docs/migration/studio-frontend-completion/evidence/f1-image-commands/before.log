@@ -1,0 +1,204 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-resource-commands.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:94422) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts (22 tests | 22 failed) 71ms
+     × renames an image with the asset envelope required by the panel 9ms
+     × rejects invalid folder name "" without changing the library 1ms
+     × rejects invalid folder name "." without changing the library 1ms
+     × rejects invalid folder name ".." without changing the library 0ms
+     × rejects invalid folder name "bad/name" without changing the library 0ms
+     × rejects invalid folder name "bad\\name" without changing the library 0ms
+     × rejects invalid folder name "   " without changing the library 0ms
+     × rejects a missing resource move and preserves the library 0ms
+     × protects the root folder from deletion 0ms
+     × rejects missing and conflicting folder renames 0ms
+     × renames and deletes a subtree without modifying a neighboring prefix 1ms
+     × renames an image with the asset envelope required by the panel 22ms
+     × rejects invalid folder name "" without changing the library 8ms
+     × rejects invalid folder name "." without changing the library 2ms
+     × rejects invalid folder name ".." without changing the library 2ms
+     × rejects invalid folder name "bad/name" without changing the library 4ms
+     × rejects invalid folder name "bad\\name" without changing the library 5ms
+     × rejects invalid folder name "   " without changing the library 4ms
+     × rejects a missing resource move and preserves the library 3ms
+     × protects the root folder from deletion 2ms
+     × rejects missing and conflicting folder renames 2ms
+     × renames and deletes a subtree without modifying a neighboring prefix 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > renames an image with the asset envelope required by the panel
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > renames an image with the asset envelope required by the panel
+AssertionError: expected { success: true, id: 'one', …(6) } to match object { success: true, asset: { …(2) } }
+(7 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "asset": {
+-     "id": "one",
+-     "originalName": "renamed.png",
+-   },
+    "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:27:35
+     25|     const response = await request('/one/rename?newName=renamed.png', …
+     26|     expect(response.status).toBe(200)
+     27|     expect(await response.json()).toMatchObject({ success: true, asset…
+       |                                   ^
+     28|     expect(stored().assets[0].originalName).toBe('renamed.png')
+     29|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name "" without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name "" without changing the library
+AssertionError: expected 409 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 409
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:32:66
+     30|   it.each(['', '.', '..', 'bad/name', 'bad\\name', '   '])('rejects in…
+     31|     const before = stored()
+     32|     expect((await request('/folders', 'POST', { name })).status).toBe(…
+       |                                                                  ^
+     33|     expect(stored()).toEqual(before)
+     34|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name "." without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name ".." without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name "bad/name" without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name "bad\\name" without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects invalid folder name "   " without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name "." without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name ".." without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name "bad/name" without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name "bad\\name" without changing the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects invalid folder name "   " without changing the library
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:32:66
+     30|   it.each(['', '.', '..', 'bad/name', 'bad\\name', '   '])('rejects in…
+     31|     const before = stored()
+     32|     expect((await request('/folders', 'POST', { name })).status).toBe(…
+       |                                                                  ^
+     33|     expect(stored()).toEqual(before)
+     34|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects a missing resource move and preserves the library
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects a missing resource move and preserves the library
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:37:95
+     35|   it('rejects a missing resource move and preserves the library', asyn…
+     36|     const before = stored()
+     37|     expect((await request('/move', 'PUT', { assetId: 'missing', target…
+       |                                                                                               ^
+     38|     expect(stored()).toEqual(before)
+     39|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > protects the root folder from deletion
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > protects the root folder from deletion
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:42:78
+     40|   it('protects the root folder from deletion', async () => {
+     41|     const before = stored()
+     42|     expect((await request('/folders', 'DELETE', { folderPath: '' })).s…
+       |                                                                              ^
+     43|     expect(stored()).toEqual(before)
+     44|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > rejects missing and conflicting folder renames
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > rejects missing and conflicting folder renames
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:47:100
+     45|   it('rejects missing and conflicting folder renames', async () => {
+     46|     const before = stored()
+     47|     expect((await request('/folders/rename', 'PUT', { oldPath: 'missin…
+       |                                                                                                    ^
+     48|     expect((await request('/folders/rename', 'PUT', { oldPath: 'a', ne…
+     49|     expect(stored()).toEqual(before)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over memory > renames and deletes a subtree without modifying a neighboring prefix
+ FAIL  src/renderer/domains/workflows/tests/image-resource-commands.test.ts > image resource commands over http > renames and deletes a subtree without modifying a neighboring prefix
+AssertionError: expected { success: true } to match object { success: true, newPath: 'renamed' }
+
+- Expected
++ Received
+
+  {
+-   "newPath": "renamed",
+    "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/image-resource-commands.test.ts:52:106
+     50|   })
+     51|   it('renames and deletes a subtree without modifying a neighboring pr…
+     52|     expect(await (await request('/folders/rename', 'PUT', { oldPath: '…
+       |                                                                                                          ^
+     53|     expect(stored().assets.map((asset: { folder: string }) => asset.fo…
+     54|     expect(await (await request('/folders', 'DELETE', { folderPath: 'r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  22 failed (22)
+   Start at  03:35:08
+   Duration  674ms (transform 90ms, setup 93ms, import 16ms, tests 71ms, environment 377ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-resource-commands.test.ts
