@@ -99,11 +99,22 @@ it('orders the title, directory actions, section heading, and results semantical
   render(<ProjectDirectory mode="recent" recentItems={[summary]} page={page([])} conditions={{ query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
   const title = screen.getByRole('heading', { name: '项目', level: 1 })
   const create = screen.getByRole('button', { name: '新建项目' })
-  const section = screen.getByRole('heading', { name: /最近打开/, level: 2 })
+  const section = screen.getByRole('heading', { name: '最近项目', level: 2 })
   const card = screen.getByRole('article')
   expect(title.compareDocumentPosition(create) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(create.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(section.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+})
+
+it('keeps the gallery hierarchy and places the all-projects entry after recent cards', () => {
+  render(<ProjectDirectory mode="recent" recentItems={[summary]} page={page([])} conditions={{ query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  expect(screen.getByText('继续最近的工作，或创建一个新项目')).toBeVisible()
+  expect(screen.getByRole('heading', { name: '最近项目', level: 2 })).toBeVisible()
+  expect(screen.getByText('1 个项目')).toBeVisible()
+  const card = screen.getByRole('article')
+  const allProjects = screen.getByRole('button', { name: /全部项目/ })
+  expect(card.compareDocumentPosition(allProjects) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.getByRole('button', { name: '刷新项目' })).toHaveTextContent('')
 })
 
 it('keeps stale rows visible and reports a refresh failure', () => {

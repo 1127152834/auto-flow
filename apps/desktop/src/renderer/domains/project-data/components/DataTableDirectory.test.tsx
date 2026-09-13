@@ -16,7 +16,8 @@ it('shows real table facts and keeps open separate from edit', async () => {
   expect(screen.getByText('23 条记录')).toBeVisible()
   expect(screen.getByText('本地表')).toBeVisible()
   await user.click(screen.getByRole('button', { name: '打开客户数据' }))
-  await user.click(screen.getByRole('button', { name: '编辑客户数据' }))
+  await user.click(screen.getByRole('button', { name: '更多客户数据操作' }))
+  await user.click(screen.getByRole('menuitem', { name: '编辑数据表' }))
   await user.click(screen.getByRole('button', { name: '从 Excel 导入' }))
   expect(onOpen).toHaveBeenCalledWith('t1'); expect(onEdit).toHaveBeenCalledWith('t1'); expect(onImportExcel).toHaveBeenCalledOnce()
   expect(onOpen).toHaveBeenCalledOnce()
@@ -74,7 +75,23 @@ it('keeps archived tables openable while hiding mutating actions', async () => {
   render(<DataTableDirectory items={[table]} readonly onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={onOpen} onEdit={vi.fn()} />)
   expect(screen.queryByRole('button', { name: '新建数据表' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: '从 Excel 导入' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '编辑客户数据' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '更多客户数据操作' })).not.toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: '打开客户数据' }))
   expect(onOpen).toHaveBeenCalledWith('t1')
+})
+
+it('shows a supplied total without presenting the current page length as the total', () => {
+  const props = { items: [table], onRetry: vi.fn(), onCreate: vi.fn(), onImportExcel: vi.fn(), onOpen: vi.fn(), onEdit: vi.fn() }
+  const view = render(<DataTableDirectory {...props} />)
+  expect(screen.getByRole('heading', { name: '数据表', level: 1 })).toBeVisible()
+  expect(screen.queryByText('1 张')).not.toBeInTheDocument()
+  view.rerender(<DataTableDirectory {...props} totalCount={41} />)
+  expect(screen.getByText('41 张')).toBeVisible()
+})
+
+it('states maintainability and source truth in each card footer', () => {
+  render(<DataTableDirectory items={[table, { ...table, tableId: 't2', name: 'Excel 表', sourceKind: 'excel' }, { ...table, tableId: 't3', name: '待配置表', sourceKind: 'unconfigured' }]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  expect(screen.getAllByText('本地可维护')).toHaveLength(2)
+  expect(screen.getByText('待配置')).toBeVisible()
+  expect(screen.getAllByText('本地记录')).toHaveLength(3)
 })
