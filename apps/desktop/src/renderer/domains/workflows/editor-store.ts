@@ -7,6 +7,9 @@ import type { ModuleType, Variable, LogEntry, ExecutionStatus, ModuleConfig, Dat
 import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
 import { layoutGraph } from './lib/elkLayout'
 import { collectNodeVarNames } from './lib/moduleDefaultVars'
+import { snapshotKey } from './lib/snapshotKey'
+
+let latestLayoutRequest = 0
 
 // React Flow selection and measurement are UI state, not document edits.
 function historyNodes(nodes: Node<NodeData>[]): Node<NodeData>[] {
@@ -2693,6 +2696,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: [...updatedNodes, ...newNodes],
       edges: [...get().edges, ...newEdges],
       selectedNodeId: newNodes.length === 1 ? newNodes[0].id : null,
+      hasUnsavedChanges: true,
     })
   },
 
@@ -2747,6 +2751,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: [...updatedNodes, ...newNodes],
       edges: [...get().edges, ...newEdges],
       selectedNodeId: newNodes.length === 1 ? newNodes[0].id : null,
+      hasUnsavedChanges: true,
     })
   },
 
@@ -3379,6 +3384,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   toggleNodesDisabled: (nodeIds) => {
     const currentNodes = get().nodes
     const nodesToToggle = new Set(nodeIds)
+    if (!currentNodes.some(node => nodesToToggle.has(node.id))) return
+    get().pushHistory()
     
     // 检查是否有分组节点被切换
     for (const nodeId of nodeIds) {
@@ -3414,6 +3421,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }
     
     set({
+      hasUnsavedChanges: true,
       nodes: currentNodes.map((node) => {
         if (nodesToToggle.has(node.id)) {
           return {
@@ -3560,6 +3568,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   autoLayoutNodes: async (options) => {
+    const request = ++latestLayoutRequest
+    const source = snapshotKey(get().exportWorkflow())
     const nodes = get().nodes
     const edges = get().edges
     if (!nodes.length) {
@@ -3576,6 +3586,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
         { direction: options?.direction || 'DOWN' },
       )
+      if (request !== latestLayoutRequest || snapshotKey(get().exportWorkflow()) !== source) {
+        return { ok: false, error: '画布或排版请求已变化，旧布局未应用，请重新排版。' }
+      }
       if (!positions || Object.keys(positions).length === 0) {
         return { ok: false, error: '自动排版失败：未得到有效布局' }
       }

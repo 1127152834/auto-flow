@@ -175,7 +175,7 @@ export function CreateCustomModuleDialog({ open, onClose, editingModule }: Creat
           name: p.name,
           label: p.label,
           type: p.type,
-          default_value: p.default_value || '',
+          default_value: p.default_value ?? '',
           required: p.required || false,
           placeholder: p.placeholder || '',
           description: p.description || '',

@@ -1,0 +1,166 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:21432) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'number' default while editing only module metadata
+[CustomModuleDialog] 更新模块: {
+  name: 'fixture_module',
+  display_name: '模块参数验收',
+  description: '',
+  icon: '',
+  color: '#123456',
+  category: '自定义',
+  parameters: [
+    {
+      name: 'value',
+      label: '值',
+      type: 'number',
+      default_value: '',
+      required: false,
+      placeholder: '',
+      description: '',
+      options: []
+    }
+  ],
+  outputs: [],
+  tags: []
+}
+
+stdout | src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'number' default while editing only module metadata
+[CustomModuleDialog] 操作成功: {
+  id: 'fixture',
+  name: 'fixture_module',
+  display_name: '模块参数验收',
+  description: '',
+  icon: '',
+  color: '#123456',
+  category: '自定义',
+  tags: [],
+  parameters: [
+    {
+      name: 'value',
+      label: '值',
+      type: 'number',
+      default_value: 0,
+      required: false,
+      placeholder: '',
+      description: '',
+      options: []
+    }
+  ],
+  outputs: [],
+  workflow: { nodes: [], edges: [] }
+}
+
+stdout | src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'boolean' default while editing only module metadata
+[CustomModuleDialog] 更新模块: {
+  name: 'fixture_module',
+  display_name: '模块参数验收',
+  description: '',
+  icon: '',
+  color: '#123456',
+  category: '自定义',
+  parameters: [
+    {
+      name: 'value',
+      label: '值',
+      type: 'boolean',
+      default_value: '',
+      required: false,
+      placeholder: '',
+      description: '',
+      options: []
+    }
+  ],
+  outputs: [],
+  tags: []
+}
+
+stdout | src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'boolean' default while editing only module metadata
+[CustomModuleDialog] 操作成功: {
+  id: 'fixture',
+  name: 'fixture_module',
+  display_name: '模块参数验收',
+  description: '',
+  icon: '',
+  color: '#123456',
+  category: '自定义',
+  tags: [],
+  parameters: [
+    {
+      name: 'value',
+      label: '值',
+      type: 'boolean',
+      default_value: false,
+      required: false,
+      placeholder: '',
+      description: '',
+      options: []
+    }
+  ],
+  outputs: [],
+  workflow: { nodes: [], edges: [] }
+}
+
+ ❯ src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx (2 tests | 2 failed) 328ms
+   × preserves a 'number' default while editing only module metadata 224ms
+   × preserves a 'boolean' default while editing only module metadata 102ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'number' default while editing only module metadata
+AssertionError: expected '' to be +0 // Object.is equality
+
+- Expected:
+0
+
++ Received:
+""
+
+ ❯ src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx:14:63
+     12|   fireEvent.click(screen.getByRole('button', { name: '保存修改' }))
+     13|   await waitFor(() => expect(save).toHaveBeenCalledOnce())
+     14|   expect(save.mock.calls[0][1].parameters?.[0].default_value).toBe(val…
+       |                                                               ^
+     15| })
+     16|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx > preserves a 'boolean' default while editing only module metadata
+AssertionError: expected '' to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+""
+
+ ❯ src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx:14:63
+     12|   fireEvent.click(screen.getByRole('button', { name: '保存修改' }))
+     13|   await waitFor(() => expect(save).toHaveBeenCalledOnce())
+     14|   expect(save.mock.calls[0][1].parameters?.[0].default_value).toBe(val…
+       |                                                               ^
+     15| })
+     16|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  02:08:00
+   Duration  1.37s (transform 219ms, setup 87ms, import 466ms, tests 328ms, environment 383ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/custom-module-defaults.test.tsx

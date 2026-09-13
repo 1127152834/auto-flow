@@ -14518,5 +14518,165 @@
     "level": "integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-listener-isolation/target.log"
+  },
+  {
+    "id": "EDITOR.command.paste-internal",
+    "capability": "内部粘贴历史和未保存",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "内部粘贴历史和未保存"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.paste-system",
+    "capability": "系统剪贴板粘贴历史和未保存",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "系统剪贴板粘贴历史和未保存"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.disable",
+    "capability": "禁用节点历史和未保存",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "禁用节点历史和未保存"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.disable-noop",
+    "capability": "无匹配禁用不改草稿",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "无匹配禁用不改草稿"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.layout-edit",
+    "capability": "编辑使布局结果失效",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "编辑使布局结果失效"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.layout-document",
+    "capability": "换文档使布局结果失效",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "换文档使布局结果失效"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.layout-selection",
+    "capability": "选择变化不使布局失效且可撤销",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "选择变化不使布局失效且可撤销"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.layout-latest",
+    "capability": "只接受最新排版请求",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "只接受最新排版请求"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.default-zero",
+    "capability": "元信息保存保留数字零",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "元信息保存保留数字零"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "EDITOR.command.default-false",
+    "capability": "元信息保存保留布尔假",
+    "preconditions": {
+      "document": "已保存的测试文档或模块"
+    },
+    "steps": [
+      "元信息保存保留布尔假"
+    ],
+    "expectedUI": "有效修改显示未保存，原值保留；迟到排版明确失败",
+    "expectedIO": "布局使用受控延迟；模块保存提交原值；其余无请求",
+    "stateAssertion": "当前草稿和历史不被无效或迟到操作覆盖",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
   }
 ]

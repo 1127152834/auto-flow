@@ -1,0 +1,110 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/editor-command-history.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:22229) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/editor-command-history.test.ts (8 tests | 6 failed) 14ms
+   × marks internal clipboard paste dirty and undoes only the paste 9ms
+   × marks system clipboard paste dirty and undoes only the paste 1ms
+   × records disabling nodes as one reversible edit 1ms
+   × rejects late automatic layout after a edit change 1ms
+   × rejects late automatic layout after a document change 1ms
+   × only accepts the most recent layout request even when an earlier request resolves first 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > marks internal clipboard paste dirty and undoes only the paste
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > marks system clipboard paste dirty and undoes only the paste
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/editor-command-history.test.ts:12:46
+     10|   else store.getState().pasteNodesFromClipboard([original], [])
+     11|   expect(store.getState().nodes).toHaveLength(2)
+     12|   expect(store.getState().hasUnsavedChanges).toBe(true)
+       |                                              ^
+     13|   store.getState().undo()
+     14|   expect(store.getState().nodes.map(n => n.id)).toEqual([original.id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > records disabling nodes as one reversible edit
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/editor-command-history.test.ts:22:46
+     20|   store.getState().toggleNodesDisabled([original.id])
+     21|   expect(store.getState().nodes[0].data.disabled).toBe(true)
+     22|   expect(store.getState().hasUnsavedChanges).toBe(true)
+       |                                              ^
+     23|   store.getState().undo()
+     24|   expect(store.getState().nodes[0]).toMatchObject({ id: original.id, d…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > rejects late automatic layout after a edit change
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > rejects late automatic layout after a document change
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/editor-command-history.test.ts:41:32
+     39|   const snapshot = store.getState().exportWorkflow()
+     40|   pending.resolve({ positions: { [original.id]: { x: 100, y: 200 } } })
+     41|   expect((await operation).ok).toBe(false)
+       |                                ^
+     42|   expect(JSON.parse(store.getState().exportWorkflow()).nodes).toEqual(…
+     43| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/editor-command-history.test.ts > only accepts the most recent layout request even when an earlier request resolves first
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/editor-command-history.test.ts:64:24
+     62|   const b = store.getState().autoLayoutNodes({ direction: 'RIGHT' })
+     63|   first.resolve({ positions: { [original.id]: { x: 100, y: 100 } } })
+     64|   expect((await a).ok).toBe(false)
+       |                        ^
+     65|   second.resolve({ positions: { [original.id]: { x: 200, y: 200 } } })
+     66|   expect((await b).ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 2 passed (8)
+   Start at  02:11:28
+   Duration  1.53s (transform 272ms, setup 168ms, import 225ms, tests 14ms, environment 920ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/editor-command-history.test.ts
