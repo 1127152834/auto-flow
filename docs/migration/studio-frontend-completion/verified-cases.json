@@ -18071,5 +18071,309 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.success-true",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "success-true"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.success-false",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "success-false"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.empty-object",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "empty-object"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.missing-success",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "missing-success"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.empty-id",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "empty-id"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.blank-id",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "blank-id"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.numeric-id",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "numeric-id"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.string-success",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "string-success"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.integer-success",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "integer-success"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.array",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "array"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.null",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "null"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-zero",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-zero"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-199",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-199"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-600",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-600"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-fraction",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-fraction"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-string",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-string"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-boolean",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-boolean"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.status-null",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "status-null"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
+  },
+  {
+    "id": "CONTRACT.command-envelope.schema-only",
+    "capability": "OpenAPI命令公共包络",
+    "preconditions": {
+      "schema": "正式应用及schema-only共用Pydantic模型"
+    },
+    "steps": [
+      "schema-only"
+    ],
+    "expectedUI": "生成类型与网络公共字段一致，业务payload尚未全量定义",
+    "expectedIO": "合法原样保留；非法输入ValidationError；仅发布schema不增加自动化路由",
+    "stateAssertion": "命令ID、布尔结果及整数HTTP状态严格校验",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-schema/backend.log"
   }
 ]
