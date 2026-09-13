@@ -1,0 +1,28 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.022959ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.11325ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.238833ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.16025ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.246042ms)
+✔ browser management smoke creates the platform kernel layout (0.169834ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.191375ms)
+✔ profile test browser smoke validates a public kernel directory (7.013625ms)
+✔ profile test browser smoke finds a session below the manager root (1.784458ms)
+✔ packaged smoke cannot silently select external health mode (0.743125ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.732584ms)
+✔ cleanup observes close without requiring exit (0.261542ms)
+✔ cleanup rejects a child process error (0.171917ms)
+✔ required path exists: apps/desktop/package.json (0.684084ms)
+✔ required path exists: apps/backend/pyproject.toml (0.122209ms)
+✔ root scripts expose the foundation checks (0.195625ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 786.5105

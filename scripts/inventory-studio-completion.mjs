@@ -47,31 +47,101 @@ for(const file of files){const tree=parse(file);walk(tree,node=>{
 })}
 // Resolve named JSX tools to their implementations; keep candidate branches for human review.
 const definitions = new Map()
+const imports = new Map()
+const starExports = new Map()
 function componentFiles(dir) {
-  return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(entry => entry.isDirectory() && entry.name !== '__tests__' ? componentFiles(`${dir}/${entry.name}`) : entry.isFile() && entry.name.endsWith('.tsx') ? [`${dir}/${entry.name}`] : [])
+  return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(entry => entry.isDirectory() && entry.name !== '__tests__' ? componentFiles(`${dir}/${entry.name}`) : entry.isFile() && /\.tsx?$/.test(entry.name) ? [`${dir}/${entry.name}`] : [])
 }
 for (const file of componentFiles(`${domain}/components`)) {
   const tree=parse(file)
+  const fileImports = new Map()
+  const stars=[]
+  for (const node of tree.statements) {
+    if(ts.isExportAssignment(node) && ts.isIdentifier(node.expression))fileImports.set('default',{specifier:'',symbol:node.expression.text})
+    if(ts.isFunctionDeclaration(node) && node.name && node.modifiers?.some(m=>m.kind===ts.SyntaxKind.DefaultKeyword))fileImports.set('default',{specifier:'',symbol:node.name.text})
+    if (ts.isExportDeclaration(node)) {
+      const specifier=node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)?node.moduleSpecifier.text:''
+      if(node.exportClause && ts.isNamedExports(node.exportClause))for(const binding of node.exportClause.elements){
+        const symbol=(binding.propertyName??binding.name).text
+        if(specifier || symbol!==binding.name.text) fileImports.set(binding.name.text,{specifier,symbol})
+      }
+      else if(specifier)stars.push(specifier)
+    }
+    if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) continue
+    const specifier = node.moduleSpecifier.text
+    const bindings = node.importClause?.namedBindings
+    if (bindings && ts.isNamedImports(bindings)) for (const binding of bindings.elements) {
+      fileImports.set(binding.name.text, { specifier, symbol: (binding.propertyName ?? binding.name).text })
+    }
+    if (bindings && ts.isNamespaceImport(bindings)) fileImports.set(bindings.name.text, { specifier, symbol: '*' })
+    if (node.importClause?.name) fileImports.set(node.importClause.name.text, { specifier, symbol: 'default' })
+  }
+  imports.set(file, fileImports)
+  starExports.set(file,stars)
   walk(tree,node=>{
+    if(ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer &&
+       (ts.isIdentifier(node.initializer)||ts.isPropertyAccessExpression(node.initializer))) {
+      fileImports.set(node.name.text,{specifier:'',symbol:node.initializer.getText(tree)})
+    }
     const namedFunction=ts.isFunctionDeclaration(node) && node.name && /^[A-Z]/.test(node.name.text)
     const namedComponent=ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /^[A-Z]/.test(node.name.text) && node.initializer && (ts.isArrowFunction(node.initializer) || ts.isCallExpression(node.initializer))
     if(!namedFunction && !namedComponent)return
-    const fields=new Set(),tools=new Set(),conditions=[],bindings=[]
+    const fields=new Set(),tools=new Set(),conditions=[],bindings=[],lazyImports=[]
+    if(namedComponent && ts.isCallExpression(node.initializer) && /(^|\.)lazy$/.test(node.initializer.expression.getText(tree))){
+      const specifiers=[];let symbol='default'
+      walk(node.initializer,part=>{
+        if(ts.isCallExpression(part)&&part.expression.kind===ts.SyntaxKind.ImportKeyword&&ts.isStringLiteral(part.arguments[0]))specifiers.push(part.arguments[0].text)
+        if(ts.isPropertyAssignment(part)&&part.name.getText(tree)==='default'&&ts.isPropertyAccessExpression(part.initializer))symbol=part.initializer.name.text
+      })
+      lazyImports.push(...specifiers.map(specifier=>({specifier,symbol})))
+    }
     walk(node,n=>{
       if(ts.isPropertyAccessExpression(n)&&/^(config|data|nodeData|node\.data)$/.test(n.expression.getText(tree)))fields.add(n.name.text)
       if(ts.isJsxOpeningElement(n)||ts.isJsxSelfClosingElement(n)) {const tag=n.tagName.getText(tree);if(/^[A-Z]/.test(tag))tools.add(tag)}
       if(ts.isJsxAttribute(n) && ['value','checked','defaultValue','onChange','onValueChange','onCheckedChange'].includes(n.name.getText(tree)) && n.initializer)bindings.push({line:tree.getLineAndCharacterOfPosition(n.getStart(tree)).line+1,attribute:n.name.getText(tree),expression:n.initializer.getText(tree)})
       if(ts.isConditionalExpression(n) || ts.isIfStatement(n))conditions.push({line:tree.getLineAndCharacterOfPosition(n.getStart(tree)).line+1,expression:(ts.isIfStatement(n)?n.expression:n.condition).getText(tree)})
     })
-    const row={component:node.name.text,file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,fields:[...fields].sort(),tools:[...tools].sort(),conditions,bindings}
+    const row={component:node.name.text,file,line:tree.getLineAndCharacterOfPosition(node.getStart(tree)).line+1,fields:[...fields].sort(),tools:[...tools].sort(),conditions,bindings,lazyImports}
     if(!definitions.has(node.name.text))definitions.set(node.name.text,[])
     definitions.get(node.name.text).push(row)
   })
 }
+function resolveFile(file,specifier){
+  if(!specifier)return file
+  const stem=path.posix.normalize(path.posix.join(path.posix.dirname(file),specifier))
+  return [`${stem}.tsx`,`${stem}.ts`,`${stem}/index.tsx`,`${stem}/index.ts`].find(candidate=>fs.existsSync(path.join(root,candidate)))
+}
+function resolveSymbol(file,name,seen=new Set()){
+  const key=`${file}#${name}`
+  if(!file || seen.has(key))return []
+  const next=new Set([...seen,key])
+  const local=(definitions.get(name)||[]).filter(row=>row.file===file)
+  if(local.length)return local
+  const [base,...member]=name.split('.'),binding=imports.get(file)?.get(base)
+  if(binding){
+    const symbol=binding.symbol==='*'?member.join('.'):binding.symbol
+    if(binding.specifier && !binding.specifier.startsWith('.'))return [{external:`${binding.specifier}#${symbol}`}]
+    return resolveSymbol(resolveFile(file,binding.specifier),symbol,next)
+  }
+  return (starExports.get(file)||[]).flatMap(specifier=>resolveSymbol(resolveFile(file,specifier),name,next))
+}
 function dependencies(type) {
-  const pending=evidence.get(type).flatMap(row=>row.components).filter(name=>/^[A-Z]/.test(name)),seen=new Set(),resolved=[],unresolved=[]
-  while(pending.length){const name=pending.pop();if(seen.has(name))continue;seen.add(name);const matches=definitions.get(name);if(!matches){unresolved.push(name);continue}for(const row of matches){resolved.push(`${row.file}#${row.component}`);pending.push(...row.tools)}}
-  return {resolved,unresolved:unresolved.sort()}
+  const pending=evidence.get(type).flatMap(row=>row.components.filter(name=>/^[A-Z]/.test(name)).map(name=>({file:row.file,name})))
+  const seen=new Set(),resolved=new Set(),unresolved=new Set(),external=new Set()
+  while(pending.length){
+    const {file,name}=pending.pop(), key=`${file}#${name}`
+    if(seen.has(key))continue
+    seen.add(key)
+    const matches=resolveSymbol(file,name)
+    if(!matches.length){unresolved.add(key);continue}
+    for(const row of matches){
+      if(row.external){external.add(row.external);continue}
+      resolved.add(`${row.file}#${row.component}`)
+      pending.push(...row.tools.map(name=>({file:row.file,name})))
+      pending.push(...row.lazyImports.map(binding=>({file:resolveFile(row.file,binding.specifier),name:binding.symbol})))
+    }
+  }
+  return {resolved:[...resolved].sort(),unresolved:[...unresolved].sort(),external:[...external].sort()}
 }
 const scenarios=[
  ['defaults','从动作库添加节点，查看默认配置','显示默认值；不触发外部服务','节点配置与目录/Store 默认值一致'],

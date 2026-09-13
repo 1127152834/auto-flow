@@ -111,7 +111,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setUserPrompt(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AutoBrowserDialog",
@@ -266,7 +267,8 @@
         "attribute": "onChange",
         "expression": "{setUrl}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ModulePicker",
@@ -295,7 +297,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setQuery(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "BlockFlowView",
@@ -857,7 +860,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setPolicy(errPopover.nodeId, { interval: Math.max(0, parseFloat(e.target.value) || 0) })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StepRow",
@@ -980,7 +984,8 @@
         "expression": "disabled"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "HoverInsert",
@@ -1008,7 +1013,8 @@
         "expression": "over"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "EmptySlot",
@@ -1036,7 +1042,8 @@
         "expression": "over"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ConfigPanel",
@@ -3050,7 +3057,8 @@
         "attribute": "value",
         "expression": "\"exponential\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CreateCustomModuleDialog",
@@ -3486,7 +3494,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => setReuseCanvas(c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CustomModuleList",
@@ -3605,7 +3614,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setSearchQuery(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CustomModuleManageDialog",
@@ -3706,7 +3716,8 @@
         "attribute": "onChange",
         "expression": "{handleImport}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DataTable",
@@ -3825,7 +3836,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setEditValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DebugBar",
@@ -3878,7 +3890,8 @@
         "expression": "varEntries.length === 0"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "EditCustomModuleDialog",
@@ -4215,7 +4228,8 @@
         "attribute": "onChange",
         "expression": "{(e) => updateOutput(index, 'description', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ExportDialog",
@@ -4250,7 +4264,8 @@
         "expression": "exporting"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "FeaturePackDialog",
@@ -4394,7 +4409,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setInstallPath(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ModelProfilesManager",
@@ -4487,7 +4503,8 @@
         "attribute": "onCheckedChange",
         "expression": "{() => toggleScene(m.id, s.key)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SecuritySettings",
@@ -4554,7 +4571,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setManualToken(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CredentialSettings",
@@ -4657,7 +4675,8 @@
         "attribute": "onChange",
         "expression": "{(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], value: e.target.value }; setEditing({ ...editing, fields: fs }) }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RetentionSettings",
@@ -4724,7 +4743,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => setCfg({ ...cfg, enabled: c })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GlobalConfigDialog",
@@ -5730,7 +5750,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setExportIncludeSensitive(e.target.checked)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5739,7 +5760,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5748,7 +5770,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5757,7 +5780,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5766,7 +5790,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5775,7 +5800,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5784,7 +5810,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5793,7 +5820,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5802,7 +5830,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5811,7 +5840,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5820,7 +5850,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5829,7 +5860,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5838,7 +5870,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5847,7 +5880,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "API_BASE",
@@ -5856,7 +5890,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "GroupNode",
@@ -5962,7 +5997,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setEditValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageAssetsPanel",
@@ -6284,7 +6320,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setNewFolderName(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InjectJsEditorDialog",
@@ -6359,7 +6396,8 @@
         "attribute": "onChange",
         "expression": "{(value) => setCurrentCode(value || '')}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InjectJsEditorDialog",
@@ -6368,7 +6406,13 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": [
+      {
+        "specifier": "../InjectJsEditorDialog",
+        "symbol": "InjectJsEditorDialog"
+      }
+    ]
   },
   {
     "component": "InputPromptDialog",
@@ -6771,7 +6815,8 @@
         "attribute": "onChange",
         "expression": "{(e) => { setInputValue(e.target.value); setError('') }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "JsEditorDialog",
@@ -6842,7 +6887,8 @@
         "attribute": "onChange",
         "expression": "{(value) => setCurrentCode(value || '')}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "JsEditorDialog",
@@ -6851,7 +6897,13 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": [
+      {
+        "specifier": "../JsEditorDialog",
+        "symbol": "JsEditorDialog"
+      }
+    ]
   },
   {
     "component": "LocalWorkflowDialog",
@@ -6955,7 +7007,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setSearchTerm(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WorkflowVirtualList",
@@ -6981,7 +7034,8 @@
         "expression": "animate"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "LogList",
@@ -7015,7 +7069,8 @@
         "expression": "log.nodeId"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "LogPanel",
@@ -7577,7 +7632,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setEditVarValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MCPConfigPanel",
@@ -7706,7 +7762,8 @@
         "expression": "editingName === '__new__'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ServerEditModal",
@@ -7854,7 +7911,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setAutoApproveText(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TemplatePicker",
@@ -7893,7 +7951,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setQuery(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MissingPacksDialog",
@@ -7917,7 +7976,8 @@
         "expression": "!open"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "MockBrowserSurface",
@@ -7996,7 +8056,8 @@
         "attribute": "value",
         "expression": "\"b\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ModuleNodeComponent",
@@ -8200,7 +8261,8 @@
         "expression": "nodeData.moduleType === 'loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ModuleNode",
@@ -8209,7 +8271,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ModuleItemRaw",
@@ -8303,7 +8366,8 @@
         "expression": "color.value"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ModuleItem",
@@ -8312,7 +8376,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ModuleSidebarRaw",
@@ -8471,7 +8536,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setSearchQuery(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ModuleSidebar",
@@ -8480,7 +8546,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "NoteNode",
@@ -8604,7 +8671,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setEditValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PanelResizer",
@@ -8654,7 +8722,8 @@
         "expression": "isH"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "PythonEditorDialog",
@@ -8700,7 +8769,8 @@
         "attribute": "onChange",
         "expression": "{(value) => setCurrentCode(value || '')}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PythonEditorDialog",
@@ -8709,7 +8779,13 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": [
+      {
+        "specifier": "../PythonEditorDialog",
+        "symbol": "PythonEditorDialog"
+      }
+    ]
   },
   {
     "component": "QuickModulePicker",
@@ -8811,7 +8887,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setSearchTerm(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RecorderPanel",
@@ -9236,7 +9313,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => setAutoWait(c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RemoteCursor",
@@ -9274,7 +9352,8 @@
         "expression": "isClicking"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ScreenshotNameDialog",
@@ -9314,7 +9393,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setName(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScreenshotErrorDialog",
@@ -9343,7 +9423,8 @@
         "expression": "retrying"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "StudioConnectionNotice",
@@ -9375,7 +9456,8 @@
         "expression": "checking"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SubflowHeaderNode",
@@ -9484,7 +9566,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setEditValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SubflowMonitorDialog",
@@ -9620,7 +9703,8 @@
         "expression": "active.status === 'success'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DocumentationDialog",
@@ -9629,7 +9713,13 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": [
+      {
+        "specifier": "./documentation/index",
+        "symbol": "DocumentationDialog"
+      }
+    ]
   },
   {
     "component": "DocumentationDialog",
@@ -9783,7 +9873,8 @@
         "attribute": "onChange",
         "expression": "{(e) => handleSearch(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "Toolbar",
@@ -10300,7 +10391,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "VariableTrackingPanel",
@@ -10518,7 +10610,8 @@
         "attribute": "value",
         "expression": "{type}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WebDAVSettings",
@@ -10616,7 +10709,8 @@
         "attribute": "onChange",
         "expression": "{(e) => update({ remoteDir: e.target.value })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ModuleCount",
@@ -10627,7 +10721,8 @@
       "Boxes"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ModuleSearch",
@@ -10717,7 +10812,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setSearchQuery(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ControlsHelp",
@@ -10735,7 +10831,8 @@
         "expression": "expanded"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "WorkflowEditor",
@@ -11314,7 +11411,8 @@
         "expression": "node.type === 'noteNode'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "AIAssistantPanel",
@@ -12069,7 +12167,8 @@
         "attribute": "onChange",
         "expression": "{(e) => { if (e.target.files) { void addFiles(e.target.files); e.target.value = '' } }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MarkdownContent",
@@ -12078,7 +12177,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ToolCallCard",
@@ -12135,7 +12235,8 @@
         "expression": "typeof tc.result === 'string'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ReasoningCard",
@@ -12181,7 +12282,8 @@
         "expression": "expanded"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "MessageBubble",
@@ -12233,7 +12335,8 @@
         "expression": "isUser"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "AIGenerateImageConfig",
@@ -12468,7 +12571,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIGenerateVideoConfig",
@@ -12651,7 +12755,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ProbabilityTriggerConfig",
@@ -12681,7 +12786,8 @@
         "attribute": "defaultValue",
         "expression": "{50}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIModelPicker",
@@ -12748,7 +12854,8 @@
         "attribute": "value",
         "expression": "{m.id}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIChatConfig",
@@ -12868,7 +12975,8 @@
         "attribute": "defaultValue",
         "expression": "{2000}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIVisionConfig",
@@ -13017,7 +13125,8 @@
         "attribute": "defaultValue",
         "expression": "{1000}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ApiRequestConfig",
@@ -13141,7 +13250,8 @@
         "attribute": "defaultValue",
         "expression": "{30}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AISmartScraperConfig",
@@ -13374,7 +13484,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIElementSelectorConfig",
@@ -13585,7 +13696,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FirecrawlScrapeConfig",
@@ -13739,7 +13851,8 @@
         "attribute": "defaultValue",
         "expression": "{60000}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FirecrawlMapConfig",
@@ -13847,7 +13960,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FirecrawlCrawlConfig",
@@ -14055,7 +14169,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AITaskApiBlock",
@@ -14108,7 +14223,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('model', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AITaskConfig",
@@ -14292,7 +14408,8 @@
         "attribute": "onChange",
         "expression": "{onChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AIVisionActConfig",
@@ -14448,7 +14565,8 @@
         "attribute": "defaultValue",
         "expression": "{300}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SelectDropdownConfig",
@@ -14500,7 +14618,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('value', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SetCheckboxConfig",
@@ -14535,7 +14654,8 @@
         "attribute": "value",
         "expression": "\"false\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DragElementConfig",
@@ -14544,7 +14664,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ScrollPageConfig",
@@ -14644,7 +14765,8 @@
         "attribute": "value",
         "expression": "\"script\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "UploadFileConfig",
@@ -14669,7 +14791,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('filePath', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DownloadFileConfig",
@@ -14756,7 +14879,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SaveImageConfig",
@@ -14793,7 +14917,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetChildElementsConfig",
@@ -14830,7 +14955,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetSiblingElementsConfig",
@@ -14894,7 +15020,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScreenshotConfig",
@@ -14958,7 +15085,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OCRCaptchaConfig",
@@ -14983,7 +15111,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SliderCaptchaConfig",
@@ -15017,7 +15146,8 @@
         "attribute": "onChange",
         "expression": "{(v) => {\n            if (v === '' || v.includes('{')) {\n              onChange('targetDistance', v)\n            } else {\n              const num = parseInt(v)\n              onChange('targetDistance', isNaN(num) ? v : num)\n            }\n          }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SendEmailConfig",
@@ -15086,7 +15216,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('emailContent', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SetClipboardConfig",
@@ -15150,7 +15281,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('imagePath', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetClipboardConfig",
@@ -15175,7 +15307,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "KeyboardActionConfig",
@@ -15276,7 +15409,8 @@
         "attribute": "defaultValue",
         "expression": "{0}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RealMouseScrollConfig",
@@ -15360,7 +15494,8 @@
         "attribute": "defaultValue",
         "expression": "{0.1}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ShutdownSystemConfig",
@@ -15439,7 +15574,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('force', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "LockScreenConfig",
@@ -15448,7 +15584,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "WindowFocusConfig",
@@ -15500,7 +15637,8 @@
         "attribute": "value",
         "expression": "\"startswith\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RealMouseClickConfig",
@@ -15586,7 +15724,8 @@
         "attribute": "defaultValue",
         "expression": "{1}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RealMouseMoveConfig",
@@ -15619,7 +15758,8 @@
         "attribute": "defaultValue",
         "expression": "{0}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RealMouseDragConfig",
@@ -15681,7 +15821,8 @@
         "attribute": "defaultValue",
         "expression": "{0.5}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RealKeyboardConfig",
@@ -16174,7 +16315,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('windowTitle', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RunCommandConfig",
@@ -16250,7 +16392,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ClickImageConfig",
@@ -16484,7 +16627,8 @@
         "attribute": "defaultValue",
         "expression": "{10}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetMousePositionConfig",
@@ -16520,7 +16664,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableNameY', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScreenshotScreenConfig",
@@ -16613,7 +16758,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RenameFileConfig",
@@ -16662,7 +16808,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NetworkCaptureConfig",
@@ -16846,7 +16993,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MacroRecorderConfig",
@@ -17001,7 +17149,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('useRelativePosition', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MacroRecordDialog",
@@ -17136,7 +17285,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => setRecordOptions(prev => ({ ...prev, recordScroll: c }))}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ActionIcon",
@@ -17152,7 +17302,8 @@
       "Type"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "MacroEditDialog",
@@ -17278,7 +17429,8 @@
         "attribute": "onChange",
         "expression": "{setEditingAction}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MacroActionEditDialog",
@@ -17426,7 +17578,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange({ ...action, char: e.target.value })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MacroAddActionDialog",
@@ -17599,7 +17752,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setAction({ ...action, char: e.target.value })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ExportLogConfig",
@@ -17697,7 +17851,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ClickTextConfig",
@@ -17847,7 +18002,8 @@
         "attribute": "defaultValue",
         "expression": "{10}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HoverImageConfig",
@@ -18009,7 +18165,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HoverTextConfig",
@@ -18140,7 +18297,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DragImageConfig",
@@ -18339,7 +18497,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(checked) => {\n              setUseSearchRegion(!!checked)\n              if (!checked) {\n                onChange('searchRegion', null)\n              }\n            }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ShareFolderConfig",
@@ -18417,7 +18576,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ShareFileConfig",
@@ -18471,7 +18631,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StopShareConfig",
@@ -18501,7 +18662,8 @@
         "attribute": "defaultValue",
         "expression": "{8080}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StartScreenShareConfig",
@@ -18591,7 +18753,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StopScreenShareConfig",
@@ -18621,7 +18784,8 @@
         "attribute": "defaultValue",
         "expression": "{9000}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageExistsConfig",
@@ -18689,7 +18853,8 @@
         "attribute": "defaultValue",
         "expression": "{5}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ElementExistsConfig",
@@ -18698,7 +18863,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ElementVisibleConfig",
@@ -18707,7 +18873,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "NetworkMonitorStartConfig",
@@ -18780,7 +18947,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('urlPattern', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NetworkMonitorWaitConfig",
@@ -18879,7 +19047,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('stopAfterCapture', checked)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NetworkMonitorStopConfig",
@@ -18916,7 +19085,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OpenPageConfig",
@@ -18994,7 +19164,8 @@
         "attribute": "value",
         "expression": "\"networkidle\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "UseOpenedPageConfig",
@@ -19041,7 +19212,8 @@
         "attribute": "value",
         "expression": "\"url\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ClickElementConfig",
@@ -19098,7 +19270,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('followNewTab', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HoverElementConfig",
@@ -19128,7 +19301,8 @@
         "attribute": "defaultValue",
         "expression": "{0.5}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InputTextConfig",
@@ -19165,7 +19339,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('clearBefore', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetElementInfoConfig",
@@ -19244,7 +19419,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('columnName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WaitConfig",
@@ -19313,7 +19489,8 @@
         "attribute": "onChange",
         "expression": "{(v) => {\n              if (v === '' || v.includes('{')) {\n                onChange('duration', v)\n              } else {\n                const num = parseFloat(v)\n                onChange('duration', isNaN(num) ? v : num)\n              }\n            }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WaitElementConfig",
@@ -19375,7 +19552,8 @@
         "attribute": "defaultValue",
         "expression": "{60}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WaitImageConfig",
@@ -19486,7 +19664,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableNameY', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WaitPageLoadConfig",
@@ -19543,7 +19722,8 @@
         "attribute": "defaultValue",
         "expression": "{60}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PageLoadCompleteConfig",
@@ -19595,7 +19775,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SetVariableConfig",
@@ -19632,7 +19813,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableValue', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PrintLogConfig",
@@ -19694,7 +19876,8 @@
         "attribute": "value",
         "expression": "\"error\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PlaySoundConfig",
@@ -19740,7 +19923,8 @@
         "attribute": "defaultValue",
         "expression": "{0.3}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SystemNotificationConfig",
@@ -19805,7 +19989,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('playSound', checked === true)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PlayMusicConfig",
@@ -19852,7 +20037,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PlayVideoConfig",
@@ -19899,7 +20085,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ViewImageConfig",
@@ -19963,7 +20150,8 @@
         "attribute": "defaultValue",
         "expression": "{5}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InputPromptConfig",
@@ -20207,7 +20395,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('required', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TextToSpeechConfig",
@@ -20313,7 +20502,8 @@
         "attribute": "onValueChange",
         "expression": "{(vals) => onChange('volume', vals[0])}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "JsScriptConfig",
@@ -20352,7 +20542,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PythonScriptConfig",
@@ -20515,7 +20706,8 @@
         "attribute": "defaultValue",
         "expression": "{60}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ExtractTableDataConfig",
@@ -20592,7 +20784,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('excelPath', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GroupConfig",
@@ -20683,7 +20876,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('label', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SubflowHeaderConfig",
@@ -20726,7 +20920,8 @@
         "attribute": "onChange",
         "expression": "{(v) => {\n            onChange('subflowName', v)\n            onChange('label', v)\n          }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RefreshPageConfig",
@@ -20766,7 +20961,8 @@
         "attribute": "value",
         "expression": "\"networkidle\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GoBackConfig",
@@ -20806,7 +21002,8 @@
         "attribute": "value",
         "expression": "\"networkidle\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GoForwardConfig",
@@ -20846,7 +21043,8 @@
         "attribute": "value",
         "expression": "\"networkidle\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HandleDialogConfig",
@@ -20905,7 +21103,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveMessage', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InjectJavaScriptConfig",
@@ -21005,7 +21204,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveResult', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SwitchIframeConfig",
@@ -21080,7 +21280,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('iframeSelector', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SwitchToMainConfig",
@@ -21089,7 +21290,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SwitchTabConfig",
@@ -21297,7 +21499,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveUrlVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "IncrementDecrementConfig",
@@ -21356,7 +21559,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('step', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ConditionConfig",
@@ -21598,7 +21802,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('leftValue', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "LoopConfig",
@@ -21773,7 +21978,8 @@
         "attribute": "value",
         "expression": "\"stop\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ForeachConfig",
@@ -21820,7 +22026,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('indexVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ForeachDictConfig",
@@ -21867,7 +22074,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('valueVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InfiniteLoopConfig",
@@ -21892,7 +22100,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('indexVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScheduledTaskConfig",
@@ -21999,7 +22208,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('taskName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SubflowConfig",
@@ -22049,7 +22259,8 @@
         "attribute": "value",
         "expression": "{n.id}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AssertCheckpointConfig",
@@ -22319,7 +22530,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CustomModuleConfig",
@@ -22365,7 +22577,8 @@
         "attribute": "onChange",
         "expression": "{(value) => handleParameterChange(param.name, value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RegexExtractConfig",
@@ -22452,7 +22665,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringReplaceConfig",
@@ -22554,7 +22768,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringSplitConfig",
@@ -22622,7 +22837,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringJoinConfig",
@@ -22671,7 +22887,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringConcatConfig",
@@ -22719,7 +22936,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringTrimConfig",
@@ -22788,7 +23006,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringCaseConfig",
@@ -22857,7 +23076,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StringSubstringConfig",
@@ -22916,7 +23136,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "JsonParseConfig",
@@ -22976,7 +23197,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('columnName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "Base64Config",
@@ -23100,7 +23322,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RandomNumberConfig",
@@ -23170,7 +23393,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GetTimeConfig",
@@ -23254,7 +23478,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListOperationConfig",
@@ -23370,7 +23595,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListGetConfig",
@@ -23419,7 +23645,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListLengthConfig",
@@ -23456,7 +23683,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListExportConfig",
@@ -23577,7 +23805,8 @@
         "attribute": "value",
         "expression": "\"true\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictOperationConfig",
@@ -23652,7 +23881,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('dictValue', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictGetConfig",
@@ -23712,7 +23942,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictKeysConfig",
@@ -23776,7 +24007,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableAddRowConfig",
@@ -23801,7 +24033,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('rowData', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableAddColumnConfig",
@@ -23837,7 +24070,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('defaultValue', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableSetCellConfig",
@@ -23884,7 +24118,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('cellValue', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableGetCellConfig",
@@ -23932,7 +24167,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableDeleteRowConfig",
@@ -23957,7 +24193,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('rowIndex', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TableClearConfig",
@@ -23966,7 +24203,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "TableExportConfig",
@@ -24048,7 +24286,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleConnectConfig",
@@ -24134,7 +24373,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleQueryConfig",
@@ -24183,7 +24423,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleExecuteConfig",
@@ -24232,7 +24473,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(v) => onChange('autoCommit', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLConnectConfig",
@@ -24318,7 +24560,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLQueryConfig",
@@ -24367,7 +24610,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLExecuteConfig",
@@ -24416,7 +24660,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(v) => onChange('autoCommit', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBConnectConfig",
@@ -24502,7 +24747,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBFindConfig",
@@ -24579,7 +24825,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBInsertConfig",
@@ -24627,7 +24874,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('document', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBUpdateConfig",
@@ -24686,7 +24934,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('update', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBDeleteConfig",
@@ -24734,7 +24983,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('query', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerConnectConfig",
@@ -24831,7 +25081,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerQueryConfig",
@@ -24880,7 +25131,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerExecuteConfig",
@@ -24929,7 +25181,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(v) => onChange('autoCommit', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteConnectConfig",
@@ -24966,7 +25219,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteQueryConfig",
@@ -25015,7 +25269,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteExecuteConfig",
@@ -25064,7 +25319,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(v) => onChange('autoCommit', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisConnectConfig",
@@ -25144,7 +25400,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisGetConfig",
@@ -25192,7 +25449,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisSetConfig",
@@ -25256,7 +25514,8 @@
         "attribute": "defaultValue",
         "expression": "{0}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisDelConfig",
@@ -25292,7 +25551,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('key', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisHGetConfig",
@@ -25351,7 +25611,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisHSetConfig",
@@ -25409,7 +25670,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('value', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleInsertConfig",
@@ -25457,7 +25719,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('data', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleUpdateConfig",
@@ -25516,7 +25779,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleDeleteConfig",
@@ -25563,7 +25827,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLInsertConfig",
@@ -25611,7 +25876,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('data', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLUpdateConfig",
@@ -25670,7 +25936,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLDeleteConfig",
@@ -25717,7 +25984,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerInsertConfig",
@@ -25765,7 +26033,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('data', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerUpdateConfig",
@@ -25824,7 +26093,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerDeleteConfig",
@@ -25871,7 +26141,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteInsertConfig",
@@ -25919,7 +26190,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('data', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteUpdateConfig",
@@ -25978,7 +26250,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteDeleteConfig",
@@ -26025,7 +26298,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('where', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "OracleDisconnectConfig",
@@ -26050,7 +26324,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PostgreSQLDisconnectConfig",
@@ -26075,7 +26350,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MongoDBDisconnectConfig",
@@ -26100,7 +26376,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLServerDisconnectConfig",
@@ -26125,7 +26402,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SQLiteDisconnectConfig",
@@ -26150,7 +26428,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RedisDisconnectConfig",
@@ -26175,7 +26454,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbConnectConfig",
@@ -26297,7 +26577,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbQueryConfig",
@@ -26357,7 +26638,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(c) => onChange('singleRow', c)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbExecuteConfig",
@@ -26405,7 +26687,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbInsertConfig",
@@ -26469,7 +26752,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbUpdateConfig",
@@ -26544,7 +26828,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbDeleteConfig",
@@ -26603,7 +26888,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DbCloseConfig",
@@ -26628,7 +26914,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictMergeConfig",
@@ -26675,7 +26962,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictFilterConfig",
@@ -26722,7 +27010,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictMapValuesConfig",
@@ -26769,7 +27058,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictInvertConfig",
@@ -26805,7 +27095,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictSortConfig",
@@ -26884,7 +27175,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictDeepCopyConfig",
@@ -26920,7 +27212,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictGetPathConfig",
@@ -26978,7 +27271,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DictFlattenConfig",
@@ -27025,7 +27319,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "LocatorTip",
@@ -27034,7 +27329,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DpOpenPageConfig",
@@ -27163,7 +27459,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('outputVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpClickConfig",
@@ -27200,7 +27497,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('timeout', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpInputConfig",
@@ -27259,7 +27557,8 @@
         "attribute": "value",
         "expression": "\"false\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpGetTextConfig",
@@ -27297,7 +27596,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpGetHtmlConfig",
@@ -27322,7 +27622,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpRunJsConfig",
@@ -27358,7 +27659,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('variableName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpWaitElementConfig",
@@ -27395,7 +27697,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('timeout', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpScrollConfig",
@@ -27452,7 +27755,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('pixels', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DpCloseConfig",
@@ -27461,7 +27765,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ListReverseConfig",
@@ -27497,7 +27802,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListFindConfig",
@@ -27544,7 +27850,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListCountConfig",
@@ -27591,7 +27898,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListFilterConfig",
@@ -27638,7 +27946,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListMapConfig",
@@ -27685,7 +27994,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListMergeConfig",
@@ -27732,7 +28042,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListFlattenConfig",
@@ -27785,7 +28096,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListChunkConfig",
@@ -27832,7 +28144,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListRemoveEmptyConfig",
@@ -27868,7 +28181,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListIntersectionConfig",
@@ -27915,7 +28229,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListUnionConfig",
@@ -27962,7 +28277,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListDifferenceConfig",
@@ -28009,7 +28325,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListCartesianProductConfig",
@@ -28056,7 +28373,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListShuffleConfig",
@@ -28092,7 +28410,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListSampleConfig",
@@ -28139,7 +28458,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathLogConfig",
@@ -28218,7 +28538,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathTrigConfig",
@@ -28317,7 +28638,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathExpConfig",
@@ -28353,7 +28675,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathGcdConfig",
@@ -28400,7 +28723,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathLcmConfig",
@@ -28447,7 +28771,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathFactorialConfig",
@@ -28483,7 +28808,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathPermutationConfig",
@@ -28530,7 +28856,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathPercentageConfig",
@@ -28604,7 +28931,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathClampConfig",
@@ -28662,7 +28990,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathRandomAdvancedConfig",
@@ -28769,7 +29098,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListSumConfig",
@@ -28805,7 +29135,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListAverageConfig",
@@ -28841,7 +29172,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListMaxConfig",
@@ -28877,7 +29209,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListMinConfig",
@@ -28913,7 +29246,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListSortConfig",
@@ -28971,7 +29305,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListUniqueConfig",
@@ -29007,7 +29342,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListSliceConfig",
@@ -29065,7 +29401,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathRoundConfig",
@@ -29118,7 +29455,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathBaseConvertConfig",
@@ -29217,7 +29555,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathFloorConfig",
@@ -29253,7 +29592,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathModuloConfig",
@@ -29300,7 +29640,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathAbsConfig",
@@ -29336,7 +29677,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathSqrtConfig",
@@ -29372,7 +29714,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MathPowerConfig",
@@ -29419,7 +29762,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FormatConvertConfig",
@@ -29599,7 +29943,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CompressImageConfig",
@@ -29692,7 +30037,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CompressVideoConfig",
@@ -29825,7 +30171,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ExtractAudioConfig",
@@ -29941,7 +30288,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TrimVideoConfig",
@@ -30012,7 +30360,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MergeMediaConfig",
@@ -30154,7 +30503,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AddWatermarkConfig",
@@ -30344,7 +30694,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FaceRecognitionConfig",
@@ -30404,7 +30755,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageOCRConfig",
@@ -30502,7 +30854,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DownloadM3U8Config",
@@ -30673,7 +31026,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RotateVideoConfig",
@@ -30758,7 +31112,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "VideoSpeedConfig",
@@ -30835,7 +31190,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ExtractFrameConfig",
@@ -30927,7 +31283,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AddSubtitleConfig",
@@ -30986,7 +31343,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AdjustVolumeConfig",
@@ -31046,7 +31404,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ResizeVideoConfig",
@@ -31134,7 +31493,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageGrayscaleConfig",
@@ -31183,7 +31543,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageRoundCornersConfig",
@@ -31249,7 +31610,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AudioToTextConfig",
@@ -31379,7 +31741,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "QRGenerateConfig",
@@ -31477,7 +31840,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "QRDecodeConfig",
@@ -31514,7 +31878,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScreenRecordConfig",
@@ -31633,7 +31998,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CameraCaptureConfig",
@@ -31699,7 +32065,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CameraRecordConfig",
@@ -31839,7 +32206,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyDiscordConfig",
@@ -31875,7 +32243,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyTelegramConfig",
@@ -31922,7 +32291,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyDingTalkConfig",
@@ -31969,7 +32339,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyWeComConfig",
@@ -32005,7 +32376,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyFeishuConfig",
@@ -32052,7 +32424,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyBarkConfig",
@@ -32099,7 +32472,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifySlackConfig",
@@ -32135,7 +32509,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyMSTeamsConfig",
@@ -32171,7 +32546,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyPushoverConfig",
@@ -32218,7 +32594,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyPushBulletConfig",
@@ -32254,7 +32631,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyGotifyConfig",
@@ -32301,7 +32679,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyServerChanConfig",
@@ -32348,7 +32727,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyPushPlusConfig",
@@ -32395,7 +32775,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyWebhookConfig",
@@ -32431,7 +32812,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyNtfyConfig",
@@ -32478,7 +32860,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyMatrixConfig",
@@ -32536,7 +32919,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "NotifyRocketChatConfig",
@@ -32572,7 +32956,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange('message', e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RunWorkflowFileConfig",
@@ -32712,7 +33097,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SSHConnectConfig",
@@ -32829,7 +33215,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SSHExecuteCommandConfig",
@@ -32917,7 +33304,8 @@
         "attribute": "defaultValue",
         "expression": "{30}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SSHUploadFileConfig",
@@ -32965,7 +33353,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('remotePath', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SSHDownloadFileConfig",
@@ -33013,7 +33402,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('localPath', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SSHDisconnectConfig",
@@ -33038,7 +33428,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('connectionName', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SimilarSelectorDialog",
@@ -33069,7 +33460,8 @@
         "attribute": "onChange",
         "expression": "{(v) => setVariableName(v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatMedianConfig",
@@ -33105,7 +33497,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatModeConfig",
@@ -33141,7 +33534,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatVarianceConfig",
@@ -33177,7 +33571,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatStdevConfig",
@@ -33213,7 +33608,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatPercentileConfig",
@@ -33266,7 +33662,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatNormalizeConfig",
@@ -33346,7 +33743,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "StatStandardizeConfig",
@@ -33382,7 +33780,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CsvParseConfig",
@@ -33451,7 +33850,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "CsvGenerateConfig",
@@ -33520,7 +33920,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ListToStringAdvancedConfig",
@@ -33589,7 +33990,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureInitConfig",
@@ -33638,7 +34040,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('clean', checked)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureStartTestConfig",
@@ -33722,7 +34125,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('testId', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureAddStepConfig",
@@ -33790,7 +34194,8 @@
         "attribute": "value",
         "expression": "\"broken\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureAddAttachmentConfig",
@@ -33869,7 +34274,8 @@
         "attribute": "value",
         "expression": "\"html\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureStopTestConfig",
@@ -33926,7 +34332,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('message', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AllureGenerateReportConfig",
@@ -33963,7 +34370,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(checked) => onChange('autoOpen', checked)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WebhookTriggerConfig",
@@ -34143,7 +34551,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('paramPrefix', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HotkeyTriggerConfig",
@@ -34186,7 +34595,8 @@
         "attribute": "defaultValue",
         "expression": "{0}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FileWatcherTriggerConfig",
@@ -34290,7 +34700,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "EmailTriggerConfig",
@@ -34443,7 +34854,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ApiTriggerConfig",
@@ -34626,7 +35038,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TimerTriggerConfig",
@@ -34788,7 +35201,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('cronExpression', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MouseTriggerConfig",
@@ -34953,7 +35367,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImageTriggerConfig",
@@ -35054,7 +35469,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SoundTriggerConfig",
@@ -35125,7 +35541,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FaceTriggerConfig",
@@ -35224,7 +35641,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ElementChangeTriggerConfig",
@@ -35311,7 +35729,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveChangeInfo', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "GestureTriggerConfig",
@@ -35488,7 +35907,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('saveToVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "UrlInputDialog",
@@ -35519,7 +35939,8 @@
         "attribute": "onChange",
         "expression": "{onUrlChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FileHashCompareConfig",
@@ -35601,7 +36022,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FileDiffCompareConfig",
@@ -35678,7 +36100,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FolderHashCompareConfig",
@@ -35728,7 +36151,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "FolderDiffCompareConfig",
@@ -35778,7 +36202,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RandomPasswordGeneratorConfig",
@@ -35871,7 +36296,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "URLEncodeDecodeConfig",
@@ -35956,7 +36382,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MD5EncryptConfig",
@@ -36041,7 +36468,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SHAEncryptConfig",
@@ -36162,7 +36590,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TimestampConverterConfig",
@@ -36262,7 +36691,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RGBToHSVConfig",
@@ -36321,7 +36751,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RGBToCMYKConfig",
@@ -36380,7 +36811,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "HEXToCMYKConfig",
@@ -36417,7 +36849,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "UUIDGeneratorConfig",
@@ -36530,7 +36963,8 @@
         "attribute": "onChange",
         "expression": "{(v) => updateConfig('resultVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PrinterCallConfig",
@@ -36684,7 +37118,8 @@
         "attribute": "value",
         "expression": "\"Legal\""
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WebhookRequestConfig",
@@ -36939,7 +37374,8 @@
         "attribute": "onChange",
         "expression": "{(v) => onChange('cookiesVariable', v)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "Button",
@@ -36957,7 +37393,8 @@
         "expression": "size === 'xs' || size === 'sm'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Checkbox",
@@ -36973,7 +37410,8 @@
         "expression": "checked"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ColorPicker",
@@ -37008,7 +37446,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ConfirmDialog",
@@ -37052,7 +37491,8 @@
         "expression": "type === 'warning'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ConfirmDialog",
@@ -37074,7 +37514,8 @@
         "expression": "variant === 'default'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ConfirmDialogComponent",
@@ -37085,7 +37526,8 @@
       "ConfirmDialog"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "CoordinateInput",
@@ -37157,7 +37599,8 @@
         "attribute": "onChange",
         "expression": "{onYChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "InputDialog",
@@ -37195,7 +37638,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setValue(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "AlertDialog",
@@ -37213,7 +37657,8 @@
       "Icon"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "CalendarPanel",
@@ -37290,7 +37735,8 @@
         "attribute": "value",
         "expression": "{i}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DatePicker",
@@ -37316,7 +37762,8 @@
         "attribute": "value",
         "expression": "{value}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TimeColumn",
@@ -37350,7 +37797,8 @@
         "expression": "i === value"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "TimePanel",
@@ -37386,7 +37834,8 @@
         "attribute": "value",
         "expression": "{ss}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TimePicker",
@@ -37417,7 +37866,8 @@
         "attribute": "onChange",
         "expression": "{onChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DateTimePicker",
@@ -37458,7 +37908,8 @@
         "attribute": "onChange",
         "expression": "{(t) => setTime(t)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DialogPortal",
@@ -37472,7 +37923,8 @@
         "expression": "!mounted"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogOverlay",
@@ -37483,7 +37935,8 @@
       "DialogPrimitive.Overlay"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogContent",
@@ -37498,7 +37951,8 @@
       "X"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogHeader",
@@ -37507,7 +37961,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogFooter",
@@ -37516,7 +37971,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogTitle",
@@ -37527,7 +37983,8 @@
       "DialogPrimitive.Title"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DialogDescription",
@@ -37538,7 +37995,8 @@
       "DialogPrimitive.Description"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuSubTrigger",
@@ -37550,7 +38008,8 @@
       "DropdownMenuPrimitive.SubTrigger"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuSubContent",
@@ -37561,7 +38020,8 @@
       "DropdownMenuPrimitive.SubContent"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuContent",
@@ -37573,7 +38033,8 @@
       "DropdownMenuPrimitive.Portal"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuItem",
@@ -37584,7 +38045,8 @@
       "DropdownMenuPrimitive.Item"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuCheckboxItem",
@@ -37603,7 +38065,8 @@
         "attribute": "checked",
         "expression": "{checked}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuRadioItem",
@@ -37616,7 +38079,8 @@
       "DropdownMenuPrimitive.RadioItem"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuLabel",
@@ -37627,7 +38091,8 @@
       "DropdownMenuPrimitive.Label"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuSeparator",
@@ -37638,7 +38103,8 @@
       "DropdownMenuPrimitive.Separator"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DropdownMenuShortcut",
@@ -37647,7 +38113,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "DualCoordinateInput",
@@ -37734,7 +38201,8 @@
         "attribute": "defaultValue",
         "expression": "{0}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ImagePathInput",
@@ -37817,7 +38285,8 @@
         "attribute": "onChange",
         "expression": "{(e) => onChange(e.target.value)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "Input",
@@ -37846,7 +38315,8 @@
         "expression": "showPassword"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Label",
@@ -37855,7 +38325,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "NumberInput",
@@ -38050,7 +38521,8 @@
         "attribute": "onChange",
         "expression": "{handleChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PathInput",
@@ -38133,7 +38605,8 @@
         "attribute": "onChange",
         "expression": "{onChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PopoverContext",
@@ -38142,7 +38615,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Popover",
@@ -38168,7 +38642,8 @@
         "attribute": "value",
         "expression": "{{ open, setOpen, triggerRef }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "PopoverTrigger",
@@ -38198,7 +38673,8 @@
         "expression": "childRef && typeof childRef === 'object'"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "PopoverContent",
@@ -38236,7 +38712,8 @@
         "expression": "!open"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "QQContactSelect",
@@ -38291,7 +38768,8 @@
         "attribute": "onChange",
         "expression": "{handleInputChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RadioGroupContext",
@@ -38300,7 +38778,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "RadioGroup",
@@ -38317,7 +38796,8 @@
         "attribute": "value",
         "expression": "{{ value, onValueChange, name, disabled }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RadioDot",
@@ -38331,7 +38811,8 @@
         "expression": "selected"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Radio",
@@ -38355,7 +38836,8 @@
         "expression": "dotOnly"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ScrollArea",
@@ -38364,7 +38846,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectNative",
@@ -38446,7 +38929,8 @@
         "attribute": "value",
         "expression": "{opt.value === '' ? EMPTY_SENTINEL : opt.value}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "SelectTrigger",
@@ -38459,7 +38943,8 @@
       "SelectPrimitive.Trigger"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectScrollUpButton",
@@ -38471,7 +38956,8 @@
       "SelectPrimitive.ScrollUpButton"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectScrollDownButton",
@@ -38483,7 +38969,8 @@
       "SelectPrimitive.ScrollDownButton"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectContent",
@@ -38498,7 +38985,8 @@
       "SelectScrollUpButton"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectLabel",
@@ -38509,7 +38997,8 @@
       "SelectPrimitive.Label"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectItem",
@@ -38523,7 +39012,8 @@
       "SelectPrimitive.ItemText"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "SelectSeparator",
@@ -38534,7 +39024,8 @@
       "SelectPrimitive.Separator"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Slider",
@@ -38554,7 +39045,8 @@
         "attribute": "onChange",
         "expression": "{handleChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "Switch",
@@ -38566,7 +39058,8 @@
       "SwitchPrimitives.Thumb"
     ],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "Textarea",
@@ -38575,7 +39068,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "UrlInput",
@@ -38603,7 +39097,8 @@
         "attribute": "onChange",
         "expression": "{onChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "VariableInput",
@@ -38793,7 +39288,8 @@
         "attribute": "onChange",
         "expression": "{handleChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "RenameConfirmDialog",
@@ -38802,7 +39298,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "VariableNameInput",
@@ -38952,7 +39449,8 @@
         "attribute": "onChange",
         "expression": "{handleChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "VariableRefInput",
@@ -39099,7 +39597,8 @@
         "attribute": "onChange",
         "expression": "{handleChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "WindowTitleInput",
@@ -39165,7 +39664,8 @@
         "attribute": "onChange",
         "expression": "{onChange}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "MarkdownRenderer",
@@ -39187,7 +39687,8 @@
         "expression": "cancelled"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "TestReportIcon",
@@ -39196,7 +39697,8 @@
     "fields": [],
     "tools": [],
     "conditions": [],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "NotificationConfigEditor",
@@ -39263,7 +39765,8 @@
         "attribute": "onCheckedChange",
         "expression": "{(v) => updateChannel(idx, { enabled: v })}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "ScheduledTasksDialog",
@@ -39280,7 +39783,8 @@
         "expression": "!open"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "ScheduledTasksPage",
@@ -39393,7 +39897,8 @@
         "expression": "task.is_running"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "StatisticsPanel",
@@ -39433,7 +39938,8 @@
         "expression": "task.total_executions > 0"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   },
   {
     "component": "TaskCreateDialog",
@@ -39954,7 +40460,8 @@
         "attribute": "onChange",
         "expression": "{(e) => setRepeatInterval(parseInt(e.target.value) || 60)}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TaskEditDialog",
@@ -40456,7 +40963,8 @@
         "attribute": "onChange",
         "expression": "{(patch) => {\n                if (patch.notifyOnFailure !== undefined) setNotifyOnFailure(patch.notifyOnFailure)\n                if (patch.notifyOnSuccess !== undefined) setNotifyOnSuccess(patch.notifyOnSuccess)\n                if (patch.channels !== undefined) setNotifyChannels(patch.channels)\n              }}"
       }
-    ]
+    ],
+    "lazyImports": []
   },
   {
     "component": "TaskLogsDialog",
@@ -40528,6 +41036,7 @@
         "expression": "!['error', 'warning', 'success', 'info'].includes(wlog.level)"
       }
     ],
-    "bindings": []
+    "bindings": [],
+    "lazyImports": []
   }
 ]
