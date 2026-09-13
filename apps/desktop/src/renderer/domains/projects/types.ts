@@ -1,4 +1,5 @@
 import type { DataTableTab } from '../project-data/types'
+import type { RecordKey } from '../project-data/records-api'
 import type { components } from '../../shared/api/generated'
 
 export type ProjectView = components['schemas']['ProjectView']
@@ -12,7 +13,8 @@ export type ProjectCreate = components['schemas']['ProjectCreate']
 export type ProjectPatch = components['schemas']['ProjectPatch']
 
 export type ProjectTab = 'overview' | 'automations' | 'runs' | 'statistics' | 'data' | 'environments'
-export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab }
+export type RecordLocation = { mode: 'create' } | { mode: 'detail' | 'edit'; datasetGeneration: string; recordKey: RecordKey }
+export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab; record?: RecordLocation }
 export type ProjectLifecycleFilter = 'active' | 'archived' | 'all'
 export type ProjectSort = 'name' | '-name' | 'updatedAt' | '-updatedAt' | 'lastOpenedAt' | '-lastOpenedAt'
 

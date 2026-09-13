@@ -88,3 +88,24 @@ it('round trips all five real data table tabs and rejects malformed nested addre
   }
   for (const hash of [`#/projects/${projectId}/data/no-id/records`, `#/projects/${projectId}/data/${tableId}/bogus`, `#/projects/${projectId}/runs/${tableId}/records`, `#/projects/${projectId}/data/${tableId}`]) expect(parseAppLocation(hash).error).toBeTruthy()
 })
+
+it('round trips create, detail, and edit record routes with typed identities', () => {
+  const projectId='00000000-0000-4000-8000-000000000001',tableId='00000000-0000-4000-8000-000000000002',datasetGeneration='00000000-0000-4000-8000-000000000003'
+  const routes = [
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'create' as const} },
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'detail' as const,datasetGeneration,recordKey:{type:'text' as const,value:'中文/📄?new/edit'}} },
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'edit' as const,datasetGeneration,recordKey:{type:'integer' as const,value:'-1'}} },
+  ]
+  for (const route of routes) expect(parseAppLocation(projectHash(route))).toEqual({section:'projects',project:route})
+  const other={...routes[1],projectId:'00000000-0000-4000-8000-000000000009'}
+  expect(parseAppLocation(projectHash(other)).project).toEqual(other)
+})
+
+it.each([
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/not-a-generation/text/MQ',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/00000000-0000-4000-8000-000000000003/integer/MDAx',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/00000000-0000-4000-8000-000000000003/text/MQ==',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/new/edit',
+])('rejects malformed record address %s', hash => {
+  expect(parseAppLocation(hash).error).toBeTruthy()
+})

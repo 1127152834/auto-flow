@@ -29,6 +29,12 @@ it('encodes Unicode record identities as UTF8 base64url exactly once and keeps k
   expect(init).toEqual({ signal })
 })
 
+it('rejects a noncanonical record identity before sending it', () => {
+  const request=vi.fn()
+  expect(() => api(request).get({type:'integer',value:'001'})).toThrow()
+  expect(request).not.toHaveBeenCalled()
+})
+
 it('encodes full filter and order before sending server-side pagination', async () => {
   const request = vi.fn().mockResolvedValueOnce({ items: [], total: 0 })
   const filter = { type: 'compare', fieldId: 'f', operator: 'contains', value: '中文&😀' }

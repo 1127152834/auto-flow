@@ -1,16 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DataTableTab } from '../domains/project-data/types'
 import type { ProjectRoute, ProjectTab } from '../domains/projects/types'
+import { decodeRecordKey, encodeRecordKey } from '../domains/project-data/record-route'
 
 export type AppRoute = 'dashboard' | 'projects' | 'profiles' | 'proxies' | 'models' | 'settings'
 const globalRoutes: AppRoute[] = ['dashboard', 'projects', 'profiles', 'proxies', 'models', 'settings']
 const projectTabs: ProjectTab[] = ['overview', 'automations', 'runs', 'statistics', 'data', 'environments']
 const projectIdPattern = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i
+const recordKeyTypes = ['text', 'integer', 'uuid'] as const
 
 export function parseAppLocation(hash: string): { section: AppRoute; project?: ProjectRoute; error?: string } {
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/')
   if (parts[0] !== 'projects') return { section: globalRoutes.includes(parts[0] as AppRoute) ? parts[0] as AppRoute : 'dashboard' }
   if (parts.length === 1) return { section: 'projects', project: { tab: 'overview' } }
+  if (parts.length === 6 && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && parts[4] === 'records' && parts[5] === 'new') {
+    return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: 'records', record: { mode: 'create' } } }
+  }
+  if ((parts.length === 8 || parts.length === 9) && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && parts[4] === 'records' && projectIdPattern.test(parts[5]) && recordKeyTypes.includes(parts[6] as typeof recordKeyTypes[number]) && (parts.length === 8 || parts[8] === 'edit')) {
+    try {
+      const recordKey = decodeRecordKey(parts[6] as typeof recordKeyTypes[number], parts[7])
+      return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: 'records', record: { mode: parts.length === 9 ? 'edit' : 'detail', datasetGeneration: parts[5], recordKey } } }
+    } catch { return { section: 'projects', error: '项目地址无效，请从项目目录重新打开。' } }
+  }
   if (parts.length === 5 && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && ['records', 'fields', 'statuses', 'source', 'settings'].includes(parts[4])) {
     return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: parts[4] as DataTableTab } }
   }
@@ -23,6 +34,14 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 export function projectHash(route: ProjectRoute) {
   if (!route.projectId) return '#/projects'
   const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
+  if (route.record) {
+    if (route.tab !== 'data' || !route.tableId || (route.dataTab ?? 'records') !== 'records') throw new Error('记录路由只能位于数据表记录页')
+    const records = `${base}/${encodeURIComponent(route.tableId)}/records`
+    if (route.record.mode === 'create') return `${records}/new`
+    if (!projectIdPattern.test(route.record.datasetGeneration)) throw new Error('数据代次无效')
+    const identity = `${records}/${route.record.datasetGeneration}/${route.record.recordKey.type}/${encodeRecordKey(route.record.recordKey)}`
+    return route.record.mode === 'edit' ? `${identity}/edit` : identity
+  }
   return route.tab === 'data' && route.tableId ? `${base}/${encodeURIComponent(route.tableId)}/${route.dataTab ?? 'records'}` : base
 }
 
