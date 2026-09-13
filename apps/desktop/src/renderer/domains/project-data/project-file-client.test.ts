@@ -3,9 +3,9 @@ import type { ProjectFileBridge } from '../../../shared/project-files'
 import type { StreamingApiClient } from '../../shared/api/client'
 import { createProjectFileClient } from './project-file-client'
 const bridge = (): ProjectFileBridge => ({
-  chooseExcelInput: vi.fn(async () => ({ ok: true, value: null })),
-  chooseXlsxOutput: vi.fn(async () => ({ ok: true, value: null })),
-  getProjectFileContext: vi.fn(async () => ({ ok: true, value: { windowId: 7, windowToken: 'test-window-proof' } })),
+  chooseExcelInput: vi.fn(async () => ({ ok: true as const, value: null })),
+  chooseXlsxOutput: vi.fn(async () => ({ ok: true as const, value: null })),
+  getProjectFileContext: vi.fn(async () => ({ ok: true as const, value: { windowId: 7, windowToken: 'test-window-proof' } })),
 })
 describe('project file window authority', () => {
   it('returns cancellation without issuing HTTP', async () => {
@@ -27,14 +27,14 @@ describe('project file window authority', () => {
   it('revokes a late window context before HTTP submission', async () => {
     let current = true
     const desktop = bridge()
-    desktop.getProjectFileContext = async () => { current = false; return { ok: true, value: { windowId: 7, windowToken: 'test' } } }
+    desktop.getProjectFileContext = async () => { current = false; return { ok: true as const, value: { windowId: 7, windowToken: 'test' } } }
     const request = vi.fn()
     const files = createProjectFileClient({ request } as unknown as StreamingApiClient, desktop, 'p', () => current)
     await expect(files.request('/inspect')).rejects.toThrow('上下文已切换')
     expect(request).not.toHaveBeenCalled()
   })
   it('requires a fresh file choice when the authority is absent', async () => {
-    const desktop = bridge(); desktop.getProjectFileContext = async () => ({ ok: true, value: null })
+    const desktop = bridge(); desktop.getProjectFileContext = async () => ({ ok: true as const, value: null })
     const request = vi.fn()
     await expect(createProjectFileClient({ request } as unknown as StreamingApiClient, desktop, 'p', () => true).request('/inspect')).rejects.toThrow('重新选择')
     expect(request).not.toHaveBeenCalled()

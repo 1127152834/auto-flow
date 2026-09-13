@@ -30,7 +30,7 @@ export function createDataCatalogApi(client: StreamingApiClient, context: Catalo
   function statusResult(action: Action, statusId?: string) {
     return ({ resource, result }: Operation): StatusDefinition => {
       if (resource.type !== 'status' || resource.projectId !== scope.projectId || resource.tableId !== scope.tableId || (statusId !== undefined && resource.statusId !== statusId)
-        || !result || !('status' in result) || result.action !== action || result.status.statusId !== resource.statusId) throw mismatch()
+        || !result || !('status' in result) || !('action' in result) || result.action !== action || result.status.statusId !== resource.statusId) throw mismatch()
       return result.status
     }
   }

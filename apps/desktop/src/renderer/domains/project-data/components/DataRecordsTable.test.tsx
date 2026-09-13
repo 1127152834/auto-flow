@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { components } from '../../../shared/api/generated'
 import { DataRecordsTable } from './DataRecordsTable'
+import { useRecordSelection } from '../use-record-selection'
 type Schema = components['schemas']
 afterEach(cleanup)
 const field: Schema['DataFieldView'] = { ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', fieldId: 'f' }, key: 'value', name: '业务值', type: 'string', required: false, validation: {}, writable: true, formula: false, fieldRevision: 1 }
@@ -58,4 +59,20 @@ it.each([0, 2])('reserves the declared column widths for %i business columns bef
   const fields = Array.from({ length: count }, (_, index) => ({ ...field, ref: { ...field.ref, fieldId: `f${index}` } }))
   render(<DataRecordsTable {...props} fields={fields} page={page([row({ type: 'text', value: '1' })])} />)
   expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${192 + 160 + 112 + count * 200}px` })
+})
+
+it('offers controlled row/page selection and bulk actions without changing legacy consumers', async () => {
+  const records=[row({type:'text',value:'1'}),row({type:'integer',value:'2'})],bulk=vi.fn()
+  function Harness(){const selection=useRecordSelection({workspaceKey:'w',projectId:'p',tableId:'t',datasetGeneration:'g'});return <DataRecordsTable {...props} page={page(records)} selection={selection} onBulkStatus={bulk}/>}
+  render(<Harness/>); expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('checkbox',{name:'选择记录 文本 · 1'})); expect(screen.getByRole('toolbar')).toHaveTextContent('已选择 1 条')
+  await userEvent.click(screen.getByRole('button',{name:'批量设置状态'})); expect(bulk).toHaveBeenCalledOnce()
+  await userEvent.click(screen.getByRole('checkbox',{name:'选择本页记录'})); expect(screen.getByRole('toolbar')).toHaveTextContent('已选择 2 条')
+  await userEvent.click(screen.getByRole('button',{name:'清空选择'})); expect(screen.queryByRole('toolbar')).not.toBeInTheDocument()
+})
+
+it('disables every selection control while readonly, disabled, or loading',()=>{
+  const selection={targets:[],count:0,error:null,isSelected:()=>false,toggle:vi.fn(),togglePage:vi.fn(),clear:vi.fn()}
+  render(<DataRecordsTable {...props} page={page([row({type:'text',value:'1'})])} selection={selection} readonly disabled loading/>)
+  expect(screen.getAllByRole('checkbox').every(item=>item.hasAttribute('disabled'))).toBe(true)
 })
