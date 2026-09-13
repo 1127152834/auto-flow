@@ -159,39 +159,8 @@ class WorkflowWorkerManager:
                 birth = process_birth(process.pid) if sys.platform != "win32" else None
                 raise
             assert process.stdin is not None and process.stdout is not None
-            payload = _worker_payload(run_id, profile, proxy, license_key)
-            payload.pop("startUrl")
-            payload.update({
-                "runId": run_id, "headless": profile.spec.headless,
-                "document": prepared.document, "nodeIds": prepared.node_ids,
-                "variables": prepared.variables, "runsRoot": str(self._runs_root),
-            })
-            process.stdin.write((json.dumps(payload, ensure_ascii=False) + "\n").encode())
-            await asyncio.wait_for(process.stdin.drain(), timeout=self._start_timeout)
-            # Parent watchdog also covers a wedged driver. Each node enforces its precise
-            # total budget inside the worker; the parent allows bounded event/IO overhead.
-            read_timeout = self._start_timeout
-            nodes = {node["id"]: node for node in prepared.document["nodes"]}
-            while True:
-                raw = await asyncio.wait_for(process.stdout.readline(), timeout=read_timeout)
-                if not raw:
-                    break
-                event = json.loads(raw)
-                if not isinstance(event, dict):
-                    raise TypeError("Invalid worker event")
-                if event.get("type") == "finished":
-                    if event.get("state") not in {"succeeded", "failed", "cancelled"}:
-                        raise ValueError("Invalid worker result")
-                    result = {"state": event["state"], "error": event.get("error")}
-                    break
-                if event.get("type") not in {"ready", "node_started", "node_succeeded", "node_failed", "log"}:
-                    raise ValueError("Invalid worker event")
-                if event["type"] == "node_started":
-                    node = nodes[event["nodeId"]]
-                    read_timeout = float(node["config"]["timeoutSeconds"]) + self._termination_timeout + 1
-                else:
-                    read_timeout = self._start_timeout
-                await on_event(event)
+            payload = self._payload(run_id, prepared, profile, proxy, license_key)
+            result = await self._exchange(process, payload, prepared, on_event)
         except asyncio.CancelledError:
             result = {"state": "cancelled", "error": None}
         except TimeoutError:
@@ -213,4 +182,50 @@ class WorkflowWorkerManager:
             self._stopping.discard(run_id)
             self._started.discard(run_id)
             self._tasks.pop(run_id, None)
+        return result
+
+    def _payload(self, run_id: str, prepared: PreparedWorkflow, profile: Profile,
+                 proxy: ProfileBrowserProxy | None, license_key: str | None) -> dict[str, Any]:
+        payload = _worker_payload(run_id, profile, proxy, license_key)
+        payload.pop("startUrl")
+        payload.update({
+            "runId": run_id, "headless": profile.spec.headless,
+            "document": prepared.document, "nodeIds": prepared.node_ids,
+            "variables": prepared.variables, "runsRoot": str(self._runs_root),
+        })
+        return payload
+
+    async def _exchange(self, process: asyncio.subprocess.Process, payload: dict[str, Any],
+                        prepared: PreparedWorkflow,
+                        on_event: Callable[[dict[str, Any]], Awaitable[None]]) -> dict[str, Any]:
+        assert process.stdin is not None and process.stdout is not None
+        result = _failed()
+        process.stdin.write((json.dumps(payload, ensure_ascii=False) + "\n").encode())
+        async with asyncio.timeout(self._start_timeout):
+            await process.stdin.drain()
+        # Parent watchdog also covers a wedged driver. Each node enforces its precise
+        # total budget inside the worker; the parent allows bounded event/IO overhead.
+        read_timeout = self._start_timeout
+        nodes = {node["id"]: node for node in prepared.document["nodes"]}
+        while True:
+            async with asyncio.timeout(read_timeout):
+                raw = await process.stdout.readline()
+            if not raw:
+                break
+            event = json.loads(raw)
+            if not isinstance(event, dict):
+                raise TypeError("Invalid worker event")
+            if event.get("type") == "finished":
+                if event.get("state") not in {"succeeded", "failed", "cancelled"}:
+                    raise ValueError("Invalid worker result")
+                result = {"state": event["state"], "error": event.get("error")}
+                break
+            if event.get("type") not in {"ready", "node_started", "node_succeeded", "node_failed", "log"}:
+                raise ValueError("Invalid worker event")
+            if event["type"] == "node_started":
+                node = nodes[event["nodeId"]]
+                read_timeout = float(node["config"]["timeoutSeconds"]) + self._termination_timeout + 1
+            else:
+                read_timeout = self._start_timeout
+            await on_event(event)
         return result

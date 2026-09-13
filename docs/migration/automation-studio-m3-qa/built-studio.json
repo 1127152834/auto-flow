@@ -1,0 +1,14 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "built",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "formal Studio starts dedicated visible browser from headless Profile and manually navigates",
+    "real iframe DOM picker result previews/applies/tests/saves; selector and frame path undo together",
+    "cancel preserves inspection; confirm cleans inspection then independent worker executes saved iframe target",
+    "native Studio close is guarded; cancel keeps browser; confirmed close waits for cleanup"
+  ],
+  "complete": true,
+  "pickerInput": "Controlled page dispatches DOM click; trusted browser input and suppression independently tested by smoke-workflow-inspection.py"
+}

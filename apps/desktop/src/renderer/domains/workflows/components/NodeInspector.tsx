@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { NodeDefinition, WorkflowIssue, WorkflowNode, WorkflowVariable } from '../types'
 
 type Props = {
+  selectorTools?: React.ReactNode
   node: WorkflowNode | null
   definition?: NodeDefinition
   variables: WorkflowVariable[]
@@ -30,7 +31,7 @@ export function NodeInspector(props: Props) {
   return <NodeFields key={props.node.id} {...props} node={props.node} />
 }
 
-function NodeFields({ node, definition, variables, issues, onChange, onLabelChange, onEditStart, onEditEnd, disabled = false }: Props & { node: WorkflowNode }) {
+function NodeFields({ node, definition, variables, issues, selectorTools, onChange, onLabelChange, onEditStart, onEditEnd, disabled = false }: Props & { node: WorkflowNode }) {
   const activeInput = useRef<{ field: string; input: HTMLInputElement | HTMLTextAreaElement; start: number; end: number } | null>(null)
   const [hasTarget, setHasTarget] = useState(false)
   const nodeIssues = issues.filter((issue) => issue.nodeId === node.id)
@@ -70,7 +71,7 @@ function NodeFields({ node, definition, variables, issues, onChange, onLabelChan
     <label className="text-sm text-ink" htmlFor={`node-${node.id}-${field}`}>{label}</label>
     <Switch id={`node-${node.id}-${field}`} checked={node.config[field] === true} disabled={disabled} onCheckedChange={(checked) => onChange({ [field]: checked })} />
   </div>
-  const selector = () => text('selector', '元素选择器', '支持 CSS 选择器或以 xpath= 开头的 XPath。')
+  const selector = () => <>{text('selector', '元素选择器', '支持 CSS 选择器或以 xpath= 开头的 XPath。')}{selectorTools}</>
   const insertReference = (reference: string) => {
     const target = activeInput.current
     if (!target || !target.input.isConnected || disabled) return

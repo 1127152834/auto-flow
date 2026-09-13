@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2 范围和验收以 superpowers 规格与 migration 记录为准。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3 范围和验收以 superpowers 规格与 migration 记录为准。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -266,3 +266,7 @@ reference/
 - `renderer/domains/workflows/hooks/useWorkflowRun.ts`：独立于编辑历史的运行快照、当前运行/历史选择、日志补读与同编号重试；`RunToolbar`、`RunPanel` 先实现再接入 `StudioPage`。
 - 工作区选择允许先展示保存/停止确认；真正切换和服务重启仍经过原有资源门控。Electron 不执行网页动作。
 - 真实受控网页和验收入口：`tests/fixtures/workflow-page.html`、`scripts/smoke-workflow-runs.mjs`、`scripts/smoke-workflow-studio-runs.mjs`。证据见 [M2 验收记录](migration/automation-studio-m2-validation.md)。
+
+## M3 拾取与框架定位（2026-09-13）
+
+仍在 workflows 领域。application/workflows/browser_resources.py 共用 Profile/内核检查；application/workflows/inspection.py 管理临时交互会话。domain/workflows/inspection.py 处理定位测试初值与端口，framePath 是原节点配置的可选扩展，无数据库迁移。providers/browser/workflow_locator.py 是运行与测试共享的框架定位入口；inspection.py 与 inspection_script.py 承担页面拾取。infrastructure/process/inspection_worker.py 复用已有工作流 worker 的受管启动/清理，仅扩展有界命令和心跳。HTTP 接口为 workflows/inspection-sessions，前端组件、请求与 hook 在 renderer/domains/workflows。正式范围和验收以 M3 规格及 migration 记录为准。

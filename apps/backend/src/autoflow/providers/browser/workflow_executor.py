@@ -8,11 +8,7 @@ from typing import Any
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.run_validation import resolve_node_config
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifacts
-
-
-class NodeFailure(Exception):
-    def __init__(self, code: str, message: str, path: list[str] | None = None):
-        self.code, self.message, self.path = code, message, path or []
+from autoflow.providers.browser.workflow_locator import NodeFailure, locate_element
 
 
 class WorkflowExecutor:
@@ -82,7 +78,8 @@ class WorkflowExecutor:
         page = self._current()
         if node_type == "screenshot":
             if config["screenshotType"] == "element":
-                data = await page.locator(config["selector"]).first.screenshot(
+                locator = await locate_element(page, config, self._timeout)
+                data = await locator.screenshot(
                     type="png", timeout=self._timeout(),
                 )
             else:
@@ -95,7 +92,7 @@ class WorkflowExecutor:
             self._timeout()
             self.variables[config["variableName"]] = artifact["outputPath"]
             return artifact
-        locator = page.locator(config["selector"]).first
+        locator = await locate_element(page, config, self._timeout)
         if node_type == "click_element":
             await self._click(page, locator, config)
         elif node_type == "input_text":

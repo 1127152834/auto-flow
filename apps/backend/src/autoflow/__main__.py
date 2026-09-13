@@ -12,6 +12,7 @@ def main() -> None:
     parser.add_argument("--kernel-worker", action="store_true")
     parser.add_argument("--test-browser-worker", action="store_true")
     parser.add_argument("--workflow-worker", action="store_true")
+    parser.add_argument("--inspection-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--instance-id")
@@ -26,6 +27,11 @@ def main() -> None:
         from autoflow.bootstrap.test_browser_worker import test_browser_worker_main
 
         raise SystemExit(test_browser_worker_main())
+    if args.inspection_worker:
+        from autoflow.bootstrap.test_browser_worker import browser_worker_main
+        from autoflow.providers.browser.inspection_worker import run_worker
+
+        raise SystemExit(browser_worker_main(run_worker))
     if args.workflow_worker:
         from autoflow.bootstrap.workflow_worker import workflow_worker_main
 

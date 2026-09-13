@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-13T01:54:04.109572+00:00",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "checks": [
+    "real picking intercepts link/submit/checkbox without page action",
+    "ordinary input restored after picking",
+    "escaped identifiers, duplicate ids, open shadow generate unique executable selectors",
+    "cross-origin nested iframe picker and CSS/XPath zero/one/multiple/hidden locator tests",
+    "Escape cancels; navigation invalidates picking",
+    "105 matches counted without truncation; highlighter limit/expiry; placeholder-like IDs use structural fallback; invalid CSS rejected",
+    "same-origin iframe; selected result invalid after navigation; iframe detach invalidates request; new/closed tabs never silently retarget",
+    "fresh independent browser executes all six nodes using picked iframe target; real extraction and PNG verified"
+  ],
+  "passed": true
+}

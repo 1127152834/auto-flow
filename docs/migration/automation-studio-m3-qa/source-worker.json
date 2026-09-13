@@ -1,0 +1,14 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "source",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "real worker launch, headless override, blank start, idempotency, exclusive resource locks, navigation/test, cleanup",
+    "five consecutive closes during startup clean worker/browser and release sessions",
+    "close interrupts pending navigation without waiting full node timeout",
+    "SIGKILL owned worker reaps its browser tree and releases resources",
+    "sidecar crash cleans owned worker/browser; restart creates no session and permits a fresh one"
+  ],
+  "complete": true
+}

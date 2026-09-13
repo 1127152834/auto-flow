@@ -164,7 +164,7 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
         for field, value in config.items():
             path = ["config", field]
             if field != "variableName" and not (
-                field == "selector"
+                field in {"selector", "framePath"}
                 and node["type"] == "screenshot"
                 and config.get("screenshotType", "fullpage") != "element"
             ):
@@ -178,6 +178,10 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
             if not _matches_type(value, definition["type"]):
                 issue("INVALID_CONFIG_TYPE", "配置值类型不符", path, node["id"])
                 continue
+            if field == "framePath":
+                for index, step in enumerate(value):
+                    if not isinstance(step, str) or not step.strip():
+                        issue("INVALID_FRAME_PATH", "框架路径须为非空选择器", [*path, str(index)], node["id"])
             if "enum" in definition and value not in definition["enum"]:
                 issue("INVALID_CONFIG_VALUE", "请选择有效选项", path, node["id"])
             if field == "timeoutSeconds" and value <= 0:

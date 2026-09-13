@@ -23,6 +23,9 @@ def _definition(
         name: {**definition, **({"minLength": 1} if name in required else {})}
         for name, definition in properties.items()
     }
+    if "selector" in properties:
+        properties["framePath"] = {"type": "array", "items": {"type": "string", "minLength": 1}, "default": []}
+        defaults = {**defaults, "framePath": []}
     return {
         "type": node_type,
         "title": title,

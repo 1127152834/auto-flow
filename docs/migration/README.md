@@ -47,3 +47,6 @@
 ## Automation Studio 当前交付（2026-09-13）
 
 上述阶段为总体迁移顺序；本轮用户确认的实际范围以 [M1 验收](automation-studio-m1-validation.md) 与 [M2 规格](../superpowers/specs/2026-09-13-automation-studio-m2-design.md) 为准。M2 实现六节点顺序运行、真实日志/结果与临时浏览器清理，见 [M2 验收](automation-studio-m2-validation.md)。条件/循环/子流程、调试和录制尚未实施；企业、Windows 控制、发布/版本管理不在当前复刻范围。
+
+
+M3 已增加专用可见拾取会话、元素拾取/定位测试和 framePath 的真实执行；参见 [M3 验收记录](automation-studio-m3-validation.md)。这更新了上文“元素拾取尚未实施”的历史状态；完整录制、Debug 和复杂控制流仍未交付。

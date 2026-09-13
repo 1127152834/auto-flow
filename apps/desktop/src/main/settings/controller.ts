@@ -26,11 +26,12 @@ const BLOCKER_LABELS: Record<string, string> = {
   proxy_sync_active: '代理同步进行中', proxy_operation_active: '代理任务进行中',
   profile_in_use: '浏览器配置正在使用', api_mutation_in_progress: '数据保存或资源操作进行中',
   api_mutations_paused: '服务正在准备切换',
+  workflow_inspection_active: '拾取浏览器仍打开，请先关闭',
   workflow_run_active: '工作流正在运行，请先停止', test_browser_process_active: '测试浏览器仍在运行',
 }
 
 function allowsWorkflowLeave(blockers: string[]): boolean {
-  return blockers.includes('workflow_run_active') && blockers.every(code => code === 'workflow_run_active' || code === 'profile_in_use')
+  return blockers.some(code => code === 'workflow_run_active' || code === 'workflow_inspection_active') && blockers.every(code => code === 'workflow_run_active' || code === 'workflow_inspection_active' || code === 'profile_in_use')
 }
 
 export class SettingsController {

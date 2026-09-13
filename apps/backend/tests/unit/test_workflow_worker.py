@@ -40,6 +40,9 @@ def profile(values):
 
 
 class Locator:
+    async def count(self):
+        return 1
+
     def __init__(self, page):
         self.page = page
         self.first = self
@@ -653,3 +656,73 @@ async def test_test_browser_failed_monitor_cleanup_retains_session_for_retry(mon
     await manager.stop("profile-1")
     assert not manager.busy()
     await manager.shutdown()
+
+
+def test_inspection_worker_can_be_identified_after_initial_birth_probe_was_unavailable(monkeypatch, tmp_path):
+    from autoflow.infrastructure.process import browser_processes as module
+
+    run, executable = tmp_path / 'run', tmp_path / 'Chromium'
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: '700 1 700 autoflow-backend --inspection-worker\n')
+    monkeypatch.setattr(module, 'process_birth', lambda _: 123)
+    monkeypatch.setattr(module, '_native_arguments', lambda _: (
+        Path(sys.executable), ['autoflow-backend', '--inspection-worker'], {'CLOAKBROWSER_CACHE_DIR': str(run)},
+    ))
+    assert module.capture_processes(700, None, run, executable) == {700: (700, 123)}
+    monkeypatch.setattr(module, '_native_arguments', lambda _: (
+        Path(sys.executable), ['autoflow-backend', '--inspection-worker'], {'CLOAKBROWSER_CACHE_DIR': str(tmp_path / 'other')},
+    ))
+    assert module.capture_processes(700, None, run, executable) == {}
+
+
+@pytest.mark.asyncio
+async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
+    from autoflow.infrastructure.process import test_browser_worker as module
+
+    exited = asyncio.Event()
+    process = SimpleNamespace(pid=700, returncode=None, wait=exited.wait)
+    monkeypatch.setattr(module, 'capture_processes', lambda *_args: {})
+    monkeypatch.setattr(module, 'signal_processes', lambda *_args: None)
+    try:
+        async with asyncio.timeout(1):
+            with pytest.raises(RuntimeError, match='identity or process exit'):
+                await module.force_process_tree(process, 0.01)
+    finally:
+        exited.set()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("inspection", [False, True])
+@pytest.mark.parametrize("phase", ["drain", "read"])
+async def test_worker_transport_does_not_swallow_stop_when_io_completes(tmp_path, inspection, phase):
+    from autoflow.infrastructure.process.inspection_worker import (
+        InspectionWorkerManager,
+    )
+
+    manager = InspectionWorkerManager(tmp_path) if inspection else WorkflowWorkerManager(tmp_path, tmp_path)
+    owner = None
+    reads = 0
+
+    async def drain():
+        if phase == "drain":
+            asyncio.get_running_loop().call_soon(owner.cancel)
+
+    async def readline():
+        nonlocal reads
+        reads += 1
+        if phase == "read" and reads == 1:
+            asyncio.get_running_loop().call_soon(owner.cancel)
+            return json.dumps({"type": "inspection" if inspection else "ready"}).encode() + b"\n"
+        await asyncio.Event().wait()
+
+    async def event(_value):
+        pass
+
+    process = SimpleNamespace(stdin=SimpleNamespace(write=lambda _: None, drain=drain),
+                              stdout=SimpleNamespace(readline=readline))
+    owner = asyncio.create_task(manager._exchange(process, {}, prepared(), event))
+    try:
+        done, _ = await asyncio.wait({owner}, timeout=0.2)
+        assert done and owner.cancelled(), "completed I/O swallowed stop and kept reading the worker"
+    finally:
+        owner.cancel()
+        await asyncio.gather(owner, return_exceptions=True)

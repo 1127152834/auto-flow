@@ -84,10 +84,11 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
     }
     for (const [field, value] of Object.entries(node.config)) {
       const path = ['config', field]
-      if (field !== 'variableName') checkReferences(value, path, node.id)
+      if (field !== 'variableName' && !(node.type === 'screenshot' && node.config.screenshotType !== 'element' && ['selector', 'framePath'].includes(field))) checkReferences(value, path, node.id)
       const rule = schema.properties?.[field]
       if (!rule) { issue('UNKNOWN_CONFIG_FIELD', '此节点不支持该配置字段', path, node.id); continue }
       if (!matchesType(value, rule.type)) { issue('INVALID_CONFIG_TYPE', '配置值类型不符', path, node.id); continue }
+      if (field === 'framePath' && Array.isArray(value)) value.forEach((step, index) => { if (typeof step !== 'string' || !step.trim()) issue('INVALID_FRAME_PATH', '框架路径须为非空选择器', [...path, String(index)], node.id) })
       if (rule.enum && !rule.enum.includes(value)) issue('INVALID_CONFIG_VALUE', '请选择有效选项', path, node.id)
       if (field === 'timeoutSeconds' && typeof value === 'number' && value <= 0) issue('INVALID_TIMEOUT', '超时须大于 0 秒', path, node.id)
       if (field === 'variableName' && value && !validName(value)) issue('INVALID_VARIABLE_NAME', '输出变量名须为有效标识符', path, node.id)

@@ -14,14 +14,12 @@ from threading import RLock
 from typing import Any
 
 from autoflow.application.profiles.service import ProfileService
-from autoflow.domain.kernels.errors import KernelBusy, LicenseInvalid
-from autoflow.domain.kernels.models import InstalledKernel
-from autoflow.domain.profiles.errors import (
-    KernelNotInstalled,
-    ProfileDirectoryBusy,
-    ProfileNotFound,
-    ProxyUnavailable,
+from autoflow.application.workflows.browser_resources import acquire_browser
+from autoflow.application.workflows.browser_resources import (
+    resource_error as _resource_error,
 )
+from autoflow.domain.kernels.errors import LicenseInvalid
+from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.models import WorkflowError, WorkflowIssue
 from autoflow.domain.workflows.run_validation import PreparedWorkflow, prepare_run
@@ -75,6 +73,7 @@ class WorkflowRunService:
         self._completion_lock = RLock()
         self._loop: asyncio.AbstractEventLoop | None = None
         self._subscribers: dict[str, set[asyncio.Event]] = {}
+        self.inspection_busy: Callable[[], bool] = lambda: False
         self._closing = False
         self._shutdown_task: asyncio.Task[None] | None = None
 
@@ -119,25 +118,14 @@ class WorkflowRunService:
             return self.get(run_id)
         if self._closing:
             raise WorkflowError("WORKFLOW_RUN_SHUTTING_DOWN", "运行服务正在退出", 409)
+        if self.inspection_busy():
+            raise WorkflowError("INSPECTION_ACTIVE", "请先关闭拾取浏览器后运行", 409)
         if self.busy():
             raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
         prepared = prepare_run(document, layout)
         guards = ExitStack()
         try:
-            guards.enter_context(self._profiles.profile_usage.guard(profile_id))
-            profile = self._profiles.get(profile_id)
-            guards.enter_context(self._kernel_guard(profile))
-            executable = self._kernel_executable(profile)
-            # Verify configured resource references before accepting the run.
-            spec = profile.spec
-            if spec.proxy_mode == "proxy" and (
-                spec.proxy_id is None or not self._profiles.proxy_options.proxy_is_available(spec.proxy_id)
-            ):
-                raise ProxyUnavailable
-            if spec.proxy_mode == "pool" and (
-                spec.proxy_pool_id is None or not self._profiles.proxy_options.pool_exists(spec.proxy_pool_id)
-            ):
-                raise ProxyUnavailable
+            profile, executable = acquire_browser(guards, self._profiles, self._kernel_guard, self._installed_kernels, profile_id)
             now = datetime.now(UTC).isoformat()
             snapshot = {_camel(key): value for key, value in asdict(profile.spec).items()}
             snapshot.update(id=profile.id, fingerprintSeed=profile.fingerprint_seed)
@@ -410,13 +398,6 @@ class WorkflowRunService:
                 except Exception:  # noqa: BLE001 - retain completion for a later bounded retry
                     logger.warning("workflow terminal event remains pending: run_id=%s", pending_id)
 
-    def _kernel_executable(self, profile: Profile) -> Path:
-        for kernel in self._installed_kernels():
-            if (kernel.edition == profile.spec.browser_edition
-                and kernel.version == profile.spec.browser_version
-                and kernel.executable_path.is_file()):
-                return kernel.executable_path
-        raise KernelNotInstalled
 
 
 def _reset_cleanup_retry(operation: _ActiveRun) -> None:
@@ -443,25 +424,9 @@ def _issue(issue: WorkflowIssue) -> dict[str, Any]:
     return {"nodeId": issue.node_id, "path": issue.path, "code": issue.code, "message": issue.message}
 
 
-def _resource_error(error: Exception) -> WorkflowError:
-    if isinstance(error, WorkflowError):
-        return error
-    mappings: list[tuple[type[Exception], str, str, str, int]] = [
-        (ProfileNotFound, "WORKFLOW_PROFILE_NOT_FOUND", "所选浏览器配置不存在", "profileId", 422),
-        (ProfileDirectoryBusy, "WORKFLOW_PROFILE_BUSY", "所选浏览器配置正在使用", "profileId", 409),
-        (KernelNotInstalled, "WORKFLOW_KERNEL_UNAVAILABLE", "所选浏览器内核未安装或不可用", "profileId", 422),
-        (KernelBusy, "WORKFLOW_KERNEL_BUSY", "所选浏览器内核正在使用或安装", "profileId", 409),
-        (ProxyUnavailable, "WORKFLOW_PROXY_UNAVAILABLE", "所选代理或代理池不可用", "profileId", 422),
-        (LicenseInvalid, "WORKFLOW_LICENSE_UNAVAILABLE", "所选内核需要有效的 License", "profileId", 422),
-        (TimeoutError, "WORKFLOW_RESOURCE_TIMEOUT", "运行资源准备超时", "profileId", 422),
-    ]
-    for exception, code, message, path, status in mappings:
-        if isinstance(error, exception):
-            return WorkflowError(code, message, status, [WorkflowIssue(None, [path], code, message)])
-    return WorkflowError("WORKFLOW_RUN_FAILED", "运行失败，请检查配置与本地服务状态", 500)
 
 
-async def _wait_cleanup(task: asyncio.Task[None]) -> None:
+async def _wait_cleanup(task: asyncio.Task[Any]) -> None:
     # Request/host cancellation must not expose a terminal record or release guards
     # while the independent cleanup task still owns a browser process tree.
     while not task.done():

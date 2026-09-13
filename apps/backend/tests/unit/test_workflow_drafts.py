@@ -41,6 +41,7 @@ def test_catalog_is_independent_and_wait_timeout_is_explicit_in_one_unit():
     assert wait["defaultConfig"] == {
         "selector": "",
         "waitCondition": "visible",
+        "framePath": [],
         "timeoutSeconds": 60,
     }
     wait["defaultConfig"]["timeoutSeconds"] = 1

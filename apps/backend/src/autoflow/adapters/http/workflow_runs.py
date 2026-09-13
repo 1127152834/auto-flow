@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 
 from autoflow.application.workflows.runs import WorkflowRunService
+from autoflow.domain.workflows.run_validation import prepare_run
 
 from .errors import browser_error_responses
 from .workflow_run_schemas import RunEvents, RunList, RunRead, RunStart, RunSummary
@@ -19,6 +20,11 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
             body.run_id, body.document.model_dump(by_alias=True),
             body.layout.model_dump(by_alias=True), body.profile_id,
         ))
+
+    @router.post("/validate", response_model=list[dict[str, str]])
+    async def validate(body: RunStart) -> list[dict[str, str]]:
+        prepared = prepare_run(body.document.model_dump(by_alias=True), body.layout.model_dump(by_alias=True))
+        return [{"code": issue.code, "message": issue.message} for issue in prepared.warnings]
 
     @router.get("", response_model=RunList)
     def list_runs(

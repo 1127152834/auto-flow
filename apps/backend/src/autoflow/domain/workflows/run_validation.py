@@ -67,7 +67,7 @@ def _substitute(value: Any, lookup: Callable[[str], Any]) -> Any:
     return REFERENCE_PATTERN.sub(replace, value)
 
 
-def _initial_values(document: dict[str, Any]) -> dict[str, Any]:
+def initial_values(document: dict[str, Any]) -> dict[str, Any]:
     declarations = {item["name"]: item["value"] for item in document["variables"]}
     indices = {item["name"]: str(i) for i, item in enumerate(document["variables"])}
     dependencies: dict[str, set[str]] = {}
@@ -110,7 +110,7 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
     errors = [issue for issue in issues if issue.code != "DUPLICATE_OUTPUT_VARIABLE"]
     if errors:
         raise WorkflowError("WORKFLOW_RUN_INVALID", "请完成流程配置后再运行", 422, errors)
-    variables = _initial_values(effective)
+    variables = initial_values(effective)
     nodes = {node["id"]: node for node in effective["nodes"]}
     outgoing = {edge["source"]: edge["target"] for edge in effective["edges"]}
     targets = {edge["target"] for edge in effective["edges"]}
@@ -121,9 +121,9 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
         ordered.append(current)
         node = nodes[current]
         config = node["config"]
-        for field in ("url", "selector", "text", "savePath"):
+        for field in ("url", "selector", "framePath", "text", "savePath"):
             # A hidden element selector is not used by viewport/full-page screenshots.
-            if field == "selector" and node["type"] == "screenshot" and config["screenshotType"] != "element":
+            if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":
                 continue
             for name, path in _references(config.get(field), ["config", field]):
                 if name not in available:
@@ -136,15 +136,19 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
 
 def resolve_node_config(node: dict[str, Any], variables: dict[str, Any]) -> dict[str, Any]:
     config = deepcopy(node["config"])
-    for field in ("url", "selector", "text", "savePath"):
+    for field in ("url", "selector", "framePath", "text", "savePath"):
         if field not in config:
             continue
-        if field == "selector" and node["type"] == "screenshot" and config["screenshotType"] != "element":
+        if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":
             continue
         for name, path in _references(config[field], ["config", field]):
             if name not in variables:
                 _fail("VARIABLE_NOT_AVAILABLE", f"变量 {name} 尚未产生", path, node["id"])
         config[field] = _substitute(config[field], variables.__getitem__)
+        if field == "framePath":
+            for index, step in enumerate(config[field]):
+                if not step.strip():
+                    _fail("REQUIRED", "变量解析后框架路径为空", ["config", field, str(index)], node["id"])
         if field in {"url", "selector"} and not config[field].strip():
             _fail("REQUIRED", "变量解析后此字段为空", ["config", field], node["id"])
     if node["type"] == "open_page":

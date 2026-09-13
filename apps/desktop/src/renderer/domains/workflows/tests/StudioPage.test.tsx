@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ApiProvider } from '../../../app/ApiProvider'
 import { StudioPage } from '../pages/StudioPage'
+import type { InspectionSession } from '../inspection-api'
 import type { WorkflowCanvasProps } from '../components/WorkflowCanvas'
 import type { NodeDefinition, WorkflowContent, WorkflowIssue, WorkflowRead } from '../types'
 import { isRunActive, type RunRead } from '../run-types'
@@ -50,6 +51,8 @@ function testServer(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
   const documents = new Map(initial.map((record) => [record.document.id, structuredClone(record)]))
   const runs = new Map(initialRuns.map(record => [record.runId, structuredClone(record)]))
   const requests: Request[] = []
+  let inspection: InspectionSession | null = null
+  let inspectionCloseBarrier: Promise<void> | null = null
   let writeError: string | null = null
   let readBarrier: Promise<void> | null = null
   let writeBarrier: Promise<void> | null = null
@@ -61,6 +64,9 @@ function testServer(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
     const method = init?.method ?? 'GET'
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) as Request['body'] : undefined
     requests.push({ path, method, body, headers: new Headers(init?.headers) })
+    if (path === '/api/v1/workflows/inspection-sessions') return json(inspection)
+    if (path.endsWith('/close') && path.includes('/inspection-sessions/')) { if (inspectionCloseBarrier) await inspectionCloseBarrier; inspection = inspection ? { ...inspection, state: 'closed', pages: [], targetPageId: null } : null; return json(inspection) }
+    if (path === '/api/v1/workflows/runs/validate') return json([])
     if (path === '/api/v1/profiles') return json({ items: [{ id: 'profile-1', name: '真实配置', headless: false }], total: 1 })
     if (path === '/api/v1/workflows/runs' && method === 'GET') return json({ items: [...runs.values()], activeRunId: [...runs.values()].find(isRunActive)?.runId ?? null, nextOffset: null })
     if (path === '/api/v1/workflows/runs' && method === 'POST' && body) {
@@ -103,7 +109,7 @@ function testServer(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
     }
     throw new Error(`Unexpected request ${method} ${path}`)
   })
-  return { fetch, requests, documents, runs, setWriteError(message: string | null) { writeError = message }, pauseRead(barrier: Promise<void>) { readBarrier = barrier }, pauseWrite(barrier: Promise<void>) { writeBarrier = barrier }, pauseStop(barrier: Promise<void>) { stopBarrier = barrier }, loseStartResponse() { loseStartResponse = true }, setRunIssue(issue: WorkflowIssue) { runIssue = issue } }
+  return { fetch, requests, documents, runs, setInspection(value: InspectionSession) { inspection = value }, pauseInspectionClose(value: Promise<void>) { inspectionCloseBarrier = value }, setWriteError(message: string | null) { writeError = message }, pauseRead(barrier: Promise<void>) { readBarrier = barrier }, pauseWrite(barrier: Promise<void>) { writeBarrier = barrier }, pauseStop(barrier: Promise<void>) { stopBarrier = barrier }, loseStartResponse() { loseStartResponse = true }, setRunIssue(issue: WorkflowIssue) { runIssue = issue } }
 }
 
 type LeaveHandler = (reason: 'close' | 'quit' | 'workspace' | 'new' | 'open') => Promise<boolean>
@@ -118,7 +124,7 @@ function setup(initial: WorkflowRead[] = [], initialRuns: RunRead[] = []) {
 }
 
 const content = () => JSON.parse(screen.getByTestId('document').textContent!) as WorkflowContent
-const writes = (server: ReturnType<typeof testServer>) => server.requests.filter((request) => (request.method === 'POST' || request.method === 'PUT') && !request.path.includes('/runs'))
+const writes = (server: ReturnType<typeof testServer>) => server.requests.filter((request) => (request.method === 'POST' || request.method === 'PUT') && !request.path.includes('/runs') && !request.path.includes('/inspection-sessions'))
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 it('creates all six nodes, sends an authenticated manual save, then updates with a revision through Ctrl+S', async () => {
@@ -534,4 +540,31 @@ it('marks the current node failed after worker loss without a node_failed event'
   await userEvent.setup().click(screen.getByRole('button', { name: '刷新运行状态' }))
   await waitFor(() => expect(JSON.parse(screen.getByTestId('run-markers').textContent!)).toEqual({ [record.currentNodeId!]: '失败' }))
   expect(screen.getByTestId('run-markers')).not.toHaveTextContent('执行中')
+})
+
+const activeInspection: InspectionSession = { sessionId: 'inspection', profileId: 'profile-1', profileName: '拾取配置', state: 'ready', headless: false, pages: [{ pageId: 'page', url: 'about:blank', title: '', revision: 0 }], targetPageId: 'page', pick: null, error: null }
+
+it.each(['close', 'quit', 'workspace'] as const)('protects a dirty inspection session on %s; failed save and cancel preserve it; cleanup precedes leave', async reason => {
+  const user = userEvent.setup(), app = setup()
+  const { server } = app
+  server.setInspection(activeInspection)
+  await user.click(await screen.findByRole('button', { name: '添加打开网页' }))
+  let result: boolean | undefined
+  act(() => { void app.prepareLeave(reason).then(value => { result = value }) })
+  await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '取消' }))
+  await waitFor(() => expect(result).toBe(false))
+  expect(server.requests.filter(r => r.path.endsWith('/close'))).toHaveLength(0)
+  result = undefined
+  server.setWriteError('磁盘失败')
+  act(() => { void app.prepareLeave(reason).then(value => { result = value }) })
+  await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '保存并关闭浏览器' }))
+  await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('磁盘失败'))
+  expect(server.requests.filter(r => r.path.endsWith('/close'))).toHaveLength(0)
+  let release!: () => void
+  server.pauseInspectionClose(new Promise(resolve => { release = resolve }))
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: '放弃并关闭浏览器' }))
+  await waitFor(() => expect(server.requests.filter(r => r.path.endsWith('/close'))).toHaveLength(1))
+  expect(result).toBeUndefined()
+  await act(async () => release())
+  await waitFor(() => expect(result).toBe(true))
 })

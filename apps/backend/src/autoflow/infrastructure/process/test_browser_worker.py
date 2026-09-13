@@ -445,7 +445,12 @@ async def force_process_tree(
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned)
     await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
     if process.returncode is None:
-        await process.wait()
+        # A missing native identity must retain cleanup ownership, never hang shutdown.
+        # Do not signal an unverified PID; a retry can capture its startup identity.
+        try:
+            await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
+        except TimeoutError:
+            raise RuntimeError("Worker identity or process exit is not yet confirmed") from None
     deadline = asyncio.get_running_loop().time() + max(termination_timeout, 2)
     while await asyncio.to_thread(living_processes, owned):
         if asyncio.get_running_loop().time() >= deadline:

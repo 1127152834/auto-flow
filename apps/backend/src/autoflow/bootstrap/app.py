@@ -12,6 +12,7 @@ from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.events.workflows import workflow_events_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.health import health_router
+from autoflow.adapters.http.inspection import inspection_router
 from autoflow.adapters.http.kernels import internal_kernel_paths_router, kernels_router
 from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
@@ -25,6 +26,7 @@ from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.inspection import InspectionService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.config import Settings
@@ -79,6 +81,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.filesystem.workflow_artifacts import artifact_path
+from autoflow.infrastructure.process.inspection_worker import InspectionWorkerManager
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
@@ -181,6 +184,12 @@ def create_app(
         partial(artifact_path, paths.workspace / "runs"),
     )
 
+    inspection_workers = InspectionWorkerManager(paths.temp)
+    inspection = InspectionService(profile_service, catalog_provider.installed, workflow_kernel_guard,
+                                   proxy_runtime.resolve_profile, license_store.read, inspection_workers,
+                                   workflow_runs.busy)
+    workflow_runs.inspection_busy = inspection.busy
+
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
         {
@@ -196,6 +205,7 @@ def create_app(
             *(["kernel_process_active"] if kernel_worker_manager.active_processes() else []),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *(["workflow_run_active"] if workflow_runs.busy() else []),
+            *(["workflow_inspection_active"] if inspection.busy() else []),
         ],
         quiesce_gate,
     )
@@ -209,6 +219,8 @@ def create_app(
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
+    app.state.workflow_inspection_service = inspection
+    app.state.inspection_worker_manager = inspection_workers
     app.state.workflow_run_service = workflow_runs
     app.state.workflow_worker_manager = workflow_workers
 
@@ -218,7 +230,7 @@ def create_app(
 
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown(),
-                workflow_runs.shutdown()
+                workflow_runs.shutdown(), inspection.shutdown()
             )
         finally:
             try:
@@ -242,6 +254,7 @@ def create_app(
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(settings_dashboard_router(settings_runtime))
+    app.include_router(inspection_router(inspection))
     app.include_router(workflow_runs_router(workflow_runs))
     app.include_router(workflow_events_router(workflow_runs))
     app.include_router(workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory))))
