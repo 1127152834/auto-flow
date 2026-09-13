@@ -87,7 +87,7 @@ it('keeps the original table revision and draft on refresh, then explicitly relo
     return path.includes('?') ? page([current]) : current
   })
   const view = mount(request as StreamingApiClient['request'])
-  await userEvent.click(await screen.findByRole('button', { name: '编辑客户数据' }))
+  await userEvent.click(await screen.findByRole('button', { name: '更多客户数据操作' })); await userEvent.click(screen.getByRole('menuitem', {name:'编辑数据表'}))
   await userEvent.clear(screen.getByLabelText('数据表名称')); await userEvent.type(screen.getByLabelText('数据表名称'), '我的草稿')
   current = { ...table, name: '远端新名称', tableRevision: 4 }
   await act(async () => { await view.cache.invalidateQueries() })
@@ -172,7 +172,7 @@ it('shows explicit initial-load failure, and readonly data remains openable', as
   expect(screen.queryByText(/上次成功/)).not.toBeInTheDocument()
   request.mockResolvedValue(page())
   fireEvent.click(screen.getByRole('button', { name: '重试' }))
-  await userEvent.click(await screen.findByRole('button', { name: '打开客户数据' }))
+  await userEvent.click(await screen.findByRole('button', { name: '打开数据表：客户数据' }))
   expect(view.props.onOpen).toHaveBeenCalledWith('t')
   expect(screen.queryByRole('button', { name: '新建数据表' })).not.toBeInTheDocument()
 })

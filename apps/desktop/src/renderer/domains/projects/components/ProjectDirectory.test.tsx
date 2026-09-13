@@ -124,3 +124,9 @@ it('keeps stale rows visible and reports a refresh failure', () => {
   expect(screen.getByRole('alert')).toHaveTextContent('刷新项目失败')
   expect(screen.getByRole('button', { name: '新建项目' })).toBeDisabled()
 })
+it('does not turn an unresolved recent directory into a zero count',()=>{
+ const props={mode:'recent' as const,recentItems:[],conditions:{query:'',lifecycle:'active',sort:'-lastOpenedAt',page:1,pageSize:50} as const,loading:false,refreshing:false,disabled:false,error:null,onConditionsChange:vi.fn(),onRefresh:vi.fn(),onCreate:vi.fn(),onOpen:vi.fn(),onEdit:vi.fn()};
+ const v=render(<ProjectDirectory {...props} recentLoading/>);expect(screen.queryByText('0 个项目')).not.toBeInTheDocument();
+ v.rerender(<ProjectDirectory {...props} recentError="刷新最近项目失败"/>);expect(screen.queryByText('0 个项目')).not.toBeInTheDocument();expect(screen.queryByText(/尚无最近访问/)).not.toBeInTheDocument();
+ v.rerender(<ProjectDirectory {...props}/>);expect(screen.getByText('0 个项目')).toBeVisible();
+})

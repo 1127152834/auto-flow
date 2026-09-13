@@ -15,7 +15,7 @@ it('shows real table facts and keeps open separate from edit', async () => {
   render(<DataTableDirectory items={[table]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={onImportExcel} onOpen={onOpen} onEdit={onEdit} />)
   expect(screen.getByText('23 条记录')).toBeVisible()
   expect(screen.getByText('本地表')).toBeVisible()
-  await user.click(screen.getByRole('button', { name: '打开客户数据' }))
+  await user.click(screen.getByRole('button', { name: '打开数据表：客户数据' }))
   await user.click(screen.getByRole('button', { name: '更多客户数据操作' }))
   await user.click(screen.getByRole('menuitem', { name: '编辑数据表' }))
   await user.click(screen.getByRole('button', { name: '从 Excel 导入' }))
@@ -76,7 +76,7 @@ it('keeps archived tables openable while hiding mutating actions', async () => {
   expect(screen.queryByRole('button', { name: '新建数据表' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: '从 Excel 导入' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: '更多客户数据操作' })).not.toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: '打开客户数据' }))
+  await userEvent.click(screen.getByRole('button', { name: '打开数据表：客户数据' }))
   expect(onOpen).toHaveBeenCalledWith('t1')
 })
 
