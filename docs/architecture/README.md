@@ -1,6 +1,6 @@
 # AutoFlow 系统架构规格
 
-> 2026-09-13 当前状态：用户要求先清除现有 Studio，再重新讨论 WebRPA 迁入。旧实现现已退出当前源码，仅保留独立空窗口；本文相关实现状态/迁入步骤留作历史，不在本轮执行。以[清除记录](../migration/studio-removal.md)为准。
+> 2026-09-13 Studio 补充：旧实现已清除，仅保留[独立空窗口](../migration/studio-removal.md)。Electron/React/sidecar、领域目录、IO 分层和工程门槛继续适用。用户现要求保留 WebRPA 原 UI/交互/执行语义；本文有关自定义 Workflow IR、重新定义行为，以及坐标一律不进入执行的旧 Studio 取舍已被该方向替代，具体迁入安排见[修订设计（proposed，未实现）](../superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)。必要组几何有业务含义，不包括 React Flow 选中/拖拽等瞬态。
 
 - 状态：已批准，2026-09-11 用户确认架构规格
 - 日期：2026-09-11

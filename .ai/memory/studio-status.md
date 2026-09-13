@@ -1,10 +1,12 @@
 # Studio 当前状态
 
-- 日期：2026-09-13；状态：confirmed；来源：用户“先把现有代码都清除，然后再思考 WebRPA 迁入”及对应源码清理。
-- 旧 Studio 前后端已清除，仅保留总览菜单和正式独立空窗口；不再有编辑、保存、执行、Debug、录制或拾取功能。
-- 本轮不实施此前提出的 WebRPA 迁入架构，也不预置新的模型/API/执行器。下一步先重新讨论迁入。
-- 主应用和其他领域保留；通用浏览器管理、进程清理和工作区继续可用。
+- 日期：2026-09-13；状态：源码清除及用户迁入方向 confirmed，具体迁入安排 proposed。
+- 旧 Studio 前后端已在 `25273d5` 清除，仅保留总览菜单和正式独立空窗口；当前没有编辑、保存、执行、Debug、录制或拾取功能。
+- 用户现在要求制定 WebRPA 迁入方式，明确架构、技术栈和开发习惯贴合 AutoFlow。本轮只更新设计/计划；没有新增业务源码、API、依赖或数据库迁移。
+- 产品以冻结 WebRPA 原 UI/交互/执行语义为准，按 AutoFlow 领域目录、分层、共享 API/OpenAPI、工作区存储、Profile 和进程监管落位。具体设计见[规格](../../docs/superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)与[实施安排](../../docs/superpowers/plans/2026-09-13-studio-webrpa-source-migration-implementation.md)。
+- 原“整块 webrpa 目录 + 默认 Socket.IO”建议已 superseded；新方案保留原编辑算法/专用控件，使用领域 Store 和 HTTP/SSE 适配。原组几何存在执行语义，不能当作纯显示字段删除。
+- 主应用和其他领域保留；通用浏览器管理、进程清理和工作区继续可用。旧 Studio 的草稿离开握手和连接权限已删除，迁入时需要重新接入。
 - 旧代码归档 `codex/studio-before-removal-20260913@4eda207`，M6 未完成试验归档 `codex/m6-unfinished-checkpoint-20260913@59ae8d4`。
 - 0005–0008 历史 Alembic 迁移及旧数据库/产物数据保留；没有旧业务兼容执行器。
-- 本文优先于历史 project-context 中有关 WebRPA 重写方式、M1–M6 能力和实施状态的描述。迁入目标仍为原 UI/交互/业务逻辑复刻，具体实施尚未启动。
-- [清除记录](../../docs/migration/studio-removal.md)包含验证与平台边界。
+- 本文优先于历史 project-context 中有关 WebRPA 重写方式、M1–M6 能力和实施状态的描述。迁入尚未开始；架构判断高置信，受管共享会话中置信，必须早期真实验证。
+- [清除记录](../../docs/migration/studio-removal.md)包含已完成清除的验证与平台边界，不是新迁入的验收结果。
