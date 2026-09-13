@@ -14,6 +14,7 @@ from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.project_data import project_data_router
+from autoflow.adapters.http.project_data_deletions import project_data_deletion_router
 from autoflow.adapters.http.project_data_impacts import project_data_impact_router
 from autoflow.adapters.http.project_data_records import project_records_router
 from autoflow.adapters.http.projects import projects_router
@@ -25,6 +26,7 @@ from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.project_data.catalog import DataCatalogService
+from autoflow.application.project_data.deletions import DataDeletionService
 from autoflow.application.project_data.queries import DataRecordQueryService
 from autoflow.application.project_data.records import DataRecordService
 from autoflow.application.project_data.tables import DataTableService
@@ -57,6 +59,9 @@ from autoflow.infrastructure.database.profiles import profile_repository_transac
 from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_catalog import (
     SqlAlchemyProjectDataCatalog,
+)
+from autoflow.infrastructure.database.project_data_deletions import (
+    SqlAlchemyProjectDataDeletions,
 )
 from autoflow.infrastructure.database.project_data_queries import (
     SqlAlchemyProjectDataQueries,
@@ -106,7 +111,15 @@ def create_app(
     model_gateway: ModelGateway | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
-    for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
+    for directory in (
+        paths.database.parent,
+        paths.logs,
+        paths.workspace,
+        paths.cache,
+        paths.temp,
+        paths.profiles,
+        paths.kernels,
+    ):
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
@@ -127,7 +140,9 @@ def create_app(
         installations.retry_pending()
     kernel_service = kernel_service or KernelService(
         catalog_provider,
-        CloakBrowserLicenseProvider(license_store, kernel_worker_manager.validate_license),
+        CloakBrowserLicenseProvider(
+            license_store, kernel_worker_manager.validate_license
+        ),
         license_store,
         SqlAlchemyDefaultKernelRepository(session_factory),
         installations,
@@ -137,7 +152,9 @@ def create_app(
     proxy_options = SqlAlchemyProxyOptions(session_factory)
     data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
     usage_guard = profile_usage_guard or FilesystemProfileUsageGuard(paths.profiles)
-    data_store.retry_pending(lambda profile_id: _profile_exists(transaction, profile_id))
+    data_store.retry_pending(
+        lambda profile_id: _profile_exists(transaction, profile_id)
+    )
     profile_service = ProfileService(
         transaction,
         installed_kernel_lookup or catalog_provider,
@@ -179,7 +196,11 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
-            *(["kernel_process_active"] if kernel_worker_manager.active_processes() else []),
+            *(
+                ["kernel_process_active"]
+                if kernel_worker_manager.active_processes()
+                else []
+            ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
         ],
         quiesce_gate,
@@ -213,7 +234,11 @@ def create_app(
                 session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
-    app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
+    app.include_router(
+        health_router(
+            api_version=settings.api_version, instance_id=settings.instance_id
+        )
+    )
     app.include_router(
         profiles_router(
             profile_service, read_profile_environment_options, profile_test_browser
@@ -224,12 +249,29 @@ def create_app(
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(settings_dashboard_router(settings_runtime))
-    app.include_router(workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory))))
-    app.include_router(projects_router(ProjectService(SqlAlchemyProjects(session_factory))))
-    app.include_router(project_records_router(DataRecordService(SqlAlchemyProjectDataRecords(session_factory)), DataRecordQueryService(SqlAlchemyProjectDataQueries(session_factory))))
+    app.include_router(
+        workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory)))
+    )
+    app.include_router(
+        projects_router(ProjectService(SqlAlchemyProjects(session_factory)))
+    )
+    app.include_router(
+        project_records_router(
+            DataRecordService(SqlAlchemyProjectDataRecords(session_factory)),
+            DataRecordQueryService(SqlAlchemyProjectDataQueries(session_factory)),
+        )
+    )
     data_catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory))
-    app.include_router(project_data_router(DataTableService(SqlAlchemyProjectData(session_factory)), data_catalog))
-    app.include_router(project_data_impact_router(data_catalog))
+    data_deletions = DataDeletionService(
+        SqlAlchemyProjectDataDeletions(session_factory)
+    )
+    app.include_router(
+        project_data_router(
+            DataTableService(SqlAlchemyProjectData(session_factory)), data_catalog
+        )
+    )
+    app.include_router(project_data_impact_router(data_catalog, data_deletions))
+    app.include_router(project_data_deletion_router(data_deletions))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )
@@ -249,15 +291,15 @@ def create_app(
                     headers={"Cache-Control": "no-store"},
                 )
         if request.url.path.startswith("/api/v1/") and (
-            settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
+            settings.instance_token is None
+            or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
-            return error_response(401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接")
-        guarded_get = (
-            request.method == "GET"
-            and (
-                request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
-                or request.url.path.endswith("/models/discover")
+            return error_response(
+                401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接"
             )
+        guarded_get = request.method == "GET" and (
+            request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
+            or request.url.path.endswith("/models/discover")
         )
         guarded_request = request.url.path.startswith("/api/v1/") and (
             request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get

@@ -1207,7 +1207,8 @@ export type paths = {
         get: operations["get_api_v1_projects__projectId__tables__tableId__records__recordKey__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Record */
+        delete: operations["delete_record_api_v1_projects__projectId__tables__tableId__records__recordKey__delete"];
         options?: never;
         head?: never;
         /** Update */
@@ -1313,7 +1314,8 @@ export type paths = {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Status */
+        delete: operations["delete_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__delete"];
         options?: never;
         head?: never;
         /** Update Status */
@@ -1733,7 +1735,7 @@ export type components = {
             /** Code */
             code: string;
             /** Resource */
-            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
             /** State */
             state: string;
             /** Message */
@@ -1744,7 +1746,7 @@ export type components = {
             /** Code */
             code: string;
             /** Resource */
-            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
             /** Message */
             message: string;
             /** Blocking */
@@ -1987,6 +1989,28 @@ export type components = {
             expectedRevision: number;
             kernel: components["schemas"]["KernelRefRead"] | null;
         };
+        /** DeletionImpactReport */
+        DeletionImpactReport: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Target */
+            target: components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            /** Changedigest */
+            changeDigest: string;
+            /** Expectedrevisions */
+            expectedRevisions: {
+                [key: string]: number;
+            };
+            /** Impacts */
+            impacts: components["schemas"]["DataMutationImpact"][];
+            /** Blockers */
+            blockers: components["schemas"]["DataMutationBlocker"][];
+            /**
+             * Calculatedat
+             * Format: date-time
+             */
+            calculatedAt: string;
+        };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
         /** Endpoint */
@@ -2036,8 +2060,8 @@ export type components = {
         /** FieldImpactRequest */
         FieldImpactRequest: {
             /**
-             * Action
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             action: "updateField";
             target: components["schemas"]["FieldResourceLocator"];
@@ -2650,6 +2674,10 @@ export type components = {
              */
             mode: "none";
         };
+        /** OperationAccepted */
+        OperationAccepted: {
+            operation: components["schemas"]["ProjectOperationView"];
+        };
         /** OperationView */
         OperationView: {
             /** Id */
@@ -3011,7 +3039,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus";
+            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord";
             /**
              * Status
              * @constant
@@ -3022,7 +3050,7 @@ export type components = {
             /** Resource */
             resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["DataRecordView"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["RecordDeleteResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -3234,6 +3262,42 @@ export type components = {
             /** Capabilities */
             capabilities?: components["schemas"]["Capability"][];
         };
+        /** RecordDelete */
+        RecordDelete: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /**
+             * Recordkeytype
+             * @enum {string}
+             */
+            recordKeyType: "text" | "integer" | "uuid";
+            /** Expectedcontentrevision */
+            expectedContentRevision: number;
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+            /** Expectedlinkrevision */
+            expectedLinkRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
+        };
+        /** RecordDeleteImpactRequest */
+        RecordDeleteImpactRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "deleteRecord";
+            target: components["schemas"]["RecordResourceLocator"];
+        };
+        /** RecordDeleteResult */
+        RecordDeleteResult: {
+            target: components["schemas"]["RecordResourceLocator"];
+            /**
+             * Deleted
+             * @constant
+             */
+            deleted: true;
+        };
         /** RecordResourceLocator */
         RecordResourceLocator: {
             /**
@@ -3349,6 +3413,41 @@ export type components = {
              * @enum {string}
              */
             mode: "sourceDefault";
+        };
+        /** StatusDelete */
+        StatusDelete: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
+        };
+        /** StatusDeleteImpactRequest */
+        StatusDeleteImpactRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "deleteStatus";
+            target: components["schemas"]["StatusResourceLocator"];
+        };
+        /** StatusDeleteResult */
+        StatusDeleteResult: {
+            /**
+             * Action
+             * @constant
+             */
+            action: "delete";
+            /** Statusid */
+            statusId: string;
+            /**
+             * Deleted
+             * @constant
+             */
+            deleted: true;
+            /** Tablerevision */
+            tableRevision: number;
         };
         /** StatusMutationResult */
         StatusMutationResult: {
@@ -7932,7 +8031,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus") | null;
+                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
                 resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
             };
@@ -8351,6 +8450,99 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    delete_record_api_v1_projects__projectId__tables__tableId__records__recordKey__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9082,6 +9274,99 @@ export interface operations {
             };
         };
     };
+    delete_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+                statusId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     update_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__patch: {
         parameters: {
             query?: never;
@@ -9261,7 +9546,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FieldImpactRequest"];
+                "application/json": components["schemas"]["FieldImpactRequest"] | components["schemas"]["StatusDeleteImpactRequest"] | components["schemas"]["RecordDeleteImpactRequest"];
             };
         };
         responses: {
@@ -9271,7 +9556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FieldImpactReport"];
+                    "application/json": components["schemas"]["FieldImpactReport"] | components["schemas"]["DeletionImpactReport"];
                 };
             };
             /** @description Unauthorized */

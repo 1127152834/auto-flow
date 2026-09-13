@@ -9,6 +9,7 @@ from .project_data_catalog_schemas import (
     StatusMutationResult,
     StatusResourceLocator,
 )
+from .project_data_deletion_schemas import RecordDeleteResult, StatusDeleteResult
 from .project_data_record_schemas import DataRecordView, RecordResourceLocator
 from .project_data_schemas import DataTableView, TableResourceLocator
 from .schemas import ApiModel
@@ -93,11 +94,38 @@ class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
     idempotency_key: str
-    kind: Literal["createProject", "updateProject", "createTable", "updateTable", "mutateField", "mutateStatus", "createRecord", "updateRecord", "setRecordStatus"]
+    kind: Literal[
+        "createProject",
+        "updateProject",
+        "createTable",
+        "updateTable",
+        "mutateField",
+        "mutateStatus",
+        "createRecord",
+        "updateRecord",
+        "setRecordStatus",
+        "deleteRecord",
+    ]
     status: Literal["succeeded"]
     status_revision: int
-    resource: Annotated[ProjectResourceLocator | TableResourceLocator | FieldResourceLocator | StatusResourceLocator | RecordResourceLocator, Field(discriminator="type")]
-    result: ProjectView | DataTableView | FieldMutationResult | StatusMutationResult | DataRecordView | None
+    resource: Annotated[
+        ProjectResourceLocator
+        | TableResourceLocator
+        | FieldResourceLocator
+        | StatusResourceLocator
+        | RecordResourceLocator,
+        Field(discriminator="type"),
+    ]
+    result: (
+        ProjectView
+        | DataTableView
+        | FieldMutationResult
+        | StatusMutationResult
+        | StatusDeleteResult
+        | DataRecordView
+        | RecordDeleteResult
+        | None
+    )
     error: dict[str, Any] | None
     created_at: datetime
     updated_at: datetime
@@ -110,6 +138,10 @@ class ProjectOperationPage(ApiModel):
     page_size: int
     total: int
     sort: str
+
+
+class OperationAccepted(ApiModel):
+    operation: ProjectOperationView
 
 
 class ProjectOpenResult(ApiModel):

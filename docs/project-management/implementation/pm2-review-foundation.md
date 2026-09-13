@@ -152,3 +152,11 @@ A2g2：状态/记录删除预检绑定完整身份、当前代次、项目生命
 - 状态/记录引用扫描使用必要列投影、yield_per=500、流式计数与摘要，最多20条详情；601行独立探针由601次整行ORM载入/19,693,568个无关业务字符降至0/0。
 - 当前47项删除/catalog/record/query集成通过；Ruff、mypy及独立规格/工程审查通过。过期、跨作用域、旧代次、并发、原key回放、当前引用变化和事务故障均有覆盖。
 - Task/Sheets/automation引用提供方尚未实现，后续接入必须扩展实际检查；此包不证明这些跨模块能力通过。HTTP单独审查。
+
+## A2g3 删除 HTTP 与生成类型（2026-09-13）
+
+新增状态/记录DELETE，复用统一mutation-impact中的三个action分支、同一个删除服务和项目Operation查询。202的operation是实际已提交succeeded结果，不把接受当成未执行任务；原字段预检分支保留。最新generated由真实handler统一生成。
+
+- 22项相关HTTP测试通过；矩阵新增deleteRecord操作kind过滤曾422，修正真实查询枚举后通过。覆盖strict payload、typed identity、scope/auth、引用blocker、影响变化、CAS、归档和quiesce。
+- 独立规格/工程审查通过；额外TestClient探针覆盖9种畸形typed key、5种action错误、4种编码路径错误、六必填、安全整数、精确result/Operation查询及墓碑/归档后的原key重放。7源码mypy、Ruff通过，生成类型只读核对通过。
+- 全量后端首次713通过/6失败，失败均为其他迁移回归仍断言旧head。已仅更新两测试文件的head/最终version期望为pm02_status_tombstones，保留旧资源内容与FK检查；该6项重新通过。全量重新核验单独记最终报告。
