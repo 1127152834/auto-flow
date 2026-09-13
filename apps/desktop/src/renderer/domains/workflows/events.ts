@@ -1,4 +1,6 @@
-import { inputPromptApi } from './api'
+import { inputPromptApi, jsScriptApi } from './api'
+import type { components } from '../../shared/api/generated'
+import { runJsScript } from './lib/runJsScript'
 import type { InputPromptRequest } from './types/workflow'
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
 import { StudioEventClient as Socket } from './api/event-client'
@@ -124,13 +126,6 @@ class SocketService {
     }
   }
 
-  // 发送JS脚本执行结果
-  sendJsScriptResult(requestId: string, success: boolean, result?: unknown, error?: string, variables?: Record<string, unknown>) {
-    if (this.socket?.connected) {
-      this.socket.emit('js_script_result', { requestId, success, result, error, variables })
-    }
-  }
-
   // 发送音乐播放结果
   sendPlayMusicResult(requestId: string, success: boolean, error?: string) {
     if (this.socket?.connected) {
@@ -191,39 +186,79 @@ class SocketService {
     }
   }
 
-  // 执行JS脚本
-  private executeJsScript(data: {
-    requestId: string
-    code: string
-    variables: Record<string, unknown>
-  }) {
-    try {
-      // 创建一个可修改的 vars 对象副本
-      const vars = { ...data.variables }
-      
-      // 创建一个包含用户代码的函数
-      // 用户代码中应该定义 main(vars) 函数
-      const wrappedCode = `
-        ${data.code}
-        
-        // 调用 main 函数并返回结果
-        if (typeof main === 'function') {
-          return main(vars);
-        } else {
-          throw new Error('未找到 main 函数，请确保代码中定义了 main(vars) 函数');
-        }
-      `
-      
-      // 使用 Function 构造器创建函数，传入 vars 参数
+  private jsRequests = new Map<string, { fingerprint: string; controller: AbortController; workflowId: string }>()
 
-      const fn = new Function('vars', wrappedCode)
-      const result = fn(vars)
-      
-      // 返回结果和修改后的变量对象
-      this.sendJsScriptResult(data.requestId, true, result, undefined, vars)
+  private cancelJsScripts(workflowId?: string) {
+    for (const [id, request] of this.jsRequests) {
+      if (!workflowId || request.workflowId === workflowId) { request.controller.abort(); this.jsRequests.delete(id) }
+    }
+  }
+
+  private waitJsRetry(signal: AbortSignal) {
+    return new Promise<void>(resolve => {
+      const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve() }
+      const timer = setTimeout(done, 1000)
+      signal.addEventListener('abort', done, { once: true })
+      if (signal.aborted) done()
+    })
+  }
+
+  private async confirmJsCommand(socket: Socket, event: string, data: unknown, signal: AbortSignal) {
+    const commandId = crypto.randomUUID()
+    let receipt = await socket.command(event, data, commandId)
+    while (!signal.aborted && receipt.status === 'unconfirmed') {
+      await this.waitJsRetry(signal)
+      if (signal.aborted) break
+      try {
+        const confirmed = await socket.queryCommand(commandId)
+        receipt = { ...confirmed, success: confirmed.success && confirmed.httpStatus < 400 }
+      } catch { /* Keep querying the original identity; never resubmit a script action. */ }
+    }
+    return receipt
+  }
+
+  // Claim before executing: replay and other Studio windows cannot perform the script twice.
+  private async executeJsScript(data: components['schemas']['StudioJsScriptRequest']) {
+    const socket = this.socket
+    if (!socket || !data || typeof data !== 'object' || Array.isArray(data) || typeof data.requestId !== 'string' || !data.requestId || typeof data.workflowId !== 'string'
+      || !data.workflowId.trim() || typeof data.nodeId !== 'string' || !data.nodeId.trim() || typeof data.code !== 'string' || !data.code.trim() || !data.variables || typeof data.variables !== 'object' || Array.isArray(data.variables)) {
+      useWorkflowStore.getState().addLog({level:'error',message:'脚本请求缺少有效身份或参数，未执行'})
+      return
+    }
+    const fingerprint = JSON.stringify(data)
+    const previous = this.jsRequests.get(data.requestId)
+    if (previous) {
+      if (previous.fingerprint !== fingerprint) useWorkflowStore.getState().addLog({ level: 'error', message: '脚本请求标识冲突，未重新执行' })
+      return
+    }
+    const controller = new AbortController()
+    this.jsRequests.set(data.requestId, { fingerprint, controller, workflowId: data.workflowId })
+    const isCurrent = () => !controller.signal.aborted && this.socket === socket
+    try {
+      let state = await jsScriptApi.getState(data.requestId)
+      let warned = false
+      while (isCurrent() && !state.success && (!state.httpStatus || state.httpStatus >= 500)) {
+        if (!warned) { useWorkflowStore.getState().addLog({level:'warning',message:'暂时无法确认脚本请求，连接恢复后查询原请求；尚未执行脚本'}); warned = true }
+        await this.waitJsRetry(controller.signal)
+        if (!isCurrent()) return
+        state = await jsScriptApi.getState(data.requestId)
+      }
+      if (!isCurrent()) return
+      if (!state.success || !state.data) throw new Error(state.error || '无法确认脚本请求')
+      if (state.data.workflowId !== data.workflowId || state.data.nodeId !== data.nodeId) throw new Error('脚本请求目标不匹配')
+      if (['completed', 'failed', 'expired'].includes(state.data.status)) return
+      if (state.data.status !== 'pending') throw new Error('脚本已被领取，无法安全重放；请停止本次运行')
+      const claimId = crypto.randomUUID()
+      const claim = await this.confirmJsCommand(socket, 'js_script_claim', { requestId: data.requestId, claimId }, controller.signal)
+      if (!isCurrent()) return
+      if (!claim.success) throw new Error('脚本领取尚未确认，未执行脚本')
+      const result = await runJsScript(data.code, data.variables, controller.signal)
+      if (!isCurrent()) return
+      const receipt = await this.confirmJsCommand(socket, 'js_script_result', { ...result, requestId: data.requestId, claimId }, controller.signal)
+      if (!isCurrent()) return
+      if (!receipt.success) throw new Error('脚本结果尚未确认；保留原命令记录，不重新执行脚本')
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      this.sendJsScriptResult(data.requestId, false, undefined, errorMessage)
+      if (isCurrent()) useWorkflowStore.getState().addLog({ level: 'error', message: `脚本交互失败: ${error instanceof Error ? error.message : String(error)}` })
     }
   }
 
@@ -477,12 +512,8 @@ class SocketService {
     })
 
     // JS脚本执行请求
-    this.socket.on('execution:js_script', (data: {
-      requestId: string
-      code: string
-      variables: Record<string, unknown>
-    }) => {
-      this.executeJsScript(data)
+    this.socket.on('execution:js_script', (data: components['schemas']['StudioJsScriptRequest']) => {
+      void this.executeJsScript(data)
     })
 
     // 播放音乐请求
@@ -525,6 +556,7 @@ class SocketService {
       collectedData?: Record<string, unknown>[]
       healedSelectors?: { nodeId?: string; configKey?: string; oldSelector?: string; newSelector?: string }[]
     }) => {
+      this.cancelJsScripts(data.workflowId)
       console.log('[Socket] 收到 execution:completed 事件 - 后端执行完成！', data)
       if (this.pendingInputPrompt?.workflowId === data.workflowId && data.result.status !== 'completed') {
         this.inputPromptSequence++
@@ -617,6 +649,7 @@ class SocketService {
 
     // 执行停止
     this.socket.on('execution:stopped', (data: { workflowId: string }) => {
+      this.cancelJsScripts(data.workflowId)
       if (!belongsToCurrentExecution(data.workflowId)) return
       isExecuting = false  // 停止接收实时数据行
       useDebugStore.getState().clearPaused()
@@ -674,6 +707,8 @@ class SocketService {
   }
 
   disconnect() {
+    this.cancelJsScripts()
+    this.jsRequests.clear()
     this.inputPromptSequence++
     clearTimeout(this.inputPromptRetry)
     this.pendingInputPrompt = null

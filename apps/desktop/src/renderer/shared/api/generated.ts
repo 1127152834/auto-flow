@@ -2336,6 +2336,7 @@ export type components = {
             /** Height */
             height: number;
         };
+        JsonValue: unknown;
         /** StudioBrowserStatus */
         StudioBrowserStatus: {
             /** Isopen */
@@ -2497,6 +2498,70 @@ export type components = {
              * @enum {string}
              */
             status: "pending" | "answered" | "cancelled" | "expired";
+        };
+        /** StudioJsScriptClaim */
+        StudioJsScriptClaim: {
+            /** Requestid */
+            requestId: string;
+            /** Claimid */
+            claimId: string;
+        };
+        /** StudioJsScriptRequest */
+        StudioJsScriptRequest: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /** Code */
+            code: string;
+            /** Variables */
+            variables: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** StudioJsScriptResult */
+        StudioJsScriptResult: {
+            /** Requestid */
+            requestId: string;
+            /** Claimid */
+            claimId: string;
+            /** Success */
+            success: boolean;
+            /** @default null */
+            result: components["schemas"]["JsonValue"];
+            /**
+             * Variables
+             * @default null
+             */
+            variables: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
+        };
+        /** StudioJsScriptState */
+        StudioJsScriptState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "claimed" | "completed" | "failed" | "expired";
+            /**
+             * Claimid
+             * @default null
+             */
+            claimId: string | null;
         };
         /** StudioSelectorAttempt */
         StudioSelectorAttempt: {

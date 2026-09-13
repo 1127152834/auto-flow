@@ -25018,5 +25018,1107 @@
     "level": "browser E2E / Mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-service-recovery/browser-ui.md"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-success",
+    "capability": "领取幂等与变量同步",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "领取幂等与变量同步",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-invalid",
+    "capability": "错误身份与格式拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "错误身份与格式拒绝",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-failure",
+    "capability": "脚本失败停止后续",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "脚本失败停止后续",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-stop",
+    "capability": "停止后迟到结果拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "停止后迟到结果拒绝",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-large",
+    "capability": "大于64KiB结果完整",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "大于64KiB结果完整",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-memory-query",
+    "capability": "状态查询404与405",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "状态查询404与405",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-normal",
+    "capability": "完整脚本消费",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "完整脚本消费",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-claim-loss",
+    "capability": "领取响应丢失",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "领取响应丢失",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-result-loss",
+    "capability": "结果响应丢失",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "结果响应丢失",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-state-loss",
+    "capability": "状态读取失败后恢复",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "状态读取失败后恢复",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-stop",
+    "capability": "停止终止Worker",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "停止终止Worker",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-malformed",
+    "capability": "畸形事件拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "畸形事件拒绝",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-memory-other-owner",
+    "capability": "其它页面已领取不重放",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "其它页面已领取不重放",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-success",
+    "capability": "领取幂等与变量同步",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "领取幂等与变量同步",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-invalid",
+    "capability": "错误身份与格式拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "错误身份与格式拒绝",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-failure",
+    "capability": "脚本失败停止后续",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "脚本失败停止后续",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-stop",
+    "capability": "停止后迟到结果拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "停止后迟到结果拒绝",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-large",
+    "capability": "大于64KiB结果完整",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "大于64KiB结果完整",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.protocol-http-query",
+    "capability": "状态查询404与405",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "状态查询404与405",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-normal",
+    "capability": "完整脚本消费",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "完整脚本消费",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-claim-loss",
+    "capability": "领取响应丢失",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "领取响应丢失",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-result-loss",
+    "capability": "结果响应丢失",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "结果响应丢失",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-state-loss",
+    "capability": "状态读取失败后恢复",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "状态读取失败后恢复",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-stop",
+    "capability": "停止终止Worker",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "停止终止Worker",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-malformed",
+    "capability": "畸形事件拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "畸形事件拒绝",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.delivery-http-other-owner",
+    "capability": "其它页面已领取不重放",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "其它页面已领取不重放",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-success",
+    "capability": "结果与变量深副本",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "结果与变量深副本",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-undefined",
+    "capability": "undefined返回为null",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "undefined返回为null",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-absent",
+    "capability": "无返回为null",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "无返回为null",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-1",
+    "capability": "非JSON输出分支1",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支1",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-2",
+    "capability": "非JSON输出分支2",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支2",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-3",
+    "capability": "非JSON输出分支3",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支3",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-4",
+    "capability": "非JSON输出分支4",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支4",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-5",
+    "capability": "非JSON输出分支5",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支5",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-6",
+    "capability": "非JSON输出分支6",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支6",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-7",
+    "capability": "非JSON输出分支7",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支7",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-8",
+    "capability": "非JSON输出分支8",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支8",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-9",
+    "capability": "非JSON输出分支9",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支9",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-10",
+    "capability": "非JSON输出分支10",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支10",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-non-json-11",
+    "capability": "非JSON输出分支11",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "非JSON输出分支11",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-async",
+    "capability": "async返回拒绝",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "async返回拒绝",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-promise",
+    "capability": "Promise拒绝且处理拒绝异常",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "Promise拒绝且处理拒绝异常",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-missing-main",
+    "capability": "缺main报错",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "缺main报错",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-syntax",
+    "capability": "语法报错",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "语法报错",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.value-throw",
+    "capability": "业务异常报错",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "业务异常报错",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-values.test.ts"
+  },
+  {
+    "id": "F3.js-script.worker-result",
+    "capability": "Worker结果及清理",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "Worker结果及清理",
+    "level": "lifecycle",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-worker.test.ts"
+  },
+  {
+    "id": "F3.js-script.worker-stop",
+    "capability": "即时取消清理",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "即时取消清理",
+    "level": "lifecycle",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-worker.test.ts"
+  },
+  {
+    "id": "F3.js-script.worker-timeout",
+    "capability": "30秒超时清理",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "30秒超时清理",
+    "level": "lifecycle",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-worker.test.ts"
+  },
+  {
+    "id": "F3.js-script.worker-error",
+    "capability": "Worker错误清理",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "Worker错误清理",
+    "level": "lifecycle",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-worker.test.ts"
+  },
+  {
+    "id": "F3.js-script.worker-pre-abort",
+    "capability": "预先取消不创建Worker",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "预先取消不创建Worker",
+    "level": "lifecycle",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-script-worker.test.ts"
+  },
+  {
+    "id": "F3.js-script.editor-result",
+    "capability": "编辑器测试与原变量隔离",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "编辑器测试与原变量隔离",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-editor-execution.test.tsx"
+  },
+  {
+    "id": "F3.js-script.editor-edit",
+    "capability": "修改代码取消旧测试",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "修改代码取消旧测试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-editor-execution.test.tsx"
+  },
+  {
+    "id": "F3.js-script.editor-close",
+    "capability": "关闭取消旧测试",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "关闭取消旧测试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-editor-execution.test.tsx"
+  },
+  {
+    "id": "F3.js-script.editor-unmount",
+    "capability": "卸载取消旧测试",
+    "preconditions": {
+      "source": "同步main(vars)",
+      "request": "独立js-run/js-delivery及稳定requestId/claimId/commandId；细节见命名用例",
+      "variables": "显式初值或未产生输出占位"
+    },
+    "steps": [
+      "执行同名用例的输入、事件、HTTP命令或组件按钮",
+      "核对执行次数、变量、确认状态或清理"
+    ],
+    "expectedUI": "组件与浏览器显示真实错误/结果；纯协议与规则测试不挂载UI",
+    "expectedIO": "复用events命令及js-requests查询；禁止响应丢失后新ID重做",
+    "stateAssertion": "卸载取消旧测试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-editor-execution.test.tsx"
+  },
+  {
+    "id": "F3.js-script.browser-editor",
+    "capability": "编辑器真实计算6",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "document": "F3 脚本回传验收"
+    },
+    "steps": [
+      "通过模块库和代码编辑器建立计算脚本",
+      "保存重开或临时测试对应代码",
+      "核对结果、取消或变量追踪"
+    ],
+    "expectedUI": "编辑器真实计算6",
+    "expectedIO": "实际Worker计算；Mock服务领取与回传",
+    "stateAssertion": "原草稿初值不被运行输出覆盖；脚本只按确认请求执行",
+    "level": "browser E2E / Mock coordination",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-js-script/browser-ui.md"
+  },
+  {
+    "id": "F3.js-script.browser-dom",
+    "capability": "实际Worker无DOM",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "document": "F3 脚本回传验收"
+    },
+    "steps": [
+      "通过模块库和代码编辑器建立计算脚本",
+      "保存重开或临时测试对应代码",
+      "核对结果、取消或变量追踪"
+    ],
+    "expectedUI": "实际Worker无DOM",
+    "expectedIO": "实际Worker计算；Mock服务领取与回传",
+    "stateAssertion": "原草稿初值不被运行输出覆盖；脚本只按确认请求执行",
+    "level": "browser E2E / Mock coordination",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-js-script/browser-ui.md"
+  },
+  {
+    "id": "F3.js-script.browser-cancel",
+    "capability": "无限循环测试可关闭",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "document": "F3 脚本回传验收"
+    },
+    "steps": [
+      "通过模块库和代码编辑器建立计算脚本",
+      "保存重开或临时测试对应代码",
+      "核对结果、取消或变量追踪"
+    ],
+    "expectedUI": "无限循环测试可关闭",
+    "expectedIO": "实际Worker计算；Mock服务领取与回传",
+    "stateAssertion": "原草稿初值不被运行输出覆盖；脚本只按确认请求执行",
+    "level": "browser E2E / Mock coordination",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-js-script/browser-ui.md"
+  },
+  {
+    "id": "F3.js-script.browser-saved-run",
+    "capability": "保存重开运行及变量追踪",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "document": "F3 脚本回传验收"
+    },
+    "steps": [
+      "通过模块库和代码编辑器建立计算脚本",
+      "保存重开或临时测试对应代码",
+      "核对结果、取消或变量追踪"
+    ],
+    "expectedUI": "保存重开运行及变量追踪",
+    "expectedIO": "实际Worker计算；Mock服务领取与回传",
+    "stateAssertion": "原草稿初值不被运行输出覆盖；脚本只按确认请求执行",
+    "level": "browser E2E / Mock coordination",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-js-script/browser-ui.md"
   }
 ]

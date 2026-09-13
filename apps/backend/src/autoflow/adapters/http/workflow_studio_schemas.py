@@ -2,7 +2,7 @@
 
 from typing import Any, Literal, Self
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, JsonValue, model_validator
 
 from .schemas import ApiModel
 
@@ -183,3 +183,49 @@ class StudioBrowserStatus(ApiModel):
 
     is_open: bool
     picker_active: bool
+
+
+class StudioJsScriptRequest(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    node_id: str = Field(min_length=1, pattern=r"\S")
+    code: str = Field(min_length=1, pattern=r"\S")
+    variables: dict[str, JsonValue]
+
+
+class StudioJsScriptState(ApiModel):
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    node_id: str = Field(min_length=1, pattern=r"\S")
+    status: Literal["pending", "claimed", "completed", "failed", "expired"]
+    claim_id: str | None = None
+
+    @model_validator(mode="after")
+    def validate_claim(self) -> Self:
+        if self.status == "claimed" and not (self.claim_id and self.claim_id.strip()):
+            raise ValueError("已领取请求必须包含领取标识")
+        return self
+
+
+class StudioJsScriptClaim(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    claim_id: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioJsScriptResult(StudioJsScriptClaim):
+    success: bool = Field(strict=True)
+    result: JsonValue = None
+    variables: dict[str, JsonValue] | None = None
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> Self:
+        if self.success and self.variables is None:
+            raise ValueError("成功结果必须包含变量对象")
+        if not self.success and not (self.error and self.error.strip()):
+            raise ValueError("失败结果必须包含错误")
+        return self

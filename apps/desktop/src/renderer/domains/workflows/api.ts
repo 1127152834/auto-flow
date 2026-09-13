@@ -617,3 +617,17 @@ export const featurePackApi = {
 export const inputPromptApi = {
   getState: (requestId: string) => apiRequest<components['schemas']['StudioInputPromptState']>(`/events/input-prompts/${encodeURIComponent(requestId)}`),
 }
+
+export const jsScriptApi = {
+  getState: async (requestId: string) => {
+    const result = await apiRequest<components['schemas']['StudioJsScriptState']>(`/events/js-requests/${encodeURIComponent(requestId)}`)
+    if (!result.success) return result
+    const state = result.data
+    if (!state || state.requestId !== requestId || typeof state.workflowId !== 'string' || !state.workflowId
+      || typeof state.nodeId !== 'string' || !state.nodeId || !['pending','claimed','completed','failed','expired'].includes(state.status)
+      || (state.status === 'claimed' && (typeof state.claimId !== 'string' || !state.claimId))) {
+      return { success: false, httpStatus: 200, error: '脚本请求状态无效，未执行脚本' }
+    }
+    return result
+  },
+}

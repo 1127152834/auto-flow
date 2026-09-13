@@ -131,3 +131,7 @@ F0仍需完整字段/动态工具依赖核对；F1仍需全部操作schema和独
 ## 相似元素服务闭环增量
 
 已打通显式Mock相似元素审查、索引命名、整批应用/撤销/重做和保存重开，响应使用生成schema并有运行时检查。见similar-picker-validation.md。前端全量142文件1715项、后端502项、工程检查通过，仍不计真实网页识别或正式Electron验收。
+
+## 2026-09-14：脚本回传与连接恢复补齐
+
+浏览器状态严格校验与停止期间迟到结果失效见browser-status-validation.md；快捷键/拾取错误及连接恢复见service-recovery-validation.md（146文件1749项全量通过）。JavaScript领取、Worker、回传、取消及变量追踪见js-script-validation.md（151文件1799项全量通过，后增边界用例另记专项结果）。真实浏览器发现并修复横幅残留、无初值占位与诊断记录缺失。F0–F6仍未整体完成，Mock及平台边界保持原标注。

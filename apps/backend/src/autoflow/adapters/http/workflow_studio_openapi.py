@@ -24,6 +24,10 @@ STUDIO_SCHEMAS = (
     schemas.StudioSelectorTestResult,
     schemas.StudioSimilarPickerResult,
     schemas.StudioBrowserStatus,
+    schemas.StudioJsScriptRequest,
+    schemas.StudioJsScriptState,
+    schemas.StudioJsScriptClaim,
+    schemas.StudioJsScriptResult,
 )
 
 

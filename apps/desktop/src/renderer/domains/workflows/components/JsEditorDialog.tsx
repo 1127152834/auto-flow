@@ -8,6 +8,7 @@ import { X, Play, RotateCcw, Copy, Check, Loader2 } from 'lucide-react'
 import { Button } from './controls/button'
 import { useWorkflowStore } from '../editor-store'
 import { AICodeAssistant } from './AICodeAssistant'
+import { runJsScript } from '../lib/runJsScript'
 
 // 预加载 Monaco Editor（只加载一次）
 let monacoPreloaded = false
@@ -55,6 +56,8 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
   const [currentCode, setCurrentCode] = useState(code || DEFAULT_CODE)
   const [testResult, setTestResult] = useState<{ success: boolean; result?: string; error?: string } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const testController = useRef<AbortController | null>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   
@@ -68,6 +71,19 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
       setTestResult(null)
     }
   }, [isOpen, code])
+
+  useEffect(() => {
+    setTestResult(null)
+    setTesting(false)
+    return () => { testController.current?.abort(); testController.current = null }
+  }, [isOpen, currentCode])
+
+  const handleClose = () => {
+    testController.current?.abort()
+    testController.current = null
+    setTesting(false)
+    onClose()
+  }
 
   // 配置 Monaco Editor
   const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
@@ -204,36 +220,23 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
   }
 
   // 测试运行代码
-  const handleTest = () => {
+  const handleTest = async () => {
+    if (testController.current) return
+    const controller = new AbortController()
+    testController.current = controller
+    setTesting(true)
+    setTestResult(null)
     try {
-      // 准备测试变量
-      const testVars: Record<string, unknown> = {}
-      variables.forEach(v => {
-        testVars[v.name] = v.value
-      })
-
-      // 执行代码
-      const wrappedCode = `
-        ${currentCode}
-        if (typeof main === 'function') {
-          return main(vars);
-        } else {
-          throw new Error('未找到 main 函数');
-        }
-      `
-
-      const fn = new Function('vars', wrappedCode)
-      const result = fn(testVars)
-      
-      setTestResult({
-        success: true,
-        result: JSON.stringify(result, null, 2),
-      })
+      const testVars = Object.fromEntries(variables.filter(variable => variable.value !== undefined).map(variable => [variable.name, variable.value]))
+      const result = await runJsScript(currentCode, testVars, controller.signal)
+      if (controller.signal.aborted || testController.current !== controller) return
+      setTestResult(result.success ? { success: true, result: JSON.stringify(result.result, null, 2) } : { success: false, error: result.error || '脚本测试失败' })
     } catch (error) {
-      setTestResult({
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      })
+      if (!controller.signal.aborted && testController.current === controller) {
+        setTestResult({ success: false, error: error instanceof Error ? error.message : String(error) })
+      }
+    } finally {
+      if (testController.current === controller) { testController.current = null; setTesting(false) }
     }
   }
 
@@ -253,7 +256,7 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
   // 保存并关闭
   const handleSave = () => {
     onSave(currentCode)
-    onClose()
+    handleClose()
   }
 
   if (!isOpen) return null
@@ -281,7 +284,7 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
               {variables.length} 个变量可用
             </span>
           </div>
-          <Button variant="tonal-danger" size="icon" onClick={onClose} title="关闭">
+          <Button variant="tonal-danger" size="icon" onClick={handleClose} title="关闭">
 
             <X className="w-4 h-4" />
 
@@ -297,9 +300,9 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
             variableReferenceFormat="vars.变量名"
             moduleType="js_script"
           />
-          <Button size="sm" variant="tonal-success" onClick={handleTest}>
+          <Button size="sm" variant="tonal-success" onClick={() => void handleTest()} disabled={testing}>
             <Play className="w-4 h-4 mr-1" />
-            测试运行
+            {testing ? '正在测试' : '测试运行'}
           </Button>
           <Button size="sm" variant="tonal-success" onClick={handleReset}>
             <RotateCcw className="w-4 h-4 mr-1" />
@@ -404,7 +407,7 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
 
         {/* 底部 */}
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t bg-gray-50 rounded-b-lg">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={handleClose}>
             取消
           </Button>
           <Button variant="success" onClick={handleSave}>

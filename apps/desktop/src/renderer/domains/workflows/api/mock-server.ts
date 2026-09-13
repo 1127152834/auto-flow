@@ -1,3 +1,4 @@
+import type { components } from '../../../shared/api/generated'
 import { mockScheduledRequest, finishScheduledFixture } from './mock-scheduled-tasks'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { mockSettingsRequest } from './mock-settings'
@@ -42,7 +43,8 @@ const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
-let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
+let run: { js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
@@ -86,6 +88,7 @@ function finish(status: string) {
   if (!run) return
   clearTimeout(run.timer)
   if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
+  if (run.js) { const request = jsRequests.get(run.js.requestId); if (request && ['pending', 'claimed'].includes(request.status)) request.status = 'expired' }
   emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
   finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
@@ -97,6 +100,14 @@ function stopRun(id: unknown): Response {
   if (run?.id === id) { finish('stopped'); return response({ success: true }) }
   if (finishedWorkflows.has(id)) return response({ success: true })
   return failure(run ? '停止请求不属于当前运行' : '目标工作流没有活跃运行', 409)
+}
+function writeRunVariable(name: string, value: Json, nodeId: string, nodeName: string) {
+  if (!run) return
+  const existed = Object.hasOwn(run.variables, name)
+  const old = run.variables[name]
+  if (existed && JSON.stringify(old) === JSON.stringify(value)) return
+  Object.defineProperty(run.variables, name, { value: structuredClone(value), enumerable: true, configurable: true, writable: true })
+  tracking.get(run.id)?.push({timestamp:new Date().toISOString(),variable_name:name,old_value:existed ? structuredClone(old) : null,new_value:structuredClone(value),node_id:nodeId,node_name:nodeName,operation:existed?'update':'create',value_type:value===null?'null':Array.isArray(value)?'array':typeof value})
 }
 function submitInput(data: Json | undefined): Response {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return failure('缺少输入请求信息', 422)
@@ -117,7 +128,7 @@ function submitInput(data: Json | undefined): Response {
       try { value = JSON.parse(value) as Json } catch { return failure('多选结果不是 JSON 数组', 422) }
       if (!Array.isArray(value) || value.some(item => typeof item !== 'string')) return failure('多选结果不是字符串数组', 422)
     }
-    run.variables[pending.variableName] = value
+    writeRunVariable(pending.variableName, value, pending.nodeId, '[Mock] 输入结果')
   }
   // Consume the pending identity before scheduling: another command cannot answer it again.
   const request = inputRequests.get(pending.requestId)
@@ -129,7 +140,37 @@ function submitInput(data: Json | undefined): Response {
   tick()
   return response({success:true,requestId:pending.requestId,mock:true})
 }
+function submitJs(event: string, data: Json | undefined): Response {
+  if (!data || typeof data !== 'object' || Array.isArray(data)
+    || typeof data.requestId !== 'string' || typeof data.claimId !== 'string' || !data.claimId.trim()) return failure('脚本请求及领取标识无效', 422)
+  const pending = run?.js
+  const state = jsRequests.get(data.requestId)
+  if (!run || !pending || pending.requestId !== data.requestId || !state) return failure('脚本请求不存在或已结束', 409)
+  if (event === 'js_script_claim') {
+    if (state.status === 'claimed' && state.claimId === data.claimId) return response({success:true,requestId:data.requestId})
+    if (state.status !== 'pending') return failure('脚本已由其它客户端领取', 409)
+    state.status = 'claimed'; state.claimId = data.claimId
+    return response({success:true,requestId:data.requestId})
+  }
+  if (state.status !== 'claimed' || state.claimId !== data.claimId) return failure('脚本结果不属于当前领取者', 409)
+  if (typeof data.success !== 'boolean' || (data.success && (!data.variables || typeof data.variables !== 'object' || Array.isArray(data.variables)))
+    || (!data.success && (typeof data.error !== 'string' || !data.error.trim()))) return failure('脚本结果格式无效', 422)
+  clearTimeout(run.timer)
+  state.status = data.success ? 'completed' : 'failed'
+  emitMockEvent('execution:node_complete', {workflowId:run.id,nodeId:pending.nodeId,success:data.success})
+  if (!data.success) {
+    emitMockEvent('execution:log', {workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'error',message:`[Mock] 前端脚本失败: ${data.error}`,isSystemLog:true}})
+    finish('failed'); return response({success:true,requestId:data.requestId})
+  }
+  const variables = data.variables as ObjectValue
+  for (const name of Object.keys(run.variables)) if (Object.hasOwn(variables,name)) writeRunVariable(name, variables[name], pending.nodeId, '[Mock] 前端脚本变量')
+  if (pending.resultVariable) writeRunVariable(pending.resultVariable, data.result ?? null, pending.nodeId, '[Mock] 前端脚本返回值')
+  emitMockEvent('execution:log', {workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:'[Mock] 已确认前端脚本结果；未执行网页动作',isSystemLog:true}})
+  run.js = undefined; run.index++; tick()
+  return response({success:true,requestId:data.requestId})
+}
 function applyCommand(event: string, data: Json | undefined): Response {
+  if (event === 'js_script_claim' || event === 'js_script_result') return submitJs(event, data)
   if (event === 'input_prompt_result') return submitInput(data)
   const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
   if (event === 'execution_stop') return stopRun(payload.workflowId)
@@ -161,6 +202,21 @@ function tick(skipBreakpoint = false) {
   emitMockEvent('execution:node_start', { workflowId: current.id, nodeId })
   current.timer = setTimeout(() => {
     if (run !== current) return
+    if (String(node.type) === 'js_script') {
+      const code = typeof data?.code === 'string' ? data.code : ''
+      if (!code.trim()) { finish('failed'); return }
+      const requestId = crypto.randomUUID()
+      current.js = {requestId,nodeId,resultVariable:typeof data?.resultVariable === 'string' ? data.resultVariable.trim() : ''}
+      jsRequests.set(requestId,{requestId,workflowId:current.id,nodeId,status:'pending',claimId:null})
+      emitMockEvent('execution:js_script',{requestId,workflowId:current.id,nodeId,code,variables:structuredClone(current.variables)})
+      current.timer = setTimeout(() => {
+        if (run !== current || current.js?.requestId !== requestId) return
+        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待前端脚本结果超过30秒',isSystemLog:true}})
+        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
+        finish('failed')
+      }, 30000)
+      return
+    }
     if (String(node.type) === 'input_prompt') {
       const variableName = typeof data?.variableName === 'string' ? data.variableName.trim() : ''
       if (!variableName) {
@@ -240,7 +296,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         nextExecutionOrder = null
         finishedWorkflows.delete(id)
         runRows.set(id, [])
-        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
+        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
         tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
         run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
         return response({ success: true, workflowId: id, mock: true })
@@ -293,6 +349,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (!Number.isSafeInteger(after) || after < 0) return failure('Invalid event cursor', 400)
       if (after > events.length) return failure('Event cursor exceeds the current journal', 409)
       return streamResponse(after, signal)
+    }
+    const jsQuery = path.match(/^\/events\/js-requests\/([^/]+)$/)
+    if (jsQuery) {
+      if (method !== 'GET') return failure('脚本状态查询只接受 GET', 405)
+      const state = jsRequests.get(decodeURIComponent(jsQuery[1]))
+      return state ? response(state) : failure('脚本请求不存在', 404)
     }
     const inputQuery = path.match(/^\/events\/input-prompts\/([^/]+)$/)
     if (inputQuery) {
