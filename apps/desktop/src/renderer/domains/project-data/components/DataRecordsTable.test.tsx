@@ -61,6 +61,7 @@ it.each([0, 2])('reserves the declared column widths for %i business columns bef
   const fields = Array.from({ length: count }, (_, index) => ({ ...field, ref: { ...field.ref, fieldId: `f${index}` } }))
   render(<DataRecordsTable {...props} fields={fields} page={page([row({ type: 'text', value: '1' })])} />)
   expect(screen.getByRole('columnheader', { name: '记录身份' })).toHaveAttribute('data-column-width', '112')
+  expect(document.querySelector('[data-record-column="identity"]')).toHaveStyle({ width: '112px' })
   expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${112 + 160 + 112 + count * 200}px` })
 })
 

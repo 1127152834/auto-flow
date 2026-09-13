@@ -42,7 +42,7 @@ it('selects the first asynchronously loaded text field and follows applied searc
 it('shows column names and clearing search submits only an empty quick search',async()=>{
   const user=userEvent.setup(),onApplySearch=vi.fn()
   render(<RecordQueryToolbar {...props} quickSearch={{fieldId:'name',keyword:'needle'}} onApplySearch={onApplySearch}/>)
-  await user.click(screen.getByRole('button',{name:'显示列'})); expect(within(screen.getByLabelText('显示列')).getByText('名称')).toBeVisible()
+  await user.click(screen.getByRole('button',{name:'显示列'})); expect(within(screen.getByRole('dialog',{name:'显示列'})).getByText('名称')).toBeVisible()
   await user.click(screen.getByRole('button',{name:'清除文本搜索'})); expect(onApplySearch).toHaveBeenCalledWith({fieldId:'name',keyword:''})
   expect(query.filter).toEqual({type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:0}]})
 })
@@ -54,7 +54,7 @@ it('orders record actions and gives every query panel a title, close control, an
   expect(Array.from(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','batch-status','export','create'])
   for (const [buttonName,panelName,size] of [['筛选','记录筛选','filter'],['排序','记录排序','sort'],['显示列','显示列','columns']] as const) {
     await user.click(screen.getByRole('button',{name:buttonName}))
-    const panel=screen.getByLabelText(panelName)
+    const panel=screen.getByRole('dialog',{name:panelName})
     expect(within(panel).getByRole('heading',{name:panelName})).toBeVisible()
     expect(within(panel).getByRole('button',{name:`关闭${panelName}`})).toBeVisible()
     expect(panel).toHaveAttribute('data-query-panel-size',size)
@@ -62,34 +62,46 @@ it('orders record actions and gives every query panel a title, close control, an
   }
 })
 
+it('derives applied markers only from the applied query and visible columns',()=>{
+  render(<RecordQueryToolbar {...props}/>)
+  expect(screen.getByRole('button',{name:'筛选'})).toHaveAttribute('data-query-applied','true')
+  expect(screen.getByRole('button',{name:'排序'})).toHaveAttribute('data-query-applied','true')
+  expect(screen.getByRole('button',{name:'显示列'})).toHaveAttribute('data-query-applied','false')
+  cleanup()
+  render(<RecordQueryToolbar {...props} query={emptyRecordQuery()} visibleFieldIds={['name']}/>)
+  expect(screen.getByRole('button',{name:'筛选'})).toHaveAttribute('data-query-applied','false')
+  expect(screen.getByRole('button',{name:'排序'})).toHaveAttribute('data-query-applied','false')
+  expect(screen.getByRole('button',{name:'显示列'})).toHaveAttribute('data-query-applied','true')
+})
+
 it('focuses a validation alert when the current schema invalidates a filter draft',async()=>{
   const user=userEvent.setup(),view=render(<RecordQueryToolbar {...props}/>)
   await user.click(screen.getByRole('button',{name:'筛选'})); view.rerender(<RecordQueryToolbar {...props} fields={[fields[0]]}/>)
-  await user.click(within(screen.getByLabelText('记录筛选')).getByRole('button',{name:'应用筛选'}))
+  await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'应用筛选'}))
   expect(screen.getByRole('alert')).toHaveFocus()
 })
 
 it('keeps filter drafts local and applies only the filter part',async()=>{
   const user=userEvent.setup(),onApplyQuery=vi.fn()
   render(<RecordQueryToolbar {...props} onApplyQuery={onApplyQuery}/>)
-  expect(screen.queryByLabelText('记录筛选')).not.toBeInTheDocument()
+  expect(screen.queryByRole('dialog',{name:'记录筛选'})).not.toBeInTheDocument()
   await user.click(screen.getByRole('button',{name:'筛选'}))
-  const panel=screen.getByLabelText('记录筛选'); await user.click(within(panel).getByRole('button',{name:'添加状态条件'}))
+  const panel=screen.getByRole('dialog',{name:'记录筛选'}); await user.click(within(panel).getByRole('button',{name:'添加状态条件'}))
   await user.click(within(panel).getByRole('button',{name:'取消'})); expect(onApplyQuery).not.toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'筛选'})); await user.click(within(screen.getByLabelText('记录筛选')).getByRole('button',{name:'添加状态条件'}))
-  await user.click(within(screen.getByLabelText('记录筛选')).getByRole('button',{name:'应用筛选'}))
+  await user.click(screen.getByRole('button',{name:'筛选'})); await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'添加状态条件'}))
+  await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'应用筛选'}))
   expect(onApplyQuery).toHaveBeenCalledWith({filter:{type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:0},{type:'status',operator:'eq',statusId:'open'}]},orderBy:query.orderBy})
 })
 
 it('switches mutually exclusive panels, discards drafts, and skips unchanged callbacks',async()=>{
   const user=userEvent.setup(),onApplyQuery=vi.fn(),onApplyColumns=vi.fn()
   render(<RecordQueryToolbar {...props} onApplyQuery={onApplyQuery} onApplyColumns={onApplyColumns}/>)
-  await user.click(screen.getByRole('button',{name:'排序'})); await user.click(within(screen.getByLabelText('记录排序')).getByRole('button',{name:'删除排序'}))
-  await user.click(screen.getByRole('button',{name:'显示列'})); expect(screen.queryByLabelText('记录排序')).not.toBeInTheDocument()
-  await user.click(within(screen.getByLabelText('显示列')).getByRole('button',{name:'取消'}))
-  await user.click(screen.getByRole('button',{name:'排序'})); expect(within(screen.getByLabelText('记录排序')).getByLabelText('排序字段 1')).toBeInTheDocument()
-  await user.click(within(screen.getByLabelText('记录排序')).getByRole('button',{name:'应用排序'})); expect(onApplyQuery).not.toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'显示列'})); await user.click(within(screen.getByLabelText('显示列')).getByRole('button',{name:'应用显示列'})); expect(onApplyColumns).not.toHaveBeenCalled()
+  await user.click(screen.getByRole('button',{name:'排序'})); await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'删除排序'}))
+  await user.click(screen.getByRole('button',{name:'显示列'})); expect(screen.queryByRole('dialog',{name:'记录排序'})).not.toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog',{name:'显示列'})).getByRole('button',{name:'取消'}))
+  await user.click(screen.getByRole('button',{name:'排序'})); expect(within(screen.getByRole('dialog',{name:'记录排序'})).getByLabelText('排序字段 1')).toBeInTheDocument()
+  await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'应用排序'})); expect(onApplyQuery).not.toHaveBeenCalled()
+  await user.click(screen.getByRole('button',{name:'显示列'})); await user.click(within(screen.getByRole('dialog',{name:'显示列'})).getByRole('button',{name:'应用显示列'})); expect(onApplyColumns).not.toHaveBeenCalled()
 })
 
 it('searches only on submit and disables search when no text field exists',async()=>{
@@ -104,9 +116,9 @@ it('keeps a rejected apply open, focuses its error, resets drafts, and exposes r
   const user=userEvent.setup(),onApplyQuery=vi.fn(()=>false),clear=vi.fn(),batch=vi.fn(),view=render(<RecordQueryToolbar {...props} selectionCount={2} onClearSelection={clear} onBatchStatus={batch} onApplyQuery={onApplyQuery}/>)
   expect(screen.getByText('已选择 2 条')).toBeVisible(); await user.click(screen.getByRole('button',{name:'清空选择'})); expect(clear).toHaveBeenCalled()
   await user.click(screen.getByRole('button',{name:'批量设置状态'})); expect(batch).toHaveBeenCalled()
-  await user.click(screen.getByRole('button',{name:'排序'})); await user.click(within(screen.getByLabelText('记录排序')).getByRole('button',{name:'删除排序'})); await user.click(within(screen.getByLabelText('记录排序')).getByRole('button',{name:'应用排序'}))
-  const alert=screen.getByRole('alert'); expect(alert).toHaveFocus(); expect(screen.getByLabelText('记录排序')).toBeVisible()
-  view.rerender(<RecordQueryToolbar {...props} resetKey="next" onApplyQuery={onApplyQuery}/>); expect(screen.queryByLabelText('记录排序')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button',{name:'排序'})); await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'删除排序'})); await user.click(within(screen.getByRole('dialog',{name:'记录排序'})).getByRole('button',{name:'应用排序'}))
+  const alert=screen.getByRole('alert'); expect(alert).toHaveFocus(); expect(screen.getByRole('dialog',{name:'记录排序'})).toBeVisible()
+  view.rerender(<RecordQueryToolbar {...props} resetKey="next" onApplyQuery={onApplyQuery}/>); expect(screen.queryByRole('dialog',{name:'记录排序'})).not.toBeInTheDocument()
 })
 
 it('hides create in readonly mode and keeps batch status disabled',()=>{
@@ -136,7 +148,7 @@ it('disables only export for an invalid effective query',async()=>{
   const user=userEvent.setup()
   render(<RecordQueryToolbar {...props} exportDisabled/>)
   expect(screen.getByRole('button',{name:'导出 Excel'})).toBeDisabled()
-  expect(screen.getByRole('button',{name:'筛选'})).toBeEnabled(); await user.click(screen.getByRole('button',{name:'筛选'})); expect(screen.getByLabelText('记录筛选')).toBeVisible()
+  expect(screen.getByRole('button',{name:'筛选'})).toBeEnabled(); await user.click(screen.getByRole('button',{name:'筛选'})); expect(screen.getByRole('dialog',{name:'记录筛选'})).toBeVisible()
 })
 
 it('renders and focuses the parent query error instead of a generic message',()=>{

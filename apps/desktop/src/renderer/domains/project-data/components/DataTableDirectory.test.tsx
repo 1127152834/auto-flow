@@ -46,6 +46,15 @@ it('wraps unbroken table names and descriptions without widening the card', () =
   expect(screen.getByText(description)).toHaveClass('break-all')
 })
 
+it('keeps metadata and actions in stable card anchors after variable content', () => {
+  render(<DataTableDirectory items={[table, { ...table, tableId: 't2', name: '短名', description: '' }]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  for (const card of screen.getAllByRole('article')) {
+    expect(card.querySelector('[data-card-meta]')).toBeTruthy()
+    expect(card.querySelector('[data-card-actions]')).toBeTruthy()
+    expect(card.querySelector('[data-card-meta]')?.nextElementSibling).toBe(card.querySelector('[data-card-actions]'))
+  }
+})
+
 it('distinguishes loading, empty, filtered empty, and stale error states', async () => {
   const retry = vi.fn(); const props = { items: [] as DataTableView[], onRetry: retry, onCreate: vi.fn(), onImportExcel: vi.fn(), onOpen: vi.fn(), onEdit: vi.fn() }
   const view = render(<DataTableDirectory {...props} loading />)
