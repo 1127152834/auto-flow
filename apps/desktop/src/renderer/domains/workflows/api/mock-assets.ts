@@ -41,7 +41,7 @@ export async function mockAssetRequest(path: string, method: string, params: URL
     })() : await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)})
     const id=crypto.randomUUID(),name=(file as File).name || id
     const asset={id,name,originalName:name,filename:name,folder:String(form?.get('folder') || ''),path:dataUrl,url:dataUrl,dataUrl,size:file.size,createdAt:new Date().toISOString(),uploadedAt:new Date().toISOString(),extension:name.split('.').at(-1) || ''}
-    library.assets.push(asset);save(kind,library);return json(asset)
+    library.assets.push(asset);save(kind,library);return json({ asset })
   }
   if (action === 'move') {
     library.assets=library.assets.map(a=>a.id===body.assetId?{...a,folder:String(body.targetFolder||'')}:a);save(kind,library);return json({success:true})
@@ -49,6 +49,14 @@ export async function mockAssetRequest(path: string, method: string, params: URL
   const [id,operation]=action.split('/')
   const asset=library.assets.find(a=>a.id===id)
   if (!asset) return json({success:false,error:'资源不存在'},404)
+  if (method === 'GET' && (operation === 'thumbnail' || operation === 'file')) {
+    const data = asset.dataUrl.match(/^data:(image\/[^;,]+);base64,(.*)$/s)
+    if (!data) return json({ success: false, error: '图片内容缺失或格式不支持' }, 422)
+    try {
+      const bytes = Uint8Array.from(atob(data[2]), character => character.charCodeAt(0))
+      return new Response(bytes, { headers: { 'Content-Type': data[1], 'Cache-Control': 'no-store' } })
+    } catch { return json({ success: false, error: '图片内容已损坏' }, 422) }
+  }
   if (method === 'DELETE') {library.assets=library.assets.filter(a=>a.id!==id);save(kind,library);return json({success:true})}
   if (operation === 'rename') {asset.name=params.get('newName')||asset.name;asset.originalName=asset.name;asset.filename=asset.name;save(kind,library);return json({success:true,...asset})}
   return json(asset)

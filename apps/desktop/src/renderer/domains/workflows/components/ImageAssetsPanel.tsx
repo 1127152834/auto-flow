@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/ImageAssetsPanel.tsx; see SOURCE.md for license and adaptation boundaries.
+import { ImageAssetPreview } from './controls/image-asset-preview'
 import { studioFetch } from '../api/transport'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
@@ -511,7 +512,6 @@ export function ImageAssetsPanel() {
   // 渲染图片卡片（小预览图，与 Excel 卡片大小一致）
   const renderImageCard = (asset: ImageAsset) => {
     const isEditing = editingAsset === asset.id
-    const API_BASE = getBackendBaseUrl()
 
     return (
       <div
@@ -531,23 +531,7 @@ export function ImageAssetsPanel() {
         <div className="flex flex-col items-center gap-1">
           {/* 小预览图 */}
           <div className="bg-[hsl(var(--card))] w-10 h-10 rounded flex items-center justify-center overflow-hidden">
-            <img
-              src={asset.path?.startsWith('data:') ? asset.path : `${API_BASE}/api/image-assets/${asset.id}/thumbnail`}
-              alt={asset.originalName}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              onError={(e) => {
-                // 图片加载失败时显示图标
-                e.currentTarget.style.display = 'none'
-                const parent = e.currentTarget.parentElement
-                if (parent && !parent.querySelector('.fallback-icon')) {
-                  const icon = document.createElement('div')
-                  icon.className = 'fallback-icon flex items-center justify-center w-full h-full'
-                  icon.innerHTML = '<svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                  parent.appendChild(icon)
-                }
-              }}
-            />
+            <ImageAssetPreview asset={asset} className="w-full h-full object-cover" />
           </div>
           
           {isEditing ? (
@@ -890,11 +874,7 @@ export function ImageAssetsPanel() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <img
-              src={previewAsset.path?.startsWith('data:') ? previewAsset.path : `${getBackendBaseUrl()}/api/image-assets/${previewAsset.id}/file`}
-              alt={previewAsset.originalName}
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            />
+            <ImageAssetPreview asset={previewAsset} variant="file" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
           </div>
         </div>,
         document.body,

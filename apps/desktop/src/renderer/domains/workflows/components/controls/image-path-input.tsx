@@ -4,7 +4,7 @@ import { FolderOpen, ChevronRight, Folder, Image } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import { systemApi, imageAssetApi } from '../../api'
-import { getBackendBaseUrl } from '../../api/config'
+import { ImageAssetPreview } from './image-asset-preview'
 import type { ImageAsset } from '../../types/index'
 
 interface ImagePathInputProps {
@@ -106,7 +106,6 @@ export function ImagePathInput({ value, onChange, className, placeholder = 'è¾“å
     }
   }, [isOpen])
 
-  const API_BASE = getBackendBaseUrl()
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
@@ -232,18 +231,7 @@ export function ImagePathInput({ value, onChange, className, placeholder = 'è¾“å
                       onClick={() => selectFile(asset)}
                     >
                       <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <img
-                          src={asset.path?.startsWith('data:') ? asset.path : `${API_BASE}/api/image-assets/${asset.id}/thumbnail`}
-                          alt={asset.originalName}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                            const parent = e.currentTarget.parentElement
-                            if (parent) {
-                              parent.innerHTML = '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>'
-                            }
-                          }}
-                        />
+                        <ImageAssetPreview asset={asset} className="w-full h-full object-cover" />
                       </div>
                       <span className="flex-1 truncate">
                         {asset.originalName}

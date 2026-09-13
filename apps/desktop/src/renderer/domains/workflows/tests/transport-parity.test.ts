@@ -40,6 +40,19 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     expect((await request('/workflows', { method: 'POST', body: '{broken' })).status).toBe(400)
     expect((await request('/unknown')).status).toBe(501)
   })
+  it('reads registered image bytes through thumbnail and file routes, rejecting missing or invalid content', async () => {
+    const data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGNkAAAAASUVORK5CYII='
+    localStorage.setItem('autoflow:studio:mock:image-assets', JSON.stringify({ folders: [], assets: [
+      { id: 'png', dataUrl: `data:image/png;base64,${data}` }, { id: 'broken', dataUrl: 'data:application/json;base64,e30=' },
+    ] }))
+    for (const variant of ['thumbnail', 'file']) {
+      const response = await request(`/image-assets/png/${variant}`)
+      expect(response.status).toBe(200); expect(response.headers.get('content-type')).toBe('image/png')
+      expect(Buffer.from(await response.arrayBuffer()).toString('base64')).toBe(data)
+      expect((await request(`/image-assets/missing/${variant}`)).status).toBe(404)
+      expect((await request(`/image-assets/broken/${variant}`)).status).toBe(422)
+    }
+  })
   it('round-trips scheduled configuration and fails missing workflows without a running record', async () => {
     const created = await request('/scheduled-tasks', json({ name: '计划 HTTP', workflow_id: 'missing.json', enabled: true, trigger: { type: 'startup', startup_delay: 0 } }))
     expect(created.status).toBe(200)
@@ -60,7 +73,7 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     payload.set(head); payload.set(bytes, head.length); payload.set(tail, head.length + bytes.length)
     const response = await request('/image-assets/upload', { method: 'POST', headers: { 'content-type': `multipart/form-data; boundary=${boundary}` }, body: payload })
     expect(response.status, await response.clone().text()).toBe(200)
-    const asset = await response.json()
+    const { asset } = await response.json()
     expect(asset.name).toBe('测试.bin')
     expect(asset.size).toBe(bytes.length)
     const decoded = Uint8Array.from(atob(asset.dataUrl.split(',')[1]), c => c.charCodeAt(0))

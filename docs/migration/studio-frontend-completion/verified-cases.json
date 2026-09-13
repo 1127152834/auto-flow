@@ -17303,5 +17303,197 @@
     "level": "transport",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-command-identity/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.thumbnail",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "thumbnail"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.file",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "file"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.late-bytes",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "late-bytes"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.http-404",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "http-404"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.http-403",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "http-403"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.http-500",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "http-500"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.wrong-mime",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "wrong-mime"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.inline-decode",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "inline-decode"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.cancel",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "cancel"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.memory-bytes",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "memory-bytes"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.http-bytes",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "http-bytes"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
+  },
+  {
+    "id": "RESOURCE.image-transport.upload-panel",
+    "capability": "图像资源传输和展示",
+    "preconditions": {
+      "asset": "受控图片与专用Mock数据，响应状态由测试指定"
+    },
+    "steps": [
+      "upload-panel"
+    ],
+    "expectedUI": "已确认图片显示；失败明确可重试；取消及过期不覆盖新资源",
+    "expectedIO": "服务图片通过受控传输读取；内联图片无需网络；上传返回asset包装",
+    "stateAssertion": "图片字节不被JSON替代，URL清理，资源列表同步",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-resources/target.log"
   }
 ]
