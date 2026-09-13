@@ -1530,11 +1530,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       return // 阻止连接
     }
     
+    const edges = addEdge(connection, get().edges)
+    if (edges === get().edges) return
     // 先保存当前状态到历史（连线之前）
     get().pushHistory()
-    set({
-      edges: addEdge(connection, get().edges),
-    })
+    set({ edges, hasUnsavedChanges: true })
   },
 
   addNode: (type, position, extraConfig) => {
@@ -2517,6 +2517,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({
       nodes: [...get().nodes, newNode],
       selectedNodeId: newNode.id,  // 自动选中新添加的节点
+      hasUnsavedChanges: true,
     })
   },
 
@@ -2538,6 +2539,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   deleteNode: (nodeId) => {
+    if (!get().nodes.some(node => node.id === nodeId)) return
     // 先保存当前状态到历史（删除之前）
     get().pushHistory()
     set({
@@ -2546,6 +2548,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         (edge) => edge.source !== nodeId && edge.target !== nodeId
       ),
       selectedNodeId: get().selectedNodeId === nodeId ? null : get().selectedNodeId,
+      hasUnsavedChanges: true,
     })
   },
 

@@ -16855,5 +16855,101 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-field-context/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.add",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "add"
+    ],
+    "expectedUI": "标记未保存，撤销重做恢复节点与连线",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "标记未保存，撤销重做恢复节点与连线",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.delete",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "delete"
+    ],
+    "expectedUI": "标记未保存，撤销重做恢复节点与连线",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "标记未保存，撤销重做恢复节点与连线",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.connect",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "connect"
+    ],
+    "expectedUI": "标记未保存，撤销重做恢复节点与连线",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "标记未保存，撤销重做恢复节点与连线",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.missing-delete",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "missing-delete"
+    ],
+    "expectedUI": "节点、连线、历史及已保存状态保持不变",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "节点、连线、历史及已保存状态保持不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.self-link",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "self-link"
+    ],
+    "expectedUI": "节点、连线、历史及已保存状态保持不变",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "节点、连线、历史及已保存状态保持不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
+  },
+  {
+    "id": "EDITOR.graph-dirty.duplicate-link",
+    "capability": "图编辑未保存状态",
+    "preconditions": {
+      "document": "两个已保存节点，重复连线用例预先建立连线"
+    },
+    "steps": [
+      "duplicate-link"
+    ],
+    "expectedUI": "节点、连线、历史及已保存状态保持不变",
+    "expectedIO": "本地编辑，不发保存请求",
+    "stateAssertion": "节点、连线、历史及已保存状态保持不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-graph-dirty/target.log"
   }
 ]

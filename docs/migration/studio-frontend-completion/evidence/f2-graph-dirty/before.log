@@ -1,0 +1,172 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/graph-dirty-state.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:88180) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/graph-dirty-state.test.ts (6 tests | 5 failed) 13ms
+   × marks add as unsaved and supports undo/redo 6ms
+   × marks delete as unsaved and supports undo/redo 1ms
+   × marks connect as unsaved and supports undo/redo 1ms
+   × does not mark missing-delete as an unsaved graph edit 3ms
+   × does not mark duplicate-link as an unsaved graph edit 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/graph-dirty-state.test.ts > marks add as unsaved and supports undo/redo
+ FAIL  src/renderer/domains/workflows/tests/graph-dirty-state.test.ts > marks delete as unsaved and supports undo/redo
+ FAIL  src/renderer/domains/workflows/tests/graph-dirty-state.test.ts > marks connect as unsaved and supports undo/redo
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/graph-dirty-state.test.ts:10:35
+      8|   if (action === 'connect') store.getState().onConnect({ source: befor…
+      9|   const after = store.getState()
+     10|   expect(after.hasUnsavedChanges).toBe(true)
+       |                                   ^
+     11|   store.getState().undo()
+     12|   expect(store.getState().nodes.map(n => n.id)).toEqual(before.nodes.m…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/graph-dirty-state.test.ts > does not mark missing-delete as an unsaved graph edit
+AssertionError: expected [ Array(3) ] to deeply equal [ Array(2) ]
+
+- Expected
++ Received
+
+@@ -23,6 +23,39 @@
+          "type": "moduleNode",
+        },
+      ],
+      "variables": [],
+    },
++   {
++     "edges": [],
++     "name": "未命名工作流",
++     "nodes": [
++       {
++         "data": {
++           "label": "打开网页",
++           "moduleType": "open_page",
++           "timeout": 60,
++         },
++         "id": "4yKHDa5kbNNF8CxhNYv-N",
++         "position": {
++           "x": 0,
++           "y": 0,
++         },
++         "type": "moduleNode",
++       },
++       {
++         "data": {
++           "label": "点击元素",
++           "moduleType": "click_element",
++           "timeout": 60,
++         },
++         "id": "IOTPV-pF0GdxWOX0GY57R",
++         "position": {
++           "x": 0,
++           "y": 100,
++         },
++         "type": "moduleNode",
++       },
++     ],
++     "variables": [],
++   },
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/graph-dirty-state.test.ts:29:36
+     27|   expect(store.getState().nodes).toEqual(before.nodes)
+     28|   expect(store.getState().edges).toEqual(before.edges)
+     29|   expect(store.getState().history).toEqual(before.history)
+       |                                    ^
+     30| })
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/graph-dirty-state.test.ts > does not mark duplicate-link as an unsaved graph edit
+AssertionError: expected [ Array(4) ] to deeply equal [ Array(3) ]
+
+- Expected
++ Received
+
+@@ -56,6 +56,45 @@
+          "type": "moduleNode",
+        },
+      ],
+      "variables": [],
+    },
++   {
++     "edges": [
++       {
++         "id": "xy-edge__d3ZG13F6Q91gQWx-CrYwD-kPdmn23cqgklZt1i9OLMY",
++         "source": "d3ZG13F6Q91gQWx-CrYwD",
++         "target": "kPdmn23cqgklZt1i9OLMY",
++       },
++     ],
++     "name": "未命名工作流",
++     "nodes": [
++       {
++         "data": {
++           "label": "打开网页",
++           "moduleType": "open_page",
++           "timeout": 60,
++         },
++         "id": "d3ZG13F6Q91gQWx-CrYwD",
++         "position": {
++           "x": 0,
++           "y": 0,
++         },
++         "type": "moduleNode",
++       },
++       {
++         "data": {
++           "label": "点击元素",
++           "moduleType": "click_element",
++           "timeout": 60,
++         },
++         "id": "kPdmn23cqgklZt1i9OLMY",
++         "position": {
++           "x": 0,
++           "y": 100,
++         },
++         "type": "moduleNode",
++       },
++     ],
++     "variables": [],
++   },
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/graph-dirty-state.test.ts:29:36
+     27|   expect(store.getState().nodes).toEqual(before.nodes)
+     28|   expect(store.getState().edges).toEqual(before.edges)
+     29|   expect(store.getState().history).toEqual(before.history)
+       |                                    ^
+     30| })
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 1 passed (6)
+   Start at  03:11:51
+   Duration  776ms (transform 169ms, setup 90ms, import 190ms, tests 13ms, environment 369ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/graph-dirty-state.test.ts
