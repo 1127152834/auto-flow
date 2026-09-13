@@ -1,0 +1,479 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T18:02:54.105Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+    "dirtyFiles": [
+      "docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-pm2-detail-flows.mjs",
+      "scripts/smoke-project-data.mjs"
+    ],
+    "scriptSha256": "b29b7f8ddffa2b0e36c461af390c7fdc552aeaa5f4f0b5022436d42c858efca7",
+    "wrapperSha256": null,
+    "options": {
+      "recordPages": false,
+      "manual": false,
+      "visualDirectory": true
+    },
+    "desktopBuildSha256": "6aa2c58c0343dfe3f951b4b5b58c9f4d9634834f7a2b6fda6b4c893058baf1f7"
+  },
+  "checks": [
+    "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+    "E1: 更多编辑打开表单不导航",
+    "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复",
+    "E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留",
+    "E1: 目录Tab键实际推进焦点"
+  ],
+  "checkScreenshotMap": [],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-loading",
+      "file": "r1-a-loading.png",
+      "stateSource": "fault-injection",
+      "navigation": "pointer",
+      "level": "E4",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "injection": "仅延迟首次真实项目GET；释放后请求真实后端，不伪造响应",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent",
+      "file": "VR-A01-recent.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "商品信息采集采集电商平台商品信息并生成结构化数据最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "账号注册流程自动化完成多渠道账号注册与验证流程最近打开：2026年9月14日 02:02",
+          "x": 730,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客服巡检定时巡检客服会话质量与响应情况最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 516,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容发布自动发布内容到多个平台并同步状态最近打开：2026年9月14日 02:02",
+          "x": 730,
+          "y": 516,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "测试项目用于验证自动化流程和组件的测试项目最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 686,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A02-all",
+      "file": "VR-A02-all.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "setupLevel": "E2",
+      "fixture": "第六个长名称项目经API预置，E1仅证明UI搜索/进入全部路径",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "商品信息采集采集电商平台商品信息并生成结构化数据最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 358,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "账号注册流程自动化完成多渠道账号注册与验证流程最近打开：2026年9月14日 02:02",
+          "x": 730,
+          "y": 358,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客服巡检定时巡检客服会话质量与响应情况最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 528,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容发布自动发布内容到多个平台并同步状态最近打开：2026年9月14日 02:02",
+          "x": 730,
+          "y": 528,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "测试项目用于验证自动化流程和组件的测试项目最近打开：2026年9月14日 02:02",
+          "x": 104,
+          "y": 698,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪用于长文本边界。",
+          "x": 730,
+          "y": 698,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A04-no-match",
+      "file": "VR-A04-no-match.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent-200",
+      "file": "VR-A01-recent-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "setupLevel": "E2",
+      "fixture": "长名fixture经UI打开成为最近记录",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 24,
+          "y": -67,
+          "w": 660,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪用于长文本边界。",
+          "x": 24,
+          "y": 181,
+          "w": 660,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "商品信息采集采集电商平台商品信息并生成结构化数据最近打开：2026年9月14日 02:02",
+          "x": 24,
+          "y": 351,
+          "w": 660,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "账号注册流程自动化完成多渠道账号注册与验证流程最近打开：2026年9月14日 02:02",
+          "x": 24,
+          "y": 521,
+          "w": 660,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客服巡检定时巡检客服会话质量与响应情况最近打开：2026年9月14日 02:02",
+          "x": 24,
+          "y": 691,
+          "w": 660,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容发布自动发布内容到多个平台并同步状态最近打开：2026年9月14日 02:02",
+          "x": 24,
+          "y": 861,
+          "w": 660,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "测试项目用于验证自动化流程和组件的测试项目最近打开：2026年9月14日 02:02",
+          "x": 24,
+          "y": 1031,
+          "w": 660,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航",
+        "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复",
+        "E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-ekGz3w",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

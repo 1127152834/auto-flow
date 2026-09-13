@@ -1,0 +1,8 @@
+UI创建A/B并依次打开，最近B在A之前
+E1: 新建表Modal在200%输入并真实提交，底栏完整可达
+保留隔离资料 /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-sUpLjR；截图报告始终保留 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/acceptance/gallery-r1/runs/run-TyWqq5
+Error: timed out waiting for input mounted: false
+    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/scripts/electron-cdp.mjs:82:9)
+    at async input (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/scripts/qa-project-alignment-r1.mjs:64:40)
+    at async uiDataFlow (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/scripts/qa-project-alignment-r1.mjs:128:28)
+    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/scripts/qa-project-alignment-r1.mjs:283:5)

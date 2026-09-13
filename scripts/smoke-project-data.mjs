@@ -35,8 +35,8 @@ try {
   assert.equal(table.name, '客户资料')
   assert.equal(await renderer.evaluate('location.hash'), `#/projects/${project.projectId}/data/${table.tableId}/records`)
   checkpoint('UI creates a local table through real HTTP and navigates to its records route')
-  await click('返回数据表'); await waitFor(renderer, `!!document.querySelector('[aria-label="编辑客户资料"]')`, 'table edit control')
-  await click('编辑客户资料')
+  await click('返回数据表'); await waitFor(renderer, `!!document.querySelector('[aria-label="更多客户资料操作"]')`, 'table edit control')
+  await click('更多客户资料操作'); await click('编辑数据表', '[role=menuitem]')
   await input('#data-table-name', '我的本地修改')
   const base = `/projects/${project.projectId}/tables/${table.tableId}`
   await api(base, { method: 'PATCH', body: { name: '另一个编辑者', expectedTableRevision: table.tableRevision } })
@@ -51,7 +51,7 @@ try {
   checkpoint('real competing edit preserves the draft and requires explicit reload before resaving')
 
   // All data mutations below use the real UI; HTTP only reads facts or creates a competing edit.
-  await click('打开客户资料'); await visible('还没有记录')
+  await click('打开数据表：客户资料'); await visible('还没有记录')
   await click('字段', '[role=tab]'); await click('新建字段')
   await input('#field-name', '客户名称'); await input('#field-key', 'customer')
   await click('创建字段'); await closed('#field-editor-form')
@@ -164,8 +164,8 @@ try {
     await input(`#record-${field.ref.fieldId}`, value)
     await capture('record-create'); await click('创建记录'); await closed('#record'); await visible(value); await capture('record-detail')
   }
-  await click('返回数据表'); await waitFor(renderer, `!!document.querySelector('[aria-label="编辑客户资料"]')`, 'table edit control')
-  await click('编辑客户资料'); await input('#data-table-description', '重连后保留草稿')
+  await click('返回数据表'); await waitFor(renderer, `!!document.querySelector('[aria-label="更多客户资料操作"]')`, 'table edit control')
+  await click('更多客户资料操作'); await click('编辑数据表', '[role=menuitem]'); await input('#data-table-description', '重连后保留草稿')
   const oldInstance = (await renderer.evaluate('window.autoflow.getRuntimeContext()')).sidecar.instanceId
   await renderer.evaluate('window.autoflow.restartSidecar()', 30000)
   await waitFor(renderer, `window.autoflow.getRuntimeContext().then(r=>r.sidecar.state==='ready'&&r.sidecar.instanceId!==${JSON.stringify(oldInstance)})`, 'service restart', 30000)
@@ -192,7 +192,7 @@ try {
   checkpoint('native 200 percent zoom with custom dropdown does not widen the application')
   renderer.close(); native.close(); await stop(desktop.child); desktop = null
   await launch()
-  await click('项目'); if(await renderer.evaluate("[...document.querySelectorAll('button')].some(e=>e.textContent.trim()==='查看全部项目')"))await click('查看全部项目'); await click('数据页面验收'); await click('数据'); await click('打开客户资料')
+  await click('项目'); if(await renderer.evaluate("[...document.querySelectorAll('button')].some(e=>e.getAttribute('aria-label')==='查看全部项目')"))await click('查看全部项目'); await click('数据页面验收'); await click('数据'); await click('打开数据表：客户资料')
   await visible('合成客户甲'); await visible('可再次使用'); await capture('restarted')
   assert.equal((await api(base)).description, '重连后保留草稿')
   checkpoint('full Electron restart retains table edits, business records and explicit status')
@@ -208,7 +208,7 @@ try {
   assert.equal((await api(`/projects/${separate.projectId}/tables`)).items.length, 1)
   await switchWorkspace()
   assert.equal((await renderer.evaluate('window.autoflow.getRuntimeContext()')).workspaceKey, originalWorkspace)
-  await click('项目'); if(await renderer.evaluate("[...document.querySelectorAll('button')].some(e=>e.textContent.trim()==='查看全部项目')"))await click('查看全部项目'); await click('数据页面验收'); await click('数据'); await click('打开客户资料')
+  await click('项目'); if(await renderer.evaluate("[...document.querySelectorAll('button')].some(e=>e.getAttribute('aria-label')==='查看全部项目')"))await click('查看全部项目'); await click('数据页面验收'); await click('数据'); await click('打开数据表：客户资料')
   await visible('合成客户甲'); assert.equal((await api('/projects')).total, 1)
   assert.equal((await api(base)).description, '重连后保留草稿')
   await capture('workspace-return')
@@ -232,7 +232,7 @@ async function launch() {
   await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false}); await visible('本地服务正常', 30000)
 }
 function checkpoint(message) { checks.push(message); console.log(message) }
-async function visible(text, timeout = 15000) { return waitFor(renderer, `Boolean(document.body?.innerText.includes(${JSON.stringify(text)}))`, text, timeout) }
+async function visible(text, timeout = 15000) { if(text==='返回数据表')return waitFor(renderer,"!!document.querySelector('[aria-label=返回数据表]')",text,timeout); return waitFor(renderer, `Boolean(document.body?.innerText.includes(${JSON.stringify(text)}))`, text, timeout) }
 async function api(path, options = {}) {
   const { sidecar } = await renderer.evaluate('window.autoflow.getRuntimeContext()')
   const response = await fetch(`${sidecar.baseUrl}/api/v1${path}`, { ...options, body: options.body ? JSON.stringify(options.body) : undefined, headers: { 'x-autoflow-token': sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': crypto.randomUUID() } })
@@ -245,6 +245,7 @@ async function click(text, selector = 'button') {
   assert.ok(point, `control missing: ${text || selector}`)
   assert.equal(point.disabled, false, `control disabled: ${text || selector}`)
   assert.equal(point.hit, true, `control obscured: ${text || selector}: ${JSON.stringify(point)}`)
+  await renderer.command('Input.dispatchMouseEvent', { type: 'mouseMoved', x: point.x, y: point.y });
   await renderer.command('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 })
   await renderer.command('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 }); await wait(120)
 }

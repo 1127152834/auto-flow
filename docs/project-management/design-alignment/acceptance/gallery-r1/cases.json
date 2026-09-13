@@ -1,0 +1,195 @@
+[
+  {
+    "id": "E01",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "UI创建与最近目录",
+    "steps": [
+      "新建R1手建A、R1手建B",
+      "全部目录依次打开A、B，再返回最近"
+    ],
+    "expected": "B在A之前，未访问项目只在全部目录",
+    "actual": "B在A之前，未访问项目只在全部目录",
+    "status": "passed",
+    "evidence": "runs/run-fzpgVA/VR-A01-recent.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E02",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "数据目录编辑",
+    "steps": [
+      "新建资料库及长说明表",
+      "资料库更多→编辑数据表，说明改为保存整理后的文章资料→保存"
+    ],
+    "expected": "目录卡片说明更新，hash保持数据目录",
+    "actual": "目录卡片说明更新，hash保持数据目录",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-b-two-local-tables.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E03",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "Modal 200%",
+    "steps": [
+      "新建数据表输入资料库",
+      "切200%继续输入说明，检查footer边界，点击创建"
+    ],
+    "expected": "底栏可见，真实创建成功后进入记录页",
+    "actual": "底栏可见，真实创建成功后进入记录页",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-b-create-table-200.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E04",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "三个查询草稿",
+    "steps": [
+      "UI建五字段、三记录",
+      "筛选/排序/显示列各修改后分别取消、Escape、点击项目头、切另一个面板"
+    ],
+    "expected": "每次列表保持原值，记录GET次数不增加",
+    "actual": "每次列表保持原值，记录GET次数不增加",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-c-filter-populated.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E05",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "最终查询与导出",
+    "steps": [
+      "标题包含温室命中三条；加已核对状态命中一条",
+      "快捷搜索温室；更多→导出Excel→当前筛选→选择保存位置",
+      "独立openpyxl读取并比较导出POST filter与最后GET filter"
+    ],
+    "expected": "真实XLSX只有温室管理清单，条件与屏幕相同；选择路径为明确注入",
+    "actual": "真实XLSX只有温室管理清单，条件与屏幕相同；选择路径为明确注入",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/combined-export-facts.json",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E06",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "高级树与错误",
+    "steps": [
+      "筛选优先级输入不是数字→应用",
+      "修正0后应用",
+      "清空→高级→满足任一→添加字段条件及反向条件→应用→重开"
+    ],
+    "expected": "非法数字零GET；OR/NOT完整且不能有损切简单",
+    "actual": "非法数字零GET；OR/NOT完整且不能有损切简单",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-complex-query-restored.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E07",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "目录分页和返回",
+    "steps": [
+      "工具HTTP生成52项目/120记录",
+      "搜索R1分页，排序名称A–Z，打开040后返回",
+      "第二页打开051后返回"
+    ],
+    "expected": "非零滚动、查询、排序、第二页恢复",
+    "actual": "非零滚动、查询、排序、第二页恢复",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-a-all-page2.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E08",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "故障及冲突",
+    "steps": [
+      "读取失败注入后刷新",
+      "写响应丢失注入后创建并核验原操作",
+      "UI编辑草稿，隔离HTTP真实竞争修改再保存"
+    ],
+    "expected": "旧数据/输入保留；原操作只有一个创建事实；409需显式基于最新编辑",
+    "actual": "旧数据/输入保留；原操作只有一个创建事实；409需显式基于最新编辑",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-lost-response.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E09",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "重启与隔离",
+    "steps": [
+      "真实重启sidecar",
+      "完整重启Electron",
+      "切工具B工作区再切A"
+    ],
+    "expected": "B无项目，A54项目；最近访问持久，数据不串",
+    "actual": "B无项目，A54项目；最近访问持久，数据不串",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/result.json",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E10",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "键盘与缩放",
+    "steps": [
+      "长名称200%并核对截断完整title",
+      "目录Tab实际移动焦点",
+      "嵌套Select Escape后再Escape关闭Popover；搜索Enter"
+    ],
+    "expected": "焦点与取消顺序正确；应用不撑宽、浮层底栏可见",
+    "actual": "焦点与取消顺序正确；应用不撑宽、浮层底栏可见",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/r1-c-filter-populated-200.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  },
+  {
+    "id": "E11",
+    "fixture": "工具专属隔离A/B工作区；五字段、两状态、三记录由UI创建，规模资料与竞争写为E2",
+    "title": "现有资源入口",
+    "steps": [
+      "顶部浏览器、代理、模型、设置、总览逐一打开",
+      "总览工作流工作台打开独立Studio窗口"
+    ],
+    "expected": "真实入口可达，只验证入口",
+    "actual": "真实入口可达，只验证入口",
+    "status": "passed",
+    "evidence": "runs/run-fLAsGt/entry-studio.png",
+    "runVersion": "a6a0e8e",
+    "source": "见page-map.json与截图reference/referenceSha256",
+    "evidenceType": "E1 UI；规模/竞争/事实读取E2；文件选择及网络故障注入E4（按run记录）",
+    "userStatus": "not-run"
+  }
+]

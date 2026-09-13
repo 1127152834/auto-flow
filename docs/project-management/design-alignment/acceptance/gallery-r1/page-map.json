@@ -1,5 +1,5 @@
 {
-  "status": "not-accepted",
+  "status": "engineering-and-local-qa-passed",
   "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest",
   "pages": [
     {
@@ -15,7 +15,12 @@
         "Current recent ordering uses lastOpenedAt; label must say 最近打开 rather than claim updatedAt.",
         "No project icon picker exists; use real generic project icon, no business-dependent invented icons."
       ],
-      "evidence": null
+      "evidence": [
+        "runs/run-fzpgVA/VR-A01-recent.png"
+      ],
+      "status": "passed",
+      "visualScore": 91,
+      "userAcceptance": "not-run"
     },
     {
       "id": "projects-all",
@@ -26,7 +31,12 @@
       "businessDifferences": [
         "Derived view required by approved directory capability, not an independently approved original PNG."
       ],
-      "evidence": null
+      "evidence": [
+        "runs/run-fzpgVA/VR-A02-all.png"
+      ],
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "data-directory",
@@ -42,7 +52,12 @@
         "Only actual local and Excel capabilities; no simulated Sheets push failures/external SQLite reads.",
         "Excel import remains available, edit action moves to real more menu."
       ],
-      "evidence": null
+      "evidence": [
+        "runs/run-fLAsGt/r1-b-two-local-tables.png"
+      ],
+      "status": "passed",
+      "visualScore": 90,
+      "userAcceptance": "not-run"
     },
     {
       "id": "records",
@@ -57,7 +72,12 @@
       "businessDifferences": [
         "Keep explicit text-field search, sort, batch state and filtered export; no additional persistent sidebar."
       ],
-      "evidence": null
+      "evidence": [
+        "runs/run-fLAsGt/r1-c-original-visible-columns.png"
+      ],
+      "status": "passed",
+      "visualScore": 89,
+      "userAcceptance": "not-run"
     },
     {
       "id": "filter",
@@ -71,7 +91,12 @@
       "businessDifferences": [
         "Existing nested AND/OR/NOT editor retained behind advanced mode without lossy conversion."
       ],
-      "evidence": null
+      "evidence": [
+        "runs/run-fLAsGt/r1-c-filter-populated.png"
+      ],
+      "status": "passed",
+      "visualScore": 89,
+      "userAcceptance": "not-run"
     },
     {
       "id": "create-table",
@@ -81,57 +106,104 @@
         "DataTableFormDialog"
       ],
       "layout": "Centered name/description dialog, explanation and cancel/create footer",
-      "evidence": null
+      "evidence": [
+        "runs/run-fLAsGt/r1-b-create-table.png"
+      ],
+      "status": "passed",
+      "visualScore": 88,
+      "userAcceptance": "not-run"
     }
   ],
   "supplementalStates": [
     {
       "id": "loading",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fzpgVA/r1-a-loading.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "empty",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-b-empty.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "no-match",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fzpgVA/VR-A04-no-match.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "refresh-error",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-read-failure.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "query-validation",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-query-validation.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "sort",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-c-sort-populated.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "columns",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-c-business-显示列.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     },
     {
       "id": "operation-recovery",
-      "evidence": null,
+      "evidence": [
+        "runs/run-fLAsGt/r1-lost-response.png"
+      ],
       "source": null,
-      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score."
+      "rule": "Keep parent structure; record actual state and business correctness without an invented original match score.",
+      "status": "passed",
+      "visualScore": null,
+      "userAcceptance": "not-run"
     }
-  ]
+  ],
+  "sourceRevision": "a6a0e8e",
+  "userAcceptance": "not-run"
 }

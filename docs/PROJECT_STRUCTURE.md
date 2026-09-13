@@ -376,3 +376,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ## 项目管理Gallery还原资料（2026-09-13）
 
 `docs/project-management/design-alignment/gallery-baseline/` 保存原始图库路径/hash/尺寸索引、历史验收适用性勘误和本轮文档静态核验。原PNG仍在主项目只读图库，不重新生成副本。当前规格与计划分别为 `docs/superpowers/specs/2026-09-13-project-management-gallery-fidelity.md`、`docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md`；B0资产仅历史参考。拟新增DataTablePageFrame为展示组合组件，尚未创建，不代表交付。
+
+### Gallery R1验收资产（2026-09-14）
+
+`docs/project-management/design-alignment/acceptance/gallery-r1/`保存逐页原图映射、未修改来源PNG副本、真实Electron截图/运行出处、独立审查、机器结果、逐项用例及用户手册。`scripts/verify-gallery-baseline.mjs`仅核验来源hash/尺寸/证据引用，不代替业务或人工视觉验收。`qa-project-alignment-r1.mjs --manual`只在有专属标记的隔离工作区运行，可注入竞争与响应丢失，不新增生产调试接口。

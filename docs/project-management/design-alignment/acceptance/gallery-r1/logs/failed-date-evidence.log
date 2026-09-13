@@ -1,0 +1,47 @@
+UI创建A/B并依次打开，最近B在A之前
+E1: 数据目录更多编辑真实说明，保存后卡片更新且路由保持
+E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成
+E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求
+保留隔离资料 /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-WvT30Q；截图报告始终保留 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/acceptance/gallery-r1/runs/run-IyoJM3
+Error: Command failed: uv run --project /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/backend python -c from openpyxl import load_workbook; import json; b=load_workbook("/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-WvT30Q/combined-filter.xlsx",read_only=True,data_only=True); print(json.dumps(list(b.active.values),ensure_ascii=False))
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type datetime is not JSON serializable
+
+    at genericNodeError (node:internal/errors:999:15)
+    at wrappedFn (node:internal/errors:544:14)
+    at ChildProcess.exithandler (node:child_process:417:12)
+    at ChildProcess.emit (node:events:514:20)
+    at maybeClose (node:internal/child_process:1125:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: 'uv run --project /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/backend python -c from openpyxl import load_workbook; import json; b=load_workbook("/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-WvT30Q/combined-filter.xlsx",read_only=True,data_only=True); print(json.dumps(list(b.active.values),ensure_ascii=False))',
+  stdout: '',
+  stderr: 'Traceback (most recent call last):\n' +
+    '  File "<string>", line 1, in <module>\n' +
+    '  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py", line 238, in dumps\n' +
+    '    **kw).encode(obj)\n' +
+    '          ^^^^^^^^^^^\n' +
+    '  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 200, in encode\n' +
+    '    chunks = self.iterencode(o, _one_shot=True)\n' +
+    '             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+    '  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 258, in iterencode\n' +
+    '    return _iterencode(o, 0)\n' +
+    '           ^^^^^^^^^^^^^^^^^\n' +
+    '  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/encoder.py", line 180, in default\n' +
+    "    raise TypeError(f'Object of type {o.__class__.__name__} '\n" +
+    'TypeError: Object of type datetime is not JSON serializable\n'
+}

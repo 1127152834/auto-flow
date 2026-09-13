@@ -1,0 +1,2338 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T17:35:38.414Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "automatic",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "3bf74dddea65c43723bde1918f758229ea80926e",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.test.tsx",
+      "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx",
+      "apps/desktop/src/renderer/domains/projects/components/ProjectTabs.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.test.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/popover.test.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/popover.tsx",
+      "docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-pm2-detail-flows.mjs",
+      "scripts/smoke-project-data.mjs"
+    ],
+    "scriptSha256": "fb7a63e49944e72cafc1284f6f3bee5b2de63285f53e85fbc7c707e4fe606594",
+    "wrapperSha256": null,
+    "options": {
+      "recordPages": false,
+      "manual": false,
+      "visualDirectory": false
+    },
+    "desktopBuildSha256": "2ad0aaa45e774d4bb75e3a293adfadc44ff21a58ae0e7a82472460162c5a625a"
+  },
+  "checks": [
+    "UI创建A/B并依次打开，最近B在A之前",
+    "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+    "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+    "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+    "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+    "真实目录服务端分页50/2",
+    "指定文本字段输入不查询，提交后筛选实际记录",
+    "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+    "选列取消不生效、应用后隐藏字段",
+    "1440×1024及200%三个查询浮层无应用横向撑宽",
+    "测试服务完整重启，等待新实例ready",
+    "Electron完整重启后最近访问事实持久化",
+    "切换到工具创建的另一工作区",
+    "切换到工具创建的另一工作区",
+    "两个真实工作区隔离并切回恢复54个项目",
+    "一次读取故障由现有自动重试恢复，保留旧目录内容",
+    "一次读取失败保留旧目录；提交响应丢失后用原操作核验，只有一个项目事实",
+    "隔离API真实竞争编辑已提交；保留当前表单草稿后点击保存验证冲突",
+    "真实竞争编辑发生409，保留输入，基于最新内容重新编辑后保存"
+  ],
+  "checkScreenshotMap": [],
+  "injections": [
+    {
+      "kind": "save-dialog-selection",
+      "at": "2026-09-13T17:35:14.560Z",
+      "scope": "系统保存面板返回测试路径；真实文件IPC与写出"
+    },
+    {
+      "kind": "read",
+      "at": "2026-09-13T17:35:29.893Z",
+      "scope": "仅当前隔离renderer，fetch测试注入"
+    },
+    {
+      "kind": "read-error",
+      "at": "2026-09-13T17:35:33.539Z",
+      "scope": "仅当前隔离renderer，fetch测试注入"
+    },
+    {
+      "kind": "lost",
+      "at": "2026-09-13T17:35:36.894Z",
+      "scope": "仅当前隔离renderer，fetch测试注入"
+    }
+  ],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-loading",
+      "file": "r1-a-loading.png",
+      "stateSource": "fault-injection",
+      "navigation": "pointer",
+      "level": "E4",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "injection": "仅延迟首次真实项目GET；释放后请求真实后端，不伪造响应",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-a-recent",
+      "file": "r1-a-recent.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 158,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建B暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 104,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建A暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 730,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-b-empty",
+      "file": "r1-b-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        },
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 158,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "R1手建A",
+          "x": 204,
+          "y": 171,
+          "w": 107.8984375,
+          "h": 35
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "数据表",
+          "x": 104,
+          "y": 353,
+          "w": 90,
+          "h": 36
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-b-create-table",
+      "file": "r1-b-create-table.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "05-data/016-create-table-73d061.png",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        },
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 158,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "R1手建A",
+          "x": 204,
+          "y": 171,
+          "w": 107.8984375,
+          "h": 35
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "数据表",
+          "x": 104,
+          "y": 353,
+          "w": 90,
+          "h": 36
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-b-two-local-tables",
+      "file": "r1-b-two-local-tables.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        },
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "R1手建A",
+          "x": 204,
+          "y": 171,
+          "w": 107.8984375,
+          "h": 35
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "数据表",
+          "x": 104,
+          "y": 353,
+          "w": 90,
+          "h": 36
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "较长说明的本地数据表这是一张用于验证卡片信息和操作对齐的数据表，描述内容跨越两行时底部操作仍应对齐。本地表0 条记录0条本地记录本地可维护 · 更新于 2026",
+          "x": 104,
+          "y": 433,
+          "w": 608,
+          "h": 288
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "资料库存储采集的基础信息本地表0 条记录0条本地记录本地可维护 · 更新于 2026年9月14日 01:34打开数据表",
+          "x": 728,
+          "y": 433,
+          "w": 608,
+          "h": 288
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-d-record-created-toast",
+      "file": "r1-d-record-created-toast.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "记录已创建关闭",
+          "x": 1040,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "记录已创建关闭",
+          "x": 1040,
+          "y": 158,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-business-records",
+      "file": "r1-c-business-records.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-original-visible-columns",
+      "file": "r1-c-original-visible-columns.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-selected",
+      "file": "r1-c-selected.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 584,
+          "w": 1672,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-business-筛选",
+      "file": "r1-c-business-筛选.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选字段条件高级条件请选择请选择业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 865,
+          "y": 533,
+          "w": 512,
+          "h": 373
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-filter-nested-select",
+      "file": "r1-c-filter-nested-select.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选字段条件高级条件请选择请选择业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 865,
+          "y": 533,
+          "w": 512,
+          "h": 373
+        },
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webki",
+          "x": 882,
+          "y": 697,
+          "w": 235,
+          "h": 195
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-business-排序",
+      "file": "r1-c-business-排序.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录排序",
+          "text": "记录排序排序添加排序取消应用排序",
+          "x": 957,
+          "y": 533,
+          "w": 400,
+          "h": 208
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-business-显示列",
+      "file": "r1-c-business-显示列.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "显示列",
+          "text": "显示列标题文章链接发布日期已检查优先级取消应用显示列",
+          "x": 1049,
+          "y": 533,
+          "w": 288,
+          "h": 304
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-filter-populated",
+      "file": "r1-c-filter-populated.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选尚未应用字段条件高级条件标题包含业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 865,
+          "y": 533,
+          "w": 512,
+          "h": 465
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-filter-populated-200",
+      "file": "r1-c-filter-populated-200.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 129,
+          "y": 281,
+          "w": 157.47265625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 46,
+          "y": 573,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选尚未应用字段条件高级条件标题包含业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 184,
+          "y": 12,
+          "w": 512,
+          "h": 454
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-sort-populated",
+      "file": "r1-c-sort-populated.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录排序",
+          "text": "记录排序排序标题升序删除排序添加排序取消应用排序",
+          "x": 957,
+          "y": 533,
+          "w": 400,
+          "h": 260
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-zero-business-columns",
+      "file": "r1-c-zero-business-columns.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-B/R1-C",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-filter-and-state-applied",
+      "file": "r1-filter-and-state-applied.png",
+      "stateSource": "ui",
+      "navigation": "pointer-and-keyboard",
+      "level": "E1",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-sort-applied",
+      "file": "r1-sort-applied.png",
+      "stateSource": "ui",
+      "navigation": "pointer-and-keyboard",
+      "level": "E1",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/449025f5-1a81-47a3-aaa9-98f195e4c3f7/data/197ee62b-b9c2-47a0-b38a-d52015efcd9b/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 3
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "资料库",
+          "x": 209,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题文章链接发布日期已检查优先级业务状态最近修改操作",
+          "x": 126,
+          "y": 540,
+          "w": 1672,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-a-all-page2",
+      "file": "r1-a-all-page2.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1分页002工具生成的分页边界资料最近打开：从未打开",
+          "x": 104,
+          "y": 358,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1分页001工具生成的分页边界资料最近打开：从未打开",
+          "x": 730,
+          "y": 358,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-b-directory",
+      "file": "r1-b-directory.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/001-data-v1-approved-ca940d.png",
+      "legacyCaseGroup": "R1-B",
+      "referenceSha256": "ca940d758b68d6306bd2a60576b2ec5162a56f99fdef114a0fe5ef1ff21ec76d",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        },
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "R1分页001",
+          "x": 204,
+          "y": 171,
+          "w": 139.3046875,
+          "h": 35
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "数据表",
+          "x": 104,
+          "y": 353,
+          "w": 90,
+          "h": 36
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "分页资料库120 条合成记录本地表120 条记录120条本地记录本地可维护 · 更新于 2026年9月14日 01:35打开数据表",
+          "x": 104,
+          "y": 433,
+          "w": 608,
+          "h": 270
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-records",
+      "file": "r1-c-records.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 203,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 120,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-筛选",
+      "file": "r1-c-筛选.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/017-record-filter-672930.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "6729305d756d578389afdebc802d34928b445370be776d68965dced79b412c55",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "Excel 导出已完成关闭",
+          "x": 1028,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 203,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 120,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选字段条件高级条件请选择请选择业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 859,
+          "y": 533,
+          "w": 512,
+          "h": 373
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-排序",
+      "file": "r1-c-排序.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "Excel 导出已完成关闭",
+          "x": 1028,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 203,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 120,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录排序",
+          "text": "记录排序排序添加排序取消应用排序",
+          "x": 951,
+          "y": 533,
+          "w": 400,
+          "h": 208
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-显示列",
+      "file": "r1-c-显示列.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "Excel 导出已完成关闭",
+          "x": 1028,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 203,
+          "y": 363,
+          "w": 157.4765625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 120,
+          "y": 540,
+          "w": 1188,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "显示列",
+          "text": "显示列标题取消应用显示列",
+          "x": 1043,
+          "y": 533,
+          "w": 288,
+          "h": 176
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-筛选-200",
+      "file": "r1-c-筛选-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/017-record-filter-672930.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "6729305d756d578389afdebc802d34928b445370be776d68965dced79b412c55",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 129,
+          "y": 45,
+          "w": 157.47265625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 46,
+          "y": 337,
+          "w": 872,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录筛选",
+          "text": "记录筛选字段条件高级条件请选择请选择业务状态请选择两项条件同时满足时显示；业务状态仅属于本项目。清空条件取消应用筛选",
+          "x": 184,
+          "y": 282,
+          "w": 512,
+          "h": 218
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-排序-200",
+      "file": "r1-c-排序-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 129,
+          "y": -3,
+          "w": 157.47265625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 46,
+          "y": 289,
+          "w": 872,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "记录排序",
+          "text": "记录排序排序添加排序取消应用排序",
+          "x": 45,
+          "y": 282,
+          "w": 400,
+          "h": 208
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-c-显示列-200",
+      "file": "r1-c-显示列-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "05-data/002-records-c496e3.png",
+      "legacyCaseGroup": "R1-C",
+      "referenceSha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+      "route": "#/projects/cb43e4cb-824f-4bce-b734-e05930a4666e/data/a1351504-a971-40a6-86fd-5583ec5bca79/records",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 129,
+          "y": -3,
+          "w": 157.47265625,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态最近修改操作",
+          "x": 46,
+          "y": 289,
+          "w": 872,
+          "h": 48
+        },
+        {
+          "tag": "DIV",
+          "label": "显示列",
+          "text": "显示列标题取消应用显示列",
+          "x": 137,
+          "y": 282,
+          "w": 288,
+          "h": 176
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-after-restart",
+      "file": "r1-after-restart.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1分页001工具生成的分页边界资料最近打开：2026年9月14日 01:35",
+          "x": 104,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建A暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 730,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建B暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 104,
+          "y": 516,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段",
+        "1440×1024及200%三个查询浮层无应用横向撑宽",
+        "测试服务完整重启，等待新实例ready"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-read-failure",
+      "file": "r1-read-failure.png",
+      "stateSource": "fault-injection",
+      "navigation": "pointer",
+      "level": "E4",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "injection": "读取故障注入",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1分页001工具生成的分页边界资料最近打开：2026年9月14日 01:35",
+          "x": 104,
+          "y": 424,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建A暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 730,
+          "y": 424,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建B暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 104,
+          "y": 594,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段",
+        "1440×1024及200%三个查询浮层无应用横向撑宽",
+        "测试服务完整重启，等待新实例ready",
+        "Electron完整重启后最近访问事实持久化",
+        "切换到工具创建的另一工作区",
+        "切换到工具创建的另一工作区",
+        "两个真实工作区隔离并切回恢复54个项目",
+        "一次读取故障由现有自动重试恢复，保留旧目录内容"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-lost-response",
+      "file": "r1-lost-response.png",
+      "stateSource": "fault-injection",
+      "navigation": "pointer",
+      "level": "E4",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "injection": "提交后响应丢失注入",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 48
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1分页001工具生成的分页边界资料最近打开：2026年9月14日 01:35",
+          "x": 104,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建A暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 730,
+          "y": 346,
+          "w": 606,
+          "h": 150
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "R1手建B暂无项目描述最近打开：2026年9月14日 01:34",
+          "x": 104,
+          "y": 516,
+          "w": 606,
+          "h": 150
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段",
+        "1440×1024及200%三个查询浮层无应用横向撑宽",
+        "测试服务完整重启，等待新实例ready",
+        "Electron完整重启后最近访问事实持久化",
+        "切换到工具创建的另一工作区",
+        "切换到工具创建的另一工作区",
+        "两个真实工作区隔离并切回恢复54个项目",
+        "一次读取故障由现有自动重试恢复，保留旧目录内容"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "r1-real-conflict",
+      "file": "r1-real-conflict.png",
+      "stateSource": "ui-with-api-competition",
+      "navigation": "pointer",
+      "level": "E1",
+      "setupLevel": "E2",
+      "reference": "00-projects/100-projects-prototype-5238b4.png",
+      "legacyCaseGroup": "R1-A",
+      "referenceSha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+      "route": "#/projects/7034b8ba-a1ae-4499-bf35-61fd74fca757/overview",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        },
+        {
+          "familyName": ".SF NS",
+          "postScriptName": ".SFNS-Bold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "DIV",
+          "label": null,
+          "text": "项目已创建关闭",
+          "x": 1040,
+          "y": 96,
+          "w": 384,
+          "h": 54
+        },
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "R1响应丢失",
+          "x": 204,
+          "y": 171,
+          "w": 144.1328125,
+          "h": 35
+        }
+      ],
+      "checks": [
+        "UI创建A/B并依次打开，最近B在A之前",
+        "E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成",
+        "E1: 三个查询面板分别经取消/Escape/外部点击/切换关闭；草稿不生效且零记录请求",
+        "E1: 字段与状态AND、搜索清空保留高级条件、数字排序、无变化应用和显示列零额外查询通过",
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+        "真实目录服务端分页50/2",
+        "指定文本字段输入不查询，提交后筛选实际记录",
+        "当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致",
+        "选列取消不生效、应用后隐藏字段",
+        "1440×1024及200%三个查询浮层无应用横向撑宽",
+        "测试服务完整重启，等待新实例ready",
+        "Electron完整重启后最近访问事实持久化",
+        "切换到工具创建的另一工作区",
+        "切换到工具创建的另一工作区",
+        "两个真实工作区隔离并切回恢复54个项目",
+        "一次读取故障由现有自动重试恢复，保留旧目录内容",
+        "一次读取失败保留旧目录；提交响应丢失后用原操作核验，只有一个项目事实",
+        "隔离API真实竞争编辑已提交；保留当前表单草稿后点击保存验证冲突"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-Mz7re6",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

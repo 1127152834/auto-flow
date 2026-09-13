@@ -68,3 +68,7 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 ### Gallery G0 执行记录（2026-09-13，confirmed）
 
 用户已授权连续执行。共享Frame及页面装配完成；真实表名面包屑、200%页签换行与保存栏可见性修正。run-AatYpG真实隔离应用14项smoke通过，规格与工程问题闭合。这里只验收共用结构，R1目录与查询、R2原表单/详情、R3聚合字段仍需继续；单字段截图及B0历史评分不能证明全页还原。详见docs/project-management/design-alignment/acceptance/gallery-g0/review.md。
+
+### Gallery R1 退出（2026-09-14，confirmed）
+
+来源：acceptance/gallery-r1/machine-report.json、review.md及原PNG并排。a6a0e8e恢复原目录、项目头、同卡片记录表/工具/查询Popover；997前端测试、32后端定向及真实E2E通过，原图逐页至少85且硬结构通过。R1可进入R2，但用户手动/Windows/打包未执行，不能解释为项目管理全部完成。R2继续原003–007全页与确认；R3聚合字段仍待实施，PM3不在授权推进范围。
