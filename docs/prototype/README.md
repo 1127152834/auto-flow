@@ -5,6 +5,7 @@
 - [浏览器管理](./browser-management/browser-management-overview.png)：浏览器配置与内嵌 CloakBrowser 内核管理。
 - [代理管理](./proxy-management/proxy-management-overview.png)：ProxyPanel 代理舰队与 AutoFlow 本地代理组。
 - [设置](./settings/README.md)：常规、工作区和关于；包含缩放、动效偏好与诊断导出三项能力，已授权实施；验证见 [设置与总览实施状态](../migration/settings-dashboard-status.md)。
+- [安卓资源看板与二级页面](../../reference/redroid-demo/prototypes/2026-09-13/README.md)：2026-09-13 用户选定资源看板；手动控制、创建实例、工作流接管为配套目标原型，二级交互待评审，尚未接入正式模块。
 
 每个模块的交互、动效、弹窗、错误和空态规则位于对应的 `*-interactions.md`。原型图使用内置 imagegen 生成，后续实现必须先复用共享组件，再按原型和交互文档组装页面。
 
