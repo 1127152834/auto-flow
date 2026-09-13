@@ -1,6 +1,26 @@
-/** AutoFlow owns transport selection; no source-project port discovery or credentials. */
-export const getBackendBaseUrl = () => 'http://autoflow-studio.mock'
-export const getBackendPort = () => ''
+import { setStudioTransport, type StudioTransport } from './transport'
+
+let backendOrigin: string | undefined
+
+/** Compose before mounting Studio; disconnect existing event clients before replacing. */
+export function configureStudioConnection(origin: string, transport: StudioTransport): () => void {
+  const url = new URL(origin)
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
+      url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('Studio connection requires an HTTP origin without credentials or path')
+  }
+  const previous = backendOrigin
+  const restoreTransport = setStudioTransport(transport)
+  backendOrigin = url.origin
+  return () => { backendOrigin = previous; restoreTransport() }
+}
+
+/** AutoFlow owns connection selection; no source-project discovery or credentials. */
+export const getBackendBaseUrl = () => {
+  if (!backendOrigin) throw new Error('Studio connection has not been configured')
+  return backendOrigin
+}
+export const getBackendPort = () => new URL(getBackendBaseUrl()).port
 export const getFrontendPort = () => location.port
 export const setBackendPort = (_port: number | string) => { throw new Error('Studio connection is managed by AutoFlow') }
-export const preloadConfig = async () => {}
+export const preloadConfig = async () => { getBackendBaseUrl() }

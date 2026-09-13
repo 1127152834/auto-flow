@@ -12593,5 +12593,93 @@
     "level": "http protocol",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-parity.test.ts"
+  },
+  {
+    "id": "F1.connection.service-and-tool",
+    "capability": "Studio connection composition",
+    "preconditions": {
+      "service": "独立协议夹具"
+    },
+    "steps": [
+      "配置 origin 和 adapter",
+      "调用 apiRequest 和 studioFetch",
+      "恢复原连接"
+    ],
+    "expectedUI": "浏览器用例显示旧变量；其他为协议测试不挂载页面",
+    "expectedIO": "同一连接用于请求及 SSE；无真实自动化动作",
+    "stateAssertion": "两种请求命中同一 origin，恢复后使用旧 origin",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
+  },
+  {
+    "id": "F1.connection.invalid-origin",
+    "capability": "Studio connection composition",
+    "preconditions": {
+      "service": "独立协议夹具"
+    },
+    "steps": [
+      "依次配置 file、凭据、路径、查询、片段和无效 URL",
+      "请求当前服务"
+    ],
+    "expectedUI": "浏览器用例显示旧变量；其他为协议测试不挂载页面",
+    "expectedIO": "同一连接用于请求及 SSE；无真实自动化动作",
+    "stateAssertion": "6 类均拒绝且既有 transport 不变",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
+  },
+  {
+    "id": "F1.connection.http-sse",
+    "capability": "Studio connection composition",
+    "preconditions": {
+      "service": "独立协议夹具"
+    },
+    "steps": [
+      "启动本地 HTTP 夹具",
+      "装配 fetch",
+      "调用服务并接收分块 SSE"
+    ],
+    "expectedUI": "浏览器用例显示旧变量；其他为协议测试不挂载页面",
+    "expectedIO": "同一连接用于请求及 SSE；无真实自动化动作",
+    "stateAssertion": "真实 HTTP 响应和中文事件内容完整收到",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
+  },
+  {
+    "id": "F1.connection.unconfigured",
+    "capability": "Studio connection composition",
+    "preconditions": {
+      "service": "独立协议夹具"
+    },
+    "steps": [
+      "重新导入未装配模块",
+      "读取服务地址"
+    ],
+    "expectedUI": "浏览器用例显示旧变量；其他为协议测试不挂载页面",
+    "expectedIO": "同一连接用于请求及 SSE；无真实自动化动作",
+    "stateAssertion": "明确报错，不静默选择 Mock",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
+  },
+  {
+    "id": "F1.connection.browser-reopen",
+    "capability": "Studio connection composition",
+    "preconditions": {
+      "service": "独立协议夹具"
+    },
+    "steps": [
+      "刷新测试 Studio",
+      "打开 F2 零节点变量草稿",
+      "查看全局变量"
+    ],
+    "expectedUI": "浏览器用例显示旧变量；其他为协议测试不挂载页面",
+    "expectedIO": "同一连接用于请求及 SSE；无真实自动化动作",
+    "stateAssertion": "节点数 0；only_variable 的值为保留我",
+    "level": "browser UI",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
   }
 ]

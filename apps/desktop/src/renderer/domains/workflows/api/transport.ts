@@ -1,8 +1,6 @@
-import { mockRequest } from './mock-server'
-
 /** Single IO seam for migrated requests. No mutation of global fetch. */
 export type StudioTransport = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
-let transport: StudioTransport = mockRequest
+let transport: StudioTransport = (input, init) => fetch(input, init)
 export function setStudioTransport(next: StudioTransport): () => void {
   const previous = transport
   transport = next

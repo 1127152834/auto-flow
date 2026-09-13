@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/renderer/domains/workflows/tests/setup-connection.ts'],
   },
 })

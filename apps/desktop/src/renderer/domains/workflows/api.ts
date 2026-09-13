@@ -7,16 +7,16 @@ function getApiBase(): string {
   return `${getBackendBaseUrl()}/api`
 }
 
-let API_BASE = getApiBase()
 
-// 配置变化后刷新 API_BASE，确保后续请求使用最新地址
+
+// 兼容旧调用入口；地址现在在每次请求时读取，不缓存旧连接。
 export function updateApiBase() {
-  API_BASE = getApiBase()
+  getApiBase()
 }
 
 // 获取当前 API 基础地址
 export function getApiBaseUrl(): string {
-  return API_BASE
+  return getApiBase()
 }
 
 // 获取后端服务 URL（不含 /api 前缀）
@@ -44,7 +44,7 @@ export async function apiRequest<T = any>(
     const { preloadConfig } = await import('./api/config')
     await preloadConfig()
     
-    const url = `${API_BASE}${endpoint}`
+    const url = `${getApiBase()}${endpoint}`
     const isFormData = options.body instanceof FormData
     const _authToken = getAuthToken()
     const _authHeader: Record<string, string> = _authToken ? { 'X-WebRPA-Token': _authToken } : {}

@@ -1,0 +1,543 @@
+studio-composition-target.log
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/tests/connection-composition.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:20819) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  23:53:12
+   Duration  801ms (transform 99ms, setup 85ms, import 37ms, tests 32ms, environment 541ms)
+
+
+studio-composition-all.log
+
+> test
+> npm --workspace @autoflow/desktop test --run
+
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:22295) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22298) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22294) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22292) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22301) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22300) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22302) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22299) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22296) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22304) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22293) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22805) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22806) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22826) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22829) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22830) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22831) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22832) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22835) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22834) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22836) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22837) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22838) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22839) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22844) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22840) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22842) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22841) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22843) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22845) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22846) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22847) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22853) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22852) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22854) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22856) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22855) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22857) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22859) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22858) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22861) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22860) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22862) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22863) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22865) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22866) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22874) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22867) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22868) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22875) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22869) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22870) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22871) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22872) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22873) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22876) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22877) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22878) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22879) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22880) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22886) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22881) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22883) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22884) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22882) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22885) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22888) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22889) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22890) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22891) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22894) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22895) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22896) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22898) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22900) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22899) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22901) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22902) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22903) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22904) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22905) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22906) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22907) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22915) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22916) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22908) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22909) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22910) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22911) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22913) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22912) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22917) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22919) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22922) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22918) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22921) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22924) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22925) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  98 passed (98)
+      Tests  1146 passed (1146)
+   Start at  23:53:26
+   Duration  16.93s (transform 7.61s, setup 3.80s, import 41.83s, tests 66.37s, environment 55.97s)
+
+
+studio-composition-checks.log
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+
+> lint
+> npm --workspace @autoflow/desktop run lint
+
+
+> @autoflow/desktop@0.1.0 lint
+> eslint .
+
+
+> build
+> npm --workspace @autoflow/desktop run build
+
+
+> @autoflow/desktop@0.1.0 build
+> electron-vite build
+
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 10 modules transformed.
+rendering chunks...
+out/main/index.js  48.03 kB
+✓ built in 106ms
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+out/preload/index.js  2.10 kB
+✓ built in 7ms
+vite v7.3.6 building client environment for production...
+transforming...
+../../node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../node_modules/zod/v4/core/regexes.js (72:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 10550 modules transformed.
+rendering chunks...
+[plugin vite:reporter]
+(!) /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.ts is dynamically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts but also statically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/api/config.ts is dynamically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/api.ts, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/VariableTrackingPanel.tsx but also statically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/api.ts, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/events.ts, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/studio.tsx, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/events.ts is dynamically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/editor-store.ts but also statically imported by /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/SubflowMonitorDialog.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/hooks/useClipboardImageMonitor.ts, /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts, dynamic import will not move module into another chunk.
+
+../../out/renderer/studio.html                                           0.46 kB
+../../out/renderer/index.html                                            0.47 kB
+../../out/renderer/assets/ollama-Cko46lRu.svg                            6.87 kB
+../../out/renderer/assets/gemini-BYkEpiWr.svg                           27.79 kB
+../../out/renderer/assets/qwen-AEXkUelR.png                             74.25 kB
+../../out/renderer/assets/codicon-ngg6Pgfi.ttf                         121.97 kB
+../../out/renderer/assets/json.worker-r5IVm0zS.js                      840.03 kB
+../../out/renderer/assets/html.worker-5fBvJVFp.js                    1,241.56 kB
+../../out/renderer/assets/css.worker-CsqbzYvt.js                     1,865.96 kB
+../../out/renderer/assets/ts.worker-CL8L56yC.js                     13,264.04 kB
+../../out/renderer/assets/main-CebBoJ5u.css                            182.73 kB
+../../out/renderer/assets/AICodeAssistant-B6UfNlAV.css                 206.31 kB
+../../out/renderer/assets/studio-BBhmGDFZ.css                          244.31 kB
+../../out/renderer/assets/channel-8IBEQUpP.js                            0.20 kB
+../../out/renderer/assets/init-ZxktEp_H.js                               0.26 kB
+../../out/renderer/assets/chunk-JWPE2WC7-DWjVM-5L.js                     0.37 kB
+../../out/renderer/assets/chunk-2Q5K7J3B-aBWFQxO3.js                     0.38 kB
+../../out/renderer/assets/chunk-5VM5RSS4-uJHoqLBH.js                     0.43 kB
+../../out/renderer/assets/chunk-XXDRQBXY-BoNMyef9.js                     0.52 kB
+../../out/renderer/assets/stateDiagram-v2-MP3YSRHH-C67MmQj2.js           0.74 kB
+../../out/renderer/assets/classDiagram-ZZMXUADV-BSuni6xP.js              0.78 kB
+../../out/renderer/assets/classDiagram-v2-VYDZK3BY-BSuni6xP.js           0.78 kB
+../../out/renderer/assets/swimlanesDiagram-VR7AAH4N-DnfbafBP.js          0.78 kB
+../../out/renderer/assets/infoDiagram-27XIBGKW-BR8I7phz.js               1.02 kB
+../../out/renderer/assets/chunk-POPQ4Y6H-DalRzzVo.js                     1.07 kB
+../../out/renderer/assets/azcli-BEAhqcuE.js                              1.30 kB
+../../out/renderer/assets/javascript-DbRQ_kAB.js                         1.38 kB
+../../out/renderer/assets/ini-BcQysCTb.js                                1.67 kB
+../../out/renderer/assets/csp-D_3BK2Wp.js                                1.70 kB
+../../out/renderer/assets/sizeCapture-INFHLROL-BG52vbAT.js               1.81 kB
+../../out/renderer/assets/content-share-BPnfddaU.js                      2.02 kB
+../../out/renderer/assets/content-share.en-BuzMqhU9.js                   2.04 kB
+../../out/renderer/assets/ordinal-CxptdPJm.js                            2.20 kB
+../../out/renderer/assets/scheme-D7PxodDG.js                             2.36 kB
+../../out/renderer/assets/bat-Bqkp9Cfu.js                                2.66 kB
+../../out/renderer/assets/flow9-ZSTChSMd.js                              2.76 kB
+../../out/renderer/assets/sb-Chfc_wZF.js                                 2.81 kB
+../../out/renderer/assets/xml-oADwITcd.js                                2.82 kB
+../../out/renderer/assets/railroadDiagram-O6MQD6OU-LA1lmyoA.js           2.86 kB
+../../out/renderer/assets/pla-DEV89yYj.js                                2.87 kB
+../../out/renderer/assets/dockerfile--oxj0cAH.js                         3.02 kB
+../../out/renderer/assets/pascaligo-VA_LQ1oU.js                          3.25 kB
+../../out/renderer/assets/lua-hNsuGJkO.js                                3.43 kB
+../../out/renderer/assets/bicep-DIlfshcM.js                              3.44 kB
+../../out/renderer/assets/objective-c-B1L1C5EC.js                        3.48 kB
+../../out/renderer/assets/abnfDiagram-VCTEODGH-DI3DJdxe.js               3.48 kB
+../../out/renderer/assets/cameligo-CLaaYNMV.js                           3.51 kB
+../../out/renderer/assets/pegDiagram-XKGWAZYB-Dk1E-fvw.js                3.72 kB
+../../out/renderer/assets/graphql-BeiGgjIU.js                            3.77 kB
+../../out/renderer/assets/chunk-F27PBJKO-z_mPQ540.js                     3.79 kB
+../../out/renderer/assets/lexon-C1U0m2n9.js                              3.81 kB
+../../out/renderer/assets/content-ssh.en-CuX0cnOw.js                     3.88 kB
+../../out/renderer/assets/ebnfDiagram-PWID7BFC-DR1f6edF.js               3.89 kB
+../../out/renderer/assets/typespec-R77Ln7Jb.js                           3.90 kB
+../../out/renderer/assets/sparql-DxuVdnRl.js                             3.94 kB
+../../out/renderer/assets/content-ssh-DfJ764SH.js                        3.96 kB
+../../out/renderer/assets/mips-CJm71dS3.js                               4.14 kB
+../../out/renderer/assets/m3-6ko6q9-_.js                                 4.15 kB
+../../out/renderer/assets/sophia-D7pU0Y1d.js                             4.27 kB
+../../out/renderer/assets/content-plugin-dev-BMNBDxQ4.js                 4.47 kB
+../../out/renderer/assets/shell-vZEubQ82.js                              4.48 kB
+../../out/renderer/assets/go-brnMpFrj.js                                 4.49 kB
+../../out/renderer/assets/fsharp-D2uoxuLH.js                             4.51 kB
+../../out/renderer/assets/content-plugin-dev.en-ZCX344gL.js              4.63 kB
+../../out/renderer/assets/pascal-DMQyD4Xk.js                             4.71 kB
+../../out/renderer/assets/r-CtqYUQ6l.js                                  4.80 kB
+../../out/renderer/assets/less-B7Qaxw-O.js                               5.00 kB
+../../out/renderer/assets/tcl-Bb4GCwBr.js                                5.05 kB
+../../out/renderer/assets/content-network.en-BIVnb48q.js                 5.06 kB
+../../out/renderer/assets/qsharp-BWK6YLKm.js                             5.14 kB
+../../out/renderer/assets/liquid-BmXH8rnq.js                             5.15 kB
+../../out/renderer/assets/cypher-D0--_GAN.js                             5.15 kB
+../../out/renderer/assets/java-Dt3iMn2o.js                               5.16 kB
+../../out/renderer/assets/kotlin-Ddo1SjA5.js                             5.20 kB
+../../out/renderer/assets/content-math-flow.en-Bc5UFQJn.js               5.20 kB
+../../out/renderer/assets/hcl-CrX1Es2W.js                                5.21 kB
+../../out/renderer/assets/content-network-B6XBZ5rA.js                    5.24 kB
+../../out/renderer/assets/redis-O7gSt3oh.js                              5.25 kB
+../../out/renderer/assets/restructuredtext-B-KQCVu_.js                   5.33 kB
+../../out/renderer/assets/content-math-flow-BGrjyYc5.js                  5.35 kB
+../../out/renderer/assets/content-utils.en-Bd0hq-Wd.js                   5.36 kB
+../../out/renderer/assets/content-bots.en-B-TmpHzc.js                    5.36 kB
+../../out/renderer/assets/powershell-BXiKvz7Z.js                         5.39 kB
+../../out/renderer/assets/content-bots-CtDB5B-4.js                       5.48 kB
+../../out/renderer/assets/coffee-CzJ5oEdj.js                             5.51 kB
+../../out/renderer/assets/content-utils-CYE7aCmU.js                      5.58 kB
+../../out/renderer/assets/content-ai-vision-CIEFmelk.js                  5.62 kB
+../../out/renderer/assets/content-word-D17tE9dA.js                       5.74 kB
+../../out/renderer/assets/mdx-Dl0RUKDD.js                                5.83 kB
+../../out/renderer/assets/content-word.en-DimNEHBN.js                    5.86 kB
+../../out/renderer/assets/yaml-BDSS8mdh.js                               5.88 kB
+../../out/renderer/assets/content-ai-vision.en-Lod1ofsq.js               5.89 kB
+../../out/renderer/assets/css-i3rI3_64.js                                6.10 kB
+../../out/renderer/assets/cssMode-WqUJ-iE_.js                            6.22 kB
+../../out/renderer/assets/content-input.en-BYGztQb-.js                   6.24 kB
+../../out/renderer/assets/rust-B1c0VCeq.js                               6.27 kB
+../../out/renderer/assets/content-input-yOVvs1M9.js                      6.32 kB
+../../out/renderer/assets/apex-DVGUZ64i.js                               6.39 kB
+../../out/renderer/assets/content-notify.en-DyptJHBF.js                  6.48 kB
+../../out/renderer/assets/dart-vLMHv35g.js                               6.48 kB
+../../out/renderer/assets/python-CZWpQzgK.js                             6.51 kB
+../../out/renderer/assets/markdown-B0YTnTxW.js                           6.65 kB
+../../out/renderer/assets/swift-CbF6f74o.js                              6.92 kB
+../../out/renderer/assets/arc-CDPDd-ML.js                                6.94 kB
+../../out/renderer/assets/msdax-BBeIktCY.js                              6.95 kB
+../../out/renderer/assets/htmlMode-CKy03WhU.js                           6.96 kB
+../../out/renderer/assets/csharp-BJeIuvde.js                             6.98 kB
+../../out/renderer/assets/content-notify-CclSykH5.js                     7.02 kB
+../../out/renderer/assets/content-sap.en-ChB74M_s.js                     7.19 kB
+../../out/renderer/assets/content-debug.en-GdqfjfWb.js                   7.24 kB
+../../out/renderer/assets/diagram-Z3DM3KII-B1RNiLvJ.js                   7.38 kB
+../../out/renderer/assets/html-BIkjryrj.js                               7.63 kB
+../../out/renderer/assets/content-debug-B5UMiQ-2.js                      7.63 kB
+../../out/renderer/assets/content-files.en-igkQpFBI.js                   7.67 kB
+../../out/renderer/assets/typescript-B8NKIpA-.js                         7.91 kB
+../../out/renderer/assets/ecl-CeuUgzaZ.js                                7.94 kB
+../../out/renderer/assets/cpp-CcN6f0ik.js                                8.22 kB
+../../out/renderer/assets/content-files-Gcm44Bdm.js                      8.24 kB
+../../out/renderer/assets/pug-BxCXwerb.js                                8.26 kB
+../../out/renderer/assets/vb-Bm6ESA0Q.js                                 8.33 kB
+../../out/renderer/assets/content-patterns-3_DgOdQV.js                   8.73 kB
+../../out/renderer/assets/content-platform-BefyeyAK.js                   8.87 kB
+../../out/renderer/assets/scss-B42qMyAu.js                               9.07 kB
+../../out/renderer/assets/content-sap-B8AXE_rW.js                        9.20 kB
+../../out/renderer/assets/content-scheduled-tasks.en-SIKFfs5x.js         9.26 kB
+../../out/renderer/assets/defaultLocale-B2RvLBDe.js                      9.37 kB
+../../out/renderer/assets/content-patterns.en-Brgof4h4.js                9.38 kB
+../../out/renderer/assets/content-image-BL3VPLEc.js                      9.45 kB
+../../out/renderer/assets/content-variables.en-BSgpq13p.js               9.55 kB
+../../out/renderer/assets/content-platform.en-CDEoyg3N.js                9.56 kB
+../../out/renderer/assets/linear-Lt7X1LTw.js                             9.59 kB
+../../out/renderer/assets/content-ai-assistant-CYnf9Gf0.js               9.64 kB
+../../out/renderer/assets/content-scheduled-tasks-D9fXkiuo.js            9.68 kB
+../../out/renderer/assets/wgsl-_KPae5vw.js                               9.78 kB
+../../out/renderer/assets/content-database.en-Cxfar-MX.js                9.84 kB
+../../out/renderer/assets/content-test-report-D32Do0Jm.js                9.96 kB
+../../out/renderer/assets/content-variables-ZcPHBh6M.js                 10.07 kB
+../../out/renderer/assets/st-C-b0Dh53.js                                10.15 kB
+../../out/renderer/assets/content-notifications-BzJVQzDR.js             10.24 kB
+../../out/renderer/assets/twig-DvgEGWAV.js                              10.26 kB
+../../out/renderer/assets/content-feishu-XHFxOJEq.js                    10.26 kB
+../../out/renderer/assets/content-ai-assistant.en-Dy7W5GdN.js           10.37 kB
+../../out/renderer/assets/handlebars-CygF6VN4.js                        10.41 kB
+../../out/renderer/assets/content-browser-KQpCcC8D.js                   10.42 kB
+../../out/renderer/assets/content-test-report.en-vx9BOw8g.js            10.44 kB
+../../out/renderer/assets/content-database-BnA_VX2F.js                  10.44 kB
+../../out/renderer/assets/content-image.en-FFtgZ_x6.js                  10.52 kB
+../../out/renderer/assets/julia-Cm3ItYL_.js                             10.54 kB
+../../out/renderer/assets/content-browser.en-CUa5Jcjh.js                10.59 kB
+../../out/renderer/assets/content-feishu.en--FyIyA4f.js                 10.62 kB
+../../out/renderer/assets/scala-DbVzH-3O.js                             10.70 kB
+../../out/renderer/assets/content-excel.en-nzV3X0JN.js                  10.71 kB
+../../out/renderer/assets/content-excel-CeAlGLUy.js                     11.07 kB
+../../out/renderer/assets/content-custom-modules-DfY3e4pD.js            11.13 kB
+../../out/renderer/assets/content-notifications.en-DEK_XhB9.js          11.15 kB
+../../out/renderer/assets/diagram-UQ7AKVKN-nZhHDbJf.js                  11.45 kB
+../../out/renderer/assets/systemverilog-BOC0OOdC.js                     11.63 kB
+../../out/renderer/assets/content-custom-modules.en-BOyCzsRj.js         12.37 kB
+../../out/renderer/assets/php-Bkx1qpkQ.js                               12.48 kB
+../../out/renderer/assets/content-getting-started.en-QLTG8aeN.js        12.51 kB
+../../out/renderer/assets/pieDiagram-E7YTZNPT-CTOFVbPC.js               12.57 kB
+../../out/renderer/assets/protobuf-CndvAUGu.js                          12.68 kB
+../../out/renderer/assets/perl-DC0Z0tlO.js                              12.82 kB
+../../out/renderer/assets/content-cases-BcwWLbTM.js                     13.09 kB
+../../out/renderer/assets/razor-HMY8HnwE.js                             13.34 kB
+../../out/renderer/assets/content-cases.en-Cqqh0-P8.js                  13.75 kB
+../../out/renderer/assets/clojure-fcgFaMHx.js                           13.94 kB
+../../out/renderer/assets/content-selector-CQqMfVws.js                  14.10 kB
+../../out/renderer/assets/content-pdf-BafTjORc.js                       14.21 kB
+../../out/renderer/assets/content-selector.en-Dw5jGknA.js               14.35 kB
+../../out/renderer/assets/content-pdf.en-Cr3hnS7s.js                    15.27 kB
+../../out/renderer/assets/ruby-DCd4DmAr.js                              15.31 kB
+../../out/renderer/assets/content-tips-Dv0ST71R.js                      15.47 kB
+../../out/renderer/assets/sql-BAGepFCR.js                               15.56 kB
+../../out/renderer/assets/content-desktop-BwwY-dNJ.js                   15.91 kB
+../../out/renderer/assets/diagram-S7CK7UJ4-DqHpkIy4.js                  16.04 kB
+../../out/renderer/assets/mysql-BWiizXSn.js                             16.16 kB
+../../out/renderer/assets/redshift-CvYMMYZY.js                          16.33 kB
+../../out/renderer/assets/JsEditorDialog-C84PSsTf.js                    16.34 kB
+../../out/renderer/assets/content-data.en-D8mkiSDP.js                   16.69 kB
+../../out/renderer/assets/content-tips.en-Csg92cQ4.js                   17.34 kB
+../../out/renderer/assets/content-desktop.en-c-kWFeZp.js                17.45 kB
+../../out/renderer/assets/content-data-BjejM5tN.js                      18.21 kB
+../../out/renderer/assets/pgsql-DaSGFTLp.js                             18.25 kB
+../../out/renderer/assets/content-phone-Cv5RuUCb.js                     18.33 kB
+../../out/renderer/assets/InjectJsEditorDialog-CRfoa5ng.js              18.37 kB
+../../out/renderer/assets/cynefinDiagram-5FMLGOSQ-BPTo0s3G.js           18.37 kB
+../../out/renderer/assets/elixir-eLfY1jWH.js                            18.74 kB
+../../out/renderer/assets/stateDiagram-D77RDMKH-BU0DBT8Y.js             19.07 kB
+../../out/renderer/assets/PythonEditorDialog-DzTR3pQK.js                19.25 kB
+../../out/renderer/assets/postiats-CVVurEnu.js                          19.30 kB
+../../out/renderer/assets/content-basic.en-DkuFtZnq.js                  19.42 kB
+../../out/renderer/assets/content-triggers-CqLNlIwE.js                  19.71 kB
+../../out/renderer/assets/content-module-reference-DvaczgQV.js          19.84 kB
+../../out/renderer/assets/content-phone.en-B0DWHqul.js                  19.98 kB
+../../out/renderer/assets/content-basic-Dg-aqDwr.js                     21.34 kB
+../../out/renderer/assets/diagram-VSXAHHWV-tV7H8kkA.js                  21.61 kB
+../../out/renderer/assets/powerquery-BQ_t1ZiQ.js                        21.65 kB
+../../out/renderer/assets/content-media-Dc2rUm8r.js                     21.90 kB
+../../out/renderer/assets/content-module-reference.en-C5UKShuL.js       21.99 kB
+../../out/renderer/assets/content-triggers.en-jTEYSOUR.js               22.58 kB
+../../out/renderer/assets/abap-D5KwWAsZ.js                              22.97 kB
+../../out/renderer/assets/dagre-GXQ25YYZ-CfRlh_SJ.js                    23.32 kB
+../../out/renderer/assets/content-media.en-68YrO5Q6.js                  23.87 kB
+../../out/renderer/assets/solidity-yHOxYChb.js                          26.03 kB
+../../out/renderer/assets/jsonMode-CBrQj7RM.js                          29.19 kB
+../../out/renderer/assets/chunk-SVP7TREG-JSayQXe4.js                    30.85 kB
+../../out/renderer/assets/diagram-VX7I27RA-BHgnCJ27.js                  32.39 kB
+../../out/renderer/assets/ishikawaDiagram-5VMMS53U-DdWYwL6U.js          35.11 kB
+../../out/renderer/assets/kanban-definition-UXKFOSKX-DCIk4Pdx.js        38.14 kB
+../../out/renderer/assets/tsMode-Drd_Ywro.js                            40.39 kB
+../../out/renderer/assets/freemarker2-kGsrYND3.js                       42.17 kB
+../../out/renderer/assets/mindmap-definition-YA3MSWOX-DzQLN1Iq.js       43.32 kB
+../../out/renderer/assets/wardleyDiagram-VM6X3IG4-CtzwjFjQ.js           44.54 kB
+../../out/renderer/assets/journeyDiagram-3NMN7TZE-9FAGOVVK.js           45.32 kB
+../../out/renderer/assets/sankeyDiagram-P5KCCOFB-NgxMeqDI.js            46.18 kB
+../../out/renderer/assets/requirementDiagram-BXWQKSXE-DYTcviJ2.js       52.58 kB
+../../out/renderer/assets/erDiagram-RLTQ6QDP-C7sblAFk.js                56.23 kB
+../../out/renderer/assets/gitGraphDiagram-WWUBYQGX-BNnfQSYE.js          57.51 kB
+../../out/renderer/assets/timeline-definition-24CTP7MA-B_dJel6I.js      60.53 kB
+../../out/renderer/assets/quadrantDiagram-AXDQQJYC-CE51orUX.js          61.67 kB
+../../out/renderer/assets/lspLanguageFeatures-BFi8vs_V.js               61.70 kB
+../../out/renderer/assets/index-CQTLaIKw.js                             66.87 kB
+../../out/renderer/assets/chunk-IMKFNOWR-CuncXytM.js                    72.88 kB
+../../out/renderer/assets/content-advanced-CmtEubRm.js                  73.77 kB
+../../out/renderer/assets/blockDiagram-I7D4REHJ-Bnr3nZaB.js             76.04 kB
+../../out/renderer/assets/layout-BwiaoJ1g.js                            78.73 kB
+../../out/renderer/assets/content-advanced.en-TAeFWwS_.js               82.52 kB
+../../out/renderer/assets/xychartDiagram-S5SC5T6Z-DOZuSlzZ.js           83.28 kB
+../../out/renderer/assets/chunk-TICWLB2K-BmK5EnWS.js                    84.50 kB
+../../out/renderer/assets/vennDiagram-4TSXK5OY-JyYZXl0L.js              88.88 kB
+../../out/renderer/assets/flowDiagram-HODETNUW-B4QVYR6H.js             105.36 kB
+../../out/renderer/assets/c4Diagram-7LVT6UL2-DjjkAy4D.js               111.16 kB
+../../out/renderer/assets/ganttDiagram-EL5Y4UJY-CSV35Ryw.js            133.58 kB
+../../out/renderer/assets/sequenceDiagram-WJ2MYXX4-Cb-vRnIC.js         201.70 kB
+../../out/renderer/assets/cose-bilkent-JH36ORCC-BIa4yofU.js            214.57 kB
+../../out/renderer/assets/swimlanes-42K2YHIH-qWEz4KRZ.js               298.69 kB
+../../out/renderer/assets/html2canvas.esm-CMq0_Xqz.js                  349.46 kB
+../../out/renderer/assets/architectureDiagram-5GKGNRK7-DThqAo3I.js     423.27 kB
+../../out/renderer/assets/katex-oVG3DVWa.js                            484.52 kB
+../../out/renderer/assets/main-Bbi4z6t6.js                             854.45 kB
+../../out/renderer/assets/cytoscape.esm-Ct9zsnh1.js                    961.04 kB
+../../out/renderer/assets/events-B3x0Mqre.js                           991.36 kB
+../../out/renderer/assets/mermaid.core-wirmXw9o.js                   1,092.67 kB
+../../out/renderer/assets/cynefin-OW5HDTMX-DvoVwKTh.js               1,304.47 kB
+../../out/renderer/assets/AICodeAssistant-j26Agx8m.js                7,341.64 kB
+../../out/renderer/assets/studio-BtHQS-uu.js                         7,718.33 kB
+✓ built in 31.60s
