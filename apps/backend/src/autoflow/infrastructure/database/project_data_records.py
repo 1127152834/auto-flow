@@ -198,6 +198,7 @@ class SqlAlchemyProjectDataRecords:
                         DataStatusRow.project_id == project_id,
                         DataStatusRow.table_id == table_id,
                         DataStatusRow.id == status_id,
+                        DataStatusRow.deleted.is_(False),
                     )
                 )
                 is None

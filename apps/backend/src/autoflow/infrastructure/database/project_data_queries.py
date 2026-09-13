@@ -80,6 +80,7 @@ class SqlAlchemyProjectDataQueries:
                         select(DataStatusRow).where(
                             DataStatusRow.project_id == project_id,
                             DataStatusRow.table_id == table_id,
+                            DataStatusRow.deleted.is_(False),
                         )
                     )
                 )

@@ -277,6 +277,7 @@ class SqlAlchemyProjectDataCatalog:
                 .where(
                     DataStatusRow.project_id == project_id,
                     DataStatusRow.table_id == table_id,
+                    DataStatusRow.deleted.is_(False),
                 )
                 .order_by(DataStatusRow.position, DataStatusRow.id)
             ).all()
@@ -311,6 +312,7 @@ class SqlAlchemyProjectDataCatalog:
                 color=value["color"],
                 position=value["order"],
                 status_revision=1,
+                deleted=False,
             )
             table.table_revision += 1
             table.updated_at = datetime.now(UTC)
@@ -354,6 +356,7 @@ class SqlAlchemyProjectDataCatalog:
                     DataStatusRow.project_id == project_id,
                     DataStatusRow.table_id == table_id,
                     DataStatusRow.id == status_id,
+                    DataStatusRow.deleted.is_(False),
                 )
             )
             if row is None:
