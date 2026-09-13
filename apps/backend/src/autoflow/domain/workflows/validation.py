@@ -184,6 +184,11 @@ def workflow_issues(document: dict[str, Any]) -> list[WorkflowIssue]:
                         issue("INVALID_FRAME_PATH", "框架路径须为非空选择器", [*path, str(index)], node["id"])
             if "enum" in definition and value not in definition["enum"]:
                 issue("INVALID_CONFIG_VALUE", "请选择有效选项", path, node["id"])
+            if node["type"].startswith("android_"):
+                if field in {"x", "y", "basisWidth", "basisHeight"} and (type(value) is not int or value < (1 if field.startswith("basis") else 0)):
+                    issue("INVALID_COORDINATE", "坐标与画面尺寸必须为有效整数", path, node["id"])
+                if field == "timeoutSeconds" and not (30 <= value <= 3600 if node["type"] == "android_manual" else 0 < value <= 180):
+                    issue("INVALID_TIMEOUT", "安卓操作超时超出允许范围", path, node["id"])
             if field == "timeoutSeconds" and value <= 0:
                 issue("INVALID_TIMEOUT", "超时须大于 0 秒", path, node["id"])
             if field == "variableName" and value and not _name(value):

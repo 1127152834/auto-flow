@@ -156,3 +156,10 @@ class WorkflowRunEventRow(Base):
     )
     seq: Mapped[int] = mapped_column(Integer, primary_key=True)
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class AndroidDeviceRow(Base):
+    __tablename__ = "android_devices"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    owner_run_id: Mapped[str | None] = mapped_column(String(36))
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)

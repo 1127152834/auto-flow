@@ -1,0 +1,33 @@
+2026-09-13 Mac ARM64 final verification (formal M3 base d43ee31)
+
+Python full suite: 548 passed, 2 existing deprecation warnings (72.80 seconds)
+React full suite: 415 passed, 64 files (15.53 seconds)
+Ruff src/tests: passed
+mypy src: 169 source files passed
+TypeScript: passed
+ESLint: passed
+OpenAPI check: passed
+Script tests: 12 passed
+Structure tests: 3 passed
+Vite build: passed
+PyInstaller build: passed
+Mac package:dir: passed (unsigned local build)
+Source Android: happy path + missing app + stale coordinates + tap + stop + deadline
+Frozen Android: same checks + SIGKILL sidecar recovery
+Packaged Mac UI: real device, native keyboard, explicit continue, screenshots, idle
+Browser runs: 8 real groups passed
+M3 worker: 5 real groups passed
+
+One prior full Python run had a failure in the existing browser worker's
+50ms cleanup test during parallel builds (547 passed / 1 failed). All three
+stop phases passed alone; final full rerun passed all 548. Runtime cleanup
+confirmation was not relaxed.
+
+An existing ProfileFormDialog viewport focus test asserted before the
+component's requestAnimationFrame callback. It now waits for actual focus;
+the assertion itself is retained. Final full frontend run passed all 415.
+
+After the full backend run, volume ownership validation was tightened to
+check both workspace and device labels. The targeted Android runtime suite
+(9 tests) and Ruff/mypy were rerun successfully. No behavior change to the
+browser executor or its cleanup implementation.

@@ -121,14 +121,14 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
         ordered.append(current)
         node = nodes[current]
         config = node["config"]
-        for field in ("url", "selector", "framePath", "text", "savePath"):
+        for field in ("url", "selector", "framePath", "text", "savePath", "packageName", "prompt"):
             # A hidden element selector is not used by viewport/full-page screenshots.
             if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":
                 continue
             for name, path in _references(config.get(field), ["config", field]):
                 if name not in available:
                     _fail("VARIABLE_NOT_AVAILABLE", f"变量 {name} 在此节点执行前尚未产生", path, current)
-        if node["type"] in {"get_element_info", "screenshot"}:
+        if node["type"] in {"get_element_info", "screenshot", "android_screenshot"}:
             available.add(config["variableName"])
         current = outgoing.get(current)
     return PreparedWorkflow(effective, ordered, variables, warnings)
@@ -136,7 +136,7 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
 
 def resolve_node_config(node: dict[str, Any], variables: dict[str, Any]) -> dict[str, Any]:
     config = deepcopy(node["config"])
-    for field in ("url", "selector", "framePath", "text", "savePath"):
+    for field in ("url", "selector", "framePath", "text", "savePath", "packageName", "prompt"):
         if field not in config:
             continue
         if field in {"selector", "framePath"} and node["type"] == "screenshot" and config["screenshotType"] != "element":

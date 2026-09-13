@@ -6,6 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from autoflow.domain.android.ports import AndroidError
 from autoflow.domain.kernels.errors import (
     KernelBusy,
     KernelCredentialStoreUnavailable,
@@ -161,6 +162,10 @@ def install_error_handlers(app: FastAPI) -> None:
                 {"fields": {"apiKey": "API key is required"}},
             )
         return error_response(422, "VALIDATION_ERROR", "Request validation failed", {"fields": fields})
+
+    @app.exception_handler(AndroidError)
+    async def android_error(_request: Request, error: AndroidError) -> JSONResponse:
+        return error_response(error.status, error.code, error.message)
 
     @app.exception_handler(WorkflowError)
     async def workflow_error(_request: Request, error: WorkflowError) -> JSONResponse:

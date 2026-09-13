@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.events.kernels import kernels_events_router
 from autoflow.adapters.events.workflows import workflow_events_router
+from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.health import health_router
 from autoflow.adapters.http.inspection import inspection_router
@@ -29,6 +30,7 @@ from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeSe
 from autoflow.application.workflows.inspection import InspectionService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.bootstrap.android import android_service, save_android_image
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
@@ -81,6 +83,9 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.filesystem.workflow_artifacts import artifact_path
+from autoflow.infrastructure.process.android_workflow_worker import (
+    AndroidWorkflowWorker,
+)
 from autoflow.infrastructure.process.inspection_worker import InspectionWorkerManager
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
@@ -178,10 +183,12 @@ def create_app(
     workflow_workers = workflow_run_launcher or WorkflowWorkerManager(paths.temp, paths.workspace / "runs")
     run_repository = SqlAlchemyWorkflowRunRepository(session_factory)
     run_repository.recover_interrupted()
+    android = android_service(session_factory, paths.data_dir)
     workflow_runs = WorkflowRunService(
         run_repository, profile_service, catalog_provider.installed, workflow_kernel_guard,
         proxy_runtime.resolve_profile, license_store.read, workflow_workers,
         partial(artifact_path, paths.workspace / "runs"),
+        android, AndroidWorkflowWorker(), partial(save_android_image, paths.workspace / "runs"),
     )
 
     inspection_workers = InspectionWorkerManager(paths.temp)
@@ -221,6 +228,7 @@ def create_app(
     app.state.settings_runtime = settings_runtime
     app.state.workflow_inspection_service = inspection
     app.state.inspection_worker_manager = inspection_workers
+    app.state.android_service = android
     app.state.workflow_run_service = workflow_runs
     app.state.workflow_worker_manager = workflow_workers
 
@@ -242,7 +250,9 @@ def create_app(
             finally:
                 session_factory.dispose()
 
+    app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("shutdown", shutdown)
+    app.include_router(android_router(android))
     app.include_router(health_router(api_version=settings.api_version, instance_id=settings.instance_id))
     app.include_router(
         profiles_router(

@@ -12,6 +12,7 @@ def main() -> None:
     parser.add_argument("--kernel-worker", action="store_true")
     parser.add_argument("--test-browser-worker", action="store_true")
     parser.add_argument("--workflow-worker", action="store_true")
+    parser.add_argument("--android-workflow-worker", action="store_true")
     parser.add_argument("--inspection-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
@@ -19,6 +20,9 @@ def main() -> None:
     parser.add_argument("--parent-pid", type=int)
     parser.add_argument("--data-dir")
     args = parser.parse_args()
+    if args.android_workflow_worker:
+        from autoflow.providers.android.workflow_worker import main as android_main
+        raise SystemExit(android_main())
     if args.kernel_worker:
         from autoflow.bootstrap.kernel_worker import kernel_worker_main
 

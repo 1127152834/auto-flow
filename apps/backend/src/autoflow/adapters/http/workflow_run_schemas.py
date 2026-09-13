@@ -1,28 +1,63 @@
 from datetime import datetime
-from typing import Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from pydantic import Field, JsonValue, field_validator
+from pydantic import Field, JsonValue, field_validator, model_validator
 
 from .schemas import ApiModel
 from .workflow_schemas import WorkflowDocument, WorkflowIssue, WorkflowLayout
 
 RunState = Literal[
     "starting", "running", "finishing", "stopping", "succeeded", "failed",
-    "cancelled", "interrupted",
+    "cancelled", "interrupted", "waiting_manual", "resuming",
 ]
+
+
+class BrowserTarget(ApiModel):
+    kind: Literal["browser"]
+    profile_id: UUID
+
+
+class AndroidTarget(ApiModel):
+    kind: Literal["android"]
+    device_id: UUID
+
+
+RunTarget = Annotated[BrowserTarget | AndroidTarget, Field(discriminator="kind")]
+
+
+class Handoff(ApiModel):
+    handoff_id: str
+    node_id: str
+    state: str
+    prompt: str
+    deadline_at: datetime
+    native_session_id: str | None
+    error: str | None
+    receipts: dict[str, str] = Field(default_factory=dict)
+
+
+class HandoffCommand(ApiModel):
+    request_id: UUID
 
 
 class RunStart(ApiModel):
     run_id: str
     document: WorkflowDocument
     layout: WorkflowLayout
-    profile_id: str
+    profile_id: str | None = None
+    target: RunTarget | None = None
 
     @field_validator("run_id", "profile_id")
     @classmethod
-    def canonical_uuid(cls, value: str) -> str:
-        return str(UUID(value))
+    def canonical_uuid(cls, value: str | None) -> str | None:
+        return str(UUID(value)) if value is not None else None
+
+    @model_validator(mode="after")
+    def target_required(self) -> "RunStart":
+        if (self.target is None) == (self.profile_id is None):
+            raise ValueError("请仅提供 target 或 profileId")
+        return self
 
 
 class RunError(ApiModel):
@@ -47,8 +82,10 @@ class RunSummary(ApiModel):
     run_id: str
     workflow_id: str
     name: str
-    profile_id: str
-    profile_name: str
+    profile_id: str | None
+    profile_name: str | None
+    target: RunTarget
+    target_name: str
     state: RunState
     current_node_id: str | None
     started_at: datetime
@@ -58,10 +95,29 @@ class RunSummary(ApiModel):
     error: RunError | None
 
 
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_target(cls, value: Any) -> Any:
+        if isinstance(value, dict):
+            value = dict(value)
+            value.setdefault("target", {"kind": "browser", "profileId": value.get("profileId")})
+            value.setdefault("targetName", value.get("profileName"))
+        return value
+
+
 class RunRead(RunSummary):
+    @model_validator(mode="before")
+    @classmethod
+    def hide_internal_receipts(cls, value: Any) -> Any:
+        if isinstance(value, dict):
+            return {key: item for key, item in value.items() if key != "handoffReceipts"}
+        return value
+
     document: WorkflowDocument
     layout: WorkflowLayout
-    profile_snapshot: dict[str, JsonValue]
+    profile_snapshot: dict[str, JsonValue] | None
+    target_snapshot: dict[str, JsonValue] = Field(default_factory=dict)
+    handoff: Handoff | None = None
     node_order: list[str]
     artifacts: list[RunArtifact]
     warnings: list[WorkflowIssue]

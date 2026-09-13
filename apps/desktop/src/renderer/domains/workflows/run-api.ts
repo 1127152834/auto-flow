@@ -9,6 +9,7 @@ export function createWorkflowRunApi(client: StreamingApiClient) {
     list: (offset = 0) => client.request<RunList>(`${path()}?offset=${offset}&limit=20`),
     get: (id: string) => client.request<RunRead>(path(id)),
     start: (body: RunStart) => client.request<RunRead>(path(), { method: 'POST', body }),
+    handoff: (id: string, handoffId: string, action: 'open' | 'continue', requestId: string) => client.request<RunRead>(`${path(id)}/handoffs/${encodeURIComponent(handoffId)}/${action}`, { method: 'POST', body: { requestId } }),
     stop: (id: string) => client.request<RunRead>(`${path(id)}/stop`, { method: 'POST', timeoutMs: 120_000 }),
     events: (id: string, afterSeq: number) => client.request<RunEvents>(`${path(id)}/events?afterSeq=${afterSeq}&limit=200`),
     async watch(id: string, afterSeq: number, signal: AbortSignal, onEvent: (event: RunEvent) => void) {

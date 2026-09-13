@@ -5,7 +5,14 @@ from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.run_validation import prepare_run
 
 from .errors import browser_error_responses
-from .workflow_run_schemas import RunEvents, RunList, RunRead, RunStart, RunSummary
+from .workflow_run_schemas import (
+    HandoffCommand,
+    RunEvents,
+    RunList,
+    RunRead,
+    RunStart,
+    RunSummary,
+)
 
 
 def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
@@ -19,6 +26,7 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
         return RunRead.model_validate(await service.start(
             body.run_id, body.document.model_dump(by_alias=True),
             body.layout.model_dump(by_alias=True), body.profile_id,
+            body.target.model_dump(by_alias=True, mode="json") if body.target else None,
         ))
 
     @router.post("/validate", response_model=list[dict[str, str]])
@@ -33,7 +41,7 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
     ) -> RunList:
         result = service.list(workflow_id, offset, limit)
         return RunList(
-            items=[RunSummary.model_validate({name: item[field.alias or name] for name, field in RunSummary.model_fields.items()}) for item in result["items"]],
+            items=[RunSummary.model_validate({(field.alias or name): item[field.alias or name] for name, field in RunSummary.model_fields.items() if (field.alias or name) in item}) for item in result["items"]],
             active_run_id=result["activeRunId"], next_offset=result["nextOffset"],
         )
 
@@ -44,6 +52,14 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
     @router.post("/{run_id}/stop", response_model=RunRead)
     async def stop(run_id: str) -> RunRead:
         return RunRead.model_validate(await service.stop(run_id))
+
+    @router.post("/{run_id}/handoffs/{handoff_id}/open", response_model=RunRead, status_code=202)
+    async def open_native(run_id: str, handoff_id: str, body: HandoffCommand) -> RunRead:
+        return RunRead.model_validate(await service.handoff_control(run_id, handoff_id, str(body.request_id), "open"))
+
+    @router.post("/{run_id}/handoffs/{handoff_id}/continue", response_model=RunRead, status_code=202)
+    async def continue_native(run_id: str, handoff_id: str, body: HandoffCommand) -> RunRead:
+        return RunRead.model_validate(await service.handoff_control(run_id, handoff_id, str(body.request_id), "continue"))
 
     @router.get("/{run_id}/events", response_model=RunEvents)
     def events(

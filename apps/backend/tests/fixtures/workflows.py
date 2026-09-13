@@ -11,7 +11,7 @@ def workflow_payload(workflow_id: str = "d45f286f-129d-4e3b-a09b-995c3b491609") 
             "label": item["title"],
             "config": deepcopy(item["defaultConfig"]),
         }
-        for index, item in enumerate(node_catalog())
+        for index, item in enumerate(item for item in node_catalog() if not item["type"].startswith("android_"))
     ]
     nodes[0]["config"]["url"] = "https://example.com"
     for node in nodes[1:5]:

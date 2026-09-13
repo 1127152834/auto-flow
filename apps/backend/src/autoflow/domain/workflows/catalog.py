@@ -141,4 +141,5 @@ _DEFINITIONS[-1]["configSchema"]["allOf"] = [
 
 
 def node_catalog() -> list[dict[str, Any]]:
-    return deepcopy(_DEFINITIONS)
+    from autoflow.domain.android.catalog import android_definitions
+    return deepcopy([*_DEFINITIONS, *android_definitions()])

@@ -1,0 +1,5 @@
+PASS real worker launch, headless override, blank start, idempotency, exclusive resource locks, navigation/test, cleanup
+PASS five consecutive closes during startup clean worker/browser and release sessions
+PASS close interrupts pending navigation without waiting full node timeout
+PASS SIGKILL owned worker reaps its browser tree and releases resources
+PASS sidecar crash cleans owned worker/browser; restart creates no session and permits a fresh one

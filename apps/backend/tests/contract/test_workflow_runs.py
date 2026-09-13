@@ -156,3 +156,18 @@ def test_failed_cleanup_is_visible_and_second_http_stop_retries(tmp_path, monkey
         assert second.json()["error"] is None
         assert client.get(ROOT).json()["activeRunId"] is None
         assert client.post(f"{ROOT}/{run_id}/stop").json() == second.json()
+
+
+def test_new_browser_target_retries_legacy_request_without_duplicate_run(tmp_path):
+    app, profile, worker = workflow_runtime(tmp_path)
+    content = workflow_payload()
+    run_id = str(uuid4())
+    with TestClient(app, headers=HEADERS) as client:
+        legacy = client.post(ROOT, json={'runId': run_id, **content, 'profileId': profile.id})
+        assert legacy.status_code == 201
+        modern = client.post(ROOT, json={'runId': run_id, **content, 'target': {'kind': 'browser', 'profileId': profile.id}})
+        assert modern.status_code == 201
+        client.portal.call(worker.started.wait)
+        assert worker.executions == 1
+        assert modern.json()['target'] == {'kind': 'browser', 'profileId': profile.id}
+        assert client.post(f'{ROOT}/{run_id}/stop').status_code == 200

@@ -152,9 +152,9 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
     }
   }, [accept, markActive, select, verifyActive])
 
-  const start = useCallback(async (content: WorkflowContent, profileId: string) => {
+  const start = useCallback(async (content: WorkflowContent, resource: string | NonNullable<RunStart['target']>) => {
     if (!online.current || busyRef.current || activeRef.current || pendingStart.current || !verified.current) return
-    await submit({ ...structuredClone(content), profileId, runId: crypto.randomUUID() })
+    await submit({ ...structuredClone(content), ...(typeof resource === 'string' ? { profileId: resource } : { target: resource }), runId: crypto.randomUUID() })
   }, [submit])
   const retryStart = useCallback(async () => {
     if (!online.current || busyRef.current || !pendingStart.current) return

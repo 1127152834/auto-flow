@@ -12,10 +12,10 @@ def test_catalog_and_openapi_have_one_explicit_editing_contract(client):
     response = client.get(f"{ROOT}/node-catalog")
     assert response.status_code == 200
     assert response.json()["items"] == node_catalog()
-    assert len(response.json()["items"]) == 6
+    assert len(response.json()["items"]) == 11
     for item in response.json()["items"]:
         assert item["runnable"] is True
-        assert item["defaultConfig"]["timeoutSeconds"] == 60
+        assert item["defaultConfig"]["timeoutSeconds"] == ({"android_launch_app": 30, "android_manual": 600}.get(item["type"], 15) if item["type"].startswith("android_") else 60)
         assert item["inputPorts"] == ["in"] and item["outputPorts"] == ["out"]
         assert set(item["defaultConfig"]) == set(item["configSchema"]["properties"])
     assert (

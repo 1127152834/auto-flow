@@ -1,0 +1,534 @@
+{
+  "cases": [
+    {
+      "case": "missing application",
+      "run": {
+        "runId": "265af7ab-fdec-4954-a712-2835859a0ec8",
+        "workflowId": "49ea6293-3a8a-4e6d-bf1e-2073dbd0bb87",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "failed",
+        "currentNodeId": "case-0",
+        "startedAt": "2026-09-13T03:15:45.209236Z",
+        "finishedAt": "2026-09-13T03:15:46.832889Z",
+        "latestSeq": 5,
+        "completedNodeIds": [],
+        "error": {
+          "code": "ANDROID_APP_UNAVAILABLE",
+          "message": "应用不存在或没有启动入口",
+          "nodeId": "case-0",
+          "path": []
+        },
+        "document": {
+          "id": "49ea6293-3a8a-4e6d-bf1e-2073dbd0bb87",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_launch_app",
+              "label": "android_launch_app",
+              "config": {
+                "packageName": "local.autoflow.missing.test",
+                "timeoutSeconds": 15
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": null,
+        "nodeOrder": [
+          "case-0"
+        ],
+        "artifacts": [],
+        "warnings": []
+      }
+    },
+    {
+      "case": "rotated coordinate basis",
+      "run": {
+        "runId": "9ab297df-eb45-4dbc-b3d2-fc61bb7f5ffb",
+        "workflowId": "5e8281fd-16fc-4298-8251-5e970442d8bd",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "failed",
+        "currentNodeId": "case-0",
+        "startedAt": "2026-09-13T03:15:46.885768Z",
+        "finishedAt": "2026-09-13T03:15:49.041355Z",
+        "latestSeq": 5,
+        "completedNodeIds": [],
+        "error": {
+          "code": "ANDROID_SCREEN_CHANGED",
+          "message": "屏幕尺寸已变化，请更新坐标基准",
+          "nodeId": "case-0",
+          "path": []
+        },
+        "document": {
+          "id": "5e8281fd-16fc-4298-8251-5e970442d8bd",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_tap",
+              "label": "android_tap",
+              "config": {
+                "x": 20,
+                "y": 20,
+                "basisWidth": 1280,
+                "basisHeight": 720,
+                "timeoutSeconds": 15
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": null,
+        "nodeOrder": [
+          "case-0"
+        ],
+        "artifacts": [],
+        "warnings": []
+      }
+    },
+    {
+      "case": "valid coordinate input",
+      "run": {
+        "runId": "61de9f75-99ba-4c93-8eb4-2745271107b5",
+        "workflowId": "b3043409-9bdb-4838-8499-1418b15f4599",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "succeeded",
+        "currentNodeId": "case-2",
+        "startedAt": "2026-09-13T03:15:49.178819Z",
+        "finishedAt": "2026-09-13T03:15:51.433728Z",
+        "latestSeq": 10,
+        "completedNodeIds": [
+          "case-0",
+          "case-1",
+          "case-2"
+        ],
+        "error": null,
+        "document": {
+          "id": "b3043409-9bdb-4838-8499-1418b15f4599",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_launch_app",
+              "label": "android_launch_app",
+              "config": {
+                "packageName": "com.android.settings",
+                "timeoutSeconds": 30
+              }
+            },
+            {
+              "id": "case-1",
+              "type": "android_tap",
+              "label": "android_tap",
+              "config": {
+                "x": 200,
+                "y": 640,
+                "basisWidth": 720,
+                "basisHeight": 1280,
+                "timeoutSeconds": 15
+              }
+            },
+            {
+              "id": "case-2",
+              "type": "android_screenshot",
+              "label": "android_screenshot",
+              "config": {
+                "variableName": "tapResult",
+                "timeoutSeconds": 15
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "e-0",
+              "source": "case-0",
+              "target": "case-1",
+              "sourceHandle": "out",
+              "targetHandle": "in"
+            },
+            {
+              "id": "e-1",
+              "source": "case-1",
+              "target": "case-2",
+              "sourceHandle": "out",
+              "targetHandle": "in"
+            }
+          ],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            },
+            "case-1": {
+              "x": 240.0,
+              "y": 100.0
+            },
+            "case-2": {
+              "x": 480.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": null,
+        "nodeOrder": [
+          "case-0",
+          "case-1",
+          "case-2"
+        ],
+        "artifacts": [
+          {
+            "id": "a15f4691dd3a484783eee1a75d6b345d",
+            "nodeId": "case-2",
+            "kind": "image",
+            "name": "a15f4691dd3a484783eee1a75d6b345d.png",
+            "mimeType": "image/png",
+            "relativePath": "a15f4691dd3a484783eee1a75d6b345d.png",
+            "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/61de9f75-99ba-4c93-8eb4-2745271107b5/artifacts/a15f4691dd3a484783eee1a75d6b345d.png",
+            "preview": "Android · 720 × 1280"
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "case": "stop manual wait",
+      "run": {
+        "runId": "6f9b0429-59a3-4132-8b69-87b16c66f6a1",
+        "workflowId": "84bef6ee-1ca1-4db5-aadf-2da5b049db0b",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "cancelled",
+        "currentNodeId": "case-0",
+        "startedAt": "2026-09-13T03:15:51.473782Z",
+        "finishedAt": "2026-09-13T03:15:53.233451Z",
+        "latestSeq": 6,
+        "completedNodeIds": [],
+        "error": null,
+        "document": {
+          "id": "84bef6ee-1ca1-4db5-aadf-2da5b049db0b",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_manual",
+              "label": "android_manual",
+              "config": {
+                "prompt": "stop test",
+                "timeoutSeconds": 30
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": {
+          "handoffId": "a6daa588-3ca9-4dfe-9fd9-040f8a57878d",
+          "nodeId": "case-0",
+          "state": "waiting",
+          "prompt": "stop test",
+          "deadlineAt": "2026-09-13T03:16:22.961322Z",
+          "nativeSessionId": null,
+          "error": null,
+          "receipts": {}
+        },
+        "nodeOrder": [
+          "case-0"
+        ],
+        "artifacts": [],
+        "warnings": []
+      }
+    },
+    {
+      "case": "real manual deadline",
+      "run": {
+        "runId": "2f581b79-743b-4a53-9899-95d20483e5d3",
+        "workflowId": "1fff90b5-c7e7-45d0-8e07-065216c41aee",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "failed",
+        "currentNodeId": "case-0",
+        "startedAt": "2026-09-13T03:15:53.242142Z",
+        "finishedAt": "2026-09-13T03:16:24.942000Z",
+        "latestSeq": 6,
+        "completedNodeIds": [],
+        "error": {
+          "code": "ANDROID_MANUAL_TIMEOUT",
+          "message": "人工处理等待超时",
+          "nodeId": "case-0",
+          "path": []
+        },
+        "document": {
+          "id": "1fff90b5-c7e7-45d0-8e07-065216c41aee",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_manual",
+              "label": "android_manual",
+              "config": {
+                "prompt": "timeout test",
+                "timeoutSeconds": 30
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": {
+          "handoffId": "4ea19002-2448-4515-a4cf-4f53d574f253",
+          "nodeId": "case-0",
+          "state": "waiting",
+          "prompt": "timeout test",
+          "deadlineAt": "2026-09-13T03:16:24.741625Z",
+          "nativeSessionId": null,
+          "error": null,
+          "receipts": {}
+        },
+        "nodeOrder": [
+          "case-0"
+        ],
+        "artifacts": [],
+        "warnings": []
+      }
+    },
+    {
+      "case": "sidecar killed with native window open; recovered without replay",
+      "run": {
+        "runId": "03afd7d8-1b5c-453f-945e-2f50402da468",
+        "workflowId": "e76b8396-7b00-4589-8816-a4d645c49853",
+        "name": "安卓故障验收",
+        "profileId": null,
+        "profileName": null,
+        "target": {
+          "kind": "android",
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+        },
+        "targetName": "安卓工作流测试",
+        "state": "interrupted",
+        "currentNodeId": "case-0",
+        "startedAt": "2026-09-13T03:16:25.006146Z",
+        "finishedAt": "2026-09-13T03:16:29.946510Z",
+        "latestSeq": 8,
+        "completedNodeIds": [],
+        "error": {
+          "code": "WORKFLOW_RUN_INTERRUPTED",
+          "message": "本地服务退出，运行已中断；不会自动重放",
+          "nodeId": null,
+          "path": []
+        },
+        "document": {
+          "id": "e76b8396-7b00-4589-8816-a4d645c49853",
+          "name": "安卓故障验收",
+          "schemaVersion": 1,
+          "nodes": [
+            {
+              "id": "case-0",
+              "type": "android_manual",
+              "label": "android_manual",
+              "config": {
+                "prompt": "restart test",
+                "timeoutSeconds": 30
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layout": {
+          "nodes": {
+            "case-0": {
+              "x": 0.0,
+              "y": 100.0
+            }
+          },
+          "viewport": {
+            "x": 0.0,
+            "y": 0.0,
+            "zoom": 0.8
+          }
+        },
+        "profileSnapshot": null,
+        "targetSnapshot": {
+          "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "name": "安卓工作流测试",
+          "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "width": 720,
+          "height": 1280
+        },
+        "handoff": {
+          "handoffId": "71ced18c-47c9-4c0a-8685-0f1c9ec46daa",
+          "nodeId": "case-0",
+          "state": "open",
+          "prompt": "restart test",
+          "deadlineAt": "2026-09-13T03:16:57.634330Z",
+          "nativeSessionId": "92244acd-30b2-443a-8495-66fc6e6425ec",
+          "error": null,
+          "receipts": {
+            "733ffb56-d756-4482-931b-08c7489e5619": "open"
+          }
+        },
+        "nodeOrder": [
+          "case-0"
+        ],
+        "artifacts": [],
+        "warnings": []
+      }
+    }
+  ],
+  "devices": [
+    {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "runtimeId": "autoflow-redroid",
+      "ownerRunId": null,
+      "control": "idle",
+      "generation": 27,
+      "width": 720,
+      "height": 1280,
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "androidStatus": "ready",
+      "lastError": null
+    }
+  ]
+}

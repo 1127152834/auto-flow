@@ -141,7 +141,7 @@ it.each([
   await user.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(screen.getByRole('tab', { name: '浏览器环境' })).toHaveAttribute('data-state', 'active'))
   expect(await screen.findByText('视口不可用')).toBeVisible()
-  expect(screen.getByLabelText(_mode === '自定义' ? '视口宽' : '视口预设')).toHaveFocus()
+  await waitFor(() => expect(screen.getByLabelText(_mode === '自定义' ? '视口宽' : '视口预设')).toHaveFocus())
 })
 
 it('applies the default once for create and passes the selected kernel with its trigger', async () => {

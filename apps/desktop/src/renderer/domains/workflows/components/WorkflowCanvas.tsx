@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Background, BackgroundVariant, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps, type ReactFlowInstance } from '@xyflow/react'
 import { BracketsCurly, Camera, CursorClick, Globe, TextT, Timer, WarningCircle } from '@phosphor-icons/react'
 import '@xyflow/react/dist/style.css'
@@ -35,15 +35,16 @@ export type WorkflowCanvasProps = {
 export function WorkflowCanvas(props: WorkflowCanvasProps) {
   const { content, catalog, issues, selectedNodes, selectedEdges, disabled, runMarkers, locate, onSelect, onMove, onViewport, onConnect, onAdd, onEditStart, onEditEnd, onPointer } = props
   const instance = useRef<ReactFlowInstance<CanvasNode, Edge> | null>(null)
+  const [measurements, setMeasurements] = useState<Record<string, { width: number; height: number }>>({})
   const nodes = useMemo<CanvasNode[]>(() => content.document.nodes.map(node => ({
-    id: node.id, type: 'workflow', position: content.layout.nodes[node.id], selected: selectedNodes.includes(node.id),
+    id: node.id, type: 'workflow', measured: measurements[node.id], position: content.layout.nodes[node.id], selected: selectedNodes.includes(node.id),
     ariaLabel: `节点：${node.label || node.type}`, data: {
       label: node.label, title: catalog.find(item => item.type === node.type)?.title ?? node.type, kind: node.type,
       summary: String(node.config.url || node.config.selector || (node.type === 'screenshot' ? '网页截图' : '')),
       issueCount: issues.filter(issue => issue.nodeId === node.id).length,
       runStatus: runMarkers?.[node.id],
     },
-  })), [content, catalog, issues, selectedNodes, runMarkers])
+  })), [content, catalog, issues, selectedNodes, runMarkers, measurements])
   const edges = useMemo<Edge[]>(() => content.document.edges.map(edge => ({ ...edge, selected: selectedEdges.includes(edge.id), style: { stroke: selectedEdges.includes(edge.id) ? '#a2684a' : '#989087', strokeWidth: 2 } })), [content.document.edges, selectedEdges])
   useEffect(() => { if (locate && instance.current) void instance.current.fitView({ nodes: [{ id: locate.nodeId }], duration: 250, maxZoom: 1, padding: 1 }) }, [locate])
 
@@ -51,7 +52,7 @@ export function WorkflowCanvas(props: WorkflowCanvasProps) {
     <ReactFlow<CanvasNode, Edge> nodes={nodes} edges={edges} nodeTypes={nodeTypes} onInit={flow => { instance.current = flow }}
       defaultViewport={content.layout.viewport} onMoveEnd={(_event, viewport) => onViewport(viewport)}
       onNodeDragStart={onEditStart} onNodeDragStop={onEditEnd} onSelectionDragStart={onEditStart} onSelectionDragStop={onEditEnd}
-      onNodesChange={changes => { if (disabled) return; const positions: Record<string, Point> = {}; const selection = new Set(selectedNodes); let changedSelection = false; for (const change of changes) { if (change.type === 'position' && change.position) positions[change.id] = change.position; if (change.type === 'select') { changedSelection = true; if (change.selected) selection.add(change.id); else selection.delete(change.id) } }; if (Object.keys(positions).length) onMove(positions); if (changedSelection) onSelect([...selection], null) }}
+      onNodesChange={changes => { const dimensions = changes.filter(change => change.type === 'dimensions' && change.dimensions); if (dimensions.length) setMeasurements(previous => { const next = { ...previous }; let changed = false; for (const change of dimensions) { if (change.type !== 'dimensions' || !change.dimensions) continue; if (next[change.id]?.width !== change.dimensions.width || next[change.id]?.height !== change.dimensions.height) { next[change.id] = change.dimensions; changed = true } }; return changed ? next : previous }); if (disabled) return; const positions: Record<string, Point> = {}; const selection = new Set(selectedNodes); let changedSelection = false; for (const change of changes) { if (change.type === 'position' && change.position) positions[change.id] = change.position; if (change.type === 'select') { changedSelection = true; if (change.selected) selection.add(change.id); else selection.delete(change.id) } }; if (Object.keys(positions).length) onMove(positions); if (changedSelection) onSelect([...selection], null) }}
       onEdgesChange={changes => { if (disabled) return; const selection = new Set(selectedEdges); let changed = false; for (const change of changes) if (change.type === 'select') { changed = true; if (change.selected) selection.add(change.id); else selection.delete(change.id) }; if (changed) onSelect(null, [...selection]) }}
       onConnect={connection => { if (!disabled && connection.source && connection.target) onConnect(connection.source, connection.target) }}
       onPaneClick={() => onSelect([], [])}

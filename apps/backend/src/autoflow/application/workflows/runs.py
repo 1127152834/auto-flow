@@ -13,11 +13,13 @@ from pathlib import Path
 from threading import RLock
 from typing import Any
 
+from autoflow.application.android.devices import AndroidDeviceService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.workflows.browser_resources import acquire_browser
 from autoflow.application.workflows.browser_resources import (
     resource_error as _resource_error,
 )
+from autoflow.domain.android.ports import AndroidError, AndroidWorkflowLauncher
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
@@ -43,6 +45,8 @@ class _ActiveRun:
     cleanup_failed: bool = False
     guards: ExitStack | None = None
     result: dict[str, Any] | None = None
+    android: bool = False
+    device_task: asyncio.Task[dict[str, Any]] | None = None
 
 
 @dataclass(frozen=True)
@@ -59,7 +63,12 @@ class WorkflowRunService:
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None], launcher: WorkflowRunLauncher,
         artifact_path: Callable[[str, str], Path],
+        android: AndroidDeviceService | None = None,
+        android_worker: AndroidWorkflowLauncher | None = None,
+        save_android_image: Callable[[str, str, bytes], dict[str, Any]] | None = None,
     ) -> None:
+        self.android, self.android_worker = android, android_worker
+        self.save_android_image = save_android_image
         self.repository = repository
         self._profiles = profiles
         self._installed_kernels = installed_kernels
@@ -83,7 +92,7 @@ class WorkflowRunService:
             if run_id in self._pending_completions:
                 raise WorkflowError(
                     "WORKFLOW_RUN_PERSISTENCE_PENDING",
-                    "浏览器已关闭，但运行结果暂未保存；请重试查询或停止操作", 503,
+                    "连接已关闭，但运行结果暂未保存；请重试查询或停止操作", 503,
                 )
         record = self.repository.get(run_id)
         if record is None:
@@ -103,13 +112,18 @@ class WorkflowRunService:
         }
 
     async def start(
-        self, run_id: str, document: dict[str, Any], layout: dict[str, Any], profile_id: str,
+        self, run_id: str, document: dict[str, Any], layout: dict[str, Any], profile_id: str | None,
+        target: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         # No await between admission, resource guards, persistence and task ownership.
         self._loop = asyncio.get_running_loop()
         self._retry_completions()
+        target = target or {"kind": "browser", "profileId": profile_id}
+        is_android = target["kind"] == "android"
+        if not is_android:
+            profile_id = target["profileId"]
         request_hash = hashlib.sha256(json.dumps(
-            [document, layout, profile_id], sort_keys=True, ensure_ascii=False, allow_nan=False,
+            [document, layout, target if is_android else profile_id], sort_keys=True, ensure_ascii=False, allow_nan=False,
         ).encode()).hexdigest()
         existing = self.repository.get(run_id)
         if existing is not None:
@@ -123,17 +137,32 @@ class WorkflowRunService:
         if self.busy():
             raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
         prepared = prepare_run(document, layout)
+        if any(node["type"].startswith("android_") != is_android for node in prepared.document["nodes"]):
+            raise WorkflowError("WORKFLOW_RUNTIME_MISMATCH", "首版不能混合安卓与浏览器节点，请选择匹配的运行资源", 422)
         guards = ExitStack()
         try:
-            profile, executable = acquire_browser(guards, self._profiles, self._kernel_guard, self._installed_kernels, profile_id)
+            profile = None
+            executable = None
+            if is_android:
+                if self.android is None or self.android_worker is None:
+                    raise WorkflowError("ANDROID_UNAVAILABLE", "安卓运行环境未配置", 503)
+                device = self.android.claim(target["deviceId"], run_id)
+                guards.callback(self.android.rollback_claim)
+                snapshot = {key: device.get(key) for key in ("deviceId", "name", "imageId", "width", "height")}
+                target_name = device["name"]
+            else:
+                assert profile_id is not None
+                profile, executable = acquire_browser(guards, self._profiles, self._kernel_guard, self._installed_kernels, profile_id)
+                snapshot = {_camel(key): value for key, value in asdict(profile.spec).items()}
+                snapshot.update(id=profile.id, fingerprintSeed=profile.fingerprint_seed)
+                target_name = profile.spec.name
             now = datetime.now(UTC).isoformat()
-            snapshot = {_camel(key): value for key, value in asdict(profile.spec).items()}
-            snapshot.update(id=profile.id, fingerprintSeed=profile.fingerprint_seed)
             record = RunRecord(request_hash, {
                 "runId": run_id, "workflowId": document["id"], "name": document["name"],
-                "profileId": profile_id, "profileName": profile.spec.name,
+                "profileId": profile_id if not is_android else None, "profileName": target_name if not is_android else None,
+                "target": target, "targetName": target_name, "targetSnapshot": snapshot, "handoff": None,
                 "state": "starting", "document": deepcopy(document), "layout": deepcopy(layout),
-                "profileSnapshot": snapshot, "nodeOrder": list(prepared.node_ids),
+                "profileSnapshot": snapshot if not is_android else None, "nodeOrder": list(prepared.node_ids),
                 "currentNodeId": None, "startedAt": now, "finishedAt": None,
                 "latestSeq": 1, "completedNodeIds": [], "error": None, "artifacts": [],
                 "warnings": [_issue(issue) for issue in prepared.warnings],
@@ -142,7 +171,7 @@ class WorkflowRunService:
             if saved is not record:
                 guards.close()
                 return saved.data
-            operation = _ActiveRun(guards=guards)
+            operation = _ActiveRun(guards=guards, android=is_android)
             self._active[run_id] = operation
             operation.task = asyncio.create_task(
                 self._execute(run_id, operation, prepared, profile, executable),
@@ -153,6 +182,8 @@ class WorkflowRunService:
             return deepcopy(saved.data)
         except Exception as error:  # noqa: BLE001 - normalize process/resource failures without exposing credentials
             guards.close()
+            if isinstance(error, AndroidError):
+                raise WorkflowError(error.code, error.message, error.status) from None
             raise _resource_error(error) from None
 
     async def stop(self, run_id: str) -> dict[str, Any]:
@@ -179,7 +210,7 @@ class WorkflowRunService:
     async def _stop(self, run_id: str, operation: _ActiveRun) -> None:
         try:
             if self._active.get(run_id) is operation:
-                self._append(run_id, {"type": "stopping", "message": "正在停止运行并回收浏览器"}, {"state": "stopping"})
+                self._append(run_id, {"type": "stopping", "message": "正在停止运行并回收连接"}, {"state": "stopping"})
         except Exception:  # noqa: BLE001 - persistence failure must never prevent process cleanup
             logger.warning("workflow stopping event could not be saved: run_id=%s", run_id)
         if operation.executing:
@@ -264,7 +295,7 @@ class WorkflowRunService:
 
     async def _execute(
         self, run_id: str, operation: _ActiveRun, prepared: PreparedWorkflow,
-        profile: Profile, executable: Path,
+        profile: Profile | None, executable: Path | None,
     ) -> None:
         result: dict[str, Any] = {"state": "cancelled", "error": None}
         cleanup_failed = False
@@ -273,6 +304,12 @@ class WorkflowRunService:
                 return
             for warning in prepared.warnings:
                 self._append(run_id, {"type": "log", "level": "warning", "nodeId": warning.node_id, "message": warning.message})
+            if operation.android:
+                operation.executing = True
+                operation.device_task = asyncio.create_task(self._run_android(run_id, operation, prepared))
+                result = await asyncio.shield(operation.device_task)
+                return
+            assert profile is not None and executable is not None
             async with asyncio.timeout(110):
                 proxy = await self._resolve_proxy(profile, run_id)
                 license_key = self._read_license() if profile.spec.browser_edition == "licensed" else None
@@ -288,7 +325,7 @@ class WorkflowRunService:
         except asyncio.CancelledError:
             result = {"state": "cancelled", "error": None}
         except Exception as error:  # noqa: BLE001 - normalize process/resource failures without exposing credentials
-            normalized = _resource_error(error)
+            normalized = WorkflowError(error.code, error.message, error.status) if isinstance(error, AndroidError) else _resource_error(error)
             cleanup_failed = normalized.code == "WORKFLOW_CLEANUP_FAILED"
             issue = normalized.issues[0] if normalized.issues else None
             result = {"state": "failed", "error": {
@@ -302,9 +339,71 @@ class WorkflowRunService:
             else:
                 await self._finish(run_id, operation)
 
+    async def _run_android(self, run_id: str, operation: _ActiveRun, prepared: PreparedWorkflow) -> dict[str, Any]:
+        assert self.android is not None and self.android_worker is not None
+        await self.android.connect()
+
+        async def publish(event: dict[str, Any], changes: dict[str, Any]) -> None:
+            if operation.stopping:
+                raise asyncio.CancelledError
+            handoff = changes.get("handoff")
+            if handoff:
+                receipts = dict(self.get(run_id).get("handoffReceipts", {}))
+                receipts[handoff["handoffId"]] = dict(handoff["receipts"])
+                changes = {**changes, "handoffReceipts": receipts}
+            self._append(run_id, event, changes)
+
+        async def command(event: dict[str, Any]) -> dict[str, Any]:
+            assert self.android is not None
+            node_id = event["nodeId"]
+            record = self.get(run_id)
+            if operation.stopping or node_id != record["currentNodeId"]:
+                raise asyncio.CancelledError
+            try:
+                if event["operation"] == "android_manual":
+                    await self.android.manual(node_id, event["args"], publish)
+                    return {"result": None}
+                data = await self.android.command(event["operation"], event["args"], float(event["args"]["timeoutSeconds"]))
+                if event["operation"] == "android_screenshot":
+                    assert self.save_android_image is not None
+                    result = self.save_android_image(run_id, node_id, data)
+                    await self._worker_event(run_id, operation, {"type": "log", "nodeId": node_id, "message": "安卓截图已保存", "artifact": result["artifact"]})
+                    return {"result": result["value"]}
+                return {"result": None}
+            except (AndroidError, TimeoutError) as error:
+                return {"error": {"code": error.code if isinstance(error, AndroidError) else "ANDROID_TIMEOUT", "message": error.message if isinstance(error, AndroidError) else "安卓动作超时", "nodeId": node_id, "path": []}}
+
+        return await self.android_worker.execute(run_id, prepared, lambda event: self._worker_event(run_id, operation, event), command)
+
+    async def handoff_control(self, run_id: str, handoff_id: str, request_id: str, action: str) -> dict[str, Any]:
+        record = self.get(run_id)
+        prior = record.get("handoff")
+        receipts = record.get("handoffReceipts", {}).get(handoff_id, {})
+        if prior and prior["handoffId"] == handoff_id:
+            receipts = prior.get("receipts", receipts)
+        if request_id in receipts:
+            if receipts[request_id] != action:
+                raise WorkflowError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同操作", 409)
+            return record
+        operation = self._active.get(run_id)
+        if not operation or not operation.android or operation.stopping or self.android is None:
+            raise WorkflowError("ANDROID_HANDOFF_STALE", "当前运行不接受人工操作", 409)
+        await self.android.control(handoff_id, request_id, action)
+        return self.get(run_id)
+
+    async def _cleanup_android(self, run_id: str, operation: _ActiveRun) -> None:
+        assert self.android is not None and self.android_worker is not None
+        self.android.request_stop()
+        if operation.device_task is not None and not operation.device_task.done():
+            operation.device_task.cancel()
+        await self.android_worker.stop(run_id)
+        if operation.device_task is not None:
+            await asyncio.gather(operation.device_task, return_exceptions=True)
+        await self.android.cleanup()
+
     async def _cleanup(self, run_id: str, operation: _ActiveRun) -> None:
         if operation.cleanup_task is None:
-            operation.cleanup_task = asyncio.create_task(self._launcher.stop(run_id))
+            operation.cleanup_task = asyncio.create_task(self._cleanup_android(run_id, operation) if operation.android else self._launcher.stop(run_id))
         await _wait_cleanup(operation.cleanup_task)
 
     def _record_cleanup_failure(self, run_id: str, operation: _ActiveRun) -> None:
@@ -335,7 +434,7 @@ class WorkflowRunService:
         outcome_error = None if state == "cancelled" else operation.result.get("error")
         completion = _PendingCompletion({"type": state, "level": "error" if state == "failed" else "info", "message": {
             "succeeded": "运行完成，浏览器已关闭", "failed": "运行失败，浏览器已关闭", "cancelled": "运行已停止，浏览器已关闭",
-        }[state], "error": outcome_error}, {"state": state, "finishedAt": datetime.now(UTC).isoformat(), "error": outcome_error})
+        }[state].replace("浏览器已关闭", "设备占用已释放，Android 与数据保留") if operation.android else {"succeeded": "运行完成，浏览器已关闭", "failed": "运行失败，浏览器已关闭", "cancelled": "运行已停止，浏览器已关闭"}[state], "error": outcome_error}, {"state": state, "finishedAt": datetime.now(UTC).isoformat(), "error": outcome_error})
         with self._completion_lock:
             self._pending_completions[run_id] = completion
         self._retry_completions(run_id)
@@ -407,7 +506,7 @@ def _reset_cleanup_retry(operation: _ActiveRun) -> None:
 
 
 def _cleanup_error() -> WorkflowError:
-    return WorkflowError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未完成，请重试停止", 503)
+    return WorkflowError("WORKFLOW_CLEANUP_FAILED", "运行连接清理尚未完成，请重试停止", 503)
 
 
 def _cleanup_error_data() -> dict[str, Any]:

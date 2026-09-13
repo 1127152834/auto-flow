@@ -91,6 +91,11 @@ function NodeFields({ node, definition, variables, issues, selectorTools, onChan
     <div><h3 className="text-sm font-semibold text-ink">{definition?.title ?? node.type}</h3><p className="mt-1 text-xs leading-5 text-muted">{definition?.description}</p></div>
     <FormField htmlFor={`node-${node.id}-label`} label="节点名称"><Input value={node.label} disabled={disabled} onFocus={() => { clearTextTarget(); onEditStart?.() }} onBlur={onEditEnd} onChange={(event) => onLabelChange(event.target.value)} /></FormField>
     <div className="space-y-4 border-t border-line pt-4">
+      {node.type === 'android_launch_app' ? text('packageName', '应用包名') : null}
+      {node.type === 'android_manual' ? text('prompt', '人工处理说明', '到达此节点后等待人工明确继续。', true) : null}
+      {node.type === 'android_screenshot' ? text('variableName', '输出变量', '输出截图引用及原始宽高。', false, false) : null}
+      {node.type === 'android_key' ? select('key', '系统按键', [['HOME', '主页'], ['BACK', '返回'], ['ENTER', '确认'], ['APP_SWITCH', '最近应用']]) : null}
+      {node.type === 'android_tap' ? <>{[['x', '横坐标'], ['y', '纵坐标'], ['basisWidth', '截图宽度'], ['basisHeight', '截图高度']].map(([field, label]) => <FormField key={field} label={label} htmlFor={`android-${field}`}><Input id={`android-${field}`} type="number" value={Number(node.config[field] ?? 0)} disabled={disabled} onFocus={onEditStart} onBlur={onEditEnd} onChange={e => onChange({ [field]: Number(e.target.value) })} /></FormField>)}<p className="text-xs text-muted">填写设备截图中的像素坐标，尺寸不符将停止操作。</p></> : null}
       {node.type === 'open_page' ? <>
         {text('url', '网页地址', '支持在地址中引用流程变量。')}
         {select('openMode', '打开方式', [['new_tab', '新标签页'], ['current_tab', '当前标签页']])}

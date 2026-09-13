@@ -1,3 +1,7 @@
+import { androidApi } from '../../android/api'
+import { DeviceSelect } from '../../android/components/DeviceControls'
+import { ManualHandoffPanel } from '../components/ManualHandoffPanel'
+import type { RunStart } from '../run-types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowCounterClockwise, ArrowClockwise, Check, FloppyDisk, FolderOpen, List, Plus, Trash, WarningCircle, X } from '@phosphor-icons/react'
@@ -43,7 +47,7 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
   const inspectionApi = useMemo(() => createInspectionApi(client), [client])
   const inspection = useInspection(inspectionApi, connected)
   const inspectionRef = useRef(inspection); inspectionRef.current = inspection
-  const [runPending, setRunPending] = useState<{ content: WorkflowContent; profileId: string } | null>(null)
+  const [runPending, setRunPending] = useState<{ content: WorkflowContent; resource: string | NonNullable<RunStart["target"]> } | null>(null)
   const [runPreparing, setRunPreparing] = useState(false)
   const runTransition = useRef(false); runTransition.current = runPreparing || Boolean(runPending)
   const run = useWorkflowRun(runApi, connected)
@@ -51,10 +55,14 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
   runRef.current = run
   const profilesQuery = useQuery({ queryKey: ['workflows', 'run-profiles'], queryFn: profiles.list, enabled: connected })
   const [profileId, setProfileId] = useState('')
+  const [deviceId, setDeviceId] = useState('')
+  const android = useMemo(() => androidApi(client), [client])
+  const devicesQuery = useQuery({ queryKey: ['android', 'devices'], queryFn: android.devices, enabled: connected, refetchInterval: 3000 })
   const queryClient = useQueryClient()
   const catalogQuery = useQuery({ queryKey: ['workflows', 'catalog'], queryFn: api.catalog, enabled: connected, staleTime: Infinity })
   const catalog = catalogQuery.data?.items ?? []
   const editor = useWorkflowEditor(api, connected && !locked)
+  const androidMode = editor.content.document.nodes.some(node => node.type.startsWith("android_"))
   const editorRef = useRef(editor)
   editorRef.current = editor
   const [selection, setSelection] = useState({ nodes: [] as string[], edges: [] as string[] })
@@ -140,10 +148,10 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
       const inspecting = await inspectionRef.current.verifyActive()
       if (inspecting === null) return
       if (inspecting) {
-        if (!profileId) { editorRef.current.setMessage('请选择运行浏览器配置'); return }
-        await client.request('/api/v1/workflows/runs/validate', { method: 'POST', body: { runId: crypto.randomUUID(), ...content, profileId } })
-        setRunPending({ content, profileId })
-      } else await runRef.current.start(content, profileId)
+        if (!(androidMode ? deviceId : profileId)) { editorRef.current.setMessage('请选择运行资源'); return }
+        await client.request('/api/v1/workflows/runs/validate', { method: 'POST', body: { runId: crypto.randomUUID(), ...content, ...(androidMode ? { target: { kind: 'android', deviceId } } : { profileId }) } })
+        setRunPending({ content, resource: androidMode ? { kind: 'android', deviceId } : profileId })
+      } else await runRef.current.start(content, androidMode ? { kind: 'android', deviceId } : profileId)
     } catch (error) { editorRef.current.setMessage(error instanceof Error ? error.message : '运行校验失败') }
     finally { setRunPreparing(false) }
   }
@@ -242,7 +250,7 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
         <Button variant="primary" disabled={!connected || locked || editor.saving} onClick={() => void save()}><FloppyDisk size={17} />保存</Button>
       </div>
     </header>
-    <RunToolbar profiles={profilesQuery.data?.items ?? []} profileId={profileId} onProfileChange={setProfileId} active={run.active} busy={run.busy || runPreparing || Boolean(runPending)} uncertain={run.uncertain} disabled={!connected || locked || Boolean(leave)} profilesLoading={profilesQuery.isPending} profilesError={profilesQuery.isError} onStart={() => void startRun()} onStop={() => void run.stop()} onRefresh={() => { void run.refresh(); void profilesQuery.refetch() }} canRetryStart={run.canRetryStart} onRetryStart={() => void run.retryStart()} />
+    <RunToolbar resource={androidMode ? <DeviceSelect devices={(devicesQuery.data ?? []).map(device => devicesQuery.isError ? { ...device, androidStatus: 'unknown' } : device)} value={deviceId} onChange={setDeviceId} disabled={!connected || locked || Boolean(run.active)} /> : undefined} resourceReady={androidMode ? Boolean(!devicesQuery.isError && devicesQuery.data?.some(d => d.deviceId === deviceId && d.control === 'idle' && d.androidStatus !== 'unknown')) : undefined} profiles={profilesQuery.data?.items ?? []} profileId={profileId} onProfileChange={setProfileId} active={run.active} busy={run.busy || runPreparing || Boolean(runPending)} uncertain={run.uncertain} disabled={!connected || locked || Boolean(leave)} profilesLoading={profilesQuery.isPending} profilesError={profilesQuery.isError} onStart={() => void startRun()} onStop={() => void run.stop()} onRefresh={() => { void run.refresh(); void profilesQuery.refetch() }} canRetryStart={run.canRetryStart} onRetryStart={() => void run.retryStart()} />
     <InspectionPanel inspection={inspection} profiles={profilesQuery.data?.items ?? []} disabled={!connected || locked || Boolean(leave) || runPreparing || Boolean(runPending)} runActive={Boolean(run.active) || run.busy} />
     {run.validation?.issues.length ? <div className="max-h-28 shrink-0 overflow-y-auto border-b border-red-200 bg-red-50 px-5 py-2 text-xs text-red-800" aria-label="运行校验问题">{run.validation.issues.map((issue, index) => <p key={index} className="flex items-center gap-2"><span>{issue.message} · {issue.path.join(' / ')}</span>{issue.nodeId ? <Button variant="ghost" className="h-7 text-xs" disabled={!validationMatches || locked} onClick={() => { select([issue.nodeId!], []); setTab('properties'); setLocate(previous => ({ nodeId: issue.nodeId!, request: (previous?.request ?? 0) + 1, document: documentSignature(editor.content.document, catalog) })) }}>定位 {run.validation!.document.nodes.find(node => node.id === issue.nodeId)?.label || issue.nodeId}</Button> : null}</p>)}</div> : null}
     {editor.message ? <div role="alert" className="flex shrink-0 items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-950"><span>{editor.message}</span><div className="flex shrink-0 gap-2">{editor.conflict ? <><Button disabled={!connected || locked || editor.saving} onClick={() => void editor.saveAsNew()}>另存为新流程</Button><Button disabled={!connected || locked || opening} onClick={() => void prepareLeave('open').then(ready => { if (ready) void openFlow(editor.content.document.id) })}>重新加载并放弃修改</Button></> : null}<Button variant="ghost" aria-label="关闭提示" onClick={() => editor.setMessage(null)}><X size={15} /></Button></div></div> : null}
@@ -263,11 +271,12 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
         <div className="border-t border-line px-4 py-3 text-xs text-muted">{editor.content.document.nodes.length} 个节点 · {editor.content.document.edges.length} 条连线{issues.length ? <span className="mt-2 flex items-center gap-1 text-amber-800"><WarningCircle size={13} />{issues.length} 项待完成 · 可以保存进度</span> : null}</div>
       </aside>
     </div>
+    {run.active?.handoff && <ManualHandoffPanel key={`${run.active.runId}:${run.active.handoff.handoffId}`} run={run.active} api={runApi} connected={connected && !locked} onRefresh={() => void run.refresh()} onStop={() => void run.stop()} />}
     <RunPanel run={run.run} events={run.events} history={run.history} nextOffset={run.nextOffset} sameDocument={sameDocument} connected={connected} message={run.message} api={runApi} onSelect={run.select} onMore={() => void run.more()} onLocate={id => { if (sameDocument) { select([id], []); setTab('properties'); setLocate(previous => ({ nodeId: id, request: (previous?.request ?? 0) + 1, document: documentSignature(editor.content.document, catalog) })) } }} />
     <Dialog open={Boolean(leave)} onOpenChange={open => { if (!open && !editor.saving && !leaving) finishLeave(false) }} busy={editor.saving || leaving}>
       <DialogContent><DialogTitle>{leave?.inspection ? '关闭拾取浏览器后离开？' : leave?.active ? '停止运行后离开？' : '保存当前流程的修改？'}</DialogTitle><DialogDescription>{leave?.dirty ? `“${editor.content.document.name || '未命名流程'}”有未保存内容。` : ''}{leave?.inspection ? '拾取浏览器仍打开，关闭后手动登录和页面状态将结束。' : leave?.active ? '当前工作区仍有运行，浏览器清理完成后才会继续。' : '保存成功后才会继续离开。'}</DialogDescription>{editor.message || run.message || inspection.message ? <p role="alert" className="text-sm text-red-700">{editor.message || run.message || inspection.message}</p> : null}<div className="flex justify-end gap-2"><Button disabled={editor.saving || leaving} onClick={() => finishLeave(false)}>取消</Button>{leave?.dirty ? <><Button disabled={(!connected && leave.active) || editor.saving || leaving} onClick={() => void continueLeave(false)}>{leave.inspection ? '放弃并关闭浏览器' : leave.active ? '放弃并停止' : '放弃修改'}</Button><Button variant="primary" disabled={!connected || locked || editor.saving || leaving} onClick={() => void continueLeave(true)}>{editor.saving ? '保存中…' : leave.inspection ? '保存并关闭浏览器' : leave.active ? '保存并停止' : '保存并继续'}</Button></> : <Button variant="primary" disabled={!connected || leaving} onClick={() => void continueLeave(false)}>{leave?.inspection ? '关闭浏览器并继续' : '停止并继续'}</Button>}</div>{leaving && !editor.saving ? <p role="status" className="text-xs text-muted">正在确认运行停止与浏览器清理…</p> : null}</DialogContent>
     </Dialog>
-    <Dialog open={Boolean(runPending)} onOpenChange={open => { if (!open && !runPreparing) setRunPending(null) }} busy={runPreparing}><DialogContent><DialogTitle>关闭拾取浏览器后运行？</DialogTitle><DialogDescription>手动登录和页面状态将随拾取浏览器关闭而结束。流程将使用点击运行时捕获的草稿，在独立浏览器中执行。</DialogDescription>{inspection.message ? <p role="alert">{inspection.message}</p> : null}<div className="flex justify-end gap-2"><Button disabled={runPreparing} onClick={() => setRunPending(null)}>取消</Button><Button variant="primary" disabled={runPreparing || !connected} onClick={() => { if (!runPending) return; const pending = runPending; setRunPreparing(true); void inspection.close().then(async closed => { if (closed) { setRunPending(null); await runRef.current.start(pending.content, pending.profileId) } }).finally(() => setRunPreparing(false)) }}>关闭并运行</Button></div></DialogContent></Dialog>
+    <Dialog open={Boolean(runPending)} onOpenChange={open => { if (!open && !runPreparing) setRunPending(null) }} busy={runPreparing}><DialogContent><DialogTitle>关闭拾取浏览器后运行？</DialogTitle><DialogDescription>手动登录和页面状态将随拾取浏览器关闭而结束。流程将使用点击运行时捕获的草稿，使用所选资源执行。</DialogDescription>{inspection.message ? <p role="alert">{inspection.message}</p> : null}<div className="flex justify-end gap-2"><Button disabled={runPreparing} onClick={() => setRunPending(null)}>取消</Button><Button variant="primary" disabled={runPreparing || !connected} onClick={() => { if (!runPending) return; const pending = runPending; setRunPreparing(true); void inspection.close().then(async closed => { if (closed) { setRunPending(null); await runRef.current.start(pending.content, pending.resource) } }).finally(() => setRunPreparing(false)) }}>关闭并运行</Button></div></DialogContent></Dialog>
     <Dialog open={openDialog} onOpenChange={setOpenDialog} busy={opening}><DialogContent><DialogTitle>打开工作流</DialogTitle><DialogDescription>当前工作区中已保存的流程，按最近修改排序。</DialogDescription><Input aria-label="搜索工作流" placeholder="搜索流程名称" value={search} onChange={event => setSearch(event.target.value)} />{editor.message ? <p role="alert" className="text-sm text-red-700">{editor.message}</p> : null}<div className="max-h-80 space-y-1 overflow-y-auto">{listQuery.isPending ? <p role="status">正在加载…</p> : listQuery.isError ? <p role="alert">无法读取流程列表，请恢复连接后重试。</p> : listQuery.data?.items.filter(item => item.name.toLowerCase().includes(search.toLowerCase())).map(item => <button type="button" key={item.id} disabled={opening || !connected || locked} onClick={() => void openFlow(item.id)} className="flex w-full items-center justify-between gap-4 rounded-control px-3 py-3 text-left hover:bg-surface-hover disabled:opacity-50"><span className="truncate text-sm font-medium">{item.name}</span><time className="shrink-0 text-xs text-muted">{new Date(item.updatedAt).toLocaleString()}</time></button>)}{listQuery.data?.items.length === 0 ? <p className="py-6 text-center text-sm text-muted">还没有保存的流程</p> : null}</div>{opening ? <p role="status">正在打开…</p> : null}<Button onClick={() => setOpenDialog(false)} disabled={opening}>关闭</Button></DialogContent></Dialog>
     <Dialog open={deletingVariable !== null} onOpenChange={open => { if (!open) setDeletingVariable(null) }}><DialogContent><DialogTitle>删除被引用的变量？</DialogTitle><DialogDescription>“{deletingVariable}”仍被流程引用。删除后引用文本会保留，并标记缺失变量；可以撤销此次删除。</DialogDescription><div className="flex justify-end gap-2"><Button onClick={() => setDeletingVariable(null)}>取消</Button><Button variant="danger" disabled={locked} onClick={() => { editor.mutate(c => ({ ...c, document: { ...c.document, variables: c.document.variables.filter(v => v.name !== deletingVariable) } })); setDeletingVariable(null) }}>删除变量</Button></div></DialogContent></Dialog>
   </div>

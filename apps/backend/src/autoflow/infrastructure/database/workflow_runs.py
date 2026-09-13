@@ -37,7 +37,7 @@ class SqlAlchemyWorkflowRunRepository:
                 session.add(WorkflowRunEventRow(run_id=record.data["runId"], seq=1, payload={
                     "runId": record.data["runId"], "seq": 1, "timestamp": record.data["startedAt"],
                     "type": "accepted", "nodeId": None, "level": "info",
-                    "message": "已接受当前草稿快照，正在启动浏览器", "durationMs": None,
+                    "message": "已接受当前草稿快照，正在准备运行资源", "durationMs": None,
                     "artifactId": None, "error": None,
                 }))
         except IntegrityError:

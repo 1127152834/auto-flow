@@ -1,0 +1,194 @@
+{
+  "runId": "50d92fcf-1910-4872-80a9-8e623392ed11",
+  "workflowId": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+  "name": "安卓人工接管示例",
+  "profileId": null,
+  "profileName": null,
+  "target": {
+    "kind": "android",
+    "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+  },
+  "targetName": "安卓工作流测试",
+  "targetSnapshot": {
+    "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+    "name": "安卓工作流测试",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "width": 720,
+    "height": 1280
+  },
+  "handoff": {
+    "handoffId": "30faccf9-c802-4940-ae61-e7986e68a526",
+    "nodeId": "android-2",
+    "state": "completed",
+    "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+    "deadlineAt": "2026-09-13T03:29:32.324978+00:00",
+    "nativeSessionId": "517f74cf-8d01-4bf1-b79c-311dfbeeb204",
+    "error": null,
+    "receipts": {
+      "ec3f3615-7fc5-44f8-b100-c8c52e016280": "open",
+      "518af3ed-a34a-4e7d-92d2-07a0e58a00ef": "continue"
+    }
+  },
+  "state": "succeeded",
+  "document": {
+    "id": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+    "name": "安卓人工接管示例",
+    "schemaVersion": 1,
+    "nodes": [
+      {
+        "id": "android-0",
+        "type": "android_launch_app",
+        "label": "打开设置",
+        "config": {
+          "packageName": "com.android.settings",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "android-1",
+        "type": "android_screenshot",
+        "label": "操作前截图",
+        "config": {
+          "variableName": "before",
+          "timeoutSeconds": 15
+        }
+      },
+      {
+        "id": "android-2",
+        "type": "android_manual",
+        "label": "人工处理",
+        "config": {
+          "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+          "timeoutSeconds": 600
+        }
+      },
+      {
+        "id": "android-3",
+        "type": "android_key",
+        "label": "自动返回",
+        "config": {
+          "key": "BACK",
+          "timeoutSeconds": 15
+        }
+      },
+      {
+        "id": "android-4",
+        "type": "android_screenshot",
+        "label": "操作后截图",
+        "config": {
+          "variableName": "after",
+          "timeoutSeconds": 15
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-0",
+        "source": "android-0",
+        "target": "android-1",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      },
+      {
+        "id": "edge-1",
+        "source": "android-1",
+        "target": "android-2",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      },
+      {
+        "id": "edge-2",
+        "source": "android-2",
+        "target": "android-3",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      },
+      {
+        "id": "edge-3",
+        "source": "android-3",
+        "target": "android-4",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      }
+    ],
+    "variables": []
+  },
+  "layout": {
+    "nodes": {
+      "android-0": {
+        "x": 120.0,
+        "y": 160.0
+      },
+      "android-1": {
+        "x": 360.0,
+        "y": 160.0
+      },
+      "android-2": {
+        "x": 600.0,
+        "y": 160.0
+      },
+      "android-3": {
+        "x": 840.0,
+        "y": 160.0
+      },
+      "android-4": {
+        "x": 1080.0,
+        "y": 160.0
+      }
+    },
+    "viewport": {
+      "x": 0.0,
+      "y": 0.0,
+      "zoom": 0.8
+    }
+  },
+  "profileSnapshot": null,
+  "nodeOrder": [
+    "android-0",
+    "android-1",
+    "android-2",
+    "android-3",
+    "android-4"
+  ],
+  "currentNodeId": "android-4",
+  "startedAt": "2026-09-13T03:19:30.152635+00:00",
+  "finishedAt": "2026-09-13T03:22:00.647047+00:00",
+  "latestSeq": 21,
+  "completedNodeIds": [
+    "android-0",
+    "android-1",
+    "android-2",
+    "android-3",
+    "android-4"
+  ],
+  "error": null,
+  "artifacts": [
+    {
+      "id": "b6766909cb5e42829d85257f9e21ef94",
+      "nodeId": "android-1",
+      "kind": "image",
+      "name": "b6766909cb5e42829d85257f9e21ef94.png",
+      "mimeType": "image/png",
+      "relativePath": "b6766909cb5e42829d85257f9e21ef94.png",
+      "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/50d92fcf-1910-4872-80a9-8e623392ed11/artifacts/b6766909cb5e42829d85257f9e21ef94.png",
+      "preview": "Android · 720 × 1280"
+    },
+    {
+      "id": "fd3f49953abf4b2cbcf1646daf255f37",
+      "nodeId": "android-4",
+      "kind": "image",
+      "name": "fd3f49953abf4b2cbcf1646daf255f37.png",
+      "mimeType": "image/png",
+      "relativePath": "fd3f49953abf4b2cbcf1646daf255f37.png",
+      "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/50d92fcf-1910-4872-80a9-8e623392ed11/artifacts/fd3f49953abf4b2cbcf1646daf255f37.png",
+      "preview": "Android · 720 × 1280"
+    }
+  ],
+  "warnings": [],
+  "handoffReceipts": {
+    "30faccf9-c802-4940-ae61-e7986e68a526": {
+      "ec3f3615-7fc5-44f8-b100-c8c52e016280": "open",
+      "518af3ed-a34a-4e7d-92d2-07a0e58a00ef": "continue"
+    }
+  }
+}

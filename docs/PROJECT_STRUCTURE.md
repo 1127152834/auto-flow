@@ -21,11 +21,11 @@ apps/
 ├── backend/
 │   ├── src/autoflow/
 │   │   ├── bootstrap/
-│   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows}/
+│   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows,android}/
 │   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
 │   │   ├── adapters/{http,events}/
 │   │   ├── infrastructure/{database,filesystem,credentials,process,events}/
-│   │   └── providers/{browser,proxy,kernel,model,platform}/
+│   │   └── providers/{browser,proxy,kernel,model,platform,android}/
 │   └── tests/{unit,integration,contract,fixtures}/
 └── desktop/
     ├── src/
@@ -270,3 +270,12 @@ reference/
 ## M3 拾取与框架定位（2026-09-13）
 
 仍在 workflows 领域。application/workflows/browser_resources.py 共用 Profile/内核检查；application/workflows/inspection.py 管理临时交互会话。domain/workflows/inspection.py 处理定位测试初值与端口，framePath 是原节点配置的可选扩展，无数据库迁移。providers/browser/workflow_locator.py 是运行与测试共享的框架定位入口；inspection.py 与 inspection_script.py 承担页面拾取。infrastructure/process/inspection_worker.py 复用已有工作流 worker 的受管启动/清理，仅扩展有界命令和心跳。HTTP 接口为 workflows/inspection-sessions，前端组件、请求与 hook 在 renderer/domains/workflows。正式范围和验收以 M3 规格及 migration 记录为准。
+
+## 安卓工作流首版（2026-09-13）
+
+- `domain/android` 定义动作目录与端口；`application/android` 管理设备占用及人工交接；`providers/android` 承载 Mac Lima/ADB/scrcpy 和子进程协议。
+- `bootstrap/android_prepare.py` 为显式设备准备入口，`adapters/http/android.py` 为真实环境/设备查询契约。
+- `infrastructure/database/android.py` 与 `0007_android_devices` 保存设备及恢复记录；运行快照、事件与 PNG 复用 workflows。
+- `renderer/domains/android` 提供设备状态和选择组件；`ManualHandoffPanel` 接入正式 Studio。
+- `scripts/open-android-demo.command` 与 `scripts/smoke-android-handoff.py` 是 Mac 打开/验收入口。
+- 完成范围和运行方式见 `docs/migration/android-workflow-handoff-validation.md`。

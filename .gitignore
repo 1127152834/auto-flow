@@ -16,3 +16,7 @@ reference/RedroidManager/
 reference/redroid-script/
 
 .superpowers/verification/
+
+# Local runtime evidence outside curated validation artifacts.
+.local/
+node_modules

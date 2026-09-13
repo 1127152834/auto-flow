@@ -1,7 +1,7 @@
 # 安卓工作流与原生窗口交接：首个正式切片
 
-- 日期：2026-09-13；状态：**proposed，待用户确认实施**。
-- 授权范围：用户同意开始“接口与状态设计，再接入正式系统”；本文件不是已实现能力声明。
+- 日期：2026-09-13；状态：**confirmed，用户已确认实施；Mac 首版已交付**。
+- 授权范围：用户同意开始“接口与状态设计，再接入正式系统”；本文件保留设计依据；实际实现和未测边界见 [验证记录](../../migration/android-workflow-handoff-validation.md)。
 - 输入：当前正式 workflows 源码、M2/M3 约束，以及用户已通过的 [Mac 原生窗口验证](../../../reference/redroid-demo/NATIVE_MAC_TEST.md)。
 - 实施计划：[安卓工作流交接计划](../plans/2026-09-13-android-workflow-handoff-implementation.md)。
 

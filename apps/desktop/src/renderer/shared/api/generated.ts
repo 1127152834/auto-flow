@@ -450,6 +450,57 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment */
+        get: operations["environment_api_v1_android_environment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Devices */
+        get: operations["devices_api_v1_android_devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/devices/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Device */
+        get: operations["device_api_v1_android_devices__device_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1193,6 +1244,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows/runs/{run_id}/handoffs/{handoff_id}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open Native */
+        post: operations["open_native_api_v1_workflows_runs__run_id__handoffs__handoff_id__open_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/runs/{run_id}/handoffs/{handoff_id}/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Continue Native */
+        post: operations["continue_native_api_v1_workflows_runs__run_id__handoffs__handoff_id__continue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows/runs/{run_id}/events": {
         parameters: {
             query?: never;
@@ -1400,6 +1485,55 @@ export type components = {
             resource?: components["schemas"]["SyncSnapshot"] | null;
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** AndroidDeviceRead */
+        AndroidDeviceRead: {
+            /** Deviceid */
+            deviceId: string;
+            /** Name */
+            name: string;
+            /** Runtimeid */
+            runtimeId: string;
+            /** Ownerrunid */
+            ownerRunId: string | null;
+            /** Control */
+            control: string;
+            /** Generation */
+            generation: number;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Imageid */
+            imageId: string;
+            /** Androidstatus */
+            androidStatus: string;
+            /** Lasterror */
+            lastError: string | null;
+        };
+        /** AndroidEnvironment */
+        AndroidEnvironment: {
+            /** Available */
+            available: boolean;
+            /** Platformsupported */
+            platformSupported: boolean;
+            /** Runtimeid */
+            runtimeId: string;
+            /** Message */
+            message: string;
+        };
+        /** AndroidTarget */
+        AndroidTarget: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "android";
+            /**
+             * Deviceid
+             * Format: uuid
+             */
+            deviceId: string;
+        };
         /** ApiError */
         ApiError: {
             /** Code */
@@ -1446,6 +1580,19 @@ export type components = {
         /** BrowserErrorEnvelope */
         BrowserErrorEnvelope: {
             error: components["schemas"]["BrowserApiError"];
+        };
+        /** BrowserTarget */
+        BrowserTarget: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "browser";
+            /**
+             * Profileid
+             * Format: uuid
+             */
+            profileId: string;
         };
         /** Capability */
         Capability: {
@@ -1659,6 +1806,38 @@ export type components = {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** Handoff */
+        Handoff: {
+            /** Handoffid */
+            handoffId: string;
+            /** Nodeid */
+            nodeId: string;
+            /** State */
+            state: string;
+            /** Prompt */
+            prompt: string;
+            /**
+             * Deadlineat
+             * Format: date-time
+             */
+            deadlineAt: string;
+            /** Nativesessionid */
+            nativeSessionId: string | null;
+            /** Error */
+            error: string | null;
+            /** Receipts */
+            receipts?: {
+                [key: string]: string;
+            };
+        };
+        /** HandoffCommand */
+        HandoffCommand: {
+            /**
+             * Requestid
+             * Format: uuid
+             */
+            requestId: string;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -2775,14 +2954,18 @@ export type components = {
             /** Name */
             name: string;
             /** Profileid */
-            profileId: string;
+            profileId: string | null;
             /** Profilename */
-            profileName: string;
+            profileName: string | null;
+            /** Target */
+            target: components["schemas"]["BrowserTarget"] | components["schemas"]["AndroidTarget"];
+            /** Targetname */
+            targetName: string;
             /**
              * State
              * @enum {string}
              */
-            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted";
+            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
             /** Currentnodeid */
             currentNodeId: string | null;
             /**
@@ -2802,7 +2985,12 @@ export type components = {
             /** Profilesnapshot */
             profileSnapshot: {
                 [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** Targetsnapshot */
+            targetSnapshot?: {
+                [key: string]: components["schemas"]["JsonValue"];
             };
+            handoff?: components["schemas"]["Handoff"] | null;
             /** Nodeorder */
             nodeOrder: string[];
             /** Artifacts */
@@ -2817,7 +3005,9 @@ export type components = {
             document: components["schemas"]["WorkflowDocument"];
             layout: components["schemas"]["WorkflowLayout"];
             /** Profileid */
-            profileId: string;
+            profileId?: string | null;
+            /** Target */
+            target?: (components["schemas"]["BrowserTarget"] | components["schemas"]["AndroidTarget"]) | null;
         };
         /** RunSummary */
         RunSummary: {
@@ -2828,14 +3018,18 @@ export type components = {
             /** Name */
             name: string;
             /** Profileid */
-            profileId: string;
+            profileId: string | null;
             /** Profilename */
-            profileName: string;
+            profileName: string | null;
+            /** Target */
+            target: components["schemas"]["BrowserTarget"] | components["schemas"]["AndroidTarget"];
+            /** Targetname */
+            targetName: string;
             /**
              * State
              * @enum {string}
              */
-            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted";
+            state: "starting" | "running" | "finishing" | "stopping" | "succeeded" | "failed" | "cancelled" | "interrupted" | "waiting_manual" | "resuming";
             /** Currentnodeid */
             currentNodeId: string | null;
             /**
@@ -3014,7 +3208,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual";
             /** Label */
             label: string;
             /** Config */
@@ -3028,7 +3222,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual";
             /** Title */
             title: string;
             /** Description */
@@ -4645,6 +4839,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OperationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    environment_api_v1_android_environment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidEnvironment"];
+                };
+            };
+        };
+    };
+    devices_api_v1_android_devices_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidDeviceRead"][];
+                };
+            };
+        };
+    };
+    device_api_v1_android_devices__device_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidDeviceRead"];
                 };
             };
             /** @description Validation Error */
@@ -7733,6 +7998,168 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    open_native_api_v1_workflows_runs__run_id__handoffs__handoff_id__open_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoffCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunRead"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    continue_native_api_v1_workflows_runs__run_id__handoffs__handoff_id__continue_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HandoffCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };

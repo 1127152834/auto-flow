@@ -1,0 +1,8 @@
+PASS six real nodes; unsaved snapshot; idempotent request; extraction and real PNG; cleanup
+PASS replacement, append, empty input, container, contenteditable, CSS/XPath first match
+PASS six extraction modes including raw attributes/null/large UTF-8 results; all wait states
+PASS popup follow on/off and no-popup success; double/right clicks
+PASS viewport/element screenshots, relative directory, explicit absolute PNG, retained copy, collision/traversal refusal
+PASS preflight, fractional timeout, fail-fast, single active run, resource deletion guard, stop interrupts wait
+PASS ordered event pagination, SSE cursor replay, restart restores run/log/results without replay
+PASS temporary sessions isolated; actual locale/timezone; Profile start URL not visited

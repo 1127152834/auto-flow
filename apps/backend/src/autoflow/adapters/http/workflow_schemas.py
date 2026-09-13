@@ -13,6 +13,7 @@ NodeType = Literal[
     "wait_element",
     "get_element_info",
     "screenshot",
+    "android_launch_app", "android_tap", "android_key", "android_screenshot", "android_manual",
 ]
 Identifier = Annotated[str, Field(min_length=1, max_length=120, strict=True)]
 

@@ -1,0 +1,809 @@
+{
+  "waiting": {
+    "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+    "workflowId": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+    "name": "安卓人工接管示例",
+    "profileId": null,
+    "profileName": null,
+    "target": {
+      "kind": "android",
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+    },
+    "targetName": "安卓工作流测试",
+    "state": "waiting_manual",
+    "currentNodeId": "android-2",
+    "startedAt": "2026-09-13T03:13:47.191060Z",
+    "finishedAt": null,
+    "latestSeq": 9,
+    "completedNodeIds": [
+      "android-0",
+      "android-1"
+    ],
+    "error": null,
+    "document": {
+      "id": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+      "name": "安卓人工接管示例",
+      "schemaVersion": 1,
+      "nodes": [
+        {
+          "id": "android-0",
+          "type": "android_launch_app",
+          "label": "打开设置",
+          "config": {
+            "packageName": "com.android.settings",
+            "timeoutSeconds": 30
+          }
+        },
+        {
+          "id": "android-1",
+          "type": "android_screenshot",
+          "label": "操作前截图",
+          "config": {
+            "variableName": "before",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-2",
+          "type": "android_manual",
+          "label": "人工处理",
+          "config": {
+            "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+            "timeoutSeconds": 600
+          }
+        },
+        {
+          "id": "android-3",
+          "type": "android_key",
+          "label": "自动返回",
+          "config": {
+            "key": "BACK",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-4",
+          "type": "android_screenshot",
+          "label": "操作后截图",
+          "config": {
+            "variableName": "after",
+            "timeoutSeconds": 15
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge-0",
+          "source": "android-0",
+          "target": "android-1",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-1",
+          "source": "android-1",
+          "target": "android-2",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-2",
+          "source": "android-2",
+          "target": "android-3",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-3",
+          "source": "android-3",
+          "target": "android-4",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        }
+      ],
+      "variables": []
+    },
+    "layout": {
+      "nodes": {
+        "android-0": {
+          "x": 120.0,
+          "y": 160.0
+        },
+        "android-1": {
+          "x": 360.0,
+          "y": 160.0
+        },
+        "android-2": {
+          "x": 600.0,
+          "y": 160.0
+        },
+        "android-3": {
+          "x": 840.0,
+          "y": 160.0
+        },
+        "android-4": {
+          "x": 1080.0,
+          "y": 160.0
+        }
+      },
+      "viewport": {
+        "x": 0.0,
+        "y": 0.0,
+        "zoom": 0.8
+      }
+    },
+    "profileSnapshot": null,
+    "targetSnapshot": {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "width": 720,
+      "height": 1280
+    },
+    "handoff": {
+      "handoffId": "27ac1976-8750-48ef-84d0-a9093eb8c42e",
+      "nodeId": "android-2",
+      "state": "waiting",
+      "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+      "deadlineAt": "2026-09-13T03:23:49.306882Z",
+      "nativeSessionId": null,
+      "error": null,
+      "receipts": {}
+    },
+    "nodeOrder": [
+      "android-0",
+      "android-1",
+      "android-2",
+      "android-3",
+      "android-4"
+    ],
+    "artifacts": [
+      {
+        "id": "a72696a3dd6347c3893b868813e17cc7",
+        "nodeId": "android-1",
+        "kind": "image",
+        "name": "a72696a3dd6347c3893b868813e17cc7.png",
+        "mimeType": "image/png",
+        "relativePath": "a72696a3dd6347c3893b868813e17cc7.png",
+        "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/9e30bbf3-0dda-4c13-81b2-0d52b47a8e64/artifacts/a72696a3dd6347c3893b868813e17cc7.png",
+        "preview": "Android · 720 × 1280"
+      }
+    ],
+    "warnings": []
+  },
+  "opened": {
+    "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+    "workflowId": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+    "name": "安卓人工接管示例",
+    "profileId": null,
+    "profileName": null,
+    "target": {
+      "kind": "android",
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+    },
+    "targetName": "安卓工作流测试",
+    "state": "waiting_manual",
+    "currentNodeId": "android-2",
+    "startedAt": "2026-09-13T03:13:47.191060Z",
+    "finishedAt": null,
+    "latestSeq": 12,
+    "completedNodeIds": [
+      "android-0",
+      "android-1"
+    ],
+    "error": null,
+    "document": {
+      "id": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+      "name": "安卓人工接管示例",
+      "schemaVersion": 1,
+      "nodes": [
+        {
+          "id": "android-0",
+          "type": "android_launch_app",
+          "label": "打开设置",
+          "config": {
+            "packageName": "com.android.settings",
+            "timeoutSeconds": 30
+          }
+        },
+        {
+          "id": "android-1",
+          "type": "android_screenshot",
+          "label": "操作前截图",
+          "config": {
+            "variableName": "before",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-2",
+          "type": "android_manual",
+          "label": "人工处理",
+          "config": {
+            "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+            "timeoutSeconds": 600
+          }
+        },
+        {
+          "id": "android-3",
+          "type": "android_key",
+          "label": "自动返回",
+          "config": {
+            "key": "BACK",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-4",
+          "type": "android_screenshot",
+          "label": "操作后截图",
+          "config": {
+            "variableName": "after",
+            "timeoutSeconds": 15
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge-0",
+          "source": "android-0",
+          "target": "android-1",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-1",
+          "source": "android-1",
+          "target": "android-2",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-2",
+          "source": "android-2",
+          "target": "android-3",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-3",
+          "source": "android-3",
+          "target": "android-4",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        }
+      ],
+      "variables": []
+    },
+    "layout": {
+      "nodes": {
+        "android-0": {
+          "x": 120.0,
+          "y": 160.0
+        },
+        "android-1": {
+          "x": 360.0,
+          "y": 160.0
+        },
+        "android-2": {
+          "x": 600.0,
+          "y": 160.0
+        },
+        "android-3": {
+          "x": 840.0,
+          "y": 160.0
+        },
+        "android-4": {
+          "x": 1080.0,
+          "y": 160.0
+        }
+      },
+      "viewport": {
+        "x": 0.0,
+        "y": 0.0,
+        "zoom": 0.8
+      }
+    },
+    "profileSnapshot": null,
+    "targetSnapshot": {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "width": 720,
+      "height": 1280
+    },
+    "handoff": {
+      "handoffId": "27ac1976-8750-48ef-84d0-a9093eb8c42e",
+      "nodeId": "android-2",
+      "state": "open",
+      "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+      "deadlineAt": "2026-09-13T03:23:49.306882Z",
+      "nativeSessionId": "10da85dc-b689-4590-9222-ea546012fd7c",
+      "error": null,
+      "receipts": {
+        "47f7821e-ca4b-4cd1-a033-8bf2721f34b4": "open"
+      }
+    },
+    "nodeOrder": [
+      "android-0",
+      "android-1",
+      "android-2",
+      "android-3",
+      "android-4"
+    ],
+    "artifacts": [
+      {
+        "id": "a72696a3dd6347c3893b868813e17cc7",
+        "nodeId": "android-1",
+        "kind": "image",
+        "name": "a72696a3dd6347c3893b868813e17cc7.png",
+        "mimeType": "image/png",
+        "relativePath": "a72696a3dd6347c3893b868813e17cc7.png",
+        "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/9e30bbf3-0dda-4c13-81b2-0d52b47a8e64/artifacts/a72696a3dd6347c3893b868813e17cc7.png",
+        "preview": "Android · 720 × 1280"
+      }
+    ],
+    "warnings": []
+  },
+  "final": {
+    "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+    "workflowId": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+    "name": "安卓人工接管示例",
+    "profileId": null,
+    "profileName": null,
+    "target": {
+      "kind": "android",
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+    },
+    "targetName": "安卓工作流测试",
+    "state": "succeeded",
+    "currentNodeId": "android-4",
+    "startedAt": "2026-09-13T03:13:47.191060Z",
+    "finishedAt": "2026-09-13T03:13:50.945127Z",
+    "latestSeq": 21,
+    "completedNodeIds": [
+      "android-0",
+      "android-1",
+      "android-2",
+      "android-3",
+      "android-4"
+    ],
+    "error": null,
+    "document": {
+      "id": "7c5f248d-7785-4d90-891f-53d21dfd36e0",
+      "name": "安卓人工接管示例",
+      "schemaVersion": 1,
+      "nodes": [
+        {
+          "id": "android-0",
+          "type": "android_launch_app",
+          "label": "打开设置",
+          "config": {
+            "packageName": "com.android.settings",
+            "timeoutSeconds": 30
+          }
+        },
+        {
+          "id": "android-1",
+          "type": "android_screenshot",
+          "label": "操作前截图",
+          "config": {
+            "variableName": "before",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-2",
+          "type": "android_manual",
+          "label": "人工处理",
+          "config": {
+            "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+            "timeoutSeconds": 600
+          }
+        },
+        {
+          "id": "android-3",
+          "type": "android_key",
+          "label": "自动返回",
+          "config": {
+            "key": "BACK",
+            "timeoutSeconds": 15
+          }
+        },
+        {
+          "id": "android-4",
+          "type": "android_screenshot",
+          "label": "操作后截图",
+          "config": {
+            "variableName": "after",
+            "timeoutSeconds": 15
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "edge-0",
+          "source": "android-0",
+          "target": "android-1",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-1",
+          "source": "android-1",
+          "target": "android-2",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-2",
+          "source": "android-2",
+          "target": "android-3",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        },
+        {
+          "id": "edge-3",
+          "source": "android-3",
+          "target": "android-4",
+          "sourceHandle": "out",
+          "targetHandle": "in"
+        }
+      ],
+      "variables": []
+    },
+    "layout": {
+      "nodes": {
+        "android-0": {
+          "x": 120.0,
+          "y": 160.0
+        },
+        "android-1": {
+          "x": 360.0,
+          "y": 160.0
+        },
+        "android-2": {
+          "x": 600.0,
+          "y": 160.0
+        },
+        "android-3": {
+          "x": 840.0,
+          "y": 160.0
+        },
+        "android-4": {
+          "x": 1080.0,
+          "y": 160.0
+        }
+      },
+      "viewport": {
+        "x": 0.0,
+        "y": 0.0,
+        "zoom": 0.8
+      }
+    },
+    "profileSnapshot": null,
+    "targetSnapshot": {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "width": 720,
+      "height": 1280
+    },
+    "handoff": {
+      "handoffId": "27ac1976-8750-48ef-84d0-a9093eb8c42e",
+      "nodeId": "android-2",
+      "state": "completed",
+      "prompt": "在原生窗口进入一个设置子页，回到这里完成并继续。",
+      "deadlineAt": "2026-09-13T03:23:49.306882Z",
+      "nativeSessionId": "10da85dc-b689-4590-9222-ea546012fd7c",
+      "error": null,
+      "receipts": {
+        "47f7821e-ca4b-4cd1-a033-8bf2721f34b4": "open",
+        "3fd0c5d6-45ad-4a83-8565-a09ce16fdd10": "continue"
+      }
+    },
+    "nodeOrder": [
+      "android-0",
+      "android-1",
+      "android-2",
+      "android-3",
+      "android-4"
+    ],
+    "artifacts": [
+      {
+        "id": "a72696a3dd6347c3893b868813e17cc7",
+        "nodeId": "android-1",
+        "kind": "image",
+        "name": "a72696a3dd6347c3893b868813e17cc7.png",
+        "mimeType": "image/png",
+        "relativePath": "a72696a3dd6347c3893b868813e17cc7.png",
+        "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/9e30bbf3-0dda-4c13-81b2-0d52b47a8e64/artifacts/a72696a3dd6347c3893b868813e17cc7.png",
+        "preview": "Android · 720 × 1280"
+      },
+      {
+        "id": "89295d12661f438592bd35b91392a8de",
+        "nodeId": "android-4",
+        "kind": "image",
+        "name": "89295d12661f438592bd35b91392a8de.png",
+        "mimeType": "image/png",
+        "relativePath": "89295d12661f438592bd35b91392a8de.png",
+        "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-handoff-workspace/workspace/runs/9e30bbf3-0dda-4c13-81b2-0d52b47a8e64/artifacts/89295d12661f438592bd35b91392a8de.png",
+        "preview": "Android · 720 × 1280"
+      }
+    ],
+    "warnings": []
+  },
+  "devices": [
+    {
+      "deviceId": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "name": "安卓工作流测试",
+      "runtimeId": "autoflow-redroid",
+      "ownerRunId": null,
+      "control": "idle",
+      "generation": 9,
+      "width": 720,
+      "height": 1280,
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "androidStatus": "ready",
+      "lastError": null
+    }
+  ],
+  "events": {
+    "items": [
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 1,
+        "timestamp": "2026-09-13T03:13:47.191060Z",
+        "type": "accepted",
+        "nodeId": null,
+        "level": "info",
+        "message": "已接受当前草稿快照，正在准备运行资源",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 2,
+        "timestamp": "2026-09-13T03:13:48.656651Z",
+        "type": "ready",
+        "nodeId": null,
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 3,
+        "timestamp": "2026-09-13T03:13:48.660089Z",
+        "type": "node_started",
+        "nodeId": "android-0",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 4,
+        "timestamp": "2026-09-13T03:13:48.812653Z",
+        "type": "node_succeeded",
+        "nodeId": "android-0",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 5,
+        "timestamp": "2026-09-13T03:13:48.815075Z",
+        "type": "node_started",
+        "nodeId": "android-1",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 6,
+        "timestamp": "2026-09-13T03:13:49.300294Z",
+        "type": "log",
+        "nodeId": "android-1",
+        "level": "info",
+        "message": "安卓截图已保存",
+        "durationMs": null,
+        "artifactId": "a72696a3dd6347c3893b868813e17cc7",
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 7,
+        "timestamp": "2026-09-13T03:13:49.303078Z",
+        "type": "node_succeeded",
+        "nodeId": "android-1",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 8,
+        "timestamp": "2026-09-13T03:13:49.305153Z",
+        "type": "node_started",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 9,
+        "timestamp": "2026-09-13T03:13:49.308474Z",
+        "type": "manual_requested",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "等待人工处理",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 10,
+        "timestamp": "2026-09-13T03:13:49.486456Z",
+        "type": "native_opening",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "正在打开操作窗口",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 11,
+        "timestamp": "2026-09-13T03:13:49.491202Z",
+        "type": "native_opening",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "正在启动原生窗口",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 12,
+        "timestamp": "2026-09-13T03:13:50.115098Z",
+        "type": "native_opened",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "请在 Mac 原生窗口操作",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 13,
+        "timestamp": "2026-09-13T03:13:50.366969Z",
+        "type": "resume_requested",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "正在收回控制权",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 14,
+        "timestamp": "2026-09-13T03:13:50.423731Z",
+        "type": "resumed",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "人工处理完成，继续自动执行",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 15,
+        "timestamp": "2026-09-13T03:13:50.521673Z",
+        "type": "node_succeeded",
+        "nodeId": "android-2",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 16,
+        "timestamp": "2026-09-13T03:13:50.523717Z",
+        "type": "node_started",
+        "nodeId": "android-3",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 17,
+        "timestamp": "2026-09-13T03:13:50.570948Z",
+        "type": "node_succeeded",
+        "nodeId": "android-3",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 18,
+        "timestamp": "2026-09-13T03:13:50.573042Z",
+        "type": "node_started",
+        "nodeId": "android-4",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 19,
+        "timestamp": "2026-09-13T03:13:50.860233Z",
+        "type": "log",
+        "nodeId": "android-4",
+        "level": "info",
+        "message": "安卓截图已保存",
+        "durationMs": null,
+        "artifactId": "89295d12661f438592bd35b91392a8de",
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 20,
+        "timestamp": "2026-09-13T03:13:50.862737Z",
+        "type": "node_succeeded",
+        "nodeId": "android-4",
+        "level": "info",
+        "message": "",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      },
+      {
+        "runId": "9e30bbf3-0dda-4c13-81b2-0d52b47a8e64",
+        "seq": 21,
+        "timestamp": "2026-09-13T03:13:50.945899Z",
+        "type": "succeeded",
+        "nodeId": null,
+        "level": "info",
+        "message": "运行完成，设备占用已释放，Android 与数据保留",
+        "durationMs": null,
+        "artifactId": null,
+        "error": null
+      }
+    ],
+    "hasMore": false,
+    "nextSeq": 21
+  }
+}

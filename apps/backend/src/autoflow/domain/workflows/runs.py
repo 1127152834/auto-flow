@@ -8,7 +8,7 @@ from typing import Any, Protocol
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.run_validation import PreparedWorkflow
 
-ACTIVE_RUN_STATES = frozenset({"starting", "running", "finishing", "stopping"})
+ACTIVE_RUN_STATES = frozenset({"starting", "running", "finishing", "stopping", "waiting_manual", "resuming"})
 
 
 @dataclass(frozen=True)
