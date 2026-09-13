@@ -365,7 +365,7 @@ function DataTableDetail({
       });
       if (kind === "recordDelete") setDetailTarget(null);
       notify({
-        title: kind.includes("Delete") ? "删除已确认" : "保存已确认",
+        title: ({ tableEdit: "数据表已保存", recordCreate: "记录已创建", recordEdit: "记录已保存", recordStatus: "业务状态已更新", recordDelete: "记录已删除", fieldCreate: "字段已创建", fieldEdit: "字段已保存", statusCreate: "业务状态已创建", statusEdit: "业务状态已保存", statusDelete: "业务状态已删除" })[kind],
         tone: "success",
         operationId: JSON.stringify([workspaceKey, projectId, tableId, generation, operationKey]),
       });
@@ -533,19 +533,15 @@ function DataTableDetail({
       </section>
     );
   return (
-    <section className="grid min-w-0 gap-5">
+    <section className="grid min-w-0 gap-3" data-table-detail>
       <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Button variant="ghost" disabled={disabled} onClick={onBack}>
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>
             返回数据表
           </Button>
           <h1 className="m-0 break-words text-2xl font-semibold">
             {table.name}
           </h1>
-          <p className="text-sm text-muted">
-            {table.description || "暂无说明"}
-          </p>
-        </div>
         <Badge>
           {readonly
             ? "只读"
@@ -557,6 +553,8 @@ function DataTableDetail({
                   ? "Google Sheets"
                   : "来源未配置"}
         </Badge>
+          </div><p className="mb-0 mt-1 truncate text-sm text-muted" title={table.description || "暂无说明"}>{table.description || "暂无说明"}</p>
+        </div>
         <div className="flex flex-wrap gap-2">
           {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
           {tab !== "records" ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
@@ -586,7 +584,7 @@ function DataTableDetail({
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContent value="records" className="grid gap-5">
+        <TabsContent value="records" className="grid gap-3">
           <RecordQueryToolbar
             fields={fields} statuses={statuses} query={query} visibleFieldIds={visibleFieldIds} quickSearch={quickSearch}
             resetKey={`${projectId}:${tableId}:${generation}:${table.tableRevision}:${catalogQuery.data?.[0].tableRevision}:${filterSession}`}

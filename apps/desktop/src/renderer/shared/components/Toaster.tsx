@@ -1,3 +1,4 @@
+import { CheckCircle, Info, WarningCircle } from '@phosphor-icons/react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Button } from './ui/button'
 
@@ -74,5 +75,5 @@ export function Toaster() {
       latest.current.forEach(forget)
     }
   }, [])
-  return <div className="pointer-events-none fixed bottom-4 right-4 z-[100] grid w-[min(24rem,calc(100vw-2rem))] gap-2" aria-live="polite">{toasts.map(toast => <div key={toast.id} className={`${exiting.has(toast.id) ? 'toast-exit' : 'toast-enter'} pointer-events-auto flex items-center justify-between gap-4 rounded-control border border-line bg-surface px-4 py-3 text-sm text-ink shadow-lg`} role="status" data-tone={toast.tone}><span className="min-w-0 break-words">{toast.title}</span><Button variant="ghost" className="h-7 shrink-0 px-2 text-xs" aria-label="关闭通知" onClick={() => dismissRef.current(toast.id)}>关闭</Button></div>)}</div>
+  return <div className="pointer-events-none fixed top-24 right-4 z-[100] grid w-[min(24rem,calc(100vw-2rem))] gap-2" aria-live="polite">{toasts.map(toast => <div key={toast.id} className={`${exiting.has(toast.id) ? 'toast-exit' : 'toast-enter'} pointer-events-auto flex items-center justify-between gap-4 rounded-control border border-line bg-surface px-4 py-3 text-sm text-ink shadow-lg`} role="status" data-tone={toast.tone}><span className="flex min-w-0 items-start gap-2">{toast.tone === 'success' ? <CheckCircle aria-hidden size={20} className="shrink-0 text-success" /> : toast.tone === 'error' ? <WarningCircle aria-hidden size={20} className="shrink-0 text-danger" /> : <Info aria-hidden size={20} className="shrink-0 text-muted" />}<span className="min-w-0 break-words">{toast.title}</span></span><Button variant="ghost" className="h-7 shrink-0 px-2 text-xs" aria-label="关闭通知" onClick={() => dismissRef.current(toast.id)}>关闭</Button></div>)}</div>
 }

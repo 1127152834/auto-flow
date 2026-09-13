@@ -47,7 +47,7 @@ async function main() {
     assert.ok(response.ok,`${options.method??'GET'} ${path}: ${response.status} ${response.ok?'':await response.text()}`);return response.json()
   }
   async function click(text,selector='button'){
-    const point=await waitFor(renderer,`(()=>{const el=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>(e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)})&&e.getClientRects().length);if(!el||el.disabled)return null;el.scrollIntoView({block:'center'});const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return el.contains(document.elementFromPoint(x,y))?{x,y}:null})()`,text)
+    const point=await waitFor(renderer,`(()=>{const matches=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>(${JSON.stringify(text)}===''||e.textContent.trim()===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)})&&e.getClientRects().length);if(matches.length!==1)return null;const el=matches[0];if(el.disabled)return null;el.scrollIntoView({block:'center'});const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return el.contains(document.elementFromPoint(x,y))?{x,y}:null})()`,text)
     for(const type of ['mousePressed','mouseReleased'])await renderer.command('Input.dispatchMouseEvent',{type,...point,button:'left',clickCount:1});await wait(120)
   }
   async function input(selector,value){await renderer.evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});if(!el)throw Error('input missing');el.focus();el.select()})()`);await renderer.command('Input.insertText',{text:value})}
@@ -58,7 +58,7 @@ async function main() {
     const state=await renderer.evaluate(`({route:location.hash,viewport:{width:innerWidth,height:innerHeight},dpr:devicePixelRatio,fonts:document.fonts.status})`)
     let geometry=null, previous=''
     for(let attempt=0;attempt<15;attempt++){
-      const current=await renderer.evaluate(`JSON.stringify([...document.querySelectorAll('h1,[aria-label=项目目录] article')].map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}}))`)
+      const current=await renderer.evaluate(`JSON.stringify([...document.querySelectorAll('h1,article,[data-table-detail] thead,[data-af-popup],[role=status][data-tone]')].map(e=>{const r=e.getBoundingClientRect();return {tag:e.tagName,label:e.getAttribute('aria-label'),text:e.textContent.slice(0,80),x:r.x,y:r.y,w:r.width,h:r.height}}))`)
       if(current===previous){geometry=JSON.parse(current);break}previous=current;await wait(100)
     }
     assert.ok(geometry,'截图前布局必须稳定')
@@ -70,10 +70,10 @@ async function main() {
     const windowContentSize=await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].getContentSize()')
     const {data}=await renderer.command('Page.captureScreenshot',{format:'png'})
     await writeFile(join(evidence,`${name}.png`),Buffer.from(data,'base64'))
-    screenshots.push({id:name,file:`${name}.png`,...source,...state,zoom:zoomFactor,windowContentSize,viewportMode:visualDirectory?'CDP desktop viewport override (physical macOS work area limited)':'native',platformFonts,geometry,checks:[...checks],visualReview:'pending'})
+    screenshots.push({id:name,file:`${name}.png`,...source,...state,zoom:zoomFactor,windowContentSize,viewportMode:!manual?'CDP desktop viewport override (physical macOS work area limited)':'native',platformFonts,geometry,checks:[...checks],visualReview:'pending'})
   }
   async function directoryGeometry() {
-    const geometry=await renderer.evaluate(`(()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}};return {h1:document.querySelectorAll('h1').length,width:innerWidth,scrollWidth:document.documentElement.scrollWidth,cards:[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>({card:box(e),icon:e.querySelector('[data-project-icon]')?box(e.querySelector('[data-project-icon]')):null,info:e.querySelector('[data-project-info]')?box(e.querySelector('[data-project-info]')):null,menu:e.querySelector('[data-project-menu]')?box(e.querySelector('[data-project-menu]')):null}))}})()`)
+    const geometry=await renderer.evaluate(`(()=>{const box=e=>{const r=e.getBoundingClientRect();return {tag:e.tagName,label:e.getAttribute('aria-label'),text:e.textContent.slice(0,80),x:r.x,y:r.y,w:r.width,h:r.height}};return {h1:document.querySelectorAll('h1').length,width:innerWidth,scrollWidth:document.documentElement.scrollWidth,cards:[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>({card:box(e),icon:e.querySelector('[data-project-icon]')?box(e.querySelector('[data-project-icon]')):null,info:e.querySelector('[data-project-info]')?box(e.querySelector('[data-project-info]')):null,menu:e.querySelector('[data-project-menu]')?box(e.querySelector('[data-project-menu]')):null}))}})()`)
     assert.equal(geometry.h1,1,'项目目录只有一个主标题')
     assert.ok(geometry.scrollWidth<=geometry.width+1,'项目目录无全页横向溢出')
     for(const item of geometry.cards){assert.ok(item.icon&&item.info&&item.menu,'项目图标/信息/菜单区域存在');assert.ok(item.icon.x+item.icon.w<=item.info.x+1,'图标在业务信息左侧');assert.ok(item.menu.x+item.menu.w/2>item.card.x+item.card.w*2/3,'更多菜单位于卡片右侧');assert.ok(item.menu.y+item.menu.h/2<item.card.y+item.card.h/2,'更多菜单位于卡片上半部')}
@@ -86,7 +86,7 @@ async function main() {
     await click('查看全部项目');await click(created[0]);await visible('项目资料');await click('返回项目目录');await click(created[1]);await visible('项目资料');await click('返回项目目录');await click('返回最近')
     await directoryGeometry();checkpoint('E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过')
     const names=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.textContent)");assert.ok(names[0].includes(created[1])&&names[1].includes(created[0]))
-    await capture('VR-A01-recent',source)
+    await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'目录正常态通知自然退出');await capture('VR-A01-recent',source)
     const before=await renderer.evaluate('location.hash');await click(`更多${created[1]}操作`);await click('编辑项目','[role=menuitem]');await visible('编辑项目');assert.equal(await renderer.evaluate('location.hash'),before);await click('取消');checkpoint('E1: 更多编辑打开表单不导航')
     await api('/projects',{method:'POST',body:{name:longName,description:'用于长文本边界。API准备，不代表UI创建通过。'}})
     await click('查看全部项目');await visible(longName);await directoryGeometry();await capture('VR-A02-all',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径'})
@@ -96,7 +96,7 @@ async function main() {
     await zoom(2);assert.deepEqual(await renderer.evaluate('({w:innerWidth,h:innerHeight,dpr:devicePixelRatio})'),{w:720,h:512,dpr:2},'200%逻辑视口与DPR');await renderer.evaluate("document.querySelector('[aria-label=项目目录] article').scrollIntoView({block:'center'})");await directoryGeometry();assert.ok(await renderer.evaluate(`(()=>{const e=[...document.querySelectorAll('button[title]')].find(e=>e.title===${JSON.stringify(longName)})?.querySelector('span.truncate');return e&&e.scrollWidth>e.clientWidth&&getComputedStyle(e).textOverflow==='ellipsis'})()`),'边界fixture必须实际触发名称省略');checkpoint('E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留');await capture('VR-A01-recent-200',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'长名fixture经UI打开成为最近记录'});await zoom(1)
     await report('passed');clean=true;console.log(`VR1目录E2E通过，视觉审查待填：${evidence}`)
   }
-  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);if(visualDirectory)await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});await wait(250)}
+  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);if(!manual)await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});await wait(250)}
   async function fits(){assert.ok(await renderer.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),'页面不得横向撑宽');assert.ok(await renderer.evaluate(`(()=>{const input=document.querySelector('[aria-label=文本搜索]'),button=[...document.querySelectorAll('[data-query-panel-trigger]')].find(e=>e.textContent==='筛选');if(!input||!button)return true;const a=input.getBoundingClientRect(),b=button.getBoundingClientRect();return a.right<=b.left+1||b.right<=a.left+1||a.bottom<=b.top+1||b.bottom<=a.top+1})()`),'搜索框与筛选按钮不得重叠')}
   async function seed(){
     for(let index=1;index<=52;index++)await api('/projects',{method:'POST',body:{name:`R1分页${String(index).padStart(3,'0')}`,description:'工具生成的分页边界资料'}})
@@ -105,6 +105,41 @@ async function main() {
     const field=await api(`/projects/${project.projectId}/tables/${table.tableId}/fields`,{method:'POST',body:{definition:{key:'title',name:'标题',type:'string',required:false,validation:{}},expectedTableRevision:table.tableRevision,sourceColumnPolicy:'localOnly'}})
     for(let index=1;index<=120;index++)await api(`/projects/${project.projectId}/tables/${table.tableId}/records`,{method:'POST',body:{datasetGeneration:table.datasetGeneration,values:[{fieldId:field.field.ref.fieldId,value:`${index%2?'温室':'花园'}资料${String(index).padStart(3,'0')}`}]}})
     fixture={project,table,field:field.field};await writeFile(join(evidence,'fixtures.json'),JSON.stringify(fixture,null,2));checkpoint('生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）')
+  }
+  async function uiDataFlow() {
+    const source={stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-B/R1-C'}
+    await click('查看全部项目');await click('R1手建A');await visible('项目资料');await click('数据','[aria-label=项目功能] button');await visible('还没有数据表');await capture('r1-b-empty',source)
+    for(const [name,description] of [['资料库','存储采集的基础信息'],['较长说明的本地数据表','这是一张用于验证卡片信息和操作对齐的数据表，描述内容跨越两行时底部操作仍应对齐。']]){
+      await click('新建数据表');await input('#data-table-name',name);await input('#data-table-description',description);await click('创建数据表');await visible('返回数据表');await click('返回数据表');await visible(name)
+    }
+    await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'正常态通知自然退出');await capture('r1-b-two-local-tables',source);await click('打开资料库');await visible('还没有记录');await click('字段','[role=tab]')
+    for(const [name,keyName,type] of [['标题','title','文本'],['文章链接','url','文本'],['发布日期','published','日期'],['已检查','checked','布尔'],['优先级','priority','数字']]){
+      await click('新建字段');await input('#field-name',name);await input('#field-key',keyName);if(type!=='文本'){await click('','#field-type');await click(type,'[role=option]')}await click('创建字段');await waitFor(renderer,"!document.querySelector('#field-editor-form')",'field saved')
+    }
+    await click('状态','[role=tab]');for(const name of ['已核对','待补充']){await click('新建状态');await input('#status-name',name);await click('创建状态');await waitFor(renderer,"!document.querySelector('#status-editor-form')",'status saved')}
+    const project=(await api('/projects?q=R1手建A')).items[0],table=(await api(`/projects/${project.projectId}/tables`)).items.find(t=>t.name==='资料库'),base=`/projects/${project.projectId}/tables/${table.tableId}`,fields=(await api(`${base}/fields`)).items
+    await click('记录','[role=tab]')
+    for(let index=0;index<3;index++){
+      await click('新增记录');await visible('新建记录')
+      for(const field of fields){await click('',`[aria-label="${field.name}值状态"]`);if(index===2&&field.name==='发布日期'){await click('清空','[role=option]');continue}await click('填写值','[role=option]');if(field.type==='boolean'){await click('',`[aria-label="${field.name}"]`);await click(index===0?'是':'否','[role=option]')}else{const value=field.name==='标题'?['温室管理清单','智能温室控制方案🌱','温室种植技术要点'+ 'A'.repeat(100)][index]:field.name==='文章链接'?(index===2?'':`https://example.com/article/${index+1}`):field.type==='date'?'2026-09-13':String(index);await input(`#record-${field.ref.fieldId}`,value)}}
+      await click('创建记录');await waitFor(renderer,"!document.querySelector('#record-editor-form')",'record saved')
+    }
+    await waitFor(renderer,"[...document.querySelectorAll('[role=status][data-tone=success]')].some(e=>e.textContent.includes('记录已创建')&&e.getBoundingClientRect().width>0)",'真实记录创建成功通知');await capture('r1-d-record-created-toast',source);assert.ok(await renderer.evaluate("[...document.querySelectorAll('[role=status][data-tone=success]')].some(e=>e.textContent.includes('记录已创建'))"),'捕获时成功通知仍存在')
+    const statusAction=await renderer.evaluate("[...document.querySelectorAll('tbody tr')].find(e=>e.textContent.includes('温室管理清单')).querySelector('[aria-label^=修改状态]').getAttribute('aria-label')")
+    await click(statusAction);await click('','[aria-label="记录业务状态"]');await click('已核对','[role=option]');await click('保存状态');await waitFor(renderer,"!document.querySelector('[role=dialog]')",'status saved')
+    const records=(await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items;assert.equal(records.length,3);assert.equal(records.filter(r=>r.statusId!==null).length,1)
+    await waitFor(renderer,"!document.querySelector('[role=status][data-tone]')",'正常态通知自然退出');const tablePoint=await renderer.evaluate("(()=>{const r=document.querySelector('[aria-label^=记录表格]').getBoundingClientRect();return {x:r.left+100,y:r.top+70}})()");await renderer.command('Input.dispatchMouseEvent',{type:'mouseWheel',...tablePoint,deltaX:-2000,deltaY:0});await fits();const identityWidth=await renderer.evaluate("[...document.querySelectorAll('thead th')].find(e=>e.textContent==='记录身份').getBoundingClientRect().width");assert.ok(Math.abs(identityWidth-112)<=1,'记录身份实际宽度112px');await writeFile(join(evidence,'record-identity-geometry.json'),JSON.stringify({identityWidth}));await capture('r1-c-business-records',source);await click('选择本页记录','[role=checkbox]');await visible('已选择 3 条');await capture('r1-c-selected',source);await click('清空选择')
+    const mainWidth=await renderer.evaluate("document.querySelector('main').getBoundingClientRect().width")
+    for(const [panel,maxWidth] of [['筛选',512],['排序',400],['显示列',288]]){
+      await click(panel);const box=await renderer.evaluate("(()=>{const e=document.querySelector('[data-af-popup]'),r=e.getBoundingClientRect();return {width:r.width,height:r.height,viewport:innerHeight,main:document.querySelector('main').getBoundingClientRect().width}})()");assert.ok(box.width<=maxWidth+1);assert.ok(box.height<=box.viewport);assert.ok(Math.abs(box.main-mainWidth)<=1);await writeFile(join(evidence,`popup-${panel}-geometry.json`),JSON.stringify({mainWidth,...box}));await capture(`r1-c-business-${panel}`,source)
+      if(panel==='筛选'){
+        await click('','[data-af-popup] [role=combobox]');await key('Escape');assert.ok(await renderer.evaluate("Boolean(document.querySelector('[data-af-popup]'))"),'第一Escape保留筛选浮层');await key('Escape');assert.equal(await renderer.evaluate("Boolean(document.querySelector('[data-af-popup]'))"),false);assert.equal(await renderer.evaluate("document.activeElement?.getAttribute('aria-label')"),'筛选')
+      }else await key('Escape')
+    }
+    await click('筛选');await click('添加字段条件');await click('','[aria-label="filter.items.0运算符"]');await click('包含','[role=option]');await input('[id="filter.items.0-value"]','温室');await capture('r1-c-filter-populated',source);await zoom(2);await fits();const footerBox=await renderer.evaluate("(()=>{const e=[...document.querySelectorAll('[data-af-popup] button')].find(e=>e.textContent==='应用筛选'),r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:innerHeight}})()");assert.ok(footerBox.top>=0&&footerBox.bottom<=footerBox.height,'200%已配置筛选应用底栏可见');await writeFile(join(evidence,'filter-footer-200.json'),JSON.stringify(footerBox));await capture('r1-c-filter-populated-200',source);await zoom(1);await click('取消','[data-af-popup] button');await click('排序');await click('添加排序');await capture('r1-c-sort-populated',source);await click('取消','[data-af-popup] button')
+    await click('显示列');for(const field of fields)await click(field.name,'[data-af-popup] [role=checkbox]');await click('应用显示列','[data-af-popup] button');const zeroWidth=await renderer.evaluate("document.querySelector('thead [data-column-width]').getBoundingClientRect().width");assert.ok(Math.abs(zeroWidth-112)<=1,'零业务列身份宽112px');await capture('r1-c-zero-business-columns',source);await writeFile(join(evidence,'zero-column-geometry.json'),JSON.stringify({identityWidth:zeroWidth}));await click('显示列');for(const field of [...fields].reverse())await click(field.name,'[data-af-popup] [role=checkbox]');await click('应用显示列','[data-af-popup] button');assert.equal(await renderer.evaluate("document.querySelector('[aria-label=显示列]').getAttribute('data-query-applied')"),'false','恢复全部列无误标记')
+    checkpoint('E1: UI建立两表、五字段四类型、两业务状态及三条记录；核对实际状态事实，选中/Toast/浮层几何和嵌套Escape截图完成')
+    await click('返回项目目录');await click('返回最近')
   }
   async function competingEdit(){
     const hash=await renderer.evaluate('location.hash'),parts=hash.split('/'),id=parts[2];assert.ok(id,'请先打开要测试的项目')
@@ -130,11 +165,12 @@ async function main() {
   async function switchWorkspace(){await renderer.evaluate("(async()=>{const c=await window.autoflow.chooseWorkspace('previous');if(!c.ok||!c.value)throw Error('无目标');const r=await window.autoflow.confirmWorkspace(c.value.id);if(!r.ok)throw Error(r.error.message);return true})()");await visible('本地服务正常',30000);await wait(500);const current=await renderer.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).workspaceKey)()');await assertOwnedWorkspace(owner,current);checkpoint('切换到工具创建的另一工作区')}
   try {
     await launch();
-    if(visualDirectory){
+    if(!manual){
       await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});await wait(100)
       assert.deepEqual(await renderer.evaluate('({w:innerWidth,h:innerHeight})'),{w:1440,h:1024},'实际renderer视口基准')
     }
-    await click('项目','[aria-label=全局导航] button');await visible('尚无最近访问');await capture('r1-a-empty',{stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'})
+    if(!manual)await renderer.evaluate(`(()=>{const original=window.fetch.bind(window);window.__r1ReleaseRead=null;window.fetch=async(...args)=>{const input=args[0],path=typeof input==='string'?input:input.url;if(path.includes('/api/v1/projects')){window.fetch=original;await new Promise(resolve=>window.__r1ReleaseRead=resolve)}return original(...args)};return true})()`)
+    await click('项目','[aria-label=全局导航] button');if(!manual){await visible('正在加载项目');await capture('r1-a-loading',{stateSource:'fault-injection',navigation:'pointer',level:'E4',reference:'R1-A',injection:'仅延迟首次真实项目GET；释放后请求真实后端，不伪造响应'});await renderer.evaluate('window.__r1ReleaseRead();true')}await visible('尚无最近访问');await capture('r1-a-empty',{stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'})
     if(visualDirectory){await visualDirectoryFlow();return}
     if(manual){
       console.log(`R1 隔离应用已打开。测试目录：${owner}\n证据：${evidence}\n命令：seed（52/120资料，仅一次）、fixture（打开分页表）、conflict、readfail（一次失败自动重试）、readerror（本轮含重试均失败）、lost、restore（恢复fetch）、service、restart、switch、shot、entries（其他模块入口回归）、zoom200、zoom100、quit（保留目录）、clean（退出并清理本次目录）`)
@@ -162,18 +198,18 @@ async function main() {
     // Small core examples are created using actual controls; bulk data only exercises pagination.
     for(const name of ['R1手建A','R1手建B']){await click('新建项目');await input('#project-name',name);await click('创建项目');await visible('项目资料');await click('返回项目目录')}
     await click('查看全部项目');await click('R1手建A');await visible('项目资料');await click('返回项目目录');await click('R1手建B');await visible('项目资料');await click('返回项目目录');await click('返回最近')
-    const recent=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.innerText)");assert.ok(recent[0].includes('R1手建B'));assert.ok(recent[1].includes('R1手建A'));await capture('r1-a-recent');checkpoint('UI创建A/B并依次打开，最近B在A之前')
-    await seed();await click('查看全部项目');await input('[aria-label=搜索项目]','R1分页');await waitFor(renderer,"document.querySelectorAll('[aria-label=项目目录] article').length===50",'50 server paginated cards');await click('下一页');await waitFor(renderer,"document.querySelectorAll('[aria-label=项目目录] article').length===2",'second page');await capture('r1-a-all-page2');checkpoint('真实目录服务端分页50/2')
-    await route(`#/projects/${fixture.project.projectId}/data`);await visible('分页资料库');await capture('r1-b-directory');await click('打开分页资料库');await visible('温室资料');await fits();await capture('r1-c-records')
+    const recent=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.innerText)");assert.ok(recent[0].includes('R1手建B'));assert.ok(recent[1].includes('R1手建A'));await capture('r1-a-recent',{stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'});checkpoint('UI创建A/B并依次打开，最近B在A之前')
+    await uiDataFlow();await seed();await click('查看全部项目');await input('[aria-label=搜索项目]','R1分页');await waitFor(renderer,"document.querySelectorAll('[aria-label=项目目录] article').length===50",'50 server paginated cards');await click('下一页');await waitFor(renderer,"document.querySelectorAll('[aria-label=项目目录] article').length===2",'second page');await capture('r1-a-all-page2',{stateSource:'ui-with-api-fixture',navigation:'pointer',level:'E1',setupLevel:'E2',reference:'R1-A'});checkpoint('真实目录服务端分页50/2')
+    await input('[aria-label=搜索项目]','R1分页001');await click('R1分页001');await visible('项目资料');await click('数据','[aria-label=项目功能] button');await visible('分页资料库');await capture('r1-b-directory',{stateSource:'ui-with-api-fixture',navigation:'pointer',level:'E1',setupLevel:'E2',reference:'R1-B'});await click('打开分页资料库');await visible('温室资料');await fits();assert.ok(await renderer.evaluate("document.querySelector('thead').getBoundingClientRect().top<=380"),'记录表头位于紧凑预算内');await capture('r1-c-records',{stateSource:'ui-with-api-fixture',navigation:'pointer',level:'E1',setupLevel:'E2',reference:'R1-C'})
     const before=await renderer.evaluate('document.querySelector("tbody")?.innerText')
     await input('[aria-label=文本搜索]','温室');assert.equal(await renderer.evaluate('document.querySelector("tbody")?.innerText'),before);await click('搜索记录');await waitFor(renderer,"document.querySelector('tbody')?.innerText.includes('温室资料')&&!document.querySelector('tbody')?.innerText.includes('花园资料')",'applied contains search');checkpoint('指定文本字段输入不查询，提交后筛选实际记录')
     const exportPath=join(owner,'text-search.xlsx');await native.evaluate(`qaElectron.dialog.showSaveDialog=async()=>({canceled:false,filePath:${JSON.stringify(exportPath)}});true`)
     injections.push({kind:'save-dialog-selection',at:new Date().toISOString(),scope:'系统保存面板返回测试路径；真实文件IPC与写出'})
     await click('导出 Excel');await click('导出范围','[aria-label=导出范围]');await click('当前筛选结果','[role=option]');await click('选择保存位置');await waitFor(renderer,"!document.querySelector('[role=dialog]')",'search export completes',30000)
     const {stdout}=await promisify(execFile)('uv',['run','--project',join(root,'apps/backend'),'python','-c',`from openpyxl import load_workbook; import json; b=load_workbook(${JSON.stringify(exportPath)},read_only=True,data_only=True); print(json.dumps(list(b.active.values),ensure_ascii=False))`]);const exported=JSON.parse(stdout);assert.equal(exported.length,61);assert.ok(exported.slice(1).every(row=>row[0].startsWith('温室')));checkpoint('当前筛选导出真实XLSX为60条温室记录，与快捷搜索条件一致')
-    for(const panel of ['筛选','排序','显示列']){await click(panel);await capture(`r1-c-${panel}`);await fits();await key('Escape');assert.equal(await renderer.evaluate('Boolean(document.querySelector("[data-af-popup]"))'),false)}
+    for(const panel of ['筛选','排序','显示列']){await click(panel);await capture(`r1-c-${panel}`,{stateSource:'ui-with-api-fixture',navigation:'pointer',level:'E1',setupLevel:'E2',reference:'R1-C'});await fits();await key('Escape');assert.equal(await renderer.evaluate('Boolean(document.querySelector("[data-af-popup]"))'),false)}
     await click('显示列');await click('标题','[role=checkbox]');await click('取消');assert.ok(await renderer.evaluate("[...document.querySelectorAll('th')].some(e=>e.innerText==='标题')"));await click('显示列');await click('标题','[role=checkbox]');await click('应用显示列');assert.equal(await renderer.evaluate("[...document.querySelectorAll('th')].some(e=>e.innerText==='标题')"),false);checkpoint('选列取消不生效、应用后隐藏字段')
-    await click('显示列');await click('标题','[role=checkbox]');await click('应用显示列');await zoom(2);await fits();for(const panel of ['筛选','排序','显示列']){await click(panel);await fits();await capture(`r1-c-${panel}-200`);await key('Escape')}await zoom(1);checkpoint('1440×1024及200%三个查询浮层无应用横向撑宽')
+    await click('显示列');await click('标题','[role=checkbox]');await click('应用显示列');await zoom(2);await fits();for(const panel of ['筛选','排序','显示列']){await click(panel);await fits();await capture(`r1-c-${panel}-200`,{stateSource:'ui-with-api-fixture',navigation:'pointer',level:'E1',setupLevel:'E2',reference:'R1-C'});await key('Escape')}await zoom(1);checkpoint('1440×1024及200%三个查询浮层无应用横向撑宽')
     await restartService();await visible('温室资料');await shutdown();await launch();await route('#/projects');await visible('最近打开');await capture('r1-after-restart');checkpoint('Electron完整重启后最近访问事实持久化')
     await switchWorkspace();assert.equal((await api('/projects')).total,0);await switchWorkspace();assert.equal((await api('/projects')).total,54);checkpoint('两个真实工作区隔离并切回恢复54个项目')
     await route('#/projects');await visible('最近打开');const savedContent=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.innerText).join('')")
