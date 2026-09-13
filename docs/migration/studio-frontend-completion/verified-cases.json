@@ -23078,5 +23078,331 @@
     "level": "component/document rule",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/number-input-validation.test.tsx"
+  },
+  {
+    "id": "F1.command-server-error.memory.500.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 500,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.memory.500.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 500,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.memory.502.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 502,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.memory.502.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 502,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.memory.503.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 503,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.memory.503.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "memory",
+      "responseStatus": 503,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.500.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 500,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.500.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 500,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.502.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 502,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.502.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 502,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.503.True",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 503,
+      "applied": true,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.http.503.False",
+    "capability": "服务错误后的命令查询",
+    "preconditions": {
+      "transport": "http",
+      "responseStatus": 503,
+      "applied": false,
+      "command": "set_verbose_log",
+      "data": {
+        "enabled": true
+      }
+    },
+    "steps": [
+      "发送固定commandId",
+      "夹具按applied决定是否先应用命令，再返回指定5xx",
+      "读取原ID查询回执"
+    ],
+    "expectedUI": "不挂载UI；已应用返回成功，无记录返回unconfirmed",
+    "expectedIO": "POST1次、原commandId的GET1次，不重发POST",
+    "stateAssertion": "应用后查询httpStatus200/success true；无记录success false/status unconfirmed",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.wrong-id",
+    "capability": "错误回执身份保护",
+    "preconditions": {
+      "httpStatus": 409,
+      "body": "另一commandId"
+    },
+    "steps": [
+      "命令先应用",
+      "接收矛盾409包络",
+      "查询原commandId"
+    ],
+    "expectedUI": "不挂载UI，不把错误包络当作自己的拒绝",
+    "expectedIO": "查询原ID一次",
+    "stateAssertion": "返回登记的原命令成功结果",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
+  },
+  {
+    "id": "F1.command-server-error.contradictory-success",
+    "capability": "错误回执身份保护",
+    "preconditions": {
+      "httpStatus": 409,
+      "body": "自己的commandId但success:true"
+    },
+    "steps": [
+      "命令先应用",
+      "接收矛盾409包络",
+      "查询原commandId"
+    ],
+    "expectedUI": "不挂载UI，不把错误包络当作自己的拒绝",
+    "expectedIO": "查询原ID一次",
+    "stateAssertion": "返回登记的原命令成功结果",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts"
   }
 ]

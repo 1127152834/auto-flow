@@ -57,6 +57,12 @@ export class StudioEventClient {
       const result: unknown = await response.json()
       if (this.controller.signal.aborted) return interrupted
       if (!response.ok) {
+        // A server/gateway failure may occur after application. Resolve the original identity.
+        const record = typeof result === 'object' && result !== null ? result : null
+        if (response.status >= 500 || (record && 'commandId' in record && record.commandId !== commandId)
+          || (record && 'success' in record && record.success === true)) {
+          throw new Error(`HTTP ${response.status}: 命令结果需要查询确认`)
+        }
         const rejected = { ...(typeof result === 'object' && result !== null ? result : {}), commandId, success: false }
         this.dispatch('command_error', rejected)
         return rejected

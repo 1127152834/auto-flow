@@ -1,0 +1,24 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts src/renderer/domains/workflows/tests/command-recovery.test.ts src/renderer/domains/workflows/tests/command-response-identity.test.ts src/renderer/domains/workflows/tests/event-client.test.ts src/renderer/domains/workflows/tests/input-delivery-http.test.tsx src/renderer/domains/workflows/tests/command-http-recovery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:22507) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22513) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22515) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22516) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22520) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22521) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  6 passed (6)
+      Tests  38 passed (38)
+   Start at  05:54:57
+   Duration  10.95s (transform 271ms, setup 148ms, import 454ms, tests 7.42s, environment 2.29s)
