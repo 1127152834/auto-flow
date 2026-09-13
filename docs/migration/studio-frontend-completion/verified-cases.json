@@ -14678,5 +14678,185 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-editor-commands/target.log"
+  },
+  {
+    "id": "PICKER.test-context.zero",
+    "capability": "零匹配",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "零匹配",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.one",
+    "capability": "单匹配",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "单匹配",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.many",
+    "capability": "多匹配",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "多匹配",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.field",
+    "capability": "修改选择器",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "修改选择器",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.node",
+    "capability": "切换节点",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "切换节点",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.document",
+    "capability": "切换文档且复用节点 ID",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "切换文档且复用节点 ID",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.unmount",
+    "capability": "卸载面板",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "卸载面板",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.error",
+    "capability": "服务错误",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "服务错误",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
+  },
+  {
+    "id": "PICKER.test-context.late-request",
+    "capability": "交错请求和加载状态",
+    "preconditions": {
+      "node": "click_element",
+      "selector": "#before",
+      "backend": "受控 API 响应"
+    },
+    "steps": [
+      "通过实际配置面板点击测试定位",
+      "交错请求和加载状态",
+      "完成待定响应"
+    ],
+    "expectedUI": "仅当前上下文显示结果；旧响应不清除新加载状态",
+    "expectedIO": "测试调用保留原选择器和 hints，不修改节点",
+    "stateAssertion": "有效日志关联 nodeId；失效结果不显示成功；只读测试不标记 dirty",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-selector-test-context/final-target.log"
   }
 ]

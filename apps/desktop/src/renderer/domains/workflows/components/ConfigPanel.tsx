@@ -220,6 +220,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const selectedNodeId = propSelectedNodeId ?? storeSelectedNodeId
   
   const nodes = useWorkflowStore((state) => state.nodes)
+  const documentId = useWorkflowStore((state) => state.id)
   const requiredFieldsMap = useRequiredFields()
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
   const deleteNode = useWorkflowStore((state) => state.deleteNode)
@@ -233,6 +234,12 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const [isPicking, setIsPicking] = useState(false)
   const [pickingField, setPickingField] = useState<string | null>(null)
   const [testingField, setTestingField] = useState<string | null>(null)
+  const selectorTestSequence = useRef(0)
+  useEffect(() => {
+    selectorTestSequence.current += 1
+    setTestingField(null)
+    return () => { selectorTestSequence.current += 1 }
+  }, [selectedNodeId, documentId])
   // 选择器类型偏好（CSS/XPath）。用于在选择器值为空时也能正确切换模式，避免污染数据
   const [selectorTypeOverride, setSelectorTypeOverride] = useState<Record<string, 'css' | 'xpath'>>({})
   const [showUrlDialog, setShowUrlDialog] = useState(false)
@@ -578,27 +585,41 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const handleTestSelector = async (id: string) => {
     const selector = (nodeData[id] as string) || ''
     if (!selector.trim()) {
-      addLog({ level: 'warning', message: '选择器为空，无法测试' })
+      addLog({ level: 'warning', nodeId: selectedNodeId || undefined, message: '选择器为空，无法测试' })
       return
+    }
+    const request = ++selectorTestSequence.current
+    const originDocument = useWorkflowStore.getState().id
+    const originNode = selectedNodeId
+    const hints = (nodeData['selectorHints'] as Record<string, unknown>) || undefined
+    const target = JSON.stringify([selector, hints ?? null])
+    const isCurrent = () => {
+      const state = useWorkflowStore.getState()
+      const currentNode = state.nodes.find(node => node.id === originNode)
+      return request === selectorTestSequence.current && state.id === originDocument && currentNode &&
+        JSON.stringify([currentNode.data[id], currentNode.data.selectorHints ?? null]) === target
     }
     setTestingField(id)
     try {
-      const hints = (nodeData['selectorHints'] as Record<string, unknown>) || undefined
       const res = await elementPickerApi.testSelector(selector, hints)
+      if (!isCurrent()) {
+        if (request === selectorTestSequence.current) addLog({ level: 'warning', message: '定位配置已变化，旧测试结果未应用，请重新测试。' })
+        return
+      }
       const d = res.data
       if (res.error || !d?.success) {
-        addLog({ level: 'error', message: `测试失败：${res.error || d?.error || '未知错误'}` })
+        addLog({ level: 'error', nodeId: originNode || undefined, message: `测试失败：${res.error || d?.error || '未知错误'}` })
       } else if (d.matched) {
         const via = d.isPrimary ? '' : `（经自愈候选 ${d.matchedSelector}）`
         const txt = d.element?.text ? `，首个文本：${d.element.text}` : ''
-        addLog({ level: 'success', message: `命中 ${d.count} 个元素${via}${txt}，已在页面高亮` })
+        addLog({ level: 'success', nodeId: originNode || undefined, message: `命中 ${d.count} 个元素${via}${txt}，已在页面高亮` })
       } else {
-        addLog({ level: 'warning', message: '未命中任何元素，请检查选择器或页面是否已打开到目标位置' })
+        addLog({ level: 'warning', nodeId: originNode || undefined, message: '未命中任何元素，请检查选择器或页面是否已打开到目标位置' })
       }
     } catch (e) {
-      addLog({ level: 'error', message: `测试选择器出错：${e}` })
+      if (isCurrent()) addLog({ level: 'error', nodeId: originNode || undefined, message: `测试选择器出错：${e}` })
     } finally {
-      setTestingField(null)
+      if (request === selectorTestSequence.current) setTestingField(null)
     }
   }
 
