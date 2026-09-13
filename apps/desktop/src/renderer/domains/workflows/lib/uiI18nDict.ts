@@ -4123,3 +4123,9 @@ Object.assign(PHRASES, {
 })
 
 Object.assign(PHRASES, { '被占用':'is occupied', 'Studio 页面发生错误':'Studio could not render', '当前草稿仍保留在内存中，可以先导出。':'Your draft remains in memory and can be exported.', '导出当前草稿':'Export draft', '重新渲染':'Render again' })
+
+Object.assign(PHRASES, {
+  'Excel 资源功能已从 AutoFlow Studio 移除': 'Excel resources have been removed from AutoFlow Studio',
+  '全部模块不存在或已排除，已拒绝创建：': 'All modules are unknown or excluded; creation rejected: ',
+  ' 个不存在或已排除的模块：': ' unknown or excluded modules: ',
+})

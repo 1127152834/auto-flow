@@ -24,7 +24,6 @@ import {
   Search,
   Filter,
   ImageIcon,
-  Database,
   Upload,
   FileDown,
   Sparkles,
@@ -32,7 +31,6 @@ import {
 import { cn } from '../lib/utils'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { LogLevel, VariableType } from '../types/index'
-import { ExcelAssetsPanel } from './ExcelAssetsPanel'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
@@ -63,8 +61,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     addDataRow,
     clearCollectedData,
     name: workflowName,
-    dataAssets,
-    bottomPanelTab: activeTab,
+    bottomPanelTab: storedTab,
     setBottomPanelTab: setActiveTab,
     verboseLog,
     setVerboseLog,
@@ -72,6 +69,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     setMaxLogCount,
     currentExecutionWorkflowId,
   } = useWorkflowStore()
+  const activeTab = storedTab === 'assets' ? 'logs' : storedTab
 
   const { alert, confirm, ConfirmDialog } = useConfirm()
   const logEndRef = useRef<HTMLDivElement>(null)
@@ -568,26 +566,6 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 {variables.length}
               </span>
             </button>
-            {/* Excel - 绿 */}
-            <button
-              className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
-                activeTab === 'assets'
-                  ? '!bg-[hsl(var(--success-600))] !text-white !border-[hsl(var(--success-700))] shadow-success-glow'
-                  : '!bg-transparent !text-[hsl(var(--slate-600))] !border-transparent hover:!bg-[hsl(var(--success-50))] hover:!text-[hsl(var(--success-700))]'
-              )}
-              onClick={() => setActiveTab('assets')}
-            >
-              <Database className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Excel资源</span>
-              <span className="md:hidden">Excel</span>
-              <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
-                activeTab === 'assets' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
-              )}>
-                {dataAssets.length}
-              </span>
-            </button>
             {/* 图像 - 橙 */}
             <button
               className={cn(
@@ -728,22 +706,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               )}
             </>
           )}
-          {activeTab === 'assets' && (
-            <Button 
-              variant="success" 
-              size="sm" 
-              className="h-7 text-xs" 
-              onClick={() => {
-                // 调用ExcelAssetsPanel的上传函数
-                if ((window as any).__excelUploadTrigger) {
-                  (window as any).__excelUploadTrigger()
-                }
-              }}
-            >
-              <Upload className="w-3.5 h-3.5 mr-1" />
-              上传Excel
-            </Button>
-          )}
+
           {activeTab === 'images' && (
             <>
               {/* 截图快捷键提示 - 紧贴上传图像按钮左侧 */}
@@ -1052,7 +1015,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             </ScrollArea>
           )}
 
-          {activeTab === 'assets' && <ExcelAssetsPanel />}
+
 
           {activeTab === 'images' && <ImageAssetsPanel />}
         </div>

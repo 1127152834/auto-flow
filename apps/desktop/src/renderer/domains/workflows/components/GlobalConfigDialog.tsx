@@ -12,7 +12,7 @@ import { Radio } from './controls/radio-group'
 import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
 import { useGlobalConfigStore, type BrowserType, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
-import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, MessageCircle, MessageSquare, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
+import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
 import { systemApi, securityApi, getAuthToken, setAuthToken, credentialApi, retentionApi, browserApi, localWorkflowApi, type CredentialItem, type RetentionConfig, type RetentionUsage } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
@@ -375,7 +375,7 @@ interface GlobalConfigDialogProps {
   onClose: () => void
 }
 
-type TabType = 'system' | 'ai' | 'aiAssistant' | 'mcp' | 'aiScraper' | 'email' | 'workflow' | 'database' | 'display' | 'browser' | 'triggers' | 'qq' | 'feishu' | 'security' | 'credentials' | 'retention'
+type TabType = 'system' | 'ai' | 'aiAssistant' | 'mcp' | 'aiScraper' | 'email' | 'workflow' | 'database' | 'display' | 'browser' | 'triggers' | 'security' | 'credentials' | 'retention'
 
 // 浏览器选项
 const browserOptions: { value: BrowserType; label: string; description: string }[] = [
@@ -399,8 +399,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
     updateWorkflowConfig,
     updateShortcuts, 
     updateDatabaseConfig, 
-    updateQQConfig,
-    updateFeishuConfig,
     updateDisplayConfig, 
     updateBrowserConfig, 
     resetConfig,
@@ -612,8 +610,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
     { id: 'display',     label: '显示',     Icon: Monitor,        accent: 'slate'   },
     { id: 'browser',     label: '浏览器',   Icon: Globe,          accent: 'success' },
     { id: 'triggers',    label: '触发器',   Icon: Zap,            accent: 'amber'   },
-    { id: 'qq',          label: 'QQ号',     Icon: MessageCircle,  accent: 'brand'   },
-    { id: 'feishu',      label: '飞书',     Icon: MessageSquare,  accent: 'info'    },
     { id: 'security',    label: '安全',     Icon: ShieldCheck,    accent: 'success' },
     { id: 'credentials', label: '凭据库',   Icon: KeyRound,       accent: 'warning' },
     { id: 'retention',   label: '留存清理', Icon: HardDrive,      accent: 'info'    },
@@ -2216,196 +2212,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   <p className="text-xs text-amber-800">
                     提示：这些配置会在新建对应触发器模块时自动填充，帮助您快速配置常用的触发器
                   </p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'qq' && (
-            <>
-              <p className="text-xs text-gray-500 mb-4">
-                配置常用的 QQ 号和群号，在使用 QQ 自动化模块时可以快速选择
-              </p>
-              <div className="space-y-4">
-                {/* 联系人列表 */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-gray-700 font-medium">常用联系人</Label>
-                    <Button
-                      size="sm"
-                      className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={() => {
-                        const newContact = {
-                          id: Date.now().toString(),
-                          number: '',
-                          remark: '',
-                          type: 'private' as const
-                        }
-                        updateQQConfig({
-                          contacts: [...(config.qq?.contacts || []), newContact]
-                        })
-                      }}
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      添加联系人
-                    </Button>
-                  </div>
-                  
-                  {(!config.qq?.contacts || config.qq.contacts.length === 0) ? (
-                    <div className="text-center py-8 text-gray-400">
-                      <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">暂无常用联系人</p>
-                      <p className="text-xs mt-1">点击上方"添加联系人"按钮开始添加</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                      {config.qq.contacts.map((contact, index) => (
-                        <div
-                          key={contact.id}
-                          className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
-                        >
-                          {/* 类型选择 */}
-                          <SelectNative
-                            value={contact.type}
-                            onChange={(e) => {
-                              const newContacts = [...(config.qq?.contacts || [])]
-                              newContacts[index] = {
-                                ...newContacts[index],
-                                type: e.target.value as 'private' | 'group'
-                              }
-                              updateQQConfig({ contacts: newContacts })
-                            }}
-                            className="w-20"
-                          >
-                            <option value="private">私聊</option>
-                            <option value="group">群聊</option>
-                          </SelectNative>
-                          
-                          {/* QQ号/群号 */}
-                          <Input
-                            value={contact.number}
-                            onChange={(e) => {
-                              const newContacts = [...(config.qq?.contacts || [])]
-                              newContacts[index] = {
-                                ...newContacts[index],
-                                number: e.target.value
-                              }
-                              updateQQConfig({ contacts: newContacts })
-                            }}
-                            placeholder={contact.type === 'group' ? '群号' : 'QQ号'}
-                            className="flex-1 h-8 text-sm bg-white text-black border-gray-300"
-                          />
-                          
-                          {/* 备注 */}
-                          <Input
-                            value={contact.remark}
-                            onChange={(e) => {
-                              const newContacts = [...(config.qq?.contacts || [])]
-                              newContacts[index] = {
-                                ...newContacts[index],
-                                remark: e.target.value
-                              }
-                              updateQQConfig({ contacts: newContacts })
-                            }}
-                            placeholder="备注名称"
-                            className="flex-1 h-8 text-sm bg-white text-black border-gray-300"
-                          />
-                          
-                          {/* 删除按钮 */}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => {
-                              const newContacts = (config.qq?.contacts || []).filter((_, i) => i !== index)
-                              updateQQConfig({ contacts: newContacts })
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-blue-800">
-                    提示：添加常用的 QQ 号和群号后，在使用 QQ 自动化模块时可以从下拉列表中快速选择，无需每次手动输入
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'feishu' && (
-            <>
-              <p className="text-xs text-gray-500 mb-4">
-                配置飞书自动化模块的默认值，新建飞书模块时将自动填充这些配置
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-gray-700">默认 App ID</Label>
-                  <Input
-                    value={config.feishu?.appId || ''}
-                    onChange={(e) => updateFeishuConfig({ appId: e.target.value })}
-                    placeholder="cli_xxxxxxxxxxxxxxxx"
-                    className="bg-white text-black border-gray-300"
-                  />
-                  <p className="text-xs text-gray-500">
-                    飞书应用的唯一标识，可在飞书开放平台的应用详情页面获取
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">默认 App Secret</Label>
-                  <Input
-                    type="password"
-                    value={config.feishu?.appSecret || ''}
-                    onChange={(e) => updateFeishuConfig({ appSecret: e.target.value })}
-                    placeholder="应用密钥"
-                    className="bg-white text-black border-gray-300"
-                  />
-                  <p className="text-xs text-gray-500">
-                    飞书应用的密钥，用于获取访问令牌，请妥善保管
-                  </p>
-                </div>
-                
-                <div className="p-3 rounded-md bg-[hsl(var(--success-50))] border border-[hsl(var(--success-500)/0.25)] space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center mt-0.5">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-green-900 mb-2">如何获取飞书应用凭证</p>
-                      <div className="text-xs text-green-800 space-y-1.5">
-                        <p><strong>1. 创建飞书应用</strong></p>
-                        <p className="pl-3">• 访问 <a href="https://open.feishu.cn/app" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-600">飞书开放平台</a></p>
-                        <p className="pl-3">• 点击"创建企业自建应用"</p>
-                        <p className="pl-3">• 填写应用名称和描述</p>
-                        
-                        <p className="pt-2"><strong>2. 获取凭证</strong></p>
-                        <p className="pl-3">• 进入应用详情页面</p>
-                        <p className="pl-3">• 在"凭证与基础信息"中找到 App ID 和 App Secret</p>
-                        
-                        <p className="pt-2"><strong>3. 配置权限</strong></p>
-                        <p className="pl-3">• 在"权限管理"中添加所需权限</p>
-                        <p className="pl-3">• 多维表格：bitable:app</p>
-                        <p className="pl-3">• 电子表格：sheets:spreadsheet</p>
-                        <p className="pl-3">• 发布应用并等待管理员审核通过</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="status-row status-row-info !items-start !py-2.5">
-                  <div className="text-[12px]">
-                    <strong>使用说明</strong>
-                    <br />• 配置后，新建飞书模块时会自动填充 App ID 和 App Secret
-                    <br />• 如果不同的飞书模块需要使用不同的应用，可以在模块中单独修改
-                    <br />• 这些配置仅存储在本地浏览器中，不会上传到服务器
-                  </div>
                 </div>
               </div>
             </>

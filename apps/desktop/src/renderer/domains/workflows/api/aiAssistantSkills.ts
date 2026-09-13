@@ -1,5 +1,6 @@
 // Source: WebRPA@5ccb900e, services/aiAssistantSkills.ts; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from './transport'
+import { excludedModuleTypes } from '../components/ModuleSidebar'
 /**
  * 前端 Skills 派发器
  *
@@ -198,7 +199,7 @@ function partitionValidAiNodes(nodes: any[]): { valid: any[]; invalidTypes: stri
   const invalidTypes: string[] = []
   for (const n of nodes) {
     const mt = (n?.data?.moduleType ?? n?.type) as string
-    if (mt && (mt in labelKeys || CANVAS_PSEUDO_TYPES.has(mt) || mt.startsWith('custom'))) {
+    if (mt && !excludedModuleTypes.has(mt as never) && (mt in labelKeys || CANVAS_PSEUDO_TYPES.has(mt) || mt.startsWith('custom'))) {
       valid.push(n)
     } else {
       const key = mt || '(空类型)'
@@ -292,6 +293,9 @@ export async function executeClientAction(
   payload: Record<string, any> = {}
 ): Promise<ClientActionResult> {
   try {
+    if (['upload_excel', 'list_data_assets', 'delete_data_asset', 'rename_data_asset', 'preview_data_asset', 'get_data_asset_sheets'].includes(action) || (action === 'switch_bottom_panel' && payload.tab === 'assets')) {
+      return { success: false, error: 'Excel 资源功能已从 AutoFlow Studio 移除' }
+    }
     // 独立窗口（系统级 Agent）模式：没有可视画布，画布/版本/变量/数据面板类动作无效，
     // 直接返回明确指引，让小助手改用后端「真生效」能力，避免误以为画布被改动。
     if (IS_STANDALONE_AGENT && EDITOR_ONLY_ACTIONS.has(action)) {
@@ -353,7 +357,7 @@ export async function executeClientAction(
         // 🛡️ 过滤掉不存在的模块，绝不把虚构模块放进画布
         const { valid: validNodes, invalidTypes } = partitionValidAiNodes(nodes)
         if (validNodes.length === 0) {
-          return { success: false, error: `全部模块都不存在，已拒绝创建：${invalidTypes.join(', ')}。请用 search_modules 核对正确的 module_type` }
+          return { success: false, error: `全部模块不存在或已排除，已拒绝创建：${invalidTypes.join(', ')}。请用 search_modules 核对正确的 module_type` }
         }
         const validIds = new Set(validNodes.map((n: any) => n.id))
         const safeEdges = edges.filter((e: any) => validIds.has(e.source) && validIds.has(e.target))
@@ -371,7 +375,7 @@ export async function executeClientAction(
           edges: [...store.edges, ...xyEdges] as any,
           name: store.name,
         })
-        const warn = invalidTypes.length ? `（已丢弃 ${invalidTypes.length} 个不存在的模块：${invalidTypes.join(', ')}）` : ''
+        const warn = invalidTypes.length ? `（已丢弃 ${invalidTypes.length} 个不存在或已排除的模块：${invalidTypes.join(', ')}）` : ''
         return { success: true, message: `已添加 ${xyNodes.length} 个节点${warn}` }
       }
 
