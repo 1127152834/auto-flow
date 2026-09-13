@@ -1,3 +1,4 @@
+import type { Variable } from './index'
 // Source: WebRPA@5ccb900e, types/customModule.ts; see SOURCE.md for license and adaptation boundaries.
 /**
  * 自定义模块类型定义
@@ -33,6 +34,7 @@ export interface CustomModule {
   workflow: {
     nodes: any[]
     edges: any[]
+    variables?: Variable[]
   }
   author: string
   version: string
@@ -59,6 +61,7 @@ export interface CustomModuleCreate {
   workflow: {
     nodes: any[]
     edges: any[]
+    variables?: Variable[]
   }
   tags: string[]
 }

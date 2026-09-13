@@ -1,4 +1,4 @@
-import { registerDocumentLeaveHandler } from '../lib/documentLeave'
+import { registerDocumentLeaveHandler, type LeaveOptions } from '../lib/documentLeave'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '../components/controls/confirm-dialog'
 import { useWorkflowStore } from '../editor-store'
@@ -34,7 +34,11 @@ export function useDraftProtection(save: () => Promise<boolean>) {
     return () => registry.unregister(id)
   }, [open, choose])
 
-  const confirmLeave = useCallback(async () => {
+  const confirmLeave = useCallback(async (options?: LeaveOptions) => {
+    if (sessionStorage.getItem('editingCustomModuleId') && !options?.preserveMainDocument) {
+      useWorkflowStore.getState().addLog({ level: 'warning', message: '请先退出模块编辑并恢复主工作流，再新建或打开其他工作流' })
+      return false
+    }
     if (busy.current || !mounted.current) return false
     const state = useWorkflowStore.getState()
     if (!state.hasUnsavedChanges) return true

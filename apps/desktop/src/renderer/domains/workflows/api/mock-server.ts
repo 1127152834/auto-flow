@@ -314,7 +314,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (path.endsWith('/duplicate')) { const original=db.modules[id];if(!original)return failure('Module not found',404);const copy={...structuredClone(original),id:crypto.randomUUID(),name:String(body.new_name || original.name)+' copy'};persist({...db,modules:{...db.modules,[String(copy.id)]:copy}});return response(copy) }
       if (path.endsWith('/increment-usage')) { const original=db.modules[id];if(!original)return failure('Module not found',404);persist({...db,modules:{...db.modules,[id]:{...original,usage_count:Number(original.usage_count || 0)+1}}});return response({success:true}) }
       if (method === 'DELETE') { const modules={...db.modules}; delete modules[id]; persist({...db,modules}); return response({success:true}) }
-      if (method === 'PUT') { persist({...db,modules:{...db.modules,[id]:{...body,id}}}); return response(db.modules[id]) }
+      if (method === 'PUT') { if (!db.modules[id]) return failure('模块不存在',404); persist({...db,modules:{...db.modules,[id]:{...db.modules[id],...body,id}}}); return response(db.modules[id]) }
       return db.modules[id] ? response(db.modules[id]) : failure('模块不存在',404)
     }
     if (path === '/workflow-bundle/export') {

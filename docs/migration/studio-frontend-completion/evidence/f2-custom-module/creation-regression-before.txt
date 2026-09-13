@@ -1,0 +1,100 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/custom-module-editing.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:90382) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/custom-module-editing.test.tsx > creating from the canvas retains variables and structural node fields
+[CustomModuleDialog] 创建模块: {
+  name: 'created_from_canvas',
+  display_name: '创建验收',
+  description: '',
+  icon: '',
+  color: '#8B5CF6',
+  category: '自定义',
+  parameters: [],
+  outputs: [],
+  tags: [],
+  workflow: { nodes: [ [Object] ], edges: [] }
+}
+
+stdout | src/renderer/domains/workflows/tests/custom-module-editing.test.tsx > creating from the canvas retains variables and structural node fields
+[CustomModuleDialog] 操作成功: {
+  name: 'created_from_canvas',
+  display_name: '创建验收',
+  description: '',
+  icon: '',
+  color: '#8B5CF6',
+  category: '自定义',
+  parameters: [],
+  outputs: [],
+  tags: [],
+  workflow: { nodes: [ [Object] ], edges: [] },
+  id: '53bf213e-fd21-43fe-a371-5284b312f45d'
+}
+
+ ❯ src/renderer/domains/workflows/tests/custom-module-editing.test.tsx (16 tests | 1 failed) 803ms
+   × creating from the canvas retains variables and structural node fields 89ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/custom-module-editing.test.tsx > creating from the canvas retains variables and structural node fields
+AssertionError: expected { nodes: [ { …(4) } ], edges: [] } to deeply equal { Object (nodes, edges, ...) }
+
+- Expected
++ Received
+
+@@ -5,26 +5,14 @@
+        "data": {
+          "label": "打印日志",
+          "moduleType": "print_log",
+          "timeout": 5,
+        },
+-       "extent": "parent",
+        "id": "prG7JRbmuYalHVJzSHwqA",
+        "position": {
+          "x": 10,
+          "y": 20,
+-       },
+-       "style": {
+-         "width": 280,
+        },
+        "type": "print_log",
+-     },
+-   ],
+-   "variables": [
+-     {
+-       "name": "main",
+-       "scope": "global",
+-       "type": "string",
+-       "value": "原始草稿",
+      },
+    ],
+  }
+
+ ❯ src/renderer/domains/workflows/tests/custom-module-editing.test.tsx:171:26
+    169|   fireEvent.click(screen.getByRole('button', { name: '创建模块' }))
+    170|   await waitFor(() => expect(close).toHaveBeenCalledOnce())
+    171|   expect(sent?.workflow).toEqual({ nodes: before.nodes, edges: before.…
+       |                          ^
+    172| })
+    173|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  01:32:32
+   Duration  2.71s (transform 730ms, setup 87ms, import 1.17s, tests 803ms, environment 545ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/custom-module-editing.test.tsx

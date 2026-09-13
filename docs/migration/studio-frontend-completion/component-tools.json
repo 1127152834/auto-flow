@@ -3116,381 +3116,377 @@
         "expression": "!isEdit || reuseCanvas"
       },
       {
-        "line": 165,
-        "expression": "n.type === 'moduleNode'"
-      },
-      {
-        "line": 207,
+        "line": 191,
         "expression": "workflowField"
       },
       {
-        "line": 209,
+        "line": 193,
         "expression": "isEdit"
       },
       {
-        "line": 211,
+        "line": 195,
         "expression": "isEdit"
       },
       {
-        "line": 215,
+        "line": 199,
         "expression": "result"
       },
       {
-        "line": 220,
+        "line": 204,
         "expression": "isEdit"
       },
       {
-        "line": 234,
+        "line": 218,
         "expression": "isEdit"
       },
       {
-        "line": 356,
+        "line": 340,
         "expression": "parameters.length === 0"
       },
       {
-        "line": 472,
+        "line": 456,
         "expression": "outputs.length === 0"
       },
       {
-        "line": 531,
+        "line": 515,
         "expression": "isEdit"
       },
       {
-        "line": 604,
+        "line": 588,
         "expression": "isCreating"
       },
       {
-        "line": 604,
+        "line": 588,
         "expression": "isEdit"
       },
       {
-        "line": 604,
+        "line": 588,
         "expression": "isEdit"
       }
     ],
     "bindings": [
       {
-        "line": 247,
+        "line": 231,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 248,
+        "line": 232,
         "attribute": "onChange",
         "expression": "{(e) => setName(e.target.value)}"
       },
       {
-        "line": 257,
+        "line": 241,
         "attribute": "value",
         "expression": "{displayName}"
       },
       {
-        "line": 258,
+        "line": 242,
         "attribute": "onChange",
         "expression": "{(e) => setDisplayName(e.target.value)}"
       },
       {
-        "line": 268,
+        "line": 252,
         "attribute": "value",
         "expression": "{description}"
       },
       {
-        "line": 269,
+        "line": 253,
         "attribute": "onChange",
         "expression": "{(e) => setDescription(e.target.value)}"
       },
       {
-        "line": 280,
+        "line": 264,
         "attribute": "value",
         "expression": "{icon}"
       },
       {
-        "line": 281,
+        "line": 265,
         "attribute": "onChange",
         "expression": "{(e) => setIcon(e.target.value)}"
       },
       {
-        "line": 289,
+        "line": 273,
         "attribute": "value",
         "expression": "{color}"
       },
       {
-        "line": 290,
+        "line": 274,
         "attribute": "onChange",
         "expression": "{setColor}"
       },
       {
-        "line": 299,
+        "line": 283,
         "attribute": "value",
         "expression": "{category}"
       },
       {
-        "line": 300,
+        "line": 284,
         "attribute": "onChange",
         "expression": "{(e) => setCategory(e.target.value)}"
       },
       {
-        "line": 302,
+        "line": 286,
         "attribute": "value",
         "expression": "\"自定义\""
       },
       {
-        "line": 303,
+        "line": 287,
         "attribute": "value",
         "expression": "\"自动化\""
       },
       {
-        "line": 304,
+        "line": 288,
         "attribute": "value",
         "expression": "\"数据处理\""
       },
       {
-        "line": 305,
+        "line": 289,
         "attribute": "value",
         "expression": "\"AI\""
       },
       {
-        "line": 306,
+        "line": 290,
         "attribute": "value",
         "expression": "\"工具\""
       },
       {
-        "line": 307,
+        "line": 291,
         "attribute": "value",
         "expression": "\"网页操作\""
       },
       {
-        "line": 308,
+        "line": 292,
         "attribute": "value",
         "expression": "\"文件操作\""
       },
       {
-        "line": 309,
+        "line": 293,
         "attribute": "value",
         "expression": "\"数据库\""
       },
       {
-        "line": 310,
+        "line": 294,
         "attribute": "value",
         "expression": "\"API\""
       },
       {
-        "line": 311,
+        "line": 295,
         "attribute": "value",
         "expression": "\"邮件\""
       },
       {
-        "line": 312,
+        "line": 296,
         "attribute": "value",
         "expression": "\"通知\""
       },
       {
-        "line": 313,
+        "line": 297,
         "attribute": "value",
         "expression": "\"图像处理\""
       },
       {
-        "line": 314,
+        "line": 298,
         "attribute": "value",
         "expression": "\"文本处理\""
       },
       {
-        "line": 315,
+        "line": 299,
         "attribute": "value",
         "expression": "\"Excel\""
       },
       {
-        "line": 316,
+        "line": 300,
         "attribute": "value",
         "expression": "\"PDF\""
       },
       {
-        "line": 317,
+        "line": 301,
         "attribute": "value",
         "expression": "\"爬虫\""
       },
       {
-        "line": 318,
+        "line": 302,
         "attribute": "value",
         "expression": "\"测试\""
       },
       {
-        "line": 319,
+        "line": 303,
         "attribute": "value",
         "expression": "\"监控\""
       },
       {
-        "line": 320,
+        "line": 304,
         "attribute": "value",
         "expression": "\"定时任务\""
       },
       {
-        "line": 321,
+        "line": 305,
         "attribute": "value",
         "expression": "\"流程控制\""
       },
       {
-        "line": 322,
+        "line": 306,
         "attribute": "value",
         "expression": "\"系统操作\""
       },
       {
-        "line": 323,
+        "line": 307,
         "attribute": "value",
         "expression": "\"网络\""
       },
       {
-        "line": 324,
+        "line": 308,
         "attribute": "value",
         "expression": "\"安全\""
       },
       {
-        "line": 325,
+        "line": 309,
         "attribute": "value",
         "expression": "\"其他\""
       },
       {
-        "line": 333,
+        "line": 317,
         "attribute": "value",
         "expression": "{tags}"
       },
       {
-        "line": 334,
+        "line": 318,
         "attribute": "onChange",
         "expression": "{(e) => setTags(e.target.value)}"
       },
       {
-        "line": 378,
+        "line": 362,
         "attribute": "value",
         "expression": "{param.name}"
       },
       {
-        "line": 379,
+        "line": 363,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'name', e.target.value)}"
       },
       {
-        "line": 388,
+        "line": 372,
         "attribute": "value",
         "expression": "{param.label}"
       },
       {
-        "line": 389,
+        "line": 373,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'label', e.target.value)}"
       },
       {
-        "line": 398,
+        "line": 382,
         "attribute": "value",
         "expression": "{param.type}"
       },
       {
-        "line": 399,
+        "line": 383,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'type', e.target.value)}"
       },
       {
-        "line": 402,
+        "line": 386,
         "attribute": "value",
         "expression": "\"string\""
       },
       {
-        "line": 403,
+        "line": 387,
         "attribute": "value",
         "expression": "\"number\""
       },
       {
-        "line": 404,
+        "line": 388,
         "attribute": "value",
         "expression": "\"boolean\""
       },
       {
-        "line": 405,
+        "line": 389,
         "attribute": "value",
         "expression": "\"select\""
       },
       {
-        "line": 406,
+        "line": 390,
         "attribute": "value",
         "expression": "\"textarea\""
       },
       {
-        "line": 415,
+        "line": 399,
         "attribute": "value",
         "expression": "{param.default_value}"
       },
       {
-        "line": 416,
+        "line": 400,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'default_value', e.target.value)}"
       },
       {
-        "line": 425,
+        "line": 409,
         "attribute": "value",
         "expression": "{param.placeholder}"
       },
       {
-        "line": 426,
+        "line": 410,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'placeholder', e.target.value)}"
       },
       {
-        "line": 436,
+        "line": 420,
         "attribute": "value",
         "expression": "{param.description}"
       },
       {
-        "line": 437,
+        "line": 421,
         "attribute": "onChange",
         "expression": "{(e) => updateParameter(index, 'description', e.target.value)}"
       },
       {
-        "line": 445,
+        "line": 429,
         "attribute": "checked",
         "expression": "{param.required}"
       },
       {
-        "line": 446,
+        "line": 430,
         "attribute": "onCheckedChange",
         "expression": "{(c) => updateParameter(index, 'required', c)}"
       },
       {
-        "line": 494,
+        "line": 478,
         "attribute": "value",
         "expression": "{output.name}"
       },
       {
-        "line": 495,
+        "line": 479,
         "attribute": "onChange",
         "expression": "{(e) => updateOutput(index, 'name', e.target.value)}"
       },
       {
-        "line": 504,
+        "line": 488,
         "attribute": "value",
         "expression": "{output.label}"
       },
       {
-        "line": 505,
+        "line": 489,
         "attribute": "onChange",
         "expression": "{(e) => updateOutput(index, 'label', e.target.value)}"
       },
       {
-        "line": 515,
+        "line": 499,
         "attribute": "value",
         "expression": "{output.description}"
       },
       {
-        "line": 516,
+        "line": 500,
         "attribute": "onChange",
         "expression": "{(e) => updateOutput(index, 'description', e.target.value)}"
       },
       {
-        "line": 539,
+        "line": 523,
         "attribute": "checked",
         "expression": "{reuseCanvas}"
       },
       {
-        "line": 540,
+        "line": 524,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setReuseCanvas(c)}"
       }
@@ -5818,7 +5814,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 155,
+    "line": 156,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5828,7 +5824,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 420,
+    "line": 423,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5838,7 +5834,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 559,
+    "line": 562,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5848,7 +5844,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 600,
+    "line": 603,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5858,7 +5854,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 760,
+    "line": 763,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5868,7 +5864,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 872,
+    "line": 875,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -8289,7 +8285,7 @@
   {
     "component": "ModuleItemRaw",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1516,
+    "line": 1518,
     "fields": [],
     "tools": [
       "GripHorizontal",
@@ -8298,75 +8294,71 @@
     ],
     "conditions": [
       {
-        "line": 1538,
+        "line": 1540,
         "expression": "!Icon || !label"
       },
       {
-        "line": 1539,
+        "line": 1541,
         "expression": "typeof console !== 'undefined'"
       },
       {
-        "line": 1547,
+        "line": 1549,
         "expression": "showColorPicker"
       },
       {
-        "line": 1550,
+        "line": 1552,
         "expression": "!target.closest('.color-picker-container')"
       },
       {
-        "line": 1576,
+        "line": 1578,
         "expression": "enableSortDrag && onSortDragOver && event.dataTransfer.types.includes('application/sort-favorite')"
       },
       {
-        "line": 1584,
+        "line": 1586,
         "expression": "enableSortDrag && onSortDrop && event.dataTransfer.types.includes('application/sort-favorite')"
       },
       {
-        "line": 1592,
+        "line": 1594,
         "expression": "!query"
       },
       {
-        "line": 1596,
+        "line": 1598,
         "expression": "index === -1"
       },
       {
-        "line": 1618,
+        "line": 1620,
         "expression": "colorButtonRef.current"
       },
       {
-        "line": 1639,
+        "line": 1641,
         "expression": "customColor"
       },
       {
-        "line": 1655,
+        "line": 1657,
         "expression": "isDropTarget"
       },
       {
-        "line": 1656,
+        "line": 1658,
         "expression": "isDragging"
       },
       {
-        "line": 1678,
-        "expression": "customColor"
-      },
-      {
-        "line": 1690,
+        "line": 1680,
         "expression": "customColor"
       },
       {
         "line": 1692,
-        "expression": "highlight"
-      },
-      {
-        "line": 1709,
         "expression": "customColor"
       },
       {
-        "line": 1718,
-        "expression": "isFavorite"
+        "line": 1694,
+        "expression": "highlight"
       },
       {
-        "line": 1722,
+        "line": 1711,
+        "expression": "customColor"
+      },
+      {
+        "line": 1720,
         "expression": "isFavorite"
       },
       {
@@ -8374,7 +8366,11 @@
         "expression": "isFavorite"
       },
       {
-        "line": 1751,
+        "line": 1726,
+        "expression": "isFavorite"
+      },
+      {
+        "line": 1753,
         "expression": "color.value"
       }
     ],
@@ -8384,7 +8380,7 @@
   {
     "component": "ModuleItem",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1768,
+    "line": 1770,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -8394,7 +8390,7 @@
   {
     "component": "ModuleSidebarRaw",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 1770,
+    "line": 1772,
     "fields": [],
     "tools": [
       "Boxes",
@@ -8417,83 +8413,79 @@
     ],
     "conditions": [
       {
-        "line": 1794,
+        "line": 1796,
         "expression": "window.innerWidth < 1024"
       },
       {
-        "line": 1838,
+        "line": 1840,
         "expression": "next.has(categoryName)"
       },
       {
-        "line": 1864,
+        "line": 1866,
         "expression": "showFavoritesOnly"
       },
       {
-        "line": 1873,
+        "line": 1875,
         "expression": "idxA !== -1"
       },
       {
-        "line": 1874,
+        "line": 1876,
         "expression": "idxB !== -1"
       },
       {
-        "line": 1887,
+        "line": 1889,
         "expression": "frequentModules.length > 0"
       },
       {
-        "line": 1891,
+        "line": 1893,
         "expression": "!searchQuery.trim()"
       },
       {
-        "line": 1907,
+        "line": 1909,
         "expression": "frequentMatched.length > 0"
       },
       {
-        "line": 1930,
+        "line": 1932,
         "expression": "searchQuery.trim() || showFavoritesOnly"
       },
       {
-        "line": 1944,
+        "line": 1946,
         "expression": "isCollapsed"
       },
       {
-        "line": 1944,
+        "line": 1946,
         "expression": "draftWidth === null"
       },
       {
-        "line": 1947,
+        "line": 1949,
         "expression": "isCollapsed"
       },
       {
-        "line": 2003,
+        "line": 2005,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2008,
+        "line": 2010,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2009,
+        "line": 2011,
         "expression": "activeTab === 'builtin'"
       },
       {
-        "line": 2014,
+        "line": 2016,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2019,
+        "line": 2021,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2020,
+        "line": 2022,
         "expression": "activeTab === 'custom'"
       },
       {
-        "line": 2048,
-        "expression": "showFavoritesOnly"
-      },
-      {
-        "line": 2052,
+        "line": 2050,
         "expression": "showFavoritesOnly"
       },
       {
@@ -8501,50 +8493,38 @@
         "expression": "showFavoritesOnly"
       },
       {
-        "line": 2069,
-        "expression": "activeTab === 'builtin'"
+        "line": 2056,
+        "expression": "showFavoritesOnly"
       },
       {
         "line": 2071,
+        "expression": "activeTab === 'builtin'"
+      },
+      {
+        "line": 2073,
         "expression": "filteredCategories.length === 0"
       },
       {
-        "line": 2091,
+        "line": 2093,
         "expression": "expanded"
       },
       {
-        "line": 2158,
+        "line": 2161,
         "expression": "!shouldEdit"
       },
       {
-        "line": 2164,
-        "expression": "!alreadyEditing"
-      },
-      {
-        "line": 2182,
-        "expression": "fresh"
-      },
-      {
-        "line": 2194,
-        "expression": "node.type === 'group'"
-      },
-      {
-        "line": 2196,
-        "expression": "node.type === 'note'"
-      },
-      {
-        "line": 2198,
-        "expression": "node.type === 'subflow_header'"
+        "line": 2163,
+        "expression": "snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original"
       }
     ],
     "bindings": [
       {
-        "line": 2030,
+        "line": 2032,
         "attribute": "value",
         "expression": "{searchQuery}"
       },
       {
-        "line": 2031,
+        "line": 2033,
         "attribute": "onChange",
         "expression": "{(e) => setSearchQuery(e.target.value)}"
       }
@@ -8554,7 +8534,7 @@
   {
     "component": "ModuleSidebar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-    "line": 2277,
+    "line": 2219,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9721,7 +9701,7 @@
   {
     "component": "DocumentationDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 22,
+    "line": 23,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9891,7 +9871,7 @@
   {
     "component": "Toolbar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 73,
+    "line": 74,
     "fields": [
       "asset",
       "assetId",
@@ -9960,458 +9940,434 @@
     ],
     "conditions": [
       {
-        "line": 139,
+        "line": 140,
         "expression": "nameOnFocusRef.current !== name"
       },
       {
-        "line": 159,
+        "line": 160,
         "expression": "data.folder"
       },
       {
-        "line": 173,
+        "line": 174,
         "expression": "moduleId && moduleName"
       },
       {
-        "line": 201,
+        "line": 203,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 206,
+        "line": 208,
         "expression": "findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)"
       },
       {
-        "line": 213,
-        "expression": "startNodeId"
-      },
-      {
-        "line": 221,
+        "line": 215,
         "expression": "startNodeId"
       },
       {
         "line": 223,
-        "expression": "headless"
-      },
-      {
-        "line": 229,
-        "expression": "!currentWorkflowId"
-      },
-      {
-        "line": 254,
-        "expression": "createResult.error || !createResult.data?.id"
-      },
-      {
-        "line": 286,
-        "expression": "updateResult.error"
-      },
-      {
-        "line": 291,
-        "expression": "config.browser"
-      },
-      {
-        "line": 304,
-        "expression": "!currentWorkflowId"
-      },
-      {
-        "line": 316,
-        "expression": "executeResult.error"
-      },
-      {
-        "line": 322,
         "expression": "startNodeId"
       },
       {
-        "line": 324,
+        "line": 225,
         "expression": "headless"
       },
       {
-        "line": 344,
+        "line": 231,
+        "expression": "!currentWorkflowId"
+      },
+      {
+        "line": 256,
+        "expression": "createResult.error || !createResult.data?.id"
+      },
+      {
+        "line": 288,
+        "expression": "updateResult.error"
+      },
+      {
+        "line": 293,
+        "expression": "config.browser"
+      },
+      {
+        "line": 306,
+        "expression": "!currentWorkflowId"
+      },
+      {
+        "line": 318,
+        "expression": "executeResult.error"
+      },
+      {
+        "line": 324,
+        "expression": "startNodeId"
+      },
+      {
+        "line": 326,
+        "expression": "headless"
+      },
+      {
+        "line": 346,
         "expression": "nodeId"
       },
       {
-        "line": 351,
+        "line": 353,
         "expression": "workflowId"
       },
       {
-        "line": 359,
+        "line": 361,
         "expression": "result.error"
       },
       {
-        "line": 372,
+        "line": 371,
+        "expression": "sessionStorage.getItem('editingCustomModuleId')"
+      },
+      {
+        "line": 375,
         "expression": "!currentFolder"
       },
       {
-        "line": 374,
+        "line": 377,
         "expression": "result.error"
-      },
-      {
-        "line": 376,
-        "expression": "currentFolder"
-      },
-      {
-        "line": 378,
-        "expression": "!currentFolder"
       },
       {
         "line": 379,
+        "expression": "currentFolder"
+      },
+      {
+        "line": 381,
+        "expression": "!currentFolder"
+      },
+      {
+        "line": 382,
         "expression": "!skipConfirm"
       },
       {
-        "line": 391,
+        "line": 394,
         "expression": "!skipConfirm && (autoSaveCopy || showOverwriteConfirm)"
       },
       {
-        "line": 398,
+        "line": 401,
         "expression": "!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean'"
       },
       {
-        "line": 401,
+        "line": 404,
         "expression": "checkData.exists && autoSaveCopy"
       },
       {
-        "line": 407,
+        "line": 410,
         "expression": "checkData.exists"
       },
       {
-        "line": 412,
+        "line": 415,
         "expression": "!shouldOverwrite"
       },
       {
-        "line": 432,
+        "line": 435,
         "expression": "response.ok && data.success"
       },
       {
-        "line": 433,
+        "line": 436,
         "expression": "!skipConfirm"
-      },
-      {
-        "line": 437,
-        "expression": "unchanged"
       },
       {
         "line": 440,
+        "expression": "unchanged"
+      },
+      {
+        "line": 443,
         "expression": "!skipConfirm"
       },
       {
-        "line": 445,
+        "line": 448,
         "expression": "!skipConfirm"
       },
       {
-        "line": 460,
+        "line": 463,
         "expression": "await confirmLeave()"
       },
       {
-        "line": 465,
+        "line": 468,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 469,
+        "line": 472,
         "expression": "isAutoLayouting"
       },
       {
-        "line": 473,
+        "line": 476,
         "expression": "res.ok"
       },
       {
-        "line": 489,
+        "line": 492,
         "expression": "!config.workflow?.autoSave"
       },
       {
-        "line": 492,
+        "line": 495,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 506,
+        "line": 509,
         "expression": "e.key === 'F5'"
       },
       {
-        "line": 508,
+        "line": 511,
         "expression": "e.shiftKey"
       },
       {
-        "line": 512,
+        "line": 515,
         "expression": "(e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'"
       },
       {
-        "line": 521,
+        "line": 524,
         "expression": "isInInput"
       },
       {
-        "line": 524,
+        "line": 527,
         "expression": "e.altKey && e.key === 'n'"
       },
       {
-        "line": 537,
+        "line": 540,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 570,
+        "line": 573,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 592,
+        "line": 595,
         "expression": "isScreenshotting"
       },
       {
-        "line": 613,
+        "line": 616,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 621,
+        "line": 624,
         "expression": "data.success && data.asset"
       },
       {
-        "line": 627,
+        "line": 630,
         "expression": "data.cancelled"
       },
       {
-        "line": 630,
+        "line": 633,
         "expression": "data.error === 'timeout'"
       },
       {
-        "line": 666,
+        "line": 669,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 672,
+        "line": 675,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 704,
+        "line": 707,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 705,
+        "line": 708,
         "expression": "p?.headless"
       },
       {
-        "line": 713,
+        "line": 716,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 758,
+        "line": 761,
         "expression": "!screenshotAsset"
       },
       {
-        "line": 769,
+        "line": 772,
         "expression": "response.ok"
       },
       {
-        "line": 792,
+        "line": 795,
         "expression": "screenshotAsset"
       },
       {
-        "line": 803,
+        "line": 806,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 812,
+        "line": 815,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 837,
+        "line": 840,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 876,
+        "line": 879,
         "expression": "data.code"
       },
       {
-        "line": 899,
+        "line": 902,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 911,
+        "line": 914,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 913,
+        "line": 916,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 924,
+        "line": 927,
         "expression": "data?.code"
       },
       {
-        "line": 934,
+        "line": 937,
         "expression": "target === 'selenium'"
       },
       {
-        "line": 946,
+        "line": 949,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 993,
+        "line": 996,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1003,
+        "line": 1006,
         "expression": "!password"
       },
       {
-        "line": 1004,
+        "line": 1007,
         "expression": "password.length < 4"
       },
       {
-        "line": 1035,
+        "line": 1038,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1046,
+        "line": 1049,
         "expression": "res.error || !res.data?.bundle"
       },
       {
-        "line": 1074,
+        "line": 1077,
         "expression": "!file || importingBundle.current"
       },
       {
-        "line": 1080,
+        "line": 1083,
         "expression": "snapshotKey(exportWorkflow()) !== original"
       },
       {
-        "line": 1084,
+        "line": 1087,
         "expression": "!(await confirmLeave())"
       },
       {
-        "line": 1087,
+        "line": 1090,
         "expression": "res.error || !res.data?.success || !res.data.workflow"
       },
       {
-        "line": 1091,
+        "line": 1094,
         "expression": "snapshotKey(exportWorkflow()) !== accepted"
       },
       {
-        "line": 1102,
+        "line": 1105,
         "expression": "!imported"
       },
       {
-        "line": 1118,
+        "line": 1121,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1138,
+        "line": 1141,
         "expression": "v === undefined || v === null"
       },
       {
-        "line": 1139,
+        "line": 1142,
         "expression": "typeof v === 'string'"
       },
       {
-        "line": 1140,
+        "line": 1143,
         "expression": "v === ''"
       },
       {
-        "line": 1142,
+        "line": 1145,
         "expression": "v.includes('\\n')"
       },
       {
-        "line": 1145,
+        "line": 1148,
         "expression": "typeof v === 'number' || typeof v === 'boolean'"
       },
       {
-        "line": 1148,
+        "line": 1151,
         "expression": "s.length > 200"
       },
       {
-        "line": 1162,
+        "line": 1165,
         "expression": "variables.length > 0"
       },
       {
-        "line": 1167,
+        "line": 1170,
         "expression": "v.value === undefined || v.value === null || v.value === ''"
       },
       {
-        "line": 1169,
+        "line": 1172,
         "expression": "typeof v.value === 'object'"
       },
       {
-        "line": 1186,
+        "line": 1189,
         "expression": "data.remark"
       },
       {
-        "line": 1192,
+        "line": 1195,
         "expression": "META_FIELDS.has(k)"
       },
       {
-        "line": 1193,
+        "line": 1196,
         "expression": "v === undefined || v === null || v === ''"
       },
       {
-        "line": 1194,
+        "line": 1197,
         "expression": "typeof v === 'function'"
       },
       {
-        "line": 1198,
+        "line": 1201,
         "expression": "configEntries.length > 0"
       },
       {
-        "line": 1208,
+        "line": 1211,
         "expression": "edges.length > 0"
       },
       {
-        "line": 1275,
-        "expression": "!editingCustomModuleId"
+        "line": 1277,
+        "expression": "await confirmLeave({ preserveMainDocument: true })"
       },
       {
-        "line": 1280,
-        "expression": "nodes.length === 0"
-      },
-      {
-        "line": 1311,
-        "expression": "result.error"
-      },
-      {
-        "line": 1317,
-        "expression": "result.data"
-      },
-      {
-        "line": 1320,
-        "expression": "m.id === editingCustomModuleId"
-      },
-      {
-        "line": 1338,
-        "expression": "!shouldContinue"
-      },
-      {
-        "line": 1360,
-        "expression": "backupRaw"
-      },
-      {
-        "line": 1419,
-        "expression": "shouldExit"
-      },
-      {
-        "line": 1438,
+        "line": 1326,
         "expression": "isRunning"
       },
       {
-        "line": 1440,
+        "line": 1328,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1444,
+        "line": 1332,
         "expression": "isRunning"
       },
       {
-        "line": 1444,
+        "line": 1332,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1460,
+        "line": 1348,
         "expression": "!isRunning"
       },
       {
-        "line": 1598,
+        "line": 1486,
         "expression": "isAutoLayouting"
       }
     ],
     "bindings": [
       {
-        "line": 1447,
+        "line": 1335,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 1448,
+        "line": 1336,
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }

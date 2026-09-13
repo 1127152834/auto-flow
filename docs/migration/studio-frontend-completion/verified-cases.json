@@ -13320,5 +13320,333 @@
     "level": "store",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.restore",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "主流程存在名称、变量和历史",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "进入模块后修改变量，再恢复主流程并撤销"
+    ],
+    "expectedUI": "原文档标识、名称、变量、未保存状态及历史恢复",
+    "expectedIO": "原文档标识、名称、变量、未保存状态及历史恢复",
+    "stateAssertion": "原文档标识、名称、变量、未保存状态及历史恢复",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.empty-save",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "空模块有模块变量和元数据",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "更新变量并保存，重新读取模块"
+    ],
+    "expectedUI": "变量保存且名称/描述不被 PUT 删除",
+    "expectedIO": "变量保存且名称/描述不被 PUT 删除",
+    "stateAssertion": "变量保存且名称/描述不被 PUT 删除",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.read-missing",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "主草稿未保存，模块读取返回 503",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "进入模块"
+    ],
+    "expectedUI": "请求失败，主草稿和编辑标记保持原样",
+    "expectedIO": "请求失败，主草稿和编辑标记保持原样",
+    "stateAssertion": "请求失败，主草稿和编辑标记保持原样",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.read-changed",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "读取模块期间继续修改主变量",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "等待读取响应"
+    ],
+    "expectedUI": "迟到内容不能替换新草稿",
+    "expectedIO": "迟到内容不能替换新草稿",
+    "stateAssertion": "迟到内容不能替换新草稿",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.backup-quota",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "主草稿存在，sessionStorage 备份写入失败",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "进入模块"
+    ],
+    "expectedUI": "备份失败，不替换主画布",
+    "expectedIO": "备份失败，不替换主画布",
+    "stateAssertion": "备份失败，不替换主画布",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.backup-corrupt",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "正在编辑模块，主备份损坏",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "退出恢复"
+    ],
+    "expectedUI": "保留模块画布及会话，明确提示备份损坏",
+    "expectedIO": "保留模块画布及会话，明确提示备份损坏",
+    "stateAssertion": "保留模块画布及会话，明确提示备份损坏",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.save-changed",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量已编辑，保存响应被延迟",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "保存中继续编辑后收到成功响应"
+    ],
+    "expectedUI": "新编辑仍未保存",
+    "expectedIO": "新编辑仍未保存",
+    "stateAssertion": "新编辑仍未保存",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.save-failed",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量已编辑，服务返回 success=false",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "保存模块"
+    ],
+    "expectedUI": "失败提示且保留草稿",
+    "expectedIO": "失败提示且保留草稿",
+    "stateAssertion": "失败提示且保留草稿",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.exit-save",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量与主草稿都存在",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "实际工具栏退出，保存后继续"
+    ],
+    "expectedUI": "模块更新接口成功后恢复主草稿",
+    "expectedIO": "模块更新接口成功后恢复主草稿",
+    "stateAssertion": "模块更新接口成功后恢复主草稿",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.exit-discard",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量已编辑，主草稿已备份",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "实际工具栏退出，放弃修改"
+    ],
+    "expectedUI": "不更新模块，恢复主草稿",
+    "expectedIO": "不更新模块，恢复主草稿",
+    "stateAssertion": "不更新模块，恢复主草稿",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.exit-cancel",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量已编辑",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "实际工具栏退出，取消"
+    ],
+    "expectedUI": "模块变量和会话继续保留",
+    "expectedIO": "模块变量和会话继续保留",
+    "stateAssertion": "模块变量和会话继续保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.exit-save-failed",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "模块变量已编辑，PUT 返回 507",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "退出，保存后继续"
+    ],
+    "expectedUI": "保存失败不退出，主备份仍在",
+    "expectedIO": "保存失败不退出，主备份仍在",
+    "stateAssertion": "保存失败不退出，主备份仍在",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.shortcut",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "正在编辑模块变量",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "Ctrl+S"
+    ],
+    "expectedUI": "更新模块 API，不调用工作流 save-to-folder",
+    "expectedIO": "更新模块 API，不调用工作流 save-to-folder",
+    "stateAssertion": "更新模块 API，不调用工作流 save-to-folder",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.new-guard",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "主草稿隐藏在模块编辑备份中",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "工具栏新建"
+    ],
+    "expectedUI": "提示先退出模块；不丢主备份或替换模块",
+    "expectedIO": "提示先退出模块；不丢主备份或替换模块",
+    "stateAssertion": "提示先退出模块；不丢主备份或替换模块",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.switch",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "已修改第一个模块，主草稿已备份",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "打开第二模块，保存后继续，再退出"
+    ],
+    "expectedUI": "保存第一模块并保留最初主流程备份",
+    "expectedIO": "保存第一模块并保留最初主流程备份",
+    "stateAssertion": "保存第一模块并保留最初主流程备份",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.create-canvas",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "画布有变量、节点 style/extent",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "实际创建模块表单填写并提交"
+    ],
+    "expectedUI": "请求包含完整节点、连线和变量",
+    "expectedIO": "请求包含完整节点、连线和变量",
+    "stateAssertion": "请求包含完整节点、连线和变量",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.refresh",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "已保存模块，会话标记保留而内存画布重建",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "恢复前尝试保存，再挂载工具栏恢复并退出"
+    ],
+    "expectedUI": "恢复前禁止覆盖模块；已保存内容和主备份正确恢复",
+    "expectedIO": "恢复前禁止覆盖模块；已保存内容和主备份正确恢复",
+    "stateAssertion": "恢复前禁止覆盖模块；已保存内容和主备份正确恢复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.same-module",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "document": "当前模块有未保存修改",
+      "backend": "本地 Mock 模块 CRUD 或指定失败响应"
+    },
+    "steps": [
+      "再次打开同一模块"
+    ],
+    "expectedUI": "不发送读取请求，不覆盖当前草稿",
+    "expectedIO": "不发送读取请求，不覆盖当前草稿",
+    "stateAssertion": "不发送读取请求，不覆盖当前草稿",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/custom-module-editing.test.tsx"
+  },
+  {
+    "id": "MODULE.edit.browser-roundtrip",
+    "capability": "custom-module-editing",
+    "preconditions": {
+      "origin": "localhost:5175",
+      "document": "独立 F2 验收草稿"
+    },
+    "steps": [
+      "拖入节点并创建模块",
+      "模块内添加变量",
+      "取消退出",
+      "保存后退出并重开",
+      "主流程撤销重做",
+      "刷新模块再退出恢复主草稿"
+    ],
+    "expectedUI": "模块变量、主流程名称/节点和未保存状态正确",
+    "expectedIO": "通过实际 UI 消费 Mock 模块 CRUD，无真实自动化执行",
+    "stateAssertion": "取消保留，保存重开恢复，主历史可撤销重做",
+    "level": "browser-e2e",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-custom-module/browser-validation.md"
   }
 ]

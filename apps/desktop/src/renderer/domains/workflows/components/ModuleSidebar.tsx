@@ -1,3 +1,5 @@
+import { enterCustomModuleEditing } from '../lib/customModuleEditing'
+import { snapshotKey } from '../lib/snapshotKey'
 import { moduleCategories } from '../lib/moduleCatalog'
 export { excludedModuleTypes } from '../lib/moduleCatalog'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
@@ -2142,6 +2144,7 @@ function ModuleSidebarRaw() {
                 // 编辑自定义模块的工作流
                 console.log('编辑自定义模块工作流:', module.name)
 
+                const original = snapshotKey(useWorkflowStore.getState().exportWorkflow())
                 // 1. 使用自定义确认对话框
                 const shouldEdit = await confirmDialog(
                   `确定要编辑"${module.display_name || module.name}"的内部工作流吗？\n\n` +
@@ -2157,72 +2160,11 @@ function ModuleSidebarRaw() {
 
                 if (!shouldEdit) return
 
-                const store = useWorkflowStore.getState()
-
-                // 2. 备份当前主工作流（仅在尚未进入编辑模式时备份，避免用编辑态覆盖真正的主工作流）
-                const alreadyEditing = !!sessionStorage.getItem('editingCustomModuleId')
-                if (!alreadyEditing) {
-                  try {
-                    const backup = {
-                      nodes: store.nodes,
-                      edges: store.edges,
-                      name: store.name,
-                      variables: store.variables,
-                    }
-                    sessionStorage.setItem('preEditWorkflowBackup', JSON.stringify(backup))
-                  } catch (e) {
-                    console.warn('[ModuleSidebar] 备份主工作流失败:', e)
-                  }
+                if (snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original) {
+                  useWorkflowStore.getState().addLog({ level: 'warning', message: '确认期间草稿已变化，请重新打开模块' })
+                  return
                 }
-
-                // 3. 拉取最新的模块数据（避免使用列表里的过期缓存——保存后再次编辑仍显示旧配置的根因）
-                let latest = module
-                try {
-                  const fresh = await useCustomModuleStore.getState().getModule(module.id)
-                  if (fresh) latest = fresh
-                } catch (e) {
-                  console.warn('[ModuleSidebar] 获取最新模块数据失败，使用本地缓存:', e)
-                }
-
-                const wf = latest.workflow || { nodes: [], edges: [] }
-
-                // 4. 转换节点类型：后端类型 -> 前端类型
-                const convertedNodes = (wf.nodes || []).map((node: any) => {
-                  let frontendType = 'moduleNode'  // 默认类型
-
-                  // 特殊节点类型转换
-                  if (node.type === 'group') {
-                    frontendType = 'groupNode'
-                  } else if (node.type === 'note') {
-                    frontendType = 'noteNode'
-                  } else if (node.type === 'subflow_header') {
-                    frontendType = 'subflowHeaderNode'
-                  }
-
-                  return {
-                    ...node,
-                    type: frontendType,
-                    data: {
-                      ...node.data,
-                      moduleType: node.type  // 保存原始类型到data.moduleType
-                    }
-                  }
-                })
-
-                // 5. 先清空再加载，确保画布可见地被替换（解决"进入编辑后画布没清空"的问题）
-                store.clearWorkflow()
-                store.loadWorkflow({
-                  nodes: convertedNodes,
-                  edges: wf.edges || [],
-                  name: `编辑模块: ${latest.display_name || latest.name}`
-                })
-
-                // 6. 保存模块ID到sessionStorage，用于后续保存
-                sessionStorage.setItem('editingCustomModuleId', latest.id)
-                sessionStorage.setItem('editingCustomModuleName', latest.display_name || latest.name)
-
-                // 触发自定义事件通知Toolbar
-                window.dispatchEvent(new CustomEvent('editingModuleChanged'))
+                await enterCustomModuleEditing(module.id)
               }}
             />
           )}

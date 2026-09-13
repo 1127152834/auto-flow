@@ -1,3 +1,4 @@
+import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
 import { CalendarClock } from 'lucide-react'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
@@ -30,7 +31,7 @@ import { LocalWorkflowDialog } from './LocalWorkflowDialog'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
 import { useClipboardImageMonitor } from '../hooks/useClipboardImageMonitor'
-import { customModulesApi, workflowBundleApi } from '../api'
+import { workflowBundleApi } from '../api'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import {
   Play,
@@ -180,8 +181,9 @@ export function Toolbar() {
       }
     }
     
-    // 初始检测
+    // 刷新后会话标记可能仍在，但画布已重新初始化；先恢复已保存模块。
     checkEditingModule()
+    void recoverCustomModuleEditing()
     
     // 监听storage变化（跨标签页同步）
     window.addEventListener('storage', checkEditingModule)
@@ -366,6 +368,7 @@ export function Toolbar() {
   }, [workflowId, setExecutionStatus, addLog])
 
   const handleSave = useCallback(async (skipConfirm = false) => {
+    if (sessionStorage.getItem('editingCustomModuleId')) return saveCustomModuleEditing()
     const workflowData = JSON.parse(exportWorkflow())
     let filename = workflowData.name || '未命名工作流'
     let currentFolder = config.workflow?.localFolder || defaultFolder
@@ -1270,116 +1273,9 @@ export function Toolbar() {
     addLog({ level, message })
   }
 
-  // 保存自定义模块工作流
-  const handleSaveCustomModuleWorkflow = useCallback(async () => {
-    if (!editingCustomModuleId) {
-      addLog({ level: 'error', message: '未检测到正在编辑的自定义模块' })
-      return
-    }
-
-    if (nodes.length === 0) {
-      addLog({ level: 'warning', message: '工作流没有任何节点，无法保存' })
-      return
-    }
-
-    try {
-      addLog({ level: 'info', message: `正在保存模块"${editingCustomModuleName}"的工作流...` })
-
-      // 准备工作流数据
-      const workflowData = {
-        nodes: nodes.map(n => ({
-          id: n.id,
-          type: n.data.moduleType,
-          position: n.position,
-          data: n.data,
-          style: n.style,
-        })),
-        edges: edges.map(e => ({
-          id: e.id,
-          source: e.source,
-          target: e.target,
-          sourceHandle: e.sourceHandle,
-          targetHandle: e.targetHandle,
-        })),
-      }
-
-      // 调用API更新模块
-      const result = await customModulesApi.update(editingCustomModuleId, {
-        workflow: workflowData
-      })
-
-      if (result.error) {
-        addLog({ level: 'error', message: `保存失败: ${result.error}` })
-        return
-      }
-
-      // 同步更新自定义模块 store 缓存，避免再次编辑时读到旧的工作流（保存不生效的根因之一）
-      if (result.data) {
-        const updated = result.data
-        useCustomModuleStore.setState((state) => ({
-          modules: state.modules.map((m) => (m.id === editingCustomModuleId ? updated : m)),
-        }))
-      }
-
-      addLog({ level: 'success', message: `模块"${editingCustomModuleName}"的工作流已保存` })
-      markAsSaved()
-
-      // 询问用户是否继续编辑或退出
-      const shouldContinue = await confirm(
-        `模块工作流已成功保存！\n\n是否继续编辑？\n\n点击"确定"继续编辑，点击"取消"退出编辑模式。`,
-        { 
-          type: 'success', 
-          title: '保存成功', 
-          confirmText: '继续编辑', 
-          cancelText: '退出编辑' 
-        }
-      )
-
-      if (!shouldContinue) {
-        // 退出编辑模式
-        handleExitCustomModuleEdit()
-      }
-    } catch (error) {
-      console.error('[Toolbar] 保存自定义模块工作流失败:', error)
-      addLog({ level: 'error', message: `保存失败: ${error}` })
-    }
-  }, [editingCustomModuleId, editingCustomModuleName, nodes, edges, addLog, markAsSaved, confirm])
-
-  // 退出自定义模块编辑模式
-  const handleExitCustomModuleEdit = useCallback(() => {
-    sessionStorage.removeItem('editingCustomModuleId')
-    sessionStorage.removeItem('editingCustomModuleName')
-    setEditingCustomModuleId(null)
-    setEditingCustomModuleName('')
-
-    // 触发自定义事件通知其他组件
-    window.dispatchEvent(new CustomEvent('editingModuleChanged'))
-
-    // 恢复进入编辑模式前的主工作流（避免退出后画布一片空白）
-    const backupRaw = sessionStorage.getItem('preEditWorkflowBackup')
-    if (backupRaw) {
-      try {
-        const backup = JSON.parse(backupRaw)
-        useWorkflowStore.getState().restoreSnapshot({
-          nodes: backup.nodes || [],
-          edges: backup.edges || [],
-          name: backup.name,
-          variables: backup.variables,
-        }, { resetHistory: true })
-        addLog({ level: 'info', message: '已退出编辑模式，画布已恢复' })
-      } catch (e) {
-        console.warn('[Toolbar] 恢复主工作流失败，清空画布:', e)
-        clearWorkflow()
-        addLog({ level: 'info', message: '已退出自定义模块编辑模式' })
-      } finally {
-        sessionStorage.removeItem('preEditWorkflowBackup')
-      }
-    } else {
-      // 没有备份时才清空画布
-      clearWorkflow()
-      addLog({ level: 'info', message: '已退出自定义模块编辑模式' })
-    }
-  }, [clearWorkflow, addLog])
+  const handleExitCustomModuleEdit = useCallback(async () => {
+    if (await confirmLeave({ preserveMainDocument: true })) restoreMainWorkflow()
+  }, [confirmLeave])
 
   return (
     <header
@@ -1401,7 +1297,7 @@ export function Toolbar() {
           <Button
             size="sm"
             variant="success"
-            onClick={handleSaveCustomModuleWorkflow}
+            onClick={() => void handleSave()}
             title={`保存"${editingCustomModuleName}"的工作流`}
           >
             <Save className="w-3.5 h-3.5" />
@@ -1411,15 +1307,7 @@ export function Toolbar() {
           <Button
             size="sm"
             variant="outline"
-            onClick={async () => {
-              const shouldExit = await confirm(
-                '确定要退出编辑模式吗？\n\n未保存的修改将会丢失。',
-                { type: 'warning', title: '退出编辑', confirmText: '退出', cancelText: '取消' }
-              )
-              if (shouldExit) {
-                handleExitCustomModuleEdit()
-              }
-            }}
+            onClick={() => void handleExitCustomModuleEdit()}
             title="退出编辑模式"
           >
             <X className="w-3.5 h-3.5" />

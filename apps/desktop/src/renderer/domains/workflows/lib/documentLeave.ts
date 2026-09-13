@@ -1,4 +1,5 @@
-type LeaveHandler = () => Promise<boolean>
+export type LeaveOptions = { preserveMainDocument?: boolean }
+type LeaveHandler = (options?: LeaveOptions) => Promise<boolean>
 let handler: LeaveHandler | undefined
 
 /** Bridge non-React commands to the mounted Studio's save/discard/cancel UI. */
@@ -7,7 +8,7 @@ export function registerDocumentLeaveHandler(next: LeaveHandler): () => void {
   return () => { if (handler === next) handler = undefined }
 }
 
-export async function requestDocumentLeave(): Promise<boolean> {
+export async function requestDocumentLeave(options?: LeaveOptions): Promise<boolean> {
   // A background command must not bypass protection when no editor is mounted.
-  return handler ? handler() : false
+  return handler ? handler(options) : false
 }

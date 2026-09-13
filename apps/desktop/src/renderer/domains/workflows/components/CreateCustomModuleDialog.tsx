@@ -28,7 +28,7 @@ interface CreateCustomModuleDialogProps {
 }
 
 export function CreateCustomModuleDialog({ open, onClose, editingModule }: CreateCustomModuleDialogProps) {
-  const { nodes, edges } = useWorkflowStore()
+  const { nodes } = useWorkflowStore()
   const { createModule, updateModule } = useCustomModuleStore()
   
   const isEdit = Boolean(editingModule)
@@ -158,26 +158,10 @@ export function CreateCustomModuleDialog({ open, onClose, editingModule }: Creat
     
     try {
       // 准备 workflow（仅在创建或编辑时勾选 reuseCanvas 才用画布数据）
-      let workflowField: { nodes: any[]; edges: any[] } | undefined
+      let workflowField: CustomModule['workflow'] | undefined
       if (!isEdit || reuseCanvas) {
-        const validatedNodes = nodes.map(n => {
-          // 如果type是moduleNode，使用data.moduleType作为真正的类型
-          const actualType = n.type === 'moduleNode' ? (n.data?.moduleType || 'unknown') : n.type
-          return {
-            id: n.id,
-            type: actualType,
-            position: n.position || { x: 0, y: 0 },
-            data: n.data || {}
-          }
-        })
-        const validatedEdges = edges.map(e => ({
-          id: e.id,
-          source: e.source,
-          target: e.target,
-          sourceHandle: e.sourceHandle || null,
-          targetHandle: e.targetHandle || null
-        }))
-        workflowField = { nodes: validatedNodes, edges: validatedEdges }
+        const { nodes: savedNodes, edges: savedEdges, variables } = JSON.parse(useWorkflowStore.getState().exportWorkflow())
+        workflowField = { nodes: savedNodes, edges: savedEdges, variables }
       }
       
       const baseData: any = {
