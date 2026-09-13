@@ -89,6 +89,10 @@ export async function apiRequest<T = any>(
       return { success: false, httpStatus: response.status, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError, ...(errorDetails ? { errorDetails } : {}) }
     }
     const data = await response.json()
+    // Frozen WebRPA dialog cancellation is a successful read with no selection.
+    if (['/system/select-file', '/system/select-folder'].includes(endpoint) && data?.success === false && data.path === null && !data.error && data.message === '用户取消选择') {
+      return { success: true, data }
+    }
     if (data && !Array.isArray(data) && data.success === false) {
       const message = [data.error, data.message, data.detail].find(value => typeof value === 'string' && value.trim())
       return { success: false, error: message || '操作失败，服务未提供具体原因' }

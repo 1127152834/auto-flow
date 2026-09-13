@@ -22024,5 +22024,347 @@
     "level": "backend contract",
     "status": "通过",
     "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "F2.input-path.file.late-request",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "old-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "开始浏览后切换到new请求，再返回/old/result"
+    ],
+    "expectedUI": "保留new-draft",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "保留new-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.manual-edit",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "edit-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "开始浏览后输入new-manual-value，再返回/old/result"
+    ],
+    "expectedUI": "保留new-manual-value",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "保留new-manual-value",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.http-failure",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "failure-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "选择接口返回503和路径选择不可用"
+    ],
+    "expectedUI": "显示错误并保留failure-draft",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "显示错误并保留failure-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.success",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "valid-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "点击浏览并验证按钮禁用，返回/valid/result"
+    ],
+    "expectedUI": "写入/valid/result，按钮恢复",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "写入/valid/result，按钮恢复",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.empty-cancel",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "cancelled-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "选择接口返回success:true,path:null"
+    ],
+    "expectedUI": "保持原输入且没有无效路径错误",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "保持原输入且没有无效路径错误",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.malformed",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "malformed-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回path:{invalid:true}"
+    ],
+    "expectedUI": "显示服务返回了无效路径并保留原值",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "显示服务返回了无效路径并保留原值",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.submitted",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "submitted-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "浏览等待中点击确定并确认，再返回/late/result"
+    ],
+    "expectedUI": "弹窗不重开，提交值仍为submitted-draft",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "弹窗不重开，提交值仍为submitted-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.source-cancel",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "source-cancel-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回源success:false,path:null,message:用户取消选择"
+    ],
+    "expectedUI": "保留原值，不把取消作为错误",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "保留原值，不把取消作为错误",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.file.source-error",
+    "capability": "input_prompt file配套路径选择",
+    "preconditions": {
+      "inputMode": "file",
+      "defaultValue": "source-error-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回取消文案同时携带error:实际错误"
+    ],
+    "expectedUI": "显示实际错误，保留原输入",
+    "expectedIO": "POST /api/system/select-file；返回对应测试包络",
+    "stateAssertion": "显示实际错误，保留原输入",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.late-request",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "old-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "开始浏览后切换到new请求，再返回/old/result"
+    ],
+    "expectedUI": "保留new-draft",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "保留new-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.manual-edit",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "edit-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "开始浏览后输入new-manual-value，再返回/old/result"
+    ],
+    "expectedUI": "保留new-manual-value",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "保留new-manual-value",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.http-failure",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "failure-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "选择接口返回503和路径选择不可用"
+    ],
+    "expectedUI": "显示错误并保留failure-draft",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "显示错误并保留failure-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.success",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "valid-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "点击浏览并验证按钮禁用，返回/valid/result"
+    ],
+    "expectedUI": "写入/valid/result，按钮恢复",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "写入/valid/result，按钮恢复",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.empty-cancel",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "cancelled-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "选择接口返回success:true,path:null"
+    ],
+    "expectedUI": "保持原输入且没有无效路径错误",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "保持原输入且没有无效路径错误",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.malformed",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "malformed-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回path:{invalid:true}"
+    ],
+    "expectedUI": "显示服务返回了无效路径并保留原值",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "显示服务返回了无效路径并保留原值",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.submitted",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "submitted-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "浏览等待中点击确定并确认，再返回/late/result"
+    ],
+    "expectedUI": "弹窗不重开，提交值仍为submitted-draft",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "弹窗不重开，提交值仍为submitted-draft",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.source-cancel",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "source-cancel-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回源success:false,path:null,message:用户取消选择"
+    ],
+    "expectedUI": "保留原值，不把取消作为错误",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "保留原值，不把取消作为错误",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
+  },
+  {
+    "id": "F2.input-path.folder.source-error",
+    "capability": "input_prompt folder配套路径选择",
+    "preconditions": {
+      "inputMode": "folder",
+      "defaultValue": "source-error-draft",
+      "transport": "受控延迟响应"
+    },
+    "steps": [
+      "挂载InputPromptDialog",
+      "返回取消文案同时携带error:实际错误"
+    ],
+    "expectedUI": "显示实际错误，保留原输入",
+    "expectedIO": "POST /api/system/select-folder；返回对应测试包络",
+    "stateAssertion": "显示实际错误，保留原输入",
+    "level": "component/transport",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-path-selection.test.tsx"
   }
 ]

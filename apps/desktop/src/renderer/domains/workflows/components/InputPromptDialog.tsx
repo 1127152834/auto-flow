@@ -1,6 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/InputPromptDialog.tsx; see SOURCE.md for license and adaptation boundaries.
 import type { InputPromptRequest } from '../types/workflow'
-import { studioFetch } from '../api/transport'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
@@ -9,7 +8,7 @@ import { Slider } from './controls/slider'
 import { Checkbox } from './controls/checkbox'
 import { socketService } from '../events'
 import { X, List, Hash, Type, Lock, AlignLeft, File, Folder, CheckSquare, SlidersHorizontal, ListChecks } from 'lucide-react'
-import { getBackendUrl } from '../api'
+import { systemApi } from '../api'
 import { DialogPortal } from './controls/dialog-portal'
 import { useDialogRegistry } from '../hooks/stores/dialogRegistry'
 
@@ -55,18 +54,23 @@ export function InputPromptDialog() {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [error, setError] = useState('')
   const activeRequest = useRef<string | null>(null)
+  const pathRequest = useRef(0)
+  const pathEdit = useRef(0)
+  const [selectingPath, setSelectingPath] = useState(false)
   type Delivery = { requestId: string; commandId: string; status: 'sending' | 'unconfirmed' }
   const [delivery, setDelivery] = useState<Delivery | null>(null)
   const deliveryRef = useRef<Delivery | null>(null)
 
   const handlePromptRequest = useCallback((data: PromptData | null) => {
     if (!data) {
+      pathRequest.current++; setSelectingPath(false)
       activeRequest.current = null; deliveryRef.current = null
       setPromptData(null); setDelivery(null); setError('')
       return
     }
     if (activeRequest.current === data.requestId) return
     activeRequest.current = data.requestId
+    pathRequest.current++; setSelectingPath(false)
     deliveryRef.current = null
     setDelivery(null)
     try {
@@ -126,45 +130,32 @@ export function InputPromptDialog() {
     socketService.setInputPromptCallback(handlePromptRequest)
     return () => {
       activeRequest.current = null
+      pathRequest.current++
       socketService.setInputPromptCallback(null)
     }
   }, [handlePromptRequest])
 
-  // 选择文件
-  const handleSelectFile = async () => {
+  const selectPath = async (kind: 'file' | 'folder') => {
+    if (!promptData || activeRequest.current !== promptData.requestId || deliveryRef.current || selectingPath) return
+    const requestId = promptData.requestId
+    const sequence = ++pathRequest.current
+    const edit = pathEdit.current
+    setSelectingPath(true); setError('')
     try {
-      const response = await studioFetch(`${getBackendUrl()}/api/system/select-file`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: promptData?.title || '选择文件' })
-      })
-      const result = await response.json()
-      if (result.success && result.path) {
-        setInputValue(result.path)
-        setError('')
-      }
-    } catch (err) {
-      console.error('选择文件失败:', err)
-      setError('选择文件失败')
-    }
-  }
-
-  // 选择文件夹
-  const handleSelectFolder = async () => {
-    try {
-      const response = await studioFetch(`${getBackendUrl()}/api/system/select-folder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: promptData?.title || '选择文件夹' })
-      })
-      const result = await response.json()
-      if (result.success && result.path) {
-        setInputValue(result.path)
-        setError('')
-      }
-    } catch (err) {
-      console.error('选择文件夹失败:', err)
-      setError('选择文件夹失败')
+      const result = kind === 'file'
+        ? await systemApi.selectFile(promptData.title || '选择文件')
+        : await systemApi.selectFolder(promptData.title || '选择文件夹')
+      if (activeRequest.current !== requestId || pathRequest.current !== sequence || deliveryRef.current || pathEdit.current !== edit) return
+      if (!result.success) { setError(result.error || '选择路径失败'); return }
+      // Empty selection is cancellation; a successful path must remain a string.
+      const path: unknown = result.data?.path
+      if (path == null || path === '') return
+      if (typeof path !== 'string') { setError('服务返回了无效路径'); return }
+      setInputValue(path); setError('')
+    } catch (error) {
+      if (activeRequest.current === requestId && pathRequest.current === sequence && pathEdit.current === edit && !deliveryRef.current) setError(error instanceof Error ? error.message : '选择路径失败')
+    } finally {
+      if (pathRequest.current === sequence) setSelectingPath(false)
     }
   }
 
@@ -544,7 +535,7 @@ export function InputPromptDialog() {
                   <Input
                     type="text"
                     value={inputValue}
-                    onChange={(e) => { setInputValue(e.target.value); setError('') }}
+                    onChange={(e) => { pathEdit.current++; setInputValue(e.target.value); setError('') }}
                     placeholder={isFilePicker ? "选择或输入文件路径..." : "选择或输入文件夹路径..."}
                     className={`flex-1 ${error ? '!border-[hsl(var(--danger-500))] !ring-[hsl(var(--danger-500)/0.18)]' : ''}`}
                     autoFocus
@@ -558,10 +549,11 @@ export function InputPromptDialog() {
                     type="button"
                     variant="tonal"
                     className="shrink-0"
-                    onClick={isFilePicker ? handleSelectFile : handleSelectFolder}
+                    disabled={selectingPath}
+                    onClick={() => { void selectPath(isFilePicker ? 'file' : 'folder') }}
                   >
                     {isFilePicker ? <File className="w-4 h-4" /> : <Folder className="w-4 h-4" />}
-                    浏览
+                    {selectingPath ? '选择中…' : '浏览'}
                   </Button>
                 </div>
                 <div className="status-row status-row-info !py-2 text-[12px]">

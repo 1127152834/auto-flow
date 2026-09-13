@@ -1,0 +1,71 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-path-selection.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:18112) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/input-path-selection.test.tsx (6 tests | 6 failed) 193ms
+   × does not apply late file selection to another prompt 121ms
+   × does not apply late folder selection to another prompt 17ms
+   × preserves manual edits during file selection 18ms
+   × preserves manual edits during folder selection 13ms
+   × shows file service failure without replacing the draft 12ms
+   × shows folder service failure without replacing the draft 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > does not apply late file selection to another prompt
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > does not apply late folder selection to another prompt
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-path-selection.test.tsx:22:54
+     20|  fireEvent.click(screen.getByRole('button',{name:'浏览'}));prompt('new',…
+     21|  await act(async()=>release(Response.json({success:true,path:'/old/res…
+     22|  expect(screen.queryByDisplayValue('new-draft')).not.toBeNull()
+       |                                                      ^
+     23|  expect(screen.queryByDisplayValue('/old/result')).toBeNull()
+     24| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > preserves manual edits during file selection
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > preserves manual edits during folder selection
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-path-selection.test.tsx:30:61
+     28|  fireEvent.change(screen.getByDisplayValue('edit-draft'),{target:{valu…
+     29|  await act(async()=>release(Response.json({success:true,path:'/old/res…
+     30|  expect(screen.queryByDisplayValue('new-manual-value')).not.toBeNull()
+       |                                                             ^
+     31| })
+     32| it.each(['file','folder'] as const)('shows %s service failure without …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > shows file service failure without replacing the draft
+ FAIL  src/renderer/domains/workflows/tests/input-path-selection.test.tsx > shows folder service failure without replacing the draft
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-path-selection.test.tsx:36:44
+     34|  fireEvent.click(screen.getByRole('button',{name:'浏览'}))
+     35|  await act(async()=>release(Response.json({success:false,error:'路径选择不可…
+     36|  expect(screen.queryByText(/路径选择不可用/)).not.toBeNull()
+       |                                            ^
+     37|  expect(screen.queryByDisplayValue('failure-draft')).not.toBeNull()
+     38| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  05:21:46
+   Duration  1.15s (transform 249ms, setup 101ms, import 379ms, tests 193ms, environment 372ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-path-selection.test.tsx
