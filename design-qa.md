@@ -1,6 +1,8 @@
+> 2026-09-13 更正：**superseded / 未通过本轮四图还原验收**。用户重新给出R1–R4并指出实现不一致；下方历史passed只记录旧缩减范围，不能作为原型忠实度通过依据。遗漏等待任务表、数量/临时选项、输入面板和接管侧栏均是本次必须修正的差距，不再归为允许的范围差异。新的完整还原尚未实施，验收为not started。详见 `docs/superpowers/specs/2026-09-13-android-prototype-exact-design.md`。
+
 # Android management design QA
 
-Date: 2026-09-13. Status: **passed** for the approved Mac first-version scope. Source: selected prototype images, implemented packaged Mac app, native accessibility interactions and screenshots. Confidence: high for the checked surfaces; this is not a claim of full prototype feature parity or pixel identity.
+Date: 2026-09-13. Historical status: **superseded**; earlier passed verdict withdrawn for prototype fidelity. Source: selected prototype images, implemented packaged Mac app, native accessibility interactions and screenshots. Confidence: high for the checked surfaces; this is not a claim of full prototype feature parity or pixel identity.
 
 ## Reference and evidence
 

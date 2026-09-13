@@ -1,5 +1,7 @@
 # 安卓设备管理与 M4 接入验收
 
+> 2026-09-13：本记录中的真实功能与自动化测试是历史结果。用户随后明确要求按重新附上的四图完整还原，旧视觉passed已superseded，不能据此宣称符合原型。新的验收规格见 `../superpowers/specs/2026-09-13-android-prototype-exact-design.md`。
+
 日期：2026-09-13。状态：confirmed / passed（本期 Mac 范围）；来源：正式源代码、自动化测试、真实 Mac Lima/Docker/Android 与打包应用。
 
 ## 交付范围

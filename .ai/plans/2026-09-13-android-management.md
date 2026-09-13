@@ -10,3 +10,5 @@
 验证：见 `docs/migration/android-management-validation.md`（仓库根目录相对路径）；Mac本期验收通过，其他平台和并行调度仍待后续实施。
 
 集成状态（2026-09-13）：已在 `codex/android-workflow-handoff` 汇合M4并验收。最终检查发现主工作区新增尚未提交的M5调试修改，且与本轮文件重叠；未改动、stash或覆盖这些工作。主线合入待M5提交后完成，当前打包应用可独立使用。
+
+2026-09-13 后续更正（confirmed）：用户重新提供四图要求完整还原，本计划的简化UI范围superseded。后续执行索引见 `2026-09-13-android-prototype-exact.md`；既有功能验收保留，视觉不继承passed。

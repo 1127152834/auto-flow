@@ -1,0 +1,46 @@
+[
+  {
+    "id": "R1",
+    "name": "资源看板",
+    "file": "01-resource-board.png",
+    "source": "/Users/zhangtiancheng/.codex/generated_images/01a095e9-66bf-74f3-ab9f-9a2a9c65c58b/exec-3343d200-7953-4bd7-8146-a8c40299c9ad.png",
+    "size": [
+      1487,
+      1058
+    ],
+    "sha256": "e3ac5e20bdb7231b9267dae1f458071fdb696315e4fd5e216587a65180248b82"
+  },
+  {
+    "id": "R2",
+    "name": "手动控制台",
+    "file": "02-manual-console.png",
+    "source": "/Users/zhangtiancheng/.codex/generated_images/01a095e9-66bf-74f3-ab9f-9a2a9c65c58b/exec-71275194-c143-45bf-b41a-57bd08a49698.png",
+    "size": [
+      1489,
+      1056
+    ],
+    "sha256": "8fc5276175920231e364475038ceb5484e2d47bca84ebb79e11acb06870ed16b"
+  },
+  {
+    "id": "R3",
+    "name": "创建实例",
+    "file": "03-create-instances.png",
+    "source": "/Users/zhangtiancheng/.codex/generated_images/01a095e9-66bf-74f3-ab9f-9a2a9c65c58b/exec-c1b3bce9-3f48-4586-abd1-b80259e9c7e4.png",
+    "size": [
+      1489,
+      1056
+    ],
+    "sha256": "e587b5d6510ecfb79abbe7a9f82b2fba9b02bb5ff3a845ca845e22d29b4b0acb"
+  },
+  {
+    "id": "R4",
+    "name": "工作流占用与接管",
+    "file": "04-workflow-takeover.png",
+    "source": "/Users/zhangtiancheng/.codex/generated_images/01a095e9-66bf-74f3-ab9f-9a2a9c65c58b/exec-8b828dac-f95b-48f9-beb5-1156c004dc8c.png",
+    "size": [
+      1489,
+      1056
+    ],
+    "sha256": "883a92f93acda826c2b50f07f4198719e65474680156f8e9fa8df2b581c733be"
+  }
+]
