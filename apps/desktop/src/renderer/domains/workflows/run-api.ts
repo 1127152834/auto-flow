@@ -1,6 +1,6 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import { parseServerSentEvents } from '../../shared/api/events'
-import type { RunEvent, RunEvents, RunList, RunRead, RunStart } from './run-types'
+import type { RunArtifacts, RunEvent, RunEvents, RunList, RunRead, RunStart } from './run-types'
 
 const path = (id?: string) => `/api/v1/workflows/runs${id ? `/${encodeURIComponent(id)}` : ''}`
 
@@ -19,6 +19,7 @@ export function createWorkflowRunApi(client: StreamingApiClient) {
         if (event.event === 'run_event') onEvent(JSON.parse(event.data) as RunEvent)
       }
     },
+    artifacts: (runId: string, after = 0, nodeId = '', executionId = '') => client.request<RunArtifacts>(`${path(runId)}/artifacts?${new URLSearchParams({ after: String(after), limit: '50', ...(nodeId ? { nodeId } : {}), ...(executionId ? { executionId } : {}) })}`),
     async artifact(runId: string, artifactId: string, signal?: AbortSignal) {
       const response = await client.stream(`${path(runId)}/artifacts/${encodeURIComponent(artifactId)}`, { signal })
       return response.blob()

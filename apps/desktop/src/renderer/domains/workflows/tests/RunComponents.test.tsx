@@ -15,7 +15,7 @@ it('disables starting without a real selected profile and keeps stop available f
   view.rerender(<RunToolbar profiles={[]} profileId="profile-1" onProfileChange={vi.fn()} active={runRecord()} busy={false} uncertain={false} disabled={false} profilesLoading={false} profilesError={false} onStart={vi.fn()} onStop={stop} onRefresh={vi.fn()} />)
   await userEvent.click(screen.getByRole('button', { name: '停止' }))
   expect(stop).toHaveBeenCalledOnce()
-  expect(screen.getByRole('status')).toHaveTextContent('0/1 步')
+  expect(screen.getByRole('status')).toHaveTextContent('已调度 0 次')
 })
 
 it('names logs from the snapshot and only locates nodes when the current document agrees', async () => {
@@ -38,7 +38,8 @@ it('loads full JSON results through the authenticated API and presents them read
   await userEvent.click(screen.getByRole('button', { name: '查看完整结果' }))
   expect(await screen.findByLabelText('提取结果')).toHaveTextContent('{"actual":"result"}')
   expect(api.artifact).toHaveBeenCalledWith('run-1', 'artifact-1', expect.any(AbortSignal))
-  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('提取结果').tagName).toBe('PRE')
+  expect(screen.getByLabelText('提取结果')).not.toHaveAttribute('contenteditable')
 })
 
 it('allows collapsing logs and stops following when the user scrolls up to inspect older events', async () => {

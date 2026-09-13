@@ -27,7 +27,7 @@ class InspectionWorkerManager(WorkflowWorkerManager):
     def _payload(self, run_id: str, prepared: PreparedWorkflow, profile: Profile,
                  proxy: ProfileBrowserProxy | None, license_key: str | None) -> dict[str, Any]:
         payload = super()._payload(run_id, prepared, profile, proxy, license_key)
-        for key in ("document", "nodeIds", "variables", "runsRoot"):
+        for key in ("document", "nodeIds", "variables", "runsRoot", "executionPlan"):
             payload.pop(key)
         return {**payload, "headless": False}
 

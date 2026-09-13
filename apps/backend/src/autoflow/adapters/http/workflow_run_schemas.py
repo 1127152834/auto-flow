@@ -32,7 +32,15 @@ class RunError(ApiModel):
     path: list[str]
 
 
+class LoopIteration(ApiModel):
+    loop_node_id: str
+    iteration: int
+
+
 class RunArtifact(ApiModel):
+    execution_id: str | None = None
+    loop_path: list[LoopIteration] = Field(default_factory=list)
+    ordinal: int | None = None
     id: str
     node_id: str
     kind: Literal["json", "image"]
@@ -43,7 +51,16 @@ class RunArtifact(ApiModel):
     preview: str
 
 
+class RunArtifacts(ApiModel):
+    items: list[RunArtifact]
+    next_cursor: int | None
+
+
 class RunSummary(ApiModel):
+    execution_count: int = 0
+    current_execution_id: str | None = None
+    current_loop_path: list[LoopIteration] = Field(default_factory=list)
+    artifact_count: int = 0
     run_id: str
     workflow_id: str
     name: str
@@ -59,6 +76,7 @@ class RunSummary(ApiModel):
 
 
 class RunRead(RunSummary):
+    next_artifact_cursor: int | None = None
     document: WorkflowDocument
     layout: WorkflowLayout
     profile_snapshot: dict[str, JsonValue]
@@ -74,6 +92,9 @@ class RunList(ApiModel):
 
 
 class RunEvent(ApiModel):
+    execution_id: str | None = None
+    loop_path: list[LoopIteration] = Field(default_factory=list)
+    branch: str | None = None
     run_id: str
     seq: int
     timestamp: datetime

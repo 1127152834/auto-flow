@@ -41,7 +41,7 @@ export function useWorkflowEditor(api: WorkflowApi, writable: boolean) {
     epoch.current += 1
     setDocumentSession(epoch.current)
     group.current = null
-    const content = record ? { document: record.document, layout: record.layout } : createWorkflow()
+    const content = record ? { document: { ...record.document, schemaVersion: 2 as const }, layout: record.layout } : createWorkflow()
     baseline.current = signature(content)
     savedRef.current = record ?? null
     setSaved(record ?? null)

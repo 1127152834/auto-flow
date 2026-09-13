@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable
-from time import monotonic
 from typing import Any
 
+from autoflow.application.workflows.execution import WorkflowExecution
+from autoflow.domain.workflows.control import compile_control
 from autoflow.domain.workflows.models import WorkflowError
-from autoflow.domain.workflows.run_validation import resolve_node_config
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifacts
-from autoflow.providers.browser.workflow_locator import NodeFailure, locate_element
+from autoflow.providers.browser.workflow_locator import (
+    NodeFailure,
+    locate_element,
+    locate_scope,
+)
 
 
 class WorkflowExecutor:
@@ -21,37 +25,29 @@ class WorkflowExecutor:
         self.page: Any = None
         self.deadline = 0.0
 
-    async def run(self, document: dict[str, Any], node_ids: list[str]) -> dict[str, Any]:
-        nodes = {node["id"]: node for node in document["nodes"]}
-        self.emit({"type": "ready", "message": "浏览器已启动"})
-        for node_id in node_ids:
-            node = nodes[node_id]
-            started = monotonic()
-            self.emit({"type": "node_started", "nodeId": node_id, "message": "节点开始执行"})
-            try:
-                config = resolve_node_config(node, self.variables)
-                self.deadline = asyncio.get_running_loop().time() + config["timeoutSeconds"]
-                async with asyncio.timeout_at(self.deadline):
-                    artifact = await self._execute(node["type"], node_id, config)
-                    self._timeout()
-            except asyncio.CancelledError:
-                raise
-            except Exception as exception:  # noqa: BLE001 -- convert browser failures to safe node errors.
-                error = self._error(exception, node_id)
-                self.emit({
-                    "type": "node_failed", "nodeId": node_id, "level": "error",
-                    "message": error["message"], "error": error,
-                    "durationMs": round((monotonic() - started) * 1000),
-                })
-                return {"state": "failed", "error": error}
-            event = {
-                "type": "node_succeeded", "nodeId": node_id, "message": "节点执行成功",
-                "durationMs": round((monotonic() - started) * 1000),
-            }
-            if artifact is not None:
-                event["artifact"] = artifact
-            self.emit(event)
-        return {"state": "succeeded", "error": None}
+    async def run(self, document: dict[str, Any], node_ids: list[str], plan: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        if plan is None:
+            plan = compile_control(document) if document.get("schemaVersion") == 2 else [{"nodeId": identifier} for identifier in node_ids]
+        scheduler = WorkflowExecution(self.variables, self.emit, self.execute_action, self.check_page, self._error)
+        return await scheduler.run(document, plan)
+
+    async def execute_action(self, node: dict[str, Any], config: dict[str, Any], deadline: float) -> dict[str, Any] | None:
+        self.deadline = deadline
+        artifact = await self._execute(node["type"], node["id"], config)
+        self._timeout()
+        return artifact
+
+    async def check_page(self, config: dict[str, Any], deadline: float) -> bool:
+        self.deadline = deadline
+        scope = await locate_scope(self._current(), config.get("framePath", []), self._timeout)
+        try:
+            matches = scope.locator(config["selector"])
+            count = await matches.count()
+            result = count > 0 if config["operator"] in {"exists", "not_exists"} else count > 0 and await matches.first.is_visible()
+        except Exception as error:
+            raise NodeFailure("workflow_selector_invalid", "元素选择器无效或页面已变化", ["config", "selector"]) from error
+        self._timeout()
+        return not result if config["operator"] in {"not_exists", "not_visible"} else result
 
     def _timeout(self) -> float:
         remaining = (self.deadline - asyncio.get_running_loop().time()) * 1000
@@ -180,7 +176,7 @@ class WorkflowExecutor:
             code, message, path = exception.code, exception.message, exception.path
         elif isinstance(exception, WorkflowError):
             issue = exception.issues[0] if exception.issues else None
-            code, message = exception.code, exception.message
+            code, message = (issue.code if issue else exception.code), exception.message
             path = issue.path if issue else []
         elif isinstance(exception, TimeoutError) or type(exception).__name__ == "TimeoutError":
             code, message, path = "workflow_node_timeout", "节点执行超时", ["config", "timeoutSeconds"]

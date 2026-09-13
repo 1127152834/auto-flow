@@ -221,7 +221,7 @@ it('protects the current draft before opening, searches the server list and rest
   expect(dialog.queryByRole('button', { name: /另一个流程/ })).not.toBeInTheDocument()
   await user.click(await dialog.findByRole('button', { name: /已保存的流程/ }))
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-  expect(content()).toEqual({ document: stored.document, layout: stored.layout })
+  expect(content()).toEqual({ document: { ...stored.document, schemaVersion: 2 }, layout: stored.layout })
   expect(screen.getByLabelText('流程名称')).toHaveValue(stored.document.name)
   await user.click(screen.getByRole('button', { name: '选择节点 input_text' }))
   expect(screen.getByLabelText('输入文本')).toHaveValue('${目标}')
@@ -316,7 +316,7 @@ it('locks background edits and refuses window leave while a stored flow is still
   expect(await view.prepareLeave('close')).toBe(false)
   await act(async () => { finish() })
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-  expect(content()).toEqual({ document: stored.document, layout: stored.layout })
+  expect(content()).toEqual({ document: { ...stored.document, schemaVersion: 2 }, layout: stored.layout })
   expect(screen.getByLabelText('流程名称')).toBeEnabled()
 })
 
@@ -538,7 +538,7 @@ it('marks the current node failed after worker loss without a node_failed event'
   const record = [...view.server.runs.values()][0]
   view.server.runs.set(record.runId, { ...record, state: 'failed', finishedAt: time, latestSeq: 2, error: { code: 'WORKFLOW_WORKER_EXITED', message: '运行进程异常退出', nodeId: null, path: [] } })
   await userEvent.setup().click(screen.getByRole('button', { name: '刷新运行状态' }))
-  await waitFor(() => expect(JSON.parse(screen.getByTestId('run-markers').textContent!)).toEqual({ [record.currentNodeId!]: '失败' }))
+  await waitFor(() => expect(JSON.parse(screen.getByTestId('run-markers').textContent!)).toEqual({ [record.currentNodeId!]: '失败 · 执行 1 次' }))
   expect(screen.getByTestId('run-markers')).not.toHaveTextContent('执行中')
 })
 
@@ -567,4 +567,15 @@ it.each(['close', 'quit', 'workspace'] as const)('protects a dirty inspection se
   expect(result).toBeUndefined()
   await act(async () => release())
   await waitFor(() => expect(result).toBe(true))
+})
+
+
+it('marks an interrupted repeated execution stopped even when the same node succeeded in an earlier iteration', async () => {
+  const view = setup()
+  await beginRun(view)
+  const record = [...view.server.runs.values()][0]
+  view.server.runs.set(record.runId, { ...record, state: 'cancelled', finishedAt: time, latestSeq: 4, completedNodeIds: [record.currentNodeId!], currentExecutionId: 'second-attempt', executionCount: 2 })
+  await userEvent.setup().click(screen.getByRole('button', { name: '刷新运行状态' }))
+  await waitFor(() => expect(screen.getByTestId('run-markers')).toHaveTextContent('已停止'))
+  expect(screen.getByTestId('run-markers')).not.toHaveTextContent('已完成')
 })

@@ -21,7 +21,7 @@ export function RunToolbar({ profiles, profileId, onProfileChange, active, busy,
     </Select>
     <Button variant="primary" className="h-9" disabled={disabled || busy || uncertain || Boolean(active) || !profileId || !profiles.some(profile => profile.id === profileId)} onClick={onStart}><Play size={15} />运行当前草稿</Button>
     <Button className="h-9" disabled={disabled || busy || (!active && !uncertain)} onClick={onStop}><Stop size={15} />停止</Button>
-    {active ? <span role="status" className="text-xs text-muted">{runStateLabel[active.state]} · {active.completedNodeIds.length}/{active.nodeOrder.length} 步 · {active.profileName}</span> : <span className="text-xs text-muted">运行不会保存草稿</span>}
+    {active ? <span role="status" className="text-xs text-muted">{runStateLabel[active.state]} · 已调度 {active.executionCount ?? active.completedNodeIds.length} 次 · {active.profileName}</span> : <span className="text-xs text-muted">运行不会保存草稿</span>}
     {uncertain ? <span role="status" className="text-xs text-amber-800">正在核实运行状态，尚未允许再次启动</span> : null}
     {canRetryStart ? <Button className="h-8 text-xs" disabled={disabled || busy} onClick={onRetryStart}>按原编号重试启动</Button> : null}
     {profilesError ? <span role="alert" className="text-xs text-red-700">浏览器配置读取失败</span> : null}

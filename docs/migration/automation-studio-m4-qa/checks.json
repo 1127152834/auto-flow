@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-13",
+  "platform": "darwin",
+  "arch": "arm64",
+  "backend": {
+    "pytest": {
+      "passed": 557,
+      "warnings": 2
+    },
+    "ruff": "passed",
+    "mypy": {
+      "passed": true,
+      "sourceFiles": 158
+    }
+  },
+  "frontend": {
+    "vitest": {
+      "passed": 419,
+      "files": 64
+    },
+    "typescript": "passed",
+    "eslint": "passed"
+  },
+  "engineering": {
+    "openapi": "passed",
+    "scriptTests": 12,
+    "structureTests": 3,
+    "rendererMainPreload": "passed",
+    "pyinstaller": "passed",
+    "electronPackageDir": "passed"
+  },
+  "realAcceptance": {
+    "sourceWorkerGroups": 7,
+    "frozenWorkerGroups": 7,
+    "developmentStudioGroups": 3,
+    "builtHtmlStudioGroups": 3,
+    "packagedStudioGroups": 3,
+    "m1RegressionGroups": 13,
+    "m2RegressionGroups": 8,
+    "m3BrowserGroups": 8
+  },
+  "unverifiedPlatforms": [
+    "Windows x64",
+    "macOS Intel"
+  ],
+  "distributionSigning": "not performed"
+}

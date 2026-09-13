@@ -3,6 +3,7 @@ import type { components } from '../../shared/api/generated'
 export type RunRead = components['schemas']['RunRead']
 export type RunSummary = components['schemas']['RunSummary']
 export type RunEvent = components['schemas']['RunEvent']
+export type RunArtifacts = components['schemas']['RunArtifacts']
 export type RunArtifact = components['schemas']['RunArtifact']
 export type RunStart = components['schemas']['RunStart']
 export type RunList = components['schemas']['RunList']

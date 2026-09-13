@@ -1210,6 +1210,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows/runs/{run_id}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifacts */
+        get: operations["artifacts_api_v1_workflows_runs__run_id__artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows/runs/{run_id}/artifacts/{artifact_id}": {
         parameters: {
             query?: never;
@@ -2016,6 +2033,13 @@ export type components = {
              */
             availability: "available" | "unavailable" | "unknown";
         };
+        /** LoopIteration */
+        LoopIteration: {
+            /** Loopnodeid */
+            loopNodeId: string;
+            /** Iteration */
+            iteration: number;
+        };
         /** ModelDiscoveryRead */
         ModelDiscoveryRead: {
             /**
@@ -2689,6 +2713,12 @@ export type components = {
         };
         /** RunArtifact */
         RunArtifact: {
+            /** Executionid */
+            executionId?: string | null;
+            /** Looppath */
+            loopPath?: components["schemas"]["LoopIteration"][];
+            /** Ordinal */
+            ordinal?: number | null;
             /** Id */
             id: string;
             /** Nodeid */
@@ -2709,6 +2739,13 @@ export type components = {
             /** Preview */
             preview: string;
         };
+        /** RunArtifacts */
+        RunArtifacts: {
+            /** Items */
+            items: components["schemas"]["RunArtifact"][];
+            /** Nextcursor */
+            nextCursor: number | null;
+        };
         /** RunError */
         RunError: {
             /** Code */
@@ -2722,6 +2759,12 @@ export type components = {
         };
         /** RunEvent */
         RunEvent: {
+            /** Executionid */
+            executionId?: string | null;
+            /** Looppath */
+            loopPath?: components["schemas"]["LoopIteration"][];
+            /** Branch */
+            branch?: string | null;
             /** Runid */
             runId: string;
             /** Seq */
@@ -2768,6 +2811,20 @@ export type components = {
         };
         /** RunRead */
         RunRead: {
+            /**
+             * Executioncount
+             * @default 0
+             */
+            executionCount: number;
+            /** Currentexecutionid */
+            currentExecutionId?: string | null;
+            /** Currentlooppath */
+            currentLoopPath?: components["schemas"]["LoopIteration"][];
+            /**
+             * Artifactcount
+             * @default 0
+             */
+            artifactCount: number;
             /** Runid */
             runId: string;
             /** Workflowid */
@@ -2797,6 +2854,8 @@ export type components = {
             /** Completednodeids */
             completedNodeIds: string[];
             error: components["schemas"]["RunError"] | null;
+            /** Nextartifactcursor */
+            nextArtifactCursor?: number | null;
             document: components["schemas"]["WorkflowDocument"];
             layout: components["schemas"]["WorkflowLayout"];
             /** Profilesnapshot */
@@ -2821,6 +2880,20 @@ export type components = {
         };
         /** RunSummary */
         RunSummary: {
+            /**
+             * Executioncount
+             * @default 0
+             */
+            executionCount: number;
+            /** Currentexecutionid */
+            currentExecutionId?: string | null;
+            /** Currentlooppath */
+            currentLoopPath?: components["schemas"]["LoopIteration"][];
+            /**
+             * Artifactcount
+             * @default 0
+             */
+            artifactCount: number;
             /** Runid */
             runId: string;
             /** Workflowid */
@@ -2953,9 +3026,9 @@ export type components = {
             name: string;
             /**
              * Schemaversion
-             * @constant
+             * @enum {integer}
              */
-            schemaVersion: 1;
+            schemaVersion: 1 | 2;
             /** Nodes */
             nodes: components["schemas"]["WorkflowNode"][];
             /** Edges */
@@ -2973,9 +3046,9 @@ export type components = {
             target: string;
             /**
              * Sourcehandle
-             * @constant
+             * @enum {string}
              */
-            sourceHandle: "out";
+            sourceHandle: "out" | "true" | "false" | "body" | "done";
             /**
              * Targethandle
              * @constant
@@ -3014,7 +3087,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "condition" | "condition_end" | "loop" | "loop_end" | "break_loop" | "continue_loop" | "set_variable";
             /** Label */
             label: string;
             /** Config */
@@ -3028,7 +3101,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "condition" | "condition_end" | "loop" | "loop_end" | "break_loop" | "continue_loop" | "set_variable";
             /** Title */
             title: string;
             /** Description */
@@ -3046,7 +3119,7 @@ export type components = {
             /** Inputports */
             inputPorts: "in"[];
             /** Outputports */
-            outputPorts: "out"[];
+            outputPorts: ("out" | "true" | "false" | "body" | "done")[];
             /** Runnable */
             runnable: boolean;
         };
@@ -7817,6 +7890,87 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunEvents"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    artifacts_api_v1_workflows_runs__run_id__artifacts_get: {
+        parameters: {
+            query?: {
+                after?: number;
+                limit?: number;
+                nodeId?: string | null;
+                executionId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunArtifacts"];
                 };
             };
             /** @description Unauthorized */

@@ -46,7 +46,7 @@ def test_catalog_is_independent_and_wait_timeout_is_explicit_in_one_unit():
     }
     wait["defaultConfig"]["timeoutSeconds"] = 1
     assert node_catalog()[3]["defaultConfig"]["timeoutSeconds"] == 60
-    assert node_catalog()[-1]["configSchema"]["allOf"][0]["then"]["required"] == [
+    assert next(item for item in node_catalog() if item["type"] == "screenshot")["configSchema"]["allOf"][0]["then"]["required"] == [
         "selector"
     ]
 

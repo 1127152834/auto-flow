@@ -3,7 +3,7 @@ import type { WorkflowRunApi } from '../run-api'
 import type { RunEvent, RunRead } from '../run-types'
 
 export function runRecord(overrides: Partial<RunRead> = {}): RunRead {
-  return {
+  return { executionCount: 0, artifactCount: 0,
     runId: 'run-1', workflowId: 'flow-1', name: '快照流程', profileId: 'profile-1', profileName: '真实配置', state: 'running',
     document: { id: 'flow-1', name: '快照流程', schemaVersion: 1, nodes: [{ id: 'node-1', type: 'open_page', label: '快照节点', config: { url: 'https://example.test', timeoutSeconds: 60 } }], edges: [], variables: [] },
     layout: { nodes: { 'node-1': { x: 0, y: 0 } }, viewport: { x: 0, y: 0, zoom: 1 } },
@@ -22,6 +22,7 @@ export function runApi(record: RunRead | null = null): WorkflowRunApi {
     stop: vi.fn(async () => runRecord({ state: 'cancelled', finishedAt: '2026-09-13T00:00:01Z', latestSeq: 3 })),
     events: vi.fn(async () => ({ items: [runEvent(1)], hasMore: false, nextSeq: 1 })),
     watch: vi.fn((_id, _seq, signal) => new Promise<void>(resolve => signal.addEventListener('abort', () => resolve(), { once: true }))),
+    artifacts: vi.fn(async () => ({ items: record?.artifacts ?? [], nextCursor: null })),
     artifact: vi.fn(async () => new Blob(['{"actual":"result"}'], { type: 'application/json' })),
   }
 }

@@ -9,7 +9,8 @@ type Props = { items: NodeDefinition[]; onAdd(type: string): void; disabled?: bo
 export function NodeCatalog({ items, onAdd, disabled = false }: Props) {
   const [query, setQuery] = useState('')
   const search = query.trim().toLocaleLowerCase()
-  const visible = items.filter((item) => `${item.title} ${item.type}`.toLocaleLowerCase().includes(search))
+  const entries = items.filter(item => !item.type.endsWith('_end')).flatMap(item => item.type === 'loop' ? [['count', '重复指定次数'], ['foreach', '遍历列表'], ['while', '条件成立时循环']].map(([mode, title]) => ({ ...item, type: `loop:${mode}`, title })) : [item])
+  const visible = entries.filter((item) => `${item.title} ${item.type}`.toLocaleLowerCase().includes(search))
 
   return <section className="flex h-full min-h-0 flex-col" aria-label="动作库">
     <div className="border-b border-line p-4">

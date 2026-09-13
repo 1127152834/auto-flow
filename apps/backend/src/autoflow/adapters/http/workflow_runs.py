@@ -5,7 +5,14 @@ from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.run_validation import prepare_run
 
 from .errors import browser_error_responses
-from .workflow_run_schemas import RunEvents, RunList, RunRead, RunStart, RunSummary
+from .workflow_run_schemas import (
+    RunArtifacts,
+    RunEvents,
+    RunList,
+    RunRead,
+    RunStart,
+    RunSummary,
+)
 
 
 def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
@@ -33,7 +40,7 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
     ) -> RunList:
         result = service.list(workflow_id, offset, limit)
         return RunList(
-            items=[RunSummary.model_validate({name: item[field.alias or name] for name, field in RunSummary.model_fields.items()}) for item in result["items"]],
+            items=[RunSummary.model_validate({name: item.get(field.alias or name, field.get_default(call_default_factory=True)) for name, field in RunSummary.model_fields.items()}) for item in result["items"]],
             active_run_id=result["activeRunId"], next_offset=result["nextOffset"],
         )
 
@@ -51,6 +58,11 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
         limit: int = Query(200, ge=1, le=1000),
     ) -> RunEvents:
         return RunEvents.model_validate(service.events(run_id, after_seq, limit))
+
+    @router.get("/{run_id}/artifacts", response_model=RunArtifacts)
+    def artifacts(run_id: str, after: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200),
+                  node_id: str | None = Query(None, alias="nodeId"), execution_id: str | None = Query(None, alias="executionId")) -> RunArtifacts:
+        return RunArtifacts.model_validate(service.artifacts(run_id, after, limit, node_id, execution_id))
 
     @router.get("/{run_id}/artifacts/{artifact_id}", response_class=FileResponse)
     def artifact(run_id: str, artifact_id: str) -> FileResponse:

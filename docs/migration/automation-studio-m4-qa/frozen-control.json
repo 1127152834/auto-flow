@@ -1,0 +1,16 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "frozen",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "save/reopen across service restart: nested cross-origin iframe + typed branch + foreach/continue + real input/click/extract/PNG + cumulative [1,3]",
+    "execution IDs, loop iterations, branch selection, exact event continuation and dynamic execution count",
+    "55 repeated real Shadow DOM extractions remain unique, paginated, execution-filterable and readable after restart",
+    "1000 pure-variable iterations yield correctly and expose accumulated 1000 through a real browser value",
+    "stop interrupts a pure-variable while loop and confirms worker/browser cleanup before terminal response",
+    "real page predicates: zero/hidden/negative/XPath/open Shadow, ordered all/any short circuit; invalid CSS and missing frame fail with exact rule path",
+    "real worker while re-evaluation/limit failure and nested break only nearest loop; foreach snapshot ignores appended items"
+  ],
+  "complete": true
+}

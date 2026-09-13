@@ -90,7 +90,7 @@ class WorkflowWorkerManager:
     async def _retry_cleanup(self, run_id: str) -> dict[str, Any]:
         process, directory, executable, birth = self._pending_cleanup[run_id]
         try:
-            await stop_process_tree(process, self._termination_timeout, directory, executable, birth)
+            await self._cleanup_process(process, directory, executable, birth)
         except Exception:  # noqa: BLE001 -- retain cleanup ownership and expose only a safe retryable error.
             raise WorkflowError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未完成，请重试停止", 503) from None
         self._pending_cleanup.pop(run_id, None)
@@ -170,7 +170,7 @@ class WorkflowWorkerManager:
         finally:
             if process is not None:
                 self._pending_cleanup[run_id] = (process, directory, executable, birth)
-                cleanup = asyncio.create_task(stop_process_tree(process, self._termination_timeout, directory, executable, birth))
+                cleanup = asyncio.create_task(self._cleanup_process(process, directory, executable, birth))
                 try:
                     await self._wait_cleanup(cleanup)
                 except Exception:  # noqa: BLE001 -- a failed cleanup is not a terminal run.
@@ -184,6 +184,21 @@ class WorkflowWorkerManager:
             self._tasks.pop(run_id, None)
         return result
 
+    async def _cleanup_process(self, process: asyncio.subprocess.Process, directory: Path, executable: Path, birth: int | None) -> None:
+        # Execution has stopped reading the protocol. Drain only for shutdown so a
+        # full stdout pipe cannot block the worker's cancellation or process.wait().
+        # These uncommitted messages must never be reported as completed actions.
+        async def drain() -> None:
+            if process.stdout is not None:
+                while await process.stdout.read(64 * 1024):
+                    pass
+        draining = asyncio.create_task(drain())
+        try:
+            await stop_process_tree(process, self._termination_timeout, directory, executable, birth)
+        finally:
+            draining.cancel()
+            await asyncio.gather(draining, return_exceptions=True)
+
     def _payload(self, run_id: str, prepared: PreparedWorkflow, profile: Profile,
                  proxy: ProfileBrowserProxy | None, license_key: str | None) -> dict[str, Any]:
         payload = _worker_payload(run_id, profile, proxy, license_key)
@@ -191,7 +206,7 @@ class WorkflowWorkerManager:
         payload.update({
             "runId": run_id, "headless": profile.spec.headless,
             "document": prepared.document, "nodeIds": prepared.node_ids,
-            "variables": prepared.variables, "runsRoot": str(self._runs_root),
+            "variables": prepared.variables, "executionPlan": prepared.plan, "runsRoot": str(self._runs_root),
         })
         return payload
 

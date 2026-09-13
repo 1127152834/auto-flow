@@ -7,9 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../../
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs'
 import { useApi } from '../../../app/ApiProvider'
 import { createWorkflowApi } from '../api'
-import { addNode, connectNodes, deleteSelection, documentSignature, patchNode, pasteNodes, referencedVariables, renameVariable, signature } from '../editor-model'
+import { addNode, connectNodes, deleteSelection, documentSignature, patchNode, pasteNodes, referencedVariables, renameVariable, renameLoopVariable, signature } from '../editor-model'
 import { collectIssues } from '../diagnostics'
 import { useWorkflowEditor } from '../hooks/useWorkflowEditor'
+import { controlTypes, localVariables } from '../control-model'
+import { ControlFields } from '../components/ControlFields'
 import { NodeCatalog } from '../components/NodeCatalog'
 import { NodeInspector } from '../components/NodeInspector'
 import { VariablePanel } from '../components/VariablePanel'
@@ -72,7 +74,7 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
   const pointer = useRef<Point>({ x: 100, y: 100 })
   const listQuery = useQuery({ queryKey: ['workflows', 'list'], queryFn: api.list, enabled: openDialog && connected })
   const validationMatches = Boolean(run.validation && documentSignature(editor.content.document, catalog) === documentSignature(run.validation.document, catalog))
-  const issues = useMemo(() => [...collectIssues(editor.content, catalog), ...validationMatches ? run.validation?.issues ?? [] : []], [editor.content, catalog, run.validation, validationMatches])
+  const issues = useMemo(() => { const savedIssues = editor.saved && documentSignature(editor.saved.document, catalog) === documentSignature(editor.content.document, catalog) ? editor.saved.issues : []; return [...new Map([...collectIssues(editor.content, catalog), ...savedIssues, ...validationMatches ? run.validation?.issues ?? [] : []].map(issue => [`${issue.nodeId}:${issue.path.join('.')}:${issue.code}`, issue])).values()] }, [editor.content, editor.saved, catalog, run.validation, validationMatches])
   const selectedNode = editor.content.document.nodes.find(node => selection.nodes.includes(node.id)) ?? null
   const sameDocument = Boolean(run.run && documentSignature(editor.content.document, catalog) === documentSignature(run.run.document, catalog))
   const runMarkers = useMemo(() => {
@@ -80,9 +82,13 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
     const terminal = ['succeeded', 'failed', 'cancelled', 'interrupted'].includes(run.run.state)
     const markers: Record<string, string> = Object.fromEntries(run.run.nodeOrder.map(id => [id, terminal ? '未执行' : '待执行']))
     for (const id of run.run.completedNodeIds) markers[id] = '已完成'
-    if (run.run.currentNodeId && !run.run.completedNodeIds.includes(run.run.currentNodeId)) markers[run.run.currentNodeId] = run.run.state === 'failed' ? '失败' : run.run.state === 'cancelled' ? '已停止' : run.run.state === 'interrupted' ? '已中断' : run.run.state === 'stopping' ? '停止中' : '执行中'
+    const currentCompleted = run.run.currentExecutionId ? run.events.some(event => event.type === 'node_succeeded' && event.executionId === run.run!.currentExecutionId) : run.run.completedNodeIds.includes(run.run.currentNodeId ?? '')
+    if (run.run.currentNodeId && (!terminal || !currentCompleted)) markers[run.run.currentNodeId] = run.run.state === 'failed' ? '失败' : run.run.state === 'cancelled' ? '已停止' : run.run.state === 'interrupted' ? '已中断' : run.run.state === 'stopping' ? '停止中' : '执行中'
     for (const event of run.events) if (event.type === 'node_failed' && event.nodeId) markers[event.nodeId] = '失败'
     if (run.run.error?.nodeId) markers[run.run.error.nodeId] = '失败'
+    const counts = new Map<string, number>()
+    for (const event of run.events) if (event.type === 'node_started' && event.nodeId) counts.set(event.nodeId, (counts.get(event.nodeId) ?? 0) + 1)
+    for (const [id, count] of counts) markers[id] = `${markers[id]} · 执行 ${count} 次`
     return markers
   }, [run.run, run.events, sameDocument])
 
@@ -133,7 +139,7 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
   const startRun = async () => {
     if (locked || runPreparing || runPending || checkingLeave.current || leaveRef.current) return
     commitFocusedField()
-    if (document.querySelector('[data-pending-variable-rename="true"]')) { editorRef.current.setMessage('变量名称尚未成功修改，请修正后再运行'); setTab('variables'); return }
+    if (document.querySelector('[data-pending-variable-rename="true"]')) { editorRef.current.setMessage('变量名称尚未成功修改，请修正后再运行'); return }
     const content = structuredClone(editorRef.current.current())
     setRunPreparing(true)
     try {
@@ -154,10 +160,15 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
 
   const add = (type: string, position?: Point) => {
     if (locked) return
-    const definition = catalog.find(item => item.type === type)
+    const [kind, mode] = type.split(':')
+    const original = catalog.find(item => item.type === kind)
+    const definition = original && mode ? { ...original, defaultConfig: { ...original.defaultConfig, mode, source: { kind: 'literal', value: mode === 'foreach' ? [] : 1 } } } : original
     if (!definition) return
     let id = ''
-    editor.mutate(content => { const next = addNode(content, definition, position ?? { x: 80 + (content.document.nodes.length % 3) * 270, y: 100 + Math.floor(content.document.nodes.length / 3) * 160 }); id = next.document.nodes.at(-1)!.id; return next })
+    editor.mutate(content => {
+      const point = position ?? { x: 80 + (content.document.nodes.length % 3) * 270, y: 100 + Math.floor(content.document.nodes.length / 3) * 160 }
+      if (!position) while (Object.values(content.layout.nodes).some(p => Math.abs(p.x - point.x) < 245 && Math.abs(p.y - point.y) < 135)) point.y += 160
+      const next = addNode(content, definition, point); id = next.document.nodes[content.document.nodes.length].id; return next })
     select([id], [])
     setTab('properties')
   }
@@ -218,10 +229,16 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
   }
   const deleteVariable = (name: string) => {
     const content = editor.current()
-    const references = referencedVariables({ nodes: content.document.nodes.map(node => node.config), variables: content.document.variables.filter(variable => variable.name !== name).map(variable => variable.value) })
+    const references = [...referencedVariables(content.document.nodes.map(node => node.config), true), ...referencedVariables(content.document.variables.filter(variable => variable.name !== name).map(variable => variable.value))]
     if (references.includes(name)) setDeletingVariable(name)
     else editor.mutate(c => ({ ...c, document: { ...c.document, variables: c.document.variables.filter(v => v.name !== name) } }))
   }
+  const referenceNames = [...new Set([...editor.content.document.variables.map(v => v.name), ...editor.content.document.nodes.map(n => n.config.variableName).filter((v): v is string => typeof v === 'string' && Boolean(v)), ...selectedNode ? localVariables(editor.content, selectedNode.id) : []])]
+  const referenceVariables = referenceNames.map(name => editor.content.document.variables.find(v => v.name === name) ?? { name, type: 'string' as const, value: '' })
+  const controlFields = selectedNode && controlTypes.has(selectedNode.type) ? <ControlFields node={selectedNode} names={referenceNames} disabled={locked}
+    onChange={config => editor.mutate(c => patchNode(c, selectedNode.id, { config }))}
+    onLocalRename={(field, name) => { if (referenceNames.includes(name) && name !== selectedNode.config[field] || name === selectedNode.config[field === 'indexVariable' ? 'itemVariable' : 'indexVariable']) { editor.setMessage('循环变量不能与流程变量、输出或外层循环变量重名'); return }; editor.endEdit(); editor.mutate(c => renameLoopVariable(c, selectedNode.id, field, name)); editor.endEdit() }}
+    renderTools={(rule, index, change) => <SelectorTools key={`${selectedNode.id}:rule:${index}`} api={inspectionApi} session={inspection.session} node={{ ...selectedNode, id: `${selectedNode.id}:rule:${index}`, type: 'wait_element', config: { selector: rule.selector, framePath: rule.framePath ?? [] } }} documentId={`${editor.content.document.id}:${editor.documentSession}:${JSON.stringify(selectedNode.config.rules)}`} variables={editor.content.document.variables} disabled={!connected || locked || inspection.busy || Boolean(leave) || Boolean(runPending)} commit={commitFocusedField} apply={config => { editor.endEdit(); change(config); editor.endEdit() }} />} /> : null
   const renameInputId = 'workflow-name'
 
   return <div className="flex h-dvh min-h-0 flex-col bg-canvas text-ink" aria-label="工作流工作台">
@@ -253,11 +270,11 @@ export function StudioPage({ connected, locked: externalLocked, registerLeave }:
         onSelect={select} onEditStart={editor.beginEdit} onEditEnd={editor.endEdit} onPointer={point => { pointer.current = point }} onAdd={add}
         onMove={positions => editor.mutate(c => ({ ...c, layout: { ...c.layout, nodes: { ...c.layout.nodes, ...positions } } }))}
         onViewport={viewport => { if (!locked) editor.mutate(c => ({ ...c, layout: { ...c.layout, viewport } })) }}
-        onConnect={(source, target) => { const result = connectNodes(editor.current(), source, target); if (result.error) editor.setMessage(result.error); else editor.mutate(() => result.content) }} />
+        onConnect={(source, target, port) => { const result = connectNodes(editor.current(), source, target, port); if (result.error) editor.setMessage(result.error); else editor.mutate(() => result.content) }} />
       <aside className="flex w-[310px] shrink-0 flex-col overflow-hidden border-l border-line bg-surface max-[1050px]:w-[280px]" aria-label="配置面板">
         <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
           <TabsList className="m-3 shrink-0"><TabsTrigger value="properties">节点属性</TabsTrigger><TabsTrigger value="variables">流程变量 <span className="ml-1 text-xs">{editor.content.document.variables.length}</span></TabsTrigger></TabsList>
-          <TabsContent value="properties" className="min-h-0 flex-1 overflow-y-auto"><NodeInspector selectorTools={selectedNode ? <SelectorTools key={`${editor.content.document.id}:${selectedNode.id}`} api={inspectionApi} session={inspection.session} node={selectedNode} documentId={`${editor.content.document.id}:${editor.documentSession}`} variables={editor.content.document.variables} disabled={!connected || locked || inspection.busy || Boolean(leave) || Boolean(runPending)} commit={commitFocusedField} apply={config => { editor.endEdit(); editor.mutate(c => patchNode(c, selectedNode.id, { config })); editor.endEdit() }} /> : null} node={selectedNode} definition={catalog.find(d => d.type === selectedNode?.type)} variables={editor.content.document.variables} issues={issues.filter(i => i.nodeId === selectedNode?.id)} disabled={locked} onEditStart={editor.beginEdit} onEditEnd={editor.endEdit} onChange={config => { if (selectedNode) editor.mutate(c => patchNode(c, selectedNode.id, { config })) }} onLabelChange={label => { if (selectedNode) editor.mutate(c => patchNode(c, selectedNode.id, { label })) }} /></TabsContent>
+          <TabsContent value="properties" className="min-h-0 flex-1 overflow-y-auto"><NodeInspector controlFields={controlFields} selectorTools={selectedNode ? <SelectorTools key={`${editor.content.document.id}:${selectedNode.id}`} api={inspectionApi} session={inspection.session} node={selectedNode} documentId={`${editor.content.document.id}:${editor.documentSession}`} variables={editor.content.document.variables} disabled={!connected || locked || inspection.busy || Boolean(leave) || Boolean(runPending)} commit={commitFocusedField} apply={config => { editor.endEdit(); editor.mutate(c => patchNode(c, selectedNode.id, { config })); editor.endEdit() }} /> : null} node={selectedNode} definition={catalog.find(d => d.type === selectedNode?.type)} variables={referenceVariables} issues={issues.filter(i => i.nodeId === selectedNode?.id)} disabled={locked} onEditStart={editor.beginEdit} onEditEnd={editor.endEdit} onChange={config => { if (selectedNode) editor.mutate(c => patchNode(c, selectedNode.id, { config })) }} onLabelChange={label => { if (selectedNode) editor.mutate(c => patchNode(c, selectedNode.id, { label })) }} /></TabsContent>
           <TabsContent value="variables" forceMount className="min-h-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"><VariablePanel variables={editor.content.document.variables} disabled={locked} onEditStart={editor.beginEdit} onEditEnd={editor.endEdit} onChange={variables => editor.mutate(c => ({ ...c, document: { ...c.document, variables } }))} onRename={changeVariableName} onDelete={deleteVariable} />{issues.filter(i => i.nodeId === null).map((issue, index) => <p key={index} className="px-4 pb-2 text-xs text-amber-800">{issue.message}</p>)}</TabsContent>
         </Tabs>
         <div className="border-t border-line px-4 py-3 text-xs text-muted">{editor.content.document.nodes.length} 个节点 · {editor.content.document.edges.length} 条连线{issues.length ? <span className="mt-2 flex items-center gap-1 text-amber-800"><WarningCircle size={13} />{issues.length} 项待完成 · 可以保存进度</span> : null}</div>

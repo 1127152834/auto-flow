@@ -201,6 +201,21 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
     if (!connected || !selectedId) return
     const controller = new AbortController()
     let retry: number | undefined
+    let refreshTimer: number | undefined
+    let eventTimer: number | undefined
+    let buffered: RunEvent[] = []
+    const flushEvents = () => {
+      if (eventTimer !== undefined) window.clearTimeout(eventTimer)
+      eventTimer = undefined
+      if (buffered.length) { append(selectedId, buffered); buffered = [] }
+    }
+    const refreshState = () => {
+      if (refreshTimer !== undefined) return
+      refreshTimer = window.setTimeout(() => {
+        refreshTimer = undefined
+        void api.get(selectedId).then(value => { if (!controller.signal.aborted) accept(value) }).catch(() => undefined)
+      }, 200)
+    }
     const cursor = () => {
       let seq = 0
       for (const event of eventsRef.current[selectedId] ?? []) { if (event.seq !== seq + 1) break; seq = event.seq }
@@ -222,14 +237,16 @@ export function useWorkflowRun(api: WorkflowRunApi, connected: boolean) {
         }
         if (!isRunActive(record) || controller.signal.aborted) return
         await api.watch(selectedId, cursor(), controller.signal, event => {
-          append(selectedId, [event])
-          if (event.type !== 'log') void api.get(selectedId).then(value => { if (!controller.signal.aborted) accept(value) }).catch(() => undefined)
+          buffered.push(event)
+          if (eventTimer === undefined) eventTimer = window.setTimeout(flushEvents, 50)
+          if (event.type !== 'log') refreshState()
         })
       } catch (error) { if (!controller.signal.aborted) setMessage(errorMessage(error)) }
+      flushEvents()
       if (!controller.signal.aborted) retry = window.setTimeout(() => void read(), 1_000)
     }
     void read()
-    return () => { controller.abort(); if (retry !== undefined) window.clearTimeout(retry) }
+    return () => { controller.abort(); flushEvents(); if (refreshTimer !== undefined) window.clearTimeout(refreshTimer); if (retry !== undefined) window.clearTimeout(retry) }
   }, [accept, api, append, connected, selectedId])
 
   const more = async () => {

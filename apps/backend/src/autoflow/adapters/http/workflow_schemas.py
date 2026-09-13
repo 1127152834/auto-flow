@@ -13,6 +13,7 @@ NodeType = Literal[
     "wait_element",
     "get_element_info",
     "screenshot",
+    "condition", "condition_end", "loop", "loop_end", "break_loop", "continue_loop", "set_variable",
 ]
 Identifier = Annotated[str, Field(min_length=1, max_length=120, strict=True)]
 
@@ -28,7 +29,7 @@ class WorkflowEdge(ApiModel):
     id: Identifier
     source: Identifier
     target: Identifier
-    source_handle: Literal["out"]
+    source_handle: Literal["out", "true", "false", "body", "done"]
     target_handle: Literal["in"]
 
 
@@ -41,7 +42,7 @@ class WorkflowVariable(ApiModel):
 class WorkflowDocument(ApiModel):
     id: str
     name: str = Field(min_length=1, max_length=120, strict=True)
-    schema_version: Literal[1]
+    schema_version: Literal[1, 2]
     nodes: list[WorkflowNode] = Field(max_length=2000)
     edges: list[WorkflowEdge] = Field(max_length=2000)
     variables: list[WorkflowVariable] = Field(max_length=2000)
@@ -54,7 +55,7 @@ class WorkflowDocument(ApiModel):
     @field_validator("schema_version", mode="before")
     @classmethod
     def exact_schema(cls, value: object) -> object:
-        if type(value) is not int or value != 1:
+        if type(value) is not int or value not in {1, 2}:
             raise ValueError("不支持的工作流格式版本")
         return value
 
@@ -122,7 +123,7 @@ class WorkflowNodeDefinition(ApiModel):
     default_config: dict[str, JsonValue]
     config_schema: dict[str, JsonValue]
     input_ports: list[Literal["in"]]
-    output_ports: list[Literal["out"]]
+    output_ports: list[Literal["out", "true", "false", "body", "done"]]
     runnable: bool
 
 
