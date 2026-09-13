@@ -1,6 +1,7 @@
 # 原生窗口验证证据
 
-- 日期：2026-09-13；状态：小闭环 confirmed，输入稳定性待定位。
+- 日期：2026-09-13；状态：小闭环及用户真实鼠标对照 confirmed，自动化输入异常仍待定位。
+- 用户后续确认首次、重连、移动和缩放窗口后的点击与滑动“都没问题”；来源为人工反馈，已在 `result.json` 的 `manual_acceptance` 单独记录，未改写此前自动化观察。
 - [01-native-input.jpg](01-native-input.jpg)：在原生 scrcpy 窗口中输入完整测试文字。
 - [02-monitor-after-close.jpg](02-monitor-after-close.jpg)：关闭原生窗口后，监控页显示实例仍就绪。
 - [03-reopened-data.jpg](03-reopened-data.jpg)：从页面重新连接，原文字保留。

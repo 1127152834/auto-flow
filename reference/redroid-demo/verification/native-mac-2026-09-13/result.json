@@ -147,5 +147,14 @@
   "limitations": [
     "CUA mouse coordinates intermittently diverged after reconnect; root cause not isolated.",
     "Single native session; no workflow lease, audio, Chinese input or Windows verification."
-  ]
+  ],
+  "manual_acceptance": {
+    "date": "2026-09-13",
+    "status": "confirmed",
+    "source": "用户对首次、重连、移动和缩放窗口三组对照反馈：都没问题",
+    "first_open_click_swipe": "passed",
+    "reopen_click_swipe": "passed",
+    "move_resize_click_swipe": "passed",
+    "automated_input_issue": "unresolved; manual acceptance does not prove root cause or fix"
+  }
 }
