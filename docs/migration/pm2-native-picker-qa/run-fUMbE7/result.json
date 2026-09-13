@@ -1,0 +1,15 @@
+{
+  "result": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkedAt": "2026-09-13T13:39:36.385Z",
+  "scope": "Unmodified native macOS open/save panels with an active UI operator; actual Electron IPC and token registration",
+  "checks": [
+    "native open cancellation returns successful null",
+    "native workbook selection returns an opaque token and display name without a path",
+    "native save cancellation returns successful null"
+  ],
+  "excludes": [
+    "native save publication; covered separately through injected panel results in the full export workflow"
+  ]
+}

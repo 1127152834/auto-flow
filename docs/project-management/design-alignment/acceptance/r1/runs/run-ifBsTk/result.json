@@ -1,0 +1,338 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T13:43:47.709Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "25e7d330f4d051c9732b9334a22f9591ccf4fdaa",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx",
+      "apps/desktop/src/renderer/shared/components/Toaster.tsx",
+      "docs/superpowers/plans/2026-09-13-project-management-visual-remediation.md",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-pm2-native-picker.mjs"
+    ],
+    "scriptSha256": "ef92f25f9837c048b39cc26f5e3eb117d6b68fe52007c0b67f6c75268e063d01",
+    "desktopBuildSha256": "76c8ec8d00f9d3f0dd289b08bf0bf91746d795a41ebef3b3dae895e0dcf7cf65"
+  },
+  "checks": [
+    "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+    "E1: 更多编辑打开表单不导航",
+    "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复",
+    "E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留"
+  ],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent",
+      "file": "VR-A01-recent.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客户跟进项目管理客户信息并自动生成跟进记录最近打开：2026年9月13日 21:43",
+          "x": 104,
+          "y": 282,
+          "w": 608,
+          "h": 112
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容采集项目自动采集电商商品信息并生成结构化数据最近打开：2026年9月13日 21:43",
+          "x": 728,
+          "y": 282,
+          "w": 608,
+          "h": 112
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A02-all",
+      "file": "VR-A02-all.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "setupLevel": "E2",
+      "fixture": "第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客户跟进项目管理客户信息并自动生成跟进记录活动最近打开：2026年9月13日 21:43",
+          "x": 104,
+          "y": 282,
+          "w": 1232,
+          "h": 96
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容采集项目自动采集电商商品信息并生成结构化数据活动最近打开：2026年9月13日 21:43",
+          "x": 104,
+          "y": 386,
+          "w": 1232,
+          "h": 96
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪用于长文本边界。",
+          "x": 104,
+          "y": 490,
+          "w": 1232,
+          "h": 96
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A04-no-match",
+      "file": "VR-A04-no-match.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent-200",
+      "file": "VR-A01-recent-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "setupLevel": "E2",
+      "fixture": "长名fixture经UI打开成为最近记录",
+      "route": "#/projects",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 24,
+          "y": 16,
+          "w": 660,
+          "h": 32
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪🧪用于长文本边界。",
+          "x": 24,
+          "y": 200,
+          "w": 660,
+          "h": 112
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "客户跟进项目管理客户信息并自动生成跟进记录最近打开：2026年9月13日 21:43",
+          "x": 24,
+          "y": 328,
+          "w": 660,
+          "h": 112
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "内容采集项目自动采集电商商品信息并生成结构化数据最近打开：2026年9月13日 21:43",
+          "x": 24,
+          "y": 456,
+          "w": 660,
+          "h": 112
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航",
+        "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复",
+        "E1: 36个补充平面字符名称在200%实际触发尾部省略，完整title保留"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-FbFXI1",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

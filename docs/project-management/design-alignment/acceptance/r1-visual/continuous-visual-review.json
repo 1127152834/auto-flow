@@ -1,0 +1,353 @@
+{
+  "status": "passed-for-R1-engineering-handoff",
+  "reviewer": "independent continuous_r1_spec; actual image inspection",
+  "scoring": "人工判断：布局30/层级25/样式25/操作20；非像素相似度。200%及零列为边界可用性评分。",
+  "referenceSha256": "b530847d10769aabde53c147d303dda2d2a0b6dcd6db53df91ffb63d02ebb12b",
+  "userAcceptance": "pending",
+  "baselineStatus": "candidate-not-user-approved",
+  "screens": [
+    {
+      "page": "最近项目",
+      "image": "../r1/runs/run-ifBsTk/VR-A01-recent.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        26,
+        102,
+        701,
+        574
+      ],
+      "score": [
+        27,
+        23,
+        22,
+        18
+      ],
+      "total": 90,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "全部项目",
+      "image": "../r1/runs/run-ifBsTk/VR-A02-all.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        26,
+        102,
+        701,
+        574
+      ],
+      "score": [
+        27,
+        22,
+        22,
+        18
+      ],
+      "total": 89,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "无匹配",
+      "image": "../r1/runs/run-ifBsTk/VR-A04-no-match.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        816,
+        925,
+        637,
+        92
+      ],
+      "score": [
+        26,
+        22,
+        21,
+        18
+      ],
+      "total": 87,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "最近为空",
+      "image": "../r1/runs/run-ifBsTk/r1-a-empty.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        816,
+        925,
+        637,
+        92
+      ],
+      "score": [
+        26,
+        22,
+        21,
+        18
+      ],
+      "total": 87,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "数据表目录",
+      "image": "../r1/runs/run-2ZtfTu/r1-b-two-local-tables.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        763,
+        102,
+        701,
+        574
+      ],
+      "score": [
+        27,
+        23,
+        22,
+        18
+      ],
+      "total": 90,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "记录列表",
+      "image": "../r1/runs/run-2ZtfTu/r1-c-business-records.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        27,
+        740,
+        774,
+        280
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "已配置筛选",
+      "image": "../r1/runs/run-fldPXw/r1-c-filter-populated.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        810,
+        744,
+        161,
+        146
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "已配置排序",
+      "image": "../r1/runs/run-2ZtfTu/r1-c-sort-populated.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        985,
+        744,
+        140,
+        146
+      ],
+      "score": [
+        27,
+        22,
+        22,
+        18
+      ],
+      "total": 89,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "显示列",
+      "image": "../r1/runs/run-eqcpNK/r1-c-business-显示列.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        1143,
+        744,
+        145,
+        159
+      ],
+      "score": [
+        27,
+        22,
+        22,
+        18
+      ],
+      "total": 89,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "成功通知",
+      "image": "../r1/runs/run-eqcpNK/r1-d-record-created-toast.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        1310,
+        744,
+        145,
+        39
+      ],
+      "score": [
+        27,
+        23,
+        22,
+        18
+      ],
+      "total": 90,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "200%已配置筛选",
+      "image": "../r1/runs/run-fldPXw/r1-c-filter-populated-200.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        810,
+        744,
+        161,
+        146
+      ],
+      "score": [
+        26,
+        21,
+        22,
+        18
+      ],
+      "total": 87,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "零业务列",
+      "image": "../r1/runs/run-2ZtfTu/r1-c-zero-business-columns.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        27,
+        740,
+        774,
+        280
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "刷新失败",
+      "image": "../r1/runs/run-5V7HL2/r1-read-failure.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        816,
+        925,
+        637,
+        92
+      ],
+      "score": [
+        27,
+        23,
+        22,
+        18
+      ],
+      "total": 90,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "最近200%",
+      "image": "../r1/runs/run-ifBsTk/VR-A01-recent-200.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        26,
+        102,
+        701,
+        574
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "已选择记录",
+      "image": "../r1/runs/run-5V7HL2/r1-c-selected.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        27,
+        740,
+        774,
+        280
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "排序200%",
+      "image": "../r1/runs/run-5V7HL2/r1-c-排序-200.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        985,
+        744,
+        140,
+        146
+      ],
+      "score": [
+        26,
+        21,
+        22,
+        18
+      ],
+      "total": 87,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "显示列200%",
+      "image": "../r1/runs/run-5V7HL2/r1-c-显示列-200.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        1143,
+        744,
+        145,
+        159
+      ],
+      "score": [
+        26,
+        22,
+        22,
+        18
+      ],
+      "total": 88,
+      "result": "passed-for-stated-screen-scope"
+    },
+    {
+      "page": "加载",
+      "image": "../r1/runs/run-fldPXw/r1-a-loading.png",
+      "prototype": "../../prototypes/r1-directory-overview.png",
+      "sourceCrop": [
+        816,
+        925,
+        637,
+        92
+      ],
+      "score": [
+        26,
+        22,
+        21,
+        18
+      ],
+      "total": 87,
+      "result": "passed-for-stated-screen-scope"
+    }
+  ],
+  "openEvidence": []
+}

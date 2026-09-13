@@ -1,0 +1,87 @@
+{
+  "phase": "R1",
+  "status": "passed-for-R1-engineering-handoff",
+  "checkedAt": "2026-09-13",
+  "implementationCommit": "7b582b2",
+  "componentCommits": [
+    "253cd0b",
+    "c0ccb8b",
+    "25e7d33",
+    "5910508",
+    "d76cca9"
+  ],
+  "tests": [
+    {
+      "command": "npm test",
+      "result": "passed",
+      "files": 115,
+      "tests": 875
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "notes": "第三方zod注解警告不影响产物"
+    },
+    {
+      "command": "npm run openapi:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run test:scripts",
+      "result": "passed",
+      "tests": 22
+    },
+    {
+      "command": "npm run test:structure",
+      "result": "passed",
+      "tests": 3
+    },
+    {
+      "command": "uv run --directory apps/backend pytest tests/contract/test_projects.py tests/unit/test_project_data_query.py",
+      "result": "passed",
+      "tests": 21
+    },
+    {
+      "command": "node scripts/qa-project-alignment-r1.mjs",
+      "result": "passed",
+      "report": "../r1/runs/run-5V7HL2/result.json"
+    },
+    {
+      "command": "node scripts/qa-project-alignment-r1.mjs --visual-directory",
+      "result": "passed",
+      "report": "../r1/runs/run-ifBsTk/result.json"
+    },
+    {
+      "command": "node scripts/smoke-project-data.mjs",
+      "result": "passed",
+      "report": "../../../../migration/project-data-directory-qa/run-aiFSoY/result.json"
+    },
+    {
+      "command": "node scripts/smoke-pm2-detail-flows.mjs",
+      "result": "passed",
+      "notes": "10000行导入4538ms、下一页159ms，仅本轮样本，不推定所有大表",
+      "report": "../../../../migration/pm2-detail-qa/run-X0tkxr/result.json"
+    },
+    {
+      "command": "node scripts/smoke-pm2-native-picker.mjs + computer-use",
+      "result": "passed",
+      "notes": "真实打开取消/选择、保存取消；原生保存发布未执行"
+    }
+  ],
+  "userManual": "notExecuted",
+  "Windows": "notExecuted",
+  "otherArchitectures": "notExecuted",
+  "packagedApp": "notExecuted",
+  "R2": "notStarted",
+  "R3": "notStarted",
+  "visual": "continuous-visual-review.json",
+  "caseLedger": "continuous-test-cases.md"
+}

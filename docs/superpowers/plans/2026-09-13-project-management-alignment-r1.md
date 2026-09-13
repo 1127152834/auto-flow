@@ -191,3 +191,13 @@ R1完成后提交用户验收；不能用R1目录截图宣称独立记录页或�
 ## 用户视觉复审后的整改（2026-09-13）
 
 此前开发/自动测试完成记录为历史事实，整体视觉对齐结论由09b56f6审查撤回。当前执行 [整改规格和计划](2026-09-13-project-management-visual-remediation.md)，真实E2E和逐图比对双门槛；R1用户验收pending，R2/R3未开始。
+
+## 2026-09-13 连续实施 R1 完成记录
+
+状态：R1工程交付通过，用户手动验收未执行。按最新用户连续授权，工程、E2E、视觉门槛闭合后进入R2，不再等待阶段确认。此前等待用户文字为原执行机制，历史证据不覆盖。
+
+- 实现提交253cd0b、c0ccb8b、25e7d33、5910508、d76cca9、7b582b2：卡片、紧凑层级、身份固定112px、浮层标题/固定底栏、集合标记、紧凑且保留多行语义的比较值、右上语义通知。
+- 独立规格/工程双审发现并关闭：已应用标记、卡片对齐、长名全文、零列宽度、集合顺序、筛选底栏、截图遮挡及重启后视口恢复。70分筛选失败记录保留，修复后100%88分、200%87分。
+- [工程报告](../../project-management/design-alignment/acceptance/r1-visual/continuous-machine-report.json)、[逐用例](../../project-management/design-alignment/acceptance/r1-visual/continuous-test-cases.md)、[逐图对照](../../project-management/design-alignment/acceptance/r1-visual/continuous-comparison.html)、[条款核验](../../project-management/design-alignment/acceptance/r1-visual/requirements.json)、[手动测试](../../project-management/design-alignment/acceptance/r1-visual/manual-test.md)。
+- 前端115文件875测试通过；定向后端21测试；构建、类型、lint、OpenAPI、脚本22、结构3通过。R1真实链run-5V7HL2通过，PM2两组回归通过。原生文件面板和真实窗口200%由电脑工具验证限定范围。
+- 主项目与旧仓未由本任务写入。Windows、其他架构、打包、用户手动用例未执行；源图库与失败证据保留。候选截图不是用户批准金图。

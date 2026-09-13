@@ -1,148 +1,369 @@
 {
   "schemaVersion": 1,
-  "baseline": "09b56f6",
-  "status": "planned",
+  "baseline": "b93823f",
+  "status": "R1-engineering-passed",
   "requirements": [
     {
       "id": "G01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-business-records"
+      ]
     },
     {
       "id": "G02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-b-two-local-tables",
+        "r1-c-business-records"
+      ]
     },
     {
       "id": "G03",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-filter-populated-200",
+        "r1-c-zero-business-columns"
+      ]
     },
     {
       "id": "G04",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "VR-A01-recent",
+        "VR-A02-all"
+      ]
     },
     {
       "id": "G05",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-filter-populated-200",
+        "r1-d-record-created-toast"
+      ],
+      "behaviorEvidence": "continuous-test-cases.md及对应组件/页面自动测试；静图不替代动态合同。"
     },
     {
       "id": "A01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "VR-A01-recent"
+      ]
     },
     {
       "id": "A02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "VR-A01-recent",
+        "VR-A02-all"
+      ]
     },
     {
       "id": "A03",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "VR-A01-recent"
+      ]
     },
     {
       "id": "A04",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "VR-A02-all"
+      ]
     },
     {
       "id": "A05",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-a-empty",
+        "VR-A04-no-match",
+        "r1-a-loading",
+        "r1-read-failure"
+      ]
     },
     {
       "id": "B01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-b-two-local-tables"
+      ]
     },
     {
       "id": "B02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-b-two-local-tables"
+      ],
+      "limitation": "两本地卡片视觉通过；Excel来源真实导入行为由PM2回归证明，混合来源卡片独立同视口截图未执行，不用本图宣称已看混合卡片。"
     },
     {
       "id": "B03",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-b-two-local-tables"
+      ]
     },
     {
       "id": "C01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-business-records"
+      ]
     },
     {
       "id": "C02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-selected"
+      ]
     },
     {
       "id": "C03",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-business-records",
+        "r1-c-zero-business-columns"
+      ]
     },
     {
       "id": "C04",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-filter-populated",
+        "r1-c-sort-populated",
+        "r1-c-business-显示列"
+      ]
     },
     {
       "id": "C05",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-filter-populated",
+        "r1-c-sort-populated"
+      ],
+      "behaviorEvidence": "continuous-test-cases.md及对应组件/页面自动测试；静图不替代动态合同。"
     },
     {
       "id": "C06",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-c-business-records"
+      ],
+      "behaviorEvidence": "continuous-test-cases.md及对应组件/页面自动测试；静图不替代动态合同。"
     },
     {
       "id": "D01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-d-record-created-toast"
+      ]
     },
     {
       "id": "D02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": [
+        "r1-d-record-created-toast"
+      ],
+      "behaviorEvidence": "continuous-test-cases.md及对应组件/页面自动测试；静图不替代动态合同。"
     },
     {
       "id": "T01",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     },
     {
       "id": "T02",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     },
     {
       "id": "T03",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     },
     {
       "id": "T04",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     },
     {
       "id": "T05",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     },
     {
       "id": "T06",
-      "status": "notExecuted",
-      "evidence": null
+      "status": "passed-for-R1-scope",
+      "evidence": [
+        "continuous-test-cases.md",
+        "continuous-visual-review.json",
+        "continuous-machine-report.json"
+      ],
+      "scope": "本机已实现R1；用户手测不计通过；原生文件发布和Windows不在此结论中",
+      "visualStates": []
     }
   ],
   "future": {
     "R2": "notStarted",
     "R3": "notStarted"
   },
-  "visualReview": "pending",
+  "visualReview": "continuous-visual-review.json",
   "userAcceptance": "pending"
 }
