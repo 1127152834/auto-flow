@@ -42,8 +42,20 @@ function readConditions(workspaceKey: string): ProjectListConditions {
 function writeConditions(workspaceKey: string, value: ProjectListConditions) {
   try { const current = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}'); sessionStorage.setItem(storageKey(workspaceKey), JSON.stringify({ ...current, ...value })) } catch { /* unavailable storage */ }
 }
-function readScrollTop(workspaceKey: string) { try { const value = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}') as { scrollTop?: unknown }; return typeof value.scrollTop === 'number' ? value.scrollTop : 0 } catch { return 0 } }
-function writeScrollTop(workspaceKey: string, scrollTop: number) { try { const current = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}'); sessionStorage.setItem(storageKey(workspaceKey), JSON.stringify({ ...current, scrollTop })) } catch { /* unavailable storage */ } }
+type DirectoryMode = 'recent' | 'all'
+const recentConditions: ProjectListConditions = { query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 6 }
+function readMode(workspaceKey: string): DirectoryMode {
+  try { return JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}').mode === 'all' ? 'all' : 'recent' } catch { return 'recent' }
+}
+function writeMode(workspaceKey: string, mode: DirectoryMode) {
+  try { const current = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}'); sessionStorage.setItem(storageKey(workspaceKey), JSON.stringify({ ...current, mode })) } catch { /* unavailable storage */ }
+}
+function readScrollTop(workspaceKey: string, mode: DirectoryMode) {
+  try { const value = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}'); const scroll = value.scrollPositions?.[mode] ?? (mode === 'all' ? value.scrollTop : 0); return typeof scroll === 'number' && Number.isFinite(scroll) ? Math.max(0, scroll) : 0 } catch { return 0 }
+}
+function writeScrollTop(workspaceKey: string, mode: DirectoryMode, scrollTop: number) {
+  try { const current = JSON.parse(sessionStorage.getItem(storageKey(workspaceKey)) ?? '{}'); sessionStorage.setItem(storageKey(workspaceKey), JSON.stringify({ ...current, scrollPositions: { ...current.scrollPositions, [mode]: scrollTop } })) } catch { /* unavailable storage */ }
+}
 export function resetProjectUiState(workspaceKey: string) {
   try { sessionStorage.removeItem(storageKey(workspaceKey)) } catch { /* unavailable storage */ }
 }
@@ -55,7 +67,8 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const api = useMemo(() => createProjectsApi(client), [client])
   const cache = useQueryClient()
   const [conditions, setConditionsState] = useState(() => readConditions(workspaceKey))
-  const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey))
+  const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
+  const [scrollTop, setScrollTop] = useState(() => readScrollTop(workspaceKey, readMode(workspaceKey)))
   const [editor, setEditor] = useState<Editor | null>(null)
   const [saving, setSaving] = useState(false)
   const [recoveryPending, setRecoveryPending] = useState(false)
@@ -75,21 +88,23 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
   const scope = useRef({ workspaceKey, instanceId, editor: editor?.draftSession })
   scope.current = { workspaceKey, instanceId, editor: editor?.draftSession }
 
-  const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions)
+  const directory = useProjectDirectory(api, workspaceKey, instanceId, conditions, mode === 'all')
+  const recent = useProjectDirectory(api, workspaceKey, instanceId, recentConditions, mode === 'recent')
   const detail = useProject(api, workspaceKey, instanceId, route.projectId)
   const overview = useProjectOverview(api, workspaceKey, instanceId, route.projectId)
   useLayoutEffect(() => { if (detail.data) setRetainedProject({ workspaceKey, project: detail.data }) }, [detail.data, workspaceKey])
 
-  useEffect(() => { setConditionsState(readConditions(workspaceKey)); setScrollTop(readScrollTop(workspaceKey)); setEditor(null); dirtyRef.current = false; pending.current = null }, [workspaceKey])
-  const setConditions = (value: ProjectListConditions) => { setScrollTop(0); writeScrollTop(workspaceKey, 0); setConditionsState(value); writeConditions(workspaceKey, value) }
+  useEffect(() => { setConditionsState(readConditions(workspaceKey)); setModeState(readMode(workspaceKey)); setScrollTop(readScrollTop(workspaceKey, readMode(workspaceKey))); setEditor(null); dirtyRef.current = false; pending.current = null }, [workspaceKey])
+  const setConditions = (value: ProjectListConditions) => { setScrollTop(0); writeScrollTop(workspaceKey, 'all', 0); setConditionsState(value); writeConditions(workspaceKey, value) }
+  const setMode = (value: DirectoryMode) => { setModeState(value); writeMode(workspaceKey, value); setScrollTop(readScrollTop(workspaceKey, value)) }
   useEffect(() => {
-    if (!directory.data || directory.isPlaceholderData) return
+    if (mode !== 'all' || !directory.data || directory.isPlaceholderData) return
     const lastPage = Math.max(1, Math.ceil(directory.data.total / conditions.pageSize))
     if (conditions.page > lastPage) {
       const next = { ...conditions, page: lastPage }
-      setConditionsState(next); writeConditions(workspaceKey, next); setScrollTop(0); writeScrollTop(workspaceKey, 0)
+      setConditionsState(next); writeConditions(workspaceKey, next); setScrollTop(0); writeScrollTop(workspaceKey, 'all', 0)
     }
-  }, [directory.data, directory.isPlaceholderData, conditions, workspaceKey])
+  }, [directory.data, directory.isPlaceholderData, conditions, workspaceKey, mode])
   useEffect(() => {
     commandTicket.current++; commandBusy.current = false; savingRef.current = false
     setSaving(false); setRecoveryPending(Boolean(pending.current))
@@ -179,13 +194,13 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
     {route.projectId && project ? <ProjectOverviewPage project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
       {route.tab === 'data' ? route.tableId
-        ? <DataTableDetailPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab })} />
+        ? <DataTableDetailPage key={`${workspaceKey}:${project.projectId}:${route.tableId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab })} />
         : <DataTableDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onOpen={tableId => onNavigate({ projectId: project.projectId, tab: 'data', tableId, dataTab: 'records' })} />
         : undefined}
       </ProjectOverviewPage>
       : route.projectId && detail.isLoading ? <main className="p-6" role="status">正在加载项目…</main>
       : route.projectId && detail.isError ? <main className="grid gap-3 p-6" role="alert"><p>无法加载项目。</p><div className="flex gap-2"><Button onClick={() => void detail.refetch()}>重试</Button><Button variant="ghost" onClick={() => onNavigate({ tab: 'overview' })}>返回项目目录</Button></div></main>
-      : <ProjectDirectoryPage page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, value) }} onConditionsChange={setConditions} onRefresh={() => void directory.refetch()} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} />}
+      : <ProjectDirectoryPage key={mode} mode={mode} onModeChange={setMode} recentItems={recent.data?.items} recentLoading={recent.isLoading} recentError={recent.isError ? '刷新最近项目失败' : null} page={directory.data} conditions={conditions} loading={directory.isLoading} refreshing={mode === 'recent' ? recent.isFetching : directory.isFetching} disabled={disabled} error={directory.isError ? '刷新项目失败' : null} initialScrollTop={scrollTop} onScrollTopChange={value => { setScrollTop(value); writeScrollTop(workspaceKey, mode, value) }} onConditionsChange={setConditions} onRefresh={() => void (mode === 'recent' ? recent.refetch() : directory.refetch())} onCreate={() => setEditor({ project: null, draftSession: `create:${Date.now()}` })} onOpen={project => void openProject(project)} onEdit={project => setEditor({ project: project as ProjectView, draftSession: `edit:${project.projectId}:${Date.now()}` })} />}
     <ProjectFormDialog open={Boolean(editor)} project={editor?.project ?? null} draftSession={editor?.draftSession ?? 'closed'} submissionEpoch={`${instanceId}:${editor?.draftSession ?? 'closed'}`} recoveryPending={recoveryPending} disabled={disabled} onOpenChange={open => { if (!open) setEditor(null) }} onSubmit={submit} onLoadLatest={editorProjectId ? () => api.get(editorProjectId) : undefined} onDirtyChange={value => { dirtyRef.current = value }} onSavingChange={value => { savingRef.current = value; setSaving(value) }} onRequestClose={guard} />
     <AlertDialog open={leaveOpen} onOpenChange={open => { if (!open && !savingRef.current) finishLeave(false) }}><AlertDialogContent><AlertDialogTitle>保存项目修改后离开？</AlertDialogTitle><AlertDialogDescription>{recoveryPending ? '上次保存结果尚未确认。请先核对，避免遗失操作结果。' : '可以先保存修改、放弃本次修改，或继续编辑。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={saving} onClick={() => finishLeave(false)}>继续编辑</Button></AlertDialogCancel><Button variant="ghost" disabled={saving || recoveryPending} onClick={() => finishLeave(true)}>放弃修改</Button><AlertDialogAction asChild><Button variant="primary" disabled={saving || disabled} onClick={event => { event.preventDefault(); document.querySelector<HTMLFormElement>('#project-form')?.requestSubmit() }}>{recoveryPending ? '核对后离开' : '保存后离开'}</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
   </>

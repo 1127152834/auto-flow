@@ -5,7 +5,7 @@ import { ModelManagementPage } from '../domains/models/pages/ModelManagementPage
 import { ApiProvider } from './ApiProvider'
 import { ApplicationHeader } from './ApplicationHeader'
 import { parseAppLocation, projectHash, useGuardedHashNavigation, type AppRoute } from './navigation'
-import { ProjectsWorkspace, resetProjectUiState } from '../domains/projects/pages/ProjectsWorkspace'
+import { ProjectsWorkspace } from '../domains/projects/pages/ProjectsWorkspace'
 import type { ProjectRoute } from '../domains/projects/types'
 import { Button } from '../shared/components/ui/button'
 import { DashboardPage } from '../domains/dashboard/pages/DashboardPage'
@@ -35,7 +35,6 @@ export function App() {
   useLayoutEffect(() => {
     if (!session) return
     if (previousWorkspace.current !== null && previousWorkspace.current !== session.workspaceKey) {
-      resetProjectUiState(previousWorkspace.current)
       if (hash.startsWith('#/projects')) replace('#/projects')
     }
     previousWorkspace.current = session.workspaceKey

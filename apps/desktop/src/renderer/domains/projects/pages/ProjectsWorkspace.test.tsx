@@ -11,7 +11,7 @@ const base = { description: '', managementRevision: 1, lifecycleState: 'active',
 const a = { ...base, projectId: '00000000-0000-4000-8000-000000000001', name: '项目A' } as ProjectSummary
 const b = { ...base, projectId: '00000000-0000-4000-8000-000000000002', name: '项目B' } as ProjectSummary
 class ResizeObserverStub { observe() {}; unobserve() {}; disconnect() {} }
-beforeEach(() => { vi.stubGlobal('ResizeObserver', ResizeObserverStub); sessionStorage.clear() })
+beforeEach(() => { vi.stubGlobal('ResizeObserver', ResizeObserverStub); sessionStorage.clear(); sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({mode:'all'})) })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 function deferred<T>() { let resolve!: (value: T) => void; let reject!: (reason: unknown) => void; return { promise: new Promise<T>((yes, no) => { resolve = yes; reject = no }), resolve, reject } }
@@ -26,7 +26,7 @@ it('only lets the latest same-instance open request navigate', async () => {
   const opens = new Map([[a.projectId, deferred<{ project: ProjectView }>()], [b.projectId, deferred<{ project: ProjectView }>()]])
   const request = vi.fn((path: string) => path.includes('/open') ? opens.get(path.split('/').at(-2)!)!.promise : Promise.resolve({ items: [a, b], page: 1, pageSize: 50, total: 2, sort: '-lastOpenedAt' }))
   const { onNavigate } = mount(request as unknown as StreamingApiClient['request'])
-  fireEvent.click(await screen.findByRole('row', { name: /项目A/ })); fireEvent.click(screen.getByRole('row', { name: /项目B/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '项目A' })); fireEvent.click(screen.getByRole('button', { name: '项目B' }))
   opens.get(b.projectId)!.resolve({ project: b as ProjectView }); await waitFor(() => expect(onNavigate).toHaveBeenCalledWith({ projectId: b.projectId, tab: 'overview' }))
   opens.get(a.projectId)!.resolve({ project: a as ProjectView }); await Promise.resolve()
   expect(onNavigate).toHaveBeenCalledTimes(1)
@@ -36,14 +36,14 @@ it('ignores an open error from a replaced instance', async () => {
   const opening = deferred<{ project: ProjectView }>()
   const request = vi.fn((path: string) => path.includes('/open') ? opening.promise : Promise.resolve({ items: [a], page: 1, pageSize: 50, total: 1, sort: '-lastOpenedAt' }))
   const mounted = mount(request as unknown as StreamingApiClient['request'])
-  fireEvent.click(await screen.findByRole('row', { name: /项目A/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '项目A' }))
   mounted.rerender(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ProjectsWorkspace {...mounted.values} instanceId="i2" /></QueryClientProvider>)
   opening.reject(new Error('旧连接失败')); await Promise.resolve(); await Promise.resolve()
   expect(screen.queryByText('旧连接失败')).not.toBeInTheDocument()
 })
 
 it('restores directory conditions from the workspace session and reset clears them', async () => {
-  sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({ query: '保留搜索', lifecycle: 'archived', sort: 'name', page: 3, pageSize: 50, scrollTop: 80 }))
+  sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({ mode: 'all', query: '保留搜索', lifecycle: 'archived', sort: 'name', page: 3, pageSize: 50, scrollTop: 80 }))
   const request = vi.fn().mockResolvedValue({ items: [], page: 3, pageSize: 50, total: 0, sort: 'name' })
   mount(request)
   expect(await screen.findByLabelText('搜索项目')).toHaveValue('保留搜索')
@@ -58,7 +58,7 @@ it('stores and restores the directory viewport scroll position', async () => {
   const viewport = first.container.querySelector<HTMLElement>('.af-scroll-area > div')!
   Object.defineProperty(viewport, 'scrollTop', { value: 96, writable: true })
   fireEvent.scroll(viewport)
-  expect(JSON.parse(sessionStorage.getItem('autoflow:projects-ui:w1')!).scrollTop).toBe(96)
+  expect(JSON.parse(sessionStorage.getItem('autoflow:projects-ui:w1')!).scrollPositions.all).toBe(96)
   first.unmount()
   const second = mount(request)
   await screen.findByText('项目A')
@@ -152,14 +152,14 @@ it('revokes a late open response after the project module is unmounted', async (
   const opening = deferred<{ project: ProjectView }>()
   const request = vi.fn((path: string) => path.endsWith('/open') ? opening.promise : Promise.resolve({ items: [a], page: 1, pageSize: 50, total: 1, sort: '-lastOpenedAt' }))
   const mounted = mount(request as StreamingApiClient['request'])
-  fireEvent.click(await screen.findByRole('row', { name: /项目A/ }))
+  fireEvent.click(await screen.findByRole('button', { name: '项目A' }))
   mounted.unmount(); opening.resolve({ project: a })
   await new Promise(resolve => setTimeout(resolve, 0))
   expect(mounted.onNavigate).not.toHaveBeenCalled()
 })
 
 it('corrects a restored page when the current result set has shrunk', async () => {
-  sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({ page: 3 }))
+  sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({ mode: 'all', page: 3 }))
   const request = vi.fn(async (path: string) => ({ items: [], page: Number(new URL(path, 'http://local').searchParams.get('page')), pageSize: 50, total: 0, sort: '-lastOpenedAt' }))
   mount(request as StreamingApiClient['request'])
   await waitFor(() => expect(request.mock.calls.some(([path]) => path.includes('page=1&'))).toBe(true))
@@ -209,4 +209,17 @@ it('keeps a data form mounted across reconnect while refreshing the project fact
   view.rerender(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ProjectsWorkspace {...view.values} instanceId="i2" client={newClient} /></QueryClientProvider>)
   expect(screen.getByLabelText('数据表名称')).toHaveValue('保留草稿')
   expect(screen.getByLabelText('数据表名称')).toBeVisible()
+})
+
+
+it('requests recent projects independently of restored all-directory search and excludes unopened items', async () => {
+  sessionStorage.setItem('autoflow:projects-ui:w1', JSON.stringify({ mode: 'recent', query: '另一页', page: 2 }))
+  const request = vi.fn(async (path: string) => ({ items: path.includes('pageSize=6') ? [{ ...a, lastOpenedAt: '2026-09-13T01:00:00Z' }, b] : [b], page: 1, pageSize: 50, total: 60, sort: '-lastOpenedAt' }))
+  mount(request as StreamingApiClient['request'])
+  expect(await screen.findByText('项目A')).toBeInTheDocument()
+  expect(screen.queryByText('项目B')).not.toBeInTheDocument()
+  expect(request.mock.calls.some(([path]) => { const params = new URL(path, 'http://local').searchParams; return params.get('pageSize') === '6' && params.get('page') === '1' && !params.get('query') && params.get('lifecycleState') === 'active' })).toBe(true)
+  await userEvent.click(screen.getByRole('button', { name: '查看全部项目' }))
+  expect(await screen.findByText('项目B')).toBeInTheDocument()
+  expect(screen.getByLabelText('搜索项目')).toHaveValue('另一页')
 })

@@ -33,6 +33,7 @@ beforeEach(() => {
   sessionStorage.clear(); requests.mockClear()
   vi.stubGlobal('autoflow', {})
   state.session = session('workspace-a', 'instance-1'); state.workspaceChanging = false
+  sessionStorage.setItem('autoflow:projects-ui:workspace-a', JSON.stringify({mode:'all', query:''}))
 })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
@@ -44,6 +45,8 @@ it('opens a real project context and the six approved tabs without fake controls
   for (const label of ['概览', '自动化', '运行记录', '统计', '数据', '环境']) expect(screen.getByRole('button', { name: label })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: '数据' }))
   expect(await screen.findByText('还没有数据表')).toBeInTheDocument()
+  expect(screen.getAllByRole('heading', {level:1})).toHaveLength(1)
+  expect(screen.getByRole('heading', {level:1})).toHaveTextContent('数据表')
   expect(screen.getByRole('button', { name: '新建数据表' })).toBeEnabled()
   expect(requests.mock.calls.some(([path]) => path.includes(`/projects/${project.projectId}/tables?`))).toBe(true)
   await user.click(screen.getByRole('button', { name: '返回项目目录' }))
@@ -76,7 +79,7 @@ it('preserves a draft across service instances, blocks switching, and clears it 
   state.workspaceChanging = false; state.session = session('workspace-b', 'instance-3'); view.rerender(<App />)
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   expect(window.location.hash).toBe('#/projects')
-  expect(sessionStorage.getItem('autoflow:projects-ui:workspace-a')).toBeNull()
+  expect(JSON.parse(sessionStorage.getItem('autoflow:projects-ui:workspace-a')!).mode).toBe('all')
 })
 
 it('shows an invalid project address with a working directory return', async () => {
@@ -102,4 +105,22 @@ it('keeps the data route and draft when cancelling Back or global navigation', a
   await user.click(await screen.findByRole('button', { name: '继续编辑' }))
   expect(window.location.hash).toBe(`#/projects/${project.projectId}/data`)
   expect(screen.getByLabelText('数据表名称')).toHaveValue('数据草稿')
+})
+
+it('restores all-directory conditions and scroll after opening and returning through real routes', async () => {
+  sessionStorage.setItem('autoflow:projects-ui:workspace-a', JSON.stringify({mode:'all', query:'项目', sort:'name', page:2, scrollPositions:{all:96,recent:0}}))
+  requests.mockImplementation(async (path:string) => {
+    if (path.startsWith('/api/v1/projects?')) return {items:[{...project,availability}],page:Number(new URL(path,'http://local').searchParams.get('page')),pageSize:50,total:80,sort:'name'}
+    if (path.endsWith('/open')) return {project}
+    if (path.endsWith('/overview')) return {project,availability,counts:{},activity:[],recent:[]}
+    return project
+  })
+  const user=userEvent.setup();const view=render(<App />)
+  await user.click(await screen.findByRole('button',{name:project.name}));await screen.findByRole('heading',{name:'项目资料'})
+  await user.click(screen.getByRole('button',{name:'返回项目目录'}))
+  expect(await screen.findByRole('heading',{name:/全部项目/})).toBeVisible()
+  expect(screen.getByLabelText('搜索项目')).toHaveValue('项目')
+  const saved=JSON.parse(sessionStorage.getItem('autoflow:projects-ui:workspace-a')!)
+  expect(saved).toMatchObject({mode:'all',query:'项目',sort:'name',page:2})
+  expect(view.container.querySelector<HTMLElement>('.af-scroll-area > div')!.scrollTop).toBe(96)
 })

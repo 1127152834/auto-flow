@@ -8,8 +8,8 @@ export const projectKeys = {
   overview: (workspaceKey: string, instanceId: string, projectId: string) => [workspaceKey, instanceId, 'project-overview', projectId] as const,
 }
 
-export function useProjectDirectory(api: ProjectsApi, workspaceKey: string, instanceId: string, conditions: ProjectListConditions) {
-  return useQuery({ queryKey: projectKeys.directory(workspaceKey, instanceId, conditions), queryFn: ({ signal }) => api.list(conditions, signal) })
+export function useProjectDirectory(api: ProjectsApi, workspaceKey: string, instanceId: string, conditions: ProjectListConditions, enabled = true) {
+  return useQuery({ queryKey: projectKeys.directory(workspaceKey, instanceId, conditions), queryFn: ({ signal }) => api.list(conditions, signal), enabled })
 }
 
 export function useProject(api: ProjectsApi, workspaceKey: string, instanceId: string, projectId?: string) {
