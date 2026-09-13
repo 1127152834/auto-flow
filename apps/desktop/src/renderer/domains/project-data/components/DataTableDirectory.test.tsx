@@ -95,3 +95,17 @@ it('states maintainability and source truth in each card footer', () => {
   expect(screen.getByText('待配置')).toBeVisible()
   expect(screen.getAllByText('本地记录')).toHaveLength(3)
 })
+
+it('separates reconnecting controls from readonly and source availability facts', () => {
+  const props = { items: [table], onRetry: vi.fn(), onCreate: vi.fn(), onImportExcel: vi.fn(), onOpen: vi.fn(), onEdit: vi.fn() }
+  const view = render(<DataTableDirectory {...props} disabled />)
+  expect(screen.getByText('连接恢复中')).toBeVisible()
+  expect(screen.queryByText('只读可用')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '新建数据表' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '从 Excel 导入' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '更多客户数据操作' })).toBeDisabled()
+  view.rerender(<DataTableDirectory {...props} readonly />)
+  expect(screen.getByText('只读')).toBeVisible()
+  view.rerender(<DataTableDirectory {...props} items={[{ ...table, sourceKind: 'sheets' }]} />)
+  expect(screen.getByText('同步暂未开放')).toBeVisible()
+})
