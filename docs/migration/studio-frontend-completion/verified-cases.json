@@ -15074,5 +15074,141 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-autoflow-errors/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.memory-json",
+    "capability": "内存 JSON 与认证头",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "内存 JSON 与认证头"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.http-json",
+    "capability": "HTTP JSON 与认证头",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "HTTP JSON 与认证头"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.memory-upload",
+    "capability": "内存上传字节",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "内存上传字节"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.http-upload",
+    "capability": "HTTP 上传字节",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "HTTP 上传字节"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.foreign-origin",
+    "capability": "跨源请求拒绝",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "跨源请求拒绝"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.redirect",
+    "capability": "重定向不泄露令牌",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "重定向不泄露令牌"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.sse",
+    "capability": "SSE 认证与中断",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "SSE 认证与中断"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "CONTRACT.authenticated-transport.configuration",
+    "capability": "非法连接拒绝",
+    "preconditions": {
+      "token": "无敏感含义的 fixture-token",
+      "server": "独立本地 HTTP 或内存传输"
+    },
+    "steps": [
+      "非法连接拒绝"
+    ],
+    "expectedUI": "不适用：传输适配器测试",
+    "expectedIO": "同源携带 AutoFlow token；正文/字节/状态码不变；取消中断",
+    "stateAssertion": "无跨源令牌发送，无令牌存储和 URL 凭据；未知服务不执行请求",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
   }
 ]

@@ -1,0 +1,33 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (0.970917ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.109291ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.119458ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.131ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.72625ms)
+✔ browser management smoke creates the platform kernel layout (0.18925ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.188417ms)
+✔ profile test browser smoke validates a public kernel directory (7.282333ms)
+✔ profile test browser smoke finds a session below the manager root (3.268958ms)
+✔ packaged smoke cannot silently select external health mode (1.119958ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.345542ms)
+✔ cleanup observes close without requiring exit (0.371917ms)
+✔ cleanup rejects a child process error (0.226708ms)
+✔ required path exists: apps/desktop/package.json (0.624083ms)
+✔ required path exists: apps/backend/pyproject.toml (0.0885ms)
+✔ root scripts expose the foundation checks (0.211541ms)
+(node:55401) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (12.886083ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 779.200625
