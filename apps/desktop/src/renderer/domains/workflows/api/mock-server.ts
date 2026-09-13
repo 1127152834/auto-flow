@@ -26,6 +26,7 @@ const encoder = new TextEncoder()
 let offline = false
 let failNextSave = false
 let failNextRun = false
+let failNextPickerStop = false
 let selectorTest: 'none' | 'single' | 'multiple' | 'error' = 'single'
 let nextExecutionOrder: string[] | null = null
 const runRows = new Map<string, ObjectValue[]>()
@@ -53,10 +54,11 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
-export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
   if (options.selectorTest !== undefined) selectorTest = options.selectorTest
   if (options.executionOrder !== undefined) nextExecutionOrder = options.executionOrder === null ? null : [...options.executionOrder]
   if (options.offline !== undefined) offline = options.offline
+  if (options.failNextPickerStop !== undefined) failNextPickerStop = options.failNextPickerStop
   if (options.failNextRun !== undefined) failNextRun = options.failNextRun
   if (options.failNextSave !== undefined) failNextSave = options.failNextSave
   if (options.disconnect || options.offline) {
@@ -407,7 +409,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
     if (path === '/element-picker/start') { if (run || recording) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; similarPicked = null; return response({success:true}) }
-    if (path === '/element-picker/stop') { picking = false; picked = null; similarPicked = null; return response({success:true}) }
+    if (path === '/element-picker/stop') { if (method !== 'POST') return failure('停止拾取仅支持 POST', 405); if (failNextPickerStop) { failNextPickerStop = false; return failure('Mock 拾取清理失败，请重试', 503) } picking = false; picked = null; similarPicked = null; return response({success:true}) }
     if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })
     if (['/element-picker/result','/element-picker/selected'].includes(path)) return response({ success:true, active:picking, selected:picked !== null, data:picked, element:picked, ...picked })
     if (path === '/element-picker/similar') return method === 'GET' ? response({ selected: picking && similarPicked !== null, active: picking, ...(picking && similarPicked ? { similar: similarPicked } : {}) }) : failure('相似元素查询仅支持 GET', 405)

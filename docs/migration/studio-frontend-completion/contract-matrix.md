@@ -61,7 +61,7 @@
 | service:elementPickerApi.getSimilar | GET '/element-picker/similar' | 未显式声明 | Result | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:321 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.getStatus | GET '/element-picker/status' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:338 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.start | POST '/element-picker/start' | body: JSON.stringify({ url: url &#124;&#124; null, browserConfig: browserConfig &#124;&#124; null }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:313 | 待逐项核对；局部已验证项见上表 |
-| service:elementPickerApi.stop | POST '/element-picker/stop' | 未显式声明 | 未显式声明 | 4 | apps/desktop/src/renderer/domains/workflows/api.ts:318 | 待逐项核对；局部已验证项见上表 |
+| service:elementPickerApi.stop | POST '/element-picker/stop' | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:318 | 待逐项核对；局部已验证项见上表 |
 | service:elementPickerApi.testSelector | POST '/element-picker/test-selector' | body: JSON.stringify({ selector, hints: hints &#124;&#124; null, highlight }) | Result | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:340 | 待逐项核对；局部已验证项见上表 |
 | service:executorApi.execute | POST '/executor/execute' | body: JSON.stringify(data) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:230 | 待逐项核对；局部已验证项见上表 |
 | service:executorApi.getTypes | GET '/executor/types' | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:232 | 待逐项核对；局部已验证项见上表 |

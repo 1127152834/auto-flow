@@ -1121,7 +1121,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 404,
+          "line": 428,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSelected()"
         }
@@ -1155,7 +1155,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 448,
+          "line": 464,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSimilar()"
         }
@@ -1204,7 +1204,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 387,
+          "line": 411,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.start(resolvedUrl || undefined, browserConfig)"
         }
@@ -1238,19 +1238,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 436,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "elementPickerApi.stop()"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 513,
-          "source": "frontend/src/components/workflow/ConfigPanel.tsx",
-          "call": "elementPickerApi.stop()"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 528,
+          "line": 348,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         }

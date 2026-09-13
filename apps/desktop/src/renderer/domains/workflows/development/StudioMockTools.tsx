@@ -23,6 +23,7 @@ export function StudioMockTools() {
       <button onClick={() => action(() => addMockRecordingEvent({type:'input',selector:'#name',value:'AutoFlow'}))}>录制：输入</button>
       <button onClick={() => action(() => addMockRecordingEvent({type:'click',selector:'#submit'}))}>录制：点击</button>
       <button onClick={() => action(() => selectMockElement('#submit'))}>拾取：提交元素</button>
+      <button onClick={() => action(() => configureMock({failNextPickerStop:true}))}>下次停止拾取失败</button>
       <button onClick={() => action(() => selectMockSimilarElements())}>拾取：四个相似元素</button>
       {([['none', '零匹配'], ['single', '单匹配'], ['multiple', '多匹配'], ['error', '服务失败']] as const).map(([scenario, label]) =>
         <button key={scenario} onClick={() => action(() => configureMock({ selectorTest: scenario }))}>定位：{label}</button>)}
