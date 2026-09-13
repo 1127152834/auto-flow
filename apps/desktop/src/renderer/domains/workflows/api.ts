@@ -418,9 +418,9 @@ export const elementPickerApi = {
 
 // ==================== 网页智能录制器 API ====================
 export const recorderApi = {
-  start: () => apiRequest('/recorder/start', { method: 'POST' }),
-  stop: () => apiRequest('/recorder/stop', { method: 'POST' }),
-  events: () => apiRequest('/recorder/events'),
+  start: (sessionId?: string) => apiRequest('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId }) }),
+  stop: (sessionId?: string, afterSeq = 0) => apiRequest('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq }) }),
+  events: (sessionId?: string, afterSeq = 0, signal?: AbortSignal) => apiRequest(`/recorder/events?afterSeq=${afterSeq}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`, { signal }),
   status: () => apiRequest('/recorder/status'),
 }
 

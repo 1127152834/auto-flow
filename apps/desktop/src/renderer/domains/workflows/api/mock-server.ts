@@ -32,7 +32,9 @@ let lastVariables: ObjectValue = {}
 let browser = false
 let url = 'about:blank'
 let recording = false
-let recorded: Json[] = []
+let recorded: ObjectValue[] = []
+let recordingSessionId: string | null = null
+const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
 let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; variables: ObjectValue; timer?: ReturnType<typeof setTimeout> } | null = null
@@ -58,7 +60,7 @@ export function configureMock(options: { offline?: boolean; failNextSave?: boole
 export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, sequence: events.length } }
 export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
-  recorded.push({ ...event, ts: Date.now() })
+  recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
 }
 export function selectMockElement(selector: string) {
   if (!picking) throw new Error('请先开启元素拾取')
@@ -259,12 +261,24 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     if (path === '/recorder/start') {
-      if (!browser || run || picking) return failure('请先打开空闲的 Mock 浏览器', 409)
-      recording = true; recorded = []; return response({success:true})
+      const sessionId = typeof body.sessionId === 'string' && body.sessionId ? body.sessionId : crypto.randomUUID()
+      if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
+      if (sessionId === recordingSessionId) return response({ success: true, sessionId, recording, nextSeq: recorded.length })
+      if (!browser || run || picking || recording) return failure('请先打开空闲的 Mock 浏览器', 409)
+      if (recordingSessionId) retiredRecordings.add(recordingSessionId)
+      recordingSessionId = sessionId; recording = true; recorded = []
+      return response({ success: true, sessionId, recording: true, nextSeq: 0 })
     }
-    if (path === '/recorder/events') { const data = recorded; recorded = []; return response({ success: true, data }) }
-    if (path === '/recorder/stop') { recording = false; const data = recorded; recorded = []; return response({ success: true, data: { events: data } }) }
-    if (path === '/recorder/status') return response({ recording, isRecording: recording })
+    if (path === '/recorder/events' || path === '/recorder/stop') {
+      const requestedSession = method === 'POST' ? body.sessionId : target.searchParams.get('sessionId')
+      if (requestedSession && requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
+      const afterSeq = Number(method === 'POST' ? body.afterSeq || 0 : target.searchParams.get('afterSeq') || 0)
+      if (!Number.isSafeInteger(afterSeq) || afterSeq < 0 || afterSeq > recorded.length) return failure('Invalid recording cursor', 400)
+      const data = recorded.filter(event => Number(event.sequence) > afterSeq)
+      if (path === '/recorder/stop') { recording = false; return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data: { events: data } }) }
+      return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
+    }
+    if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
     if (path === '/element-picker/start') { if (run || recording) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; return response({success:true}) }
     if (path === '/element-picker/stop') { picking = false; return response({success:true}) }
     if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })

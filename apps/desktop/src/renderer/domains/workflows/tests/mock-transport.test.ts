@@ -101,14 +101,15 @@ describe('source-compatible mock HTTP boundary',()=>{
     await vi.advanceTimersByTimeAsync(2000)
     expect(server.mockSnapshot().run).toBe(null);expect(server.mockSnapshot().sequence).toBe(sequence)
   })
-  it('feeds the original recorder protocol and requires an available browser',async()=>{
+  it('feeds the non-destructive recorder protocol and requires an available browser',async()=>{
     expect((await request('/recorder/start',{})).status).toBe(409)
     await request('/browser/open',{url:'about:blank'});await request('/recorder/start',{})
     server.addMockRecordingEvent({type:'input',selector:'#name',value:'中文'})
     expect((await(await request('/recorder/events')).json()).data[0]).toMatchObject({value:'中文'})
-    expect((await(await request('/recorder/events')).json()).data).toEqual([])
+    expect((await(await request('/recorder/events')).json()).data[0]).toMatchObject({value:'中文',sequence:1})
+    expect((await(await request('/recorder/events?afterSeq=1')).json()).data).toEqual([])
     server.addMockRecordingEvent({type:'click',selector:'#submit'})
-    expect((await(await request('/recorder/stop',{})).json()).data.events).toHaveLength(1)
+    expect((await(await request('/recorder/stop',{afterSeq:1})).json()).data.events).toHaveLength(1)
     expect(server.mockSnapshot().recording).toBe(false)
   })
   it('persists custom modules and mutable resource folders through the same request seam',async()=>{

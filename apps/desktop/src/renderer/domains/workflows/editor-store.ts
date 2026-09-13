@@ -8,6 +8,27 @@ import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
 import { layoutGraph } from './lib/elkLayout'
 import { collectNodeVarNames } from './lib/moduleDefaultVars'
 
+// React Flow selection and measurement are UI state, not document edits.
+function historyNodes(nodes: Node<NodeData>[]): Node<NodeData>[] {
+  return nodes.map(node => {
+    const copy = { ...node }
+    delete copy.selected
+    delete copy.dragging
+    delete copy.measured
+    delete copy.resizing
+    return copy
+  })
+}
+function historyEdges(edges: Edge[]): Edge[] {
+  return edges.map(edge => { const copy = { ...edge }; delete copy.selected; return copy })
+}
+
+function matchesHistory(state: { nodes: Node<NodeData>[]; edges: Edge[]; name: string }, snapshot?: HistorySnapshot): boolean {
+  return !!snapshot && state.name === snapshot.name &&
+    JSON.stringify(historyNodes(state.nodes)) === JSON.stringify(historyNodes(snapshot.nodes)) &&
+    JSON.stringify(historyEdges(state.edges)) === JSON.stringify(historyEdges(snapshot.edges))
+}
+
 // ============================================================================
 // 日志显示偏好的本地持久化
 //
@@ -1340,7 +1361,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       (c.type === 'position' && (c as { dragging?: boolean }).dragging === false) ||
       c.type === 'remove' ||
       c.type === 'add' ||
-      c.type === 'dimensions'
+      (c.type === 'dimensions' && !!c.setAttributes)
     )
     
     // 先保存历史（变化之前）
@@ -2967,16 +2988,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const state = get()
     // 保存当前状态作为新的历史记录点
     const snapshot: HistorySnapshot = {
-      nodes: JSON.parse(JSON.stringify(state.nodes)),
-      edges: JSON.parse(JSON.stringify(state.edges)),
+      nodes: JSON.parse(JSON.stringify(historyNodes(state.nodes))),
+      edges: JSON.parse(JSON.stringify(historyEdges(state.edges))),
       name: state.name,
     }
     
     // 检查是否与当前历史记录相同（避免重复）
     const currentSnapshot = state.history[state.historyIndex]
     if (currentSnapshot && 
-        JSON.stringify(currentSnapshot.nodes) === JSON.stringify(snapshot.nodes) &&
-        JSON.stringify(currentSnapshot.edges) === JSON.stringify(snapshot.edges) &&
+        JSON.stringify(historyNodes(currentSnapshot.nodes)) === JSON.stringify(snapshot.nodes) &&
+        JSON.stringify(historyEdges(currentSnapshot.edges)) === JSON.stringify(snapshot.edges) &&
         currentSnapshot.name === snapshot.name) {
       return // 没有变化，不保存
     }
@@ -3015,7 +3036,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   redo: () => {
     const state = get()
-    if (state.historyIndex < state.history.length - 1) {
+    if (get().canRedo()) {
       const newIndex = state.historyIndex + 1
       const snapshot = state.history[newIndex]
       set({
@@ -3030,12 +3051,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   canUndo: () => {
-    return get().historyIndex > 0
+    const state = get()
+    return state.historyIndex > 0 || !matchesHistory(state, state.history[state.historyIndex])
   },
 
   canRedo: () => {
     const state = get()
-    return state.historyIndex < state.history.length - 1
+    return state.historyIndex < state.history.length - 1 && matchesHistory(state, state.history[state.historyIndex])
   },
 
   setWorkflowName: (name) => {

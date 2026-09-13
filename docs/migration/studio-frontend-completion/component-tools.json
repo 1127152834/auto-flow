@@ -8822,7 +8822,7 @@
   {
     "component": "RecorderPanel",
     "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-    "line": 52,
+    "line": 53,
     "fields": [],
     "tools": [
       "ArrowDown",
@@ -8839,366 +8839,406 @@
     ],
     "conditions": [
       {
-        "line": 72,
+        "line": 79,
         "expression": "j < 0 || j >= prev.length"
       },
       {
-        "line": 81,
+        "line": 88,
         "expression": "!incoming || !incoming.length"
       },
       {
-        "line": 87,
+        "line": 94,
         "expression": "ev.type === 'input' && last && last.type === 'input' && last.selector === ev.selector && frameSig(last) === frameSig(ev)"
       },
       {
-        "line": 89,
+        "line": 96,
         "expression": "ev.type === 'dblclick'"
       },
       {
-        "line": 94,
-        "expression": "l && l.type === 'click' && l.selector === ev.selector"
+        "line": 101,
+        "expression": "l && l.type === 'click' && l.selector === ev.selector && frameSig(l) === frameSig(ev)"
       },
       {
-        "line": 98,
-        "expression": "ev.type === 'scroll' && last && last.type === 'scroll' && ((last.dy ?? 0) > 0) === ((ev.dy ?? 0) > 0)"
+        "line": 105,
+        "expression": "ev.type === 'scroll' && last && last.type === 'scroll' && last.selector === ev.selector && frameSig(last) === frameSig(ev) && ((last.dy ?? 0) > 0) === ((ev.dy ?? 0) > 0)"
       },
       {
-        "line": 100,
-        "expression": "ev.type === 'navigate' && last && last.type === 'navigate' && last.url === ev.url"
+        "line": 107,
+        "expression": "ev.type === 'navigate' && last && last.type === 'navigate' && last.url === ev.url && frameSig(last) === frameSig(ev)"
       },
       {
-        "line": 111,
-        "expression": "pollRef.current"
+        "line": 118,
+        "expression": "sessionRef.current !== sessionId"
       },
       {
-        "line": 120,
-        "expression": "!st?.data?.isOpen"
+        "line": 119,
+        "expression": "!response.success || !response.data?.success"
+      },
+      {
+        "line": 121,
+        "expression": "body.sessionId !== sessionId"
+      },
+      {
+        "line": 122,
+        "expression": "stopping"
+      },
+      {
+        "line": 123,
+        "expression": "!Array.isArray(incoming) || !Number.isSafeInteger(body.nextSeq)"
       },
       {
         "line": 131,
+        "expression": "pollRef.current"
+      },
+      {
+        "line": 146,
+        "expression": "!st.success"
+      },
+      {
+        "line": 147,
+        "expression": "!st?.data?.isOpen"
+      },
+      {
+        "line": 158,
         "expression": "res?.error || res?.success === false || res?.data?.success === false"
       },
       {
-        "line": 135,
+        "line": 162,
         "expression": "String(errMsg).includes('浏览器')"
       },
       {
-        "line": 149,
-        "expression": "Array.isArray(arr) && arr.length"
+        "line": 168,
+        "expression": "res.data?.sessionId !== sessionId || res.data?.recording !== true"
       },
       {
-        "line": 165,
-        "expression": "remaining.length"
+        "line": 177,
+        "expression": "pollBusyRef.current || sessionRef.current !== sessionId"
       },
       {
-        "line": 179,
-        "expression": "!evs.length"
+        "line": 183,
+        "expression": "!controller.signal.aborted"
       },
       {
-        "line": 200,
-        "expression": "name"
+        "line": 185,
+        "expression": "!controller.signal.aborted && sessionRef.current === sessionId"
       },
       {
-        "line": 206,
-        "expression": "prevId"
+        "line": 186,
+        "expression": "pollAbortRef.current === controller"
       },
       {
-        "line": 214,
-        "expression": "!f || f.main"
-      },
-      {
-        "line": 215,
-        "expression": "f.selector"
+        "line": 197,
+        "expression": "!sessionId"
       },
       {
         "line": 216,
-        "expression": "f.name"
+        "expression": "!evs.length"
       },
       {
-        "line": 217,
-        "expression": "typeof f.index === 'number' && f.index >= 0"
+        "line": 237,
+        "expression": "name"
       },
       {
-        "line": 223,
-        "expression": "key === curFrameKey"
-      },
-      {
-        "line": 224,
-        "expression": "key === '__main__'"
-      },
-      {
-        "line": 228,
-        "expression": "f.selector"
-      },
-      {
-        "line": 229,
-        "expression": "f.name"
-      },
-      {
-        "line": 238,
-        "expression": "autoWait && idx > 0"
-      },
-      {
-        "line": 241,
-        "expression": "gap >= 1500"
-      },
-      {
-        "line": 247,
-        "expression": "ev.type === 'navigate'"
-      },
-      {
-        "line": 249,
-        "expression": "ev._frame && !ev._frame.main"
+        "line": 243,
+        "expression": "prevId"
       },
       {
         "line": 251,
-        "expression": "!u || u.startsWith('about:')"
+        "expression": "!f || f.main"
       },
       {
         "line": 252,
-        "expression": "seenFirstNav && u === lastNavUrl"
+        "expression": "f.selector"
       },
       {
-        "line": 255,
-        "expression": "!seenFirstNav"
+        "line": 253,
+        "expression": "f.name"
       },
       {
-        "line": 259,
-        "expression": "lastActionTs && (ev.ts || 0) - lastActionTs < 10000"
+        "line": 254,
+        "expression": "typeof f.index === 'number' && f.index >= 0"
       },
       {
-        "line": 267,
-        "expression": "ev.type === 'click'"
+        "line": 260,
+        "expression": "key === curFrameKey"
       },
       {
-        "line": 268,
-        "expression": "!ev.selector"
+        "line": 261,
+        "expression": "key === '__main__'"
       },
       {
-        "line": 271,
-        "expression": "ev.hints"
+        "line": 265,
+        "expression": "f.selector"
       },
       {
-        "line": 271,
-        "expression": "ev.text"
+        "line": 266,
+        "expression": "f.name"
       },
       {
-        "line": 272,
-        "expression": "ev.type === 'dblclick'"
-      },
-      {
-        "line": 273,
-        "expression": "!ev.selector"
-      },
-      {
-        "line": 276,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 276,
-        "expression": "ev.text"
-      },
-      {
-        "line": 277,
-        "expression": "ev.type === 'input'"
+        "line": 275,
+        "expression": "autoWait && idx > 0"
       },
       {
         "line": 278,
-        "expression": "!ev.selector"
+        "expression": "gap >= 1500"
       },
       {
-        "line": 281,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 282,
-        "expression": "ev.type === 'select'"
-      },
-      {
-        "line": 283,
-        "expression": "!ev.selector"
-      },
-      {
-        "line": 285,
-        "expression": "Array.isArray(ev.values) && ev.values.length > 1"
-      },
-      {
-        "line": 288,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 288,
-        "expression": "ev.text"
-      },
-      {
-        "line": 289,
-        "expression": "ev.type === 'check'"
-      },
-      {
-        "line": 290,
-        "expression": "!ev.selector"
-      },
-      {
-        "line": 292,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 293,
-        "expression": "ev.type === 'drag'"
-      },
-      {
-        "line": 294,
-        "expression": "!ev.selector"
-      },
-      {
-        "line": 299,
-        "expression": "sameEl && ev.endX != null"
-      },
-      {
-        "line": 300,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 304,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 305,
-        "expression": "ev.targetHints"
-      },
-      {
-        "line": 307,
-        "expression": "ev.text"
-      },
-      {
-        "line": 308,
-        "expression": "ev.type === 'upload'"
-      },
-      {
-        "line": 309,
-        "expression": "!ev.selector"
-      },
-      {
-        "line": 312,
-        "expression": "ev.hints"
-      },
-      {
-        "line": 312,
-        "expression": "ev.fileName"
-      },
-      {
-        "line": 313,
-        "expression": "ev.type === 'scroll'"
-      },
-      {
-        "line": 315,
-        "expression": "(ev.dy ?? 0) >= 0"
-      },
-      {
-        "line": 317,
-        "expression": "ev.type === 'keypress'"
-      },
-      {
-        "line": 318,
-        "expression": "!ev.key"
-      },
-      {
-        "line": 321,
-        "expression": "ev.key === 'Enter' || ev.key === 'Tab' || /Enter$/.test(ev.key)"
-      },
-      {
-        "line": 323,
-        "expression": "ev.selector"
-      },
-      {
-        "line": 328,
-        "expression": "!newNodes.length"
-      },
-      {
-        "line": 349,
-        "expression": "!open"
-      },
-      {
-        "line": 351,
-        "expression": "recording"
-      },
-      {
-        "line": 357,
-        "expression": "!open"
-      },
-      {
-        "line": 371,
-        "expression": "!recording"
-      },
-      {
-        "line": 386,
-        "expression": "events.length === 0"
-      },
-      {
-        "line": 388,
-        "expression": "recording"
-      },
-      {
-        "line": 395,
+        "line": 284,
         "expression": "ev.type === 'navigate'"
       },
       {
-        "line": 396,
+        "line": 286,
+        "expression": "ev._frame && !ev._frame.main"
+      },
+      {
+        "line": 288,
+        "expression": "!u || u.startsWith('about:')"
+      },
+      {
+        "line": 289,
+        "expression": "seenFirstNav && u === lastNavUrl"
+      },
+      {
+        "line": 292,
+        "expression": "!seenFirstNav"
+      },
+      {
+        "line": 296,
+        "expression": "lastActionTs && (ev.ts || 0) - lastActionTs < 10000"
+      },
+      {
+        "line": 304,
+        "expression": "ev.type === 'click'"
+      },
+      {
+        "line": 305,
+        "expression": "!ev.selector"
+      },
+      {
+        "line": 308,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 308,
+        "expression": "ev.text"
+      },
+      {
+        "line": 309,
+        "expression": "ev.type === 'dblclick'"
+      },
+      {
+        "line": 310,
+        "expression": "!ev.selector"
+      },
+      {
+        "line": 313,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 313,
+        "expression": "ev.text"
+      },
+      {
+        "line": 314,
         "expression": "ev.type === 'input'"
       },
       {
-        "line": 396,
-        "expression": "ev.sensitive"
+        "line": 315,
+        "expression": "!ev.selector"
       },
       {
-        "line": 397,
+        "line": 318,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 319,
         "expression": "ev.type === 'select'"
       },
       {
-        "line": 398,
+        "line": 320,
+        "expression": "!ev.selector"
+      },
+      {
+        "line": 322,
+        "expression": "Array.isArray(ev.values) && ev.values.length > 1"
+      },
+      {
+        "line": 325,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 325,
+        "expression": "ev.text"
+      },
+      {
+        "line": 326,
         "expression": "ev.type === 'check'"
       },
       {
-        "line": 398,
-        "expression": "ev.value"
+        "line": 327,
+        "expression": "!ev.selector"
       },
       {
-        "line": 399,
-        "expression": "ev.type === 'keypress'"
+        "line": 329,
+        "expression": "ev.hints"
       },
       {
-        "line": 400,
+        "line": 330,
         "expression": "ev.type === 'drag'"
       },
       {
-        "line": 401,
+        "line": 331,
+        "expression": "!ev.selector"
+      },
+      {
+        "line": 336,
+        "expression": "sameEl && ev.endX != null"
+      },
+      {
+        "line": 337,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 341,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 342,
+        "expression": "ev.targetHints"
+      },
+      {
+        "line": 344,
+        "expression": "ev.text"
+      },
+      {
+        "line": 345,
         "expression": "ev.type === 'upload'"
       },
       {
-        "line": 401,
+        "line": 346,
+        "expression": "!ev.selector"
+      },
+      {
+        "line": 349,
+        "expression": "ev.hints"
+      },
+      {
+        "line": 349,
         "expression": "ev.fileName"
       },
       {
-        "line": 402,
+        "line": 350,
         "expression": "ev.type === 'scroll'"
       },
       {
-        "line": 402,
+        "line": 352,
         "expression": "(ev.dy ?? 0) >= 0"
       },
       {
-        "line": 427,
+        "line": 354,
+        "expression": "ev.type === 'keypress'"
+      },
+      {
+        "line": 355,
+        "expression": "!ev.key"
+      },
+      {
+        "line": 358,
+        "expression": "ev.key === 'Enter' || ev.key === 'Tab' || /Enter$/.test(ev.key)"
+      },
+      {
+        "line": 360,
+        "expression": "ev.selector"
+      },
+      {
+        "line": 365,
+        "expression": "!newNodes.length"
+      },
+      {
+        "line": 387,
+        "expression": "busy"
+      },
+      {
+        "line": 388,
+        "expression": "recording && !await stopRecording()"
+      },
+      {
+        "line": 392,
+        "expression": "!open"
+      },
+      {
+        "line": 407,
+        "expression": "!recording"
+      },
+      {
+        "line": 422,
+        "expression": "events.length === 0"
+      },
+      {
+        "line": 424,
+        "expression": "recording"
+      },
+      {
+        "line": 431,
+        "expression": "ev.type === 'navigate'"
+      },
+      {
+        "line": 432,
+        "expression": "ev.type === 'input'"
+      },
+      {
+        "line": 432,
+        "expression": "ev.sensitive"
+      },
+      {
+        "line": 433,
+        "expression": "ev.type === 'select'"
+      },
+      {
+        "line": 434,
+        "expression": "ev.type === 'check'"
+      },
+      {
+        "line": 434,
+        "expression": "ev.value"
+      },
+      {
+        "line": 435,
+        "expression": "ev.type === 'keypress'"
+      },
+      {
+        "line": 436,
+        "expression": "ev.type === 'drag'"
+      },
+      {
+        "line": 437,
+        "expression": "ev.type === 'upload'"
+      },
+      {
+        "line": 437,
+        "expression": "ev.fileName"
+      },
+      {
+        "line": 438,
+        "expression": "ev.type === 'scroll'"
+      },
+      {
+        "line": 438,
+        "expression": "(ev.dy ?? 0) >= 0"
+      },
+      {
+        "line": 463,
         "expression": "recording"
       }
     ],
     "bindings": [
       {
-        "line": 429,
+        "line": 465,
         "attribute": "checked",
         "expression": "{autoWait}"
       },
       {
-        "line": 429,
+        "line": 465,
         "attribute": "onCheckedChange",
         "expression": "{(c) => setAutoWait(c)}"
       }

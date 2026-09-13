@@ -4166,3 +4166,4 @@ Object.assign(PHRASES, {
   '请求不是合法 JSON 对象': 'Request is not a valid JSON object',
   '请求不是合法 JSON 或 multipart 数据': 'Request is not valid JSON or multipart data',
 })
+Object.assign(PHRASES, { '关闭录制器': 'Close recorder' })

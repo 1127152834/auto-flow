@@ -473,7 +473,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 119,
+          "line": 145,
           "source": "frontend/src/components/workflow/RecorderPanel.tsx",
           "call": "browserApi.getStatus()"
         }
@@ -2711,7 +2711,7 @@
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
-          "call": "apiRequest('/recorder/events')",
+          "call": "apiRequest(`/recorder/events?afterSeq=${afterSeq}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`, { signal })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
           "line": 423,
           "source": "frontend/src/services/api.ts"
@@ -2720,9 +2720,9 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 147,
+          "line": 182,
           "source": "frontend/src/components/workflow/RecorderPanel.tsx",
-          "call": "recorderApi.events()"
+          "call": "recorderApi.events(sessionId, sequenceRef.current, controller.signal)"
         }
       ],
       "status": "待核对"
@@ -2735,7 +2735,7 @@
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
-          "call": "apiRequest('/recorder/start', { method: 'POST' })",
+          "call": "apiRequest('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
           "line": 421,
           "source": "frontend/src/services/api.ts"
@@ -2744,9 +2744,9 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 130,
+          "line": 157,
           "source": "frontend/src/components/workflow/RecorderPanel.tsx",
-          "call": "recorderApi.start()"
+          "call": "recorderApi.start(sessionId)"
         }
       ],
       "status": "待核对"
@@ -2776,7 +2776,7 @@
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
-          "call": "apiRequest('/recorder/stop', { method: 'POST' })",
+          "call": "apiRequest('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
           "line": 422,
           "source": "frontend/src/services/api.ts"
@@ -2785,15 +2785,9 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 163,
+          "line": 200,
           "source": "frontend/src/components/workflow/RecorderPanel.tsx",
-          "call": "recorderApi.stop()"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 351,
-          "source": "frontend/src/components/workflow/RecorderPanel.tsx",
-          "call": "recorderApi.stop()"
+          "call": "recorderApi.stop(sessionId, sequenceRef.current)"
         }
       ],
       "status": "待核对"
@@ -4672,7 +4666,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx",
-          "line": 341,
+          "line": 379,
           "source": "frontend/src/components/workflow/RecorderPanel.tsx",
           "via": "emitAssistantUiEvent"
         },

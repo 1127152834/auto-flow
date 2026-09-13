@@ -11,6 +11,7 @@ import { useConfirm } from './controls/confirm-dialog'
 import { Checkbox } from './controls/checkbox'
 
 interface RecEvent {
+  sequence?: number
   type: 'navigate' | 'click' | 'dblclick' | 'input' | 'select' | 'check' | 'keypress' | 'drag' | 'upload' | 'scroll'
   selector?: string
   targetSelector?: string
@@ -53,6 +54,12 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const [recording, setRecording] = useState(false)
   const [events, setEvents] = useState<RecEvent[]>([])
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const sessionRef = useRef<string | null>(null)
+  const pendingStartRef = useRef<string | null>(null)
+  const sequenceRef = useRef(0)
+  const pollBusyRef = useRef(false)
+  const pollAbortRef = useRef<AbortController | null>(null)
   const [autoWait, setAutoWait] = useState(true)
   const pollRef = useRef<number | null>(null)
   const eventsRef = useRef<RecEvent[]>([])
@@ -91,13 +98,13 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           let removed = 0
           while (next.length && removed < 2) {
             const l = next[next.length - 1]
-            if (l && l.type === 'click' && l.selector === ev.selector) { next.pop(); removed++ }
+            if (l && l.type === 'click' && l.selector === ev.selector && frameSig(l) === frameSig(ev)) { next.pop(); removed++ }
             else break
           }
           next.push(ev)
-        } else if (ev.type === 'scroll' && last && last.type === 'scroll' && ((last.dy ?? 0) > 0) === ((ev.dy ?? 0) > 0)) {
+        } else if (ev.type === 'scroll' && last && last.type === 'scroll' && last.selector === ev.selector && frameSig(last) === frameSig(ev) && ((last.dy ?? 0) > 0) === ((ev.dy ?? 0) > 0)) {
           next[next.length - 1] = { ...last, dy: (last.dy ?? 0) + (ev.dy ?? 0), y: ev.y, ts: ev.ts }  // 合并连续同向滚动
-        } else if (ev.type === 'navigate' && last && last.type === 'navigate' && last.url === ev.url) {
+        } else if (ev.type === 'navigate' && last && last.type === 'navigate' && last.url === ev.url && frameSig(last) === frameSig(ev)) {
           // 跳过重复导航
         } else {
           next.push(ev)
@@ -107,16 +114,36 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     })
   }, [])
 
+  const acceptBatch = useCallback((sessionId: string, response: any, stopping = false) => {
+    if (sessionRef.current !== sessionId) return
+    if (!response.success || !response.data?.success) throw new Error(response.error || response.data?.error || 'Recording request failed')
+    const body = response.data
+    if (body.sessionId !== sessionId) throw new Error('Recording session mismatch')
+    const incoming = stopping ? body.data?.events : body.data
+    if (!Array.isArray(incoming) || !Number.isSafeInteger(body.nextSeq)) throw new Error('Invalid recording response')
+    const fresh = incoming.filter((event: RecEvent) => Number(event.sequence) > sequenceRef.current)
+    appendEvents(fresh)
+    sequenceRef.current = Math.max(sequenceRef.current, body.nextSeq)
+    setError('')
+  }, [appendEvents])
+
   const stopPolling = useCallback(() => {
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
+    pollAbortRef.current?.abort()
+    pollAbortRef.current = null
+    pollBusyRef.current = false
   }, [])
 
   const startRecording = useCallback(async () => {
     setBusy(true)
+    setError('')
+    const sessionId = pendingStartRef.current || nanoid()
+    pendingStartRef.current = sessionId
     try {
       // 录制前先检查自动化浏览器是否已启动，未启动则明确提示（不用浏览器原生弹窗）
       try {
         const st: any = await browserApi.getStatus()
+        if (!st.success) { setError(st.error || 'Browser status unavailable'); return }
         if (!st?.data?.isOpen) {
           setBusy(false)
           await alertDialog('请先启动自动化浏览器，再开始录制。可点击工具栏的「打开浏览器」按钮启动后重试。', {
@@ -127,7 +154,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       } catch {
         // 状态查询失败不阻断，继续尝试启动（由后端兜底返回错误）
       }
-      const res: any = await recorderApi.start()
+      const res: any = await recorderApi.start(sessionId)
       if (res?.error || res?.success === false || res?.data?.success === false) {
         const errMsg = res?.data?.error || res?.error || '未知错误'
         setBusy(false)
@@ -138,40 +165,50 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         addLog({ level: 'error', message: `录制启动失败：${errMsg}` })
         return
       }
+      if (res.data?.sessionId !== sessionId || res.data?.recording !== true) throw new Error('Recording session was not started')
+      sessionRef.current = sessionId
+      pendingStartRef.current = null
+      sequenceRef.current = 0
       setEvents([])
       setRecording(true)
       addLog({ level: 'success', message: '已开始录制，请在浏览器中操作（点击/输入/选择）' })
-      // 轮询排空事件（注意：apiRequest 返回 {success,data:响应体}，事件在 r.data.data）
+      stopPolling()
       pollRef.current = window.setInterval(async () => {
+        if (pollBusyRef.current || sessionRef.current !== sessionId) return
+        pollBusyRef.current = true
+        const controller = new AbortController()
+        pollAbortRef.current = controller
         try {
-          const r: any = await recorderApi.events()
-          const arr = r?.data?.data
-          if (Array.isArray(arr) && arr.length) appendEvents(arr)
-        } catch {}
+          const response = await recorderApi.events(sessionId, sequenceRef.current, controller.signal)
+          if (!controller.signal.aborted) acceptBatch(sessionId, response)
+        } catch (error) {
+          if (!controller.signal.aborted && sessionRef.current === sessionId) setError(String(error))
+        } finally { if (pollAbortRef.current === controller) { pollBusyRef.current = false; pollAbortRef.current = null } }
       }, 700)
     } catch (e) {
       addLog({ level: 'error', message: `录制启动异常：${e}` })
     } finally {
       setBusy(false)
     }
-  }, [addLog, appendEvents, alertDialog])
+  }, [addLog, acceptBatch, alertDialog, stopPolling])
 
   const stopRecording = useCallback(async () => {
+    const sessionId = sessionRef.current
+    if (!sessionId) return false
     setBusy(true)
-    stopPolling()
     try {
-      const r: any = await recorderApi.stop()
-      const remaining = (r?.data?.data?.events as RecEvent[]) || []
-      if (remaining.length) appendEvents(remaining)
+      const response = await recorderApi.stop(sessionId, sequenceRef.current)
+      acceptBatch(sessionId, response, true)
+      stopPolling()
       setRecording(false)
       addLog({ level: 'info', message: '录制已停止' })
-    } catch (e) {
-      addLog({ level: 'error', message: `停止录制异常：${e}` })
-      setRecording(false)
-    } finally {
-      setBusy(false)
-    }
-  }, [addLog, appendEvents, stopPolling])
+      return true
+    } catch (error) {
+      setError(String(error))
+      addLog({ level: 'error', message: `停止录制异常：${error}` })
+      return false
+    } finally { setBusy(false) }
+  }, [addLog, acceptBatch, stopPolling])
 
   // 事件 → 节点
   const generateNodes = useCallback(async () => {
@@ -333,10 +370,11 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     const store = useWorkflowStore.getState()
     // 蛇形（横向长方形）排版：录制链纯竖排太长，改为逐行折返、连线自动拐弯
     applySerpentineLayout(newNodes as any, store.nodes as any)
-    store.loadWorkflow({
+    store.pushHistory()
+    useWorkflowStore.setState({
       nodes: [...store.nodes, ...newNodes] as any,
       edges: [...store.edges, ...newEdges] as any,
-      name: store.name,
+      hasUnsavedChanges: true,
     })
     emitAssistantUiEvent('fit_view', {})
     addLog({ level: 'success', message: `已根据录制生成 ${newNodes.length} 个节点` })
@@ -344,15 +382,12 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     onClose()
   }, [addLog, onClose, autoWait])
 
-  // 关闭面板时清理
-  useEffect(() => {
-    if (!open) {
-      stopPolling()
-      if (recording) { recorderApi.stop().catch(() => {}); setRecording(false) }
-    }
-    return () => stopPolling()
-
-  }, [open])
+  useEffect(() => () => stopPolling(), [stopPolling])
+  const closePanel = async () => {
+    if (busy) return
+    if (recording && !await stopRecording()) return
+    onClose()
+  }
 
   if (!open) return null
 
@@ -364,9 +399,10 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         <Wand2 className="w-4 h-4 text-[hsl(var(--brand-600))]" />
         <span className="font-semibold text-sm">智能录制器</span>
         {recording && <span className="ml-1 flex items-center gap-1 text-xs text-red-500"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />录制中</span>}
-        <button className="ml-auto p-1 rounded hover:bg-[hsl(var(--muted))]" onClick={onClose}><X className="w-4 h-4" /></button>
+        <button className="ml-auto p-1 rounded hover:bg-[hsl(var(--muted))]" aria-label="关闭录制器" disabled={busy} onClick={closePanel}><X className="w-4 h-4" /></button>
       </div>
 
+      {error && <div role="alert" className="px-4 py-2 text-sm text-red-700">{error}</div>}
       <div className="px-4 py-2 border-b border-[hsl(var(--border))] flex gap-2">
         {!recording ? (
           <button disabled={busy} onClick={startRecording} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50">
