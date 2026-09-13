@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { recordQueryDraft, type FilterDraft, type RecordQuery } from '../record-query'
+import { recordQueryDraft, RecordQueryError, type FilterDraft, type RecordQuery } from '../record-query'
 import { GalleryRecordFilter } from './GalleryRecordFilter'
 
 afterEach(cleanup)
@@ -25,8 +25,18 @@ it('edits a representable compare and status as two simple AND conditions',()=>{
   expect(screen.getByRole('combobox',{name:'字段'})).toHaveTextContent('标题')
   expect(screen.getByRole('combobox',{name:'字段运算符'})).toHaveTextContent('包含')
   expect(screen.getByLabelText('比较值')).toHaveValue('温室')
+  expect(screen.queryByLabelText('比较值值状态')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button',{name:'使用多行输入'})).not.toBeInTheDocument()
   expect(screen.getByRole('combobox',{name:'业务状态'})).toHaveTextContent('待核对')
   expect(screen.getByText('两项条件同时满足时显示；业务状态仅属于本项目。')).toBeVisible()
+})
+
+it('maps nested field and status errors to their simple controls',()=>{
+  const filter=recordQueryDraft({filter:{type:'all',items:[{type:'compare',fieldId:'name',operator:'contains',value:'温室'},{type:'status',operator:'eq',statusId:'open'}]},orderBy:[]}).filter
+  const view=render(<GalleryRecordFilter fields={fields} statuses={statuses} filter={filter} error={new RecordQueryError('filter.items.0','字段值无效','value')} onChange={vi.fn()}/>)
+  expect(screen.getByRole('alert')).toHaveTextContent('字段值无效')
+  view.rerender(<GalleryRecordFilter fields={fields} statuses={statuses} filter={filter} error={new RecordQueryError('filter.items.1','业务状态已失效')} onChange={vi.fn()}/>)
+  expect(screen.getByRole('alert')).toHaveTextContent('业务状态已失效')
 })
 
 it('opens complex trees in advanced mode and refuses a lossy simple switch',async()=>{

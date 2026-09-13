@@ -97,6 +97,14 @@ it('focuses a validation alert when the current schema invalidates a filter draf
   expect(screen.getByRole('alert')).toHaveFocus()
 })
 
+it('focuses a nested simple value error after apply',async()=>{
+  const user=userEvent.setup(),invalid:RecordQuery={filter:{type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:1},{type:'status',operator:'eq',statusId:'open'}]},orderBy:[]}
+  render(<RecordQueryToolbar {...props} query={invalid}/>)
+  await user.click(screen.getByRole('button',{name:'筛选'}));const value=screen.getByLabelText('比较值');await user.clear(value);await user.type(value,'not-a-number')
+  await user.click(within(screen.getByRole('dialog',{name:'记录筛选'})).getByRole('button',{name:'应用筛选'}))
+  expect(screen.getByRole('alert')).toHaveTextContent('有效数字');expect(screen.getByRole('alert')).toHaveFocus()
+})
+
 it('keeps filter drafts local and applies only the filter part',async()=>{
   const user=userEvent.setup(),onApplyQuery=vi.fn()
   render(<RecordQueryToolbar {...props} onApplyQuery={onApplyQuery}/>)
