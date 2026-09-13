@@ -1,0 +1,15 @@
+{
+  "result": "passed",
+  "scope": "PM2 directory create-from-Excel only; system file panel result injected, all renderer UI, IPC registration/proof, HTTP, workbook reads and SQLite writes were real",
+  "checkedAt": "2026-09-13T03:04:15.881Z",
+  "checks": [
+    "first Excel table used injected system picker result, real IPC/file inspection/HTTP import, and persisted two records",
+    "directory reopened the same real workflow for a second independent Excel import"
+  ],
+  "excluded": [
+    "native picker manual interaction",
+    "existing-table replacement",
+    "detail-page editing",
+    "continuous import recovery: this historical run cleared localStorage before its second import, so it does not prove that a second import works with the first import's client recovery state intact"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-09-13T03:08:40.014226+00:00",
+  "command": "uv run python ../../scripts/measure-pm2-data.py (from apps/backend)",
+  "scope": {
+    "rows": 10000,
+    "columns": 3,
+    "transport": "FastAPI TestClient",
+    "database": "temporary SQLite",
+    "uiPerformanceExecuted": false
+  },
+  "timingsSeconds": {
+    "inspect": 1.342069,
+    "importPostAndBackgroundWork": 2.274319,
+    "getAllRecordPages": 2.031866,
+    "exportPostAndBackgroundWork": 0.635029
+  },
+  "evidence": {
+    "inspectionRowCount": 10000,
+    "importedRecordCount": 10000,
+    "pagination": {
+      "pageSize": 200,
+      "pageCount": 50,
+      "recordCount": 10000
+    },
+    "sourceSha256Before": "fd4e90657bc8c6ed655b4322e9cff75f904d42792a342deb07d10f8bcdf3992e",
+    "sourceSha256After": "fd4e90657bc8c6ed655b4322e9cff75f904d42792a342deb07d10f8bcdf3992e",
+    "sourceHashPreserved": true,
+    "exportSha256": "4c3dd95ca5f3f74c66f187b4162494581a023ad5817811e0c5ca9c2832b7dc72",
+    "exportResultHashMatchesFile": true,
+    "exportedDataRowCount": 10000,
+    "exportedColumnCount": 3,
+    "leadingZeroValues": {
+      "first": "000001",
+      "last": "010000"
+    }
+  },
+  "limitations": [
+    "This is one local backend measurement, not a general large-table performance guarantee.",
+    "Renderer/UI responsiveness and memory use were not executed or measured."
+  ]
+}

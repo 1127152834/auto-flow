@@ -10,8 +10,11 @@ import { Select } from '../../../shared/components/ui/select'
 import { createProjectDataApi, DataCommandUncertain, type DataTable, type DirectoryQuery, type TableCreate, type TablePatch } from '../api'
 import { DataTableDirectory } from '../components/DataTableDirectory'
 import { DataTableFormDialog } from '../components/DataTableFormDialog'
+import { ExcelImportWizard } from '../components/ExcelImportWizard'
 import { DataCommandNotAccepted } from '../data-command'
+import { createExcelApi } from '../excel-api'
 import type { DataTableFormValues } from '../form-schema'
+import { createProjectFileClient } from '../project-file-client'
 
 export type DataTableDirectoryPageProps = {
   workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient
@@ -42,6 +45,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
   const key = storageKey(workspaceKey, projectId)
   const [query, setQuery] = useState(() => readQuery(key))
   const [editor, setEditor] = useState<Editor | null>(null)
+  const [excelSession, setExcelSession] = useState<string | null>(null)
   const [recoveryPending, setRecoveryPending] = useState(false)
   const [notAccepted, setNotAccepted] = useState(false)
   const [submissionEpoch, setSubmissionEpoch] = useState(0)
@@ -54,20 +58,24 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
   const cache = useQueryClient()
   const prefix = useMemo(() => [workspaceKey, instanceId, 'project-data', projectId] as const, [workspaceKey, instanceId, projectId])
   const directory = useQuery({ queryKey: [...prefix, 'tables', query], queryFn: ({ signal }) => api.list(query, signal), enabled: !disabled })
-  const pending = useRef<Pending | null>(null), dirty = useRef(false), busy = useRef(false), commandBusy = useRef(false)
+  const pending = useRef<Pending | null>(null), dirty = useRef(false), excelDirty = useRef(false), busy = useRef(false), excelBusy = useRef(false), commandBusy = useRef(false)
+  const creationMode = useRef<'form' | 'excel' | null>(null)
   const epoch = useRef(0), mounted = useRef(false)
-  const scope = useRef({ workspaceKey, projectId, client, instanceId, disabled, readonly, session: editor?.session })
+  const scope = useRef({ workspaceKey, projectId, client, instanceId, disabled, readonly, session: editor?.session ?? excelSession })
+  const files = useMemo(() => createProjectFileClient(client, window.autoflow, projectId, () => scope.current.workspaceKey === workspaceKey && scope.current.projectId === projectId && scope.current.client === client && scope.current.instanceId === instanceId && !scope.current.disabled), [client, instanceId, projectId, workspaceKey])
+  const excelApi = useMemo(() => createExcelApi(client, files, projectId), [client, files, projectId])
   const leaveResolver = useRef<((allowed: boolean) => void) | null>(null)
 
   useLayoutEffect(() => {
     const previous = scope.current
-    scope.current = { workspaceKey, projectId, client, instanceId, disabled, readonly, session: editor?.session }
-    if (previous.instanceId !== instanceId || previous.client !== client || previous.disabled !== disabled || previous.session !== editor?.session) {
+    const session = editor?.session ?? excelSession
+    scope.current = { workspaceKey, projectId, client, instanceId, disabled, readonly, session }
+    if (previous.instanceId !== instanceId || previous.client !== client || previous.disabled !== disabled || previous.session !== session) {
       epoch.current++; commandBusy.current = false; busy.current = false
       setSubmissionEpoch(value => value + 1)
       setRecoveryPending(Boolean(pending.current)); setReloading(false); setReloadOpen(false)
     }
-  }, [client, disabled, editor?.session, instanceId, projectId, readonly, workspaceKey])
+  }, [client, disabled, editor?.session, excelSession, instanceId, projectId, readonly, workspaceKey])
   useLayoutEffect(() => { mounted.current = true; return () => { mounted.current = false; epoch.current++; leaveResolver.current?.(false) } }, [])
   useEffect(() => { try { sessionStorage.setItem(key, JSON.stringify(query)) } catch { /* session storage can be unavailable */ } }, [key, query])
   useEffect(() => {
@@ -76,22 +84,28 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
     if (query.page > last) setQuery(current => ({ ...current, page: last }))
   }, [directory.data, query.page, query.pageSize])
   const guard = useCallback(async () => {
-    if (busy.current || commandBusy.current || pending.current) return false
-    if (!dirty.current) return true
+    if (busy.current || excelBusy.current || commandBusy.current || pending.current) return false
+    if (!dirty.current && !excelDirty.current) return true
     if (leaveResolver.current) return false
     setLeaveOpen(true)
     return new Promise<boolean>(resolve => { leaveResolver.current = resolve })
   }, [])
   useEffect(() => { registerLeaveGuard(guard); return () => registerLeaveGuard(null) }, [guard, registerLeaveGuard])
   const finishLeave = (allow: boolean) => {
-    if (busy.current || commandBusy.current || pending.current) return
-    if (allow) { dirty.current = false; setEditor(null) }
+    if (busy.current || excelBusy.current || commandBusy.current || pending.current) return
+    if (allow) { dirty.current = false; excelDirty.current = false; creationMode.current = null; setEditor(null); setExcelSession(null) }
     const resolve = leaveResolver.current; leaveResolver.current = null; setLeaveOpen(false); resolve?.(allow)
   }
   const startEditor = (table: DataTable | null) => {
-    if (disabled || readonly || commandBusy.current || pending.current) return
+    if (disabled || readonly || commandBusy.current || pending.current || creationMode.current) return
+    creationMode.current = 'form'
     setError(null); setConflict(false); setNotAccepted(false); dirty.current = false
     setEditor({ session: crypto.randomUUID(), table })
+  }
+  const startExcel = () => {
+    if (disabled || readonly || commandBusy.current || pending.current || creationMode.current) return
+    creationMode.current = 'excel'
+    excelDirty.current = false; setExcelSession(crypto.randomUUID())
   }
   const execute = async (mode: 'submit' | 'lookup' | 'retry', values?: DataTableFormValues) => {
     if (!editor || scope.current.disabled || commandBusy.current || (mode !== 'lookup' && scope.current.readonly)) return
@@ -115,7 +129,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
         : await (resume ? api.resumePatch(command.tableId, command.body, command.key, policy) : api.patch(command.tableId, command.body, command.key, policy))
       if (!current()) return
       pending.current = null; dirty.current = false; busy.current = false; commandBusy.current = false
-      setRecoveryPending(false); setEditor(null)
+      setRecoveryPending(false); creationMode.current = null; setEditor(null)
       cache.setQueryData([...prefix, 'table', saved.tableId], saved)
       void cache.invalidateQueries({ queryKey: [...prefix, 'tables'] })
       notify({ title: command.kind === 'create' ? '数据表已创建' : '数据表已保存', tone: 'success' })
@@ -154,12 +168,13 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
       <Select aria-label="数据表排序" clearable={false} value={query.sort} options={sorts} onValueChange={value => setQuery({ ...query, sort: value as DirectoryQuery['sort'], page: 1 })} />
     </div>
     {disabled ? <p role="status" className="text-sm text-muted">正在恢复服务连接，暂时无法保存。</p> : null}
-    <DataTableDirectory items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error?.message} readonly={readonly || disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
+    <DataTableDirectory items={directory.data?.items ?? []} loading={directory.isPending && !directory.isError} error={directory.error?.message} readonly={readonly || disabled} hasFilters={Boolean(query.query || query.sourceKind)} onRetry={() => void directory.refetch()} onCreate={() => startEditor(null)} onImportExcel={startExcel} onEdit={id => { const table = directory.data?.items.find(item => item.tableId === id); if (table) startEditor(table) }} onOpen={onOpen} />
     {directory.data ? <Pagination offset={(query.page - 1) * query.pageSize} limit={query.pageSize} total={directory.data.total} count={directory.data.items.length} disabled={directory.isFetching || disabled} onOffsetChange={offset => setQuery({ ...query, page: Math.floor(offset / query.pageSize) + 1 })} /> : null}
     <DataTableFormDialog open={Boolean(editor)} mode={editor?.table ? 'edit' : 'create'} sessionKey={editor?.session ?? 'closed'} submissionEpoch={submissionEpoch} initialValues={editor?.table ? tableValues(editor.table) : undefined}
       readonly={readonly || disabled} recoveryPending={recoveryPending} onRecover={disabled ? undefined : () => execute('lookup')} onSubmit={values => execute('submit', values)} onDirtyChange={dirtyChanged} onSavingChange={savingChanged} onRequestClose={guard}
-      onOpenChange={open => { if (!open && !pending.current && !commandBusy.current) { dirty.current = false; setEditor(null) } }} error={error}
+      onOpenChange={open => { if (!open && !pending.current && !commandBusy.current) { dirty.current = false; creationMode.current = null; setEditor(null) } }} error={error}
       errorActions={notAccepted ? <div className="flex gap-2"><Button disabled={disabled || readonly} onClick={() => void execute('retry')}>重试原请求</Button><Button disabled={disabled} variant="ghost" onClick={() => { if (commandBusy.current || !notAccepted) return; pending.current = null; setNotAccepted(false); setRecoveryPending(false); setError(null) }}>放弃未接受请求</Button></div> : conflict ? <Button disabled={disabled || reloading} onClick={() => setReloadOpen(true)}>载入最新资料</Button> : undefined} />
+    <ExcelImportWizard open={Boolean(excelSession)} mode="create" sessionKey={excelSession ?? 'closed'} scopeKey={JSON.stringify([workspaceKey, projectId])} contextKey={JSON.stringify([workspaceKey, instanceId, projectId])} api={excelApi} files={files} readonly={readonly} disabled={disabled} onClose={() => { excelDirty.current=false; creationMode.current=null; setExcelSession(null) }} onDirtyChange={value => { excelDirty.current=value }} onBusyChange={value => { excelBusy.current=value }} onCompleted={operation => { if (operation.status !== 'succeeded' || !operation.result || !('table' in operation.result)) return; excelDirty.current=false; creationMode.current=null; setExcelSession(null); void cache.invalidateQueries({ queryKey: [...prefix, 'tables'] }); onOpen(operation.result.table.tableId) }} />
     <AlertDialog open={leaveOpen} onOpenChange={open => { if (!open) finishLeave(false) }}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>离开后，本次数据表修改不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button onClick={() => finishLeave(false)}>继续编辑</Button></AlertDialogCancel><Button variant="danger" onClick={() => finishLeave(true)}>放弃修改</Button></div></AlertDialogContent></AlertDialog>
     <AlertDialog open={reloadOpen} onOpenChange={open => { if (!reloading) setReloadOpen(open) }}><AlertDialogContent><AlertDialogTitle>替换当前草稿？</AlertDialogTitle><AlertDialogDescription>载入最新资料后，当前输入将被替换。请先保留需要的内容。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={reloading}>继续编辑</Button></AlertDialogCancel><Button disabled={disabled || reloading} onClick={() => void reload()}>{reloading ? '正在载入…' : '重新编辑'}</Button></div></AlertDialogContent></AlertDialog>
   </section>

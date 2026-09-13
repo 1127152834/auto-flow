@@ -4,11 +4,13 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ApiClientError, type ApiRequestInit, type StreamingApiClient } from '../../../shared/api/client'
+import { choiceTestEnvironment, chooseOption } from '../../../shared/testing/choice-user'
 import type { DataTable } from '../api'
 import { DataTableDirectoryPage, type DataTableDirectoryPageProps } from './DataTableDirectoryPage'
 
 const table: DataTable = { projectId: 'p', tableId: 't', name: '客户数据', description: '说明', sourceKind: 'local', datasetGeneration: 'g', tableRevision: 3, identity: { mode: 'system' }, slotDefinitions: [], recordCount: 7, syncSummary: { status: 'notApplicable', pendingCount: 0, unknownCount: 0, lastConfirmedAt: null }, createdAt: '2026-09-13T09:00:00Z', updatedAt: '2026-09-13T10:00:00Z' }
 const page = (items = [table], total = items.length) => ({ items, total, page: 1, pageSize: 50, sort: '-updatedAt' })
+choiceTestEnvironment()
 function deferred<T>() { let resolve!: (value: T) => void, reject!: (error: unknown) => void; return { promise: new Promise<T>((yes, no) => { resolve = yes; reject = no }), resolve, reject } }
 function mount(request: StreamingApiClient['request'], override: Partial<DataTableDirectoryPageProps> = {}) {
   const cache = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
@@ -17,8 +19,39 @@ function mount(request: StreamingApiClient['request'], override: Partial<DataTab
   const view = render(tree())
   return { ...view, props, cache, update: (next: Partial<DataTableDirectoryPageProps>) => view.rerender(tree(next)) }
 }
-beforeEach(() => { sessionStorage.clear(); vi.stubGlobal('ResizeObserver', class { observe() {}; unobserve() {}; disconnect() {} }) })
+beforeEach(() => { sessionStorage.clear(); const values=new Map<string,string>(); vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key),clear:()=>values.clear()}); vi.stubGlobal('ResizeObserver', class { observe() {}; unobserve() {}; disconnect() {} }); vi.stubGlobal('autoflow', { chooseExcelInput: vi.fn(), getProjectFileContext: vi.fn() }) })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+
+it('opens the controlled Excel import flow exclusively from the directory', async () => {
+  mount(vi.fn().mockResolvedValue(page([])) as StreamingApiClient['request'])
+  await userEvent.click(await screen.findByRole('button',{name:'从 Excel 导入'}))
+  expect(screen.getByText('从 Excel 新建数据表')).toBeVisible()
+  expect(screen.getByRole('button',{name:'选择 Excel 文件'})).toBeVisible()
+  expect(screen.queryByRole('dialog',{name:'新建数据表'})).not.toBeInTheDocument()
+})
+
+it('claims one creation mode synchronously when both entry actions fire together', async () => {
+  mount(vi.fn().mockResolvedValue(page([])) as StreamingApiClient['request'])
+  const local=await screen.findByRole('button',{name:'新建数据表'}), excel=screen.getByRole('button',{name:'从 Excel 导入'})
+  act(()=>{fireEvent.click(local);fireEvent.click(excel)})
+  expect(screen.getByLabelText('数据表名称')).toBeVisible()
+  expect(screen.queryByText('从 Excel 新建数据表')).not.toBeInTheDocument()
+})
+
+it('chooses, inspects, maps, and submits Excel through the real adapter', async () => {
+  const selection={selectionToken:'selection',displayName:'客户.xlsx',kind:'excel-input',expiresAt:'2099-01-01T00:00:00Z'}
+  const inspection={inspectionId:'inspection',fingerprint:'f'.repeat(64),filename:'客户.xlsx',expiresAt:'2099-01-01T00:00:00Z',issues:[],sheets:[{sheetId:'sheet',name:'客户',headers:['姓名'],sample:[['张三']],rowCount:1,ignoredEmptyRowCount:0,formulaRowCount:[0],identityCandidates:[0],issues:[]}]}
+  vi.mocked(window.autoflow.chooseExcelInput!).mockResolvedValue({ok:true,value:selection as never}); vi.mocked(window.autoflow.getProjectFileContext!).mockResolvedValue({ok:true,value:{windowId:7,windowToken:'proof'}})
+  const opened=vi.fn(), request=vi.fn(async (path:string,init?:ApiRequestInit) => {
+    const base={projectId:'p',idempotencyKey:new Headers(init?.headers).get('Idempotency-Key'),status:'succeeded',statusRevision:2,error:null,createdAt:'',updatedAt:'',completedAt:''}
+    if(path.endsWith('/table-imports/excel/inspect')) return {operation:{...base,operationId:'inspect',kind:'inspectExcel',resource:{type:'project',projectId:'p'},result:inspection}}
+    if(path.endsWith('/table-imports/excel')&&init?.method==='POST') return {operation:{...base,operationId:'import',kind:'importExcel',resource:{type:'table',projectId:'p',tableId:'t'},result:{table,importedRecordCount:1}}}
+    return page([])
+  })
+  mount(request as StreamingApiClient['request'],{onOpen:opened}); await userEvent.click(await screen.findByRole('button',{name:'从 Excel 导入'})); await userEvent.click(screen.getByRole('button',{name:'选择 Excel 文件'})); await userEvent.click(await screen.findByRole('button',{name:'检查文件'}))
+  await chooseOption(userEvent.setup(),await screen.findByRole('combobox',{name:'工作表'}),'sheet'); await userEvent.click(screen.getByRole('button',{name:'继续字段映射'})); await userEvent.click(screen.getByRole('button',{name:'继续导入'})); await userEvent.type(screen.getByLabelText('数据表名称'),'客户'); await userEvent.click(screen.getByRole('button',{name:'确认并开始导入'})); await waitFor(()=>expect(opened).toHaveBeenCalledWith('t'))
+  expect(request.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(2)
+})
 
 it('queries the real data API with scoped filters, paging, and cancelable reads', async () => {
   const request = vi.fn(async () => page([table], 70))

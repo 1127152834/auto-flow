@@ -420,3 +420,52 @@ def test_import_rejects_inspection_grant_from_previous_service_instance(tmp_path
         assert response.status_code == 410, response.text
         assert response.json()["error"]["code"] == "FILE_SELECTION_EXPIRED"
         assert client.get(f"/api/v1/projects/{project}/tables").json()["total"] == 0
+
+
+def test_header_only_workbook_publishes_a_real_empty_dataset_and_allows_new_record(
+    tmp_path,
+):
+    from openpyxl import load_workbook
+
+    app = _app(tmp_path)
+    with TestClient(app, headers={"x-autoflow-token": "renderer"}) as client:
+        project, token, proof = prepare(client, tmp_path)
+        book = load_workbook(tmp_path / "source.xlsx")
+        book.active.delete_rows(2)
+        book.save(tmp_path / "source.xlsx")
+        book.close()
+        inspection = client.post(
+            f"/api/v1/projects/{project}/table-imports/excel/inspect",
+            json={"selectionToken": token},
+            headers=proof,
+        ).json()["inspection"]
+        assert inspection["sheets"][0]["rowCount"] == 0
+        body = {**request_for(inspection), "identity": {"mode": "system"}}
+        key = str(uuid4())
+        assert (
+            client.post(
+                f"/api/v1/projects/{project}/table-imports/excel",
+                json=body,
+                headers={**proof, "Idempotency-Key": key},
+            ).status_code
+            == 202
+        )
+        result = client.get(
+            f"/api/v1/projects/{project}/operations/by-idempotency-key/{key}"
+        ).json()
+        assert result["status"] == "succeeded", result
+        table = result["result"]["table"]
+        assert table["recordCount"] == 0
+        base = f"/api/v1/projects/{project}/tables/{table['tableId']}"
+        field = client.get(f"{base}/fields").json()["items"][0]
+        created = client.post(
+            f"{base}/records",
+            json={
+                "datasetGeneration": table["datasetGeneration"],
+                "values": [{"fieldId": field["ref"]["fieldId"], "value": "001"}],
+            },
+            headers={"Idempotency-Key": str(uuid4())},
+        )
+        assert created.status_code == 201, created.text
+        assert created.json()["statusId"] is None
+        assert client.get(base).json()["recordCount"] == 1

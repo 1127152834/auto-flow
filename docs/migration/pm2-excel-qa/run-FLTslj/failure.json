@@ -1,0 +1,8 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T03:03:46.448Z",
+  "checks": [
+    "first Excel table used injected system picker result, real IPC/file inspection/HTTP import, and persisted two records"
+  ],
+  "error": "control missing: 选择 Excel 文件"
+}
