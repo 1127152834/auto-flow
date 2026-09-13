@@ -150,3 +150,15 @@ it('keeps the cancel identity when restoring the original key cannot be persiste
   expect(JSON.parse(localStorage.getItem('autoflow:status-batch:w:p:t')!)).toHaveProperty('cancel.operationId', 'op')
 })
 import '@testing-library/jest-dom/vitest'
+
+it('shows the persisted target count and actionable conflict messages after selection is cleared', async () => {
+  const targets = Array.from({ length: 120 }, () => ({ recordRef: ref, expectedStatusRevision: 3 }))
+  const operation = { operationId: 'partial', idempotencyKey: 'saved', kind: 'setRecordStatuses', status: 'failed', statusRevision: 4, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { request: { targets, statusId: null, blockSize: 100 }, blocks: [{ blockers: [{ code: 'REVISION_CONFLICT', message: 'Status revision changed', details: { expectedRevision: 3, currentRevision: 4 } }] }], changedCount: 20, conflictCount: 100, notStartedCount: 0, cancelled: false }, error: { code: 'BATCH_STATUS_CONFLICT', message: 'One or more blocks conflicted' } }
+  localStorage.setItem('autoflow:status-batch:w:p:t', 'saved')
+  render(<RecordStatusBatchDialog open sessionKey="reopen" contextKey="w:i:p:t" storageScopeKey="w:p:t" targets={[]} statuses={[status]} api={{ lookup: vi.fn().mockResolvedValue(operation) } as never} onClose={vi.fn()} />)
+  await screen.findByText('操作未全部完成')
+  expect(screen.getByText('本次操作共 120 条记录，提交后按每块 100 条处理。')).toBeInTheDocument()
+  expect(screen.getByText('部分记录发生冲突，已提交的修改已保留；请查看分块结果。')).toBeInTheDocument()
+  expect(screen.getByText('记录状态已变化，本块未修改。请重新选择记录后再处理。')).toBeInTheDocument()
+  expect(screen.queryByText('One or more blocks conflicted')).not.toBeInTheDocument()
+})

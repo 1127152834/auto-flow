@@ -3876,6 +3876,21 @@ export type components = {
             type: "record";
             recordRef: components["schemas"]["DataRecordRef"];
         };
+        /** RecordStatusBatchBlocker */
+        RecordStatusBatchBlocker: {
+            /** Code */
+            code: string;
+            /** Resource */
+            resource: components["schemas"]["FieldResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["StatusResourceLocator"];
+            /** State */
+            state: string;
+            /** Message */
+            message: string;
+            /** Details */
+            details?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
         /** RecordStatusBatchCancel */
         RecordStatusBatchCancel: {
             /** Expectedoperationrevision */
@@ -3932,7 +3947,7 @@ export type components = {
              */
             state: "notStarted" | "committed" | "conflicted";
             /** Blockers */
-            blockers: components["schemas"]["DataMutationBlocker"][];
+            blockers: components["schemas"]["RecordStatusBatchBlocker"][];
             /** Committedrevisions */
             committedRevisions: components["schemas"]["CommittedStatusRevision"][];
         };

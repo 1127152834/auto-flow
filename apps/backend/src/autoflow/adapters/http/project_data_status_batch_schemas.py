@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, JsonValue
 
 from .project_data_catalog_schemas import Revision
 from .project_data_impact_schemas import DataMutationBlocker
@@ -33,11 +33,17 @@ class CommittedStatusRevision(ApiModel):
     status_revision: Revision
 
 
+class RecordStatusBatchBlocker(DataMutationBlocker):
+    details: dict[str, JsonValue] = Field(
+        default_factory=dict, exclude_if=lambda value: not value
+    )
+
+
 class RecordStatusBlock(ApiModel):
     block_index: int
     targets: list[RecordStatusTarget]
     state: Literal["notStarted", "committed", "conflicted"]
-    blockers: list[DataMutationBlocker]
+    blockers: list[RecordStatusBatchBlocker]
     committed_revisions: list[CommittedStatusRevision]
 
 

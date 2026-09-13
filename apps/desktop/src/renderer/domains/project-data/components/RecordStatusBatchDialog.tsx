@@ -22,6 +22,14 @@ export type RecordStatusBatchDialogProps = {
 const storageKey = (scope: string) => `autoflow:status-batch:${scope}`
 const message = (error: unknown) => error instanceof Error ? error.message : '批量状态操作失败'
 const terminal = (operation: ProjectOperation) => operation.status === 'succeeded' || operation.status === 'failed'
+const batchMessage = (value: { code?: unknown; message?: unknown } | null | undefined): string | null => {
+  if (!value) return null
+  if (value.code === 'REVISION_CONFLICT') return '记录状态已变化，本块未修改。请重新选择记录后再处理。'
+  if (value.code === 'BATCH_STATUS_CONFLICT') return '部分记录发生冲突，已提交的修改已保留；请查看分块结果。'
+  if (value.code === 'BATCH_STATUS_CANCELLED') return '已停止后续处理，已提交的修改已保留。'
+  if (value.code === 'BATCH_STATUS_EXECUTION_FAILED') return '批量处理未完成，请刷新结果核对已提交的修改。'
+  return typeof value.message === 'string' ? value.message : null
+}
 
 export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageScopeKey, records = [], targets, statuses, api, disabled, readonly, onClose, onCompleted, onSettled, onDirtyChange, onBusyChange }: RecordStatusBatchDialogProps) {
   const [statusId, setStatusId] = useState<string | null>(null), [preview, setPreview] = useState<StatusBatchPreview | null>(null), [frozen, setFrozen] = useState<StatusBatchRequest | null>(null)
@@ -102,12 +110,14 @@ export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageS
   }
   const startNew = () => { if (!operation || !terminal(operation)) return; try { localStorage.removeItem(storageKey(storageScopeKey)) } catch (cause) { setError(message(cause)); return }; operationEpoch.current = null; setOperation(null); setStartPending(null); setCancelPending(null); setPreview(null); setFrozen(null); setError(null) }
   const blockers = preview?.blocks.flatMap(block => block.blockers) ?? [], writeBlocked = Boolean(disabled || readonly)
-  return <Dialog open={open} onOpenChange={next => { if (!next) onClose() }}><DialogContent busy={busy}><DialogTitle>批量设置业务状态</DialogTitle><DialogDescription>已选择 {selectedTargets.length} 条记录，提交后按每块 100 条处理。</DialogDescription>
-    {operation ? <DataOperationStatus operation={operation} error={error ?? (operation.error && typeof operation.error.message === 'string' ? operation.error.message : null)} busy={busy} onRefresh={refresh}>
-      {operation.result && 'blocks' in operation.result ? <ul>{operation.result.blocks.flatMap(block => block.blockers).map((item, index) => <li key={index}>{item.message}</li>)}</ul> : null}
+  const outcome = operation?.result && 'blocks' in operation.result ? operation.result : null
+  const targetCount = outcome?.request?.targets.length ?? startPending?.request?.targets.length ?? frozen?.targets.length ?? selectedTargets.length
+  return <Dialog open={open} onOpenChange={next => { if (!next) onClose() }}><DialogContent busy={busy}><DialogTitle>批量设置业务状态</DialogTitle><DialogDescription>{operation ? '本次操作共' : '已选择'} {targetCount} 条记录，提交后按每块 {outcome?.request?.blockSize ?? frozen?.blockSize ?? 100} 条处理。</DialogDescription>
+    {operation ? <DataOperationStatus operation={operation} error={error ?? batchMessage(operation.error)} busy={busy} onRefresh={refresh}>
+      {operation.result && 'blocks' in operation.result ? <ul>{operation.result.blocks.flatMap(block => block.blockers).map((item, index) => <li key={index}>{batchMessage(item)}</li>)}</ul> : null}
       {terminal(operation) ? operation.status === 'failed' ? <Button onClick={startNew}>开始新的批量操作</Button> : null : cancelPending ? <Button disabled={busy || (cancelPending.retry && writeBlocked)} onClick={() => void (cancelPending.retry ? stop() : recoverCancel())}>{cancelPending.retry ? '按原键重试停止' : '核对停止结果'}</Button> : <AlertDialog><AlertDialogTrigger asChild><Button disabled={writeBlocked}>停止后续处理</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>停止后续处理？</AlertDialogTitle><AlertDialogDescription>已经提交的修改不会回滚，只关闭尚未开始的块。</AlertDialogDescription><div className="flex gap-2"><AlertDialogCancel asChild><Button variant="ghost">返回</Button></AlertDialogCancel><AlertDialogAction asChild><Button disabled={writeBlocked} onClick={() => void stop()}>确认停止</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>}
     </DataOperationStatus> : <><Select aria-label="目标状态" value={statusId} placeholder="清空状态" options={statuses.map(item => ({ value: item.statusId, label: item.name }))} onValueChange={value => { setStatusId(value); setPreview(null); setFrozen(null) }} disabled={disabled} readOnly={readonly} />
-      {preview ? <section><p>预检完成，共 {frozen?.targets.length ?? 0} 条</p>{blockers.map((item, index) => <p role="alert" key={index}>{item.message}</p>)}</section> : null}{selectedTargets.length > 1000 ? <p role="alert">一次最多处理 1000 条记录，请缩小选择范围。</p> : null}{error ? <p role="alert">{error}</p> : null}
+      {preview ? <section><p>预检完成，共 {frozen?.targets.length ?? 0} 条</p>{blockers.map((item, index) => <p role="alert" key={index}>{batchMessage(item)}</p>)}</section> : null}{selectedTargets.length > 1000 ? <p role="alert">一次最多处理 1000 条记录，请缩小选择范围。</p> : null}{error ? <p role="alert">{error}</p> : null}
       <div className="flex gap-2"><Button variant="ghost" onClick={onClose}>关闭</Button><Button onClick={inspect} disabled={busy || writeBlocked || selectedTargets.length === 0 || selectedTargets.length > 1000 || Boolean(startPending)}>预检批量状态</Button>{preview && !startPending ? <Button onClick={() => void start()} disabled={busy || writeBlocked}>确认开始</Button> : null}{startPending ? <Button onClick={() => void (startPending.retry ? start() : recoverStart())} disabled={busy || (startPending.retry && writeBlocked)}>{startPending.retry ? '按原键重试' : '核对原操作'}</Button> : null}</div>
     </>}
   </DialogContent></Dialog>
