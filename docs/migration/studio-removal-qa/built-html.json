@@ -1,0 +1,13 @@
+{
+  "result": "passed",
+  "entry": "built-html",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checks": [
+    "main application and sidecar start; retired workflow routes are absent",
+    "overview opens empty Studio; repeat open reuses and restores the same window",
+    "Studio closes and reopens without editor, run, or export state",
+    "closing only the main window leaves Studio and the shared sidecar alive",
+    "normal application quit cleans up the sidecar"
+  ]
+}

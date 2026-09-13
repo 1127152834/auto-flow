@@ -32,7 +32,6 @@ from autoflow.domain.profiles.errors import (
     ProfileValidationError,
     ProxyUnavailable,
 )
-from autoflow.domain.workflows.models import WorkflowError
 
 _MODEL_ERROR_MESSAGES = {
     "VALIDATION_ERROR": "请求参数无效",
@@ -121,23 +120,6 @@ def install_error_handlers(app: FastAPI) -> None:
     async def request_validation_error(
         _request: Request, error: RequestValidationError
     ) -> JSONResponse:
-        if _request.url.path.startswith("/api/v1/workflows"):
-            issues = []
-            body = error.body if isinstance(error.body, dict) else {}
-            nodes = body.get("document", {}).get("nodes", []) if isinstance(body.get("document"), dict) else []
-            for problem in error.errors():
-                location = problem["loc"]
-                if location[:1] == ("body",):
-                    location = location[1:]
-                path = [str(part) for part in location]
-                node_id = None
-                if len(path) > 2 and path[:2] == ["document", "nodes"] and path[2].isdigit() and isinstance(nodes, list):
-                    index = int(path[2])
-                    if index < len(nodes) and isinstance(nodes[index], dict):
-                        candidate = nodes[index].get("id")
-                        node_id = candidate if isinstance(candidate, str) else None
-                issues.append({"nodeId": node_id, "path": path, "code": "INVALID_STRUCTURE", "message": str(problem["msg"])})
-            return error_response(422, "WORKFLOW_STRUCTURE_INVALID", "工作流结构无效", {"issues": issues})
         fields: dict[str, str] = {}
         api_key_required = False
         for issue in error.errors():
@@ -161,13 +143,6 @@ def install_error_handlers(app: FastAPI) -> None:
                 {"fields": {"apiKey": "API key is required"}},
             )
         return error_response(422, "VALIDATION_ERROR", "Request validation failed", {"fields": fields})
-
-    @app.exception_handler(WorkflowError)
-    async def workflow_error(_request: Request, error: WorkflowError) -> JSONResponse:
-        return error_response(error.status, error.code, error.message, {"issues": [
-            {"nodeId": issue.node_id, "path": issue.path, "code": issue.code, "message": issue.message}
-            for issue in error.issues
-        ]})
 
     @app.exception_handler(ProfileValidationError)
     async def profile_validation_error(

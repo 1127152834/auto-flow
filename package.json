@@ -18,9 +18,7 @@
     "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
     "test:scripts": "node --test scripts/*.test.mjs",
     "smoke:desktop": "node scripts/smoke-desktop.mjs",
-    "smoke:studio": "node scripts/smoke-workflow-studio.mjs",
-    "smoke:runs": "node scripts/smoke-workflow-runs.mjs",
-    "smoke:studio:runs": "node scripts/smoke-workflow-studio-runs.mjs"
+    "smoke:studio": "node scripts/smoke-studio-window.mjs"
   },
   "devDependencies": {
     "openapi-typescript": "^7.13.0"

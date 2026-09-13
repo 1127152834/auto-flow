@@ -16,7 +16,7 @@ export function ResourceOverview({ data }: { data: DashboardSnapshot }) {
 }
 
 const links = [
-  { target: 'automationStudio', title: '工作流工作台', hint: '在独立窗口中打开工作流编排工作台', icon: FlowArrow },
+  { target: 'automationStudio', title: '工作流工作台', hint: '打开空工作台窗口，编排功能待重建', icon: FlowArrow },
   { target: 'profiles', title: '管理浏览器配置', hint: '维护浏览器身份、内核与代理绑定', icon: Browser },
   { target: 'proxies', title: '管理代理出口', hint: '维护代理连接与本地代理组', icon: Globe },
   { target: 'models', title: '管理模型资源', hint: '连接供应商并维护模型目录', icon: Cube },

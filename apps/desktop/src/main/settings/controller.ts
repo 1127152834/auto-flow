@@ -26,12 +26,7 @@ const BLOCKER_LABELS: Record<string, string> = {
   proxy_sync_active: '代理同步进行中', proxy_operation_active: '代理任务进行中',
   profile_in_use: '浏览器配置正在使用', api_mutation_in_progress: '数据保存或资源操作进行中',
   api_mutations_paused: '服务正在准备切换',
-  workflow_inspection_active: '拾取浏览器仍打开，请先关闭',
-  workflow_run_active: '工作流正在运行，请先停止', test_browser_process_active: '测试浏览器仍在运行',
-}
-
-function allowsWorkflowLeave(blockers: string[]): boolean {
-  return blockers.some(code => code === 'workflow_run_active' || code === 'workflow_inspection_active') && blockers.every(code => code === 'workflow_run_active' || code === 'workflow_inspection_active' || code === 'profile_in_use')
+  test_browser_process_active: '测试浏览器仍在运行',
 }
 
 export class SettingsController {
@@ -104,7 +99,7 @@ export class SettingsController {
     const blockers = runtime?.blockers.map(code => BLOCKER_LABELS[code] ?? '本地任务进行中，请等待任务结束') ?? (state.state === 'ready' ? ['无法读取占用状态，请重试'] : [])
     return {
       preferences: this.getPreferences(),
-      workspace: { path: this.settings.currentPath, previousPath: this.settings.previousPath, paths: this.paths(), blocked: blockers.length > 0 || this.operation !== 'idle' || state.state === 'starting', canChoose: this.operation === 'idle' && state.state !== 'starting' && (blockers.length === 0 || !!runtime && allowsWorkflowLeave(runtime.blockers)), blockers, recovery: this.recovery, needsSelection: this.needsSelection },
+      workspace: { path: this.settings.currentPath, previousPath: this.settings.previousPath, paths: this.paths(), blocked: blockers.length > 0 || this.operation !== 'idle' || state.state === 'starting', blockers, recovery: this.recovery, needsSelection: this.needsSelection },
       service: { state: state.state, apiVersion: state.state === 'ready' ? state.apiVersion : null, baseUrl: state.state === 'ready' ? state.baseUrl : null, message: state.state === 'failed' ? '本地服务启动失败，请重试启动或选择其他工作区' : null },
       runtime: { ...this.options.runtime, backendVersion: runtime?.backendVersion ?? null, pythonVersion: runtime?.pythonVersion ?? null, sqliteVersion: runtime?.sqliteVersion ?? null },
       operation: this.operation,
@@ -130,9 +125,7 @@ export class SettingsController {
   async chooseWorkspace(source: unknown): Promise<WorkspaceChoice | null> {
     this.assertIdle()
     if (source !== 'choose' && source !== 'previous') throw new SettingsError('INVALID_REQUEST', '无效的工作区选择方式')
-    // Selecting a path does not switch services. Confirm runs Studio's save/stop
-    // handshake first; quiesce below still rejects every remaining blocker.
-    await this.checkIdleTasks(true)
+    await this.checkIdleTasks()
     let selected: string | null
     if (source === 'previous') {
       if (!this.settings.previousPath) throw new SettingsError('NO_PREVIOUS_WORKSPACE', '没有上一个工作区')
@@ -260,13 +253,13 @@ export class SettingsController {
     return { workspace: root, database: join(root, 'data', 'autoflow.sqlite3'), profiles: join(root, 'workspace', 'profiles'), kernels: join(root, 'data', 'kernels'), logs: join(root, 'logs') }
   }
 
-  private async checkIdleTasks(allowWorkflowChoice = false): Promise<void> {
+  private async checkIdleTasks(): Promise<void> {
     const status = this.getStatus()
     if (status.state === 'starting') throw new SettingsError('SERVICE_STARTING', '本地服务正在启动，请稍后再试')
     if (status.state !== 'ready') return
     const runtime = await this.backendRuntime()
     if (!runtime) throw new SettingsError('WORKSPACE_STATUS_UNKNOWN', '无法读取占用状态，请重试')
-    if (runtime.blockers.length > 0 && !(allowWorkflowChoice && allowsWorkflowLeave(runtime.blockers))) throw new SettingsError('WORKSPACE_BUSY', runtime.blockers.includes('workflow_run_active') ? '工作流正在运行，请先停止，再重启服务或切换工作区' : '任务进行中，暂时无法重启或切换工作区；请等待任务结束')
+    if (runtime.blockers.length > 0) throw new SettingsError('WORKSPACE_BUSY', '任务进行中，暂时无法重启或切换工作区；请等待任务结束')
   }
 
   private async quiesce(): Promise<void> {

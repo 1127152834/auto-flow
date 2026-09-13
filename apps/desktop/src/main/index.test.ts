@@ -27,10 +27,8 @@ let context: DesktopRuntimeContext
 let handlers: Map<string, (event: DesktopIpcEvent, ...args: unknown[]) => unknown>
 let app: EventEmitter & { quit: Mock<() => void> }
 let settings: { shutdown: ReturnType<typeof vi.fn>; confirmWorkspace: ReturnType<typeof vi.fn>; restart: ReturnType<typeof vi.fn> }
-let reloadMenuItem: { role: string; enabled: boolean }
 const sender = (window: FakeWindow) => ({ sender: window.webContents, senderFrame: window.webContents.mainFrame })
 const invoke = (channel: string, window: FakeWindow, ...args: unknown[]) => handlers.get(channel)!(sender(window), ...args)
-const pendingRequest = (window: FakeWindow) => window.webContents.send.mock.calls.slice().reverse().find(call => call[0] === 'autoflow:studio-prepare-leave')![1] as { id: string; reason: string }
 
 beforeEach(async () => {
   vi.resetModules()
@@ -38,7 +36,6 @@ beforeEach(async () => {
   FakeWindow.instances = []
   handlers = new Map()
   context = runtime()
-  reloadMenuItem = { role: 'reload', enabled: true }
   settings = { shutdown: vi.fn(async () => {}), confirmWorkspace: vi.fn(async () => { context = { ...runtime(), workspaceKey: '/workspace-b' }; return {} }), restart: vi.fn(async () => context.sidecar) }
   app = Object.assign(new EventEmitter(), {
     getPath: () => '/tmp/autoflow-main-test', getVersion: () => '0.1.0', isReady: () => true, isPackaged: false,
@@ -49,7 +46,7 @@ beforeEach(async () => {
     app.emit('before-quit', event)
     if (!event.preventDefault.mock.calls.length) for (const window of FakeWindow.instances) if (!window.destroyed) window.close()
   })
-  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, Menu: { getApplicationMenu: () => ({ items: [reloadMenuItem] }) }, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn() } }))
+  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn() } }))
   vi.doMock('./settings/controller', () => ({ SettingsController: class {
     constructor(private options: SettingsControllerOptions) {}
     start = async () => {}
@@ -71,76 +68,77 @@ afterEach(() => { vi.unstubAllGlobals(); vi.doUnmock('electron'); vi.doUnmock('.
 
 async function openStudio() {
   await invoke('autoflow:open-automation-studio', FakeWindow.instances[0]!)
-  const studio = FakeWindow.instances[1]!
-  invoke('autoflow:studio-ready', studio, true)
-  return studio
+  return FakeWindow.instances[1]!
 }
 
-it('grants runtime access to registered main frames but keeps settings and credential mutations main-only', async () => {
+it('keeps service credentials, restart, settings and credential mutations main-only', async () => {
   const main = FakeWindow.instances[0]!
   const studio = await openStudio()
   expect(invoke('autoflow:runtime-context', main)).toEqual(context)
-  expect(invoke('autoflow:runtime-context', studio)).toEqual(context)
-  expect(() => handlers.get('autoflow:runtime-context')!({ ...sender(studio), senderFrame: {} })).toThrow()
+  expect(() => invoke('autoflow:runtime-context', studio)).toThrow()
+  expect(() => invoke('autoflow:sidecar-status', studio)).toThrow()
+  expect(() => handlers.get('autoflow:runtime-context')!({ ...sender(main), senderFrame: {} })).toThrow()
   const stranger = new FakeWindow()
   expect(() => invoke('autoflow:runtime-context', stranger)).toThrow()
   await expect(invoke('autoflow:settings:preferences', studio, {})).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
   await expect(invoke('autoflow:copy-proxy-credentials', studio, {})).rejects.toThrow()
-  await expect(invoke('autoflow:sidecar-restart', studio)).resolves.toEqual(context.sidecar)
+  await expect(invoke('autoflow:sidecar-restart', studio)).rejects.toThrow()
+  expect(settings.restart).not.toHaveBeenCalled()
+  await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
   expect(settings.restart).toHaveBeenCalledOnce()
-  expect(JSON.stringify(invoke('autoflow:runtime-context', studio))).not.toContain('hostToken')
+  expect(JSON.stringify(invoke('autoflow:runtime-context', main))).not.toContain('hostToken')
 })
 
-it('does not change workspace before save approval, and publishes new context before unlocking Studio', async () => {
-  const studio = await openStudio()
-  const change = invoke('autoflow:settings:confirm-workspace', FakeWindow.instances[0]!, 'choice')
-  expect(pendingRequest(studio).reason).toBe('workspace')
-  expect(settings.confirmWorkspace).not.toHaveBeenCalled()
-  invoke('autoflow:studio-leave-result', studio, pendingRequest(studio).id, true)
-  await expect(change).resolves.toMatchObject({ ok: true })
-  expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
-  const messages = studio.webContents.send.mock.calls
-  expect(messages.at(-2)).toEqual(['autoflow:runtime-context-changed', context])
-  expect(messages.at(-1)).toEqual(['autoflow:studio-transition', false])
-})
-
-it('cancels a workspace switch on rejected save and unfreezes the old document after switch failure', async () => {
-  const studio = await openStudio()
+it('switches workspace without a Studio handshake and publishes credentials only to main', async () => {
   const main = FakeWindow.instances[0]!
-  const cancelled = invoke('autoflow:settings:confirm-workspace', main, 'choice')
-  invoke('autoflow:studio-leave-result', studio, pendingRequest(studio).id, false)
-  await expect(cancelled).resolves.toMatchObject({ ok: false, error: { code: 'STUDIO_TRANSITION_CANCELLED' } })
-  expect(settings.confirmWorkspace).not.toHaveBeenCalled()
+  const studio = await openStudio()
+  await expect(invoke('autoflow:settings:confirm-workspace', main, 'choice')).resolves.toMatchObject({ ok: true })
+  expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
+  expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:runtime-context-changed', context)
+  expect(studio.webContents.send.mock.calls.map(call => call[0])).not.toContain('autoflow:runtime-context-changed')
+  expect(handlers.has('autoflow:studio-ready')).toBe(false)
+  expect(handlers.has('autoflow:studio-leave-result')).toBe(false)
+  expect(handlers.has('autoflow:workflow-export')).toBe(false)
+})
+
+it('keeps the old workspace and open windows on switch failure', async () => {
+  const main = FakeWindow.instances[0]!
+  const studio = await openStudio()
   settings.confirmWorkspace.mockRejectedValueOnce(new Error('target failed'))
-  const failed = invoke('autoflow:settings:confirm-workspace', main, 'choice')
-  invoke('autoflow:studio-leave-result', studio, pendingRequest(studio).id, true)
-  await expect(failed).resolves.toMatchObject({ ok: false })
+  await expect(invoke('autoflow:settings:confirm-workspace', main, 'choice')).resolves.toMatchObject({ ok: false })
   expect(context.workspaceKey).toBe('/workspace-a')
-  expect(studio.webContents.send).toHaveBeenLastCalledWith('autoflow:studio-transition', false)
+  expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:runtime-context-changed', context)
   expect(studio.destroyed).toBe(false)
 })
 
-it('waits for Studio save before stopping the sidecar and honors cancel on application quit', async () => {
+it('stops the sidecar before quitting and closing the empty Studio', async () => {
   const studio = await openStudio()
+  let finishShutdown!: () => void
+  settings.shutdown.mockImplementationOnce(() => new Promise<void>(resolve => { finishShutdown = resolve }))
   app.quit()
-  expect(pendingRequest(studio).reason).toBe('quit')
-  expect(settings.shutdown).not.toHaveBeenCalled()
-  invoke('autoflow:studio-leave-result', studio, pendingRequest(studio).id, false)
-  await Promise.resolve(); await Promise.resolve()
-  expect(settings.shutdown).not.toHaveBeenCalled()
+  expect(settings.shutdown).toHaveBeenCalledOnce()
   expect(studio.destroyed).toBe(false)
-  app.quit()
-  invoke('autoflow:studio-leave-result', studio, pendingRequest(studio).id, true)
-  await vi.waitFor(() => expect(settings.shutdown).toHaveBeenCalledOnce())
+  finishShutdown()
   await vi.waitFor(() => expect(studio.destroyed).toBe(true))
 })
 
-it('keeps Studio alive and authorized when the main window closes and is recreated', async () => {
+it('keeps windows open after failed shutdown and permits a later retry', async () => {
+  const studio = await openStudio()
+  settings.shutdown.mockRejectedValueOnce(new Error('cleanup failed'))
+  app.quit()
+  await Promise.resolve(); await Promise.resolve()
+  expect(studio.destroyed).toBe(false)
+  app.quit()
+  await vi.waitFor(() => expect(studio.destroyed).toBe(true))
+  expect(settings.shutdown).toHaveBeenCalledTimes(2)
+})
+
+it('keeps Studio alive when the main window closes and permits reuse from its replacement', async () => {
   const studio = await openStudio()
   const original = FakeWindow.instances[0]!
   original.close()
   expect(studio.destroyed).toBe(false)
-  expect(invoke('autoflow:runtime-context', studio)).toEqual(context)
+  expect(settings.shutdown).not.toHaveBeenCalled()
   app.emit('activate')
   await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(3))
   const replacement = FakeWindow.instances[2]!
@@ -150,14 +148,4 @@ it('keeps Studio alive and authorized when the main window closes and is recreat
   await invoke('autoflow:settings:preferences', replacement, {})
   expect(replacement.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
   expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
-})
-
-it('restores the existing reload menu when focus returns from Studio to the main window', async () => {
-  const studio = await openStudio()
-  studio.emit('focus')
-  expect(reloadMenuItem.enabled).toBe(false)
-  FakeWindow.instances[0]!.emit('focus')
-  expect(reloadMenuItem.enabled).toBe(true)
-  studio.emit('focus')
-  expect(reloadMenuItem.enabled).toBe(false)
 })

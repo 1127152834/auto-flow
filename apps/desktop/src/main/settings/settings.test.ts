@@ -121,21 +121,20 @@ describe('desktop settings storage', () => {
 })
 
 describe('workspace and preference controller', () => {
-  it('allows target selection during a workflow but refuses replacement until cleanup', async () => {
+  it('blocks workspace selection and restart while browser resources are in use', async () => {
     let occupied = true
-    const target = temporary('workflow-choice')
-    const h = harness({ selectDirectory: async () => target, request: vi.fn(async () => new Response(JSON.stringify({ blockers: occupied ? ['workflow_run_active', 'profile_in_use'] : [] }))) })
+    const target = temporary('profile-in-use')
+    const selectDirectory = vi.fn(async () => target)
+    const h = harness({ selectDirectory, request: vi.fn(async () => new Response(JSON.stringify({ blockers: occupied ? ['profile_in_use', 'test_browser_process_active'] : [] }))) })
     await h.controller.start()
-    expect((await h.controller.snapshot()).workspace).toMatchObject({ blocked: true, canChoose: true })
-    const choice = await h.controller.chooseWorkspace('choose')
-    expect(choice?.path).toBe(realpathSync(target))
+    expect((await h.controller.snapshot()).workspace.blocked).toBe(true)
+    await expectCode(h.controller.chooseWorkspace('choose'), 'WORKSPACE_BUSY')
     await expectCode(h.controller.restart(), 'WORKSPACE_BUSY')
-    expect(h.sidecars[0].stops).toBe(0)
-    await expectCode(h.controller.confirmWorkspace(choice!.id), 'WORKSPACE_BUSY')
+    expect(selectDirectory).not.toHaveBeenCalled()
     expect(h.sidecars[0].stops).toBe(0)
     occupied = false
-    const nextChoice = await h.controller.chooseWorkspace('choose')
-    await h.controller.confirmWorkspace(nextChoice!.id)
+    const choice = await h.controller.chooseWorkspace('choose')
+    await h.controller.confirmWorkspace(choice!.id)
     expect(h.sidecars[0].stops).toBe(1)
   })
 

@@ -1,6 +1,5 @@
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
-import { createWorkflowExportHandler } from './ipc/workflow-export'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
@@ -22,14 +21,13 @@ const studio = new StudioWindowController({
 })
 
 function requireRuntimeSender(event: DesktopIpcEvent): void {
-  if (!isWindowMainFrame(event, mainWindow?.webContents.id) && !studio.isSender(event)) throw new Error('此窗口不能访问本地服务')
+  if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能访问本地服务')
 }
 
 function publishRuntimeContext(): void {
   if (!settings) return
   const context = settings.getRuntimeContext()
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('autoflow:runtime-context-changed', context)
-  studio.notifyRuntime(context)
 }
 
 function applyPreferences(preferences: UiPreferences): void {
@@ -61,8 +59,7 @@ async function createWindow(): Promise<void> {
     'preferences': value => settings!.setPreferences(value),
     'choose-workspace': source => settings!.chooseWorkspace(source),
     'confirm-workspace': async id => {
-      if (!await studio.prepareLeave('workspace')) throw new SettingsError('STUDIO_TRANSITION_CANCELLED', '已取消工作区切换，请先处理工作台中的修改')
-      try { return await settings!.confirmWorkspace(id) } finally { publishRuntimeContext(); studio.finishTransition() }
+      try { return await settings!.confirmWorkspace(id) } finally { publishRuntimeContext() }
     },
     'open-directory': directory => settings!.openDirectory(directory),
     'preview-diagnostics': includeLogs => settings!.previewDiagnostics(includeLogs),
@@ -77,11 +74,9 @@ async function createWindow(): Promise<void> {
   ipcMain.removeHandler('autoflow:sidecar-restart')
   ipcMain.handle('autoflow:sidecar-restart', async event => {
     requireRuntimeSender(event)
-    if (studio.isTransitioning()) throw new Error('工作台正在关闭或切换工作区，请稍候')
     try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })
-  mainWindow.on('focus', () => studio.restoreReloadMenu())
   mainWindow.on('closed', () => { settings?.invalidateChoices(); mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -119,9 +114,6 @@ app.whenReady().then(async () => {
   void settings.start().catch(() => undefined)
 
   ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
-  ipcMain.handle('autoflow:studio-ready', (event, ready: unknown) => studio.markReady(event, ready))
-  ipcMain.handle('autoflow:studio-leave-result', (event, id: unknown, approved: unknown) => studio.reply(event, id, approved))
-  ipcMain.handle('autoflow:workflow-export', createWorkflowExportHandler({ allowed: event => studio.isSender(event), context: () => settings!.getRuntimeContext(), request: fetch, selectPath: async defaultPath => { const result = await dialog.showSaveDialog({ title: '导出工作流记录', defaultPath }); return result.canceled ? null : result.filePath ?? null } }))
   ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
   ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
   ipcMain.handle('autoflow:platform-paths', event => {
@@ -140,16 +132,13 @@ app.on('before-quit', event => {
   if (isQuitting) return
   isQuitting = true
   void (async () => {
-    if (!await studio.prepareLeave('quit')) { isQuitting = false; return }
     try {
       await settings?.shutdown()
       stoppedForQuit = true
-      studio.permitClose()
       app.quit()
     } catch {
       isQuitting = false
-      studio.finishTransition()
-      dialog.showErrorBox('暂未退出 AutoFlow', '本地服务未能停止，请重试退出。工作台仍保持打开。')
+      dialog.showErrorBox('暂未退出 AutoFlow', '本地服务未能停止，请重试退出。')
     }
   })()
 })

@@ -1,5 +1,7 @@
 # Studio 改为 WebRPA 源码迁入：设计规格
 
+> 2026-09-13 当前状态：用户要求先清除现有 Studio，再重新讨论 WebRPA 迁入。旧实现现已退出当前源码，仅保留独立空窗口；本文相关实现状态/迁入步骤留作历史，不在本轮执行。以[清除记录](../../migration/studio-removal.md)为准。
+
 - 日期：2026-09-13。
 - 状态：**方向 confirmed；具体架构 proposed，待确认后实施**。依据用户本轮要求，停止 M6 自定义录制扩展，完整迁入范围内的 WebRPA UI、前端交互和后端业务逻辑。
 - 源基线：`reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`；目标基线：AutoFlow `c657073`，数据库 `0008_workflow_debug`。

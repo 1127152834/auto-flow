@@ -39,6 +39,7 @@ def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: 
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
+        assert {"workflow_runs", "workflow_run_events", "workflow_run_artifacts", "workflow_debug_commands"} <= tables
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if revision:
             assert connection.execute("SELECT name FROM proxy_pools WHERE id='existing'").fetchone() == ("Retained group",)
@@ -46,3 +47,59 @@ def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: 
             assert connection.execute("SELECT proxy_pool_id FROM proxy_group_details").fetchall() == [("existing",)]
         if revision == "0002_model_management":
             assert connection.execute("SELECT secret_ref FROM model_credential_cleanup").fetchall() == [("synthetic-ref",)]
+
+
+def test_retired_studio_data_survives_application_startup(tmp_path: Path):
+    from fastapi.testclient import TestClient
+
+    from autoflow.bootstrap.app import create_app
+    from autoflow.bootstrap.config import Settings
+    from autoflow.infrastructure.filesystem.paths import AppPaths
+    from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
+
+    paths = AppPaths.from_data_dir(tmp_path)
+    database_session.migrate_database(paths.database)
+    statements = {
+        "workflow_documents": (
+            "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+            ("document", "Archived Studio", '{"schemaVersion":2}', '{"breakpoints":["node"]}', 7, "2026-09-13", "2026-09-13"),
+        ),
+        "workflow_runs": (
+            "INSERT INTO workflow_runs VALUES (?, ?, ?, ?, ?, ?)",
+            ("run", "document", "request-hash", "2026-09-13", 1, '{"state":"paused"}'),
+        ),
+        "workflow_run_events": (
+            "INSERT INTO workflow_run_events VALUES (?, ?, ?)",
+            ("run", 1, '{"type":"paused"}'),
+        ),
+        "workflow_run_artifacts": (
+            "INSERT INTO workflow_run_artifacts (run_id,id,ordinal,node_id,execution_id,payload,purpose,event_seq) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("run", "artifact", 1, "node", "execution", '{"relativePath":"artifacts/result.json"}', "result", 1),
+        ),
+        "workflow_debug_commands": (
+            "INSERT INTO workflow_debug_commands VALUES (?, ?, ?, ?)",
+            ("run", "command", "command-hash", '{"status":"applied"}'),
+        ),
+    }
+    artifact = paths.workspace / "runs" / "run" / "artifacts" / "result.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b'{"saved":"evidence"}')
+    with sqlite3.connect(paths.database) as connection:
+        connection.execute("PRAGMA foreign_keys=ON")
+        for statement, values in statements.values():
+            connection.execute(statement, values)
+        before = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
+
+    app = create_app(
+        Settings(data_dir=str(tmp_path), instance_id="retired-studio"),
+        credential_store=FakeCredentialStore(), model_gateway=FakeModelGateway(),
+    )
+    with TestClient(app):
+        pass
+
+    with sqlite3.connect(paths.database) as connection:
+        after = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0008_workflow_debug",)
+    assert after == before
+    assert artifact.read_bytes() == b'{"saved":"evidence"}'

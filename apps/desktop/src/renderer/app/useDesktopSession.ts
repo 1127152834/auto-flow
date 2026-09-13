@@ -14,7 +14,7 @@ export type DesktopSession = {
 const runtimeKey = (runtime: DesktopRuntimeContext) => runtime.sidecar.state === 'ready'
   ? `${runtime.workspaceKey}:${runtime.sidecar.instanceId}:${runtime.sidecar.baseUrl}:${runtime.sidecar.token}` : null
 
-/** The two desktop renderers share service recovery, but own separate document/query state. */
+/** Keeps the main application connected to its current workspace service. */
 export function useDesktopSession() {
   const [session, setSession] = useState<DesktopSession | null>(null)
   const [status, setStatus] = useState<'loading' | 'connected' | 'offline'>('loading')

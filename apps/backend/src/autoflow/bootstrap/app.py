@@ -1,6 +1,4 @@
 import secrets
-from collections.abc import Iterator
-from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 
@@ -9,41 +7,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.events.kernels import kernels_events_router
-from autoflow.adapters.events.workflows import workflow_events_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.health import health_router
-from autoflow.adapters.http.inspection import inspection_router
 from autoflow.adapters.http.kernels import internal_kernel_paths_router, kernels_router
 from autoflow.adapters.http.models import models_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.profiles import profiles_router
 from autoflow.adapters.http.proxy_options import proxy_options_router
 from autoflow.adapters.http.settings_dashboard import settings_dashboard_router
-from autoflow.adapters.http.workflow_runs import workflow_runs_router
-from autoflow.adapters.http.workflows import workflows_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
-from autoflow.application.workflows.inspection import InspectionService
-from autoflow.application.workflows.runs import WorkflowRunService
-from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
     configure_proxy_management,
 )
 from autoflow.domain.credentials import CredentialStore
-from autoflow.domain.kernels.errors import KernelBusy
 from autoflow.domain.models.ports import ModelGateway
-from autoflow.domain.profiles.models import Profile
 from autoflow.domain.profiles.ports import (
     InstalledKernelLookup,
     ProfileDataStore,
     ProfileUsageGuard,
 )
-from autoflow.domain.workflows.runs import WorkflowRunLauncher
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
@@ -63,14 +51,9 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
-from autoflow.infrastructure.database.workflow_runs import (
-    SqlAlchemyWorkflowRunRepository,
-)
-from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
-    kernel_target_lock,
 )
 from autoflow.infrastructure.filesystem.paths import AppPaths
 from autoflow.infrastructure.filesystem.profile_data import (
@@ -80,15 +63,8 @@ from autoflow.infrastructure.filesystem.profile_data import (
 from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
-from autoflow.infrastructure.filesystem.workflow_artifacts import artifact_path
-from autoflow.infrastructure.filesystem.workflow_diagnostics import (
-    read_workflow_json,
-    result_archive,
-)
-from autoflow.infrastructure.process.inspection_worker import InspectionWorkerManager
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
-from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
@@ -105,7 +81,6 @@ def create_app(
     kernel_service: KernelService | None = None,
     credential_store: CredentialStore | None = None,
     model_gateway: ModelGateway | None = None,
-    workflow_run_launcher: WorkflowRunLauncher | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
     for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
@@ -169,32 +144,6 @@ def create_app(
         test_browser_workers,
     )
 
-    @contextmanager
-    def workflow_kernel_guard(profile: Profile) -> Iterator[None]:
-        lock = kernel_target_lock(paths.kernels, profile.spec.browser_edition, profile.spec.browser_version)
-        try:
-            if not lock.acquire():
-                raise KernelBusy()
-            yield
-        finally:
-            lock.release()
-
-    workflow_workers = workflow_run_launcher or WorkflowWorkerManager(paths.temp, paths.workspace / "runs")
-    run_repository = SqlAlchemyWorkflowRunRepository(session_factory)
-    run_repository.recover_interrupted()
-    workflow_runs = WorkflowRunService(
-        run_repository, profile_service, catalog_provider.installed, workflow_kernel_guard,
-        proxy_runtime.resolve_profile, license_store.read, workflow_workers,
-        partial(artifact_path, paths.workspace / "runs"),
-        read_json=read_workflow_json, archive=result_archive,
-    )
-
-    inspection_workers = InspectionWorkerManager(paths.temp)
-    inspection = InspectionService(profile_service, catalog_provider.installed, workflow_kernel_guard,
-                                   proxy_runtime.resolve_profile, license_store.read, inspection_workers,
-                                   workflow_runs.busy)
-    workflow_runs.inspection_busy = inspection.busy
-
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
         {
@@ -209,8 +158,6 @@ def create_app(
         lambda: [
             *(["kernel_process_active"] if kernel_worker_manager.active_processes() else []),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
-            *(["workflow_run_active"] if workflow_runs.busy() else []),
-            *(["workflow_inspection_active"] if inspection.busy() else []),
         ],
         quiesce_gate,
     )
@@ -224,18 +171,13 @@ def create_app(
     app.state.kernel_worker_manager = kernel_worker_manager
     app.state.kernel_service = kernel_service
     app.state.settings_runtime = settings_runtime
-    app.state.workflow_inspection_service = inspection
-    app.state.inspection_worker_manager = inspection_workers
-    app.state.workflow_run_service = workflow_runs
-    app.state.workflow_worker_manager = workflow_workers
 
     async def shutdown() -> None:
         try:
             import asyncio
 
             await asyncio.gather(
-                test_browser_workers.shutdown(), kernel_worker_manager.shutdown(),
-                workflow_runs.shutdown(), inspection.shutdown()
+                test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
             )
         finally:
             try:
@@ -259,10 +201,6 @@ def create_app(
     app.include_router(kernels_router(kernel_service))
     app.include_router(internal_kernel_paths_router(kernel_service))
     app.include_router(settings_dashboard_router(settings_runtime))
-    app.include_router(inspection_router(inspection))
-    app.include_router(workflow_runs_router(workflow_runs))
-    app.include_router(workflow_events_router(workflow_runs))
-    app.include_router(workflows_router(WorkflowService(SqlAlchemyWorkflowRepository(session_factory))))
     app.include_router(
         kernels_events_router(kernel_events, kernel_worker_manager.snapshot)
     )

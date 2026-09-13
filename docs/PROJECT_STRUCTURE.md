@@ -1,7 +1,7 @@
 # AutoFlow 项目目录结构
 
 - 日期：2026-09-13
-- 状态：目录骨架与已实现领域的职责索引；空占位目录不代表功能已经实现。
+- 状态：目录骨架与已实现领域的职责索引；2026-09-13 按用户要求移除旧 Studio 实现，当前仅保留独立空窗口。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
 ## 路径基准
@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs；M4 增加 0007_workflow_artifacts，索引历史及逐次执行产物；M5 增加 0008_workflow_debug，区分结果/诊断并持久化幂等调试命令。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；0005–0008 为已发布的旧工作流历史迁移，清除 Studio 业务实现后仍保留，不降级、不删除用户数据；它们不代表当前有工作流 API 或执行器。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -98,12 +98,12 @@ reference/
 | `apps/backend/tests/integration/` | 真实临时数据库、迁移和仓储测试。 |
 | `apps/backend/tests/unit/` | 纯规则、用例和隔离适配测试。 |
 | `apps/desktop/src/main/ipc/` | 有明确输入输出的 IPC handler；禁止任意文件或进程命令。 |
-| `apps/desktop/src/main/ipc/automation-studio.ts` | 正式工作流工作台的单窗口生命周期、离开握手和刷新保护；同 renderer 产物的独立 StudioApp 入口。 |
+| `apps/desktop/src/main/ipc/automation-studio.ts` | 独立空窗口的创建、重复打开聚焦、最小化恢复和关闭重开；无旧草稿、运行或离开握手。 |
 | `apps/desktop/src/main/platform/macos/` | 必要的 macOS 桌面适配。 |
 | `apps/desktop/src/main/platform/windows/` | 必要的 Windows 桌面适配。 |
 | `apps/desktop/src/main/sidecar/` | 本地后端启动、就绪、恢复和退出监管。 |
 | `apps/desktop/src/preload/` | 受控桌面能力桥接。 |
-| `apps/desktop/src/shared/automation-studio.ts` | 工作台开窗、离开确认与编辑锁定的固定桌面 IPC 类型契约。 |
+| `apps/desktop/src/shared/automation-studio.ts` | 仅保留主窗口打开独立工作台的固定 IPC 契约。 |
 | `apps/desktop/src/renderer/app/` | 应用入口、路由、装配、全局错误和服务恢复。 |
 | `apps/desktop/src/renderer/domains/` | 正式业务组件和页面；按已批准架构使用 domains。 |
 | `apps/desktop/src/renderer/domains/dashboard/` | 总览前端模块；请求封装 api.ts 和必要 model.ts 在实际实现时添加。 |
@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3/M4/M5 范围和验收以 superpowers 规格与 migration 记录为准。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；M1–M6 实现路线已停止，当前状态见 migration/studio-removal.md。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -182,7 +182,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；条件、循环与变量处理按 M4 实现；M5 已接入调试和诊断；子流程、录制留给后续里程碑。
+- 不预设项目管理模块。旧 workflows 业务已按用户指令移除，前后端保留空目录骨架；WebRPA 迁入另行思考，本次不预设其模型、协议或执行器。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -243,53 +243,13 @@ reference/
 - `renderer/domains/proxies/components/{LocationPicker,RotationScheduleForm,ProxyOperationStatus,ProxyRemoteControls}.tsx`：独立领域组件，由现有详情抽屉组合；`hooks/useProxyRemoteControls.ts` 处理读取、命令状态、限流和恢复。
 - 验证证据及尚未执行的实网写入项目见 [远程控制验收](migration/proxy-remote-controls-verification.md)。
 
-## 工作流编排 M1（2026-09-13，confirmed）
+## 工作台清空（2026-09-13，confirmed）
 
-- `domain/workflows/{models,catalog,validation}.py`：自有文档、六节点目录、结构与草稿诊断；不依赖 React Flow、HTTP、数据库或浏览器。
-- `application/workflows/service.py`：文档用例和仓储端口；`infrastructure/database/workflows.py` 实现 SQLite 幂等创建、revision CAS 和文档/布局原子写入。`0005_workflow_documents.py` 为增量迁移。
-- `adapters/http/workflows.py` 与 `workflow_schemas.py`：最小目录/列表/创建/读取/保存 API，复用鉴权、停写和错误包；类型生成到现有 `renderer/shared/api/generated.ts`。
-- `renderer/domains/workflows/components/`：动作库、画布、专用属性表单和变量面板；`hooks/useWorkflowEditor.ts` 管理文档历史和保存；`pages/StudioPage.tsx` 组合真实交互；`tests/` 集中组件、状态和页面测试。领域根保留 api/types、文档变换、历史和即时诊断。
-- `renderer/app/StudioApp.tsx` 是独立工作台入口，`useDesktopSession.ts` 复用主应用连接与恢复逻辑；同工作区重连保留草稿，实际切换工作区才更换文档上下文。旧 `app-state.ts` 已由该共享 hook 替代。
-- `shared/runtime.ts` 只给已登记窗口的主 frame 提供运行上下文；编辑、目录管理和凭据权限仍按各自 IPC 边界校验。
-- `scripts/smoke-workflow-studio.mjs` 使用真实 Electron/sidecar 与临时工作区验收；支持构建 HTML、`--dev` 开发 URL、`--executable` 打包入口。
-- M1 只提供编排编辑与保存，没有执行器、录制、Debug 或模拟运行。详细证据见 [M1 验收记录](migration/automation-studio-m1-validation.md)。
-
-
-## 工作流真实运行（2026-09-13，confirmed）
-
-- `domain/workflows/run_validation.py`：单链运行门槛、初值依赖和单次引用解析；`references.py` 与 M1 共用标识符规则。
-- `application/workflows/runs.py`：不可变草稿/Profile 快照、单运行协调、资源锁、幂等启动、停止及持久化异常恢复责任。
-- `infrastructure/database/workflow_runs.py` 与增量迁移 `0006_workflow_runs.py`：运行记录、连续事件与产物元数据；节点状态/事件原子提交。运行不要求来源文档已保存。
-- `infrastructure/process/browser_processes.py`：POSIX 原生 PID 启动身份、浏览器 argv/专属环境和进程组归属；不按命令文本子串认领进程。Windows 继续使用 Job/taskkill。
-- `infrastructure/process/workflow_worker.py`：一次运行一个 worker，关闭通道和取消、进程树清理；`infrastructure/filesystem/workflow_artifacts.py`：结果/PNG 独占写入和登记路径读取。
-- `providers/browser/workflow_executor.py`、`workflow_worker.py`：临时 CloakBrowser context、六节点顺序执行、当前页和统一节点预算；复用测试浏览器已有启动/代理参数和进程清理，不建立通用 RPC。
-- `bootstrap/workflow_worker.py` 与主入口 `--workflow-worker` 同时供源码和冻结后端使用。
-- `adapters/http/workflow_runs.py` 与 `adapters/events/workflows.py`：现有鉴权/停写门控、运行与产物 API、可续读 SSE；前端类型仍从 OpenAPI 生成。
-- `renderer/domains/workflows/hooks/useWorkflowRun.ts`：独立于编辑历史的运行快照、当前运行/历史选择、日志补读与同编号重试；`RunToolbar`、`RunPanel` 先实现再接入 `StudioPage`。
-- 工作区选择允许先展示保存/停止确认；真正切换和服务重启仍经过原有资源门控。Electron 不执行网页动作。
-- 真实受控网页和验收入口：`tests/fixtures/workflow-page.html`、`scripts/smoke-workflow-runs.mjs`、`scripts/smoke-workflow-studio-runs.mjs`。证据见 [M2 验收记录](migration/automation-studio-m2-validation.md)。
-
-## M3 拾取与框架定位（2026-09-13）
-
-仍在 workflows 领域。application/workflows/browser_resources.py 共用 Profile/内核检查；application/workflows/inspection.py 管理临时交互会话。domain/workflows/inspection.py 处理定位测试初值与端口，framePath 是原节点配置的可选扩展，无数据库迁移。providers/browser/workflow_locator.py 是运行与测试共享的框架定位入口；inspection.py 与 inspection_script.py 承担页面拾取。infrastructure/process/inspection_worker.py 复用已有工作流 worker 的受管启动/清理，仅扩展有界命令和心跳。HTTP 接口为 workflows/inspection-sessions，前端组件、请求与 hook 在 renderer/domains/workflows。正式范围和验收以 M3 规格及 migration 记录为准。
-
-## M4 结构化控制流（2026-09-13）
-
-- `domain/workflows/control.py`：配对块编译、端口与区域验证、正常到达路径的变量可用性；`control_values.py`：固定值/结构化变量来源、严格比较和赋值。现有文档 JSON 格式支持 1/2，不改变历史文档迁移。
-- `application/workflows/execution.py`：顺序/条件/循环计划调度，每步 executionId、loopPath、局部作用域、取消和调度上限；浏览器动作通过注入的明确入口执行。
-- `providers/browser/workflow_executor.py`：原六类浏览器动作及只读网页条件，共用 M3 的定位入口。原 worker 命令携带结构化计划，沿用进程与资源归属。清理阶段排空未提交的 stdout，防止高频日志阻塞退出。
-- `infrastructure/database/migrations/versions/0007_workflow_artifacts.py`：增量创建产物索引、迁入旧登记；仓储在一个事务内写产物/事件/状态，不再每轮重写完整产物数组。
-- `renderer/domains/workflows/control-model.ts`：控制块成员、整体操作和引用；`components/{ControlFields,ValueSourceEditor,ArtifactPanel}.tsx`：专用规则、值来源和分页结果组件。React Flow 尺寸、运行标记及日志加载均为会话状态，不进入持久化格式。
-- `scripts/smoke-workflow-control.mjs` 与 `smoke-workflow-control-studio.mjs`：真实 worker 与正式 Electron 的可重跑验收；证据位于 `docs/migration/automation-studio-m4-qa/`。
-
-## M5 调试与运行诊断（2026-09-13）
-
-- `domain/workflows/debug.py`：全图结构验证、顶层后缀编译及运行初值校验；嵌套起点不伪造上下文。
-- `application/workflows/debug.py`：原调度器节点边界的暂停许可、修订号、断点、运行变量原子修改、检查点和增量变化。页面命令通过注入的 provider 入口调用。
-- `providers/browser/workflow_worker.py`：一个 stdin 读取方与串行有限命令分发，暂停心跳。父进程 EOF 优先取消；结束检查点与网页成功消息分别处理。
-- `infrastructure/process/workflow_worker.py`：同一个运行 worker 的命令传输、心跳期限和资源归属；正常调试停止允许最终诊断提交，超时仍回收进程树，清理阶段不补记未确认动作。
-- `infrastructure/database/migrations/versions/0008_workflow_debug.py`：旧产物默认 result，新增 purpose/event_seq 与命令记录；继续使用原事件序号和事务。
-- `infrastructure/filesystem/workflow_diagnostics.py`：诊断读取及分块 ZIP 文件适配器；application 从已登记索引生成固定截止序号的导出。
-- `renderer/domains/workflows/components/{DebugStart,DebugPanel,RunLogs}.tsx`、`hooks/useWorkflowDebug.ts`：快照调试、变量分页/编辑、服务端日志筛选和命令原编号确认；面板分页与 SSE 分离。
-- `main/ipc/workflow-export.ts`：登记 Studio 主 frame 的固定导出操作，原生保存对话框、工作区/sidecar 复核、认证响应流写入临时文件后替换。Electron 不执行浏览器动作。
-- `scripts/smoke-workflow-debug.mjs` 与 `smoke-workflow-debug-studio.mjs`：独立临时工作区、真实 CloakBrowser 和正式 Electron 验收；证据位于 `docs/migration/automation-studio-m5-qa/`。
+- 用户要求先清除现有 Studio 代码，再讨论 WebRPA 迁入；当前不执行此前提出的迁入方案。
+- `renderer/app/StudioApp.tsx` 仅渲染独立空窗口；`main/ipc/automation-studio.ts` 保留单窗口创建、聚焦、最小化恢复及关闭重开。总览菜单继续可用。
+- `domain/workflows/`、`application/workflows/`、`renderer/domains/workflows/` 仅为空骨架。旧文档 API、运行/Debug/拾取、执行器、worker、录制试验、编辑 Store、表单、日志结果和导出已退出当前源码。
+- 历史 `0005_workflow_documents` 至 `0008_workflow_debug` 迁移保留，已有数据库表与产物文件不删除；它们只负责旧工作区 schema 连续性，不加载业务执行实现。
+- `infrastructure/process/browser_processes.py` 等通用浏览器资源/进程工具继续由 Profile 测试浏览器使用。原混在工作流测试中的通用进程回归已迁入独立测试。
+- `scripts/smoke-studio-window.mjs` 只验收正式空窗口和宿主生命周期，不再执行旧里程碑流程；`smoke:studio` 指向该脚本。
+- 旧源码及早期原型已归档至 `codex/studio-before-removal-20260913@4eda207`；未完成 M6 另存 `codex/m6-unfinished-checkpoint-20260913@59ae8d4`。
+- 清理范围、实际检查结果及平台边界见 [清理验收](migration/studio-removal.md)。原 M1–M5 规格/验收保留为历史证据，不是当前功能列表。

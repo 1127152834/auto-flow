@@ -1,5 +1,7 @@
 # Automation Studio：WebRPA 核心能力对齐里程碑
 
+> 2026-09-13 当前状态：用户要求先清除现有 Studio，再重新讨论 WebRPA 迁入。旧实现现已退出当前源码，仅保留独立空窗口；本文相关实现状态/迁入步骤留作历史，不在本轮执行。以[清除记录](../../migration/studio-removal.md)为准。
+
 > 2026-09-13 路线替代（superseded）：用户要求完整迁入 WebRPA UI、前端交互及后端业务逻辑，并允许弃用现有 Studio 实现。后续以[源码迁入规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)为准。本文保留为历史记录；旧自定义视觉、节点/执行模型及 M6 计划不再约束新 Studio。M6 未完成试验已归档，不能标为交付。
 
 > 2026-09-13 更新：下文旧排序已由后续批准的 M1–M5 专项计划替代（superseded）。当前 M1=正式编辑器，M2=真实运行/基础日志，M3=元素拾取与定位测试，M4=条件、循环与变量处理，M5=调试与运行诊断。实现和平台结果以专项验收为准；见 [M5 验收](../../migration/automation-studio-m5-validation.md)。旧 M5 的录制不因编号相同而视为完成。

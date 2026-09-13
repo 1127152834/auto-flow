@@ -9,8 +9,6 @@ export type DesktopSettingsSnapshot = {
     previousPath: string | null
     paths: Record<SettingsDirectory, string>
     blocked: boolean
-    /** Choosing a target is allowed before Studio resolves an active workflow. */
-    canChoose?: boolean
     blockers: string[]
     recovery: string | null
     needsSelection: boolean

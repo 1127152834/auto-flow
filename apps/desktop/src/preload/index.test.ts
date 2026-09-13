@@ -13,24 +13,14 @@ beforeEach(async () => {
   await import('./index')
 })
 
-it('freezes the Studio renderer before acknowledging an approved save', async () => {
-  const order: string[] = []
-  const stopTransition = bridge.onStudioTransition(locked => { if (locked) order.push('locked') })
-  const stopLeave = bridge.onPrepareStudioLeave(async reason => { expect(reason).toBe('workspace'); order.push('saved'); return true })
-  ipc.invoke.mockImplementation(async (name: string) => { if (name === 'autoflow:studio-leave-result') order.push('reply') })
-  await ipc.listeners('autoflow:studio-prepare-leave')[0]!({}, { id: 'leave-1', reason: 'workspace' })
-  expect(order).toEqual(['saved', 'locked', 'reply'])
-  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-leave-result', 'leave-1', true)
-  stopLeave(); stopTransition()
-})
-
-it('rejects leave when saving throws or the renderer handler has unmounted', async () => {
-  const stop = bridge.onPrepareStudioLeave(async () => { throw new Error('disk full') })
-  await ipc.listeners('autoflow:studio-prepare-leave')[0]!({}, { id: 'failed', reason: 'close' })
-  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-leave-result', 'failed', false)
-  stop()
-  await ipc.listeners('autoflow:studio-prepare-leave')[0]!({}, { id: 'unmounted', reason: 'quit' })
-  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-leave-result', 'unmounted', false)
+it('exposes only the Studio window opener without obsolete editor control channels', async () => {
+  await bridge.openAutomationStudio()
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:open-automation-studio')
+  expect(bridge).not.toHaveProperty('onPrepareStudioLeave')
+  expect(bridge).not.toHaveProperty('onStudioTransition')
+  expect(bridge).not.toHaveProperty('exportWorkflow')
+  expect(ipc.eventNames()).not.toContain('autoflow:studio-prepare-leave')
+  expect(ipc.eventNames()).not.toContain('autoflow:studio-transition')
 })
 
 it('exposes runtime notifications with a removable listener and synchronizes preferences', () => {

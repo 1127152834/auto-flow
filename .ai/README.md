@@ -2,6 +2,8 @@
 
 `.ai/` 是项目协作知识库，不存放业务源码。它记录经过确认的上下文、架构决策、经验和阶段计划，帮助后续 agent 延续工作而不重复猜测。
 
+Studio 当前状态以 [memory/studio-status.md](memory/studio-status.md) 为准：旧实现已清除，仅保留独立空窗口，WebRPA 迁入待重新讨论。
+
 ## 目录
 
 - `memory/`：稳定的项目事实、用户偏好、当前目标。

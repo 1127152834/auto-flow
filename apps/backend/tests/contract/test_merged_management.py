@@ -29,3 +29,7 @@ def test_merged_domains_keep_routes_validation_and_host_isolation(tmp_path):
         assert client.post("/internal/kernels/resolve", json={}, headers={"x-autoflow-host-token": "host", "origin": "null"}).status_code == 401
         paths = client.get("/openapi.json").json()["paths"]
         assert not any(path.startswith("/internal/") for path in paths)
+        assert not any(path.startswith("/api/v1/workflows") for path in paths)
+        for path in ("", "/node-catalog", "/runs", "/inspection-sessions"):
+            assert client.get(f"/api/v1/workflows{path}").status_code == 404
+            assert client.post(f"/api/v1/workflows{path}", json={}).status_code == 404

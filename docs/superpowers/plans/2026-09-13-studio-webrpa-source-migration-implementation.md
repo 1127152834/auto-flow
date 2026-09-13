@@ -1,5 +1,7 @@
 # Studio WebRPA 源码迁入实施安排
 
+> 2026-09-13 当前状态：用户要求先清除现有 Studio，再重新讨论 WebRPA 迁入。旧实现现已退出当前源码，仅保留独立空窗口；本文相关实现状态/迁入步骤留作历史，不在本轮执行。以[清除记录](../../migration/studio-removal.md)为准。
+
 日期：2026-09-13。方向 confirmed；本实施安排 proposed，待架构确认。依据 [设计规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)。本轮不再按旧 M6 新增自定义录制系统。
 
 用户追加确认允许完全重构并弃用此前 Studio 代码。因此执行器、Store、节点协议和自定义 UI 都不要求保留；旧数据原文保全，取消双编辑器/双执行引擎兼容工作。
