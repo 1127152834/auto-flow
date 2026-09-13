@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, inspect, select, text, tuple_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -27,6 +27,10 @@ from autoflow.infrastructure.database.project_data_models import (
     DataRecordRow,
     DataStatusRow,
     DataTableRow,
+)
+from autoflow.infrastructure.database.project_data_status_batch_models import (
+    DataStatusBatchBlockRow,
+    DataStatusBatchRow,
 )
 
 
@@ -284,6 +288,97 @@ class SqlAlchemyProjectDataCatalog:
             return {
                 "items": [_status(row) for row in rows],
                 "tableRevision": table.table_revision,
+            }
+
+    def status_usage(self, project_id: str, table_id: str) -> dict[str, Any]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN"))
+            table = self._table(session, project_id, table_id, False)
+            statuses = session.scalars(
+                select(DataStatusRow)
+                .where(
+                    DataStatusRow.project_id == project_id,
+                    DataStatusRow.table_id == table_id,
+                    DataStatusRow.deleted.is_(False),
+                )
+                .order_by(DataStatusRow.position, DataStatusRow.id)
+            ).all()
+            record_counts: dict[str, int] = {
+                status_id: count
+                for status_id, count in session.execute(
+                    select(DataRecordRow.status_id, func.count())
+                    .where(
+                        DataRecordRow.project_id == project_id,
+                        DataRecordRow.table_id == table_id,
+                        DataRecordRow.dataset_generation == table.current_generation,
+                        DataRecordRow.deleted.is_(False),
+                        DataRecordRow.status_id.is_not(None),
+                    )
+                    .group_by(DataRecordRow.status_id)
+                ).all()
+                if status_id is not None
+            }
+            active: dict[str, set[str]] = {}
+            if inspect(session.connection()).has_table(DataStatusBatchRow.__tablename__):
+                rows = session.execute(
+                    select(DataStatusBatchRow, DataStatusBatchBlockRow)
+                    .join(ProjectOperationRow, ProjectOperationRow.id == DataStatusBatchRow.operation_id)
+                    .join(DataStatusBatchBlockRow, DataStatusBatchBlockRow.operation_id == DataStatusBatchRow.operation_id)
+                    .where(
+                        DataStatusBatchRow.project_id == project_id,
+                        DataStatusBatchRow.table_id == table_id,
+                        DataStatusBatchRow.cancel_requested.is_(False),
+                        DataStatusBatchBlockRow.state == "notStarted",
+                        ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                    )
+                ).all()
+                target_keys: set[tuple[str, str]] = set()
+                target_operations: dict[tuple[str, str], set[str]] = {}
+                for batch, block in rows:
+                    if batch.status_id is not None:
+                        active.setdefault(batch.status_id, set()).add(batch.operation_id)
+                    for target in block.targets:
+                        ref = target.get("recordRef") if isinstance(target, dict) else None
+                        if not isinstance(ref, dict):
+                            continue
+                        key = ref.get("recordKey")
+                        if (
+                            isinstance(key, dict)
+                            and ref.get("projectId") == project_id
+                            and ref.get("tableId") == table_id
+                            and ref.get("datasetGeneration") == table.current_generation
+                            and key.get("type") in {"text", "integer", "uuid"}
+                            and isinstance(key.get("value"), str)
+                        ):
+                            record_key = (key["type"], key["value"])
+                            target_keys.add(record_key)
+                            target_operations.setdefault(record_key, set()).add(batch.operation_id)
+                if target_keys:
+                    target_rows = session.execute(
+                        select(DataRecordRow.key_type, DataRecordRow.key_value, DataRecordRow.status_id)
+                        .where(
+                            DataRecordRow.project_id == project_id,
+                            DataRecordRow.table_id == table_id,
+                            DataRecordRow.dataset_generation == table.current_generation,
+                            DataRecordRow.deleted.is_(False),
+                            tuple_(DataRecordRow.key_type, DataRecordRow.key_value).in_(target_keys),
+                        )
+                    ).all()
+                    for key_type, key_value, status_id in target_rows:
+                        if status_id is not None:
+                            active.setdefault(status_id, set()).update(target_operations[(key_type, key_value)])
+            return {
+                "datasetGeneration": table.current_generation,
+                "calculatedAt": datetime.now(UTC).isoformat(),
+                "items": [
+                    {
+                        "statusId": row.id,
+                        "currentRecords": record_counts.get(row.id, 0),
+                        "activeBatchOperations": len(active.get(row.id, ())),
+                    }
+                    for row in statuses
+                ],
+                "configurationReferences": {"availability": "notImplemented"},
             }
 
     def create_status(

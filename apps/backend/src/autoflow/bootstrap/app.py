@@ -18,6 +18,7 @@ from autoflow.adapters.http.project_data import project_data_router
 from autoflow.adapters.http.project_data_deletions import project_data_deletion_router
 from autoflow.adapters.http.project_data_impacts import project_data_impact_router
 from autoflow.adapters.http.project_data_records import project_records_router
+from autoflow.adapters.http.project_data_schema import project_data_schema_router
 from autoflow.adapters.http.project_data_status_batches import (
     record_status_batches_router,
 )
@@ -42,6 +43,7 @@ from autoflow.application.project_data.excel_export import ProjectExcelExportSer
 from autoflow.application.project_data.excel_import import ExcelImportService
 from autoflow.application.project_data.queries import DataRecordQueryService
 from autoflow.application.project_data.records import DataRecordService
+from autoflow.application.project_data.schema import DataSchemaService
 from autoflow.application.project_data.status_batches import (
     RecordStatusBatchCoordinator,
     RecordStatusBatchService,
@@ -85,6 +87,9 @@ from autoflow.infrastructure.database.project_data_queries import (
 )
 from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
+)
+from autoflow.infrastructure.database.project_data_schema import (
+    SqlAlchemyProjectDataSchema,
 )
 from autoflow.infrastructure.database.project_data_status_batches import (
     SqlAlchemyRecordStatusBatches,
@@ -362,6 +367,11 @@ def create_app(
         )
     )
     app.include_router(project_data_impact_router(data_catalog, data_deletions))
+    app.include_router(
+        project_data_schema_router(
+            DataSchemaService(SqlAlchemyProjectDataSchema(session_factory))
+        )
+    )
     app.include_router(project_data_deletion_router(data_deletions))
     app.include_router(record_status_batches_router(status_batch_service))
     app.include_router(

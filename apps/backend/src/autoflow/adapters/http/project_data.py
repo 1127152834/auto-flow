@@ -18,6 +18,7 @@ from .project_data_catalog_schemas import (
     DataStatusCreate,
     DataStatusDirectory,
     DataStatusPatch,
+    DataStatusUsageDirectory,
     DataStatusView,
 )
 from .project_data_schemas import (
@@ -161,6 +162,14 @@ def project_data_router(
     )
     def list_statuses(projectId: CanonicalId, tableId: CanonicalId):
         return catalog.statuses(str(projectId), str(tableId))
+
+    @router.get(
+        "/{tableId}/statuses/usage",
+        response_model=DataStatusUsageDirectory,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def status_usage(projectId: CanonicalId, tableId: CanonicalId):
+        return catalog.status_usage(str(projectId), str(tableId))
 
     @router.post(
         "/{tableId}/statuses",

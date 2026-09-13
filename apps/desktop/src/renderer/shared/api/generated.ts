@@ -1406,6 +1406,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables/{tableId}/statuses/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status Usage */
+        get: operations["status_usage_api_v1_projects__projectId__tables__tableId__statuses_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tables/{tableId}/statuses/{statusId}": {
         parameters: {
             query?: never;
@@ -1452,6 +1469,40 @@ export type paths = {
         put?: never;
         /** Preview */
         post: operations["preview_api_v1_projects__projectId__mutation_impact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/schema/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_projects__projectId__tables__tableId__schema_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Commit */
+        post: operations["commit_api_v1_projects__projectId__tables__tableId__schema_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2037,6 +2088,124 @@ export type components = {
              */
             updatedAt: string;
         };
+        /** DataSchemaCandidate */
+        DataSchemaCandidate: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Fields */
+            fields: (components["schemas"]["DataSchemaExisting"] | components["schemas"]["DataSchemaNew"])[];
+        };
+        /** DataSchemaCommit */
+        DataSchemaCommit: {
+            candidate: components["schemas"]["DataSchemaCandidate"];
+            /** Impactrevision */
+            impactRevision: number;
+        };
+        /** DataSchemaExisting */
+        DataSchemaExisting: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "existing";
+            /** Fieldid */
+            fieldId: string;
+            /** Expectedfieldrevision */
+            expectedFieldRevision: number;
+            definition: components["schemas"]["DataFieldWrite"];
+        };
+        /** DataSchemaImpact */
+        DataSchemaImpact: {
+            /** Impactrevision */
+            impactRevision: number;
+            /** Calculatedat */
+            calculatedAt: string;
+            /** Expiresat */
+            expiresAt: string;
+            /** Affectedrecords */
+            affectedRecords: number;
+            /** Backfillbytes */
+            backfillBytes: number;
+            /** Blockers */
+            blockers: components["schemas"]["DataSchemaIssue"][];
+            /** Warnings */
+            warnings: components["schemas"]["DataSchemaIssue"][];
+            referenceAvailability: components["schemas"]["DataSchemaReferenceAvailability"];
+        };
+        /** DataSchemaIssue */
+        DataSchemaIssue: {
+            /** Code */
+            code: string;
+            /** Fieldid */
+            fieldId: string | null;
+            /** Clientid */
+            clientId: string | null;
+            /** Message */
+            message: string;
+            /** Affectedrecords */
+            affectedRecords: number | null;
+        };
+        /** DataSchemaNew */
+        DataSchemaNew: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "new";
+            /** Clientid */
+            clientId: string;
+            definition: components["schemas"]["DataFieldWrite"];
+            /**
+             * Sourcecolumnpolicy
+             * @constant
+             */
+            sourceColumnPolicy: "localOnly";
+            /** Existingrecorddefault */
+            existingRecordDefault?: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+        };
+        /** DataSchemaReferenceAvailability */
+        DataSchemaReferenceAvailability: {
+            /**
+             * Automations
+             * @constant
+             */
+            automations: "notImplemented";
+            /**
+             * Sync
+             * @constant
+             */
+            sync: "notImplemented";
+        };
+        /** DataSchemaResult */
+        DataSchemaResult: {
+            /**
+             * Action
+             * @constant
+             */
+            action: "saveSchema";
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Tablerevision */
+            tableRevision: number;
+            /** Fields */
+            fields: components["schemas"]["DataFieldView"][];
+            /** Createdfieldids */
+            createdFieldIds: {
+                [key: string]: string;
+            };
+            /** Backfilledrecords */
+            backfilledRecords: number;
+        };
+        /** DataStatusConfigurationReferences */
+        DataStatusConfigurationReferences: {
+            /**
+             * Availability
+             * @constant
+             */
+            availability: "notImplemented";
+        };
         /** DataStatusCreate */
         DataStatusCreate: {
             /** Name */
@@ -2067,6 +2236,25 @@ export type components = {
             expectedTableRevision: number;
             /** Expectedstatusrevision */
             expectedStatusRevision: number;
+        };
+        /** DataStatusUsage */
+        DataStatusUsage: {
+            /** Statusid */
+            statusId: string;
+            /** Currentrecords */
+            currentRecords: number;
+            /** Activebatchoperations */
+            activeBatchOperations: number;
+        };
+        /** DataStatusUsageDirectory */
+        DataStatusUsageDirectory: {
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Calculatedat */
+            calculatedAt: string;
+            /** Items */
+            items: components["schemas"]["DataStatusUsage"][];
+            configurationReferences: components["schemas"]["DataStatusConfigurationReferences"];
         };
         /** DataStatusView */
         DataStatusView: {
@@ -3415,7 +3603,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
+            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
             /**
              * Status
              * @enum {string}
@@ -3426,7 +3614,7 @@ export type components = {
             /** Resource */
             resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -8777,7 +8965,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
+                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
                 resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
             };
@@ -10020,6 +10208,56 @@ export interface operations {
             };
         };
     };
+    status_usage_api_v1_projects__projectId__tables__tableId__statuses_usage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataStatusUsageDirectory"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     delete_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__delete: {
         parameters: {
             query?: never;
@@ -10343,6 +10581,188 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_api_v1_projects__projectId__tables__tableId__schema_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataSchemaCandidate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSchemaImpact"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    commit_api_v1_projects__projectId__tables__tableId__schema_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataSchemaCommit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataSchemaResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
                 headers: {
                     [name: string]: unknown;
                 };

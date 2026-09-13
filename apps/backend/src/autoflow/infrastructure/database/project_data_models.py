@@ -51,6 +51,9 @@ class DataTableRow(Base):
     )
     current_generation: Mapped[str] = mapped_column(sa.String(36), nullable=False)
     table_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
+    schema_guard_revision: Mapped[int] = mapped_column(
+        sa.Integer(), nullable=False, default=1, server_default="1"
+    )
     identity: Mapped[dict[str, Any]] = mapped_column(sa.JSON(), nullable=False)
     slot_definitions: Mapped[list[dict[str, Any]]] = mapped_column(
         sa.JSON(), nullable=False
@@ -200,6 +203,13 @@ class DataRecordRow(Base):
             "dataset_generation",
             "deleted",
             "updated_at",
+        ),
+        sa.Index(
+            "ix_project_data_records_current_status",
+            "project_id",
+            "table_id",
+            "dataset_generation",
+            "status_id",
         ),
     )
     project_id: Mapped[str] = mapped_column(sa.String(36), nullable=False)

@@ -158,6 +158,10 @@ class DataCatalogService:
         _ids(project_id, table_id)
         return self.catalog.statuses(project_id, table_id)
 
+    def status_usage(self, project_id: str, table_id: str) -> dict[str, Any]:
+        _ids(project_id, table_id)
+        return self.catalog.status_usage(project_id, table_id)
+
     def create_status(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> tuple[dict[str, Any], ProjectOperation, bool]:

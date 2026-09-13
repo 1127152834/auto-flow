@@ -1,7 +1,7 @@
 # 项目管理 HTTP、事件与桌面 IPC 契约
 
 - 日期：2026-09-13。
-- 状态：PM0 冻结契约；全部项目管理 handler 仍为 planned，不能据本文宣称接口已实现。
+- 状态：§1–8 保留 PM0 冻结时点的 planned 契约；后续 PM1/PM2 勘误及文末 R3 实施事实分别标明当前实现范围。不能用历史计划推断其余 handler 已实现。
 - 依据：[功能结构](../design/functional-structure.md)、[数据与状态规则](../design/data-and-state-rules.md)、[数据传递契约](../design/data-flow-and-contracts.md)、[执行与环境规则](../design/execution-and-environment.md)、[共享领域契约](contracts.md)和[里程碑计划](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - 范围：公开 `/api/v1/projects` 项目子资源、项目聚合所需操作查询与事件、Studio/core Run 的消费边界、桌面文件选择 IPC、迁移及 OpenAPI 集成。本文不创建 handler、DTO、迁移或生成类型。
 - 基线：交付前主目录已由另一任务提交为 `b2e95b3`。`/api/v1/workflows` CRUD 与 node catalog、`workflow_schemas.py`、`0005_workflow_documents.py` 均已提交；初读f3fe376+WIP的当前描述 superseded。核心 Run 路由尚不存在。`WorkflowDocument.document.id` 已校验为 UUID，保存使用 `expectedRevision`，当前节点目录均为 `runnable: false`。这些事实不是运行能力验收。
@@ -564,3 +564,86 @@ PM0历史报告不回写。PM2新增表身份策略、写入值形状、Excel创
 `DataTableView.source` 可选，兼容已有历史 Operation 快照；本次表查询和新结果返回 `kind`，Excel 表另含 `filename`、`sheetName`、`importedAt`。这些字段来自当前数据代次，不公开文件路径、授权、内部工作表 ID 或指纹。导入原子发布同时保存一条唯一 `DataChange`，重发不重复记账。
 
 新的导入命令必须仍持有当前工作区、当前服务实例的检查授权；重启后的旧检查快照可查询，但不能授权新的文件读取。已接受同键同请求先找回原 Operation，不重新验证旧令牌或读取文件。
+
+## R3 原子字段草稿与状态引用：实际接口（2026-09-14，confirmed）
+
+本节记录当前实现，保留以上 PM0 历史契约及 PM2 事实；冲突的早期请求形状不用于调用本节接口。来源：`adapters/http/project_data_schema.py`、`project_data_schema_schemas.py`、`project_data.py`、`project_data_catalog_schemas.py`、`project_schemas.py`，以及对应 application/domain/database 实现和真实 contract/integration 测试。OpenAPI 生成类型仍为桌面唯一 HTTP 类型来源。
+
+### 路由与请求
+
+统一前缀 `/api/v1/projects/{projectId}/tables/{tableId}`；路径 ID、候选 generation/fieldId/clientId 和提交幂等键均使用规范小写 UUID。
+
+| 方法与后缀 | 请求 | 响应与权限 |
+|---|---|---|
+| `POST /schema/preview` | `DataSchemaCandidate`，不要求 Idempotency-Key | `200 DataSchemaImpact`；活动项目可预检。保存预览证据，不修改业务字段或记录，不产生成功 Operation。 |
+| `POST /schema` | `DataSchemaCommit` 与 UUID `Idempotency-Key` | 首次成功与同请求重放均 `200 DataSchemaResult`；新提交要求活动项目，同键历史成功允许归档后找回。 |
+| `GET /statuses/usage` | 无请求体 | `200 DataStatusUsageDirectory`；归档可读。查询失败保持错误，不返回合成零值。 |
+
+三个路由使用现有认证、项目归属检查及应用 quiesce 门闩。新写入在归档时返回 `409 LIFECYCLE_CONFLICT`，closing 时为 `423 PROJECT_CLOSING`；不存在或已删除项目为 `404 PROJECT_NOT_FOUND`，非所属表为 `404 TABLE_NOT_FOUND`。旧 `DataFieldCreate/Patch` 与 `mutateField` 端点继续保留。
+
+```ts
+type DataSchemaCandidate = {
+  datasetGeneration: string
+  expectedTableRevision: number
+  fields: Array<
+    {kind:'existing'; fieldId:string; expectedFieldRevision:number; definition:DataFieldWrite}
+    | {kind:'new'; clientId:string; definition:DataFieldWrite;
+       sourceColumnPolicy:'localOnly'; existingRecordDefault?:Scalar}
+  >
+}
+type DataSchemaCommit = {candidate:DataSchemaCandidate; impactRevision:number}
+type DataSchemaIssue = {
+  code:string; fieldId:string|null; clientId:string|null
+  message:string; affectedRecords:number|null
+}
+type DataSchemaImpact = {
+  impactRevision:number; calculatedAt:string; expiresAt:string
+  affectedRecords:number; backfillBytes:number
+  blockers:DataSchemaIssue[]; warnings:DataSchemaIssue[]
+  referenceAvailability:{automations:'notImplemented'; sync:'notImplemented'}
+}
+type DataSchemaResult = {
+  action:'saveSchema'; datasetGeneration:string; tableRevision:number
+  fields:DataFieldView[]; createdFieldIds:Record<string,string>; backfilledRecords:number
+}
+```
+
+这里 `DataFieldWrite`、`DataFieldView`、`Scalar`、`Revision` 直接复用现有 catalog HTTP schema：definition 恰为 `key/name/type/required/validation`；type 为 `string|number|boolean|date`。Scalar 保留 string、number、boolean、DateScalar、null 的真实类型；DateScalar 的 `offset` 可为 null，但不可省略。修订为 1 至 9007199254740991 的严格整数。领域不反向导入 HTTP DTO，使用已有 `validate_field/validate_value` 和纯 candidate 校验。
+
+候选必须包含当前代次每个已有 fieldId 且恰好一次，新 clientId 互异，规范字段 key 不重复。已有 key 不能改变；公式或不可写字段的 definition 整体不变；身份字段只保护 type，其他合法属性沿用旧字段规则。本接口不支持字段删除或来源映射变更。`fields:[]` 对当前空表合法，缺少 fields 属性不合法。
+
+HTTP 使用 `model_dump(by_alias=True, exclude_unset=True)` 保留默认值存在性。省略 `existingRecordDefault` 不回填；显式 null 是真实默认值，仅允许非必填字段；false、0、空串不互相转换。新增必填字段在存在记录且省略默认值时，预检产生 `EXISTING_RECORD_DEFAULT_REQUIRED` blocker；显式提交非法默认值则在值校验阶段返回 422。两者均不能提交业务变更。已有未修改规则的异常值原样保留，不重新执行旧正则或合成“已验证无异常”的声明。
+
+### 预览证据、内部守卫与事务
+
+`impactRevision` 是持久 `DataImpactRow.id`，不是记录变更修订。内部 action 为 `saveTableSchema`，target 绑定 project/table/generation，候选摘要使用排序 key、无额外空格、`ensure_ascii=False`、`allow_nan=False` 的 UTF-8 JSON。非有限数、孤立代理、类型强制转换均不能形成合法提交。
+
+预览先在显式一致读事务读取表、字段、当前未删除记录和守卫，将记录写入可溢出到磁盘的 spool。释放读事务后只执行变更的 type/required/validation 校验及回填计算；字段值校验阶段有 **120 秒**时间预算，在每次字段验证前后及行处理边界检查。该预算不是整个 HTTP 请求的端到端超时。用户正则另保留既有单次执行限制。超时为 `422 FIELD_VALIDATION_TIMEOUT` 或既有 `PATTERN_VALIDATION_TIMEOUT`，不发布成功预览证据。
+
+预览完成后用短 `BEGIN IMMEDIATE` 事务重验 generation、tableRevision、fieldRevision 集合及内部 guard，再保存证据。证据从保存时起 **10 分钟**有效；内部 prepared 的 clientId→fieldId 映射和有界回填行不返回公开 HTTP。预览证据本身不授权当前范围外的写入。
+
+迁移 `pm02_schema_drafts` 从 `pm02_excel_exports` 接续，增加 `DataTableRow.schema_guard_revision`，初值 1。SQLite 触发器在当前代次记录 INSERT/UPDATE/DELETE 的同一事务推进它，保守包含状态/关联变化；UPDATE 同时考虑 NEW/OLD 范围，非当前隐藏代次不推进当前表守卫。它是独立的内部并发守卫，不新增公共通用版本，也不替代 content/status/linkRevision。迁移还增加 `(project_id,table_id,dataset_generation,status_id)` 查询索引。
+
+默认回填上限为 **1000 条实际写入记录、4194304 字节**，两者同时满足；字节按每条记录写后完整 values JSON 的规范 UTF-8 编码计算，不只计算新增字段，多个字段回填同一条记录只计一次。超过任一上限形成 `SCHEMA_BACKFILL_LIMIT` blocker，整候选拒绝；无法原样形成严格 JSON 的旧值会形成 `SCHEMA_BACKFILL_INVALID_JSON`。提交仍重新检查内部 prepared 的预算及原内容修订。
+
+提交使用单个 `BEGIN IMMEDIATE`：先检查项目读取归属并查原幂等键，比较包含 scope/target/candidate/impactRevision 的请求摘要与 kind；相同请求直接返回冻结结果，不用旧 revision 再作 CAS，不重新分配新字段 ID。不同请求为 `409 OPERATION_PAYLOAD_MISMATCH`。只有新操作继续检查 active、generation、table/field/guard 修订、预览绑定/用途/有效期及空 blockers；证据失效为 `409 IMPACT_STALE`，当前 revision 冲突为 `409 REVISION_CONFLICT`，代次替换为 `410 DATASET_GENERATION_GONE`。
+
+字段、回填记录、DataChange 和 Operation 冻结结果在同一事务提交或回滚。每条回填记录 contentRevision 只加 1，status/linkRevision、typed recordKey、record_slots、状态和环境关联保持；实际变更字段 fieldRevision 加 1，新字段为 1。真实变更才推进 tableRevision，无变化允许记录成功 Operation 而不推进业务修订。Excel 来源文件与原来源映射不写入。
+
+`ProjectOperationView.kind` 新增 `saveTableSchema`，result 新增 `DataSchemaResult`（action 为 `saveSchema`），resource 沿用 `{type:'table',projectId,tableId}`。响应丢失使用既有项目 `/operations/by-idempotency-key/{key}` 查询；不新增恢复 URL。桌面在发送前持久保存 candidate、impactRevision、key 及原作用域，未知时先查原请求，明确未接受后才允许原 key/原 body 重试，不能换 key 猜测成功。旧 Operation DTO 成员保持。
+
+### 状态引用投影
+
+```ts
+type DataStatusUsageDirectory = {
+  datasetGeneration:string; calculatedAt:string
+  items:Array<{statusId:string; currentRecords:number; activeBatchOperations:number}>
+  configurationReferences:{availability:'notImplemented'}
+}
+```
+
+状态目录、分组计数和活动批引用在同一个显式读取事务内计算。currentRecords 只统计当前 project/table/generation 的未删除记录，null 状态不归入任一状态，已删除状态不在目录中。activeBatchOperations 统计未取消、Operation 为 accepted/running/reconciling 且仍有 notStarted 块的批操作；同时考虑目标状态以及冻结 typed recordRef 对应的当前记录状态，对同状态按 operation ID 去重。旧代次引用、已完成块和取消操作不计入；批操作数与记录数分别展示，不能相加成“记录数”。
+
+`configurationReferences.availability='notImplemented'` 明确表示配置引用未接通，不能解读为零配置引用；自动化及同步也维持 notImplemented。界面引用读取失败显示不可读取并允许重试，不以失败补零。投影数字不是删除授权，真实删除仍走既有影响预检及最终事务守卫。
+
+性能实测入口为 `scripts/measure-schema-commit.py`，只建立并清理自己的临时数据库，使用真实应用服务；输出分别记录预览、成功 BEGIN IMMEDIATE→COMMIT、数据库大小、规范字节及并发读取响应。本轮证据保存于 [R3 性能报告](../design-alignment/acceptance/gallery-r3/performance/schema-commit.json)，其数字仅代表该次机器与有限样本，不是无限数据量承诺。

@@ -38,6 +38,8 @@ class ProjectDataCatalog(Protocol):
 
     def statuses(self, project_id: str, table_id: str) -> dict[str, Any]: ...
 
+    def status_usage(self, project_id: str, table_id: str) -> dict[str, Any]: ...
+
     def create_status(
         self,
         project_id: str,

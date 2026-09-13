@@ -11,6 +11,7 @@ from .project_data_catalog_schemas import (
 )
 from .project_data_deletion_schemas import RecordDeleteResult, StatusDeleteResult
 from .project_data_record_schemas import DataRecordView, RecordResourceLocator
+from .project_data_schema_schemas import DataSchemaResult
 from .project_data_schemas import DataTableView, TableResourceLocator
 from .project_data_status_batch_schemas import (
     CancelRecordStatusesResult,
@@ -110,6 +111,7 @@ class ProjectOperationView(ApiModel):
         "createTable",
         "updateTable",
         "mutateField",
+        "saveTableSchema",
         "mutateStatus",
         "createRecord",
         "updateRecord",
@@ -136,6 +138,7 @@ class ProjectOperationView(ApiModel):
         ProjectView
         | DataTableView
         | FieldMutationResult
+        | DataSchemaResult
         | StatusMutationResult
         | StatusDeleteResult
         | DataRecordView

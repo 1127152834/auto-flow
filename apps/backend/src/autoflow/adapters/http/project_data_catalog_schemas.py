@@ -94,6 +94,23 @@ class DataStatusDirectory(ApiModel):
     table_revision: Revision
 
 
+class DataStatusUsage(ApiModel):
+    status_id: str
+    current_records: Annotated[int, Field(strict=True, ge=0)]
+    active_batch_operations: Annotated[int, Field(strict=True, ge=0)]
+
+
+class DataStatusConfigurationReferences(ApiModel):
+    availability: Literal["notImplemented"]
+
+
+class DataStatusUsageDirectory(ApiModel):
+    dataset_generation: str
+    calculated_at: str
+    items: list[DataStatusUsage]
+    configuration_references: DataStatusConfigurationReferences
+
+
 class DataStatusCreate(ApiModel):
     name: str
     color: str
