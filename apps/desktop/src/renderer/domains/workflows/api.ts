@@ -241,41 +241,6 @@ export const imageAssetApi = {
     apiRequest('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
 }
 
-// ==================== 数据资源 API ====================
-export const dataAssetApi = {
-  list: () => apiRequest('/data-assets'),
-  listFolders: () => apiRequest('/data-assets/folders'),
-  get: (id: string) => apiRequest(`/data-assets/${id}`),
-  getSheets: (id: string) => apiRequest(`/data-assets/${id}/sheets`),
-  getSheetData: (id: string, sheet: string, page?: number, pageSize?: number) =>
-    apiRequest(`/data-assets/${id}/sheet-data?sheet=${encodeURIComponent(sheet)}&page=${page||1}&page_size=${pageSize||100}`),
-  preview: (fileId: string, sheet?: string, maxRows?: number, maxCols?: number) => {
-    const params = new URLSearchParams()
-    if (sheet) params.append('sheet', sheet)
-    if (maxRows) params.append('max_rows', String(maxRows))
-    if (maxCols) params.append('max_cols', String(maxCols))
-    const queryString = params.toString()
-    return apiRequest(`/data-assets/${fileId}/preview${queryString ? '?' + queryString : ''}`)
-  },
-  upload: (file: File, folder?: string) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    if (folder) formData.append('folder', folder)
-    return apiRequest('/data-assets/upload', { method: 'POST', body: formData })
-  },
-  delete: (id: string) => apiRequest(`/data-assets/${id}`, { method: 'DELETE' }),
-  createFolder: (name: string, parentPath?: string) =>
-    apiRequest('/data-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) }),
-  renameFolder: (oldPath: string, newName: string) =>
-    apiRequest('/data-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) }),
-  deleteFolder: (folderPath: string) =>
-    apiRequest('/data-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) }),
-  rename: (assetId: string, newName: string) =>
-    apiRequest(`/data-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' }),
-  moveAsset: (assetId: string, targetFolder?: string) =>
-    apiRequest('/data-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
-}
-
 // ==================== 手机自动化 API ====================
 export const phoneApi = {
   listDevices: () => apiRequest('/phone/devices'),

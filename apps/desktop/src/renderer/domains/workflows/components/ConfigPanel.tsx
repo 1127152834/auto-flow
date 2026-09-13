@@ -17,7 +17,6 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { elementPickerApi, desktopPickerApi, systemApi } from '../api'
 
 // 导入拆分的配置组件
-import { ReadExcelConfig } from './config-panels/ReadExcelConfig'
 import {
   DpOpenPageConfig, DpClickConfig, DpInputConfig, DpGetTextConfig, DpGetHtmlConfig,
   DpRunJsConfig, DpWaitElementConfig, DpScrollConfig, DpCloseConfig,
@@ -1478,8 +1477,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <RandomNumberConfig data={nodeData} onChange={handleChange} />
       case 'get_time':
         return <GetTimeConfig data={nodeData} onChange={handleChange} />
-      case 'read_excel':
-        return <ReadExcelConfig data={nodeData} onChange={handleChange} />
       case 'list_operation':
         return <ListOperationConfig data={nodeData} onChange={handleChange} />
       case 'list_get':

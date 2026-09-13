@@ -4,7 +4,8 @@ interface Library { assets: Asset[]; folders: string[] }
 function read(kind: string): Library { return JSON.parse(localStorage.getItem(`autoflow:studio:mock:${kind}`) || '{"assets":[],"folders":[]}') }
 function save(kind: string, library: Library) { localStorage.setItem(`autoflow:studio:mock:${kind}`, JSON.stringify(library)) }
 export async function mockAssetRequest(path: string, method: string, params: URLSearchParams, body: Record<string, unknown>, form?: FormData): Promise<Response | undefined> {
-  const match = path.match(/^\/(image-assets|data-assets)(?:\/(.*))?$/)
+  if (path === '/data-assets' || path.startsWith('/data-assets/')) return Response.json({ success: false, error: 'Excel 资源功能已从 AutoFlow Studio 移除' }, { status: 410 })
+  const match = path.match(/^\/(image-assets)(?:\/(.*))?$/)
   if (!match) return undefined
   const [,kind,action=''] = match
   const library=read(kind)
@@ -34,7 +35,7 @@ export async function mockAssetRequest(path: string, method: string, params: URL
     if (file.size > 2 * 1024 * 1024) return json({success:false,error:'Mock 单文件上限 2 MiB；真实后端接入后使用文件存储'},413)
     const dataUrl = await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)})
     const id=crypto.randomUUID(),name=(file as File).name || id
-    const asset={id,name,originalName:name,filename:name,folder:String(form?.get('folder') || ''),path:dataUrl,url:dataUrl,dataUrl,size:file.size,createdAt:new Date().toISOString(),uploadedAt:new Date().toISOString(),sheetNames:['Mock Sheet'],extension:name.split('.').at(-1) || ''}
+    const asset={id,name,originalName:name,filename:name,folder:String(form?.get('folder') || ''),path:dataUrl,url:dataUrl,dataUrl,size:file.size,createdAt:new Date().toISOString(),uploadedAt:new Date().toISOString(),extension:name.split('.').at(-1) || ''}
     library.assets.push(asset);save(kind,library);return json(asset)
   }
   if (action === 'move') {
@@ -45,7 +46,5 @@ export async function mockAssetRequest(path: string, method: string, params: URL
   if (!asset) return json({success:false,error:'资源不存在'},404)
   if (method === 'DELETE') {library.assets=library.assets.filter(a=>a.id!==id);save(kind,library);return json({success:true})}
   if (operation === 'rename') {asset.name=params.get('newName')||asset.name;asset.originalName=asset.name;asset.filename=asset.name;save(kind,library);return json({success:true,...asset})}
-  if (operation === 'sheets') return json({sheets:['Mock Sheet'],mock:true})
-  if (operation === 'sheet-data' || operation === 'preview') return json({success:true,sheets:['Mock Sheet'],sheet:'Mock Sheet',headers:['Mock 资源','字节数'],columns:['Mock 资源','字节数'],rows:[[asset.name,asset.size]],data:[[asset.name,asset.size]],total:1,totalRows:1,totalCols:2,total_rows:1,mock:true})
   return json(asset)
 }

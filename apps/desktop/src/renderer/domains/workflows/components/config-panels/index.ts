@@ -3,7 +3,6 @@
 // 注意：DesktopModuleConfigs 中的 Desktop*Config 是新版本，
 // AdvancedModuleConfigs 中的同名 export 是旧版占位符。
 // 必须先 export DesktopModuleConfigs，再用 named re-export 排除 AdvancedModuleConfigs 中重复的 Desktop* 名称。
-export * from './ReadExcelConfig'
 export * from './SimilarSelectorDialog'
 export * from './UrlInputDialog'
 export * from './BasicModuleConfigs'

@@ -1,4 +1,4 @@
-import { excludedModuleTypes } from './ModuleSidebar'
+import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, components/workflow/Toolbar.tsx; see SOURCE.md for license and adaptation boundaries.
@@ -199,7 +199,7 @@ export function Toolbar() {
       return
     }
 
-    if (nodes.some(node => excludedModuleTypes.has(node.data.moduleType))) {
+    if (findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)) {
       addLog({ level: 'error', message: '工作流包含已排除节点；请移除这些节点后运行，原文档仍可保存或导出。' })
       return
     }

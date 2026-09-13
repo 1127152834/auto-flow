@@ -334,3 +334,22 @@ export const moduleCategories = sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))
   .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))
 
+/** Check imported custom-module contents as well as top-level nodes, without modifying documents. */
+export function findExcludedModuleType(nodes: readonly unknown[], resolveCustomNodes: (id: string) => readonly unknown[] | undefined = () => undefined): string | null {
+  const pending = [...nodes]
+  const visited = new Set<string>()
+  while (pending.length) {
+    const value = pending.pop()
+    if (!value || typeof value !== 'object') continue
+    const node = value as { type?: unknown; data?: { moduleType?: unknown; customModuleId?: unknown } }
+    const type = node.data?.moduleType ?? node.type
+    if (typeof type === 'string' && excludedModuleTypes.has(type as ModuleType)) return type
+    const id = node.data?.customModuleId
+    if (type === 'custom_module' && typeof id === 'string' && !visited.has(id)) {
+      visited.add(id)
+      const children = resolveCustomNodes(id)
+      if (children) pending.push(...children)
+    }
+  }
+  return null
+}

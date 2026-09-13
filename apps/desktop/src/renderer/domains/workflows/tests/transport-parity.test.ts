@@ -1,0 +1,89 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { parseServerSentEvents } from '../../../shared/api/events'
+import { startHttpStudioFixture } from './fixtures/http-studio-server'
+
+describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mode => {
+  let fixture: Awaited<ReturnType<typeof startHttpStudioFixture>> | undefined
+  let server: typeof import('../api/mock-server')
+  let request: (path: string, init?: RequestInit) => Promise<Response>
+  const aborts: AbortController[] = []
+  beforeEach(async () => {
+    const data = new Map<string, string>()
+    vi.stubGlobal('localStorage', { getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => data.set(key, value), removeItem: (key: string) => data.delete(key) })
+    vi.resetModules()
+    server = await import('../api/mock-server')
+    if (mode === 'http') {
+      fixture = await startHttpStudioFixture(server.mockRequest)
+      request = (path, init) => fetch(`${fixture!.origin}/api${path}`, init)
+    } else request = (path, init) => server.mockRequest(`http://autoflow-studio.mock/api${path}`, init)
+  })
+  afterEach(async () => {
+    aborts.splice(0).forEach(controller => controller.abort())
+    server.configureMock({ offline: false, disconnect: true })
+    await fixture?.close()
+    fixture = undefined
+    vi.unstubAllGlobals()
+  })
+  const json = (body: unknown): RequestInit => ({ method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+
+  it('preserves large Unicode documents, saved content on failure, and exact HTTP error codes', async () => {
+    const content = { name: '协议往返', nodes: [{ id: 'web', type: 'input_text', data: { text: '中文😀'.repeat(18000) } }], edges: [], variables: [] }
+    expect((await request('/local-workflows/save-to-folder', json({ filename: 'contract', content }))).status).toBe(200)
+    expect((await (await request('/local-workflows/load/contract.json')).json()).content).toEqual(content)
+    server.configureMock({ failNextSave: true })
+    expect((await request('/local-workflows/save-to-folder', json({ filename: 'contract', content: { name: 'lost' } }))).status).toBe(507)
+    expect((await (await request('/local-workflows/load/contract.json')).json()).content).toEqual(content)
+    expect((await request('/workflows', { method: 'POST', body: '{broken' })).status).toBe(400)
+    expect((await request('/unknown')).status).toBe(501)
+  })
+  it('keeps command identity stable across retries and rejects changed payloads', async () => {
+    const command = { commandId: 'stable', event: 'set_verbose_log', data: { enabled: true } }
+    const first = await (await request('/events/commands', json(command))).json()
+    expect(await (await request('/events/commands', json(command))).json()).toEqual(first)
+    expect((await request('/events/commands', json({ ...command, data: { enabled: false } }))).status).toBe(409)
+  })
+  it('resumes numbered SSE with Unicode intact and cancels the previous stream', async () => {
+    server.emitMockEvent('execution:log', { message: '第一条😀' })
+    const abort = new AbortController(); aborts.push(abort)
+    const result = await request('/events/stream?afterSeq=0', { signal: abort.signal })
+    const events = parseServerSentEvents(result.body!)[Symbol.asyncIterator]()
+    const first = (await events.next()).value!
+    expect(first.id).toBe('1')
+    expect(JSON.parse(first.data)).toEqual({ message: '第一条😀' })
+    abort.abort()
+    await events.return?.(undefined)
+    if (fixture) await vi.waitFor(() => expect(fixture!.cancelledStreams).toBeGreaterThan(0))
+    server.emitMockEvent('execution:log', { message: '断线期间' })
+    const nextAbort = new AbortController(); aborts.push(nextAbort)
+    const resumed = await request('/events/stream?afterSeq=1', { signal: nextAbort.signal })
+    const replay = parseServerSentEvents(resumed.body!)[Symbol.asyncIterator]()
+    const next = (await replay.next()).value!
+    expect(next.id).toBe('2')
+    expect(JSON.parse(next.data)).toEqual({ message: '断线期间' })
+    nextAbort.abort()
+    await replay.return?.(undefined)
+  })
+
+  it('reconnects the production event client without duplicates or manufactured completion', async () => {
+    const { StudioEventClient } = await import('../api/event-client')
+    const { setStudioTransport } = await import('../api/transport')
+    const restore = setStudioTransport((input, init) => {
+      const url = new URL(input instanceof Request ? input.url : String(input))
+      return request(url.pathname.replace(/^\/api/, '') + url.search, init)
+    })
+    const client = new StudioEventClient('http://autoflow-studio.mock')
+    const received = vi.fn(), completed = vi.fn()
+    client.on('execution:log', received)
+    client.on('execution:completed', completed)
+    try {
+      await vi.waitFor(() => expect(client.connected).toBe(true))
+      server.emitMockEvent('execution:log', { message: 'connected' })
+      await vi.waitFor(() => expect(received).toHaveBeenCalledTimes(1))
+      server.configureMock({ disconnect: true })
+      server.emitMockEvent('execution:log', { message: 'replay' })
+      await vi.waitFor(() => expect(received).toHaveBeenCalledTimes(2), { timeout: 2500 })
+      expect(received.mock.calls.map(args => args[0])).toEqual([{ message: 'connected' }, { message: 'replay' }])
+      expect(completed).not.toHaveBeenCalled()
+    } finally { client.disconnect(); restore() }
+  })
+})

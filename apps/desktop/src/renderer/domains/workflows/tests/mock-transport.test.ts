@@ -130,3 +130,26 @@ it('keeps excluded legacy configuration readable but refuses to run it', async (
   expect(server.mockSnapshot().run).toBe(null)
   expect(await (await request('/workflows/legacy')).json()).toMatchObject(content)
 })
+
+it('rejects removed Excel resource operations without deleting existing stored data or disabling image resources', async () => {
+  const previous = JSON.stringify({ assets: [{ id: 'legacy', dataUrl: 'data:application/octet-stream;base64,YQ==' }], folders: ['old'] })
+  localStorage.setItem('autoflow:studio:mock:data-assets', previous)
+  for (const [path, method] of [['/data-assets', 'GET'], ['/data-assets/upload', 'POST'], ['/data-assets/legacy', 'DELETE']]) {
+    expect((await request(path, method === 'GET' ? undefined : {}, method)).status).toBe(410)
+  }
+  expect(localStorage.getItem('autoflow:studio:mock:data-assets')).toBe(previous)
+  expect((await request('/image-assets/folders', { name: 'retained' })).ok).toBe(true)
+  expect(await (await request('/image-assets/folders')).json()).toEqual(['retained'])
+})
+
+it('rejects excluded nodes inside nested custom modules without changing the module or workflow', async () => {
+  const inner = { id: 'inner', name: 'old', workflow: { nodes: [{ id: 'excel', type: 'excel_create', data: { path: '/preserve.xlsx' } }], edges: [] } }
+  await request('/custom-modules', inner)
+  await request('/custom-modules', { id: 'outer', workflow: { nodes: [{ id: 'nested', type: 'custom_module', data: { customModuleId: 'inner' } }] } })
+  const doc = { id: 'nested-legacy', nodes: [{ id: 'call', type: 'moduleNode', data: { moduleType: 'custom_module', customModuleId: 'outer' } }], edges: [] }
+  await request('/workflows', doc)
+  expect((await request('/workflows/nested-legacy/execute', {})).status).toBe(422)
+  expect(server.mockSnapshot().run).toBe(null)
+  expect(await (await request('/custom-modules/inner')).json()).toMatchObject(inner)
+  expect(await (await request('/workflows/nested-legacy')).json()).toMatchObject(doc)
+})

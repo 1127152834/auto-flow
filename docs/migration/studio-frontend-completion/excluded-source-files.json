@@ -1,0 +1,26 @@
+[
+  {
+    "source": "frontend/src/components/ui/hierarchical-excel-selector.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/hierarchical-excel-selector.tsx",
+    "sha256": "68483cae4382cdc27a79a7c92da3e8ef70cb7d9244dec37895d9626fddaef2d6",
+    "reason": "F0: 已排除 Excel 资源专属消费者，无保留节点引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/ExcelAssetsPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/ExcelAssetsPanel.tsx",
+    "sha256": "45e9e1d406413de0a33645a2b8b0dbf1aeff31926afcd59ed634d2ebc0ecebec",
+    "reason": "F0: 已排除 Excel 资源专属消费者，无保留节点引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ExcelPreviewDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelPreviewDialog.tsx",
+    "sha256": "e64ffa7f4db57d5d6355a64e1c8706b689c41d20fcace5862d522d99d3310ef4",
+    "reason": "F0: 已排除 Excel 资源专属消费者，无保留节点引用"
+  },
+  {
+    "source": "frontend/src/components/workflow/config-panels/ReadExcelConfig.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ReadExcelConfig.tsx",
+    "sha256": "45f43d43830295a48be16f14ff7a26055f46ed7f2489bdd0c4e64e461946a9a2",
+    "reason": "F0: 已排除 Excel 资源专属消费者，无保留节点引用"
+  }
+]

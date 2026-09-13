@@ -74,3 +74,12 @@ capabilities.json 和 test-cases.json 由 scripts/inventory-studio-completion.mj
 本批工程结果：85 文件、1,071 项测试通过，TypeScript/ESLint/构建通过，见 evidence/f0-registry-tests.txt、evidence/f0-registry-build.txt。类型/构建在删除无消费者 API 后再次通过。
 
 AST 核对发现早期扫描将查询回调中的 open_page 比较扩展为整个 ConfigPanel，错误地拉入所有表单依赖。已在函数边界停止扩展，区分 reference 与 branch，并重新生成。没有使用旧候选图作为删除依据。共享 UrlInputDialog/SimilarSelectorDialog/CustomModuleConfig 在专属节点分支之外，仍需单独注册，不能因节点候选未引用而删除。
+
+## Excel 配套清理与真实 HTTP 层验证
+
+- 四个 Excel 专属组件、旧 dataAssetApi 及其分发已删除；checksum/消费者依据见 excluded-source-files.json 和 excluded-capabilities.md。
+- mock-transport.test.ts：Excel GET/上传/删除返回 410，已有存储字节原样保留；图像资源正常；嵌套自定义模块包含排除节点时返回 422，模块/文档无损。
+- excluded-custom-modules.test.ts：循环引用不重复检查，不修改内容；它不代表循环执行合法。
+- HTTP-DOC/CMD/SSE/CLIENT 四场景分别通过 memory/http，共 8 项；完整数据/操作/边界见 http-fixture.md。
+- 全量 87 文件、1,082 项测试通过，TypeScript/ESLint/renderer-main-preload 构建通过，见 evidence/f0-http-tests.txt 和 evidence/f0-http-build.txt。
+- 284 属性面板和既有保存/编辑测试通过。F0 仍有其它专属配置源码/字段用例未关闭；F1 只有局部 HTTP 夹具，不能标完整合同已冻结。

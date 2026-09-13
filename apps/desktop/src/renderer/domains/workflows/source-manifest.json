@@ -300,11 +300,6 @@
     "sha256": "6b70d865b3a2bacaf330c127b9a09678c09a83226167e789c6e1eeb5d5b88851"
   },
   {
-    "source": "frontend/src/components/ui/hierarchical-excel-selector.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/controls/hierarchical-excel-selector.tsx",
-    "sha256": "68483cae4382cdc27a79a7c92da3e8ef70cb7d9244dec37895d9626fddaef2d6"
-  },
-  {
     "source": "frontend/src/components/ui/url-input.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/controls/url-input.tsx",
     "sha256": "68cf786f22c70072c3608ad597daca703edb4f83ed31ba79a00334a80d1c4499"
@@ -633,11 +628,6 @@
     "source": "frontend/src/components/workflow/ImageViewerDialog.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/ImageViewerDialog.tsx",
     "sha256": "c7e68194fbab7c60b016b8236d09c6b9ddd6b9b80d754894bf5ad6b02ff1f23d"
-  },
-  {
-    "source": "frontend/src/components/workflow/ExcelAssetsPanel.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/ExcelAssetsPanel.tsx",
-    "sha256": "45e9e1d406413de0a33645a2b8b0dbf1aeff31926afcd59ed634d2ebc0ecebec"
   },
   {
     "source": "frontend/src/components/workflow/LogList.tsx",
@@ -1170,11 +1160,6 @@
     "sha256": "009af936c4a916947439ccf7384bcb0465eff3e1a69d01cf2d124c4e3ede8913"
   },
   {
-    "source": "frontend/src/components/workflow/config-panels/ExcelPreviewDialog.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ExcelPreviewDialog.tsx",
-    "sha256": "e64ffa7f4db57d5d6355a64e1c8706b689c41d20fcace5862d522d99d3310ef4"
-  },
-  {
     "source": "frontend/src/components/workflow/config-panels/PDFModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/PDFModuleConfigs.tsx",
     "sha256": "b5d3686f46beb3252f57874cfe3d53f88b769aaf3417dc71fc91800a0d9676ca"
@@ -1343,11 +1328,6 @@
     "source": "frontend/src/components/workflow/config-panels/DataModuleConfigs.tsx",
     "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/DataModuleConfigs.tsx",
     "sha256": "49c059b4790a206c26f6990e8eb19d864960a45f12f88dbcba8b1278e8a2cc5d"
-  },
-  {
-    "source": "frontend/src/components/workflow/config-panels/ReadExcelConfig.tsx",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ReadExcelConfig.tsx",
-    "sha256": "45f43d43830295a48be16f14ff7a26055f46ed7f2489bdd0c4e64e461946a9a2"
   },
   {
     "source": "frontend/src/components/workflow/config-panels/FeishuModuleConfigs.tsx",

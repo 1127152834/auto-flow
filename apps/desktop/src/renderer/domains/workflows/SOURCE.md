@@ -1,7 +1,7 @@
 # WebRPA frontend provenance and boundaries
 
 - Frozen source: `reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`.
-- `source-manifest.json` records 276 source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
+- `source-manifest.json` records 272 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
 - The user authorized frontend-first migration with replaceable mock APIs on 2026-09-13. This supersedes the earlier sequencing requirement to finish a real backend before migrating the full frontend.
 
 ## Preserved implementation
@@ -22,7 +22,7 @@ Original encrypted-file and clipboard identifiers remain unchanged for interchan
 
 Documents, virtual folders, modules, assets and settings persist in browser-local storage under AutoFlow-specific keys. Running, picking, recording and the event journal are in-memory fixtures. The mock visits the frozen node array to exercise UI events; it does not evaluate conditions, loops, expressions or browser actions. The UI continuously displays this distinction.
 
-File uploads retain bytes (2 MiB per file, explicit failure on limits/quota). Excel parsing, generated backend scripts, model answers and connection probes are fixtures. Credentials retain masked metadata only. Unknown endpoints return 501 and external network targets are rejected; native tools and external integrations require the later backend adapter. Virtual folders are not AutoFlow workspace SQLite storage. No mock records are silently migrated to production.
+File uploads retain bytes (2 MiB per file, explicit failure on limits/quota). Generated backend scripts, model answers and connection probes are fixtures. Credentials retain masked metadata only. Unknown endpoints return 501 and external network targets are rejected; native tools and external integrations require the later backend adapter. Virtual folders are not AutoFlow workspace SQLite storage. No mock records are silently migrated to production.
 
 Validation and remaining integration work: `docs/migration/studio-frontend-mock-validation.md`.
 
@@ -33,3 +33,5 @@ Source ModuleSidebar category data was extracted to lib/moduleCatalog.ts without
 The source globalTooltip implementation is now mounted with Studio. AutoFlow theme tokens replace its blue gradient; cleanup restores titles, preserves accessible icon names, cancels delayed display and supports remounts. Source checksum is recorded in the manifest.
 
 AI UI dispatch now distinguishes a missing/failed synchronous consumer from accepted delivery. This is not an acknowledgment that an asynchronous save/run has completed; that distinction remains part of F1/F3 contracts. Phone mirror and system-screen Agent actions are excluded, while editor screenshots remain available. Unreferenced version-management and screensaver API wrappers were removed after caller search.
+
+F0 removed the unreferenced Excel resource component chain (four files), its configuration dispatch and API wrapper. Checksums for removed files remain in docs/migration/studio-frontend-completion/excluded-source-files.json. Mock data-assets requests return 410 without reading or deleting old library data; image resources retain the existing implementation. Nested custom-module definitions are also checked for excluded node types before a fixture run starts.
