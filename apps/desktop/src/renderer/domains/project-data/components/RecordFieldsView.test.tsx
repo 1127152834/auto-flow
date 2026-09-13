@@ -29,3 +29,17 @@ it('copies the exact original link and keeps date precision and offsets', async 
   expect(copy).toHaveBeenCalledWith('https://example.com/a?q=%20')
   expect(screen.getByText('2026-09-13T12:00:00.123456789 +08:00')).toBeVisible()
 })
+
+it('groups gallery business fields under the title and keeps label/value row separation',()=>{
+ render(<RecordFieldsView fields={[field('标题')]} record={row([cell('标题','温室')])}/>);
+ expect(screen.getByRole('heading',{name:'业务字段'})).toHaveClass('text-2xl');
+ expect(screen.getByText('业务字段只读展示，修改请点击「编辑记录」。')).toBeVisible();
+ expect(screen.getByText('标题').parentElement).toHaveClass('sm:grid-cols-[180px_minmax(0,1fr)]');
+})
+it('shows a field identity once while preserving unrelated fields with the same value',()=>{
+ render(<RecordFieldsView identityFieldId="记录编号" fields={[field('记录编号'),field('另一个字段')]} record={row([cell('记录编号','001'),cell('另一个字段','001')])}/>);
+ expect(screen.getAllByText('记录编号')).toHaveLength(1);
+ expect(screen.getByText('文本 · 001')).toBeVisible();
+ expect(screen.getByText('另一个字段')).toBeVisible();
+ expect(screen.getAllByText('001')).toHaveLength(1);
+})

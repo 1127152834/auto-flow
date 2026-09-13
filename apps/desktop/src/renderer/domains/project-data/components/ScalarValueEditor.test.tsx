@@ -113,12 +113,55 @@ it('uses a single-line page editor until the value or user requests multiline in
   const user=userEvent.setup(),draft=scalarDraft('short'),view=render(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={draft} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
   expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','INPUT')
   const label=document.querySelector('[data-record-field-label]'),controls=document.querySelector('[data-record-field-controls]');expect(label?.parentElement).toBe(controls?.parentElement);expect(label?.parentElement).toHaveAttribute('data-record-field-layout','page')
-  await user.click(screen.getByRole('button',{name:'使用多行输入'}));expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
+  await user.click(screen.getByRole('button',{name:'值选项'}));await user.click(screen.getByRole('button',{name:'使用多行输入'}));expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
   view.rerender(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={{...draft,text:'first\nsecond'}} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
   expect(screen.getByLabelText('摘要')).toHaveValue('first\nsecond');expect(screen.getByRole('button',{name:'使用单行输入'})).toBeDisabled()
 })
 
 it('keeps page missing and null states explicit without repeating the field label',()=>{
   render(<ScalarValueEditor id="page-null" label="备注" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
-  expect(screen.getByRole('combobox',{name:'备注值状态'})).toHaveAttribute('data-choice-value','null');expect(document.querySelectorAll('[data-record-field-label]')).toHaveLength(1)
+  expect(screen.getByRole('button',{name:'值选项'})).toBeVisible();expect(screen.getByText('空值')).toBeVisible();expect(screen.queryByRole('combobox',{name:'备注值状态'})).not.toBeInTheDocument();expect(document.querySelectorAll('[data-record-field-label]')).toHaveLength(1)
+})
+
+it('keeps page inputs directly editable and expands value options only on request',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),missing=scalarDraft(undefined)
+  render(<ScalarValueEditor id="page-missing" label="备注" type="string" draft={missing} onChange={change} presentation="page" allowMissing presenceDisplay="contextual"/>)
+  expect(screen.queryByRole('combobox',{name:'备注值状态'})).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('备注'),'x')
+  expect(change).toHaveBeenLastCalledWith({...missing,presence:'value',text:'x'})
+  await user.click(screen.getByRole('button',{name:/值选项/}))
+  expect(screen.getByRole('combobox',{name:'备注值状态'})).toBeVisible()
+  expect(screen.getByRole('button',{name:'使用多行输入'})).toBeVisible()
+})
+
+it('uses the calendar text input for pure dates without normalizing raw drafts',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),draft={...scalarDraft(undefined),presence:'value' as const,precision:'date' as const,text:'2026-02-31'}
+  render(<ScalarValueEditor id="day" label="发布日期" type="date" draft={draft} onChange={change} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByRole('textbox',{name:'发布日期'})).toHaveValue('2026-02-31')
+  expect(screen.getByRole('button',{name:'选择发布日期'})).toBeVisible()
+  await user.type(screen.getByRole('textbox',{name:'发布日期'}),'x')
+  expect(change).toHaveBeenLastCalledWith({...draft,text:'2026-02-31x'})
+})
+
+it('keeps pure date dialogs on the original text input and does not compress page textareas',()=>{
+  const draft={...scalarDraft(undefined),presence:'value' as const,precision:'date' as const,text:'2026-09-10'}
+  const view=render(<ScalarValueEditor id="dialog-day" label="日期" type="date" draft={draft} onChange={vi.fn()}/>)
+  expect(screen.queryByRole('button',{name:'选择日期'})).not.toBeInTheDocument()
+  view.rerender(<ScalarValueEditor id="page-note" label="摘要" type="string" draft={scalarDraft('A\nB')} onChange={vi.fn()} presentation="page"/>)
+  expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
+  expect(screen.getByRole('group',{name:'摘要'})).toHaveClass('[&_textarea[data-af-control]]:min-h-20')
+  expect(screen.getAllByRole('button').filter(button=>button.textContent?.includes('值选项'))).toHaveLength(1)
+})
+
+it('distinguishes readonly missing, null, and empty values while allowing options inspection',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),view=render(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft(undefined)} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('未填写 · 此字段只读')).toBeVisible()
+  expect(screen.getByRole('button',{name:'值选项'})).toBeEnabled()
+  await user.click(screen.getByRole('button',{name:'值选项'}))
+  expect(screen.getByRole('combobox',{name:'备注值状态'})).toHaveAttribute('aria-readonly','true')
+  view.rerender(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft(null)} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('空值 · 此字段只读')).toBeVisible()
+  view.rerender(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft('')} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('空字符串 · 此字段只读')).toBeVisible()
+  expect(change).not.toHaveBeenCalled()
 })

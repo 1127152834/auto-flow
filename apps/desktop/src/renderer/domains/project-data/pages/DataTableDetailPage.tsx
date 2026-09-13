@@ -1,4 +1,4 @@
-import { FileText } from "@phosphor-icons/react";
+import { FileText, PencilSimple } from "@phosphor-icons/react";
 import { DataTablePageFrame } from "../components/DataTablePageFrame";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { StreamingApiClient } from "../../../shared/api/client";
+import { ApiClientError, type StreamingApiClient } from "../../../shared/api/client";
 import type { components } from "../../../shared/api/generated";
 import { Modal } from "../../../shared/components/Modal";
 import { notify } from "../../../shared/components/Toaster";
@@ -44,6 +44,8 @@ import { RecordDetailPage } from "./RecordDetailPage";
 import { RecordEditPage } from "./RecordEditPage";
 import { RecordFieldsView } from "../components/RecordFieldsView";
 import { RecordEditorForm } from "../components/RecordEditorForm";
+import { RecordUnsavedDialog } from "../components/RecordUnsavedDialog";
+import type { RecordDraftSummary } from "../record-draft";
 import type { RecordLocation } from "../../projects/types";
 import { RecordEditorDialog } from "../components/RecordEditorDialog";
 import { RecordStatusDialog } from "../components/RecordStatusDialog";
@@ -86,7 +88,9 @@ const labels: Record<DataTableTab, string> = {
   settings: "数据表设置",
 };
 const errorMessage = (value: unknown) =>
-  value instanceof Error ? value.message : "读取数据失败";
+  value instanceof ApiClientError && value.code === "RECORD_NOT_FOUND"
+    ? "记录不存在，可能已被删除。请返回记录列表查看当前数据。"
+    : value instanceof Error ? value.message : "读取数据失败";
 const base64url = (value: unknown) => {
   const bytes = new TextEncoder().encode(JSON.stringify(value));
   let binary = "";
@@ -161,6 +165,8 @@ function DataTableDetail({
     [leaveOpen, setLeaveOpen] = useState(false),
     [discardTarget, setDiscardTarget] = useState<"editor" | "all">("all"),
     [editorDirty, setEditorDirty] = useState(false),
+    [recordValidationError, setRecordValidationError] = useState(false),
+    [recordDraftSummary, setRecordDraftSummary] = useState<RecordDraftSummary>({ dirtyFields: [], invalidFields: [] }),
     [workflow, setWorkflow] = useState<{ kind: "batch" | "replace" | "export"; session: string } | null>(null),
     [conflictLatest, setConflictLatest] = useState<{ session: string; context: EditingContext; input: Parameters<ReturnType<typeof useDataTableEditing>["replaceEditor"]>[1]; summary: string } | null>(null),
     [conflictLoading, setConflictLoading] = useState(false),
@@ -299,6 +305,12 @@ function DataTableDetail({
   });
   const page = recordsQuery.data;
   const restoredScroll = useRef(false);
+  const previousRecordPage = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const identity = recordLocation ? JSON.stringify(recordLocation) : null;
+    if (identity && identity !== previousRecordPage.current) window.scrollTo({ top: 0, behavior: "auto" });
+    previousRecordPage.current = identity;
+  }, [recordLocation]);
   useLayoutEffect(() => { if (recordLocation) { restoredScroll.current = false; return } if (!restoredScroll.current && page) { restoredScroll.current = true; window.scrollTo({ top: scrollY, behavior: "auto" }); const identity = JSON.stringify(originRowKey.current); Array.from(document.querySelectorAll<HTMLButtonElement>("[data-record-open]")).find(node => node.dataset.recordOpen === identity)?.focus({ preventScroll: true }) } }, [page, scrollY, recordLocation]);
   useEffect(() => {
     if (!catalogQuery.data) return;
@@ -542,35 +554,54 @@ function DataTableDetail({
   const foreignRecovery = Boolean(recordLocation && editing.recoveryPending && editing.editor && !(recordEditor || (editing.editor.kind === "recordStatus" || editing.editor.kind === "recordDelete") && matchesRoute(editing.editor.record.ref)));
 
   const backToRecords = () => onRecordNavigate?.();
+  const recordDisplayTitle = (item: Schema["DataRecordView"]) => {
+    const name = fields.map(field => item.values.find(cell => cell.fieldId === field.ref.fieldId && cell.readable && !cell.error && typeof cell.value === "string" && cell.value && cell.value !== String(item.ref.recordKey.value))).find(Boolean)?.value;
+    return `${item.ref.recordKey.value}${typeof name === "string" && name !== String(item.ref.recordKey.value) ? ` · ${name}` : ""}`;
+  };
   const openRecordFromList = (record: Schema["DataRecordView"], mode: "detail" | "edit" = "detail") => {
     originRowKey.current = record.ref.recordKey;
     try { sessionStorage.setItem(viewStateKey, JSON.stringify({ identity: { workspaceKey, projectId, tableId, datasetGeneration: generation }, originRowKey: record.ref.recordKey, query, quickSearch, page: recordPage, visibleFieldIds, scrollY: window.scrollY })) } catch { /* retain the in-memory return context */ }
     onRecordNavigate?.({ mode, datasetGeneration: record.ref.datasetGeneration, recordKey: record.ref.recordKey });
   };
   const recordContent = recordLocation?.mode === "detail" ? <RecordDetailPage
-    title={routeRecord ? fields.map(field => routeRecord.values.find(cell => cell.fieldId === field.ref.fieldId && cell.readable && !cell.error && typeof cell.value === "string" && cell.value)).find(Boolean)?.value as string || "记录详情" : "记录详情"}
+    title={routeRecord ? recordDisplayTitle(routeRecord) : "记录详情"}
+    recordKeyLabel={routeRecord ? String(routeRecord.ref.recordKey.value) : undefined}
     loading={detailQuery.isFetching || catalogQuery.isPending} error={routeError} readonly={!writable} disabled={disabled || editing.busy || editing.recoveryPending}
-    fieldsView={routeRecord && catalogQuery.data ? <RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} /> : undefined}
+    fieldsView={routeRecord && catalogQuery.data ? <RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} identityFieldId={table?.identity.mode === "field" ? table.identity.fieldId : undefined} /> : undefined}
     statusForm={routeRecord && editing.editor?.kind === "recordStatus" && matchesRoute(editing.editor.record.ref) ? <RecordStatusDialog key={editing.editor.session} presentation="inline" open sessionKey={editing.editor.session} submissionEpoch={instanceId}
       record={editing.editor.record} statuses={editing.editor.statuses.items} readonly={!writable} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} error={editing.error} errorActions={errorActions}
       onSubmit={editing.submitRecordStatus} onRecover={editing.recover} onOpenChange={() => undefined} onRequestClose={closeEditor}
       onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : routeRecord ? <p className="text-sm">{routeRecord.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}</p> : undefined}
     createdAt={routeRecord?.createdAt} updatedAt={routeRecord?.updatedAt} onBack={backToRecords}
     onEdit={() => { if (recordLocation.mode === "detail") onRecordNavigate?.({ ...recordLocation, mode: "edit" }) }}
-    onDelete={() => { if (routeRecord && editing.canLeave()) void askDiscardOnce("editor", () => { editing.close(); editing.open({ kind: "recordDelete", record: routeRecord }) }) }}
+    onDelete={() => { if (routeRecord && writable && !disabled && !detailQuery.isFetching && editing.canLeave()) void askDiscardOnce("editor", () => { editing.close(); editing.open({ kind: "recordDelete", record: routeRecord }) }) }}
     onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }} />
     : recordLocation ? <RecordEditPage embedded
       mode={recordLocation.mode === "create" ? "create" : "edit"}
       loading={!recordEditor && !routeError && !editing.recoveryBlocked && !foreignRecovery} error={routeError} disabled={disabled || editing.busy || editing.recoveryPending} onBack={backToRecords}
       onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }}
-      footer={<>{editorDirty ? <span className="mr-auto text-sm text-muted">未保存的修改</span> : null}<Button variant="ghost" disabled={disabled || editing.busy || editing.recoveryPending} onClick={backToRecords}>取消</Button>{editing.recoveryPending ? <Button type="submit" form="record" data-record-action="recover" disabled={disabled || editing.busy}>核对保存结果</Button> : <Button type="submit" form="record" variant="primary" disabled={disabled || editing.busy || !writable || recordLocation.mode === "edit" && !editorDirty}>{editing.busy ? "正在保存…" : recordLocation.mode === "create" ? "创建记录" : "保存修改"}</Button>}</>}
+      footer={<>{editorDirty ? <span className="mr-auto flex items-center gap-2 text-base text-clay"><PencilSimple size={20} />未保存 · {recordLocation.mode === "create" ? "新增草稿" : `${recordDraftSummary.dirtyFields.length} 处修改`}</span> : null}<Button className="h-12 min-w-28 text-base" disabled={disabled || editing.busy || editing.recoveryPending} onClick={backToRecords}>取消</Button>{editing.recoveryPending ? <Button className="h-12 text-base" type="submit" form="record" data-record-action="recover" disabled={disabled || editing.busy}>核对保存结果</Button> : <Button className="h-12 min-w-32 text-base" type="submit" form="record" variant="primary" disabled={disabled || editing.busy || recordValidationError || !writable || recordLocation.mode === "edit" && !editorDirty}>{editing.busy ? "正在保存…" : recordLocation.mode === "create" ? "保存到本地" : "保存修改"}</Button>}</>}
       editorForm={recordEditor ? <RecordEditorForm key={recordEditor.session} id="record" presentation="page" externalActions mode={recordEditor.kind === "recordCreate" ? "create" : "edit"}
         sessionKey={recordEditor.session} submissionEpoch={instanceId} initialSubmittedValues={recordEditor.submittedValues} fields={recordEditor.fields.items} initialRecord={recordEditor.kind === "recordEdit" ? recordEditor.record : undefined}
         identityFieldId={recordEditor.table.identity.mode === "field" ? recordEditor.table.identity.fieldId : undefined}
         saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.conflict ? "数据已更新，你的输入已保留。请载入最新资料后核对。" : editing.error} errorActions={errorActions}
         footerClassName="sticky bottom-0 z-10 -mx-6 -mb-6 mt-4 flex justify-end gap-2 border-t border-line bg-surface p-4"
         onCancel={backToRecords} onSubmit={editing.submitRecord} onRecover={editing.recover}
+        onDraftSummaryChange={setRecordDraftSummary} onValidationErrorChange={setRecordValidationError}
         onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : undefined} /> : null;
+  const cancelLeave = (next: boolean) => {
+    if (next) return;
+    setLeaveOpen(false); leaveResolve.current?.(false); leaveResolve.current = null; leaveAction.current = null;
+  };
+  const discardAndLeave = () => {
+    if (!editing.canLeave()) return;
+    const action = leaveAction.current;
+    setLeaveOpen(false);
+    if (discardTarget === "all") setFilterSession(value => value + 1);
+    setEditorDirty(false); workflowDirtyRef.current = false;
+    editing.close(); closeWorkflow(); leaveResolve.current?.(true);
+    leaveResolve.current = null; leaveAction.current = null; action?.();
+  };
   const loadingTable = tableQuery.isPending && !table,
     tableError = tableQuery.error ? errorMessage(tableQuery.error) : null;
   if (loadingTable && !table)
@@ -596,7 +627,7 @@ function DataTableDetail({
       <DataTablePageFrame notice={null} header={<div className="flex min-w-0 gap-5">
         <span className="flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"><FileText size={32} /></span>
         <div className="min-w-0">
-          {recordLocation?.mode === "detail" ? <h2 className="m-0 break-words text-2xl font-semibold">{table.name}</h2> : <h1 className="m-0 break-words text-2xl font-semibold">{recordLocation?.mode === "create" ? "新增记录" : recordLocation?.mode === "edit" ? `编辑记录 · ${recordLocation.recordKey.value}` : table.name}</h1>}
+          <h2 className="m-0 break-words text-2xl font-semibold">{recordLocation?.mode === "create" ? "新增记录" : recordLocation?.mode === "edit" ? `编辑记录 · ${recordLocation.recordKey.value}` : table.name}</h2>
           <p className="mb-0 mt-1 break-words text-base text-muted">{recordLocation?.mode === "create" ? "填写业务字段，保存后先写入本地。" : recordLocation?.mode === "edit" ? "修改业务字段，保存后先写入本地。" : table.description || "暂无说明"}</p>
           <p className="mb-0 mt-2 text-sm text-muted">{table.sourceKind === "excel" ? "Excel 一次导入" : table.sourceKind === "sheets" ? "Google Sheets" : table.sourceKind === "local" ? "本地数据" : "来源未配置"}　|　{readonly ? "只读" : "本地可维护"}</p>
         </div>
@@ -1047,9 +1078,11 @@ function DataTableDetail({
           key={editing.editor.session}
           open
           kind={editing.editor.kind === "recordDelete" ? "record" : "status"}
+          tableName={table.name}
+          sourceKind={table.sourceKind}
           targetName={
             editing.editor.kind === "recordDelete"
-              ? `${editing.editor.record.ref.recordKey.type} · ${editing.editor.record.ref.recordKey.value}`
+              ? recordDisplayTitle(editing.editor.record)
               : "status" in editing.editor
                 ? editing.editor.status.name
                 : ""
@@ -1082,54 +1115,17 @@ function DataTableDetail({
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
         onCompleted={operation => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
       <AlertDialog open={Boolean(conflictLatest || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
-      <AlertDialog
-        open={leaveOpen}
-        onOpenChange={(next) => {
-          if (!next) {
-            setLeaveOpen(false);
-            leaveResolve.current?.(false);
-            leaveResolve.current = null;
-            leaveAction.current = null;
-          }
-        }}
-      >
+      {recordLocation && (recordLocation.mode === "create" || recordLocation.mode === "edit") ? <RecordUnsavedDialog
+        open={leaveOpen} onOpenChange={cancelLeave} onDiscard={discardAndLeave}
+        title={routeRecord ? recordDisplayTitle(routeRecord) : "新增记录"}
+        dirtyFields={recordDraftSummary.dirtyFields.map(id => recordEditor?.fields.items.find(field => field.ref.fieldId === id)?.name ?? "字段已变化")} invalidFields={recordDraftSummary.invalidFields.map(id => recordEditor?.fields.items.find(field => field.ref.fieldId === id)?.name ?? "字段已变化")} /> : <AlertDialog open={leaveOpen} onOpenChange={cancelLeave}>
         <AlertDialogContent>
           <AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle>
-          <AlertDialogDescription>
-            {discardTarget === "editor"
-              ? "未保存的记录、字段或状态修改将丢失。"
-              : `${editorDirtyRef.current ? "未保存的记录、字段或状态修改；" : ""}${workflowDirtyRef.current ? "未完成的批量或文件设置；" : ""}将丢失。`}
-          </AlertDialogDescription>
-          <div className="flex justify-end gap-2">
-            <AlertDialogCancel asChild>
-              <Button autoFocus>继续编辑</Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button
-                variant="danger"
-                onClick={() => {
-                  if (!editing.canLeave()) return;
-                  const action = leaveAction.current;
-                  setLeaveOpen(false);
-                  if (discardTarget === "all") {
-                                  setFilterSession((value) => value + 1);
-                  }
-                  setEditorDirty(false);
-                  workflowDirtyRef.current = false;
-                  editing.close();
-                  closeWorkflow();
-                  leaveResolve.current?.(true);
-                  leaveResolve.current = null;
-                  leaveAction.current = null;
-                  action?.();
-                }}
-              >
-                放弃并离开
-              </Button>
-            </AlertDialogAction>
-          </div>
+          <AlertDialogDescription>{discardTarget === "editor" ? "未保存的记录、字段或状态修改将丢失。" : `${editorDirtyRef.current ? "未保存的记录、字段或状态修改；" : ""}${workflowDirtyRef.current ? "未完成的批量或文件设置；" : ""}将丢失。`}</AlertDialogDescription>
+          <div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" onClick={discardAndLeave}>放弃并离开</Button></AlertDialogAction></div>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog>}
+
       </DataTablePageFrame>
     </Tabs>
   );

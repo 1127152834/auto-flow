@@ -262,7 +262,7 @@ it('keeps query drafts local and applies quick search only on submit',async()=>{
 
 it('opens the typed detail route directly without fetching the record list', async()=>{
   const {client,request}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
-  expect(await screen.findByRole('heading',{level:1,name:'Alice'})).toBeVisible()
+  expect(await screen.findByRole('heading',{level:2,name:'001 · Alice'})).toBeVisible()
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(request.mock.calls.some(([path])=>path.includes('/records?'))).toBe(false)
   expect(request.mock.calls.some(([path])=>path.includes('/records/MDAx?'))).toBe(true)
@@ -273,6 +273,36 @@ it('rejects a direct record response with a different typed identity', async()=>
   renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
   expect(await screen.findByText(/记录响应与当前地址不一致/)).toBeVisible()
   expect(screen.queryByText('Alice')).not.toBeInTheDocument()
+})
+
+it('keeps the business title when a field identity is the first string column', async()=>{
+  const {client,request}=api(), original=request.getMockImplementation()!
+  const identity={...field,ref:{...field.ref,fieldId:'identity'},key:'id',name:'编号'}
+  request.mockImplementation(async(path,init)=>{
+    if(path.endsWith('/tables/t'))return {...table,identity:{mode:'field',fieldId:'identity'}} as unknown as typeof table
+    if(path.includes('/fields'))return {items:[identity,field],tableRevision:3}
+    if(path.includes('/records/'))return {...record,values:[{fieldId:'identity',value:'001',source:'local',readable:true},...record.values]}
+    return original(path,init)
+  })
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByRole('heading',{name:'001 · Alice'})).toBeVisible()
+})
+
+it('shows dirty field names rather than internal identities in the record leave confirmation', async()=>{
+  const {client}=api(); let guard:(()=>Promise<boolean>)|null=null
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn(),registerLeaveGuard:value=>{guard=value}})}/>)
+  const input=await screen.findByLabelText('姓名');await userEvent.clear(input);await userEvent.type(input,'新姓名')
+  const pending=guard!();const dialog=await screen.findByRole('alertdialog')
+  expect(within(dialog).getByText('姓名')).toBeVisible()
+  expect(dialog).toHaveTextContent('001 · Alice')
+  await userEvent.click(within(dialog).getByRole('button',{name:'继续编辑'}));expect(await pending).toBe(false)
+  expect(input).toHaveValue('新姓名')
+})
+
+it('starts a newly opened record page at the top without resetting scroll while typing', async()=>{
+  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  const input=await screen.findByLabelText('姓名');expect(window.scrollTo).toHaveBeenCalledWith({top:0,behavior:'auto'})
+  vi.mocked(window.scrollTo).mockClear();await userEvent.type(input,'修改');expect(window.scrollTo).not.toHaveBeenCalled()
 })
 it('keeps a stale generation route invalid rather than opening the same key in new data', async()=>{
   const {client,request}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'old',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
@@ -298,11 +328,11 @@ it('restores an accepted-unknown create after a full coordinator remount without
   const {client,request}=api();const original=request.getMockImplementation()!
   request.mockImplementation(async(path,init)=>{if(init?.method==='POST'||path.includes('/operations/'))throw new TypeError('offline');return original(path,init)})
   const options=props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})
-  const first=renderPage(<DataTableDetailPage {...options}/>);await userEvent.click(await screen.findByRole('combobox',{name:'姓名值状态'}));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('姓名'),'持久草稿')
-  await userEvent.click(screen.getByRole('button',{name:'创建记录'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
+  const first=renderPage(<DataTableDetailPage {...options}/>);await userEvent.type(await screen.findByLabelText('姓名'),'持久草稿')
+  await userEvent.click(screen.getByRole('button',{name:'保存到本地'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
   renderPage(<DataTableDetailPage {...options}/>)
   expect(await screen.findByRole('button',{name:'核对保存结果'})).toBeVisible()
-  expect(screen.getByRole('heading',{level:1,name:'新增记录'})).toBeVisible()
+  expect(screen.getByRole('heading',{level:2,name:'新增记录'})).toBeVisible()
   expect(screen.getByLabelText('姓名')).toHaveValue('持久草稿')
 })
 
@@ -374,7 +404,7 @@ it('adopts the latest record revision explicitly and clears comparison after suc
 
 it('keeps the original gallery table heading, tabs and record form inside one content card',async()=>{
   const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})}/>);
-  const heading=await screen.findByRole('heading',{name:'新增记录',level:1});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
+  const heading=await screen.findByRole('heading',{name:'新增记录',level:2});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'数据记录'})).toBeVisible()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'字段与校验'})).toBeVisible()
   expect(await within(frame as HTMLElement).findByRole('form',{name:'新建记录表单'})).toBeVisible()
@@ -393,4 +423,25 @@ it('opens the row edit route with typed identity and preserves the record list r
  expect(navigate).toHaveBeenCalledWith({mode:'edit',datasetGeneration:'g',recordKey:{type:'text',value:'001'}});
  const stored=JSON.parse(sessionStorage.getItem('autoflow:table-view:'+JSON.stringify(['w','p','t']))??'null');
  expect(stored.originRowKey).toEqual({type:'text',value:'001'});expect(stored.identity).toEqual({workspaceKey:'w',projectId:'p',tableId:'t',datasetGeneration:'g'});
+})
+
+
+it('shows a Chinese missing-record message and prevents editing a missing record',async()=>{
+  const {client,request}=api(),original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(path.includes('/records/'))throw new ApiClientError('Record was not found',404,'RECORD_NOT_FOUND');return original(path,init)})
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByText('记录不存在，可能已被删除。请返回记录列表查看当前数据。')).toBeVisible()
+  expect(screen.queryByText('Record was not found')).not.toBeInTheDocument()
+  expect(screen.getByRole('button',{name:'重试'})).toBeEnabled()
+  expect(screen.getByRole('button',{name:'编辑记录'})).toBeDisabled()
+})
+
+
+it('disables the page save action after field validation fails and reenables it after correction',async()=>{
+ const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+ const input=await screen.findByLabelText('姓名');await userEvent.clear(input)
+ const save=screen.getByRole('button',{name:'保存修改'});await userEvent.click(save)
+ await waitFor(()=>expect(save).toBeDisabled())
+ expect(screen.getByText(/还有 1 个字段需要修正/)).toBeVisible()
+ await userEvent.type(input,'修正后姓名');await waitFor(()=>expect(save).toBeEnabled())
 })

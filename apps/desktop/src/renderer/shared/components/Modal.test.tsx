@@ -112,3 +112,10 @@ describe('Modal', () => {
     await waitFor(() => expect(second).toHaveFocus())
   })
 })
+
+
+it('names a rich-title content region from its accessible title rather than object serialization',()=>{
+ render(<Modal open onOpenChange={()=>undefined} title={<span>删除记录</span>}>真实影响</Modal>)
+ expect(screen.getByRole('region',{name:'删除记录'})).toHaveTextContent('真实影响')
+ expect(screen.queryByRole('region',{name:'[object Object]内容'})).not.toBeInTheDocument()
+})

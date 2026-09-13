@@ -38,11 +38,13 @@ const sameValue = (a: Scalar | undefined, b: Scalar | undefined): boolean => {
   return Boolean(a && b && typeof a === 'object' && typeof b === 'object' && a.kind === b.kind && a.precision === b.precision && a.value === b.value && a.offset === b.offset)
 }
 
-export function recordValues(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): components['schemas']['DataCellWrite'][] {
-  const cells = new Map(record?.values.map(cell => [cell.fieldId, cell]))
-  const values: components['schemas']['DataCellWrite'][] = []
-  for (const field of fields) {
-    const fieldId = field.ref.fieldId, cell = cells.get(fieldId)
+type DraftAnalysis = { values: components['schemas']['DataCellWrite'][]; errors: Record<string,{message:string;control:ScalarDraftControl}> }
+
+function analyzeRecordDraft(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): DraftAnalysis {
+  const cells=new Map(record?.values.map(cell=>[cell.fieldId,cell])),values:components['schemas']['DataCellWrite'][]=[],errors:Record<string,{message:string;control:ScalarDraftControl}>={}
+  for(const field of fields){
+    const fieldId=field.ref.fieldId,cell=cells.get(fieldId)
+    try {
     if (field.formula || !field.writable || cell?.readable === false || (record && fieldId === identityFieldId)) {
       if (!record && field.required) throw new RecordDraftError(fieldId, '此必填字段不可填写，当前表结构无法新增记录', 'presence')
       continue
@@ -58,6 +60,34 @@ export function recordValues(fields: Field[], drafts: RecordDraft, record?: Reco
       throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效', 'value')
     }
     if (value !== undefined) values.push({ fieldId, value })
+    } catch(error) {
+      if(error instanceof RecordDraftError)errors[fieldId]={message:error.message,control:error.control}
+      else errors[fieldId]={message:error instanceof Error?error.message:'字段值无效',control:'value'}
+    }
   }
-  return values
+  return {values,errors}
+}
+
+export function recordValues(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): components['schemas']['DataCellWrite'][] {
+  const analysis=analyzeRecordDraft(fields,drafts,record,identityFieldId)
+  const first=fields.map(field=>field.ref.fieldId).find(fieldId=>analysis.errors[fieldId])
+  if(first){const error=analysis.errors[first];throw new RecordDraftError(first,error.message,error.control)}
+  return analysis.values
+}
+
+export type RecordDraftSummary = { dirtyFields: string[]; invalidFields: string[] }
+
+export function recordDraftErrors(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): Record<string,{message:string;control:ScalarDraftControl}> {
+  return analyzeRecordDraft(fields,drafts,record,identityFieldId).errors
+}
+
+export function recordDraftSummary(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): RecordDraftSummary {
+  const analysis=analyzeRecordDraft(fields,drafts,record,identityFieldId),baseline=createRecordDraft(fields,record),dirty=new Set(analysis.values.map(value=>value.fieldId))
+  for (const field of fields) {
+    const fieldId=field.ref.fieldId
+    if(analysis.errors[fieldId]){
+      if (JSON.stringify(drafts[fieldId])!==JSON.stringify(baseline[fieldId])&&!field.formula&&field.writable&&!(record&&fieldId===identityFieldId))dirty.add(fieldId)
+    }
+  }
+  return {dirtyFields:fields.map(field=>field.ref.fieldId).filter(fieldId=>dirty.has(fieldId)),invalidFields:fields.map(field=>field.ref.fieldId).filter(fieldId=>analysis.errors[fieldId])}
 }

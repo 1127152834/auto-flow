@@ -11,6 +11,17 @@ function props(overrides: Partial<DataDeletionDialogProps> = {}): DataDeletionDi
 }
 afterEach(cleanup)
 
+it('identifies the record and table without inventing an impact before preview', async () => {
+  const p = props({ kind: 'record', targetName: 'R021 · 温室巡检资料链接', tableName: '待采集链接', sourceKind: 'excel' })
+  render(<DataDeletionDialog {...p} />)
+  expect(screen.getByRole('dialog', { name: '删除这条记录？' })).toHaveTextContent('待采集链接')
+  expect(screen.getByText('不会修改原始 Excel 文件')).toBeInTheDocument()
+  expect(screen.queryByText(/影响范围：1/)).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '取消' })).toHaveFocus()
+  await userEvent.click(screen.getByRole('button', { name: '检查删除影响' }))
+  expect(p.onConfirm).not.toHaveBeenCalled()
+})
+
 it('requires a real impact report and defaults danger-dialog focus to cancel', async () => {
   const p = props(); const view = render(<DataDeletionDialog {...p} />)
   expect(screen.getByRole('button', { name: '取消' })).toHaveFocus()
@@ -88,4 +99,12 @@ it('invalidates an older close approval even after a subsequent delete has faile
   expect(await screen.findByRole('alert')).toHaveTextContent('删除失败')
   await act(async () => allow(true))
   expect(p.onOpenChange).not.toHaveBeenCalled()
+})
+
+
+it('localizes a real single-record impact without guessing an inbound-reference count',()=>{
+ const target: components['schemas']['RecordResourceLocator']={type:'record',recordRef:{projectId:'p',tableId:'t',datasetGeneration:'g',recordKey:{type:'text',value:'001'}}}
+ render(<DataDeletionDialog {...props({kind:'record',targetName:'001',impact:{...impact,target,impacts:[{code:'RECORD_DELETE',resource:target,message:'Delete record; 0 inbound references',blocking:false}]}})}/>)
+ expect(screen.getByText('影响范围：1 条本地记录')).toBeVisible()
+ expect(screen.queryByText(/inbound references/)).not.toBeInTheDocument()
 })

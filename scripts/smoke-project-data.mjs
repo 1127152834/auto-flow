@@ -110,17 +110,17 @@ try {
   await click('记录', '[role=tab]'); await createRecord('待删除记录')
   records = (await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items
   assert.equal(records.length, 2)
-  await click('返回记录列表'); await clickRow('待删除记录', '查看记录'); await waitFor(renderer,`!!document.querySelector('[data-record-page=detail]')`,'record detail page'); await click('删除记录')
-  await click('检查删除影响'); await click('确认删除'); await closed('[role=dialog]')
+  await click('返回记录列表'); await clickRow('待删除记录', '查看记录'); await waitFor(renderer,`!!document.querySelector('[data-record-page=detail]')`,'record detail page'); await click('更多记录操作'); await click('删除记录', '[role=menuitem]')
+  await click('检查删除影响'); await click('删除记录', '[role=dialog] button'); await closed('[role=dialog]')
   assert.equal((await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items.length, 1)
   checkpoint('UI deletes the selected record after impact confirmation and retains the other record')
 
   // Simulate a lost acknowledgement only after the real server commits; the reload restores fetch.
   await renderer.evaluate(`(()=>{const original=window.fetch.bind(window);window.fetch=async(input,init)=>{const url=String(input?.url??input);if(url.includes('/operations/by-idempotency-key/'))throw new TypeError('QA offline lookup');const response=await original(input,init);if(url.includes('/records')&&init?.method==='POST')throw new TypeError('QA lost committed response');return response};return true})()`)
   await click('新增记录'); await visible('新增记录')
-  await click('', '[aria-label="客户姓名值状态"]'); await click('填写值', '[role=option]')
+  await waitFor(renderer,"Boolean(document.querySelector('[data-record-page=create] #record'))",'record page ready for direct input')
   await input(`#record-${field.ref.fieldId}`, '恢复后不重复新增')
-  await click('创建记录'); await visible('核对保存结果')
+  await click('保存到本地'); await visible('核对保存结果')
   assert.equal((await api(`${base}/records?datasetGeneration=${table.datasetGeneration}`)).items.length, 2)
   await renderer.command('Page.reload')
   await visible('本地服务正常', 30000); await visible('核对保存结果')
@@ -160,9 +160,9 @@ try {
     await capture('record-create-200-footer')
     await renderer.evaluate('window.scrollTo(0,0);true')
     await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1)'); await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false})
-    await click('', '[aria-label="客户姓名值状态"]'); await click('填写值', '[role=option]')
+    await waitFor(renderer,"Boolean(document.querySelector('[data-record-page=create] #record'))",'record page ready for direct input')
     await input(`#record-${field.ref.fieldId}`, value)
-    await capture('record-create'); await click('创建记录'); await closed('#record'); await visible(value); await capture('record-detail')
+    await capture('record-create'); await click('保存到本地'); await closed('#record'); await visible(value); await capture('record-detail')
   }
   await click('返回数据表'); await waitFor(renderer, `!!document.querySelector('[aria-label="更多客户资料操作"]')`, 'table edit control')
   await click('更多客户资料操作'); await click('编辑数据表', '[role=menuitem]'); await input('#data-table-description', '重连后保留草稿')

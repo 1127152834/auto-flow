@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import type { components } from '../../shared/api/generated'
-import { createRecordDraft, recordValues, RecordDraftError } from './record-draft'
+import { createRecordDraft, recordDraftSummary, recordValues, RecordDraftError } from './record-draft'
 import { scalarDraft } from './scalar-draft'
 type Schema = components['schemas']
 const field = (id: string, extra: Partial<Schema['DataFieldView']> = {}): Schema['DataFieldView'] => ({ ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', fieldId: id }, key: id, name: id, type: 'string', required: false, validation: {}, writable: true, formula: false, fieldRevision: 1, ...extra })
@@ -57,4 +57,18 @@ it('applies submitted display values only to writable readable business fields',
   const drafts=createRecordDraft(fields,initial,submitted)
   expect(drafts.text).toEqual(scalarDraft('sent'));expect(drafts.zero).toEqual(scalarDraft(0));expect(drafts.flag).toEqual(scalarDraft(false));expect(drafts.nil).toEqual(scalarDraft(null))
   expect(drafts.formula).toEqual(scalarDraft('safe'));expect(drafts.locked).toEqual(scalarDraft('safe'));expect(drafts.secret).toEqual(scalarDraft(undefined));expect(drafts).not.toHaveProperty('unknown')
+})
+
+it('summarizes every invalid field and only semantic writable changes',()=>{
+  const fields=[field('identity'),field('required',{required:true}),field('number',{type:'number'}),field('locked',{writable:false})]
+  const initial=record([cell('identity','001'),cell('required','ok'),cell('number',1),cell('locked','safe')])
+  const drafts=createRecordDraft(fields,initial)
+  drafts.identity=scalarDraft('002');drafts.required=scalarDraft('');drafts.number={...scalarDraft(1),text:'bad'};drafts.locked=scalarDraft('changed')
+  expect(recordDraftSummary(fields,drafts,initial,'identity')).toEqual({dirtyFields:['required','number'],invalidFields:['required','number']})
+})
+
+it('summarizes many fields in field order with one shared record context',()=>{
+  const fields=Array.from({length:200},(_,index)=>field(`f${index}`)),initial=record(fields.map(item=>cell(item.ref.fieldId,'same')))
+  const drafts=createRecordDraft(fields,initial);drafts.f2=scalarDraft('changed');drafts.f198=scalarDraft(null)
+  expect(recordDraftSummary(fields,drafts,initial)).toEqual({dirtyFields:['f2','f198'],invalidFields:[]})
 })

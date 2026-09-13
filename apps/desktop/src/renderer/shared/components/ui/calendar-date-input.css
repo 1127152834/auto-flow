@@ -1,0 +1,14 @@
+.af-calendar {
+  --rdp-day-height: 38px;
+  --rdp-day-width: 38px;
+  --rdp-day_button-height: 36px;
+  --rdp-day_button-width: 36px;
+  --rdp-day_button-border-radius: var(--radius-control);
+  font: inherit;
+  font-size: 14px;
+}
+.af-calendar button { cursor: pointer; }
+.af-calendar button:enabled:hover { background: var(--color-surface-hover); }
+.af-calendar button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.af-calendar .rdp-selected .rdp-day_button { background: var(--color-clay); color: var(--color-on-accent); }
+.af-calendar .rdp-month_caption { font-size: 16px; }

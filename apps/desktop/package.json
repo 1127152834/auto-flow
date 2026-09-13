@@ -14,6 +14,7 @@
     "openapi:check": "node ../../scripts/generate-api.mjs --check"
   },
   "dependencies": {
+    "@daypicker/react": "^10.0.1",
     "@hookform/resolvers": "^5.9.1",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-alert-dialog": "^1.1.23",

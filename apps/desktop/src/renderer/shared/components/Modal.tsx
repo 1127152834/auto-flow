@@ -9,7 +9,7 @@ export type ModalProps = PropsWithChildren<{
   placement?: 'dialog' | 'drawer'
   open: boolean
   onOpenChange(open: boolean): void
-  title: string
+  title: ReactNode
   description?: string
   footer?: ReactNode
   size?: 'small' | 'medium' | 'large'
@@ -26,7 +26,7 @@ const sizes = {
 }
 
 export function Modal({ open, onOpenChange, title, description, children, footer, size = 'medium', variant = 'default', closeDisabled = false, bodyClassName, className, placement = 'dialog', closeLabel = '关闭' }: ModalProps) {
-  const descriptionId = useId()
+  const descriptionId = useId(), titleId = useId()
   const focusReturn = useRef<{ opener: HTMLElement | null; container: HTMLElement | null; content: HTMLElement | null }>({ opener: null, container: null, content: null })
 
   const captureReturnTarget = (candidate: EventTarget | null, content: HTMLElement) => {
@@ -41,6 +41,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
       busy={closeDisabled}
       data-placement={placement}
       aria-describedby={description ? descriptionId : undefined}
+      aria-labelledby={titleId}
       className={cn('max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0', sizes[size], placement === 'drawer' && 'left-auto right-0 top-0 h-dvh max-h-dvh w-[min(94vw,44rem)] translate-x-0 translate-y-0 rounded-r-none', className)}
       onFocusCapture={(event) => captureReturnTarget(event.relatedTarget, event.currentTarget)}
       onOpenAutoFocus={(event) => {
@@ -66,7 +67,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
     >
       <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
         <div className="grid gap-1">
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle id={titleId}>{title}</DialogTitle>
           {description ? <DialogDescription id={descriptionId}>{description}</DialogDescription> : null}
         </div>
         <DialogClose asChild>
@@ -75,7 +76,7 @@ export function Modal({ open, onOpenChange, title, description, children, footer
           </IconButton>
         </DialogClose>
       </header>
-      <div role="region" aria-label={`${title}内容`} tabIndex={0} className={cn('min-h-0 overflow-y-auto px-6 py-5', variant === 'form' && 'bg-surface-subtle', variant === 'split' && 'grid gap-6 md:grid-cols-2', bodyClassName)}>
+      <div role="region" aria-label={typeof title === 'string' ? `${title}内容` : undefined} aria-labelledby={typeof title === 'string' ? undefined : titleId} tabIndex={0} className={cn('min-h-0 overflow-y-auto px-6 py-5', variant === 'form' && 'bg-surface-subtle', variant === 'split' && 'grid gap-6 md:grid-cols-2', bodyClassName)}>
         {children}
       </div>
       {footer ? <footer className="flex justify-end gap-3 border-t border-line px-6 py-4">{footer}</footer> : null}

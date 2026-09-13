@@ -6,9 +6,7 @@ type HeaderDensity = 'default' | 'compact'
 
 export function ProjectHeader({ project, density = 'default', disabled, onEdit }: { project: ProjectView; density?: HeaderDensity; disabled: boolean; onBack(): void; onEdit(): void }) {
   const titleClassName = 'm-0 break-all text-[28px] leading-tight font-bold text-ink'
-  const title = density === 'compact'
-    ? <h2 className={titleClassName} title={project.name}>{project.name}</h2>
-    : <h1 className={titleClassName} title={project.name}>{project.name}</h1>
+  const title = <h1 className={titleClassName} title={project.name}>{project.name}</h1>
   return <header data-project-header-density={density} className="flex min-w-0 flex-wrap items-start justify-between gap-5">
     <div className="flex min-w-0 flex-1 items-start gap-5">
       <span data-testid="project-header-icon" className="grid h-20 w-20 shrink-0 place-items-center rounded-card border border-clay/10 bg-clay-soft text-clay" aria-hidden="true"><Folder size={34} weight="duotone" /></span>

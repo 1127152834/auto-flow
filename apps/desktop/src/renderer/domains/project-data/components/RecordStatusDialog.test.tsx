@@ -99,3 +99,14 @@ it('inline clear explicitly submits null even from a null baseline', async () =>
   const p=props({presentation:'inline',record:{...record,statusId:null}});render(<RecordStatusDialog {...p}/>)
   await userEvent.click(screen.getByRole('button',{name:'清空状态'}));expect(p.onSubmit).toHaveBeenCalledWith(null);expect(p.onOpenChange).not.toHaveBeenCalled()
 })
+
+it('uses a full width primary inline action for save and recovery without changing the dialog shell',()=>{
+ const p=props({presentation:'inline'}),view=render(<RecordStatusDialog {...p}/>);
+ expect(screen.getByRole('button',{name:'保存状态'})).toHaveClass('h-12','w-full');
+ expect(screen.getByRole('button',{name:'清空状态'})).toBeVisible();
+ view.rerender(<RecordStatusDialog {...p} recoveryPending/>);
+ expect(screen.getByRole('button',{name:'核对保存结果'})).toHaveClass('h-12','w-full');
+ expect(screen.getByRole('button',{name:'清空状态'})).toBeDisabled();
+ view.rerender(<RecordStatusDialog {...p} presentation="dialog"/>);
+ expect(screen.getByRole('button',{name:'保存状态'})).not.toHaveClass('w-full');
+})

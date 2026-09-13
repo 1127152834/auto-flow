@@ -34,7 +34,7 @@ it('locks duplicate submissions before the queued callback starts',async()=>{
 
 it('renders the page identity in Chinese and keeps the shared footer actions',()=>{
   render(<RecordEditorForm id="editor" mode="edit" presentation="page" sessionKey="page" fields={[field('value')]} initialRecord={record([cell('value','short')])} footerClassName="sticky-actions" onCancel={vi.fn()} onSubmit={vi.fn()}/>)
-  expect(screen.getByText('记录身份：文本 · 001（只读）')).toBeVisible();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
+  expect(screen.getByRole('textbox',{name:'记录身份'})).toHaveValue('文本 · 001');expect(screen.getByRole('textbox',{name:'记录身份'})).toHaveAttribute('readonly');expect(screen.getByText('只读')).toBeVisible();expect(screen.getByLabelText('value')).toHaveProperty('tagName','INPUT')
   expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument();expect(screen.getByRole('button',{name:'保存修改'}).closest('footer')).toBeInTheDocument()
 })
 
@@ -55,4 +55,44 @@ it('keeps an unchanged submitted recovery value across a same-session record ref
 it('restores a submitted field identity while creating a record',()=>{
   render(<RecordEditorForm id="editor" mode="create" sessionKey="create-recovery" fields={[field('identity')]} identityFieldId="identity" initialSubmittedValues={[{fieldId:'identity',value:'new-key'}]} recoveryPending onSubmit={vi.fn()}/>)
   expect(screen.getByLabelText('identity')).toHaveValue('new-key')
+})
+
+it('reports submitted dirty fields and all invalid fields without changing dirty callback semantics',()=>{
+  const required={...field('required'),required:true},number={...field('number'),type:'number' as const}
+  const summary=vi.fn()
+  const view=render(<RecordEditorForm id="editor" mode="create" sessionKey="summary" fields={[required,number]} initialSubmittedValues={[{fieldId:'required',value:''},{fieldId:'number',value:0}]} onDraftSummaryChange={summary} onSubmit={vi.fn()}/>)
+  expect(summary).toHaveBeenLastCalledWith({dirtyFields:['required','number'],invalidFields:['required']})
+  view.rerender(<RecordEditorForm id="editor" mode="create" sessionKey="summary" fields={[required,number]} initialSubmittedValues={[{fieldId:'required',value:''},{fieldId:'number',value:0}]} onDraftSummaryChange={summary} onSubmit={vi.fn()}/>)
+})
+
+it('renders page identity and field rows without a separate identity card',()=>{
+  render(<RecordEditorForm id="editor" mode="create" presentation="page" sessionKey="page-create" fields={[{...field('title'),required:true}]} onSubmit={vi.fn()}/>)
+  expect(screen.getByText('保存时自动生成')).toBeVisible()
+  expect(document.querySelector('[data-record-field-label]')).toHaveTextContent('title*')
+  expect(screen.queryByText(/^记录身份：/)).not.toBeInTheDocument()
+  expect(screen.getByLabelText('title').closest('[data-record-field-layout]')).toHaveClass('lg:grid-cols-[250px_minmax(0,1fr)]')
+})
+
+it('shows every field error from the shared record validation and focuses the first',async()=>{
+  const user=userEvent.setup(),required={...field('required'),required:true},number={...field('number'),type:'number' as const}
+  render(<RecordEditorForm id="editor" mode="create" presentation="page" sessionKey="errors" fields={[required,number]} initialSubmittedValues={[{fieldId:'number',value:1}]} onSubmit={vi.fn()}/>)
+  await user.clear(screen.getByLabelText('number'));await user.type(screen.getByLabelText('number'),'bad')
+  await user.click(screen.getByRole('button',{name:'创建记录'}))
+  const summary=screen.getByText('还有 2 个字段需要修正，其他输入已保留。')
+  expect(summary).toBeVisible()
+  expect(summary.compareDocumentPosition(screen.getByText('保存时自动生成'))&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.getAllByRole('alert').map(node=>node.textContent)).toEqual(expect.arrayContaining(['请填写必填字段','请输入有效数字']))
+  expect(screen.getByLabelText('required')).toHaveFocus()
+  expect(screen.getByText('请填写必填字段',{selector:'p[aria-hidden="true"]'})).toHaveClass('text-danger','text-sm')
+  expect(screen.getByText('请填写必填字段',{selector:'p[aria-hidden="true"]'}).querySelector('svg')).toBeTruthy()
+})
+
+it('reports visible validation errors, disables ordinary save, and clears after correction',async()=>{
+  const user=userEvent.setup(),validation=vi.fn()
+  render(<RecordEditorForm id="editor" mode="create" presentation="page" sessionKey="validation" fields={[{...field('required'),required:true}]} onValidationErrorChange={validation} onSubmit={vi.fn()}/>)
+  expect(validation).toHaveBeenLastCalledWith(false)
+  await user.click(screen.getByRole('button',{name:'创建记录'}))
+  expect(validation).toHaveBeenLastCalledWith(true);expect(screen.getByRole('button',{name:'创建记录'})).toBeDisabled()
+  await user.type(screen.getByLabelText('required'),'fixed')
+  expect(validation).toHaveBeenLastCalledWith(false);expect(screen.getByRole('button',{name:'创建记录'})).toBeEnabled()
 })
