@@ -47,6 +47,21 @@ it('shows column names and clearing search submits only an empty quick search',a
   expect(query.filter).toEqual({type:'all',items:[{type:'compare',fieldId:'amount',operator:'eq',value:0}]})
 })
 
+it('orders record actions and gives every query panel a title, close control, and geometry marker',async()=>{
+  const user=userEvent.setup()
+  render(<RecordQueryToolbar {...props}/>)
+  expect(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).toHaveLength(6)
+  expect(Array.from(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','batch-status','export','create'])
+  for (const [buttonName,panelName,size] of [['筛选','记录筛选','filter'],['排序','记录排序','sort'],['显示列','显示列','columns']] as const) {
+    await user.click(screen.getByRole('button',{name:buttonName}))
+    const panel=screen.getByLabelText(panelName)
+    expect(within(panel).getByRole('heading',{name:panelName})).toBeVisible()
+    expect(within(panel).getByRole('button',{name:`关闭${panelName}`})).toBeVisible()
+    expect(panel).toHaveAttribute('data-query-panel-size',size)
+    await user.click(within(panel).getByRole('button',{name:`关闭${panelName}`}))
+  }
+})
+
 it('focuses a validation alert when the current schema invalidates a filter draft',async()=>{
   const user=userEvent.setup(),view=render(<RecordQueryToolbar {...props}/>)
   await user.click(screen.getByRole('button',{name:'筛选'})); view.rerender(<RecordQueryToolbar {...props} fields={[fields[0]]}/>)

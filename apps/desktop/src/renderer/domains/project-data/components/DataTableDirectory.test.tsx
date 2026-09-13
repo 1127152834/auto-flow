@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { components } from '../../../shared/api/generated'
@@ -22,12 +22,21 @@ it('shows real table facts and keeps open separate from edit', async () => {
   expect(onOpen).toHaveBeenCalledOnce()
 })
 
+it('keeps search and table actions in the single title tool area', () => {
+  render(<DataTableDirectory toolbar={<div role="search">搜索数据表</div>} items={[table]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  const tools = screen.getByRole('group', { name: '数据表工具' })
+  expect(within(tools).getByRole('search')).toBeVisible()
+  expect(within(tools).getAllByRole('button').map(button => button.textContent)).toEqual(['从 Excel 导入', '新建数据表'])
+})
+
 it('labels saved source kinds without inventing source facts', () => {
   render(<DataTableDirectory items={[table, { ...table, tableId: 't2', name: 'Excel 表', sourceKind: 'excel' }, { ...table, tableId: 't3', name: '待配置表', sourceKind: 'unconfigured' }]} onRetry={vi.fn()} onCreate={vi.fn()} onImportExcel={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
   expect(screen.getByText('本地表')).toBeVisible()
   expect(screen.getByText('Excel 本地副本')).toBeVisible()
   expect(screen.getByText('来源未配置')).toBeVisible()
   expect(screen.queryByText('0 个来源')).not.toBeInTheDocument()
+  expect(screen.getByTestId('table-source-icon-t1')).toHaveAttribute('data-source-tone', 'sage')
+  expect(screen.getByTestId('table-source-icon-t2')).toHaveAttribute('data-source-tone', 'clay')
 })
 
 it('wraps unbroken table names and descriptions without widening the card', () => {

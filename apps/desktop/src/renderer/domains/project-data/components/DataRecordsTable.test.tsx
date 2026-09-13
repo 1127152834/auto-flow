@@ -16,6 +16,8 @@ it('preserves typed identities and opens the exact record', async () => {
   const records = [row({ type: 'text', value: '001' }), row({ type: 'text', value: '1' }), row({ type: 'integer', value: '1' })], open = vi.fn()
   render(<DataRecordsTable {...props} page={page(records)} onOpen={open} />)
   expect(screen.getByText('文本 · 001')).toBeVisible(); expect(screen.getByText('文本 · 1')).toBeVisible(); expect(screen.getByText('整数 · 1')).toBeVisible()
+  expect(screen.getByText('整数 · 1')).toHaveAccessibleName('整数 · 1')
+  expect(screen.getByText('整数 · 1')).toHaveAttribute('title', '整数 · 1')
   await userEvent.setup().click(screen.getByRole('button', { name: '查看记录 整数 · 1' }))
   expect(open).toHaveBeenCalledWith(records[2])
 })
@@ -58,7 +60,16 @@ it('distinguishes unset status from a missing status definition', () => {
 it.each([0, 2])('reserves the declared column widths for %i business columns before horizontal scrolling', count => {
   const fields = Array.from({ length: count }, (_, index) => ({ ...field, ref: { ...field.ref, fieldId: `f${index}` } }))
   render(<DataRecordsTable {...props} fields={fields} page={page([row({ type: 'text', value: '1' })])} />)
-  expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${192 + 160 + 112 + count * 200}px` })
+  expect(screen.getByRole('columnheader', { name: '记录身份' })).toHaveAttribute('data-column-width', '112')
+  expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${112 + 160 + 112 + count * 200}px` })
+})
+
+it('renders a clickable status badge and keeps the original status callback', async () => {
+  const record={...row({type:'uuid',value:'12345678-1234-1234-1234-123456789abc'}),statusId:'open'},onStatusChange=vi.fn()
+  render(<DataRecordsTable {...props} statuses={[{statusId:'open',name:'进行中',color:'#123456',order:0,statusRevision:1}]} page={page([record])} onStatusChange={onStatusChange}/>)
+  await userEvent.click(screen.getByRole('button',{name:'修改状态 UUID · 12345678-1234-1234-1234-123456789abc'}))
+  expect(screen.getByText('进行中')).toHaveAttribute('data-status-badge')
+  expect(onStatusChange).toHaveBeenCalledWith(record)
 })
 
 it('offers controlled row/page selection and bulk actions without changing legacy consumers', async () => {
