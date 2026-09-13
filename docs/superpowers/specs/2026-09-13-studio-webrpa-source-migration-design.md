@@ -7,7 +7,7 @@
 - 源基线：`reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`；目标基线：清除旧 Studio 后的 AutoFlow `25273d5`，数据库 `0008_workflow_debug`。
 - 本文替代“重新定义节点、状态模型、控制流和 AutoFlow 风格编辑器”的后续开发路线。历史 M1–M5 保留为已实现版本和回归证据，不再作为新 Studio 的产品行为规范。
 - 用户追加授权：可以完全重构，弃用此前编写的 Studio 代码。新方案不再要求兼容旧编辑器、旧节点协议或旧执行引擎；旧源码通过 Git 归档，已有数据保留原文。
-- [实施安排](../plans/2026-09-13-studio-webrpa-source-migration-implementation.md)。源码复用和工程归位判断置信度高；受管共享会话适配置信度中，视觉、交互、浏览器兼容及跨平台结果尚未实测。
+- [详细里程碑计划](../plans/2026-09-13-studio-webrpa-source-migration-implementation.md)采用 R0–R8，替代原粗粒度 S0–S4；操作步骤和退出条件以该计划为准，实际状态统一记在[验收台账](../../migration/studio-webrpa-migration-validation.md)。源码复用和工程归位判断置信度高；受管共享会话适配置信度中，视觉、交互、浏览器兼容及跨平台结果尚未实测。
 
 ## 1. 产品基准
 
