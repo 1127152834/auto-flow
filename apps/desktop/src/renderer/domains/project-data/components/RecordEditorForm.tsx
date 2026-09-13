@@ -20,7 +20,7 @@ export type RecordEditorFormProps = {
 const equalDraft = (left: RecordDraft, right: RecordDraft) => JSON.stringify(left) === JSON.stringify(right)
 
 export function RecordEditorForm({ id, mode, presentation='dialog', sessionKey, fields, initialRecord, initialSubmittedValues, identityFieldId, submissionEpoch=0, saving=false, recoveryPending=false, readonly=false, error, errorActions, footerClassName, externalActions=false, onCancel, onSubmitAttempt, onSubmit, onRecover, onDirtyChange, onSavingChange }: RecordEditorFormProps) {
-  const submittedDraft=()=>createRecordDraft(fields,initialRecord,initialSubmittedValues?.filter(value=>value.fieldId!==identityFieldId))
+  const submittedDraft=()=>createRecordDraft(fields,initialRecord,initialSubmittedValues?.filter(value=>!initialRecord||value.fieldId!==identityFieldId))
   const [drafts,setDrafts]=useState(submittedDraft),[context,setContext]=useState<FormContext>(()=>({fields,initialRecord,identityFieldId}))
   const [fieldErrors,setFieldErrors]=useState<Record<string,{message:string;control:ScalarDraftControl}>>({}),[submitError,setSubmitError]=useState<string|null>(null)
   const [submitting,setSubmitting]=useState(false),[recovering,setRecovering]=useState(false)

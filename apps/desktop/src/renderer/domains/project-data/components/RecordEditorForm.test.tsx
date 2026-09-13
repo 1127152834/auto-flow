@@ -51,3 +51,8 @@ it('keeps an unchanged submitted recovery value across a same-session record ref
   const view=render(<RecordEditorForm {...props} initialRecord={record([cell('value','before')])}/>);view.rerender(<RecordEditorForm {...props} initialRecord={record([cell('value','server-refresh')])}/>)
   expect(screen.getByLabelText('value')).toHaveValue('before')
 })
+
+it('restores a submitted field identity while creating a record',()=>{
+  render(<RecordEditorForm id="editor" mode="create" sessionKey="create-recovery" fields={[field('identity')]} identityFieldId="identity" initialSubmittedValues={[{fieldId:'identity',value:'new-key'}]} recoveryPending onSubmit={vi.fn()}/>)
+  expect(screen.getByLabelText('identity')).toHaveValue('new-key')
+})
