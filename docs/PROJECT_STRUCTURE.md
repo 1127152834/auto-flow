@@ -155,6 +155,7 @@ reference/
 | `packages/ui/src/styles/` | 计划中的 Tailwind 主题、设计令牌和组件样式。 |
 | `packages/ui/tests/` | 组件交互、可访问性和状态测试。 |
 | `reference/` | 上游源码保持只读，不作为运行时依赖；`redroid-demo/` 是用户授权的独立 Python + React 管理 Demo，自有源码由主仓库跟踪；Android / Windows / root 实机验收状态见其 `VERIFICATION.md`。 |
+| `reference/redroid-demo/scripts/native_monitor.py` | 2026-09-13 新增的 Mac 原生窗口验证启动器；配合 React `/native` 页面和固定版 scrcpy，运行文件在被忽略的 `.data/native-monitor/`。小闭环与输入限制见 `NATIVE_MAC_TEST.md`，不属于正式工作流执行器。 |
 | `scripts/` | 现有构建、类型生成、冒烟和仓库验证脚本。 |
 
 ## 依赖与维护规则

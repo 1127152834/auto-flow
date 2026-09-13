@@ -52,3 +52,14 @@ Paths: backend/app.py exports `create_app()` and CLI `python -m backend.app`; st
 `scripts/check_root.py` runs on the actual Docker host so its loopback ADB mapping resolves correctly. It records shell UID before/after `adb root`, then calls explicit `adb shell /sbin/magisk -v` and `adb shell /sbin/su -c id`. `transport_ok` describes successful ADB shell access; it is separate from the reported `adb_shell_root` observation and the always-unverified application-root field. The script exits successfully when the evidence transport worked, even if an optional root command was unavailable.
 
 Frontend user operations (including package reads) retry only HTTP 409 with error.code=busy, which means the operation was rejected before execution: 200ms intervals, a 2-second retry window, at most10 retries. Network and other errors are never retried. Screenshot polling has no additional fast retry. Temporarily paused preview retains its last frame with an explicit frozen-state label.
+
+## Mac 原生窗口验证 API（独立 8082 入口）
+
+`scripts/native_monitor.py` 在 Mac 宿主提供下列固定接口，不由 VM 中的 Flask 执行。页面位于 `/native`；只接受本机 Host，POST 必须带同源 Origin 和 JSON，不能提交命令、任意路径或 ADB 地址。
+
+| 方法与路径 | 输入与返回 |
+| --- | --- |
+| `GET /api/native` | 返回原 Demo 的 `instances` 和本次原生窗口 `session`；session 包含 `phase`、`instance_id`、`message`，出画面后有本机 `serial`，失败时可包含相对日志路径 |
+| `POST /api/native/open` | 仅接受 `{"instance_id":"afd-…"}`；202 表示启动任务已接受，不表示 Android 或窗口已就绪；已有窗口/启动任务返回 409；状态通过 GET 查询 |
+
+窗口状态为 idle → starting → connecting → open → closing → closed，任一步失败返回 failed 和具体原因。用户在 Mac 原生窗口关闭按钮结束连接；本入口没有网页 Android 输入、删除或停止设备接口。启动器对已停止实例调用原 Demo 的 start job，并核实逐台结果后才连接 scrcpy。当前一次一个窗口，不提供正式会话排他租约。详见 [NATIVE_MAC_TEST.md](NATIVE_MAC_TEST.md)。

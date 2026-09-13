@@ -1,0 +1,151 @@
+{
+  "after_native_close": {
+    "session": {
+      "instance_id": "afd-ef3857a550924052",
+      "message": "原生窗口已关闭，Android 继续运行且数据保留",
+      "name": "Mac 日常测试",
+      "phase": "closed",
+      "serial": "127.0.0.1:55149"
+    },
+    "instance": {
+      "adb_address": "127.0.0.1:32768",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 320,
+      "error": null,
+      "height": 1280,
+      "id": "afd-ef3857a550924052",
+      "image": "redroid/redroid:13.0.0_64only-latest",
+      "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memory_mb": 2048,
+      "name": "Mac 日常测试",
+      "width": 720
+    },
+    "tunnel_closed": true
+  },
+  "client": "scrcpy 3.3.4 / SDL 2.32.8",
+  "typed_text": "Native window verified 2026-09-13",
+  "input_method": "CUA native app mouse and keyboard, no Android input API",
+  "reopened_text_verified": true,
+  "cold_start_before": {
+    "adb_address": null,
+    "android_status": "stopped",
+    "android_version": "13",
+    "busy": false,
+    "cpu": 2,
+    "docker_status": "exited",
+    "dpi": 320,
+    "error": null,
+    "height": 1280,
+    "id": "afd-ef3857a550924052",
+    "image": "redroid/redroid:13.0.0_64only-latest",
+    "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "memory_mb": 2048,
+    "name": "Mac 日常测试",
+    "width": 720
+  },
+  "cold_start_after": {
+    "session": {
+      "instance_id": "afd-ef3857a550924052",
+      "message": "原生窗口已出画面；请在 Mac 窗口中点击和输入",
+      "name": "Mac 日常测试",
+      "phase": "open",
+      "serial": "127.0.0.1:56613"
+    },
+    "instance": {
+      "adb_address": "127.0.0.1:32771",
+      "android_status": "ready",
+      "android_version": "13",
+      "busy": false,
+      "cpu": 2,
+      "docker_status": "running",
+      "dpi": 320,
+      "error": null,
+      "height": 1280,
+      "id": "afd-ef3857a550924052",
+      "image": "redroid/redroid:13.0.0_64only-latest",
+      "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memory_mb": 2048,
+      "name": "Mac 日常测试",
+      "width": 720
+    }
+  },
+  "cold_restart_text_verified": true,
+  "final_closed_state": {
+    "instances": [
+      {
+        "adb_address": "127.0.0.1:32770",
+        "android_status": "ready",
+        "android_version": "13",
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "running",
+        "dpi": 320,
+        "error": null,
+        "height": 1280,
+        "id": "afd-5a7beadf6de2468d",
+        "image": "redroid/redroid:13.0.0_64only-latest",
+        "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memory_mb": 2048,
+        "name": "安卓 Demo",
+        "width": 720
+      },
+      {
+        "adb_address": "127.0.0.1:32769",
+        "android_status": "ready",
+        "android_version": "13",
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "running",
+        "dpi": 240,
+        "error": null,
+        "height": 960,
+        "id": "afd-635e8a215e194178",
+        "image": "autoflow/redroid:13-magisk",
+        "image_id": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "memory_mb": 2048,
+        "name": "Mac Magisk 对照",
+        "width": 540
+      },
+      {
+        "adb_address": "127.0.0.1:32771",
+        "android_status": "ready",
+        "android_version": "13",
+        "busy": false,
+        "cpu": 2,
+        "docker_status": "running",
+        "dpi": 320,
+        "error": null,
+        "height": 1280,
+        "id": "afd-ef3857a550924052",
+        "image": "redroid/redroid:13.0.0_64only-latest",
+        "image_id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memory_mb": 2048,
+        "name": "Mac 日常测试",
+        "width": 720
+      }
+    ],
+    "session": {
+      "instance_id": "afd-ef3857a550924052",
+      "message": "原生窗口已关闭，Android 继续运行且数据保留",
+      "name": "Mac 日常测试",
+      "phase": "closed",
+      "serial": "127.0.0.1:56613"
+    }
+  },
+  "final_tunnel_closed": true,
+  "automated_checks": {
+    "python_new": 4,
+    "frontend_total": 28,
+    "typecheck": "passed",
+    "build": "passed",
+    "shell_syntax": "passed"
+  },
+  "limitations": [
+    "CUA mouse coordinates intermittently diverged after reconnect; root cause not isolated.",
+    "Single native session; no workflow lease, audio, Chinese input or Windows verification."
+  ]
+}

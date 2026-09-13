@@ -1,4 +1,8 @@
 :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; color: #24332f; background: #f2f5f3; font-synthesis: none; line-height: 1.55; font-size: 14px; }
+.native-monitor { min-height: 100vh; background: #f1eee7; color: #34322e; }
+.native-monitor .panel { background: #fbfaf7; border-color: #d8d3c9; }
+.native-monitor button.primary { background: #8d4e2f; border-color: #8d4e2f; margin-top: 18px; }
+.native-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 * { box-sizing: border-box; }
 body { margin: 0; }
 button, input, select { font: inherit; }

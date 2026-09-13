@@ -4,6 +4,10 @@ Python Flask + Docker SDK 后端，React + TypeScript 前端。直接复用并�
 
 这是 `reference` 下的独立工程。真实运行和测试结果见 [VERIFICATION.md](VERIFICATION.md)，接口见 [API.md](API.md)，复制来源和许可证见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
+## Mac 原生窗口验证入口
+
+新增“页面监控 + scrcpy 原生操作”小闭环：运行 `bash scripts/start-native-mac.sh`，打开 <http://127.0.0.1:8082/native>。复现前置条件、真实验证结果与鼠标自动化稳定性限制见 [NATIVE_MAC_TEST.md](NATIVE_MAC_TEST.md)。该入口只用于本机单窗口验证，原 Demo 功能说明如下。
+
 ## Mac 启动（Apple Silicon）
 
 本轮按用户要求在 Mac 本机实测：**macOS → Lima VZ → Ubuntu 24.04 ARM64 → Docker Engine → redroid 13**。使用 Apple 原生虚拟化；Android 使用 ARM64 的 `13.0.0_64only-latest` 镜像和软件渲染。独立 Linux VM 提供 binder 内核能力，管理页面仍在 Mac 浏览器中打开。
