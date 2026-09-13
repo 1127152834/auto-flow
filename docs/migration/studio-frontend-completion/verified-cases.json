@@ -12931,5 +12931,55 @@
     "level": "component interaction",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F0.chinese-only.legacy-language",
+    "capability": "中文教学文档",
+    "preconditions": {
+      "language": "中文单语言"
+    },
+    "steps": [
+      "设置测试浏览器语言为 en-US、旧偏好为 en",
+      "加载入门文档"
+    ],
+    "expectedUI": "中文教学内容，缺失文档由上层空状态处理",
+    "expectedIO": "本地懒加载，无远程翻译请求",
+    "stateAssertion": "仍加载中文快速入门，缓存一致",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "F0.chinese-only.lazy-search",
+    "capability": "中文教学文档",
+    "preconditions": {
+      "language": "中文单语言"
+    },
+    "steps": [
+      "批量加载浏览器和变量文档",
+      "重复读取文档缓存"
+    ],
+    "expectedUI": "中文教学内容，缺失文档由上层空状态处理",
+    "expectedIO": "本地懒加载，无远程翻译请求",
+    "stateAssertion": "中文内容非空，缓存与搜索数据一致",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
+  },
+  {
+    "id": "F0.chinese-only.missing",
+    "capability": "中文教学文档",
+    "preconditions": {
+      "language": "中文单语言"
+    },
+    "steps": [
+      "加载不存在的文档标识"
+    ],
+    "expectedUI": "中文教学内容，缺失文档由上层空状态处理",
+    "expectedIO": "本地懒加载，无远程翻译请求",
+    "stateAssertion": "返回空内容而非伪造文档",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/documentation-loading.test.ts"
   }
 ]

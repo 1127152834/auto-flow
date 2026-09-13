@@ -19,7 +19,6 @@ import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
 import { SHORTCUT_ACTIONS, eventToCombo } from '../lib/customShortcuts'
 import { WebDAVSettings } from './WebDAVSettings'
-import { getLang, setLang as setEditorLang } from '../lib/uiI18n'
 
 const SCENE_LABELS: { key: AssistantScene; label: string }[] = [
   { key: 'vision', label: '多模态' },
@@ -410,7 +409,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [exportIncludeSensitive, setExportIncludeSensitive] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('system')
-  const [uiLang, setUiLang] = useState<'zh' | 'en'>(() => getLang())
   const [defaultFolder, setDefaultFolder] = useState<string>('')
   const [isSelectingFolder, setIsSelectingFolder] = useState(false)
   const [isSelectingBrowser, setIsSelectingBrowser] = useState(false)
@@ -690,24 +688,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
               </p>
               
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex-1">
-                    <Label className="text-sm font-medium text-gray-700">界面语言 / Language</Label>
-                    <p className="text-xs text-gray-500 mt-1">切换 WebRPA 编辑器界面的中英文显示 / Switch the editor UI language</p>
-                  </div>
-                  <div className="inline-flex rounded-lg border border-gray-300 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => { setUiLang('zh'); setEditorLang('zh') }}
-                      className={`px-3 py-1.5 text-xs font-medium ${uiLang === 'zh' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                    >中文</button>
-                    <button
-                      type="button"
-                      onClick={() => { setUiLang('en'); setEditorLang('en') }}
-                      className={`px-3 py-1.5 text-xs font-medium ${uiLang === 'en' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-                    >English</button>
-                  </div>
-                </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex-1">
                     <Label className="text-sm font-medium text-gray-700">启动时检查更新</Label>

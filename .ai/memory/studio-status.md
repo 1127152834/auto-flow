@@ -12,3 +12,5 @@
 - 旧源码归档 `codex/studio-before-removal-20260913@4eda207`；M6 试验归档 `codex/m6-unfinished-checkpoint-20260913@59ae8d4`。0005–0008 历史迁移/数据保留。用户其他领域的未提交改动未覆盖。
 
 - 2026-09-13 用户确认前端完整交付目标：先完成全部保留配置、交互、前端业务和配套工具，通过冻结契约后再接正式后端。F0–F6 已获实施授权并正在推进；F0 尚未关闭，F1 仅局部 HTTP/SSE 合同测试完成，见 ../../docs/superpowers/specs/2026-09-13-studio-frontend-completion-design.md。
+
+- 2026-09-14 用户明确取消界面国际化：Studio 中文单语言，移除语言切换、翻译运行时、英文教学文档及专属审计；浏览器语言/时区仍保留。见 decisions/2026-09-14-studio-chinese-only.md。

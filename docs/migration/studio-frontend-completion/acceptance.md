@@ -97,3 +97,7 @@ AST 核对发现早期扫描将查询回调中的 open_page 比较扩展为整�
 
 八个源 UI/Store 文件、Toolbar/AI 消费者及 Mock 协议已接通，详见 scheduled-tasks.md。新增任务协议五项、组件两项、memory/http各一项；全量 90 文件、1,095 项通过。真实浏览器实测创建、重载、修改触发器及422失败提示；不计原生 Electron 或后台调度通过。源列表错误不显示及源 Store 误判成功已修复。首次组件断言错用英文错误而运行器返回既有中文错误，已改为断言规范中文，不放宽错误语义。
 TypeScript、ESLint、renderer/main/preload 构建通过；证据 f0-scheduled-tests.txt、f0-scheduled-build.txt。日志仅规范尾部空白。类型检查发现测试误用 Playwright exact 选项，已移除并沿用 RTL 默认精确匹配；lint 的多余 let 已修复。
+
+## 2026-09-14 范围调整
+
+用户明确取消界面国际化；历史 i18n 记录保留，但不再构成后续门槛。中文单语言实现及测试见 [中文单语言验收](chinese-only.md)。完整回归 99 文件 / 1,167 项通过；F0–F6 全量验收仍未完成。

@@ -851,7 +851,6 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
 }
 
 // 模块搜索关键词（用于模糊搜索）
-// @i18n-ignore-start 搜索关键词/拼音别名仅用于中文模糊匹配，非界面展示文本，翻译会破坏中文搜索
 const moduleKeywords: Record<ModuleType, string[]> = {
   open_page: ['打开', '网页', '浏览器', 'url', '地址', 'open', 'page'],
   dp_open_page: ['drissionpage', 'dp', '反检测', '绕过', '风控', '打开', '网页', 'bypass', '隐蔽'],
@@ -1482,7 +1481,6 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   stop_workflow: ['停止', '工作流', '终止', 'stop', 'workflow', '中断'],
   custom_module: ['自定义', '模块', '函数', 'custom', 'module', '复用'],
 }
-// @i18n-ignore-end
 
 // 模块分类 - 按功能主题合理归类
 // 模块项预设颜色 - 模块外定义，避免每次渲染重建数组

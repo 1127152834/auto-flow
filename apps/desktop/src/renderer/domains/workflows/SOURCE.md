@@ -1,7 +1,7 @@
 # WebRPA frontend provenance and boundaries
 
 - Frozen source: `reference/WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb`.
-- `source-manifest.json` records 257 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
+- `source-manifest.json` records 214 active source files, original paths and SHA-256 hashes. Hashes describe the original file, not the adapted target. License: `LICENSE.WebRPA`.
 - The user authorized frontend-first migration with replaceable mock APIs on 2026-09-13. This supersedes the earlier sequencing requirement to finish a real backend before migrating the full frontend.
 
 ## Preserved implementation
@@ -47,3 +47,5 @@ F0 removed 32 unreferenced Windows-only configuration exports from the mixed Adv
 Drag and explicit resize history captures the first gesture state, not the final pointer event. Keyboard position changes also mark the document unsaved.
 
 Global variables now participate in document dirty state and undo history, including node-created defaults. Document loading clears omitted variables; confirmed variable renames can update nested references atomically. Invalid typed input is preserved with an error instead of coerced to an empty/default value.
+
+Interface internationalization and English documentation were removed at the user’s request on 2026-09-14. Studio is Chinese-only; browser locale settings remain automation parameters. Removal provenance is recorded in docs/migration/studio-frontend-completion/excluded-source-files.json.
