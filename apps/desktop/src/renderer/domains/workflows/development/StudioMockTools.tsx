@@ -9,6 +9,7 @@ export function StudioMockTools() {
   const [mockPage, setMockPage] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [message, setMessage] = useState('')
+  const [executionOrder, setExecutionOrder] = useState('')
   const action = (fn: () => void) => { try { fn(); setMessage('已发送 Mock 场景') } catch (error) { setMessage(String(error)) } }
   return <>
     <div className="studio-mock-banner"><span>AutoFlow Studio <b>Mock 接口</b> · 浏览器、运行、录制为模拟事件，未执行真实网页操作</span><button onClick={() => setMockPage(!mockPage)}>Mock 测试页</button><button onClick={() => useAIAssistantStore.getState().togglePanel()}>AI 小助手</button><button onClick={() => setToolsOpen(!toolsOpen)}>接口场景 {toolsOpen ? '收起' : '展开'}</button></div>
@@ -22,6 +23,12 @@ export function StudioMockTools() {
       <button onClick={() => action(() => addMockRecordingEvent({type:'input',selector:'#name',value:'AutoFlow'}))}>录制：输入</button>
       <button onClick={() => action(() => addMockRecordingEvent({type:'click',selector:'#submit'}))}>录制：点击</button>
       <button onClick={() => action(() => selectMockElement('#submit'))}>拾取：提交元素</button>
+      <label>下次 Mock 节点轨迹 <input aria-label="下次 Mock 节点轨迹" value={executionOrder} onChange={event => setExecutionOrder(event.target.value)} placeholder="节点ID，用逗号分隔；重复ID表示重复调度" /></label>
+      <button onClick={() => action(() => {
+        if (!executionOrder.trim()) throw new Error('请输入节点 ID；不会执行表达式或推断分支')
+        configureMock({ executionOrder: executionOrder.split(/[,，]/).map(id => id.trim()) })
+      })}>应用下次轨迹</button>
+      <button onClick={() => action(() => configureMock({ executionOrder: null }))}>恢复顺序场景</button>
       <span role="status">{message}</span>
     </div>}
     {mockPage && <MockBrowserSurface onClose={() => setMockPage(false)} />}

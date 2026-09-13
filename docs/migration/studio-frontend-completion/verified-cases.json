@@ -17975,5 +17975,101 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-image-commands/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.memory.branch-repeat-freeze",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "branch-repeat-freeze"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.memory.stale-node",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "stale-node"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.memory.repeat-breakpoint-step",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "repeat-breakpoint-step"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "transport",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.http.branch-repeat-freeze",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "branch-repeat-freeze"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.http.stale-node",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "stale-node"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
+  },
+  {
+    "id": "RUN.fixture-order.http.repeat-breakpoint-step",
+    "capability": "确定执行轨迹消费",
+    "preconditions": {
+      "document": "四节点文档；轨迹选择部分节点并重复提取，独立Mock存储"
+    },
+    "steps": [
+      "repeat-breakpoint-step"
+    ],
+    "expectedUI": "只出现已选择节点的执行事件；单步一次；重复结果保留",
+    "expectedIO": "执行沿现有HTTP/SSE，错误轨迹422；不执行网页动作",
+    "stateAssertion": "启动冻结，过期ID不启动，断点按每次到达触发",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-execution-order/target.log"
   }
 ]

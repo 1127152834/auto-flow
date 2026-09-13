@@ -26,6 +26,7 @@ const encoder = new TextEncoder()
 let offline = false
 let failNextSave = false
 let failNextRun = false
+let nextExecutionOrder: string[] | null = null
 const runRows = new Map<string, ObjectValue[]>()
 const tracking = new Map<string, ObjectValue[]>()
 let lastVariables: ObjectValue = {}
@@ -48,7 +49,8 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
-export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; disconnect?: boolean }) {
+export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; disconnect?: boolean; executionOrder?: string[] | null }) {
+  if (options.executionOrder !== undefined) nextExecutionOrder = options.executionOrder === null ? null : [...options.executionOrder]
   if (options.offline !== undefined) offline = options.offline
   if (options.failNextRun !== undefined) failNextRun = options.failNextRun
   if (options.failNextSave !== undefined) failNextSave = options.failNextSave
@@ -98,7 +100,7 @@ function tick(skipBreakpoint = false) {
   emitMockEvent('execution:node_start', { workflowId: current.id, nodeId })
   current.timer = setTimeout(() => {
     if (run !== current) return
-    emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', nodeId, message: `[Mock] 已模拟 ${data?.label ?? node.type} 的事件；未执行网页动作`, duration: 300, isSystemLog: true } })
+    emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', nodeId, message: `[Mock] 第 ${current.index + 1} 次调度：已模拟 ${data?.label ?? node.type} 的事件；未执行网页动作`, duration: 300, isSystemLog: true } })
     if (failNextRun) {
       failNextRun = false
       emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] Simulated node failure',isSystemLog:true } })
@@ -134,13 +136,21 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         if (run || recording || picking) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
         if (!doc) return failure('工作流不存在', 404)
         // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
-        const nodes = structuredClone(doc.nodes) as ObjectValue[]
+        const sourceNodes = structuredClone(doc.nodes) as ObjectValue[]
+        let nodes = sourceNodes
         if (findExcludedModuleType(nodes, moduleId => {
           const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
           return Array.isArray(children) ? children : undefined
         })) return failure('工作流包含已排除节点', 422)
+        if (nextExecutionOrder !== null) {
+          const byId = new Map(sourceNodes.map(node => [String(node.id), node]))
+          if (nextExecutionOrder.some(nodeId => typeof nodeId !== 'string' || !byId.has(nodeId))) return failure('Mock 轨迹包含快照中不存在的节点', 422)
+          // Explicit fixture order tests branches/repeated events; it never evaluates conditions or user code.
+          nodes = nextExecutionOrder.map(nodeId => byId.get(nodeId)!)
+        }
         const index = body.startNodeId ? nodes.findIndex(n => n.id === body.startNodeId) : 0
         if (index < 0) return failure('起点不存在')
+        nextExecutionOrder = null
         finishedWorkflows.delete(id)
         runRows.set(id, [])
         run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: (body.breakpoints || []) as string[], variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
