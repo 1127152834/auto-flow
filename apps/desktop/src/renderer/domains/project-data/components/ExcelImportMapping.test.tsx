@@ -50,3 +50,19 @@ it('rejects duplicate targets, keys and invalid constraints', () => {
   expect(screen.getAllByRole('alert').map(node => node.textContent).join(' ')).toContain('新字段键不能重复')
   expect(screen.getAllByRole('alert').map(node => node.textContent).join(' ')).toContain('定义或约束无效')
 })
+
+it('blocks a replacement new-field key that already exists until the user maps or renames it', async () => {
+  const existing = [{ ...fields[0], key: 'column_1' }]
+  const draft = createExcelImportMappingDraft(sheet as never)
+  const change = vi.fn()
+  const view = render(<ExcelImportMapping sheet={sheet as never} mode="replace" existingFields={existing as never} value={draft} onChange={change} onContinue={vi.fn()} />)
+
+  expect(screen.getByRole('alert')).toHaveTextContent('字段键“column_1”已存在；请选择现有字段或填写新的字段键。')
+  expect(screen.getByRole('button', { name: '继续导入' })).toBeDisabled()
+
+  await chooseOption(userEvent.setup(), screen.getAllByRole('combobox', { name: '列映射' })[0], 'existing:f1')
+  const mapped = change.mock.calls.at(-1)?.[0]
+  view.rerender(<ExcelImportMapping sheet={sheet as never} mode="replace" existingFields={existing as never} value={mapped} onChange={change} onContinue={vi.fn()} />)
+  expect(screen.queryByText(/字段键“column_1”已存在/)).toBeNull()
+  expect(screen.getByRole('button', { name: '继续导入' })).toBeEnabled()
+})

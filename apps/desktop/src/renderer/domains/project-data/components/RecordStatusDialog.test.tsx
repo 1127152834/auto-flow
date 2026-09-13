@@ -22,6 +22,17 @@ it('submits only explicit changed status and represents clearing as null', async
   expect(p.onOpenChange).not.toHaveBeenCalled()
 })
 
+it('allows an explicit null write from a null baseline while unchanged non-null stays disabled', async () => {
+  const cleared = props({ record: { ...record, statusId: null } })
+  const view = render(<RecordStatusDialog {...cleared} />)
+  expect(screen.getByRole('button', { name: '保存状态' })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: '保存状态' }))
+  expect(cleared.onSubmit).toHaveBeenCalledWith(null)
+
+  view.rerender(<RecordStatusDialog {...cleared} sessionKey="assigned" record={record} />)
+  expect(screen.getByRole('button', { name: '保存状态' })).toBeDisabled()
+})
+
 it('preserves dirty selection across refresh and reconnect but resets a new session', async () => {
   const p = props(); const view = render(<RecordStatusDialog {...p} />)
   await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '记录业务状态' }), 's2')

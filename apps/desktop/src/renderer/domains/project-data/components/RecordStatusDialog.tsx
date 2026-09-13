@@ -47,7 +47,7 @@ export function RecordStatusDialog(props: RecordStatusDialogProps) {
   const run = async (recover: boolean) => {
     const current = live.current
     if (!current.open || current.saving || actionLock.current) return
-    if (recover ? !current.recoveryPending || !current.onRecover : current.recoveryPending || current.readonly || selection.current === baseline.current || (baseline.current !== null && !current.statuses.some(status => status.statusId === baseline.current))) return
+    if (recover ? !current.recoveryPending || !current.onRecover : current.recoveryPending || current.readonly || (selection.current !== null && selection.current === baseline.current) || (baseline.current !== null && !current.statuses.some(status => status.statusId === baseline.current))) return
     if (!recover && selection.current !== null && !current.statuses.some(status => status.statusId === selection.current)) return
     const ticket = ++epoch.current
     closeLock.current = false; actionLock.current = true; setWorking(true); setLocalError(null); current.onSavingChange(true)
@@ -58,7 +58,7 @@ export function RecordStatusDialog(props: RecordStatusDialogProps) {
   return <Modal open={open} onOpenChange={next => { if (!next) void close() }} closeDisabled={busy || recoveryPending} size="small" title="修改业务状态" description={`${record.ref.recordKey.type} · ${record.ref.recordKey.value}`}
     footer={<><Button type="button" variant="ghost" disabled={busy || recoveryPending} onClick={() => void close()}>取消</Button>
       {recoveryPending ? <Button type="button" disabled={busy || !props.onRecover} onClick={() => void run(true)}>{working ? '正在核对…' : '核对保存结果'}</Button>
-        : <Button type="button" variant="primary" disabled={busy || readonly || unavailable || selected === draft.baseline} onClick={() => void run(false)}>{busy ? '正在保存…' : '保存状态'}</Button>}</>}>
+        : <Button type="button" variant="primary" disabled={busy || readonly || unavailable || (selected !== null && selected === draft.baseline)} onClick={() => void run(false)}>{busy ? '正在保存…' : '保存状态'}</Button>}</>}>
     <div className="grid gap-3">
       {error || localError ? <div role="alert"><p>{localError ?? error}</p>{errorActions}</div> : null}
       {unavailable ? <p role="alert">原状态已不可用，请载入最新资料。</p> : null}

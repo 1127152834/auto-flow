@@ -22,8 +22,9 @@ export const createExcelImportMappingDraft = (sheet: Sheet): ExcelImportMappingD
 })
 
 const cellText = (value: Sheet['sample'][number][number]) => value == null ? '' : typeof value === 'object' ? value.value : String(value)
-const errorsFor = (value: ExcelImportMappingDraft) => {
+const errorsFor = (value: ExcelImportMappingDraft, existingFields: Field[]) => {
   const errors: string[] = [], targets = new Set<string>(), keys = new Set<string>()
+  const existingKeys = new Set(existingFields.map(field => field.key.trim()))
   for (const column of value.columns) {
     if (column.target?.kind === 'existing') {
       if (targets.has(column.target.fieldId)) errors.push('同一个现有字段不能映射多列。')
@@ -34,6 +35,7 @@ const errorsFor = (value: ExcelImportMappingDraft) => {
       const result = fieldFormSchema.safeParse({ key: field.key, name: field.name, type: field.type, required: field.required, minLength: String(field.validation.minLength ?? ''), maxLength: String(field.validation.maxLength ?? ''), pattern: String(field.validation.pattern ?? ''), minimum: String(field.validation.minimum ?? ''), maximum: String(field.validation.maximum ?? '') })
       if (!result.success) errors.push(`第 ${column.columnIndex + 1} 列的新字段定义或约束无效。`)
       if (keys.has(key)) errors.push('新字段键不能重复。')
+      if (existingKeys.has(key)) errors.push(`字段键“${key}”已存在；请选择现有字段或填写新的字段键。`)
       keys.add(key)
     }
   }
@@ -44,7 +46,7 @@ const errorsFor = (value: ExcelImportMappingDraft) => {
 
 export function ExcelImportMapping({ sheet, mode, existingFields = [], value, disabled, onChange, onContinue }: ExcelImportMappingProps) {
   const update = (columnIndex: number, column: ExcelImportMappingDraft['columns'][number]) => onChange({ ...value, columns: value.columns.map((current, index) => index === columnIndex ? column : current) })
-  const errors = errorsFor(value)
+  const errors = errorsFor(value, mode === 'replace' ? existingFields : [])
   const mappingOptions = [{ value: 'ignore', label: '忽略此列' }, { value: 'new', label: '新增字段' }, ...(mode === 'replace' ? existingFields.filter(field => field.writable && !field.formula).map(field => ({ value: `existing:${field.ref.fieldId}`, label: `现有字段：${field.name}`, description: field.key })) : [])]
   const constraint = (columnIndex: number, definition: FieldWrite, key: string, raw: string, numeric = false) => {
     const validation = { ...definition.validation }
