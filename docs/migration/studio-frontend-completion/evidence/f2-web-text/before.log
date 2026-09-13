@@ -1,0 +1,47 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/web-config-text.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:86215) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/web-config-text.test.tsx (14 tests | 1 failed) 791ms
+   × 'input_text' / 'text' preserves literal '第一行\n第二行 {name} ${name}' through form, undo, copy and reopen 21ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/web-config-text.test.tsx > 'input_text' / 'text' preserves literal '第一行\n第二行 {name} ${name}' through form, undo, copy and reopen
+AssertionError: expected '第一行第二行 {name} ${name}' to be '第一行\n第二行 {name} ${name}' // Object.is equality
+
+- Expected
++ Received
+
+- 第一行
+- 第二行 {name} ${name}
++ 第一行第二行 {name} ${name}
+
+ ❯ src/renderer/domains/workflows/tests/web-config-text.test.tsx:35:49
+     33|   fireEvent.change(input, { target: { value } })
+     34|   fireEvent.blur(input)
+     35|   expect(store.getState().nodes[0].data[field]).toBe(value)
+       |                                                 ^
+     36|   expect(store.getState().hasUnsavedChanges).toBe(true)
+     37|   act(() => store.getState().undo())
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 13 passed (14)
+   Start at  03:04:23
+   Duration  3.34s (transform 1.27s, setup 103ms, import 1.77s, tests 791ms, environment 568ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/web-config-text.test.tsx

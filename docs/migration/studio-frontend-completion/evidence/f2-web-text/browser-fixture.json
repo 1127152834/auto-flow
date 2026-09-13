@@ -1,0 +1,1 @@
+{"type": "webrpa-workflow-bundle", "version": 1, "name": "F2 多行输入验收", "workflow": {"name": "F2 多行输入验收", "nodes": [{"id": "multi-input", "type": "input_text", "position": {"x": 120, "y": 120}, "data": {"moduleType": "input_text", "label": "输入文本", "selector": "#input", "text": "原始内容", "clearBefore": true}}], "edges": [], "variables": []}, "customModules": [], "images": []}

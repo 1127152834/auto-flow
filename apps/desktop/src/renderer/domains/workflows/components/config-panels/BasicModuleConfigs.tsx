@@ -206,6 +206,7 @@ export function InputTextConfig({
           value={(data.text as string) || ''}
           onChange={(v) => onChange('text', v)}
           placeholder="要输入的文本内容"
+          multiline
         />
       </div>
       <div className="flex items-center space-x-2">

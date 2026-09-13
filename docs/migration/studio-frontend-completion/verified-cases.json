@@ -16467,5 +16467,257 @@
     "level": "store",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-node-config-history/target.log"
+  },
+  {
+    "id": "NODE.text.open_page.url-template",
+    "capability": "open_page 文本原文",
+    "preconditions": {
+      "field": "url-template",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"https://example.test/{路径}?q=${关键词}\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.open_page.url-empty",
+    "capability": "open_page 文本原文",
+    "preconditions": {
+      "field": "url-empty",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.use_opened_page.pageIdentifier",
+    "capability": "use_opened_page 文本原文",
+    "preconditions": {
+      "field": "pageIdentifier",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"{页面标题}\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.click_element.selector-css",
+    "capability": "click_element 文本原文",
+    "preconditions": {
+      "field": "selector-css",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"#target[data-id=\\\"中文\\\"]\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.input_text.selector-xpath",
+    "capability": "input_text 文本原文",
+    "preconditions": {
+      "field": "selector-xpath",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"xpath=//input[@name=\\\"test\\\"]\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.input_text.text-multiline",
+    "capability": "input_text 文本原文",
+    "preconditions": {
+      "field": "text-multiline",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"第一行\\n第二行 {name} ${name}\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.input_text.text-empty",
+    "capability": "input_text 文本原文",
+    "preconditions": {
+      "field": "text-empty",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.wait_element.selector-variable",
+    "capability": "wait_element 文本原文",
+    "preconditions": {
+      "field": "selector-variable",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"{selector}\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.get_element_info.columnName",
+    "capability": "get_element_info 文本原文",
+    "preconditions": {
+      "field": "columnName",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"{列名}\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.get_element_info.variableName",
+    "capability": "get_element_info 文本原文",
+    "preconditions": {
+      "field": "variableName",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"结果_1\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.text.screenshot.variableName",
+    "capability": "screenshot 文本原文",
+    "preconditions": {
+      "field": "variableName",
+      "initial": "initial"
+    },
+    "steps": [
+      "通过配置表单输入 \"截图路径\"",
+      "失焦、撤销、重做、复制、导出、重新导入"
+    ],
+    "expectedUI": "完整显示输入文本；标记未保存",
+    "expectedIO": "本地 onChange，不执行模板",
+    "stateAssertion": "输入值逐字保留；撤销恢复 initial，复制与导入一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.branch.screenshot.screenshotType.fullpage",
+    "capability": "截图范围与选择器保留",
+    "preconditions": {
+      "selector": "#preserved",
+      "mode": "另一个截图范围"
+    },
+    "steps": [
+      "通过下拉选择 fullpage",
+      "导出并重新导入"
+    ],
+    "expectedUI": "仅 element 显示选择器输入",
+    "expectedIO": "无截图执行请求",
+    "stateAssertion": "模式和隐藏的选择器均保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.branch.screenshot.screenshotType.viewport",
+    "capability": "截图范围与选择器保留",
+    "preconditions": {
+      "selector": "#preserved",
+      "mode": "另一个截图范围"
+    },
+    "steps": [
+      "通过下拉选择 viewport",
+      "导出并重新导入"
+    ],
+    "expectedUI": "仅 element 显示选择器输入",
+    "expectedIO": "无截图执行请求",
+    "stateAssertion": "模式和隐藏的选择器均保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
+  },
+  {
+    "id": "NODE.branch.screenshot.screenshotType.element",
+    "capability": "截图范围与选择器保留",
+    "preconditions": {
+      "selector": "#preserved",
+      "mode": "另一个截图范围"
+    },
+    "steps": [
+      "通过下拉选择 element",
+      "导出并重新导入"
+    ],
+    "expectedUI": "仅 element 显示选择器输入",
+    "expectedIO": "无截图执行请求",
+    "stateAssertion": "模式和隐藏的选择器均保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-text/target.log"
   }
 ]
