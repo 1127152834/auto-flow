@@ -100,3 +100,11 @@ it('preserves multiline compact text and never switches it into a single-line in
   expect(screen.getByLabelText('比较值')).toHaveValue('first\nsecond')
   expect(change).not.toHaveBeenCalled()
 })
+
+it('shows presence contextually while keeping missing and null explicit', async () => {
+  const user=userEvent.setup(),draft=scalarDraft('value'),view=render(<ScalarValueEditor id="value" label="内容" type="string" draft={draft} onChange={vi.fn()} presenceDisplay="contextual" />)
+  expect(screen.queryByRole('combobox',{name:'内容值状态'})).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button',{name:'值选项'})); expect(screen.getByRole('combobox',{name:'内容值状态'})).toBeVisible()
+  view.rerender(<ScalarValueEditor id="value" label="内容" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presenceDisplay="contextual" />)
+  expect(screen.getByRole('combobox',{name:'内容值状态'})).toHaveAttribute('data-choice-value','null')
+})
