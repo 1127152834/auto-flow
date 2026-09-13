@@ -168,3 +168,7 @@ A2g2：状态/记录删除预检绑定完整身份、当前代次、项目生命
 最终606前端/719后端全量通过。真实隔离Electron两组脚本通过，覆盖表目录创建/编辑/冲突/重连/重启、五页签读取和PM1/既有模块回归。最新图像records与200%下拉已人工读取。首次QA脚本把aria-label当可见文本、第二次把document滚动条宽度变化当应用撑宽，均纠正测试观察；实际root宽708、trigger宽192在下拉展开前后保持，未修改已正确的CSS。旧run-P0vTUA的“directory CRUD”范围词不准确，由最新run-MJZJp0明确create/read/update取代；不声称表删除或记录编辑UI通过。
 
 Ruff首次命令将uv --directory之后的相对路径重复拼接，退出1，改为backend工作目录下src/tests后Ruff和mypy172源码通过。未把错误调用算成通过。
+
+## C2c Task1 共享命令发送准入（2026-09-13）
+
+DELETE的202结果与原操作查询使用相同identity/kind/succeeded及领域投影校验；lookupOnly始终只读，精确未接受错误独立表示；每次真实写入含404后原key重发前动态检查canSubmit。pm2_command_admission_impl先RED10项失败，再实现；独立pm2_command_admission_review规格→工程通过，4文件61测试与22项畸形wrapper/readonly/撤权/Abort探针通过。root最终单文件17测试及eslint通过，TypeScript通过。当前Task1仅共享算法，实际目录Task1b与删除客户端Task2单独审查，不把helper存在当成所有消费者已受保护。
