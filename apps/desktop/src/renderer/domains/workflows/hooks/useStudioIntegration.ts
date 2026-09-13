@@ -1,5 +1,5 @@
 import { installGlobalTooltip } from '../lib/globalTooltip'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { imageAssetApi, systemApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
@@ -8,6 +8,7 @@ import { eventToCombo, SHORTCUT_ACTION_MAP } from '../lib/customShortcuts'
 
 export function useStudioIntegration() {
   useEffect(installGlobalTooltip, [])
+  const hotkeyError = useRef<string | null>(null)
   const shortcuts=useGlobalConfigStore(s=>s.config.shortcuts)
   const theme=useGlobalConfigStore(s=>s.config.display?.theme || 'default')
   useEffect(()=>{
@@ -36,10 +37,34 @@ export function useStudioIntegration() {
     return ()=>window.removeEventListener('keydown',handler)
   },[shortcuts])
   useEffect(() => {
-    const register = () => { void systemApi.setCustomHotkeys(shortcuts || {}) }
+    let disposed = false
+    let request = 0
+    const register = async () => {
+      const current = ++request
+      const isCurrent = () => !disposed && current === request
+      try {
+        const result = await systemApi.setCustomHotkeys(shortcuts || {})
+        if (!isCurrent()) return
+        if (!result.success) throw new Error(result.error || '服务未确认注册')
+        if (hotkeyError.current) {
+          useWorkflowStore.getState().addLog({ level: 'info', message: '全局快捷键注册已恢复' })
+          hotkeyError.current = null
+        }
+      } catch (error) {
+        if (!isCurrent()) return
+        const message = error instanceof Error ? error.message : String(error)
+        if (hotkeyError.current !== message) {
+          useWorkflowStore.getState().addLog({ level: 'error', message: `全局快捷键注册失败: ${message}` })
+          hotkeyError.current = message
+        }
+      }
+    }
     register()
     window.addEventListener('socket:reconnected', register)
-    return () => window.removeEventListener('socket:reconnected', register)
+    return () => {
+      disposed = true
+      window.removeEventListener('socket:reconnected', register)
+    }
   }, [shortcuts])
   useEffect(() => {
     const handler = (event: Event) => {

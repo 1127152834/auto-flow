@@ -24763,5 +24763,260 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-rejected",
+    "capability": "快捷键业务拒绝后重连恢复",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "快捷键业务拒绝后重连恢复",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-exception",
+    "capability": "快捷键异常后重连恢复",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "快捷键异常后重连恢复",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-dedup",
+    "capability": "重复注册错误去重",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "重复注册错误去重",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-edit",
+    "capability": "旧配置响应失效",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "旧配置响应失效",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-reconnect",
+    "capability": "旧重连响应失效",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "旧重连响应失效",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.hotkey-unmount",
+    "capability": "卸载响应失效",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "卸载响应失效",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.picker-selected",
+    "capability": "单元素业务失败去重与恢复",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "单元素业务失败去重与恢复",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.picker-similar",
+    "capability": "相似元素业务失败去重与恢复",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "相似元素业务失败去重与恢复",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.picker-exception",
+    "capability": "拾取异常去重与恢复",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "拾取异常去重与恢复",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-result-context.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.transport-recovery",
+    "capability": "后续成功恢复且旧响应不隐藏新故障",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "后续成功恢复且旧响应不隐藏新故障",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-errors.test.ts"
+  },
+  {
+    "id": "F5.service-recovery.transport-replaced",
+    "capability": "旧传输失败不污染新连接",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "旧传输失败不污染新连接",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-errors.test.ts"
+  },
+  {
+    "id": "F5.service-recovery.notice-recovery",
+    "capability": "恢复清除横幅且后续失败再次显示",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "恢复清除横幅且后续失败再次显示",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/connection-notice.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.notice-retry-error",
+    "capability": "检查异常保留重试入口",
+    "preconditions": {
+      "configuration": "Alt+R或#before，由测试按能力建立",
+      "service": "受控错误、Promise延迟或恢复响应"
+    },
+    "steps": [
+      "执行对应命名用例的配置变更、请求、重连或组件操作",
+      "核对错误、恢复、过期响应及原配置"
+    ],
+    "expectedUI": "检查异常保留重试入口",
+    "expectedIO": "原服务接口；连接恢复事件仅由已确认通信发出",
+    "stateAssertion": "失败不清空配置，旧反馈不污染当前状态；具体断言见用例",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/connection-notice.test.tsx"
+  },
+  {
+    "id": "F5.service-recovery.browser-ui",
+    "capability": "拾取离线恢复与全局横幅一致",
+    "preconditions": {
+      "document": "F4 拾取写回验收",
+      "selector": "#submit",
+      "url": "http://localhost:5175/studio.html"
+    },
+    "steps": [
+      "打开文档，开启拾取",
+      "服务离线，核对错误一次与横幅",
+      "恢复连接，核对横幅消失和恢复日志",
+      "停止拾取"
+    ],
+    "expectedUI": "字段不变；横幅恢复消失；停止后入口可重新启动",
+    "expectedIO": "Mock状态注入，实际页面经API轮询",
+    "stateAssertion": "一条离线错误、一条恢复、停止成功；无新变量",
+    "level": "browser E2E / Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-service-recovery/browser-ui.md"
   }
 ]

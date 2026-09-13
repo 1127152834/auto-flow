@@ -27,3 +27,38 @@ it('preserves HTTP business failures without labelling them as connection outage
     expect(listener).not.toHaveBeenCalled()
   } finally { restore(); window.removeEventListener('studio:connection-error', listener) }
 })
+it('announces recovery once after a subsequent successful request, excluding older requests and HTTP errors', async () => {
+  const recovered = vi.fn()
+  window.addEventListener('studio:connection-restored', recovered)
+  let old!: (value: Response) => void
+  let mode: 'pending' | 'offline' | 'error' | 'ok' = 'pending'
+  const restore = setStudioTransport(async () => {
+    if (mode === 'pending') return new Promise(resolve => { old = resolve })
+    if (mode === 'offline') throw new TypeError('Failed to fetch')
+    return new Response(null, { status: mode === 'error' ? 503 : 200 })
+  })
+  try {
+    const previous = studioFetch('/old')
+    mode = 'offline'; await expect(studioFetch('/now')).rejects.toThrow()
+    old(new Response()); await previous
+    expect(recovered).not.toHaveBeenCalled()
+    mode = 'error'; await studioFetch('/now')
+    expect(recovered).not.toHaveBeenCalled()
+    mode = 'ok'; await studioFetch('/now'); await studioFetch('/again')
+    expect(recovered).toHaveBeenCalledOnce()
+  } finally { restore(); window.removeEventListener('studio:connection-restored', recovered) }
+})
+it('does not report a late network error from a replaced transport', async () => {
+  const failure = vi.fn()
+  window.addEventListener('studio:connection-error', failure)
+  let reject!: (error: Error) => void
+  const restore = setStudioTransport(() => new Promise((_resolve, fail) => { reject = fail }))
+  const old = studioFetch('/old')
+  const observed = expect(old).rejects.toThrow('Failed to fetch')
+  const restoreNew = setStudioTransport(async () => new Response())
+  try {
+    await studioFetch('/new')
+    reject(new TypeError('Failed to fetch')); await observed
+    expect(failure).not.toHaveBeenCalled()
+  } finally { restoreNew(); restore(); window.removeEventListener('studio:connection-error', failure) }
+})

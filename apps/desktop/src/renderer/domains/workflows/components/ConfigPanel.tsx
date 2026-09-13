@@ -421,12 +421,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       addLog({ level: 'success', message: '元素选择器已启动：Ctrl+点击单选，Alt+点击选择相似元素' })
 
       let polling = false
+      let pollingError: string | null = null
       pollingRef.current = window.setInterval(async () => {
         if (polling || !isCurrent()) return
         polling = true
         try {
           const selectedResult = await elementPickerApi.getSelected()
           if (!isCurrent()) return
+          if (!selectedResult.success) throw new Error(selectedResult.error || '服务未确认拾取结果')
 
           if (selectedResult.data?.active === false) {
             pickerActive.current = false
@@ -463,7 +465,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
           const similarRes = await elementPickerApi.getSimilar()
           if (!isCurrent()) return
-          if (similarRes.error) throw new Error(similarRes.error)
+          if (!similarRes.success) throw new Error(similarRes.error || '服务未确认相似元素结果')
           if (similarRes.data?.selected && similarRes.data.similar) {
             const similar = similarRes.data.similar
             addLog({ level: 'success', message: `找到 ${similar.count} 个相似元素` })
@@ -481,8 +483,17 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
               pollingRef.current = null
             }
           }
+          if (pollingError) {
+            addLog({ level: 'info', message: '拾取结果读取已恢复' })
+            pollingError = null
+          }
         } catch (error) {
-          if (isCurrent()) addLog({ level: 'error', message: `读取拾取结果失败: ${error}` })
+          if (!isCurrent()) return
+          const message = error instanceof Error ? error.message : String(error)
+          if (pollingError !== message) {
+            addLog({ level: 'error', message: `读取拾取结果失败: ${message}` })
+            pollingError = message
+          }
         } finally { polling = false }
       }, 500)
 

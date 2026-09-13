@@ -32,3 +32,17 @@ it('deduplicates retries and does not let an older successful probe hide a newer
   await act(async () => { complete({ success: true }) })
   expect(screen.getByRole('alert')).toBeDefined()
 })
+it('clears after confirmed transport recovery and shows a subsequent failure', () => {
+  render(<StudioConnectionNotice />); disconnect()
+  act(() => window.dispatchEvent(new Event('studio:connection-restored')))
+  expect(screen.queryByRole('alert')).toBeNull()
+  disconnect()
+  expect(screen.getByRole('alert')).toBeTruthy()
+})
+it('keeps retry available after a thrown probe error', async () => {
+  probe.mockRejectedValueOnce(new Error('连接检查失败'))
+  render(<StudioConnectionNotice />); disconnect()
+  fireEvent.click(screen.getByRole('button', { name: '重试连接' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: '重试连接' })).toBeTruthy())
+  expect(screen.getByRole('alert')).toBeTruthy()
+})

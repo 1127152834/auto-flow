@@ -11,8 +11,14 @@ export function StudioConnectionNotice() {
   useEffect(() => {
     mounted.current = true
     const onFailure = () => { failures.current++; setUnavailable(true) }
+    const onRecovery = () => { failures.current++; setUnavailable(false) }
     window.addEventListener('studio:connection-error', onFailure)
-    return () => { mounted.current = false; window.removeEventListener('studio:connection-error', onFailure) }
+    window.addEventListener('studio:connection-restored', onRecovery)
+    return () => {
+      mounted.current = false
+      window.removeEventListener('studio:connection-error', onFailure)
+      window.removeEventListener('studio:connection-restored', onRecovery)
+    }
   }, [])
   const retry = async () => {
     if (pending.current) return
@@ -22,6 +28,8 @@ export function StudioConnectionNotice() {
     try {
       const result = await systemApi.getConfig()
       if (mounted.current && result.success && revision === failures.current) setUnavailable(false)
+    } catch {
+      // 检查失败时保留离线提示，允许用户再次重试。
     } finally {
       pending.current = false
       if (mounted.current) setChecking(false)

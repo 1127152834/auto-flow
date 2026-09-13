@@ -1121,7 +1121,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 428,
+          "line": 429,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSelected()"
         }
@@ -1155,7 +1155,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 464,
+          "line": 466,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSimilar()"
         }
@@ -1266,7 +1266,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 628,
+          "line": 639,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.testSelector(selector, hints)"
         }
@@ -1662,7 +1662,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts",
-          "line": 20,
+          "line": 21,
           "source": null,
           "call": "imageAssetApi.list()"
         }
@@ -3290,7 +3290,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx",
-          "line": 23,
+          "line": 29,
           "source": null,
           "call": "systemApi.getConfig()"
         }
@@ -3577,7 +3577,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts",
-          "line": 39,
+          "line": 46,
           "source": null,
           "call": "systemApi.setCustomHotkeys(shortcuts || {})"
         }
@@ -4711,7 +4711,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts",
-          "line": 51,
+          "line": 76,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -4961,7 +4961,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts",
-          "line": 35,
+          "line": 36,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -5514,7 +5514,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts",
-          "line": 41,
+          "line": 63,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -5574,7 +5574,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx",
-          "line": 14,
+          "line": 15,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -5582,10 +5582,31 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/transport.ts",
-          "line": 15,
+          "line": 29,
           "source": null,
           "via": "CustomEvent",
           "call": "new CustomEvent('studio:connection-error')"
+        }
+      ]
+    },
+    {
+      "id": "event:studio:connection-restored",
+      "name": "studio:connection-restored",
+      "subscriptions": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx",
+          "line": 16,
+          "source": null,
+          "via": "window.addEventListener"
+        }
+      ],
+      "emissions": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/api/transport.ts",
+          "line": 21,
+          "source": null,
+          "via": "CustomEvent",
+          "call": "new CustomEvent('studio:connection-restored')"
         }
       ]
     },
