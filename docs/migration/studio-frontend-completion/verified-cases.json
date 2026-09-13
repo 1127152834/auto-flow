@@ -12535,5 +12535,63 @@
     "level": "HTTP integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-recovery.test.ts"
+  },
+  {
+    "id": "SSE.gap.memory",
+    "capability": "SSE连续性",
+    "preconditions": "独立事件夹具，memory",
+    "steps": [
+      "接收1/3",
+      "重连补读2/3"
+    ],
+    "expectedUI": "不伪造完成或遗漏中间状态；此例测试客户端协议",
+    "expectedIO": "只按1/2/3交付；旧连接取消",
+    "stateAssertion": "只按1/2/3交付；旧连接取消",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/event-gap-recovery.test.ts"
+  },
+  {
+    "id": "SSE.cursor.memory",
+    "capability": "SSE连续性",
+    "preconditions": "独立事件夹具，memory",
+    "steps": [
+      "提交负数/NaN/小数/超日志范围游标"
+    ],
+    "expectedUI": "不伪造完成或遗漏中间状态；此例测试客户端协议",
+    "expectedIO": "非法400、越界409，无正常SSE流",
+    "stateAssertion": "非法400、越界409，无正常SSE流",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-parity.test.ts"
+  },
+  {
+    "id": "SSE.gap.http",
+    "capability": "SSE连续性",
+    "preconditions": "独立事件夹具，http",
+    "steps": [
+      "接收1/3",
+      "重连补读2/3"
+    ],
+    "expectedUI": "不伪造完成或遗漏中间状态；此例测试客户端协议",
+    "expectedIO": "只按1/2/3交付；旧连接取消",
+    "stateAssertion": "只按1/2/3交付；旧连接取消",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/event-gap-recovery.test.ts"
+  },
+  {
+    "id": "SSE.cursor.http",
+    "capability": "SSE连续性",
+    "preconditions": "独立事件夹具，http",
+    "steps": [
+      "提交负数/NaN/小数/超日志范围游标"
+    ],
+    "expectedUI": "不伪造完成或遗漏中间状态；此例测试客户端协议",
+    "expectedIO": "非法400、越界409，无正常SSE流",
+    "stateAssertion": "非法400、越界409，无正常SSE流",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-parity.test.ts"
   }
 ]

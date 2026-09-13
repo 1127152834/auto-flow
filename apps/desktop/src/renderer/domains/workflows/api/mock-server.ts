@@ -191,7 +191,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       },
     })
     if (scheduledResult) return scheduledResult
-    if (path === '/events/stream') return streamResponse(Number(target.searchParams.get('afterSeq') || 0), signal)
+    if (path === '/events/stream') {
+      const after = Number(target.searchParams.get('afterSeq') || 0)
+      if (!Number.isSafeInteger(after) || after < 0) return failure('Invalid event cursor', 400)
+      if (after > events.length) return failure('Event cursor exceeds the current journal', 409)
+      return streamResponse(after, signal)
+    }
     const commandQuery = path.match(/^\/events\/commands\/([^/]+)$/)
     if (commandQuery && method === 'GET') {
       const previous = commandResults.get(decodeURIComponent(commandQuery[1]))

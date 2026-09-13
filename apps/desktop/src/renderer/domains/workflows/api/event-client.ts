@@ -58,21 +58,29 @@ export class StudioEventClient {
   }
   private async listen() {
     if (this.controller.signal.aborted) return
+    const connection = new AbortController()
+    const abortConnection = () => connection.abort()
+    this.controller.signal.addEventListener('abort', abortConnection, { once: true })
     try {
-      const response = await studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: this.controller.signal })
+      const response = await studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: connection.signal })
       if (!response.ok || !response.body) throw new Error('Studio event stream unavailable')
       this.connected = true
       this.dispatch('connect')
       for await (const event of parseServerSentEvents(response.body)) {
         if (this.controller.signal.aborted) return
         const sequence = Number(event.id)
-        if (!Number.isSafeInteger(sequence) || sequence <= this.sequence) continue
+        if (!Number.isSafeInteger(sequence) || sequence < 1) throw new Error('Invalid Studio event sequence')
+        if (sequence <= this.sequence) continue
+        if (sequence !== this.sequence + 1) throw new Error('Studio event sequence gap; replay required')
         this.dispatch(event.event, JSON.parse(event.data))
         this.sequence = sequence
       }
     } catch (error) {
       if (this.controller.signal.aborted) return
       this.dispatch('connect_error', error)
+    } finally {
+      connection.abort()
+      this.controller.signal.removeEventListener('abort', abortConnection)
     }
     this.connected = false
     this.dispatch('disconnect', 'stream interrupted; awaiting replay')

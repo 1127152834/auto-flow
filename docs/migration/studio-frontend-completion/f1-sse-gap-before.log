@@ -1,0 +1,55 @@
+
+> test
+> npm --workspace @autoflow/desktop test --run src/renderer/domains/workflows/tests/event-gap-recovery.test.ts
+
+npm warn "src/renderer/domains/workflows/tests/event-gap-recovery.test.ts" is being parsed as a normal command line argument.
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/event-gap-recovery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:69149) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/event-gap-recovery.test.ts (1 test | 1 failed) 2506ms
+   × does not apply an event beyond a sequence gap and reconnects from the last confirmed sequence 2505ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-gap-recovery.test.ts > does not apply an event beyond a sequence gap and reconnects from the last confirmed sequence
+AssertionError: expected [ 1, 3 ] to deeply equal [ 1, 2, 3 ]
+
+- Expected
++ Received
+
+  [
+    1,
+-   2,
+    3,
+  ]
+
+ ❯ vi.waitFor.timeout src/renderer/domains/workflows/tests/event-gap-recovery.test.ts:17:45
+     15|   client.on('fixture:item', (value: { id: number }) => { received.push…
+     16|   try {
+     17|     await vi.waitFor(() => expect(received).toEqual([1, 2, 3]), { time…
+       |                                             ^
+     18|     expect(requests.slice(0, 2).map(request => request.after)).toEqual…
+     19|     expect(requests[0].signal?.aborted).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  23:36:06
+   Duration  3.25s (transform 80ms, setup 0ms, import 96ms, tests 2.51s, environment 537ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/event-gap-recovery.test.ts

@@ -112,6 +112,10 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     expect((await request('/events/commands/missing')).status).toBe(404)
     expect((await request('/events/commands', json({ event: 'execution_stop', data: {} }))).status).toBe(400)
   })
+  it('rejects invalid and out-of-range SSE cursors before creating a stream', async () => {
+    for (const cursor of ['-1', 'NaN', '0.5']) expect((await request(`/events/stream?afterSeq=${cursor}`)).status).toBe(400)
+    expect((await request('/events/stream?afterSeq=1')).status).toBe(409)
+  })
   it('resumes numbered SSE with Unicode intact and cancels the previous stream', async () => {
     server.emitMockEvent('execution:log', { message: '第一条😀' })
     const abort = new AbortController(); aborts.push(abort)
