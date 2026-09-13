@@ -258,3 +258,20 @@ M4 未移入：range/infinite 等额外循环入口、调度、子流程、错�
 | 原日志与变量诊断能力 | 原 SQLite seq/SSE + purpose诊断索引、文件引用、原生流式导出 | adapt：调试专属检查点及增量追加，普通运行不增加追踪成本；结果与诊断分别计数和导出；全库筛选 | 1000轮、大于64KiB变量、分页、ZIP/JSONL/诊断JSON、重启读取 |
 
 不宣称旧协议或文件格式兼容。旧 M4 段落里的 Debug“未完成”是当时状态，已由本节与 [M5专项验收](../migration/automation-studio-m5-validation.md)替代。子流程、错误处理/自动重试、录制、双视图、分组注释及其余网页动作仍未交付。
+
+## M6 设计映射（2026-09-13，proposed，未实施）
+
+本节是下一阶段建议，不是完成证据。依据固定源码 `5ccb900e8dcf1530aae66f676d87593c416c7ebb` 的静态检查；详见 [M6设计](../superpowers/specs/2026-09-13-automation-studio-m6-design.md)、[实施计划](../superpowers/plans/2026-09-13-automation-studio-m6-implementation.md)。
+
+| 已查来源 | 建议目标 | 拟处理与验证门槛 |
+| --- | --- | --- |
+| backend/app/services/recorder.py：事件监听、input/dblclick/scroll合并 | domain/workflows录制规则 + provider被动采集 | adapt：按页面/frame/epoch/段隔离；真实中文输入、双击、label、导航顺序验证，不拦截页面动作 |
+| 同文件 _DRAIN_JS、_drain_all；api/recorder.py /events | 独立录制草稿、确认序号、非消费式分页 | fix：旧缓冲读取后清空；新方案以事务提交后确认、幂等补读，异常尾部明确不完整；不把旧注释的“无丢失”当证据 |
+| 同文件 _frame_meta；RecorderPanel.tsx ensureFrame | 共享M3候选与framePath | adapt：不生成switch_iframe或依赖名称/索引；嵌套跨域路径由实际locator核验 |
+| RecorderPanel.tsx generateNodes：select/check/keypress/scroll | select_option / set_checked / press_key / scroll_page | adapt：先实现正式目录、专用表单、运行/Debug，再开放录制生成；不可用动作不得静默生成 |
+| generateNodes：导航时间推断与间隔wait | open_page、wait_page及页面别名/切换/关闭 | fix：导航歧义需审查，避免重复goto；不根据用户思考时间生成sleep，不以最新页推断目标 |
+| recorder.py password事件与RecorderPanel密码遮罩 | 页面侧不读取已识别密码值、待补值节点 | fix：旧显示遮罩仍包含原值；新方案需验证事件、日志、文件均无该值 |
+| generateNodes：drag、upload | 后续录制/网页动作专项 | defer：本轮只记录明确不支持问题；不是最终排除、不是已经对齐 |
+| 原录制节点直接注入store | AutoFlow录制审查与一次编辑事务 | adapt：持久化录制独立于工作流，稳定生成预览，空流程/顶层尾部，整批撤销及手动保存 |
+
+新增原文字面量、schemaVersion3、页面别名和录制草稿持久化均需按 M6 规格确认后实施。M6 本轮验收矩阵全部为未执行，不能用 M5 的实测记录替代。
