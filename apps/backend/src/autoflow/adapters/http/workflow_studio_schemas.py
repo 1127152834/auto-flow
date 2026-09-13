@@ -1,5 +1,7 @@
 """Shared Studio command envelopes; command-specific payloads remain separate contracts."""
 
+from typing import Literal
+
 from pydantic import ConfigDict, Field
 
 from .schemas import ApiModel
@@ -56,3 +58,40 @@ class StudioImageFolderDeleted(StudioImageMutationResult):
 
 class StudioImageMoved(StudioImageMutationResult):
     new_folder: str
+
+
+class StudioInputPromptRequest(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    request_id: str = Field(min_length=1)
+    variable_name: str
+    title: str
+    message: str
+    default_value: str | float | bool | None
+    input_mode: Literal[
+        "single",
+        "multiline",
+        "number",
+        "integer",
+        "password",
+        "list",
+        "file",
+        "folder",
+        "checkbox",
+        "slider_int",
+        "slider_float",
+        "select_single",
+        "select_multiple",
+    ]
+    min_value: float | None = None
+    max_value: float | None = None
+    max_length: int | None = None
+    required: bool = True
+    select_options: list[str] | None = None
+
+
+class StudioInputPromptResult(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    request_id: str = Field(min_length=1)
+    value: str | None

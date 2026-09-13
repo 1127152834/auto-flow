@@ -1,0 +1,64 @@
+{
+  "type": "webrpa-workflow-bundle",
+  "version": 1,
+  "name": "F3 输入回传验收",
+  "workflow": {
+    "id": "input-e2e-fixture",
+    "name": "F3 输入回传验收",
+    "nodes": [
+      {
+        "id": "prompt-e2e",
+        "type": "input_prompt",
+        "position": {
+          "x": 100,
+          "y": 100
+        },
+        "data": {
+          "moduleType": "input_prompt",
+          "label": "用户输入验收",
+          "variableName": "answer",
+          "inputMode": "single",
+          "promptTitle": "输入回传验收",
+          "promptMessage": "请输入验收文字",
+          "defaultValue": "原始值",
+          "required": true,
+          "timeout": 0
+        }
+      },
+      {
+        "id": "after-e2e",
+        "type": "get_element_info",
+        "position": {
+          "x": 100,
+          "y": 300
+        },
+        "data": {
+          "moduleType": "get_element_info",
+          "label": "输入后提取验收",
+          "selector": "#fixture",
+          "infoType": "text",
+          "variableName": "result"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-input",
+        "source": "prompt-e2e",
+        "target": "after-e2e",
+        "sourceHandle": "source",
+        "targetHandle": "target"
+      }
+    ],
+    "variables": [
+      {
+        "name": "answer",
+        "value": "original",
+        "type": "string",
+        "scope": "global"
+      }
+    ]
+  },
+  "customModules": [],
+  "images": []
+}

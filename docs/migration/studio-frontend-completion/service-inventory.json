@@ -4204,7 +4204,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 213,
+          "line": 207,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4217,7 +4217,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 221,
+          "line": 215,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4230,7 +4230,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 240,
+          "line": 234,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4312,7 +4312,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 728,
+          "line": 715,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4324,7 +4324,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 481,
+          "line": 468,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4332,7 +4332,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 527,
+          "line": 514,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('execution:completed', { \n        detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } \n      })"
@@ -4345,7 +4345,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 554,
+          "line": 541,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4358,7 +4358,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 565,
+          "line": 552,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4371,7 +4371,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 415,
+          "line": 409,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4384,7 +4384,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 444,
+          "line": 431,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4397,7 +4397,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 352,
+          "line": 346,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4410,7 +4410,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 385,
+          "line": 379,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4423,7 +4423,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 275,
+          "line": 269,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4436,7 +4436,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 269,
+          "line": 263,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4449,7 +4449,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 281,
+          "line": 275,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4462,7 +4462,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 453,
+          "line": 440,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4475,7 +4475,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 462,
+          "line": 449,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4488,7 +4488,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 285,
+          "line": 279,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4501,7 +4501,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 251,
+          "line": 245,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4514,7 +4514,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 576,
+          "line": 563,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4527,7 +4527,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 432,
+          "line": 419,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4540,7 +4540,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 471,
+          "line": 458,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4677,7 +4677,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 626,
+          "line": 613,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         },
@@ -4691,7 +4691,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 628,
+          "line": 615,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:custom_action', { detail: data })"
@@ -4710,7 +4710,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 605,
+          "line": 592,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4718,7 +4718,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 607,
+          "line": 594,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_start')"
@@ -4737,7 +4737,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 612,
+          "line": 599,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4745,7 +4745,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 614,
+          "line": 601,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_stop')"
@@ -4758,7 +4758,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 600,
+          "line": 587,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4779,7 +4779,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 588,
+          "line": 575,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:run')"
@@ -4792,7 +4792,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 585,
+          "line": 572,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4817,7 +4817,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 619,
+          "line": 606,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4825,7 +4825,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 621,
+          "line": 608,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:screenshot')"
@@ -4846,7 +4846,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 595,
+          "line": 582,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:stop')"
@@ -4859,7 +4859,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 593,
+          "line": 580,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4873,7 +4873,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 82,
+          "line": 76,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4886,7 +4886,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 96,
+          "line": 90,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4898,7 +4898,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
-          "line": 279,
+          "line": 268,
           "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
           "via": "window.addEventListener"
         },
@@ -5191,7 +5191,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 103,
+          "line": 97,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5204,7 +5204,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 110,
+          "line": 104,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5416,7 +5416,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 536,
+          "line": 523,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('selector:healed', { detail: { heals } })"
@@ -5430,13 +5430,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 235,
+          "line": 229,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 743,
+          "line": 730,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5449,13 +5449,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 231,
+          "line": 225,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket?.emit"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 735,
+          "line": 722,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5507,7 +5507,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 224,
+          "line": 218,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('socket:reconnected')"
@@ -5601,7 +5601,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 89,
+          "line": 83,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5634,7 +5634,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 117,
+          "line": 111,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6570,7 +6570,7 @@
       "body": "body: JSON.stringify({ title: promptData?.title || '选择文件' })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
-      "line": 137,
+      "line": 126,
       "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/system/select-file`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ title: promptData?.title || '选择文件' })\n      })"
     },
@@ -6580,7 +6580,7 @@
       "body": "body: JSON.stringify({ title: promptData?.title || '选择文件夹' })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx",
-      "line": 156,
+      "line": 145,
       "source": "frontend/src/components/workflow/InputPromptDialog.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/system/select-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ title: promptData?.title || '选择文件夹' })\n      })"
     },

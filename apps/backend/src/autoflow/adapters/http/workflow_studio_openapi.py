@@ -17,6 +17,8 @@ STUDIO_SCHEMAS = (
     schemas.StudioImageFolderRenamed,
     schemas.StudioImageFolderDeleted,
     schemas.StudioImageMoved,
+    schemas.StudioInputPromptRequest,
+    schemas.StudioInputPromptResult,
 )
 
 

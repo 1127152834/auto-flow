@@ -2423,6 +2423,58 @@ export type components = {
         StudioImageUploadResult: {
             asset: components["schemas"]["StudioImageAsset"];
         };
+        /** StudioInputPromptRequest */
+        StudioInputPromptRequest: {
+            /** Requestid */
+            requestId: string;
+            /** Variablename */
+            variableName: string;
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+            /** Defaultvalue */
+            defaultValue: string | number | boolean | null;
+            /**
+             * Inputmode
+             * @enum {string}
+             */
+            inputMode: "single" | "multiline" | "number" | "integer" | "password" | "list" | "file" | "folder" | "checkbox" | "slider_int" | "slider_float" | "select_single" | "select_multiple";
+            /**
+             * Minvalue
+             * @default null
+             */
+            minValue: number | null;
+            /**
+             * Maxvalue
+             * @default null
+             */
+            maxValue: number | null;
+            /**
+             * Maxlength
+             * @default null
+             */
+            maxLength: number | null;
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /**
+             * Selectoptions
+             * @default null
+             */
+            selectOptions: string[] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioInputPromptResult */
+        StudioInputPromptResult: {
+            /** Requestid */
+            requestId: string;
+            /** Value */
+            value: string | null;
+        };
     };
     responses: never;
     parameters: never;

@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/InputPromptDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import type { InputPromptRequest } from '../types/workflow'
 import { studioFetch } from '../api/transport'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from './controls/button'
@@ -12,19 +13,7 @@ import { getBackendUrl } from '../api'
 import { DialogPortal } from './controls/dialog-portal'
 import { useDialogRegistry } from '../hooks/stores/dialogRegistry'
 
-interface PromptData {
-  requestId: string
-  variableName: string
-  title: string
-  message: string
-  defaultValue: string
-  inputMode: 'single' | 'multiline' | 'number' | 'integer' | 'password' | 'list' | 'file' | 'folder' | 'checkbox' | 'slider_int' | 'slider_float' | 'select_single' | 'select_multiple'
-  minValue?: number
-  maxValue?: number
-  maxLength?: number
-  required?: boolean
-  selectOptions?: string[]  // 列表选择的选项
-}
+type PromptData = InputPromptRequest
 
 // Both human input and assistant actions use the same literal-value rules.
 function validatePromptValue(data: PromptData, raw: unknown): { value: string } | { error: string } {
@@ -583,9 +572,9 @@ export function InputPromptDialog() {
                   className={error ? '!border-[hsl(var(--danger-500))] !ring-[hsl(var(--danger-500)/0.18)]' : ''}
                   autoFocus
                   step={inputMode === 'integer' ? '1' : 'any'}
-                  min={promptData.minValue}
-                  max={promptData.maxValue}
-                  maxLength={promptData.maxLength}
+                  min={promptData.minValue ?? undefined}
+                  max={promptData.maxValue ?? undefined}
+                  maxLength={promptData.maxLength ?? undefined}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSubmit()

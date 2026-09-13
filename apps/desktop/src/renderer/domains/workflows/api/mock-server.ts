@@ -30,6 +30,7 @@ let nextExecutionOrder: string[] | null = null
 const runRows = new Map<string, ObjectValue[]>()
 const tracking = new Map<string, ObjectValue[]>()
 let lastVariables: ObjectValue = {}
+const clientSettings = { verboseLog: true, workflowId: 'current' }
 let browser = false
 let url = 'about:blank'
 let recording = false
@@ -38,7 +39,7 @@ let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
-let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
 const failure = (message: string, status = 400) => response({ success: false, error: message, detail: message }, status)
@@ -84,6 +85,51 @@ function stopRun(id: unknown): Response {
   if (finishedWorkflows.has(id)) return response({ success: true })
   return failure(run ? '停止请求不属于当前运行' : '目标工作流没有活跃运行', 409)
 }
+function submitInput(data: Json | undefined): Response {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return failure('缺少输入请求信息', 422)
+  const pending = run?.input
+  if (!run || !pending || data.requestId !== pending.requestId) return failure('输入请求不存在或已结束', 409)
+  if (data.value !== null && typeof data.value !== 'string') return failure('输入结果必须是字符串或 null', 422)
+  let value: Json = data.value
+  if (value !== null) {
+    if (['number', 'integer', 'slider_int', 'slider_float'].includes(pending.mode)) {
+      const numeric = Number(value)
+      if (!value.trim() || !Number.isFinite(numeric) || (['integer', 'slider_int'].includes(pending.mode) && !Number.isInteger(numeric))) return failure('输入结果不是有效数值', 422)
+      value = numeric
+    } else if (pending.mode === 'checkbox') {
+      if (!['true', 'false'].includes(value)) return failure('输入结果不是有效布尔值', 422)
+      value = value === 'true'
+    } else if (pending.mode === 'list') value = value.split('\n').map(line => line.trim()).filter(Boolean)
+    else if (pending.mode === 'select_multiple') {
+      try { value = JSON.parse(value) as Json } catch { return failure('多选结果不是 JSON 数组', 422) }
+      if (!Array.isArray(value) || value.some(item => typeof item !== 'string')) return failure('多选结果不是字符串数组', 422)
+    }
+    run.variables[pending.variableName] = value
+  }
+  // Consume the pending identity before scheduling: another command cannot answer it again.
+  run.input = undefined
+  emitMockEvent('execution:log', {workflowId: run.id, log: {id: crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:value === null ? '[Mock] 用户取消输入，变量保持不变' : '[Mock] 已接收输入结果',isSystemLog:true}})
+  emitMockEvent('execution:node_complete', {workflowId:run.id,nodeId:pending.nodeId,success:true})
+  run.index++
+  tick()
+  return response({success:true,requestId:pending.requestId,mock:true})
+}
+function applyCommand(event: string, data: Json | undefined): Response {
+  if (event === 'input_prompt_result') return submitInput(data)
+  const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
+  if (event === 'execution_stop') return stopRun(payload.workflowId)
+  if (event === 'set_verbose_log') {
+    if (typeof payload.enabled !== 'boolean') return failure('enabled 必须为布尔值', 422)
+    clientSettings.verboseLog = payload.enabled
+    return response({ success: true, enabled: clientSettings.verboseLog, mock: true })
+  }
+  if (event === 'set_current_workflow') {
+    if (typeof payload.workflowId !== 'string' || !payload.workflowId.trim()) return failure('workflowId 必须为非空字符串', 422)
+    clientSettings.workflowId = payload.workflowId
+    return response({ success: true, workflowId: clientSettings.workflowId, mock: true })
+  }
+  return failure(`Mock 尚未实现命令：${event}`, 501)
+}
 function tick(skipBreakpoint = false) {
   if (!run) return
   const current = run
@@ -100,6 +146,25 @@ function tick(skipBreakpoint = false) {
   emitMockEvent('execution:node_start', { workflowId: current.id, nodeId })
   current.timer = setTimeout(() => {
     if (run !== current) return
+    if (String(node.type) === 'input_prompt') {
+      const variableName = typeof data?.variableName === 'string' ? data.variableName.trim() : ''
+      if (!variableName) {
+        emitMockEvent('execution:node_complete', {workflowId:current.id,nodeId,success:false})
+        finish('failed'); return
+      }
+      const mode = typeof data?.inputMode === 'string' ? data.inputMode : 'single'
+      const requestId = crypto.randomUUID()
+      current.input = {requestId,nodeId,variableName,mode}
+      const configuredOptions = data?.selectOptions
+      const options = Array.isArray(configuredOptions) ? configuredOptions : typeof configuredOptions === 'string' ? current.variables[configuredOptions.replace(/^\{(.*)\}$/, '$1')] : []
+      emitMockEvent('execution:input_prompt', {
+        requestId,workflowId:current.id,nodeId,variableName,inputMode:mode,
+        title:data?.promptTitle || '输入',message:data?.promptMessage || '请输入值:',defaultValue:data?.defaultValue ?? '',
+        minValue:data?.minValue,maxValue:data?.maxValue,maxLength:data?.maxLength,required:data?.required !== false,
+        selectOptions:Array.isArray(options)?options.map(item=>typeof item==='string'?item:JSON.stringify(item)):[],
+      })
+      return
+    }
     emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', nodeId, message: `[Mock] 第 ${current.index + 1} 次调度：已模拟 ${data?.label ?? node.type} 的事件；未执行网页动作`, duration: 300, isSystemLog: true } })
     if (failNextRun) {
       failNextRun = false
@@ -219,12 +284,13 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return previous ? response({ ...previous.response, httpStatus: previous.status }) : failure('命令不存在', 404)
     }
     if (path === '/events/commands') {
+      if (method !== 'POST') return failure('命令提交只接受 POST 请求', 405)
       if (typeof body.commandId !== 'string' || !body.commandId.trim() || typeof body.event !== 'string' || !body.event.trim()) return failure('缺少命令标识或事件名', 400)
       const id = body.commandId
       const fingerprint = JSON.stringify(body)
       const previous = commandResults.get(id)
       if (previous) return previous.fingerprint === fingerprint ? response(previous.response, previous.status) : failure('命令 ID 冲突', 409)
-      const outcome = body.event === 'execution_stop' ? stopRun((body.data as ObjectValue | undefined)?.workflowId) : response({ success: true })
+      const outcome = applyCommand(body.event, body.data)
       const result = { ...await outcome.json(), commandId: id }
       commandResults.set(id, { fingerprint, response: result, status: outcome.status })
       return response(result, outcome.status)

@@ -744,3 +744,11 @@ export interface LogEntry {
   details?: Record<string, unknown>
   duration?: number
 }
+
+// Legacy event producers may omit optional constraints; field types still come from OpenAPI.
+type StudioInputPromptSchema = components['schemas']['StudioInputPromptRequest']
+export type InputPromptRequest = Pick<StudioInputPromptSchema,
+  'requestId' | 'variableName' | 'title' | 'message' | 'defaultValue' | 'inputMode'
+> & Partial<Pick<StudioInputPromptSchema,
+  'minValue' | 'maxValue' | 'maxLength' | 'required' | 'selectOptions'
+>>

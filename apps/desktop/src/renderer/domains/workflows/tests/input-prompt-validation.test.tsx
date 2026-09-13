@@ -16,7 +16,7 @@ function open(inputMode:Prompt['inputMode'], extra:Partial<Prompt>={}) {
   render(<InputPromptDialog />)
   act(()=>receive({requestId:'prompt-1',title:'验收输入',message:'请填写',variableName:'value',defaultValue:'',inputMode,...extra}))
 }
-const confirm=()=>fireEvent.click(screen.getByRole('button',{name:'确定',exact:true}))
+const confirm=()=>fireEvent.click(screen.getByRole('button',{name:'确定'}))
 it.each(['checkbox','slider_int','slider_float'] as const)('submits an actual %s value with no hidden text default',mode=>{
   open(mode);confirm()
   expect(socketService.sendInputResult).toHaveBeenCalledWith('prompt-1',mode==='checkbox'?'false':'0')
@@ -76,7 +76,7 @@ it('does not apply a repeated AI action twice',async()=>{
 })
 it('cancels with null and rejects a cached submit after cancellation',async()=>{
  open('single');const action=useDialogRegistry.getState().getAction('input_prompt_prompt-1','submit')!
- fireEvent.click(screen.getByRole('button',{name:'取消',exact:true}))
+ fireEvent.click(screen.getByRole('button',{name:'取消'}))
  await act(async()=>{try{await action.handler({value:'late'})}catch{/* cancelled */}})
  expect(socketService.sendInputResult).toHaveBeenCalledExactlyOnceWith('prompt-1',null)
 })

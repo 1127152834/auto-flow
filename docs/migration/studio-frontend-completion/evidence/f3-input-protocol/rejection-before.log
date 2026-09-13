@@ -1,0 +1,110 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:14216) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts (26 tests | 6 failed) 17912ms
+     × rejects unimplemented commands explicitly and makes the rejection queryable 4ms
+     × rejects malformed set_verbose_log metadata 1ms
+     × rejects malformed set_current_workflow metadata 1ms
+     × rejects unimplemented commands explicitly and makes the rejection queryable 5ms
+     × rejects malformed set_verbose_log metadata 3ms
+     × rejects malformed set_current_workflow metadata 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects unimplemented commands explicitly and makes the rejection queryable
+AssertionError: expected 200 to be 501 // Object.is equality
+
+- Expected
++ Received
+
+- 501
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts:61:62
+     59|  it('rejects unimplemented commands explicitly and makes the rejection…
+     60|   const payload={commandId:'unsupported',event:'not_implemented',data:…
+     61|   expect((await request('/events/commands',payload)).status).toBe(501)
+       |                                                              ^
+     62|   expect(await (await request('/events/commands/unsupported')).json())…
+     63|   expect((await request('/events/commands',payload)).status).toBe(501)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects malformed set_verbose_log metadata
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects malformed set_current_workflow metadata
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts:66:89
+     64|  })
+     65|  it.each([['set_verbose_log',{enabled:'true'}],['set_current_workflow'…
+     66|   expect((await request('/events/commands',{commandId:'malformed',even…
+       |                                                                                         ^
+     67|  })
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects unimplemented commands explicitly and makes the rejection queryable
+AssertionError: expected 200 to be 501 // Object.is equality
+
+- Expected
++ Received
+
+- 501
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts:61:62
+     59|  it('rejects unimplemented commands explicitly and makes the rejection…
+     60|   const payload={commandId:'unsupported',event:'not_implemented',data:…
+     61|   expect((await request('/events/commands',payload)).status).toBe(501)
+       |                                                              ^
+     62|   expect(await (await request('/events/commands/unsupported')).json())…
+     63|   expect((await request('/events/commands',payload)).status).toBe(501)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects malformed set_verbose_log metadata
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects malformed set_current_workflow metadata
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts:66:89
+     64|  })
+     65|  it.each([['set_verbose_log',{enabled:'true'}],['set_current_workflow'…
+     66|   expect((await request('/events/commands',{commandId:'malformed',even…
+       |                                                                                         ^
+     67|  })
+     68|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 20 passed (26)
+   Start at  04:51:32
+   Duration  18.70s (transform 94ms, setup 91ms, import 23ms, tests 17.91s, environment 537ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts

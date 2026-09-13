@@ -1,0 +1,88 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:13899) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/input-command-protocol.test.ts (20 tests | 20 failed) 20183ms
+     × waits for single input, applies it once and resumes subsequent nodes 1010ms
+     × waits for number input, applies it once and resumes subsequent nodes 1004ms
+     × waits for integer input, applies it once and resumes subsequent nodes 1005ms
+     × waits for checkbox input, applies it once and resumes subsequent nodes 1005ms
+     × waits for list input, applies it once and resumes subsequent nodes 1003ms
+     × waits for select_multiple input, applies it once and resumes subsequent nodes 1005ms
+     × cancels with null, retains the existing variable and continues the source-defined path 1004ms
+     × rejects an unknown request and malformed value without completing the pending node 1005ms
+     × rejects a consumed request under a new command identity 1006ms
+     × rejects input after stop and does not schedule subsequent nodes 1007ms
+     × waits for single input, applies it once and resumes subsequent nodes 1060ms
+     × waits for number input, applies it once and resumes subsequent nodes 1012ms
+     × waits for integer input, applies it once and resumes subsequent nodes 1008ms
+     × waits for checkbox input, applies it once and resumes subsequent nodes 1007ms
+     × waits for list input, applies it once and resumes subsequent nodes 1007ms
+     × waits for select_multiple input, applies it once and resumes subsequent nodes 1006ms
+     × cancels with null, retains the existing variable and continues the source-defined path 1005ms
+     × rejects an unknown request and malformed value without completing the pending node 1005ms
+     × rejects a consumed request under a new command identity 1009ms
+     × rejects input after stop and does not schedule subsequent nodes 1008ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for single input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for number input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for integer input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for checkbox input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for list input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > waits for select_multiple input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > cancels with null, retains the existing variable and continues the source-defined path
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects an unknown request and malformed value without completing the pending node
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects a consumed request under a new command identity
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over memory > rejects input after stop and does not schedule subsequent nodes
+AssertionError: expected undefined to be defined
+ ❯ vi.waitFor.timeout src/renderer/domains/workflows/tests/input-command-protocol.test.ts:25:120
+     23|   await request('/workflows/input-run/execute',{})
+     24|   let prompt:Record<string,unknown>|undefined
+     25|   await vi.waitFor(async()=>{prompt=(await journal()).find(e=>e.event=…
+       |                                                                                                                        ^
+     26|   return prompt!
+     27|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for single input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for number input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for integer input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for checkbox input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for list input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > waits for select_multiple input, applies it once and resumes subsequent nodes
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > cancels with null, retains the existing variable and continues the source-defined path
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects an unknown request and malformed value without completing the pending node
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects a consumed request under a new command identity
+ FAIL  src/renderer/domains/workflows/tests/input-command-protocol.test.ts > input command protocol over http > rejects input after stop and does not schedule subsequent nodes
+AssertionError: expected undefined to be defined
+ ❯ vi.waitFor.timeout src/renderer/domains/workflows/tests/input-command-protocol.test.ts:25:120
+     23|   await request('/workflows/input-run/execute',{})
+     24|   let prompt:Record<string,unknown>|undefined
+     25|   await vi.waitFor(async()=>{prompt=(await journal()).find(e=>e.event=…
+       |                                                                                                                        ^
+     26|   return prompt!
+     27|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  20 failed (20)
+   Start at  04:49:33
+   Duration  21.00s (transform 89ms, setup 88ms, import 21ms, tests 20.18s, environment 592ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts

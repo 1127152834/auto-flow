@@ -1,3 +1,4 @@
+import type { InputPromptRequest } from './types/workflow'
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
 import { StudioEventClient as Socket } from './api/event-client'
 import { useWorkflowStore } from './editor-store'
@@ -8,14 +9,7 @@ import type { LogLevel } from './types/index'
 import { getBackendBaseUrl } from './api/config'
 
 // 输入弹窗回调
-type InputPromptCallback = (data: {
-  requestId: string
-  variableName: string
-  title: string
-  message: string
-  defaultValue: string
-  inputMode: 'single' | 'list'
-}) => void
+type InputPromptCallback = (data: InputPromptRequest) => void
 
 // 浏览器被占用错误回调
 type BrowserBusyCallback = () => void
@@ -412,14 +406,7 @@ class SocketService {
     })
 
     // 输入弹窗请求
-    this.socket.on('execution:input_prompt', (data: {
-      requestId: string
-      variableName: string
-      title: string
-      message: string
-      defaultValue: string
-      inputMode?: 'single' | 'list'
-    }) => {
+    this.socket.on('execution:input_prompt', (data: Omit<InputPromptRequest, 'inputMode'> & { inputMode?: InputPromptRequest['inputMode'] }) => {
       if (this.inputPromptCallback) {
         this.inputPromptCallback({
           ...data,

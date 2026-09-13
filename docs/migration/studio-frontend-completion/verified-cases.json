@@ -20613,5 +20613,971 @@
     "level": "script",
     "status": "通过",
     "evidencePath": "scripts/studio-service-inventory.test.mjs"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-single",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 single 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 single 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-number",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 number 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 number 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-integer",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 integer 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 integer 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-checkbox",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 checkbox 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 checkbox 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-list",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 list 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 list 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.value-select_multiple",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 select_multiple 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 select_multiple 输入一次",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.cancel",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "null取消保留变量并继续",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "null取消保留变量并继续",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.invalid",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "非法请求或结果不完成节点",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "非法请求或结果不完成节点",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.consumed",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "新命令不得重复回答已消费请求",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "新命令不得重复回答已消费请求",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.stop",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "停止后拒绝迟到输入",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "停止后拒绝迟到输入",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.unsupported",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "未知命令501且拒绝可查询",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "未知命令501且拒绝可查询",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.verbose",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "拒绝字符串enabled",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "拒绝字符串enabled",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.memory.workflow",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "拒绝非字符串workflowId",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "拒绝非字符串workflowId",
+    "level": "protocol fixture",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-single",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 single 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 single 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-number",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 number 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 number 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-integer",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 integer 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 integer 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-checkbox",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 checkbox 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 checkbox 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-list",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 list 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 list 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.value-select_multiple",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "等待并应用 select_multiple 输入一次",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "等待并应用 select_multiple 输入一次",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.cancel",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "null取消保留变量并继续",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "null取消保留变量并继续",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.invalid",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "非法请求或结果不完成节点",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "非法请求或结果不完成节点",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.consumed",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "新命令不得重复回答已消费请求",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "新命令不得重复回答已消费请求",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.stop",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "停止后拒绝迟到输入",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "停止后拒绝迟到输入",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.unsupported",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "未知命令501且拒绝可查询",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "未知命令501且拒绝可查询",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.verbose",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "拒绝字符串enabled",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "拒绝字符串enabled",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "PROTOCOL.input.http.workflow",
+    "capability": "run:input-command",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "input_prompt → open_page",
+      "answer": "original"
+    },
+    "steps": [
+      "拒绝非字符串workflowId",
+      "读取顺序事件和运行变量",
+      "检查命令结果/查询及后续节点次数"
+    ],
+    "expectedUI": "HTTP协议用例，无UI断言",
+    "expectedIO": "按requestId匹配；明确200/409/422/501；同ID可查询",
+    "stateAssertion": "拒绝非字符串workflowId",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-single",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 single 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 single 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-multiline",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 multiline 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 multiline 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-number",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 number 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 number 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-integer",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 integer 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 integer 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-password",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 password 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 password 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-list",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 list 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 list 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-file",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 file 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 file 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-folder",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 folder 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 folder 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-checkbox",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 checkbox 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 checkbox 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-slider_int",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 slider_int 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 slider_int 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-slider_float",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 slider_float 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 slider_float 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-select_single",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 select_single 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 select_single 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.mode-select_multiple",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "声明 select_multiple 输入模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "声明 select_multiple 输入模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.default-0",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "保留默认值 0",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "保留默认值 0",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.default-1",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "保留默认值 false",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "保留默认值 false",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.default-2",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "保留默认值 null",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "保留默认值 null",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.default-3",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "保留默认值 原文",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "保留默认值 原文",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.constraints",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "可空约束及拒绝未知模式",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "可空约束及拒绝未知模式",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.result-0",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "允许回传 空字符串",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "允许回传 空字符串",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.result-1",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "允许回传 原文",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "允许回传 原文",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.result-2",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "允许回传 null",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "允许回传 null",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.invalid-result-0",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "拒绝非原文结果 false",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "拒绝非原文结果 false",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.invalid-result-1",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "拒绝非原文结果 0",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "拒绝非原文结果 0",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.invalid-result-2",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "拒绝非原文结果 array",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "拒绝非原文结果 array",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "CONTRACT.input-schema.invalid-result-3",
+    "capability": "contract:input-prompt",
+    "preconditions": {
+      "schema": "StudioInputPromptRequest/StudioInputPromptResult"
+    },
+    "steps": [
+      "拒绝非原文结果 object",
+      "执行Pydantic校验"
+    ],
+    "expectedUI": "不适用，schema用例",
+    "expectedIO": "请求字段及原文/null结果契约",
+    "stateAssertion": "拒绝非原文结果 object",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "E2E.input-protocol.submit-and-resume",
+    "capability": "run:input-command",
+    "preconditions": {
+      "fixture": "browser-fixture.json",
+      "service": "Mock"
+    },
+    "steps": [
+      "真实UI导入整包",
+      "运行等待弹窗",
+      "填值并提交",
+      "核对后续日志和结果",
+      "保存"
+    ],
+    "expectedUI": "提交后第二节点执行，2节点0失败，结果1行；草稿变量不变",
+    "expectedIO": "真实UI消费HTTP/SSE命令及事件，无真实网页动作",
+    "stateAssertion": "等待期间不提前调度，提交后结束",
+    "level": "browser UI with mock service",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-input-protocol/browser-ui.md"
   }
 ]
