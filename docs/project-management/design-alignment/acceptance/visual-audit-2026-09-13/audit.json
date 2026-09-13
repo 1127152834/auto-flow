@@ -1,0 +1,689 @@
+{
+  "date": "2026-09-13",
+  "codeCommit": "b288633",
+  "method": "Fresh CUA Electron screenshots + supplied prototype images + read-only code inspection",
+  "scope": "项目管理的已接入页面与主要弹窗；不包括浏览器/代理/模型等其他领域",
+  "visualAcceptance": "reopened_changes_required",
+  "rubric": {
+    "layout": 30,
+    "informationHierarchy": 25,
+    "visualLanguage": 25,
+    "actionPresentation": 20
+  },
+  "scoreMeaning": "人工四维审阅估计，非像素测量、功能通过率或项目完成率；5分粒度，约±10个百分点；观察事实高置信，分值中等置信。",
+  "exclusions": [
+    "已批准顶部导航",
+    "最近与全部分开切换",
+    "指定文本字段快捷搜索",
+    "真实数据与原型样例数量/字段差异",
+    "已批准业务规则变化",
+    "未来能力不得伪造"
+  ],
+  "notExecuted": [
+    "Windows、其他架构、打包验收",
+    "本轮全量功能回归、200%缩放、键盘/ARIA完整验收",
+    "Excel检查后映射/影响/发布步骤及来源变体",
+    "失败/只读/空态/冲突/未保存确认/删除确认/部分结果等全部状态的视觉验收"
+  ],
+  "testData": "仅隔离 QA 工作区：工具生成52个项目/120行；本轮 UI 创建业务状态“已核对”；未提交记录、字段、批状态、导入和导出操作。",
+  "filePickerLimitation": "本轮原生文件选择自动化未成功完成，已取消；不是已证实的应用缺陷。",
+  "references": {
+    "r1": {
+      "path": "references/r1-directory-overview.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/prototypes/r1-directory-overview.png",
+      "sha256": "b530847d10769aabde53c147d303dda2d2a0b6dcd6db53df91ffb63d02ebb12b"
+    },
+    "r2": {
+      "path": "references/r2-record-pages.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/prototypes/r2-record-pages.png",
+      "sha256": "1a7cb6097c5b0058696ab4d21dd0180e7877ccb056ccaf2c5780d7012dc91c5b"
+    },
+    "r3fields": {
+      "path": "references/r3-schema-draft.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/prototypes/r3-schema-draft.png",
+      "sha256": "10a62bde6e16b6879a9488224d7d30af67126519e465120dc36e2f8572dace86"
+    },
+    "r3files": {
+      "path": "references/r3-file-and-batch-states.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/docs/project-management/design-alignment/prototypes/r3-file-and-batch-states.png",
+      "sha256": "827df7a7442ed6033e8eeecb1de68301cfc2f10aeaf4df6e872b123b3df5c003"
+    },
+    "oldprojects": {
+      "path": "references/100-projects-prototype-5238b4.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/00-projects/100-projects-prototype-5238b4.png",
+      "sha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd"
+    },
+    "overview": {
+      "path": "references/001-overview-cd1094.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/01-overview/001-overview-cd1094.png",
+      "sha256": "cd10948e1923a24c63e0d6080a0da630d5fed98c3034fcd6125f7808855e1553"
+    },
+    "statuses": {
+      "path": "references/010-states-d59f55.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/05-data/010-states-d59f55.png",
+      "sha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185"
+    },
+    "settings": {
+      "path": "references/014-table-settings-070d7f.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/05-data/014-table-settings-070d7f.png",
+      "sha256": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00"
+    },
+    "createTable": {
+      "path": "references/016-create-table-73d061.png",
+      "source": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/05-data/016-create-table-73d061.png",
+      "sha256": "73d061eba024d3358d415d4ed43b56d369fc6a4e4d68b217c2d2e1ade7132bbf"
+    }
+  },
+  "screenshots": [
+    {
+      "file": "01-project-overview.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "b0eff5e4aabe34aad34293ab743740993503c7b92f6bb59fa3890df81b432f54"
+    },
+    {
+      "file": "02-project-all.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "82f6f4263b8796f7c6d6bcbd6d0f1076399dd3e7ec065144682df8c2752e29bc"
+    },
+    {
+      "file": "03-project-recent.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "b882b8a22307ce9d7372963e8615bea609a84445d9cddda738532091e842dc5c"
+    },
+    {
+      "file": "04-data-directory.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "620f1478ce2eebf349fa8fe3c45246bddda1a808746d3ff133b88efa466b140b"
+    },
+    {
+      "file": "05-create-table.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "ca3191f9145d30e5ce55f5d3bd2e15263f4ebdf0ac90a61d7dd9e38d773f7239"
+    },
+    {
+      "file": "06-record-list.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "1425a9c678457868112bc13c922019acf5989731164867a3610f09008502abfb"
+    },
+    {
+      "file": "07-filter.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "b3235d63a95bab4f08564270151b45b106566bb19f7c962c5dd53a14cd71ce4c"
+    },
+    {
+      "file": "08-sort.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "3d24aaa3afcb0d07b1182042b491a5f8c3acba1f841c676b3ef7ef0d537f20f4"
+    },
+    {
+      "file": "09-columns.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "29db9f5dad8d3ef064f1f823fa44fb7607bc2f6552bb9271e7621b3b868f8b34"
+    },
+    {
+      "file": "10-record-detail.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "f99906fc845b6d7a9f6924b66f55c4f379d481267a21ee074024307fcd6ee43d"
+    },
+    {
+      "file": "11-record-edit.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "7a5f2e39daffea82fccbeb504a5602089f4dfadcf537879d9a0b9859946af1e2"
+    },
+    {
+      "file": "12-record-create.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "8b38701090cc9720a3b6e00db40a8053b9f3f40893e1b8f4efd7d393986837cb"
+    },
+    {
+      "file": "13-fields.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "5619e3a9132f5afd22993f734f35627d90b430475a292fb0460bf781f26ded1e"
+    },
+    {
+      "file": "14-field-editor.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "da2c7edb1afd62cafc5baa32cfcbf27c609ea6757d2fb647344faefa99b6acf1"
+    },
+    {
+      "file": "15-statuses.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "9328bf93e8256f5d5fad70b04ae984154a10b4dd74e8d4472a998c3933a4c226"
+    },
+    {
+      "file": "16-status-editor.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "417f38a7816360ee237fa4cbc73bb0198e559d418f71ed89adbc6c9b2b5752ac"
+    },
+    {
+      "file": "17-source.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "caa51d4344f26868a7e8317072ccbbc5ab03f29928aefbcda0efbc19e18351b5"
+    },
+    {
+      "file": "18-table-settings.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "1993cb91ac7939f17e6eb8d69cd14b9a40e9097f3e6734e049eb9c489d9a86db"
+    },
+    {
+      "file": "19-export.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "fd8211a6682dd0bc58461f7e5a06389fdd98ae19114016f3424027a45bc6e607"
+    },
+    {
+      "file": "20-reimport.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "61ab1e55db239b71c756db6786767312aa12ba1ebd8fa6a0b9d5cc19bb2a09ad"
+    },
+    {
+      "file": "21-batch-status.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "4232ea0954e2459d1e455af937a7379c9786c0f30017d684b5822b0f3a052b50"
+    },
+    {
+      "file": "22-automations.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "cd7c7f2d4d3d633bcdeb19f88cb8e17c52e645510ab2d61099bbe985d7b3521a"
+    },
+    {
+      "file": "23-runs.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "9483096dff47d3d54382464b22d7e11b3aa2ff8dc63dbd90662ed3559644aef7"
+    },
+    {
+      "file": "24-statistics.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "529786253c112aab026b665d15cee2f116770d6bdcc2d3b608fc444ac66f3f79"
+    },
+    {
+      "file": "25-environments.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "46e85f2910d068ec0bb0b38bf8f2dcb58ed1384b51cb622699b381d9fd89b6db"
+    },
+    {
+      "file": "26-project-edit.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "d2a2964d96a7fcfa3310b2ec7b96453c7f41764c7136c7478eb90b96ffc9e7d5"
+    },
+    {
+      "file": "27-project-create.png",
+      "width": 4718592,
+      "height": 4292935744,
+      "sha256": "4d6fc66c3998a8d62f974d439f028e8076c8a9ef93dd3b238a96e36b1b2ae19a"
+    }
+  ],
+  "pages": [
+    {
+      "id": "V01",
+      "page": "最近项目",
+      "screenshot": "03-project-recent.png",
+      "reference": "r1",
+      "score": [
+        15,
+        10,
+        10,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "未达到视觉要求",
+      "deviation": "有原型。缺少项目图标区，卡片只剩名称/描述/时间；更多操作落在卡片底部；搜索独占全宽白色容器且留下大段空白，弱化目录层次。",
+      "source": "apps/desktop/src/renderer/domains/projects/components/ProjectCard.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 50
+    },
+    {
+      "id": "V02",
+      "page": "全部项目",
+      "screenshot": "02-project-all.png",
+      "reference": "r1",
+      "score": [
+        20,
+        10,
+        10,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "部分符合，需整改",
+      "deviation": "条目列表和搜索/筛选/排序具备入口，但卡片缺少原型的图标与信息分组；容器内滚动区出现裁切感，操作区与内容区松散。最近/全部分开属于已批准改变，不扣分。",
+      "source": "apps/desktop/src/renderer/domains/projects/components/ProjectDirectory.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 55
+    },
+    {
+      "id": "V03",
+      "page": "数据表目录",
+      "screenshot": "04-data-directory.png",
+      "reference": "r1",
+      "score": [
+        25,
+        15,
+        15,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "最接近目标，仍未完全对齐",
+      "deviation": "已有数据卡片、来源和动作；搜索与工具条占用额外一整行，卡片层级、图标色块和元信息密度与 B0 不同。真实记录数量正常，不按示例数据多少扣分。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 70
+    },
+    {
+      "id": "V04",
+      "page": "记录列表",
+      "screenshot": "06-record-list.png",
+      "reference": "r1",
+      "score": [
+        10,
+        10,
+        10,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "未达到视觉要求",
+      "deviation": "项目上下文、项目页签、表标题、表页签和工具栏层层叠加；UUID 成为主要视觉列；新建记录主操作不突出，筛选等入口缺少原型图标/状态表达。业务字段少是样例差异，不扣分。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 45
+    },
+    {
+      "id": "V05",
+      "page": "筛选浮层",
+      "screenshot": "07-filter.png",
+      "reference": "r1",
+      "score": [
+        15,
+        10,
+        10,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "部分符合，呈现需整改",
+      "deviation": "浮层已存在，但无清晰标题和关闭区；初始直接展示“反向此条件”等条件树编辑术语，信息层次重于原型。复杂条件必须保留，应优化呈现，不得删能力。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "scope": "仅截图初始条件组；未在本轮复验全部条件组合",
+      "matchingPercent": 50
+    },
+    {
+      "id": "V06",
+      "page": "排序浮层",
+      "screenshot": "08-sort.png",
+      "reference": "r1",
+      "score": [
+        20,
+        15,
+        15,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "部分符合",
+      "deviation": "多字段排序入口保留，选择器/删除/添加排序在宽面板横排；缺少 B0 的明确标题区，空间密度不同。多排序能力本身不是偏差。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 65
+    },
+    {
+      "id": "V07",
+      "page": "显示列浮层",
+      "screenshot": "09-columns.png",
+      "reference": "r1",
+      "score": [
+        15,
+        10,
+        15,
+        15
+      ],
+      "stage": "R1",
+      "verdict": "部分符合",
+      "deviation": "面板宽度偏大，单一复选项占据宽面板，缺少标题与清晰分区；取消/应用入口存在。只有一个业务字段来自测试资料，不按列数扣分。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 55
+    },
+    {
+      "id": "V08",
+      "page": "记录详情",
+      "screenshot": "10-record-detail.png",
+      "reference": "r2",
+      "score": [
+        5,
+        5,
+        10,
+        5
+      ],
+      "stage": "R2",
+      "verdict": "完整目标未满足；非 R1 范围",
+      "deviation": "当前仍是窄弹窗，UUID 作为副标题，编辑与实心危险按钮并排在内容区；目标是独立详情页、业务标题、状态/时间侧区与分层动作。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 25
+    },
+    {
+      "id": "V09",
+      "page": "新增记录",
+      "screenshot": "12-record-create.png",
+      "reference": "r2",
+      "score": [
+        5,
+        5,
+        10,
+        10
+      ],
+      "stage": "R2",
+      "verdict": "完整目标未满足；非 R1 范围",
+      "deviation": "当前大弹窗首先要求选“值状态/不填写”，实际输入未直接呈现；目标是独立页面、直接编辑字段与明确的保存/离开体验。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 30
+    },
+    {
+      "id": "V10",
+      "page": "编辑记录",
+      "screenshot": "11-record-edit.png",
+      "reference": "r2",
+      "score": [
+        5,
+        5,
+        10,
+        10
+      ],
+      "stage": "R2",
+      "verdict": "完整目标未满足；非 R1 范围",
+      "deviation": "当前大弹窗有身份条、每字段值状态和重复标签；目标是整页编辑、业务字段为主、异常证据按需显示、统一保存与离开保护。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordEditorDialog.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 30
+    },
+    {
+      "id": "V11",
+      "page": "字段页",
+      "screenshot": "13-fields.png",
+      "reference": "r3fields",
+      "score": [
+        5,
+        5,
+        10,
+        10
+      ],
+      "stage": "R3",
+      "verdict": "完整目标未满足；非 R1 范围",
+      "deviation": "当前逐字段卡片和单独编辑；目标是字段表格、整体草稿、变更汇总和原子保存。此项同时是交互/能力差异，不能只换样式。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 30
+    },
+    {
+      "id": "V12",
+      "page": "字段编辑",
+      "screenshot": "14-field-editor.png",
+      "reference": "r3fields",
+      "score": [
+        5,
+        10,
+        10,
+        15
+      ],
+      "stage": "R3",
+      "verdict": "完整目标未满足；非 R1 范围",
+      "deviation": "当前居中弹窗及单字段预检；目标为右侧抽屉、默认值和约束分区、应用到整体草稿。Python 正则等技术细节在当前视图突出。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/FieldEditorDialog.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 40
+    },
+    {
+      "id": "V13",
+      "page": "业务状态页",
+      "screenshot": "15-statuses.png",
+      "reference": "statuses",
+      "score": [
+        10,
+        5,
+        10,
+        10
+      ],
+      "stage": "R3",
+      "verdict": "未满足完整设计",
+      "deviation": "当前简化列表只突出名称、顺序和编辑/删除，缺少原型的引用信息层次与业务说明。引用数量需接真实查询，不能用假 0 对齐。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 35
+    },
+    {
+      "id": "V14",
+      "page": "业务状态编辑",
+      "screenshot": "16-status-editor.png",
+      "reference": "statuses",
+      "score": [
+        15,
+        10,
+        15,
+        15
+      ],
+      "stage": "R3",
+      "verdict": "部分符合",
+      "deviation": "名称与操作具备，颜色使用裸十六进制与色码预设、排序数字，产品说明不足；当前颜色能力可以保留，不要求照抄旧图删字段。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/StatusEditorDialog.tsx",
+      "scope": "参考旧状态管理图中的创建状态弹窗，非独立编辑图稿",
+      "matchingPercent": 55
+    },
+    {
+      "id": "V15",
+      "page": "表设置",
+      "screenshot": "18-table-settings.png",
+      "reference": "settings",
+      "score": [
+        5,
+        5,
+        10,
+        10
+      ],
+      "stage": "R3",
+      "verdict": "未满足完整设计",
+      "deviation": "当前是只读资料块加编辑入口；目标是可编辑设置表单及保存/取消。更新时间直接显示 ISO/UTC 字符串，存在独立的产品呈现问题。整表删除不在本阶段，不扣分。",
+      "source": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 30
+    },
+    {
+      "id": "V16",
+      "page": "新建空白表",
+      "screenshot": "05-create-table.png",
+      "reference": "createTable",
+      "score": [
+        25,
+        15,
+        20,
+        15
+      ],
+      "stage": "PM2 保留",
+      "verdict": "基本形态相近，细节待统一",
+      "deviation": "模态表单及名称/描述相近；宽度、说明、必填标识和间距不同。旧图要求先配置来源，本计划允许直接创建本地表，这是业务规则更新，不应复刻旧限制。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 75
+    },
+    {
+      "id": "V17",
+      "page": "导出配置",
+      "screenshot": "19-export.png",
+      "reference": "r3files",
+      "score": [
+        20,
+        10,
+        15,
+        15
+      ],
+      "stage": "R3",
+      "verdict": "部分符合",
+      "deviation": "已有范围/选列/业务状态，但范围用下拉框、状态用复选框；底部“选择保存位置”与原型明确的目标文件、取消、导出步骤不同。需要进一步对齐操作顺序。",
+      "source": "",
+      "scope": "仅配置页；本轮未实际导出或核验文件",
+      "matchingPercent": 60
+    },
+    {
+      "id": "V18",
+      "page": "批量状态配置",
+      "screenshot": "21-batch-status.png",
+      "reference": "r3files",
+      "score": [
+        15,
+        10,
+        15,
+        15
+      ],
+      "stage": "R3",
+      "verdict": "部分符合",
+      "deviation": "有选中数量与预检，但以“每块100条”等内部执行细节作为主要提示；原型业务目标、确认和进度层次更明确。",
+      "source": "apps/desktop/src/renderer/domains/project-data/components/RecordStatusBatchDialog.tsx",
+      "scope": "仅配置态；未提交批量操作，不评价进度与部分结果实际匹配度",
+      "matchingPercent": 55
+    },
+    {
+      "id": "V19",
+      "page": "项目概览",
+      "screenshot": "01-project-overview.png",
+      "reference": "overview",
+      "score": [
+        5,
+        5,
+        10,
+        5
+      ],
+      "stage": "后续完整概览",
+      "verdict": "完整目标未满足；本阶段仅项目资料",
+      "deviation": "当前只显示项目资料；旧图的概览摘要、近期活动、待关注与继续工作尚无真实能力。不能填假数量补视觉，也不能将资料面板宣称完整概览。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": 25
+    },
+    {
+      "id": "V20",
+      "page": "来源页：本地表",
+      "screenshot": "17-source.png",
+      "reference": null,
+      "score": null,
+      "stage": "PM2 保留",
+      "verdict": "没有完全对应图稿，不评分",
+      "deviation": "当前展示手动维护事实。旧 SQLite 来源图针对外部只读来源，不适合拿来判定本地表缺少连接配置。Excel 来源页本轮未采集。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V21",
+      "page": "项目新建",
+      "screenshot": "27-project-create.png",
+      "reference": null,
+      "score": null,
+      "stage": "PM1 保留",
+      "verdict": "没有独立对应图稿，不评分",
+      "deviation": "当前名称/描述表单与统一模态控件可见；B0 未提供完整独立表单画板，不能声称像素对齐，也不虚构匹配率。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V22",
+      "page": "项目编辑",
+      "screenshot": "26-project-edit.png",
+      "reference": null,
+      "score": null,
+      "stage": "PM1 保留",
+      "verdict": "没有独立对应图稿，不评分",
+      "deviation": "与新建一致；当前表单只读观察并取消，未在本轮重新验证保存、冲突和未知结果恢复。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V23",
+      "page": "重新导入入口",
+      "screenshot": "20-reimport.png",
+      "reference": "r3files",
+      "score": null,
+      "stage": "R3",
+      "verdict": "不同步骤，暂不评分",
+      "deviation": "仅采集选择文件前的入口。B0 中影响确认画板属于检查后的步骤，不能拿两个不同步骤直接算匹配率，也不能据此断言后续功能不存在。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V24",
+      "page": "自动化",
+      "screenshot": "22-automations.png",
+      "reference": null,
+      "score": null,
+      "stage": "未来里程碑",
+      "verdict": "尚未实现，不评分",
+      "deviation": "当前真实入口是“暂未开放”能力提示，没有对应业务页面。属于已登记阶段边界，不能算作已完成页面或本轮 R1 漏做。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V25",
+      "page": "运行记录",
+      "screenshot": "23-runs.png",
+      "reference": null,
+      "score": null,
+      "stage": "未来里程碑",
+      "verdict": "尚未实现，不评分",
+      "deviation": "当前真实入口是“暂未开放”能力提示，没有对应业务页面。属于已登记阶段边界，不能算作已完成页面或本轮 R1 漏做。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V26",
+      "page": "统计",
+      "screenshot": "24-statistics.png",
+      "reference": null,
+      "score": null,
+      "stage": "未来里程碑",
+      "verdict": "尚未实现，不评分",
+      "deviation": "当前真实入口是“暂未开放”能力提示，没有对应业务页面。属于已登记阶段边界，不能算作已完成页面或本轮 R1 漏做。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    },
+    {
+      "id": "V27",
+      "page": "环境",
+      "screenshot": "25-environments.png",
+      "reference": null,
+      "score": null,
+      "stage": "未来里程碑",
+      "verdict": "尚未实现，不评分",
+      "deviation": "当前真实入口是“暂未开放”能力提示，没有对应业务页面。属于已登记阶段边界，不能算作已完成页面或本轮 R1 漏做。",
+      "source": "",
+      "scope": "已截图的当前状态",
+      "matchingPercent": null
+    }
+  ]
+}
