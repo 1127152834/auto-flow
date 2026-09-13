@@ -1,5 +1,7 @@
 # M6：网页录制与可重放流程生成实施计划
 
+> 2026-09-13 路线替代（superseded）：用户要求完整迁入 WebRPA UI、前端交互及后端业务逻辑，并允许弃用现有 Studio 实现。后续以[源码迁入规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)为准。本文保留为历史记录；旧自定义视觉、节点/执行模型及 M6 计划不再约束新 Studio。M6 未完成试验已归档，不能标为交付。
+
 日期：2026-09-13；状态：**proposed，文档阶段，尚未获得实施确认**。
 
 依据：[正式设计建议](../specs/2026-09-13-automation-studio-m6-design.md)、现有 M1–M5 源码、WebRPA 冻结源码 `5ccb900e8dcf1530aae66f676d87593c416c7ebb`。详细字段/状态以设计文件为准，本计划负责实施依赖、退出条件和证据。验收记录见 [M6 矩阵](../../migration/automation-studio-m6-validation.md)。

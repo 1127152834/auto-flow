@@ -1,5 +1,7 @@
 # WebRPA 能力盘点与 AutoFlow 迁移决策
 
+> 2026-09-13 路线替代（superseded）：用户要求完整迁入 WebRPA UI、前端交互及后端业务逻辑，并允许弃用现有 Studio 实现。后续以[源码迁入规格](../superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)为准。本文保留为历史记录；旧自定义视觉、节点/执行模型及 M6 计划不再约束新 Studio。M6 未完成试验已归档，不能标为交付。
+
 > 2026-09-13 范围更新：用户要求编排、执行、日志、录制、Debug 等工作台核心完整对齐，排除企业、Windows 控制、发布/版本等管理能力。参见 [核心对齐里程碑](../superpowers/plans/2026-09-13-automation-studio-core-parity-milestones.md)；本文 P0/P1/P2 是早期阶段划分，核心范围内的“暂缓”不能作为最终排除依据。
 
 ## 1. 目的与边界

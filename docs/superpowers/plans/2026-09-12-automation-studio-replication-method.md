@@ -1,5 +1,7 @@
 # Automation Studio：WebRPA 渐进复刻方法与实施路线
 
+> 2026-09-13 路线替代（superseded）：用户要求完整迁入 WebRPA UI、前端交互及后端业务逻辑，并允许弃用现有 Studio 实现。后续以[源码迁入规格](../specs/2026-09-13-studio-webrpa-source-migration-design.md)为准。本文保留为历史记录；旧自定义视觉、节点/执行模型及 M6 计划不再约束新 Studio。M6 未完成试验已归档，不能标为交付。
+
 > 2026-09-13 范围更新：用户要求工作台核心能力完整对齐，排除企业、Windows 控制、发布/版本等管理能力。最终范围与里程碑以 [核心对齐里程碑](2026-09-13-automation-studio-core-parity-milestones.md) 为当前提议；本文方法继续适用，R0–R5 作为早期切片参考，不再作为最终范围上限。
 
 - 日期：2026-09-12

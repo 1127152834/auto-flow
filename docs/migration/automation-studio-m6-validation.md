@@ -1,5 +1,7 @@
 # M6 验收矩阵
 
+> 2026-09-13 路线替代（superseded）：用户要求完整迁入 WebRPA UI、前端交互及后端业务逻辑，并允许弃用现有 Studio 实现。后续以[源码迁入规格](../superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)为准。本文保留为历史记录；旧自定义视觉、节点/执行模型及 M6 计划不再约束新 Studio。M6 未完成试验已归档，不能标为交付。
+
 日期：2026-09-13；状态：**未执行，仅建立验收标准**。本轮只有设计文档，没有 M6 实现或运行证据。
 
 依据：[设计](../superpowers/specs/2026-09-13-automation-studio-m6-design.md)、[实施计划](../superpowers/plans/2026-09-13-automation-studio-m6-implementation.md)。
