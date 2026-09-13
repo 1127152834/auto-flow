@@ -7,7 +7,7 @@ import { ApiClientError, type StreamingApiClient } from '../../../shared/api/cli
 import type { ProjectSummary, ProjectView } from '../types'
 import { ProjectsWorkspace, resetProjectUiState } from './ProjectsWorkspace'
 
-const base = { description: '', managementRevision: 1, lifecycleState: 'active', defaultResources: { profileId: null, proxy: { mode: 'none' }, modelProviderId: null }, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null, availability: { automations: 'notImplemented', data: 'notImplemented', runs: 'notImplemented', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' } }
+const base = { description: '', managementRevision: 1, lifecycleState: 'active', defaultResources: { profileId: null, proxy: { mode: 'none' }, modelProviderId: null }, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z', lastOpenedAt: null, availability: { automations: 'notImplemented', data: 'available', runs: 'notImplemented', environments: 'notImplemented', statistics: 'notImplemented', sync: 'notImplemented' } }
 const a = { ...base, projectId: '00000000-0000-4000-8000-000000000001', name: '项目A' } as ProjectSummary
 const b = { ...base, projectId: '00000000-0000-4000-8000-000000000002', name: '项目B' } as ProjectSummary
 class ResizeObserverStub { observe() {}; unobserve() {}; disconnect() {} }

@@ -56,7 +56,7 @@ class ProjectDefaultResources(ApiModel):
 
 class ProjectCapabilities(ApiModel):
     automations: Literal["notImplemented"]
-    data: Literal["notImplemented"]
+    data: Literal["available"]
     runs: Literal["notImplemented"]
     environments: Literal["notImplemented"]
     statistics: Literal["notImplemented"]

@@ -72,7 +72,18 @@ def test_create_list_patch_open_overview_and_operations(tmp_path):
         == 200
     )
     assert client.get("/api/v1/projects?q=alp").json()["total"] == 1
-    assert client.get(f"/api/v1/projects/{project_id}/overview").json()["counts"] == {}
+    listed = client.get("/api/v1/projects?q=alp").json()["items"][0]
+    assert listed["availability"] == {
+        "automations": "notImplemented",
+        "data": "available",
+        "runs": "notImplemented",
+        "environments": "notImplemented",
+        "statistics": "notImplemented",
+        "sync": "notImplemented",
+    }
+    overview = client.get(f"/api/v1/projects/{project_id}/overview").json()
+    assert overview["counts"] == {}
+    assert overview["availability"] == listed["availability"]
     opened = client.post(f"/api/v1/projects/{project_id}/open").json()
     assert opened["project"]["lastOpenedAt"]
     assert opened["lastOpenedAt"] == opened["project"]["lastOpenedAt"]
