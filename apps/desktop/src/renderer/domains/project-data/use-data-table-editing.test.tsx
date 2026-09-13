@@ -58,7 +58,7 @@ it('invalidates a late success after instance change and recovers only by lookup
   expect(onSaved).not.toHaveBeenCalled()
   await act(async () => { await result.current.recover() })
   expect(lookup.mock.calls.map(call => call[0])).toEqual([`/api/v1/projects/p/operations/by-idempotency-key/${key}`])
-  expect(onSaved).toHaveBeenCalledWith('recordCreate', key)
+  expect(onSaved).toHaveBeenCalledWith('recordCreate', key, record)
 })
 
 it('keeps an absent command frozen in readonly mode without resubmitting it', async () => {
@@ -336,4 +336,22 @@ it('rejects non-finite values before serializing durable recovery evidence', asy
   await expect(result.current.submitRecord([{ fieldId: 'f', value: Number.NaN }])).rejects.toThrow()
   expect(write).not.toHaveBeenCalled()
   expect(request).not.toHaveBeenCalled()
+})
+
+it('restores an unknown UUID record edit after remount and looks up its original operation', async () => {
+  const uuidRecord = { ...record, ref: { ...record.ref, recordKey: { type: 'uuid' as const, value: '12345678-1234-4321-8765-123456789abc' } } }
+  const offline = vi.fn().mockRejectedValue(new TypeError('offline'))
+  const firstProps = { workspaceKey: 'w', context: context(), client: client(offline), instanceId: 'i', disabled: false, readonly: false, onSaved: vi.fn() }
+  const first = renderHook(() => useDataTableEditing(firstProps))
+  act(() => first.result.current.open({ kind: 'recordEdit', record: uuidRecord }))
+  await act(async () => { await expect(first.result.current.submitRecord([{ fieldId: 'f', value: 'new' }])).rejects.toThrow() })
+  const key = offline.mock.calls.find(call => call[1]?.method === 'PATCH')![1].headers['Idempotency-Key']
+  first.unmount()
+  const lookup = vi.fn().mockResolvedValue({ projectId: 'p', idempotencyKey: key, kind: 'updateRecord', status: 'succeeded', resource: { type: 'record', recordRef: uuidRecord.ref }, result: uuidRecord })
+  const restored = renderHook(() => useDataTableEditing({ ...firstProps, client: client(lookup), instanceId: 'i2' }))
+  expect(restored.result.current.recoveryBlocked).toBe(false)
+  expect(restored.result.current.recoveryPending).toBe(true)
+  await act(async () => { await restored.result.current.recover() })
+  expect(lookup.mock.calls.map(call => call[0])).toEqual([`/api/v1/projects/p/operations/by-idempotency-key/${key}`])
+  expect(firstProps.onSaved).toHaveBeenCalledWith('recordEdit', key, uuidRecord)
 })

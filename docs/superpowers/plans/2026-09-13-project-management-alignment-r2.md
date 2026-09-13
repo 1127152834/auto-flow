@@ -141,3 +141,21 @@ type RecordReturnIdentity = {
 - [ ] 更新smoke从Modal选择器改为页面语义选择器，保留旧断线/CAS/双工作区断言，不删失败测试来过关。运行 `npm run build` 后 `node scripts/smoke-project-data.mjs`；记录R2截图/机器结果，提交 `fix: preserve record drafts and return context across navigation`。
 
 R2出口：真实列表→详情→编辑→状态→删除→返回流程，以及响应未知/服务重启/工作区隔离通过；外链IPC与长typed键通过。原型占用、环境关联和任务跳转保留未来边界，不以R2验收为PM4背书。
+
+## 连续实施执行卡（2026-09-13）
+
+状态：**进行中**。用户已授权阶段门槛通过后自动继续；本阶段未通过前不进入 R3。
+
+- 前置 R1 已以 `762234d` 保存工程、真实测试、逐图审查和手测资料；用户手测仍未执行。
+- R2-01：`954bb79` typed 路由/API 编码，`4bc97df` 修复 U+FEFF 文本身份。规格与工程独立审查通过。
+- R2-02：`3e7f6e6` 表单抽取，审查修复 `3bb9615` / `a5deb39` / `c128def`；覆盖异步关闭跨会话、恢复中放弃、固定 Modal 底栏、失败校验后迟到关闭。规格与工程审查均已闭合。
+- R2-03：`c590e37` 字段展示及独立页面壳，6 项组件测试与类型检查；规格、工程审查通过，真实路由/页面装配正在进行，不能用组件结果替代真实流程。
+- R2-04：`5f2e1d6` 主窗口/主 frame 限定的外链桥，固定协议及错误边界。26 项 handler/main/preload 测试通过，规格与工程审查通过；实际 OS 浏览器打开仍待执行。
+- 状态内联子包：`56ed7fe` 复用原 RecordStatusDialog 行为，规格已审；装配必须在确认保存后建立新 session，不能用后台刷新覆盖脏基线。集成测试已验证保存后取消保持新状态以及重复 null 清空。
+- R2-05：UUID 未确认编辑恢复反例已先失败，修复使用既有 typed identity 验证；列表返回状态从既有序列化提取，新增工作区/数据代次与焦点身份。正在集成验证。
+
+文件责任：组件智能体仅维护 RecordEditorForm/Dialog、ScalarValueEditor、RecordStatusDialog 和对应测试；协调者独占页面、ProjectsWorkspace 装配、记录 API、编辑 Hook、返回状态、脚本与公共文档。审查智能体只读。
+
+正在执行的验证：页面/API/Hook/返回状态定向测试、类型检查、lint/build；之后真实 Electron/FastAPI/隔离 SQLite 的 UI 新增→详情→编辑→状态→删除→返回、冲突与响应丢失、服务重连、重启和工作区隔离，以及 R2 各画板的截图比对。
+
+尚未执行：本阶段完整 E2E、逐图最终评分、Windows/其他架构/打包、用户手测。上述项目不得标记通过。

@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { Button } from '../../../shared/components/ui/button'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
-export function RecordEditPage({ mode, editorForm, identity, statusName = '未设置', loading, error, disabled, onBack, onRetry, onStatus }: {
-  mode: 'create' | 'edit'; editorForm?: ReactNode; identity?: string; statusName?: string; loading?: boolean; error?: string | null; disabled?: boolean; onBack(): void; onRetry?(): void; onStatus?(): void
+export function RecordEditPage({ mode, editorForm, footer, identity, statusName = '未设置', loading, error, disabled, onBack, onRetry, onStatus }: {
+  mode: 'create' | 'edit'; editorForm?: ReactNode; footer?: ReactNode; identity?: string; statusName?: string; loading?: boolean; error?: string | null; disabled?: boolean; onBack(): void; onRetry?(): void; onStatus?(): void
 }) {
   return <section aria-label={mode === 'create' ? '新增记录' : '编辑记录'} className="grid min-w-0 gap-5" data-record-page={mode}>
     <Button size="sm" variant="ghost" className="w-fit px-0" onClick={onBack} disabled={disabled}>返回记录列表</Button>
@@ -14,5 +14,6 @@ export function RecordEditPage({ mode, editorForm, identity, statusName = '未�
         {mode === 'edit' ? <p className="rounded-card border border-clay/20 bg-clay/5 p-4 text-sm leading-6 text-muted">未修改的异常单元格保留原始证据，无需修复整行即可修改其他字段。</p> : null}
       </aside>
     </div> : null}
+    {editorForm && footer ? <footer className="sticky bottom-0 z-[var(--layer-sticky)] flex min-w-0 flex-wrap items-center justify-end gap-3 rounded-card border border-line bg-surface p-4 shadow-sm">{footer}</footer> : null}
   </section>
 }

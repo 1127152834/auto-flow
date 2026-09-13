@@ -177,7 +177,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                       )}
                     </TableCell>
                     <TableCell className="py-2">
-                      <Button size="sm" variant="ghost" aria-label={`查看记录 ${identity}`} onClick={() => onOpen(record)}>
+                      <Button size="sm" variant="ghost" aria-label={`查看记录 ${identity}`} data-record-open={JSON.stringify(record.ref.recordKey)} onClick={() => onOpen(record)}>
                         查看
                       </Button>
                     </TableCell>

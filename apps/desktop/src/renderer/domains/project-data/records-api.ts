@@ -39,7 +39,12 @@ export function createRecordsApi(client: StreamingApiClient, context: CatalogSco
       if (query.orderBy !== undefined) params.set('orderBy', encodeUtf8Base64url(JSON.stringify(query.orderBy)))
       return client.request<Schema['DataRecordPage']>(`${base}?${params}`, { signal })
     },
-    get: (key: RecordKey, signal?: AbortSignal) => client.request<DataRecord>(`${path(key)}?datasetGeneration=${encode(scope.datasetGeneration)}&recordKeyType=${encode(key.type)}`, { signal }),
+    get: (key: RecordKey, signal?: AbortSignal) => {
+      return client.request<DataRecord>(`${path(key)}?datasetGeneration=${encode(scope.datasetGeneration)}&recordKeyType=${encode(key.type)}`, { signal }).then(record => {
+      if (!sameScope(record.ref) || !sameKey(record.ref.recordKey, key)) throw new Error('记录响应与当前地址不一致')
+      return record
+      })
+    },
     previewDelete: (recordKey: RecordKey, signal?: AbortSignal) => client.request<Schema['DeletionImpactReport']>(`/api/v1/projects/${encode(scope.projectId)}/mutation-impact`, {
       method: 'POST', signal, body: { action: 'deleteRecord', target: { type: 'record', recordRef: { ...scope, recordKey: { ...recordKey } } } },
     }),

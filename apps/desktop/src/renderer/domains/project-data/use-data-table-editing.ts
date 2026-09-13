@@ -1,3 +1,4 @@
+import { encodeRecordKey } from './record-route'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { StreamingApiClient } from '../../shared/api/client'
 import { ApiClientError } from '../../shared/api/client'
@@ -20,7 +21,7 @@ export type EditingContext = {
   statuses: Schema['DataStatusDirectory']
 }
 
-export type DataEditor = EditingContext & { session: string } & (
+export type DataEditor = EditingContext & { session: string; submittedValues?: Schema['DataCellWrite'][] } & (
   | { kind: 'tableEdit' }
   | { kind: 'recordCreate' }
   | { kind: 'recordEdit' | 'recordStatus' | 'recordDelete'; record: Schema['DataRecordView'] }
@@ -53,7 +54,7 @@ type Pending = { key: string; scope: Scope; session: string } & (
 )
 
 type Impact = Schema['DeletionImpactReport'] | Schema['FieldImpactReport']
-type Options = { workspaceKey: string; context: EditingContext | null; client: StreamingApiClient; instanceId: string; disabled: boolean; readonly: boolean; onSaved(kind: Pending['kind'], operationKey: string): void }
+type Options = { workspaceKey: string; context: EditingContext | null; client: StreamingApiClient; instanceId: string; disabled: boolean; readonly: boolean; onSaved(kind: Pending['kind'], operationKey: string, result: unknown): void }
 type Live = Options & { mounted: boolean }
 
 const clone = <T,>(value: T): T => structuredClone(value)
@@ -65,13 +66,18 @@ const object = (value: unknown): value is Record<string, unknown> => Boolean(val
 const kinds = new Set<Pending['kind']>(['tableEdit', 'recordCreate', 'recordEdit', 'recordStatus', 'recordDelete', 'fieldCreate', 'fieldEdit', 'statusCreate', 'statusEdit', 'statusDelete'])
 const validScope = (value: unknown): value is Scope => object(value) && ['workspaceKey', 'projectId', 'tableId', 'datasetGeneration'].every(key => typeof value[key] === 'string' && value[key].length > 0)
 const validTarget = (value: unknown, kind: Pending['kind']) => {
-  if (kind === 'recordEdit' || kind === 'recordStatus' || kind === 'recordDelete') return object(value) && (value.type === 'text' || value.type === 'integer') && typeof value.value === 'string' && value.value.length > 0
+  if (kind === 'recordEdit' || kind === 'recordStatus' || kind === 'recordDelete') {
+    if (!object(value) || !['text', 'integer', 'uuid'].includes(String(value.type)) || typeof value.value !== 'string') return false
+    try { encodeRecordKey(value as RecordKey); return true } catch { return false }
+  }
   if (kind === 'fieldEdit' || kind === 'statusEdit' || kind === 'statusDelete') return typeof value === 'string' && value.length > 0
   return value === undefined
 }
+const validCellWrites = (value: unknown) => Array.isArray(value) && value.every(cell => object(cell) && typeof cell.fieldId === 'string' && cell.fieldId.length > 0 && (cell.value === null || typeof cell.value === 'string' || typeof cell.value === 'boolean' || typeof cell.value === 'number' && Number.isFinite(cell.value) || object(cell.value) && cell.value.kind === 'date' && ['date', 'datetime'].includes(String(cell.value.precision)) && typeof cell.value.value === 'string' && (cell.value.offset === null || cell.value.offset === undefined || typeof cell.value.offset === 'string')));
 const restored = (value: unknown, current: Scope): { pending: Pending; editor: DataEditor } | null => {
   if (!object(value) || !object(value.pending) || !object(value.editor)) return null
   const pending = value.pending, editor = value.editor
+  if ((pending.kind === 'recordCreate' || pending.kind === 'recordEdit') && (!object(pending.body) || !validCellWrites(pending.body.values))) return null
   if (typeof pending.kind !== 'string' || !kinds.has(pending.kind as Pending['kind']) || pending.kind !== editor.kind || typeof pending.key !== 'string' || !pending.key || typeof pending.session !== 'string' || !pending.session || pending.session !== editor.session || !validScope(pending.scope) || !validScope(editor.scope) || !sameTable(pending.scope, current) || !sameScope(pending.scope, editor.scope) || !object(pending.body) || !validTarget(pending.target, pending.kind as Pending['kind']) || !object(editor.table) || !object(editor.fields) || !object(editor.statuses)) return null
   return { pending: pending as Pending, editor: editor as DataEditor }
 }
@@ -134,7 +140,7 @@ export function useDataTableEditing(options: Options) {
           const saved = restored(JSON.parse(raw), options.context!.scope)
           if (!saved) throw new Error('保存恢复记录不完整，已阻止新的写入。')
           pending.current = clone(saved.pending); activeSession.current = saved.editor.session
-          setEditor(clone(saved.editor)); setRecoveryPending(true); setError('上次保存结果尚未确认，请先核对原请求。')
+          setEditor({ ...clone(saved.editor), ...((saved.pending.kind === 'recordCreate' || saved.pending.kind === 'recordEdit') ? { submittedValues: clone((saved.pending.body as { values: Schema['DataCellWrite'][] }).values) } : {}) }); setRecoveryPending(true); setError('上次保存结果尚未确认，请先核对原请求。')
         }
       } catch (caught) { setRecoveryBlocked(true); setError(message(caught)) }
     }
@@ -192,7 +198,7 @@ export function useDataTableEditing(options: Options) {
       clearStored(command)
       pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; setEditor(null)
       activeSession.current = null; dialogBusy.current = null; setDialogSaving(false)
-      live.current.onSaved(command.kind, command.key)
+      live.current.onSaved(command.kind, command.key, value)
       return value
     } catch (caught) {
       if (!isCurrent()) return undefined

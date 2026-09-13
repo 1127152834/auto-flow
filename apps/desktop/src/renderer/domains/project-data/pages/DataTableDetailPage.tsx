@@ -38,6 +38,12 @@ import { ExcelExportWorkflow } from "../components/ExcelExportWorkflow";
 import { ExcelImportWizard } from "../components/ExcelImportWizard";
 import { FieldEditorDialog } from "../components/FieldEditorDialog";
 import { RecordQueryToolbar, composeRecordQuery, type QuickSearch } from "../components/RecordQueryToolbar";
+import { readTableView, tableViewKey, type TableViewState } from "../record-return-state";
+import { RecordDetailPage } from "./RecordDetailPage";
+import { RecordEditPage } from "./RecordEditPage";
+import { RecordFieldsView } from "../components/RecordFieldsView";
+import { RecordEditorForm } from "../components/RecordEditorForm";
+import type { RecordLocation } from "../../projects/types";
 import { RecordEditorDialog } from "../components/RecordEditorDialog";
 import { RecordStatusDialog } from "../components/RecordStatusDialog";
 import { RecordStatusBatchDialog } from "../components/RecordStatusBatchDialog";
@@ -62,6 +68,8 @@ export type DataTableDetailPageProps = {
   projectId: string;
   tableId: string;
   tab: DataTableTab;
+  record?: RecordLocation;
+  onRecordNavigate?(record?: RecordLocation): void;
   client: StreamingApiClient;
   disabled?: boolean;
   readonly?: boolean;
@@ -83,28 +91,6 @@ const base64url = (value: unknown) => {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
   return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
-};
-type TableViewState = { quickSearch: QuickSearch; query: RecordQuery; page: number; visibleFieldIds: string[] | null; scrollY: number };
-const tableViewKey = (workspace: string, project: string, table: string) => `autoflow:table-view:${JSON.stringify([workspace, project, table])}`;
-const validFilter = (value: unknown, depth = 1): value is FilterExpression => {
-  if (!value || typeof value !== "object" || depth > 5) return false;
-  const node = value as Record<string, unknown>;
-  if (node.type === "compare") return typeof node.fieldId === "string" && typeof node.operator === "string";
-  if (node.type === "status") return typeof node.operator === "string" && (node.statusId === undefined || typeof node.statusId === "string");
-  if (node.type === "not") return validFilter(node.item, depth + 1);
-  return (node.type === "all" || node.type === "any") && Array.isArray(node.items) && node.items.length <= 50 && node.items.every(item => validFilter(item, depth + 1));
-};
-const validOrder = (value: unknown): value is RecordQuery["orderBy"] => Array.isArray(value) && value.length <= 8 && value.every(item => {
-  if (!item || typeof item !== "object") return false;
-  const order = item as Record<string, unknown>;
-  return (order.direction === "asc" || order.direction === "desc") && (typeof order.fieldId === "string" || ["status", "createdAt", "updatedAt", "recordKey"].includes(String(order.systemField)));
-});
-const readTableView = (key: string): TableViewState => {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(key) ?? "null") as Partial<TableViewState> | null;
-    const visible = saved?.visibleFieldIds;
-    return { quickSearch: { fieldId: typeof saved?.quickSearch?.fieldId === "string" ? saved.quickSearch.fieldId : null, keyword: typeof saved?.quickSearch?.keyword === "string" ? saved.quickSearch.keyword : "" }, query: validFilter(saved?.query?.filter) && validOrder(saved?.query?.orderBy) ? saved.query! : emptyRecordQuery(), page: Number.isSafeInteger(saved?.page) && saved!.page! > 0 && saved!.page! <= 2147483647 ? saved!.page! : 1, visibleFieldIds: visible === null || Array.isArray(visible) && visible.length <= 1000 && visible.every(id => typeof id === "string") ? visible ?? null : null, scrollY: typeof saved?.scrollY === "number" && Number.isFinite(saved.scrollY) && saved.scrollY >= 0 ? saved.scrollY : 0 };
-  } catch { return { quickSearch: { fieldId: null, keyword: "" }, query: emptyRecordQuery(), page: 1, visibleFieldIds: null, scrollY: 0 } }
 };
 const sanitizeQuery = (query: RecordQuery, fieldIds: Set<string>, statusIds: Set<string>): RecordQuery => {
   const walk = (node: FilterExpression): FilterExpression | null => {
@@ -143,6 +129,8 @@ function DataTableDetail({
   projectId,
   tableId,
   tab,
+  record: recordLocation,
+  onRecordNavigate,
   client,
   disabled = false,
   readonly = false,
@@ -204,8 +192,9 @@ function DataTableDetail({
     queryFn: ({ signal }) => tableApi.get(tableId, signal),
     placeholderData: (previous) => previous,
   });
-  useEffect(() => { try { sessionStorage.setItem(viewStateKey, JSON.stringify({ query, quickSearch, page: recordPage, visibleFieldIds, scrollY })) } catch { /* view state remains usable in memory */ } }, [query, quickSearch, recordPage, scrollY, viewStateKey, visibleFieldIds]);
-  useEffect(() => { const save = () => setScrollY(window.scrollY); window.addEventListener("scroll", save, { passive: true }); return () => window.removeEventListener("scroll", save) }, []);
+  const originRowKey = useRef<RecordKey | undefined>(initialView.current.originRowKey);
+  useEffect(() => { if (recordLocation || !table) return; try { sessionStorage.setItem(viewStateKey, JSON.stringify({ identity: { workspaceKey, projectId, tableId, datasetGeneration: table.datasetGeneration }, originRowKey: originRowKey.current, query, quickSearch, page: recordPage, visibleFieldIds, scrollY })) } catch { /* view state remains usable in memory */ } }, [query, quickSearch, recordPage, scrollY, viewStateKey, visibleFieldIds, recordLocation, table, workspaceKey, projectId, tableId]);
+  useEffect(() => { const save = () => { if (!recordLocation) setScrollY(window.scrollY) }; window.addEventListener("scroll", save, { passive: true }); return () => window.removeEventListener("scroll", save) }, [recordLocation]);
   useEffect(() => {
     const next = tableQuery.data;
     if (!next) return;
@@ -217,7 +206,8 @@ function DataTableDetail({
       setGenerationWarning("数据已更新，请先处理当前编辑草稿再载入。");
       return;
     }
-    if (table && table.datasetGeneration !== next.datasetGeneration) {
+    if ((table && table.datasetGeneration !== next.datasetGeneration) || (!table && initialView.current?.identity && (initialView.current.identity.datasetGeneration !== next.datasetGeneration || initialView.current.identity.workspaceKey !== workspaceKey || initialView.current.identity.projectId !== projectId || initialView.current.identity.tableId !== tableId))) {
+      originRowKey.current = undefined;
       setQuery(emptyRecordQuery());
       setQuickSearch({ fieldId: null, keyword: "" });
       setQueryNotice("数据已更新，查询条件已重置。");
@@ -228,7 +218,7 @@ function DataTableDetail({
     }
     setTable(next);
     setGenerationWarning(null);
-  }, [table, tableQuery.data]);
+  }, [table, tableQuery.data, workspaceKey, projectId, tableId]);
   const generation = table?.datasetGeneration;
   const catalogApi = useMemo(
     () =>
@@ -283,31 +273,32 @@ function DataTableDetail({
         signal,
       );
     },
-    enabled: Boolean(recordsApi && effectiveQuery) && !generationWarning,
+    enabled: !recordLocation && Boolean(recordsApi && effectiveQuery) && !generationWarning,
   });
+  const recordTarget = recordLocation && recordLocation.mode !== "create" ? { generation: recordLocation.datasetGeneration, key: recordLocation.recordKey } : detailTarget;
   const detailQuery = useQuery({
     queryKey: [
       ...prefix,
-      detailTarget?.generation,
+      recordTarget?.generation,
       "record",
-      detailTarget?.key,
+      recordTarget?.key,
     ],
     queryFn: ({ signal }) => {
       if (
         !recordsApi ||
-        !detailTarget ||
-        detailTarget.generation !== generation
+        !recordTarget ||
+        recordTarget.generation !== generation
       )
         throw new Error("记录不可用");
-      return recordsApi.get(detailTarget.key, signal);
+      return recordsApi.get(recordTarget.key, signal);
     },
     enabled: Boolean(
-      recordsApi && detailTarget && detailTarget.generation === generation,
+      recordsApi && recordTarget && recordTarget.generation === generation,
     ),
   });
   const page = recordsQuery.data;
   const restoredScroll = useRef(false);
-  useLayoutEffect(() => { if (!restoredScroll.current && page) { restoredScroll.current = true; window.scrollTo({ top: scrollY, behavior: "auto" }) } }, [page, scrollY]);
+  useLayoutEffect(() => { if (recordLocation) { restoredScroll.current = false; return } if (!restoredScroll.current && page) { restoredScroll.current = true; window.scrollTo({ top: scrollY, behavior: "auto" }); const identity = JSON.stringify(originRowKey.current); Array.from(document.querySelectorAll<HTMLButtonElement>("[data-record-open]")).find(node => node.dataset.recordOpen === identity)?.focus({ preventScroll: true }) } }, [page, scrollY, recordLocation]);
   useEffect(() => {
     if (!catalogQuery.data) return;
     const available = new Set(catalogQuery.data[0].items.map(item => item.ref.fieldId)), availableStatuses = new Set(catalogQuery.data[1].items.map(item => item.statusId));
@@ -352,7 +343,15 @@ function DataTableDetail({
     instanceId,
     disabled,
     readonly,
-    onSaved: (kind, operationKey) => {
+    onSaved: (kind, operationKey, result) => {
+      editorDirtyRef.current = false; setEditorDirty(false);
+      if (recordLocation && onRecordNavigate) {
+        if ((kind === "recordCreate" || kind === "recordEdit" || kind === "recordStatus") && result && typeof result === "object" && "ref" in result) {
+          const saved = result as Schema["DataRecordView"];
+          cache.setQueryData([...prefix, saved.ref.datasetGeneration, "record", saved.ref.recordKey], saved);
+          if (kind !== "recordStatus" || recordLocation.mode === "create" || recordLocation.datasetGeneration !== saved.ref.datasetGeneration || recordLocation.recordKey.type !== saved.ref.recordKey.type || recordLocation.recordKey.value !== saved.ref.recordKey.value) queueMicrotask(() => onRecordNavigate({ mode: "detail", datasetGeneration: saved.ref.datasetGeneration, recordKey: saved.ref.recordKey }));
+        } else if (kind === "recordDelete") queueMicrotask(() => onRecordNavigate());
+      }
       void cache.invalidateQueries({ queryKey: prefix });
       void cache.invalidateQueries({
         queryKey: [
@@ -371,6 +370,26 @@ function DataTableDetail({
       });
     },
   });
+  const activatedRecordRoute = useRef<string | null>(null);
+  const routeIdentity = recordLocation ? JSON.stringify(recordLocation) : null;
+  useEffect(() => {
+    if (activatedRecordRoute.current !== routeIdentity) {
+      if (editing.recoveryBlocked || !editing.canLeave()) return;
+      if (editing.editor && !editing.close()) return;
+      editorDirtyRef.current = false; setEditorDirty(false);
+      if (!recordLocation) { activatedRecordRoute.current = null; return }
+      if (!context || disabled || generationWarning) return;
+      if (recordLocation.mode !== "create" && (!detailQuery.data || recordLocation.datasetGeneration !== generation)) return;
+      if (recordLocation.mode === "create") editing.open({ kind: "recordCreate" });
+      else if (recordLocation.mode === "edit") editing.open({ kind: "recordEdit", record: detailQuery.data! });
+      activatedRecordRoute.current = routeIdentity;
+    }
+  }, [recordLocation, routeIdentity, context, disabled, generationWarning, generation, detailQuery.data, editing]);
+  useEffect(() => {
+    if (recordLocation?.mode === "detail" && recordLocation.datasetGeneration === generation && context && detailQuery.data && !editing.editor && !editing.busy && !editing.recoveryBlocked && editing.canLeave() && !disabled && !generationWarning) {
+      editing.open({ kind: "recordStatus", record: detailQuery.data });
+    }
+  }, [recordLocation, generation, context, detailQuery.data, editing, disabled, generationWarning]);
   const stableWorkflowScope = JSON.stringify([workspaceKey, projectId, tableId]);
   const workflowContext = JSON.stringify([workspaceKey, instanceId, projectId, tableId]);
   useLayoutEffect(() => { workflowScope.current = { workspaceKey, projectId, tableId, instanceId, client, disabled: disabled || Boolean(generationWarning) }; conflictTicket.current += 1; setConflictLoading(false); setConflictLatest(null); setConflictError(null) }, [client, disabled, generationWarning, instanceId, projectId, tableId, workspaceKey]);
@@ -512,6 +531,46 @@ function DataTableDetail({
       载入最新资料
     </Button>
   ) : undefined;
+  const routeRecord = recordLocation && recordLocation.mode !== "create" && recordLocation.datasetGeneration === generation ? detailQuery.data : undefined;
+  const routeError = recordLocation && recordLocation.mode !== "create" && table && recordLocation.datasetGeneration !== generation
+    ? "这条记录属于已替换的数据，请返回记录列表选择当前记录。"
+    : detailQuery.error ? errorMessage(detailQuery.error) : catalogQuery.error ? errorMessage(catalogQuery.error) : null;
+  const candidateEditor = editing.editor?.kind === "recordCreate" || editing.editor?.kind === "recordEdit" ? editing.editor : null;
+  const matchesRoute = (ref: Schema["DataRecordRef"]) => recordLocation && recordLocation.mode !== "create" && ref.projectId === projectId && ref.tableId === tableId && ref.datasetGeneration === recordLocation.datasetGeneration && ref.recordKey.type === recordLocation.recordKey.type && ref.recordKey.value === recordLocation.recordKey.value;
+  const recordEditor = candidateEditor && candidateEditor.scope.datasetGeneration === generation && (recordLocation?.mode === "create" && candidateEditor.kind === "recordCreate" || recordLocation?.mode === "edit" && candidateEditor.kind === "recordEdit" && matchesRoute(candidateEditor.record.ref)) ? candidateEditor : null;
+  const foreignRecovery = Boolean(recordLocation && editing.recoveryPending && editing.editor && !(recordEditor || (editing.editor.kind === "recordStatus" || editing.editor.kind === "recordDelete") && matchesRoute(editing.editor.record.ref)));
+
+  const backToRecords = () => onRecordNavigate?.();
+  const openRecordFromList = (record: Schema["DataRecordView"]) => {
+    originRowKey.current = record.ref.recordKey;
+    try { sessionStorage.setItem(viewStateKey, JSON.stringify({ identity: { workspaceKey, projectId, tableId, datasetGeneration: generation }, originRowKey: record.ref.recordKey, query, quickSearch, page: recordPage, visibleFieldIds, scrollY: window.scrollY })) } catch { /* retain the in-memory return context */ }
+    onRecordNavigate?.({ mode: "detail", datasetGeneration: record.ref.datasetGeneration, recordKey: record.ref.recordKey });
+  };
+  const recordContent = recordLocation?.mode === "detail" ? <RecordDetailPage
+    title={routeRecord ? fields.map(field => routeRecord.values.find(cell => cell.fieldId === field.ref.fieldId && cell.readable && !cell.error && typeof cell.value === "string" && cell.value)).find(Boolean)?.value as string || "记录详情" : "记录详情"}
+    loading={detailQuery.isFetching || catalogQuery.isPending} error={routeError} readonly={!writable} disabled={disabled || editing.busy || editing.recoveryPending}
+    fieldsView={routeRecord && catalogQuery.data ? <RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} /> : undefined}
+    statusForm={routeRecord && editing.editor?.kind === "recordStatus" && matchesRoute(editing.editor.record.ref) ? <RecordStatusDialog key={editing.editor.session} presentation="inline" open sessionKey={editing.editor.session} submissionEpoch={instanceId}
+      record={editing.editor.record} statuses={editing.editor.statuses.items} readonly={!writable} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} error={editing.error} errorActions={errorActions}
+      onSubmit={editing.submitRecordStatus} onRecover={editing.recover} onOpenChange={() => undefined} onRequestClose={closeEditor}
+      onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : routeRecord ? <p className="text-sm">{routeRecord.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}</p> : undefined}
+    createdAt={routeRecord?.createdAt} updatedAt={routeRecord?.updatedAt} onBack={backToRecords}
+    onEdit={() => { if (recordLocation.mode === "detail") onRecordNavigate?.({ ...recordLocation, mode: "edit" }) }}
+    onDelete={() => { if (routeRecord && editing.canLeave()) void askDiscardOnce("editor", () => { editing.close(); editing.open({ kind: "recordDelete", record: routeRecord }) }) }}
+    onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }} />
+    : recordLocation ? <RecordEditPage mode={recordLocation.mode === "create" ? "create" : "edit"}
+      loading={!recordEditor && !routeError && !editing.recoveryBlocked && !foreignRecovery} error={routeError} disabled={disabled || editing.busy || editing.recoveryPending} onBack={backToRecords}
+      onStatus={recordLocation.mode === "edit" ? () => onRecordNavigate?.({ ...recordLocation, mode: "detail" }) : undefined}
+      statusName={routeRecord?.statusId ? statuses.find(status => status.statusId === routeRecord.statusId)?.name ?? "状态不可用" : "未设置"}
+      onRetry={() => { void detailQuery.refetch(); void catalogQuery.refetch() }}
+      footer={<>{editorDirty ? <span className="mr-auto text-sm text-muted">未保存的修改</span> : null}<Button variant="ghost" disabled={disabled || editing.busy || editing.recoveryPending} onClick={backToRecords}>取消</Button>{editing.recoveryPending ? <Button type="submit" form="record" data-record-action="recover" disabled={disabled || editing.busy}>核对保存结果</Button> : <Button type="submit" form="record" variant="primary" disabled={disabled || editing.busy || !writable || recordLocation.mode === "edit" && !editorDirty}>{editing.busy ? "正在保存…" : recordLocation.mode === "create" ? "创建记录" : "保存修改"}</Button>}</>}
+      editorForm={recordEditor ? <RecordEditorForm key={recordEditor.session} id="record" presentation="page" externalActions mode={recordEditor.kind === "recordCreate" ? "create" : "edit"}
+        sessionKey={recordEditor.session} submissionEpoch={instanceId} initialSubmittedValues={recordEditor.submittedValues} fields={recordEditor.fields.items} initialRecord={recordEditor.kind === "recordEdit" ? recordEditor.record : undefined}
+        identityFieldId={recordEditor.table.identity.mode === "field" ? recordEditor.table.identity.fieldId : undefined}
+        saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.error} errorActions={errorActions}
+        footerClassName="sticky bottom-0 z-10 -mx-6 -mb-6 mt-4 flex justify-end gap-2 border-t border-line bg-surface p-4"
+        onCancel={backToRecords} onSubmit={editing.submitRecord} onRecover={editing.recover}
+        onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : undefined} /> : null;
   const loadingTable = tableQuery.isPending && !table,
     tableError = tableQuery.error ? errorMessage(tableQuery.error) : null;
   if (loadingTable && !table)
@@ -539,9 +598,7 @@ function DataTableDetail({
           <div className="flex min-w-0 flex-wrap items-center gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>
             返回数据表
           </Button>
-          <h1 className="m-0 break-words text-2xl font-semibold">
-            {table.name}
-          </h1>
+          {recordLocation ? <span className="break-words text-sm text-muted">{table.name}</span> : <h1 className="m-0 break-words text-2xl font-semibold">{table.name}</h1>}
         <Badge>
           {readonly
             ? "只读"
@@ -553,11 +610,11 @@ function DataTableDetail({
                   ? "Google Sheets"
                   : "来源未配置"}
         </Badge>
-          </div><p className="mb-0 mt-1 truncate text-sm text-muted" title={table.description || "暂无说明"}>{table.description || "暂无说明"}</p>
+          </div>{!recordLocation ? <p className="mb-0 mt-1 truncate text-sm text-muted" title={table.description || "暂无说明"}>{table.description || "暂无说明"}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
-          {tab !== "records" ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
+          {writable && !recordLocation ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
+          {tab !== "records" && !recordLocation ? <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button> : null}
         </div>
       </header>
       {tableError ? (
@@ -572,6 +629,7 @@ function DataTableDetail({
           <Button onClick={acceptLatestGeneration}>处理草稿并载入新数据</Button>
         </p>
       ) : null}
+      {foreignRecovery ? <div role="alert" className="rounded-control border border-clay/30 bg-clay/5 p-4 text-sm"><p>另一个记录的保存结果尚未确认，请先核对原请求。当前地址的表单尚未开启。</p><Button disabled={disabled || editing.busy} onClick={() => void editing.recover().catch(() => undefined)}>核对原记录保存结果</Button>{editing.error ? <p>{editing.error}</p> : null}{errorActions}</div> : null}
       {editing.recoveryBlocked ? <p role="alert">{editing.error ?? "本地保存恢复记录异常，当前数据表已禁止写入。"}</p> : null}
       <Tabs
         value={tab}
@@ -585,13 +643,14 @@ function DataTableDetail({
           ))}
         </TabsList>
         <TabsContent value="records" className="grid gap-3">
+          {!recordLocation ? <>
           <RecordQueryToolbar
             fields={fields} statuses={statuses} query={query} visibleFieldIds={visibleFieldIds} quickSearch={quickSearch}
             resetKey={`${projectId}:${tableId}:${generation}:${table.tableRevision}:${catalogQuery.data?.[0].tableRevision}:${filterSession}`}
             disabled={disabled || Boolean(generationWarning) || !catalogQuery.data || Boolean(workflow || editing.editor)} readonly={!writable}
             exportDisabled={!effectiveQuery} queryError={queryError ?? undefined}
             selectionCount={selection.count} onClearSelection={selection.clear}
-            onCreate={() => editing.open({ kind: "recordCreate" })} onBatchStatus={() => openWorkflow("batch")} onExport={() => { if (effectiveQuery) openWorkflow("export") }}
+            onCreate={() => onRecordNavigate ? onRecordNavigate({ mode: "create" }) : editing.open({ kind: "recordCreate" })} onBatchStatus={() => openWorkflow("batch")} onExport={() => { if (effectiveQuery) openWorkflow("export") }}
             onApplyQuery={next => { try { composeRecordQuery(fields, next, quickSearch); setQuery(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
             onApplySearch={next => { try { composeRecordQuery(fields, query, next); setQuickSearch(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
             onApplyColumns={setVisibleFieldIds}
@@ -628,12 +687,14 @@ function DataTableDetail({
             }
             onCreate={
               writable
-                ? () => editing.open({ kind: "recordCreate" })
+                ? () => onRecordNavigate ? onRecordNavigate({ mode: "create" }) : editing.open({ kind: "recordCreate" })
                 : undefined
             }
             onStatusChange={
               writable
                 ? (record) => {
+                    originRowKey.current = record.ref.recordKey;
+              if (onRecordNavigate) { openRecordFromList(record); return }
                     setDetailIntent("status");
                     setDetailTarget({
                       key: record.ref.recordKey,
@@ -643,6 +704,8 @@ function DataTableDetail({
                 : undefined
             }
             onOpen={(record) => {
+              originRowKey.current = record.ref.recordKey;
+              if (onRecordNavigate) { openRecordFromList(record); return }
               setDetailIntent("view");
               setDetailTarget({
                 key: record.ref.recordKey,
@@ -651,6 +714,7 @@ function DataTableDetail({
             }}
             onPageChange={setRecordPage}
           />
+          </> : recordContent}
         </TabsContent>
         <TabsContent value="fields">
           <section aria-label="字段目录" className="grid gap-3">
@@ -863,8 +927,8 @@ function DataTableDetail({
       {editing.editor?.kind === "tableEdit" ? <DataTableFormDialog key={editing.editor.session} open mode="edit" sessionKey={editing.editor.session} submissionEpoch={instanceId} initialValues={{ name: editing.editor.table.name, description: editing.editor.table.description }} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.error} errorActions={errorActions}
         onOpenChange={open => { if (!open) editing.close() }} onRequestClose={closeEditor} onSubmit={editing.submitTable} onRecover={editing.recover}
         onDirtyChange={value => { editing.onDirtyChange(value); setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : null}
-      {editing.editor?.kind === "recordCreate" ||
-      editing.editor?.kind === "recordEdit" ? (
+      {!recordLocation && (editing.editor?.kind === "recordCreate" ||
+      editing.editor?.kind === "recordEdit") ? (
         <RecordEditorDialog
           key={editing.editor.session}
           open
@@ -969,7 +1033,7 @@ function DataTableDetail({
           onSavingChange={editing.onSavingChange}
         />
       ) : null}
-      {editing.editor?.kind === "recordStatus" ? (
+      {editing.editor?.kind === "recordStatus" && recordLocation?.mode !== "detail" ? (
         <RecordStatusDialog
           key={editing.editor.session}
           open

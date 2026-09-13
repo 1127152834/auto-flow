@@ -13,7 +13,7 @@ beforeEach(()=>{const values=new Map<string,string>(),sessionValues=new Map<stri
 const table={projectId:'p',tableId:'t',name:'客户表',description:'真实说明',sourceKind:'local' as const,datasetGeneration:'g',tableRevision:3,identity:{mode:'system' as const},slotDefinitions:[],recordCount:1,syncSummary:{status:'notApplicable' as const,pendingCount:0,unknownCount:0},createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-02T00:00:00Z'}
 const field={ref:{projectId:'p',tableId:'t',datasetGeneration:'g',fieldId:'f'},key:'name',name:'姓名',type:'string' as const,required:true,validation:{},writable:true,formula:false,fieldRevision:2}
 const status={statusId:'s',name:'进行中',color:'#123456',order:0,statusRevision:4}
-const record={ref:{projectId:'p',tableId:'t',datasetGeneration:'g',recordKey:{type:'text' as const,value:'001'}},values:[{fieldId:'f',value:'Alice',source:'local' as const,readable:true,error:null}],recordSlots:[],statusId:'s',currentEnvironmentId:null,contentRevision:1,statusRevision:1,linkRevision:1,deleted:false,createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'}
+const record: import('../../../shared/api/generated').components['schemas']['DataRecordView']={ref:{projectId:'p',tableId:'t',datasetGeneration:'g',recordKey:{type:'text' as const,value:'001'}},values:[{fieldId:'f',value:'Alice',source:'local' as const,readable:true}],recordSlots:[],statusId:'s',currentEnvironmentId:null,contentRevision:1,statusRevision:1,linkRevision:1,deleted:false,createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'}
 const page={items:[record],total:1,page:1,pageSize:50,sort:'[]'}
 function api() {
   const request=vi.fn(async (path:string,_init?:{method?:string;body?:unknown})=>{
@@ -258,4 +258,83 @@ it('keeps query drafts local and applies quick search only on submit',async()=>{
   expect(screen.getAllByRole('button',{name:'新增记录'})).toHaveLength(1)
   expect(screen.getAllByRole('button',{name:'导出 Excel'})).toHaveLength(1)
   expect(screen.getByRole('button',{name:'批量设置状态'})).toBeDisabled()
+})
+
+it('opens the typed detail route directly without fetching the record list', async()=>{
+  const {client,request}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByRole('heading',{level:1,name:'Alice'})).toBeVisible()
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(request.mock.calls.some(([path])=>path.includes('/records?'))).toBe(false)
+  expect(request.mock.calls.some(([path])=>path.includes('/records/MDAx?'))).toBe(true)
+})
+it('rejects a direct record response with a different typed identity', async()=>{
+  const {client,request}=api();const original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>path.includes('/records/')?{...record,ref:{...record.ref,recordKey:{type:'integer',value:'1'}}}:original(path,init))
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByText(/记录响应与当前地址不一致/)).toBeVisible()
+  expect(screen.queryByText('Alice')).not.toBeInTheDocument()
+})
+it('keeps a stale generation route invalid rather than opening the same key in new data', async()=>{
+  const {client,request}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'old',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByText(/这条记录属于已替换的数据/)).toBeVisible()
+  expect(request.mock.calls.some(([path])=>path.includes('/records/'))).toBe(false)
+})
+
+it('rebuilds inline status baseline from confirmed save results so cancel cannot restore a stale status',async()=>{
+  let currentRecord={...record};const {client,request}=api();const original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(path.includes('/records/')) { if(init?.method==='PUT') currentRecord={...currentRecord,statusId:(init.body as {statusId:string|null}).statusId,statusRevision:currentRecord.statusRevision+1};return currentRecord }return original(path,init)})
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>)
+  await userEvent.click(await screen.findByRole('button',{name:'清空状态'}))
+  await waitFor(()=>expect(currentRecord.statusId).toBeNull())
+  await waitFor(()=>expect(screen.getByRole('combobox',{name:'记录业务状态'})).toHaveTextContent('未设置'))
+  await userEvent.click(screen.getByRole('button',{name:'取消'}))
+  expect(screen.getByRole('combobox',{name:'记录业务状态'})).toHaveTextContent('未设置')
+  await userEvent.click(screen.getByRole('button',{name:'清空状态'}))
+  await waitFor(()=>expect(currentRecord.statusRevision).toBe(3))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+})
+
+it('restores an accepted-unknown create after a full coordinator remount without opening a second editor',async()=>{
+  const {client,request}=api();const original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(init?.method==='POST'||path.includes('/operations/'))throw new TypeError('offline');return original(path,init)})
+  const options=props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})
+  const first=renderPage(<DataTableDetailPage {...options}/>);await userEvent.click(await screen.findByRole('combobox',{name:'姓名值状态'}));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('姓名'),'持久草稿')
+  await userEvent.click(screen.getByRole('button',{name:'创建记录'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
+  renderPage(<DataTableDetailPage {...options}/>)
+  expect(await screen.findByRole('button',{name:'核对保存结果'})).toBeVisible()
+  expect(screen.getByRole('heading',{level:1,name:'新增记录'})).toBeVisible()
+  expect(screen.getByLabelText('姓名')).toHaveValue('持久草稿')
+})
+
+it('shows corrupt recovery evidence as a write block instead of throwing from route activation',async()=>{
+  localStorage.setItem('autoflow:data-edit:w:p:t','{bad-json');const {client}=api()
+  renderPage(<DataTableDetailPage {...props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})}/>)
+  expect(await screen.findByRole('alert')).toBeVisible()
+  expect(screen.queryByRole('form',{name:'新建记录表单'})).not.toBeInTheDocument()
+})
+it('does not mount a recovered record A form under a direct record B edit address',async()=>{
+  const {client,request}=api();const original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(init?.method==='PATCH'||path.includes('/operations/'))throw new TypeError('offline');if(path.includes('/records/'))return {...record,ref:{...record.ref,recordKey:{type:'text',value:path.includes('Qg?')?'B':'001'}}};return original(path,init)})
+  const options=props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})
+  const first=renderPage(<DataTableDetailPage {...options}/>);const name=await screen.findByLabelText('姓名');await userEvent.clear(name);await userEvent.type(name,'仅属于A');await userEvent.click(screen.getByRole('button',{name:'保存修改'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
+  renderPage(<DataTableDetailPage {...options} record={{mode:'edit',datasetGeneration:'g',recordKey:{type:'text',value:'B'}}}/>)
+  expect(await screen.findByRole('button',{name:'核对原记录保存结果'})).toBeVisible()
+  expect(screen.queryByLabelText('姓名')).not.toBeInTheDocument()
+  expect(localStorage.getItem('autoflow:data-edit:w:p:t')).toContain('仅属于A')
+})
+it('persists the clicked typed origin before navigating away from the list',async()=>{
+  const {client}=api(),navigate=vi.fn();renderPage(<DataTableDetailPage {...props(client,{onRecordNavigate:navigate})}/>);await userEvent.click(await screen.findByRole('button',{name:'查看记录 文本 · 001'}))
+  expect(navigate).toHaveBeenCalledWith({mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey})
+  expect(JSON.parse(sessionStorage.getItem('autoflow:table-view:["w","p","t"]')!)).toMatchObject({originRowKey:record.ref.recordKey,identity:{datasetGeneration:'g',workspaceKey:'w'}})
+})
+
+it('does not mount record A pending status controls inside record B detail',async()=>{
+  const {client,request}=api();const original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>{if(init?.method==='PUT'||path.includes('/operations/'))throw new TypeError('offline');if(path.includes('/records/'))return {...record,ref:{...record.ref,recordKey:{type:'text',value:path.includes('Qg?')?'B':'001'}}};return original(path,init)})
+  const options=props(client,{record:{mode:'detail',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})
+  const first=renderPage(<DataTableDetailPage {...options}/>);await userEvent.click(await screen.findByRole('button',{name:'清空状态'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
+  renderPage(<DataTableDetailPage {...options} record={{mode:'detail',datasetGeneration:'g',recordKey:{type:'text',value:'B'}}}/>)
+  expect(await screen.findByRole('button',{name:'核对原记录保存结果'})).toBeVisible()
+  expect(screen.queryByRole('combobox',{name:'记录业务状态'})).not.toBeInTheDocument()
+  expect(await screen.findByRole('region',{name:'业务状态'})).toHaveTextContent('进行中')
 })
