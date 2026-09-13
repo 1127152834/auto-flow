@@ -163,3 +163,11 @@ it('rejects a non-finite backfill default before actual JSON serialization', asy
     expect(fetcher).not.toHaveBeenCalled()
   } finally { vi.unstubAllGlobals() }
 })
+
+
+it('reads real status usage independently and passes abort scope', async () => {
+  const request = vi.fn().mockResolvedValue({ datasetGeneration: 'g', items: [], configurationReferences: { availability: 'notImplemented' } });
+  const signal = new AbortController().signal;
+  await api(request).statusUsage(signal);
+  expect(request).toHaveBeenCalledWith('/api/v1/projects/p/tables/t/statuses/usage', { signal });
+});

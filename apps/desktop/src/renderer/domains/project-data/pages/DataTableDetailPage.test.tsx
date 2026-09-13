@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
@@ -19,6 +19,7 @@ function api() {
   const request=vi.fn(async (path:string,_init?:{method?:string;body?:unknown})=>{
     if(path.endsWith('/tables/t'))return table
     if(path.includes('/fields'))return {items:[field],tableRevision:3}
+    if(path.endsWith('/statuses/usage'))return {datasetGeneration:'g',calculatedAt:'2026-09-14T00:00:00Z',items:[{statusId:'s',currentRecords:1,activeBatchOperations:0}],configurationReferences:{availability:'notImplemented'}}
     if(path.includes('/statuses'))return {items:[status],tableRevision:3}
     if(path.includes('/records/'))return record
     if(path.includes('/records?'))return page
@@ -64,9 +65,9 @@ it('applies filter JSON only after explicit apply and paginates on the server',a
 
 it('renders factual field, status, source and settings tabs',async()=>{
   const {client}=api(),onTabChange=vi.fn();const view=renderPage(<DataTableDetailPage {...props(client,{tab:'fields',onTabChange})}/>);expect(await screen.findByText('姓名')).toBeVisible();expect(screen.getByText(/必填/)).toBeVisible();expect(document.body.textContent).not.toContain('修订 2')
-  view.rerender(<DataTableDetailPage {...props(client,{tab:'statuses',onTabChange})}/>);expect(await screen.findByText('进行中')).toBeVisible();expect(screen.getByText(/顺序 0/)).toBeVisible();expect(document.body.textContent).not.toContain('修订 4')
+  view.rerender(<DataTableDetailPage {...props(client,{tab:'statuses',onTabChange})}/>);expect(await screen.findByText('进行中')).toBeVisible();expect(screen.getByRole('columnheader',{name:'当前记录'})).toBeVisible();expect(document.body.textContent).not.toContain('修订 4')
   view.rerender(<DataTableDetailPage {...props(client,{tab:'source',onTabChange})}/>);expect(await screen.findByText('手动维护')).toBeVisible();expect(screen.getByText(/直接在项目中维护/)).toBeVisible()
-  view.rerender(<DataTableDetailPage {...props(client,{tab:'settings',onTabChange})}/>);expect(await screen.findAllByText('真实说明')).toHaveLength(2);expect(screen.getByRole('button',{name:'编辑数据表'})).toBeVisible();expect(document.body.textContent).not.toContain('数据代次')
+  view.rerender(<DataTableDetailPage {...props(client,{tab:'settings',onTabChange})}/>);expect(await screen.findByLabelText('用途说明')).toHaveValue('真实说明');expect(screen.getByRole('button',{name:'保存设置'})).toBeVisible();expect(document.body.textContent).not.toContain('数据代次')
 })
 
 it('loads a selected record through get and shows its readonly detail',async()=>{
@@ -90,6 +91,7 @@ it('closes stale query drafts on a changed generation without applying them',asy
   request.mockImplementation(async(path:string)=>{
     if(path.endsWith('/tables/t'))return currentTable
     if(path.includes('/fields'))return {items:[field],tableRevision:3}
+    if(path.endsWith('/statuses/usage'))return {datasetGeneration:'g',calculatedAt:'2026-09-14T00:00:00Z',items:[{statusId:'s',currentRecords:1,activeBatchOperations:0}],configurationReferences:{availability:'notImplemented'}}
     if(path.includes('/statuses'))return {items:[status],tableRevision:3}
     if(path.includes('/records?'))return page
     throw new Error(path)
@@ -108,6 +110,7 @@ it('does not reopen the same typed key against a replacement generation',async()
   request.mockImplementation(async(path:string)=>{
     if(path.endsWith('/tables/t'))return currentTable
     if(path.includes('/fields'))return {items:[field],tableRevision:3}
+    if(path.endsWith('/statuses/usage'))return {datasetGeneration:'g',calculatedAt:'2026-09-14T00:00:00Z',items:[{statusId:'s',currentRecords:1,activeBatchOperations:0}],configurationReferences:{availability:'notImplemented'}}
     if(path.includes('/statuses'))return {items:[status],tableRevision:3}
     if(path.includes('/records/'))return record
     if(path.includes('/records?'))return page
@@ -135,6 +138,7 @@ it('retries the failed catalog dependency from the records error action',async()
   request.mockImplementation(async(path:string)=>{
     if(path.endsWith('/tables/t'))return table
     if(path.includes('/fields')){fieldAttempts++;if(fieldAttempts===1)throw new Error('字段目录失败');return {items:[field],tableRevision:3}}
+    if(path.endsWith('/statuses/usage'))return {datasetGeneration:'g',calculatedAt:'2026-09-14T00:00:00Z',items:[{statusId:'s',currentRecords:1,activeBatchOperations:0}],configurationReferences:{availability:'notImplemented'}}
     if(path.includes('/statuses'))return {items:[status],tableRevision:3}
     if(path.includes('/records?'))return page
     throw new Error(path)
@@ -203,9 +207,9 @@ it('loads current facts before replacing a conflicted editor draft',async()=>{
   await userEvent.click(screen.getByRole('button',{name:'重新编辑'}));expect(screen.getByLabelText('状态名称')).toHaveValue('服务端最新状态')
 })
 
-it('opens the table editor from settings without exposing internal versions',async()=>{
-  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{tab:'settings'})}/>);await userEvent.click(await screen.findByRole('button',{name:'编辑数据表'}))
-  expect(screen.getByRole('dialog',{name:'编辑数据表'})).toBeVisible();expect(screen.getByLabelText('数据表名称')).toHaveValue('客户表');expect(document.body.textContent).not.toContain('数据代次')
+it('edits inline settings without exposing internal versions',async()=>{
+  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{tab:'settings'})}/>);expect(await screen.findByLabelText('数据表名称')).toHaveValue('客户表')
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();expect(screen.getByLabelText('数据表名称')).toHaveValue('客户表');expect(document.body.textContent).not.toContain('数据代次')
 })
 
 it('keeps a dirty editor on the old data until the user handles the draft',async()=>{
@@ -445,3 +449,142 @@ it('disables the page save action after field validation fails and reenables it 
  expect(screen.getByText(/还有 1 个字段需要修正/)).toBeVisible()
  await userEvent.type(input,'修正后姓名');await waitFor(()=>expect(save).toBeEnabled())
 })
+
+
+it('mounts gallery field table and inline settings instead of immediate field cards or settings modal', async () => {
+  const {client}=api(); const p=props(client,{tab:'fields'});
+  const view=renderPage(<DataTableDetailPage {...p}/>);
+  expect(await screen.findByRole('table',{name:'字段与校验'})).toBeVisible();
+  expect(screen.getByRole('button',{name:/^保存字段$/})).toBeDisabled();
+  expect(screen.getByRole('button',{name:/删除字段 姓名/})).toBeDisabled();
+  view.rerender(<DataTableDetailPage {...p} tab="settings"/>);
+  expect(await screen.findByLabelText('数据表名称')).toHaveValue('客户表');
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('shows saved inline settings immediately and uses the new revision for the next edit',async()=>{
+  const {client,request}=api(); let latest=table; const bodies: unknown[]=[]; const original=client.request;
+  client.request=vi.fn(async(path,init)=>{ if(path.endsWith('/tables/t')&&init?.method==='PATCH'){ bodies.push(init.body); latest={...latest,...init.body as object,tableRevision:latest.tableRevision+1};return latest } if(path.endsWith('/tables/t'))return latest;return original(path,init) }) as StreamingApiClient['request'];
+  renderPage(<DataTableDetailPage {...props(client,{tab:'settings'})}/>);
+  let description=await screen.findByLabelText('用途说明');await waitFor(()=>expect(screen.getByLabelText('用途说明')).not.toHaveAttribute('readonly'));description=screen.getByLabelText('用途说明');await userEvent.clear(description);await userEvent.type(description,'第一次更新');await userEvent.click(screen.getByRole('button',{name:'保存设置'}));
+  await waitFor(()=>expect(screen.getByLabelText('用途说明')).toHaveValue('第一次更新'));
+  await waitFor(()=>expect(screen.getByRole('button',{name:'保存设置'})).toBeDisabled());
+  description=screen.getByLabelText('用途说明');await userEvent.clear(description);await userEvent.type(description,'第二次更新');await userEvent.click(screen.getByRole('button',{name:'保存设置'}));
+  await waitFor(()=>expect(bodies).toHaveLength(2));expect(bodies[1]).toMatchObject({expectedTableRevision:4,description:'第二次更新'});expect(request).toHaveBeenCalled();
+});
+
+it('keeps confirmed settings after two reconnects and settled revisioned catalog reads', async () => {
+  const { client } = api();
+  let persisted = { ...table };
+  const patches: unknown[] = [];
+  client.request = vi.fn(async (path, init) => {
+    if (path.endsWith('/tables/t') && init?.method === 'PATCH') {
+      patches.push(init.body);
+      persisted = { ...persisted, ...init.body as object, tableRevision: persisted.tableRevision + 1 };
+      return structuredClone(persisted);
+    }
+    if (path.endsWith('/tables/t')) return structuredClone(persisted);
+    if (path.endsWith('/fields')) return { items: [field], tableRevision: persisted.tableRevision };
+    if (path.endsWith('/statuses')) return { items: [status], tableRevision: persisted.tableRevision };
+    if (path.includes('/records?')) return page;
+    throw new Error(path);
+  }) as StreamingApiClient['request'];
+  const p = props(client, { tab: 'settings' });
+  const view = renderPage(<DataTableDetailPage {...p} />);
+  await waitFor(() => expect(screen.getByLabelText('用途说明')).not.toHaveAttribute('readonly'));
+  for (const [index, instanceId] of ['i2', 'i3'].entries()) {
+    view.rerender(<DataTableDetailPage {...p} instanceId={instanceId} disabled />);
+    view.rerender(<DataTableDetailPage {...p} instanceId={instanceId} disabled={false} />);
+    await waitFor(() => expect(screen.getByLabelText('用途说明')).not.toHaveAttribute('readonly'));
+    const expected = `重连后确认的说明 ${index + 1}`;
+    await userEvent.clear(screen.getByLabelText('用途说明'));
+    await userEvent.type(screen.getByLabelText('用途说明'), expected);
+    await userEvent.click(screen.getByRole('button', { name: '保存设置' }));
+    await waitFor(() => expect(patches).toHaveLength(index + 1));
+    // Read the server fact separately, then settle all instance-local cache reads.
+    expect(await client.request('/api/v1/projects/p/tables/t')).toMatchObject({ description: expected, tableRevision: 4 + index });
+    await act(async () => {
+      await view.queryClient.refetchQueries({ queryKey: ['w', instanceId, 'project-data', 'p', 'table', 't'] });
+    });
+    await waitFor(() => expect(view.queryClient.isFetching()).toBe(0));
+    await waitFor(() => expect(screen.getByText('没有未保存的修改')).toBeVisible());
+    expect(screen.getByLabelText('用途说明')).toHaveValue(expected);
+    expect(screen.getByRole('button', { name: '保存设置' })).toBeDisabled();
+  }
+});
+
+it('does not roll confirmed settings back when an older reconnect cache snapshot is delivered', async () => {
+  const { client } = api();
+  let persisted = { ...table, tableRevision: 10 };
+  const originalSnapshot = structuredClone(persisted);
+  const patches: unknown[] = [];
+  client.request = vi.fn(async (path, init) => {
+    if (path.endsWith('/tables/t') && init?.method === 'PATCH') {
+      patches.push(init.body);
+      persisted = { ...persisted, ...init.body as object, tableRevision: persisted.tableRevision + 1 };
+      return structuredClone(persisted);
+    }
+    if (path.endsWith('/tables/t')) return structuredClone(persisted);
+    if (path.endsWith('/fields')) return { items: [field], tableRevision: persisted.tableRevision };
+    if (path.endsWith('/statuses')) return { items: [status], tableRevision: persisted.tableRevision };
+    if (path.includes('/records?')) return page;
+    throw new Error(path);
+  }) as StreamingApiClient['request'];
+  const p = props(client, { tab: 'settings' });
+  const view = renderPage(<DataTableDetailPage {...p} />);
+  await waitFor(() => expect(screen.getByLabelText('用途说明')).not.toHaveAttribute('readonly'));
+  await userEvent.clear(screen.getByLabelText('用途说明'));
+  await userEvent.type(screen.getByLabelText('用途说明'), '跨重连保存后的真实说明');
+  view.rerender(<DataTableDetailPage {...p} instanceId="i2" disabled />);
+  view.rerender(<DataTableDetailPage {...p} instanceId="i2" disabled={false} />);
+  await waitFor(() => expect(screen.getByLabelText('用途说明')).not.toHaveAttribute('readonly'));
+  await userEvent.click(screen.getByRole('button', { name: '取消更改' }));
+  await userEvent.click(await screen.findByRole('button', { name: '继续编辑' }));
+  await userEvent.click(screen.getByRole('button', { name: '保存设置' }));
+  await waitFor(() => expect(persisted.tableRevision).toBe(11));
+  const confirmed = await client.request('/api/v1/projects/p/tables/t');
+  expect(confirmed).toMatchObject({ description: '跨重连保存后的真实说明', tableRevision: 11 });
+  await act(async () => {
+    await view.queryClient.refetchQueries({ queryKey: ['w', 'i2', 'project-data', 'p', 'table', 't'] });
+  });
+  await waitFor(() => expect(screen.getByText('没有未保存的修改')).toBeVisible());
+  // A reconnect observer can still deliver its captured pre-write snapshot after
+  // confirmation. Model that cache delivery separately from the authoritative GET.
+  await act(async () => {
+    view.queryClient.setQueryData(['w', 'i2', 'project-data', 'p', 'table', 't', 'view'], originalSnapshot);
+  });
+  expect(await client.request('/api/v1/projects/p/tables/t')).toEqual(confirmed);
+  expect(screen.getByLabelText('用途说明')).toHaveValue('跨重连保存后的真实说明');
+  expect(screen.getByRole('button', { name: '保存设置' })).toBeDisabled();
+  await userEvent.clear(screen.getByLabelText('用途说明'));
+  await userEvent.type(screen.getByLabelText('用途说明'), '确认后继续修改');
+  await userEvent.click(screen.getByRole('button', { name: '保存设置' }));
+  await waitFor(() => expect(patches).toHaveLength(2));
+  expect(patches[1]).toMatchObject({ expectedTableRevision: 11, description: '确认后继续修改' });
+});
+
+it('refreshes a clean schema session but keeps a dirty schema draft across reconnect loading',async()=>{
+  let currentField=field; const {client}=api(), original=client.request;
+  client.request=vi.fn(async(path,init)=>path.endsWith('/fields')?{items:[currentField],tableRevision:currentField.fieldRevision+1}:original(path,init)) as StreamingApiClient['request'];
+  const p=props(client,{tab:'fields'});const view=renderPage(<DataTableDetailPage {...p}/>);
+  await screen.findByRole('cell',{name:'姓名'});currentField={...field,name:'远端新名称',fieldRevision:3};view.rerender(<DataTableDetailPage {...p} instanceId="i2"/>);
+  await screen.findByRole('cell',{name:'远端新名称'});
+  await userEvent.click(screen.getByRole('button',{name:'编辑字段 远端新名称'}));await userEvent.clear(screen.getByLabelText('显示名称'));await userEvent.type(screen.getByLabelText('显示名称'),'本地未保存');await userEvent.click(screen.getByRole('button',{name:'应用到草稿'}));
+  currentField={...field,name:'后来的远端',fieldRevision:4};view.rerender(<DataTableDetailPage {...p} instanceId="i3"/>);
+  await waitFor(()=>expect(screen.getByRole('cell',{name:/本地未保存/})).toBeVisible());
+  expect(screen.queryByRole('cell',{name:'后来的远端'})).not.toBeInTheDocument();
+});
+
+it('can recover a persisted field save from the records tab using only its original key',async()=>{
+  const candidate={datasetGeneration:'g',expectedTableRevision:3,fields:[{kind:'existing',fieldId:'f',expectedFieldRevision:2,definition:{key:'name',name:'已保存名称',type:'string',required:true,validation:{}}}]};
+  const scope={workspaceKey:'w',projectId:'p',tableId:'t',datasetGeneration:'g'};
+  localStorage.setItem('autoflow:data-edit:w:p:t',JSON.stringify({pending:{kind:'schemaSave',key:'original-key',scope,session:'restore',body:{candidate,impactRevision:9}},editor:{kind:'schemaSave',scope,session:'restore',table,fields:{items:[field],tableRevision:3},statuses:{items:[status],tableRevision:3},submittedSchema:candidate}}));
+  const {client,request}=api(), original=client.request;
+  client.request=vi.fn(async(path,init)=>path.includes('/operations/by-idempotency-key/')?{projectId:'p',idempotencyKey:'original-key',kind:'saveTableSchema',status:'succeeded',resource:{type:'table',projectId:'p',tableId:'t'},result:{action:'saveSchema',datasetGeneration:'g',tableRevision:4,fields:[{...field,name:'已保存名称',fieldRevision:3}],createdFieldIds:{},backfilledRecords:0}}:original(path,init)) as StreamingApiClient['request'];
+  renderPage(<DataTableDetailPage {...props(client)}/>);
+  await userEvent.click(await screen.findByRole('button',{name:'核对字段保存结果'}));
+  await waitFor(()=>expect(screen.queryByRole('button',{name:'核对字段保存结果'})).not.toBeInTheDocument());
+  expect(client.request).toHaveBeenCalledWith('/api/v1/projects/p/operations/by-idempotency-key/original-key');
+  expect(request.mock.calls.filter(([,init])=>init?.method==='POST')).toHaveLength(0);
+  expect(localStorage.getItem('autoflow:data-edit:w:p:t')).toBeNull();
+});

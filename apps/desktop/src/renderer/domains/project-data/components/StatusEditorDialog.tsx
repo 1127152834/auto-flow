@@ -31,6 +31,7 @@ export function StatusEditorDialog({ open, mode, sessionKey, initialValues, subm
   const [submitting, setSubmitting] = useState(false)
   const [recovering,setRecovering]=useState(false), [submitError, setSubmitError] = useState<string | null>(null)
   const [confirmClose, setConfirmClose] = useState(false)
+  const advanced = useRef<HTMLDetailsElement>(null)
   const busy = saving || submitting || recovering, frozen=busy||recoveryPending
   const form = useForm<StatusFormValues>({ resolver: zodResolver(statusFormSchema), defaultValues: initialValues ?? emptyStatusForm })
   const currentValues = useWatch({ control: form.control })
@@ -53,7 +54,7 @@ export function StatusEditorDialog({ open, mode, sessionKey, initialValues, subm
     if (!startsSession) return
     requestEpoch.current += 1
     submitLock.current=false;recoverLock.current=false;closeLock.current=false;setSubmitting(false);setRecovering(false);setConfirmClose(false)
-    if (open) { baseline.current = initialValues ?? emptyStatusForm; setSubmitError(null); form.reset(baseline.current) }
+    if (open) { if (advanced.current) advanced.current.open = false; baseline.current = initialValues ?? emptyStatusForm; setSubmitError(null); form.reset(baseline.current) }
   }, [form, initialValues, open, sessionKey, submissionEpoch])
   useLayoutEffect(() => { dirtyCallback.current = onDirtyChange; savingCallback.current=onSavingChange }, [onDirtyChange,onSavingChange])
   useLayoutEffect(()=>{guard.current={open,readonly,saving,recoveryPending}},[open,readonly,recoveryPending,saving])
@@ -79,17 +80,19 @@ export function StatusEditorDialog({ open, mode, sessionKey, initialValues, subm
         if (ticket !== requestEpoch.current) return
         setSubmitError(caught instanceof Error ? caught.message : '保存状态失败')
       } finally { if (ticket === requestEpoch.current) {submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving)} }
-    }, errors => { if (ticket !== requestEpoch.current) return; submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving);form.setFocus(errors.name ? 'name' : errors.color ? 'color' : 'order') })(event)
+    }, errors => { if (ticket !== requestEpoch.current) return; submitLock.current=false;setSubmitting(false);savingCallback.current?.(guard.current.saving);if ((errors.color || errors.order) && advanced.current) advanced.current.open = true; form.setFocus(errors.name ? 'name' : errors.color ? 'color' : 'order') })(event)
   }
   const recover=()=>{if(!onRecover||recoverLock.current||busy)return;requestEpoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=requestEpoch.current;void onRecover().catch(caught=>{if(ticket===requestEpoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===requestEpoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(guard.current.saving)}})}
   return <>
-    <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新建状态' : '编辑状态'} description="设置状态名称、颜色和显示顺序。" footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="status-editor-form" variant="primary" disabled={busy || readonly || (mode === 'edit' && !hasChanges)}>{busy ? '正在保存…' : mode === 'create' ? '创建状态' : '保存修改'}</Button>}</>}>
+    <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新增状态' : '重命名状态'} footer={<><Button type="button" className="h-12 px-6 text-base" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="status-editor-form" className="h-12 px-6 text-base" variant="primary" disabled={busy || readonly || (mode === 'edit' && !hasChanges)}>{busy ? '正在保存…' : mode === 'create' ? '创建状态' : '保存修改'}</Button>}</>}>
       <form id="status-editor-form" className="grid gap-5" noValidate onSubmit={submit}>
         {error || submitError ? <div role="alert" className="m-0 rounded-control border border-clay/30 bg-clay/10 p-3 text-sm text-ink"><p className="m-0">{submitError ?? error}</p>{errorActions?<div className="mt-3">{errorActions}</div>:null}</div> : null}
-        <FormField label="状态名称" htmlFor="status-name" error={form.formState.errors.name?.message} hint="1–120 个字符"><Input autoFocus readOnly={frozen || readonly} {...form.register('name')} /></FormField>
+        <FormField label="状态名称" htmlFor="status-name" error={form.formState.errors.name?.message} hint="命名清晰即可，创建后可在记录详情中选择。"><Input className="h-12 text-base" autoFocus readOnly={frozen || readonly} {...form.register('name')} /></FormField>
+        <details ref={advanced} className="text-sm"><summary className="cursor-pointer rounded-control text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-clay">更多选项</summary><div className="mt-4 grid gap-4">
         <FormField label="状态颜色" htmlFor="status-color" error={form.formState.errors.color?.message} hint="使用 #RRGGBB 格式"><Input readOnly={frozen || readonly} {...form.register('color')} /></FormField>
         <div className="flex flex-wrap gap-2" aria-label="颜色预设">{presets.map(color => <Button key={color} type="button" variant="ghost" disabled={frozen || readonly} aria-label={`选择颜色 ${color}`} onClick={() => form.setValue('color', color, { shouldDirty: true, shouldValidate: true })}><span className="h-4 w-4 rounded-full" style={{ backgroundColor: color }} />{color}</Button>)}</div>
         <FormField label="显示顺序" htmlFor="status-order" error={form.formState.errors.order?.message} hint="非负整数"><Input type="number" min={0} step={1} readOnly={frozen || readonly} {...form.register('order', { valueAsNumber: true })} /></FormField>
+        </div></details>
       </form>
     </Modal>
     <AlertDialog open={confirmClose} onOpenChange={next => { if (!frozen || next) setConfirmClose(next) }}><AlertDialogContent><AlertDialogTitle>放弃未保存的修改？</AlertDialogTitle><AlertDialogDescription>关闭后，本次对状态的修改将不会保存。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus disabled={frozen}>继续编辑</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" disabled={frozen} onClick={() => { if (frozen) return; setConfirmClose(false); form.reset(initialValues ?? emptyStatusForm); onOpenChange(false) }}>放弃修改</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>

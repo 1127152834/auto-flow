@@ -47,6 +47,7 @@ export function createDataCatalogApi(client: StreamingApiClient, context: Catalo
 
   return {
     fields: (signal?: AbortSignal) => client.request<Schema['DataFieldDirectory']>(`${base}/fields`, { signal }),
+    statusUsage: (signal?: AbortSignal) => client.request<Schema['DataStatusUsageDirectory']>(`${base}/statuses/usage`, { signal }),
     statuses: (signal?: AbortSignal) => client.request<Schema['DataStatusDirectory']>(`${base}/statuses`, { signal }),
     previewField: (fieldId: string, definition: Schema['DataFieldWrite'], signal?: AbortSignal) => client.request<Schema['FieldImpactReport']>(`${project}/mutation-impact`, {
       method: 'POST', signal, body: { action: 'updateField', target: { type: 'field', fieldRef: { ...scope, fieldId } }, change: definition },

@@ -11,6 +11,8 @@ const field: Schema['DataFieldView'] = { key: 'name', name: 'Name', type: 'strin
 const status: Schema['DataStatusView'] = { statusId: 's', name: 'Ready', color: '#112233', order: 0, statusRevision: 3 }
 const record: Schema['DataRecordView'] = { ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: 'r' } }, values: [{ fieldId: 'f', value: 'old', source: 'local', readable: true }], recordSlots: [], statusId: null, currentEnvironmentId: null, contentRevision: 1, statusRevision: 4, linkRevision: 5, deleted: false, createdAt: '2026-01-01T00:00:00Z', updatedAt: '2026-01-01T00:00:00Z' }
 const context = (overrides: Partial<EditingContext> = {}): EditingContext => ({ scope, table, fields: { items: [field], tableRevision: 6 }, statuses: { items: [status], tableRevision: 7 }, ...overrides })
+const schemaCandidate: Schema['DataSchemaCandidate'] = { datasetGeneration: 'g', expectedTableRevision: 6, fields: [{ kind: 'existing', fieldId: 'f', expectedFieldRevision: 2, definition: { key: 'name', name: 'Renamed', type: 'string', required: false, validation: {} } }] }
+const schemaImpact: Schema['DataSchemaImpact'] = { impactRevision: 12, calculatedAt: '2026-01-01T00:00:00Z', expiresAt: '2026-01-01T00:05:00Z', affectedRecords: 1, backfillBytes: 0, blockers: [], warnings: [], referenceAvailability: { automations: 'notImplemented', sync: 'notImplemented' } }
 const client = (request: (path: string, init?: ApiRequestInit) => Promise<unknown>): StreamingApiClient => ({ request, health: vi.fn(), stream: vi.fn() }) as StreamingApiClient
 beforeEach(() => {
   const values = new Map<string, string>()
@@ -24,6 +26,54 @@ beforeEach(() => {
   })
 })
 afterEach(() => vi.unstubAllGlobals())
+
+it('previews and persists the exact schema candidate through the shared command engine', async () => {
+  let finish!: (value: unknown) => void
+  const request = vi.fn((path: string, _init?: ApiRequestInit) => path.endsWith('/preview') ? Promise.resolve(schemaImpact) : new Promise(resolve => { finish = resolve }))
+  const props = { workspaceKey: 'w', context: context(), client: client(request), instanceId: 'i', disabled: false, readonly: false, onSaved: vi.fn() }
+  const { result } = renderHook(() => useDataTableEditing(props))
+  act(() => result.current.open({ kind: 'schemaSave' }))
+  await act(async () => { expect(await result.current.previewSchema(schemaCandidate)).toEqual(schemaImpact) })
+  let saving!: Promise<unknown>
+  act(() => { saving = result.current.submitSchema({ candidate: schemaCandidate, impactRevision: 12 }) })
+  expect(request.mock.calls[1][1]?.body).toEqual({ candidate: schemaCandidate, impactRevision: 12 })
+  expect(result.current.canLeave()).toBe(false)
+  await expect(result.current.submitSchema({ candidate: schemaCandidate, impactRevision: 12 })).rejects.toThrow()
+  const key = (request.mock.calls[1][1]?.headers as Record<string,string>)['Idempotency-Key']
+  await act(async () => { finish({ action: 'saveSchema', datasetGeneration: 'g', tableRevision: 7, fields: [{ ...field, name: 'Renamed', fieldRevision: 3 }] }); await saving })
+  expect(props.onSaved).toHaveBeenCalledWith('schemaSave', key, expect.objectContaining({ action: 'saveSchema' }))
+})
+
+it('binds schema preview to the editor generation, baseline revision, and exact candidate', async () => {
+  const request = vi.fn().mockResolvedValue(schemaImpact)
+  const props = { workspaceKey: 'w', context: context(), client: client(request), instanceId: 'i', disabled: false, readonly: false, onSaved: vi.fn() }
+  const { result, rerender } = renderHook(p => useDataTableEditing(p), { initialProps: props })
+  act(() => result.current.open({ kind: 'schemaSave' }))
+  await expect(result.current.previewSchema({ ...schemaCandidate, datasetGeneration: 'other' })).rejects.toThrow('资料已变化')
+  expect(request).not.toHaveBeenCalled()
+  await act(async () => { await result.current.previewSchema(schemaCandidate) })
+  await expect(result.current.submitSchema({ candidate: { ...schemaCandidate, fields: [] }, impactRevision: 12 })).rejects.toThrow('尚未通过预检')
+  rerender({ ...props, readonly: true })
+  await expect(result.current.previewSchema(schemaCandidate)).rejects.toThrow('不可写')
+  expect(request).toHaveBeenCalledTimes(1)
+})
+
+it('restores a schema candidate after a lost response and only looks up the original key', async () => {
+  const offline = vi.fn((path: string, _init?: ApiRequestInit) => path.endsWith('/preview') ? Promise.resolve(schemaImpact) : Promise.reject(new TypeError('offline')))
+  const props = { workspaceKey: 'w', context: context(), client: client(offline), instanceId: 'i1', disabled: false, readonly: false, onSaved: vi.fn() }
+  const first = renderHook(() => useDataTableEditing(props))
+  act(() => first.result.current.open({ kind: 'schemaSave' }))
+  await act(async () => { await first.result.current.previewSchema(schemaCandidate) })
+  await expect(first.result.current.submitSchema({ candidate: schemaCandidate, impactRevision: 12 })).rejects.toThrow()
+  const key = (offline.mock.calls[1][1]?.headers as Record<string,string>)['Idempotency-Key']
+  first.unmount()
+  const lookup = vi.fn().mockResolvedValue({ projectId: 'p', idempotencyKey: key, kind: 'saveTableSchema', status: 'succeeded', resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { action: 'saveSchema', datasetGeneration: 'g', tableRevision: 7, fields: [{ ...field, name: 'Renamed', fieldRevision: 3 }] } })
+  const restored = renderHook(() => useDataTableEditing({ ...props, client: client(lookup), instanceId: 'i2' }))
+  expect(restored.result.current.editor).toMatchObject({ kind: 'schemaSave', submittedSchema: schemaCandidate })
+  expect(restored.result.current.recoveryPending).toBe(true)
+  await act(async () => { await restored.result.current.recover() })
+  expect(lookup.mock.calls.map(call => call[0])).toEqual([`/api/v1/projects/p/operations/by-idempotency-key/${key}`])
+})
 
 it('freezes record and directory revisions and blocks a duplicate submit synchronously', async () => {
   let resolve!: (value: unknown) => void
@@ -301,6 +351,39 @@ it.each([
   expect(result.current.recoveryBlocked).toBe(true)
   expect(result.current.error).toContain('恢复记录不完整')
   expect(() => result.current.open({ kind: 'recordCreate' })).toThrow('禁止写入')
+  expect(request).not.toHaveBeenCalled()
+  expect(localStorage.getItem(key)).not.toBeNull()
+})
+
+it.each([
+  ['missing items', { tableRevision: 6 }],
+  ['null field', { tableRevision: 6, items: [null] }],
+])('blocks a restored schema editor with a corrupt frozen field directory: %s', (_label, fields) => {
+  const key = 'autoflow:data-edit:w:p:t', request = vi.fn()
+  localStorage.setItem(key, JSON.stringify({
+    pending: { kind: 'schemaSave', key: 'original', session: 'session', scope, body: { candidate: schemaCandidate, impactRevision: 12 } },
+    editor: { ...context(), fields, kind: 'schemaSave', session: 'session', submittedSchema: schemaCandidate },
+  }))
+  const { result } = renderHook(() => useDataTableEditing({ workspaceKey: 'w', context: context(), client: client(request), instanceId: 'i', disabled: false, readonly: false, onSaved: vi.fn() }))
+  expect(result.current.recoveryBlocked).toBe(true)
+  expect(result.current.editor).toBeNull()
+  expect(request).not.toHaveBeenCalled()
+  expect(localStorage.getItem(key)).not.toBeNull()
+})
+
+it.each([
+  ['null field', { ...schemaCandidate, fields: [null] }],
+  ['missing definition', { ...schemaCandidate, fields: [{ kind: 'existing', fieldId: 'f', expectedFieldRevision: 2 }] }],
+  ['invalid field identity', { ...schemaCandidate, fields: [{ kind: 'new', clientId: '', sourceColumnPolicy: 'localOnly', definition: schemaCandidate.fields[0].definition }] }],
+])('blocks an unsafe restored schema candidate with %s and retains its evidence', (_label, candidate) => {
+  const key = 'autoflow:data-edit:w:p:t', request = vi.fn()
+  localStorage.setItem(key, JSON.stringify({
+    pending: { kind: 'schemaSave', key: 'original', session: 'session', scope, body: { candidate, impactRevision: 12 } },
+    editor: { ...context(), kind: 'schemaSave', session: 'session', submittedSchema: candidate },
+  }))
+  const { result } = renderHook(() => useDataTableEditing({ workspaceKey: 'w', context: context(), client: client(request), instanceId: 'i', disabled: false, readonly: false, onSaved: vi.fn() }))
+  expect(result.current.recoveryBlocked).toBe(true)
+  expect(result.current.editor).toBeNull()
   expect(request).not.toHaveBeenCalled()
   expect(localStorage.getItem(key)).not.toBeNull()
 })

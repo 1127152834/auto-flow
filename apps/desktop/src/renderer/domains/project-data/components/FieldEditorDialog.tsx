@@ -2,16 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { components } from '../../../shared/api/generated'
-import { FormField } from '../../../shared/components/FormField'
 import { Modal } from '../../../shared/components/Modal'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '../../../shared/components/ui/alert-dialog'
 import { Button } from '../../../shared/components/ui/button'
-import { Checkbox } from '../../../shared/components/ui/checkbox'
-import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select'
 import { fieldDefinition, fieldFormSchema, emptyFieldForm, type FieldFormValues } from '../field-form-schema'
 import { parseScalarDraft, scalarDraft, type ScalarDraft } from '../scalar-draft'
-import { ScalarValueEditor } from './ScalarValueEditor'
+import { FieldEditorFields } from './FieldEditorFields'
 
 type Schema = components['schemas']
 type Definition = Schema['DataFieldWrite']
@@ -100,18 +96,11 @@ export function FieldEditorDialog({ open, mode, sessionKey, initialField, isIden
     })(event)
   }
   const recover=()=>{if(!onRecover||recoverLock.current||busy)return;epoch.current+=1;closeLock.current=false;recoverLock.current=true;savingCallback.current?.(true);setRecovering(true);setSubmitError(null);const ticket=epoch.current;void onRecover().catch(caught=>{if(ticket===epoch.current)setSubmitError(caught instanceof Error?caught.message:'核对保存结果失败')}).finally(()=>{if(ticket===epoch.current){recoverLock.current=false;setRecovering(false);savingCallback.current?.(submitGuard.current.saving)}})}
-  const type = (values.type ?? 'string') as Definition['type']
   return <>
     <Modal open={open} onOpenChange={next => { if (!next) requestClose() }} closeDisabled={busy} variant="form" size="small" title={mode === 'create' ? '新建字段' : '编辑字段'} description={protectedField ? '公式或只读字段不能编辑。' : isIdentityField ? '身份字段的类型不可修改。' : '设置字段定义和验证规则。'} footer={<><Button type="button" variant="ghost" disabled={busy} onClick={requestClose}>取消</Button>{recoveryPending?<Button type="button" variant="primary" disabled={busy||!onRecover} onClick={recover}>{recovering?'正在核对…':'核对保存结果'}</Button>:<Button type="submit" form="field-editor-form" variant="primary" disabled={busy || readonly || protectedField || blocked || (mode === 'edit' && !actionChanged)}>{busy ? '处理中…' : mode === 'edit' && !impact ? '预检影响' : mode === 'edit' ? '确认修改' : '创建字段'}</Button>}</>}>
       <form id="field-editor-form" className="grid gap-4" noValidate onSubmit={run}>
         {error || submitError ? <div role="alert"><p>{submitError ?? error}</p>{errorActions?<div>{errorActions}</div>:null}</div> : null}
-        <FormField label="字段名称" htmlFor="field-name" error={form.formState.errors.name?.message}><Input id="field-name" readOnly={frozen || readonly || protectedField} {...form.register('name')} /></FormField>
-        <FormField label="字段键" htmlFor="field-key" error={form.formState.errors.key?.message}><Input id="field-key" readOnly={frozen || readonly || protectedField} {...form.register('key')} /></FormField>
-        <FormField label="字段类型" htmlFor="field-type"><Select id="field-type" value={type} options={[{value:'string',label:'文本'},{value:'number',label:'数字'},{value:'boolean',label:'布尔'},{value:'date',label:'日期'}]} clearable={false} disabled={frozen} readOnly={readonly || protectedField || isIdentityField} onValueChange={value => { if (value) { form.setValue('type', value as Definition['type'], { shouldDirty: true }); setDraft(scalarDraft(undefined)) } }} /></FormField>
-        <label className="flex items-center gap-2"><Checkbox checked={Boolean(values.required)} disabled={frozen || readonly || protectedField} onCheckedChange={checked => form.setValue('required', checked === true, { shouldDirty: true })} />必填</label>
-        {type === 'string' ? <><FormField label="最小长度" htmlFor="field-min-length" error={form.formState.errors.minLength?.message}><Input id="field-min-length" readOnly={frozen || readonly || protectedField} {...form.register('minLength')} /></FormField><FormField label="最大长度" htmlFor="field-max-length" error={form.formState.errors.maxLength?.message}><Input id="field-max-length" readOnly={frozen || readonly || protectedField} {...form.register('maxLength')} /></FormField><FormField label="Python 正则表达式" htmlFor="field-pattern" error={form.formState.errors.pattern?.message}><Input id="field-pattern" readOnly={frozen || readonly || protectedField} {...form.register('pattern')} /></FormField></> : null}
-        {type === 'number' ? <><FormField label="最小值" htmlFor="field-minimum" error={form.formState.errors.minimum?.message}><Input id="field-minimum" readOnly={frozen || readonly || protectedField} {...form.register('minimum')} /></FormField><FormField label="最大值" htmlFor="field-maximum" error={form.formState.errors.maximum?.message}><Input id="field-maximum" readOnly={frozen || readonly || protectedField} {...form.register('maximum')} /></FormField></> : null}
-        {mode === 'create' ? <><ScalarValueEditor id="field-default" label="现有记录默认值" type={type} draft={draft} onChange={setDraft} allowMissing disabled={frozen} readOnly={readonly} /><p className="text-xs text-muted">非空表创建必填字段时需要默认值，最终由服务端校验。</p></> : null}
+        <FieldEditorFields form={form} defaultDraft={draft} onDefaultDraftChange={setDraft} showDefault={mode === 'create'} disabled={frozen} readOnly={readonly} protectedField={protectedField} typeLocked={isIdentityField} />
         {impact ? <section aria-label="字段影响预检"><p>{impact.impacts.map(item => item.message).join('；') || '没有记录受到影响'}</p>{impact.blockers.map(item => <p role="alert" key={item.code}>{item.message}</p>)}</section> : null}
       </form>
     </Modal>

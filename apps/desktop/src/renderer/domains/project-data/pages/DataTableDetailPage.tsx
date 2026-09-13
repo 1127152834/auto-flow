@@ -37,6 +37,9 @@ import { DataTableSourcePanel } from "../components/DataTableSourcePanel";
 import { DataTableFormDialog } from "../components/DataTableFormDialog";
 import { ExcelExportWorkflow } from "../components/ExcelExportWorkflow";
 import { ExcelImportWizard } from "../components/ExcelImportWizard";
+import { DataStatusTable } from "../components/DataStatusTable";
+import { SchemaEditor } from "../components/SchemaEditor";
+import { TableSettingsForm } from "../components/TableSettingsForm";
 import { FieldEditorDialog } from "../components/FieldEditorDialog";
 import { RecordQueryToolbar, composeRecordQuery, type QuickSearch } from "../components/RecordQueryToolbar";
 import { readTableView, tableViewKey, type TableViewState } from "../record-return-state";
@@ -83,7 +86,7 @@ export type DataTableDetailPageProps = {
 const labels: Record<DataTableTab, string> = {
   records: "数据记录",
   fields: "字段与校验",
-  statuses: "业务状态",
+  statuses: "数据状态",
   source: "来源设置",
   settings: "数据表设置",
 };
@@ -205,6 +208,8 @@ function DataTableDetail({
   useEffect(() => {
     const next = tableQuery.data;
     if (!next) return;
+    // A completed command can be newer than a reconnect placeholder or in-flight read.
+    if (table?.datasetGeneration === next.datasetGeneration && next.tableRevision < table.tableRevision) return;
     if (
       table &&
       table.datasetGeneration !== next.datasetGeneration &&
@@ -248,6 +253,11 @@ function DataTableDetail({
       ]);
     },
     enabled: Boolean(catalogApi) && !generationWarning,
+  });
+  const statusUsageQuery = useQuery({
+    queryKey: [...prefix, generation, "status-usage"],
+    queryFn: ({ signal }) => { if (!catalogApi) throw new Error("数据表不可用"); return catalogApi.statusUsage(signal) },
+    enabled: Boolean(catalogApi) && !generationWarning && tab === "statuses",
   });
   const recordsApi = useMemo(
     () =>
@@ -365,6 +375,13 @@ function DataTableDetail({
           if (kind !== "recordStatus" || recordLocation.mode === "create" || recordLocation.datasetGeneration !== saved.ref.datasetGeneration || recordLocation.recordKey.type !== saved.ref.recordKey.type || recordLocation.recordKey.value !== saved.ref.recordKey.value) queueMicrotask(() => onRecordNavigate({ mode: "detail", datasetGeneration: saved.ref.datasetGeneration, recordKey: saved.ref.recordKey }));
         } else if (kind === "recordDelete") queueMicrotask(() => onRecordNavigate());
       }
+      if (kind === "schemaSave" && result && typeof result === "object" && "action" in result && result.action === "saveSchema") {
+        const saved = result as Schema["DataSchemaResult"];
+        setTable(previous => previous ? { ...previous, tableRevision: saved.tableRevision } : previous);
+        cache.setQueryData([...prefix, generation, "catalog"], (previous: [Schema["DataFieldDirectory"], Schema["DataStatusDirectory"]] | undefined) => previous ? [{ items: saved.fields, tableRevision: saved.tableRevision }, { ...previous[1], tableRevision: saved.tableRevision }] : previous);
+        cache.setQueryData([...prefix, "view"], (previous: Table | undefined) => previous ? { ...previous, tableRevision: saved.tableRevision } : previous);
+      }
+      if (kind === "tableEdit" && result && typeof result === "object" && "tableId" in result) { cache.setQueryData([...prefix, "view"], result); setTable(result as Table) }
       void cache.invalidateQueries({ queryKey: prefix });
       void cache.invalidateQueries({
         queryKey: [
@@ -377,7 +394,7 @@ function DataTableDetail({
       });
       if (kind === "recordDelete") setDetailTarget(null);
       notify({
-        title: ({ tableEdit: "数据表已保存", recordCreate: "记录已创建", recordEdit: "记录已保存", recordStatus: "业务状态已更新", recordDelete: "记录已删除", fieldCreate: "字段已创建", fieldEdit: "字段已保存", statusCreate: "业务状态已创建", statusEdit: "业务状态已保存", statusDelete: "业务状态已删除" })[kind],
+        title: ({ tableEdit: "数据表已保存", schemaSave: "字段已保存", recordCreate: "记录已创建", recordEdit: "记录已保存", recordStatus: "业务状态已更新", recordDelete: "记录已删除", fieldCreate: "字段已创建", fieldEdit: "字段已保存", statusCreate: "业务状态已创建", statusEdit: "业务状态已保存", statusDelete: "业务状态已删除" })[kind],
         tone: "success",
         operationId: JSON.stringify([workspaceKey, projectId, tableId, generation, operationKey]),
       });
@@ -403,6 +420,19 @@ function DataTableDetail({
       editing.open({ kind: "recordStatus", record: detailQuery.data });
     }
   }, [recordLocation, generation, context, detailQuery.data, editing, disabled, generationWarning]);
+  const inlineEditorTab = useRef(tab);
+  useEffect(() => {
+    const moved = inlineEditorTab.current !== tab;
+    inlineEditorTab.current = tab;
+    if (moved && (editing.editor?.kind === "schemaSave" || editing.editor?.kind === "tableEdit") && editing.canLeave() && !editorDirtyRef.current) editing.close();
+    const active = editing.editor;
+    if (!recordLocation && context && active && (active.kind === "schemaSave" && tab === "fields" || active.kind === "tableEdit" && tab === "settings") && !editorDirtyRef.current && editing.canLeave() && !disabled && !generationWarning && (
+      active.scope.datasetGeneration !== context.scope.datasetGeneration || active.fields.tableRevision !== context.fields.tableRevision || active.table.tableRevision !== context.table.tableRevision
+    )) editing.replaceEditor(context, { kind: active.kind });
+    if (!recordLocation && (tab === "fields" || tab === "settings") && context && !readonly && !disabled && !generationWarning && !editing.editor && !editing.recoveryBlocked && editing.canLeave()) {
+      editing.open({ kind: tab === "fields" ? "schemaSave" : "tableEdit" });
+    }
+  }, [tab, recordLocation, context, readonly, disabled, generationWarning, editing]);
   const stableWorkflowScope = JSON.stringify([workspaceKey, projectId, tableId]);
   const workflowContext = JSON.stringify([workspaceKey, instanceId, projectId, tableId]);
   useLayoutEffect(() => { workflowScope.current = { workspaceKey, projectId, tableId, instanceId, client, disabled: disabled || Boolean(generationWarning) }; conflictTicket.current += 1; setConflictLoading(false); setConflictLatest(null); setConflictError(null) }, [client, disabled, generationWarning, instanceId, projectId, tableId, workspaceKey, editing.editor?.session, routeIdentity]);
@@ -623,7 +653,7 @@ function DataTableDetail({
       </section>
     );
   return (
-    <Tabs value={tab} onValueChange={value => onTabChange(value as DataTableTab)} data-table-detail>
+    <Tabs className="min-w-0" value={tab} onValueChange={value => onTabChange(value as DataTableTab)} data-table-detail>
       <DataTablePageFrame notice={null} header={<div className="flex min-w-0 gap-5">
         <span className="flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"><FileText size={32} /></span>
         <div className="min-w-0">
@@ -634,10 +664,6 @@ function DataTableDetail({
       </div>} tabs={<TabsList className="w-full justify-start overflow-x-auto">
         {(Object.keys(labels) as DataTableTab[]).map(value => <TabsTrigger className="rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay" key={value} value={value} disabled={disabled}>{labels[value]}</TabsTrigger>)}
       </TabsList>}>
-      {!recordLocation && tab !== "records" ? <div className="flex flex-wrap justify-between gap-3"><Button size="sm" variant="ghost" className="px-0" disabled={disabled} onClick={onBack}>返回数据表</Button><div className="flex flex-wrap gap-2">
-        {writable ? <Button disabled={Boolean(workflow || editing.editor)} onClick={() => openWorkflow("replace")}>重新导入 Excel</Button> : null}
-        <Button disabled={disabled || !effectiveQuery || Boolean(workflow || editing.editor)} onClick={() => openWorkflow("export")}>导出 Excel</Button>
-      </div></div> : null}
       {tableError ? (
         <p role="alert">
           {tableError}
@@ -651,6 +677,7 @@ function DataTableDetail({
         </p>
       ) : null}
       {foreignRecovery ? <div role="alert" className="rounded-control border border-clay/30 bg-clay/5 p-4 text-sm"><p>另一个记录的保存结果尚未确认，请先核对原请求。当前地址的表单尚未开启。</p><Button disabled={disabled || editing.busy} onClick={() => void editing.recover().catch(() => undefined)}>核对原记录保存结果</Button>{editing.error ? <p>{editing.error}</p> : null}{errorActions}</div> : null}
+      {editing.editor?.kind === "schemaSave" && editing.recoveryPending && tab !== "fields" ? <div role="alert" className="mb-4 rounded-control border border-clay/30 bg-clay/5 p-4"><p>字段保存结果尚未确认，请先核对原请求。</p><Button disabled={disabled || editing.busy} onClick={() => void editing.recover().catch(() => undefined)}>核对字段保存结果</Button>{editing.error ? <p>{editing.error}</p> : null}{errorActions}</div> : null}
       {editing.recoveryBlocked ? <p role="alert">{editing.error ?? "本地保存恢复记录异常，当前数据表已禁止写入。"}</p> : null}
         <TabsContent value="records" className="grid gap-3">
           {!recordLocation ? <>
@@ -731,144 +758,38 @@ function DataTableDetail({
           </> : recordContent}
         </TabsContent>
         <TabsContent value="fields">
-          <section aria-label="字段目录" className="grid gap-3">
-            {writable ? (
-              <div>
-                <Button
-                  variant="primary"
-                  onClick={() => editing.open({ kind: "fieldCreate" })}
-                >
-                  新建字段
-                </Button>
-              </div>
-            ) : null}
-            {catalogQuery.isPending ? (
-              <Skeleton className="h-24" />
-            ) : catalogQuery.error ? (
-              <p role="alert">
-                {errorMessage(catalogQuery.error)}{" "}
-                <Button onClick={() => void catalogQuery.refetch()}>
-                  重新载入
-                </Button>
-              </p>
-            ) : fields.length === 0 ? (
-              <p>暂无字段</p>
-            ) : (
-              fields.map((field) => (
-                <article
-                  key={field.ref.fieldId}
-                  className="rounded-card border border-line p-4"
-                >
-                  <h2 className="m-0 break-words text-base font-semibold">
-                    {field.name}
-                  </h2>
-                  <p className="text-sm text-muted">
-                    {field.type === "string"
-                      ? "文本"
-                      : field.type === "number"
-                        ? "数字"
-                        : field.type === "boolean"
-                          ? "布尔"
-                          : "日期"}{" "}
-                    · {field.required ? "必填" : "可选"} ·{" "}
-                    {field.formula
-                      ? "公式字段"
-                      : field.writable
-                        ? "可写"
-                        : "只读"}
-                  </p>
-                  {writable && field.writable && !field.formula ? (
-                    <Button
-                      variant="ghost"
-                      aria-label={`编辑字段 ${field.name}`}
-                      onClick={() => editing.open({ kind: "fieldEdit", field })}
-                    >
-                      编辑
-                    </Button>
-                  ) : null}
-                </article>
-              ))
-            )}
-          </section>
+          {catalogQuery.isPending && editing.editor?.kind !== "schemaSave" ? <Skeleton className="h-48" /> : catalogQuery.error && editing.editor?.kind !== "schemaSave" ? <p role="alert">{errorMessage(catalogQuery.error)} <Button onClick={() => void catalogQuery.refetch()}>重新载入</Button></p> : catalogQuery.data || editing.editor?.kind === "schemaSave" ?
+          <SchemaEditor key={editing.editor?.kind === "schemaSave" ? editing.editor.session : `${stableWorkflowScope}:schema-readonly`} sessionKey={editing.editor?.kind === "schemaSave" ? editing.editor.session : `${stableWorkflowScope}:schema-readonly`} submissionEpoch={instanceId}
+            generation={editing.editor?.kind === "schemaSave" ? editing.editor.scope.datasetGeneration : table.datasetGeneration}
+            directory={editing.editor?.kind === "schemaSave" ? editing.editor.fields : catalogQuery.data![0]}
+            restoredCandidate={editing.editor?.kind === "schemaSave" ? editing.editor.submittedSchema : undefined}
+            identityFieldId={table.identity.mode === "field" ? table.identity.fieldId : undefined}
+            tableName={table.name} sourceLabel={table.sourceKind === "excel" ? "Excel 一次导入" : table.sourceKind === "sheets" ? "Google Sheets" : table.sourceKind === "local" ? "本地数据" : "来源未配置"}
+            readonly={!writable || editing.editor?.kind !== "schemaSave"} disabled={disabled || Boolean(generationWarning)} busy={editing.busy} recoveryPending={editing.editor?.kind === "schemaSave" && editing.recoveryPending}
+            error={editing.editor?.kind === "schemaSave" ? editing.error : undefined} errorActions={errorActions}
+            onPreview={editing.previewSchema} onSubmit={editing.submitSchema} onRecover={editing.recover}
+            onReset={() => { void askDiscardOnce("editor", () => { if (context) editing.replaceEditor(context, { kind: "schemaSave" }); editorDirtyRef.current = false; setEditorDirty(false) }) }}
+            onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} /> : null}
         </TabsContent>
         <TabsContent value="statuses">
-          <section aria-label="状态目录" className="grid gap-3">
-            {writable ? (
-              <div>
-                <Button
-                  variant="primary"
-                  onClick={() => editing.open({ kind: "statusCreate" })}
-                >
-                  新建状态
-                </Button>
-              </div>
-            ) : null}
-            {catalogQuery.isPending ? (
-              <Skeleton className="h-24" />
-            ) : catalogQuery.error ? (
-              <p role="alert">
-                {errorMessage(catalogQuery.error)}{" "}
-                <Button onClick={() => void catalogQuery.refetch()}>
-                  重新载入
-                </Button>
-              </p>
-            ) : statuses.length === 0 ? (
-              <p>暂无状态</p>
-            ) : (
-              statuses.map((status) => (
-                <article
-                  key={status.statusId}
-                  className="flex flex-wrap items-center gap-3 rounded-card border border-line p-4"
-                >
-                  <span
-                    aria-label={`颜色 ${status.color}`}
-                    className="h-4 w-4 rounded-full"
-                    style={{ backgroundColor: status.color }}
-                  />
-                  <strong>{status.name}</strong>
-                  <span className="text-sm text-muted">顺序 {status.order}</span>
-                  {writable ? (
-                    <>
-                      <Button
-                        variant="ghost"
-                        aria-label={`编辑状态 ${status.name}`}
-                        onClick={() =>
-                          editing.open({ kind: "statusEdit", status })
-                        }
-                      >
-                        编辑
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        aria-label={`删除状态 ${status.name}`}
-                        onClick={() =>
-                          editing.open({ kind: "statusDelete", status })
-                        }
-                      >
-                        删除
-                      </Button>
-                    </>
-                  ) : null}
-                </article>
-              ))
-            )}
-          </section>
+          {catalogQuery.isPending ? <Skeleton className="h-48" /> : catalogQuery.error ? <p role="alert">{errorMessage(catalogQuery.error)} <Button onClick={() => void catalogQuery.refetch()}>重新载入</Button></p> :
+          <DataStatusTable statuses={statuses} usage={statusUsageQuery.data?.datasetGeneration === generation ? statusUsageQuery.data : undefined}
+            loading={statusUsageQuery.isPending} error={statusUsageQuery.error ? "引用暂时无法读取" : null} readonly={!writable} disabled={disabled}
+            onCreate={() => editing.open({ kind: "statusCreate" })} onEdit={status => editing.open({ kind: "statusEdit", status })} onDelete={status => editing.open({ kind: "statusDelete", status })}
+            onRetryUsage={() => void statusUsageQuery.refetch()} />}
         </TabsContent>
         <TabsContent value="source">
-          <DataTableSourcePanel table={table} />
+          <DataTableSourcePanel table={table} readonly={!writable} disabled={disabled || Boolean(workflow)} onReimport={() => openWorkflow("replace")} />
         </TabsContent>
         <TabsContent value="settings">
-          <section className="grid gap-4 rounded-card border border-line p-5">
-          {writable ? <div><Button onClick={() => editing.open({ kind: "tableEdit" })}>编辑数据表</Button></div> : null}
-          <dl className="grid gap-3">
-            <dt>名称</dt>
-            <dd className="break-words">{table.name}</dd>
-            <dt>说明</dt>
-            <dd className="break-words">{table.description || "暂无说明"}</dd>
-            <dt>更新时间</dt>
-            <dd>{table.updatedAt}</dd>
-          </dl>
-          </section>
+          <TableSettingsForm key={editing.editor?.kind === "tableEdit" ? editing.editor.session : `${stableWorkflowScope}:settings-readonly`}
+            sessionKey={editing.editor?.kind === "tableEdit" ? editing.editor.session : `${stableWorkflowScope}:settings-readonly`} submissionEpoch={instanceId}
+            initialValues={editing.editor?.kind === "tableEdit" ? { name: editing.editor.table.name, description: editing.editor.table.description } : { name: table.name, description: table.description }}
+            readonly={!writable || editing.editor?.kind !== "tableEdit"} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.editor?.kind === "tableEdit" && editing.recoveryPending}
+            error={editing.editor?.kind === "tableEdit" ? editing.error : undefined} errorActions={errorActions}
+            onSubmit={editing.submitTable} onRecover={editing.recover} onCancel={() => { void closeEditor() }}
+            onDirtyChange={value => { editing.onDirtyChange(value); editorDirtyRef.current = value; setEditorDirty(value) }} onSavingChange={editing.onSavingChange} />
+          <section className="mt-5 rounded-control border border-danger/20 p-5"><h3 className="text-lg font-semibold">删除数据表</h3><p className="mt-2 text-sm text-muted">数据表删除暂未开放。</p><Button className="mt-3" variant="danger" disabled>删除数据表</Button></section>
         </TabsContent>
       <Modal
         open={detailTarget !== null && detailIntent === "view"}
@@ -937,7 +858,7 @@ function DataTableDetail({
           )}
         </div>
       </Modal>
-      {editing.editor?.kind === "tableEdit" ? <DataTableFormDialog key={editing.editor.session} open mode="edit" sessionKey={editing.editor.session} submissionEpoch={instanceId} initialValues={{ name: editing.editor.table.name, description: editing.editor.table.description }} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.error} errorActions={errorActions}
+      {editing.editor?.kind === "tableEdit" && tab !== "settings" ? <DataTableFormDialog key={editing.editor.session} open mode="edit" sessionKey={editing.editor.session} submissionEpoch={instanceId} initialValues={{ name: editing.editor.table.name, description: editing.editor.table.description }} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} readonly={readonly || !writable} error={editing.error} errorActions={errorActions}
         onOpenChange={open => { if (!open) editing.close() }} onRequestClose={closeEditor} onSubmit={editing.submitTable} onRecover={editing.recover}
         onDirtyChange={value => { editing.onDirtyChange(value); setEditorDirty(value) }} onSavingChange={editing.onSavingChange} /> : null}
       {!recordLocation && (editing.editor?.kind === "recordCreate" ||

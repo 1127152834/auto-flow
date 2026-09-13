@@ -7,6 +7,7 @@ import { createDataCatalogApi, type CatalogScope } from './catalog-api'
 import { assertFiniteNumbers, DataCommandNotAccepted, DataCommandUncertain, type DataCommandPolicy } from './data-command'
 import { createProjectDataApi } from './api'
 import { createRecordsApi, type RecordKey } from './records-api'
+import { createSchemaApi } from './schema-api'
 import { statusFormSchema } from './status-form-schema'
 import type { FieldSubmission } from './components/FieldEditorDialog'
 import type { StatusSubmission } from './components/StatusEditorDialog'
@@ -21,7 +22,7 @@ export type EditingContext = {
   statuses: Schema['DataStatusDirectory']
 }
 
-export type DataEditor = EditingContext & { session: string; submittedValues?: Schema['DataCellWrite'][] } & (
+export type DataEditor = EditingContext & { session: string; submittedValues?: Schema['DataCellWrite'][]; submittedSchema?: Schema['DataSchemaCandidate'] } & (
   | { kind: 'tableEdit' }
   | { kind: 'recordCreate' }
   | { kind: 'recordEdit' | 'recordStatus' | 'recordDelete'; record: Schema['DataRecordView'] }
@@ -29,6 +30,7 @@ export type DataEditor = EditingContext & { session: string; submittedValues?: S
   | { kind: 'fieldEdit'; field: Schema['DataFieldView'] }
   | { kind: 'statusCreate' }
   | { kind: 'statusEdit' | 'statusDelete'; status: Schema['DataStatusView'] }
+  | { kind: 'schemaSave' }
 )
 
 type EditorInput =
@@ -39,6 +41,7 @@ type EditorInput =
   | { kind: 'fieldEdit'; field: Schema['DataFieldView'] }
   | { kind: 'statusCreate' }
   | { kind: 'statusEdit' | 'statusDelete'; status: Schema['DataStatusView'] }
+  | { kind: 'schemaSave' }
 
 type Pending = { key: string; scope: Scope; session: string } & (
   | { kind: 'tableEdit'; body: Schema['DataTablePatch'] }
@@ -51,6 +54,7 @@ type Pending = { key: string; scope: Scope; session: string } & (
   | { kind: 'statusCreate'; body: Schema['DataStatusCreate'] }
   | { kind: 'statusEdit'; target: string; body: Schema['DataStatusPatch'] }
   | { kind: 'statusDelete'; target: string; body: Schema['StatusDelete'] }
+  | { kind: 'schemaSave'; body: Schema['DataSchemaCommit'] }
 )
 
 type Impact = Schema['DeletionImpactReport'] | Schema['FieldImpactReport']
@@ -63,7 +67,8 @@ const sameTable = (a: Scope, b: Scope) => a.workspaceKey === b.workspaceKey && a
 const storageKey = (scope: Scope) => `autoflow:data-edit:${encodeURIComponent(scope.workspaceKey)}:${encodeURIComponent(scope.projectId)}:${encodeURIComponent(scope.tableId)}`
 const message = (error: unknown) => error instanceof Error ? error.message : '保存失败'
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value)
-const kinds = new Set<Pending['kind']>(['tableEdit', 'recordCreate', 'recordEdit', 'recordStatus', 'recordDelete', 'fieldCreate', 'fieldEdit', 'statusCreate', 'statusEdit', 'statusDelete'])
+const only = (value: Record<string, unknown>, required: string[], optional: string[] = []) => required.every(key => key in value) && Object.keys(value).every(key => required.includes(key) || optional.includes(key))
+const kinds = new Set<Pending['kind']>(['tableEdit', 'recordCreate', 'recordEdit', 'recordStatus', 'recordDelete', 'fieldCreate', 'fieldEdit', 'statusCreate', 'statusEdit', 'statusDelete', 'schemaSave'])
 const validScope = (value: unknown): value is Scope => object(value) && ['workspaceKey', 'projectId', 'tableId', 'datasetGeneration'].every(key => typeof value[key] === 'string' && value[key].length > 0)
 const validTarget = (value: unknown, kind: Pending['kind']) => {
   if (kind === 'recordEdit' || kind === 'recordStatus' || kind === 'recordDelete') {
@@ -73,12 +78,31 @@ const validTarget = (value: unknown, kind: Pending['kind']) => {
   if (kind === 'fieldEdit' || kind === 'statusEdit' || kind === 'statusDelete') return typeof value === 'string' && value.length > 0
   return value === undefined
 }
-const validCellWrites = (value: unknown) => Array.isArray(value) && value.every(cell => object(cell) && typeof cell.fieldId === 'string' && cell.fieldId.length > 0 && (cell.value === null || typeof cell.value === 'string' || typeof cell.value === 'boolean' || typeof cell.value === 'number' && Number.isFinite(cell.value) || object(cell.value) && cell.value.kind === 'date' && ['date', 'datetime'].includes(String(cell.value.precision)) && typeof cell.value.value === 'string' && (cell.value.offset === null || cell.value.offset === undefined || typeof cell.value.offset === 'string')));
+const validScalar = (value: unknown) => value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || object(value) && value.kind === 'date' && ['date', 'datetime'].includes(String(value.precision)) && typeof value.value === 'string' && (value.offset === null || value.offset === undefined || typeof value.offset === 'string')
+const validSchemaScalar = (value: unknown) => value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || object(value) && only(value, ['kind', 'precision', 'value', 'offset']) && value.kind === 'date' && ['date', 'datetime'].includes(String(value.precision)) && typeof value.value === 'string' && (value.offset === null || typeof value.offset === 'string')
+const validCellWrites = (value: unknown) => Array.isArray(value) && value.every(cell => object(cell) && typeof cell.fieldId === 'string' && cell.fieldId.length > 0 && validScalar(cell.value));
+const validJson = (value: unknown): boolean => value === null || typeof value === 'boolean' || typeof value === 'string' || typeof value === 'number' && Number.isFinite(value) || Array.isArray(value) && value.every(validJson) || object(value) && Object.values(value).every(validJson)
+const validDefinition = (value: unknown) => object(value) && only(value, ['key', 'name', 'type', 'required', 'validation']) && typeof value.key === 'string' && value.key.length > 0 && typeof value.name === 'string' && value.name.length > 0 && ['string', 'number', 'boolean', 'date'].includes(String(value.type)) && typeof value.required === 'boolean' && object(value.validation) && validJson(value.validation)
+const validFieldDirectory = (value: unknown, scope: Scope) => object(value) && Number.isSafeInteger(value.tableRevision) && Number(value.tableRevision) > 0 && Array.isArray(value.items) && value.items.every(field => {
+  if (!object(field) || !object(field.ref)) return false
+  const definition = { key: field.key, name: field.name, type: field.type, required: field.required, validation: field.validation }
+  return validDefinition(definition) && typeof field.writable === 'boolean' && typeof field.formula === 'boolean' && Number.isSafeInteger(field.fieldRevision) && Number(field.fieldRevision) > 0 && typeof field.ref.fieldId === 'string' && field.ref.fieldId.length > 0 && field.ref.projectId === scope.projectId && field.ref.tableId === scope.tableId && field.ref.datasetGeneration === scope.datasetGeneration
+})
+const validSchemaCandidate = (value: unknown): value is Schema['DataSchemaCandidate'] => object(value) && only(value, ['datasetGeneration', 'expectedTableRevision', 'fields']) && typeof value.datasetGeneration === 'string' && value.datasetGeneration.length > 0 && Number.isSafeInteger(value.expectedTableRevision) && Number(value.expectedTableRevision) > 0 && Array.isArray(value.fields) && value.fields.every(field => {
+  if (!object(field) || !validDefinition(field.definition)) return false
+  if (field.kind === 'existing') return only(field, ['kind', 'fieldId', 'expectedFieldRevision', 'definition']) && typeof field.fieldId === 'string' && field.fieldId.length > 0 && Number.isSafeInteger(field.expectedFieldRevision) && Number(field.expectedFieldRevision) > 0
+  return field.kind === 'new' && only(field, ['kind', 'clientId', 'definition', 'sourceColumnPolicy'], ['existingRecordDefault']) && typeof field.clientId === 'string' && field.clientId.length > 0 && field.sourceColumnPolicy === 'localOnly' && (!('existingRecordDefault' in field) || validSchemaScalar(field.existingRecordDefault))
+})
 const restored = (value: unknown, current: Scope): { pending: Pending; editor: DataEditor } | null => {
   if (!object(value) || !object(value.pending) || !object(value.editor)) return null
   const pending = value.pending, editor = value.editor
   if ((pending.kind === 'recordCreate' || pending.kind === 'recordEdit') && (!object(pending.body) || !validCellWrites(pending.body.values))) return null
+  if (pending.kind === 'schemaSave' && (!object(pending.body) || !validSchemaCandidate(pending.body.candidate) || !Number.isSafeInteger(pending.body.impactRevision) || !validSchemaCandidate(editor.submittedSchema) || !sameValue(pending.body.candidate, editor.submittedSchema))) return null
   if (typeof pending.kind !== 'string' || !kinds.has(pending.kind as Pending['kind']) || pending.kind !== editor.kind || typeof pending.key !== 'string' || !pending.key || typeof pending.session !== 'string' || !pending.session || pending.session !== editor.session || !validScope(pending.scope) || !validScope(editor.scope) || !sameTable(pending.scope, current) || !sameScope(pending.scope, editor.scope) || !object(pending.body) || !validTarget(pending.target, pending.kind as Pending['kind']) || !object(editor.table) || !object(editor.fields) || !object(editor.statuses)) return null
+  if (pending.kind === 'schemaSave') {
+    const body = pending.body as Schema['DataSchemaCommit']
+    if (!validFieldDirectory(editor.fields, pending.scope) || body.candidate.datasetGeneration !== pending.scope.datasetGeneration || body.candidate.expectedTableRevision !== editor.fields.tableRevision) return null
+  }
   return { pending: pending as Pending, editor: editor as DataEditor }
 }
 
@@ -86,6 +110,7 @@ function dispatch(client: StreamingApiClient, pending: Pending, resume: boolean,
   const tables = createProjectDataApi(client, pending.scope.projectId)
   const catalog = createDataCatalogApi(client, pending.scope)
   const records = createRecordsApi(client, pending.scope)
+  const schema = createSchemaApi(client, pending.scope)
   switch (pending.kind) {
     case 'tableEdit': return resume ? tables.resumePatch(pending.scope.tableId, pending.body, pending.key, policy) : tables.patch(pending.scope.tableId, pending.body, pending.key, policy)
     case 'recordCreate': return records.create(pending.body, pending.key, resume, policy)
@@ -97,9 +122,12 @@ function dispatch(client: StreamingApiClient, pending: Pending, resume: boolean,
     case 'statusCreate': return catalog.createStatus(pending.body, pending.key, resume, policy)
     case 'statusEdit': return catalog.updateStatus(pending.target, pending.body, pending.key, resume, policy)
     case 'statusDelete': return catalog.deleteStatus(pending.target, pending.body, pending.key, resume, policy)
+    case 'schemaSave': return schema.commit(pending.body, pending.key, resume, policy)
     default: throw new Error('不支持的保存恢复类型')
   }
 }
+
+const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
 export function useDataTableEditing(options: Options) {
   const [editor, setEditor] = useState<DataEditor | null>(null)
@@ -112,6 +140,7 @@ export function useDataTableEditing(options: Options) {
   const [recoveryBlocked, setRecoveryBlocked] = useState(false)
   const [impact, setImpact] = useState<Schema['DeletionImpactReport'] | null>(null)
   const fieldImpact = useRef<Schema['FieldImpactReport'] | null>(null)
+  const schemaPreview = useRef<{ candidate: Schema['DataSchemaCandidate']; impact: Schema['DataSchemaImpact'] } | null>(null)
   const pending = useRef<Pending | null>(null)
   const lock = useRef(false), epoch = useRef(0), ticket = useRef(0), dirty = useRef(false)
   const activeSession = useRef<string | null>(null)
@@ -127,6 +156,7 @@ export function useDataTableEditing(options: Options) {
     if (contextChanged || authorityChanged) {
       epoch.current += 1
       lock.current = false
+      schemaPreview.current = null
       setBusy(false)
       if (pending.current) setRecoveryPending(true)
     }
@@ -196,7 +226,7 @@ export function useDataTableEditing(options: Options) {
         return value
       }
       clearStored(command)
-      pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; setEditor(null)
+      pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; schemaPreview.current = null; setEditor(null)
       activeSession.current = null; dialogBusy.current = null; setDialogSaving(false)
       live.current.onSaved(command.kind, command.key, value)
       return value
@@ -206,7 +236,7 @@ export function useDataTableEditing(options: Options) {
       if (caught instanceof DataCommandUncertain) { setRecoveryPending(true); setError(caught.message); throw caught }
       clearStored(command); pending.current = null; setRecoveryPending(false)
       if (caught instanceof ApiClientError && caught.status === 409 && caught.code === 'REVISION_CONFLICT') setConflict(true)
-      if (caught instanceof ApiClientError && caught.status === 412) { setImpact(null); fieldImpact.current = null }
+      if (caught instanceof ApiClientError && caught.status === 412) { setImpact(null); fieldImpact.current = null; schemaPreview.current = null }
       setError(message(caught)); throw caught
     } finally {
       if (runTicket === ticket.current && run === epoch.current) { lock.current = false; setBusy(false) }
@@ -220,8 +250,10 @@ export function useDataTableEditing(options: Options) {
     if (!live.current.context || !sameScope(live.current.context.scope, command.scope)) throw new Error('当前数据范围与编辑会话不一致')
     writable()
     const snapshot = requireEditor()
+    const storedEditor = command.kind === 'schemaSave' ? { ...snapshot, submittedSchema: clone(command.body.candidate) } : snapshot
     assertFiniteNumbers(command.body)
-    localStorage.setItem(storageKey(command.scope), JSON.stringify({ pending: clone(command), editor: clone(snapshot) }))
+    localStorage.setItem(storageKey(command.scope), JSON.stringify({ pending: clone(command), editor: clone(storedEditor) }))
+    if (command.kind === 'schemaSave') setEditor(clone(storedEditor))
     pending.current = clone(command); setRecoveryPending(false); setNotAccepted(false)
     return execute('submit')
   }
@@ -237,15 +269,15 @@ export function useDataTableEditing(options: Options) {
     if (recoveryBlocked) throw new Error('本地保存恢复记录异常，当前数据表已禁止写入')
     if (!live.current.context) throw new Error('数据详情尚未载入')
     if (pending.current || lock.current || dialogBusy.current?.value || (editor && dirty.current)) throw new Error('当前编辑会话不能被覆盖')
-    clearFlags(); setImpact(null); fieldImpact.current = null; dirty.current = false
+    clearFlags(); setImpact(null); fieldImpact.current = null; schemaPreview.current = null; dirty.current = false
     const session = crypto.randomUUID(); epoch.current += 1; activeSession.current = session; dialogBusy.current = null; setDialogSaving(false)
     setEditor({ ...clone(live.current.context), ...clone(input), session } as DataEditor)
   }
-  const close = () => { if (lock.current || pending.current || dialogBusy.current?.value) return false; epoch.current += 1; activeSession.current = null; dialogBusy.current = null; setDialogSaving(false); setEditor(null); setImpact(null); fieldImpact.current = null; clearFlags(); dirty.current = false; return true }
+  const close = () => { if (lock.current || pending.current || dialogBusy.current?.value) return false; epoch.current += 1; activeSession.current = null; dialogBusy.current = null; setDialogSaving(false); setEditor(null); setImpact(null); fieldImpact.current = null; schemaPreview.current = null; clearFlags(); dirty.current = false; return true }
   const replaceEditor = (context: EditingContext, input: EditorInput) => {
     if (lock.current || dialogBusy.current?.value || (pending.current && !notAccepted)) throw new Error('保存结果尚未确认')
     if (pending.current) clearStored(pending.current)
-    pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; clearFlags(); dirty.current = false
+    pending.current = null; setRecoveryPending(false); setNotAccepted(false); setImpact(null); fieldImpact.current = null; schemaPreview.current = null; clearFlags(); dirty.current = false
     const session = crypto.randomUUID(); epoch.current += 1; activeSession.current = session; dialogBusy.current = null; setDialogSaving(false)
     setEditor({ ...clone(context), ...clone(input), session } as DataEditor)
   }
@@ -284,6 +316,35 @@ export function useDataTableEditing(options: Options) {
     if (e.kind !== 'statusEdit') return Promise.reject(new Error('当前不是状态编辑会话'))
     if (!Object.keys(submission).length) return Promise.reject(new Error('状态没有修改'))
     ready(e.scope, e.session); return start({ kind: e.kind, key: crypto.randomUUID(), scope: clone(e.scope), session: e.session, target: e.status.statusId, body: clone({ ...submission, expectedStatusRevision: e.status.statusRevision, expectedTableRevision: e.statuses.tableRevision }) })
+  }
+  const submitSchema = async (body: Schema['DataSchemaCommit']) => {
+    const e = requireEditor()
+    if (e.kind !== 'schemaSave') return Promise.reject(new Error('当前不是架构保存会话'))
+    const previewed = schemaPreview.current
+    if (!previewed || previewed.impact.impactRevision !== body.impactRevision || previewed.impact.blockers.length || !sameValue(previewed.candidate, body.candidate)) return Promise.reject(new Error('架构影响尚未通过预检'))
+    ready(e.scope, e.session)
+    return start({ kind: e.kind, key: crypto.randomUUID(), scope: clone(e.scope), session: e.session, body: clone(body) })
+  }
+
+  const previewSchema = async (candidate: Schema['DataSchemaCandidate']) => {
+    const e = requireEditor()
+    if (e.kind !== 'schemaSave') throw new Error('当前不是架构保存会话')
+    schemaPreview.current = null
+    if (candidate.datasetGeneration !== e.scope.datasetGeneration || candidate.expectedTableRevision !== e.fields.tableRevision) throw new Error('资料已变化，请重新载入后编辑')
+    ready(e.scope, e.session)
+    lock.current = true; setBusy(true); setError(null)
+    const run = epoch.current, usedClient = live.current.client, usedInstance = live.current.instanceId, session = e.session, runTicket = ++ticket.current
+    try {
+      const report = await createSchemaApi(usedClient, e.scope).preview(clone(candidate))
+      if (runTicket !== ticket.current || !current(run, session, usedClient, usedInstance)) throw new Error('预检结果已过期')
+      schemaPreview.current = { candidate: clone(candidate), impact: clone(report) }
+      return report
+    } catch (caught) {
+      if (runTicket === ticket.current && run === epoch.current) { schemaPreview.current = null; setError(message(caught)) }
+      throw caught
+    } finally {
+      if (runTicket === ticket.current && run === epoch.current) { lock.current = false; setBusy(false) }
+    }
   }
 
   const validateImpact = (e: DataEditor, report: Impact) => {
@@ -324,7 +385,7 @@ export function useDataTableEditing(options: Options) {
 
   return {
     editor, error, busy: busy || dialogSaving, recoveryPending, recoveryBlocked, notAccepted, conflict, impact,
-    open, close, submitTable, submitRecord, submitField, submitStatus, submitRecordStatus, previewDelete, confirmDelete, previewField,
+    open, close, submitTable, submitRecord, submitField, submitStatus, submitRecordStatus, submitSchema, previewSchema, previewDelete, confirmDelete, previewField,
     recover: () => execute('recover'), retryOriginal: () => { if (!notAccepted) return Promise.reject(new Error('原请求尚未确认未接受')); return execute('retry') },
     discardUnaccepted: () => { if (!notAccepted) return false; if (pending.current) clearStored(pending.current); pending.current = null; setNotAccepted(false); setRecoveryPending(false); setError(null); return true },
     replaceEditor,
