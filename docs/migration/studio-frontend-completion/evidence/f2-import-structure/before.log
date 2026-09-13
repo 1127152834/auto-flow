@@ -1,0 +1,176 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/import-structure.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:80306) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts (18 tests | 12 failed) 14ms
+   × rejects corrupt 'open'/'duplicate-node' without changing the draft or history 6ms
+   × rejects corrupt 'open'/'duplicate-edge' without changing the draft or history 1ms
+   × rejects corrupt 'open'/'dangling-edge' without changing the draft or history 1ms
+   × rejects corrupt 'open'/'blank-node-id' without changing the draft or history 0ms
+   × rejects corrupt 'open'/'blank-edge-id' without changing the draft or history 1ms
+   × rejects corrupt 'open'/'edges-object' without changing the draft or history 0ms
+   × rejects corrupt 'open'/'variables-object' without changing the draft or history 0ms
+   × rejects corrupt 'merge'/'duplicate-node' without changing the draft or history 1ms
+   × rejects corrupt 'merge'/'duplicate-edge' without changing the draft or history 0ms
+   × rejects corrupt 'merge'/'dangling-edge' without changing the draft or history 0ms
+   × rejects corrupt 'merge'/'blank-node-id' without changing the draft or history 0ms
+   × rejects corrupt 'merge'/'blank-edge-id' without changing the draft or history 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'duplicate-node' without changing the draft or history
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'merge'/'duplicate-node' without changing the draft or history
+AssertionError: duplicate-node: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'duplicate-edge' without changing the draft or history
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'merge'/'duplicate-edge' without changing the draft or history
+AssertionError: duplicate-edge: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'dangling-edge' without changing the draft or history
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'merge'/'dangling-edge' without changing the draft or history
+AssertionError: dangling-edge: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'blank-node-id' without changing the draft or history
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'merge'/'blank-node-id' without changing the draft or history
+AssertionError: blank-node-id: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'blank-edge-id' without changing the draft or history
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'merge'/'blank-edge-id' without changing the draft or history
+AssertionError: blank-edge-id: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'edges-object' without changing the draft or history
+AssertionError: edges-object: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/import-structure.test.ts > rejects corrupt 'open'/'variables-object' without changing the draft or history
+AssertionError: variables-object: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/import-structure.test.ts:18:28
+     16|     const before = store.getState()
+     17|     const result = mode === 'open' ? store.getState().importWorkflow(J…
+     18|     expect(result, reason).toBe(false)
+       |                            ^
+     19|     const after = store.getState()
+     20|     for (const key of ['id', 'nodes', 'edges', 'variables', 'history',…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  12 failed | 6 passed (18)
+   Start at  02:49:32
+   Duration  805ms (transform 169ms, setup 87ms, import 191ms, tests 14ms, environment 383ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/import-structure.test.ts

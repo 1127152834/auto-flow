@@ -15539,5 +15539,345 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-boundary/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.duplicate-node",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "duplicate-node"
+    },
+    "steps": [
+      "open 导入 duplicate-node"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.duplicate-edge",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "duplicate-edge"
+    },
+    "steps": [
+      "open 导入 duplicate-edge"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.dangling-edge",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "dangling-edge"
+    },
+    "steps": [
+      "open 导入 dangling-edge"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.blank-node-id",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "blank-node-id"
+    },
+    "steps": [
+      "open 导入 blank-node-id"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.blank-edge-id",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "blank-edge-id"
+    },
+    "steps": [
+      "open 导入 blank-edge-id"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.nodes-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "nodes-object"
+    },
+    "steps": [
+      "open 导入 nodes-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.edges-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "edges-object"
+    },
+    "steps": [
+      "open 导入 edges-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.variables-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "variables-object"
+    },
+    "steps": [
+      "open 导入 variables-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.unfinished-unknown",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "unfinished-unknown"
+    },
+    "steps": [
+      "open 导入 unfinished-unknown"
+    ],
+    "expectedUI": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.open.legacy-fallback",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "legacy-fallback"
+    },
+    "steps": [
+      "open 导入 legacy-fallback"
+    ],
+    "expectedUI": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.duplicate-node",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "duplicate-node"
+    },
+    "steps": [
+      "merge 导入 duplicate-node"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.duplicate-edge",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "duplicate-edge"
+    },
+    "steps": [
+      "merge 导入 duplicate-edge"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.dangling-edge",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "dangling-edge"
+    },
+    "steps": [
+      "merge 导入 dangling-edge"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.blank-node-id",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "blank-node-id"
+    },
+    "steps": [
+      "merge 导入 blank-node-id"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.blank-edge-id",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "blank-edge-id"
+    },
+    "steps": [
+      "merge 导入 blank-edge-id"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.nodes-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "nodes-object"
+    },
+    "steps": [
+      "merge 导入 nodes-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.edges-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "edges-object"
+    },
+    "steps": [
+      "merge 导入 edges-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.variables-object",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "variables-object"
+    },
+    "steps": [
+      "merge 导入 variables-object"
+    ],
+    "expectedUI": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "返回 false，原草稿身份、内容、历史及脏状态不变",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.unfinished-unknown",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "unfinished-unknown"
+    },
+    "steps": [
+      "merge 导入 unfinished-unknown"
+    ],
+    "expectedUI": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
+  },
+  {
+    "id": "DOCUMENT.import-structure.merge.legacy-fallback",
+    "capability": "导入图结构",
+    "preconditions": {
+      "document": "已有 print_log 节点与 keep 变量",
+      "fixture": "legacy-fallback"
+    },
+    "steps": [
+      "merge 导入 legacy-fallback"
+    ],
+    "expectedUI": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "expectedIO": "本地文档解析，不调用服务",
+    "stateAssertion": "成功导入并保留未知类型/未完成参数；缺失坐标和边 ID 使用原兼容逻辑",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-import-structure/target.log"
   }
 ]

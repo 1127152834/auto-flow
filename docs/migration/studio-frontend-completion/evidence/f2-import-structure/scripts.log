@@ -1,0 +1,33 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.039959ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.115333ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.13775ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.141708ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.1925ms)
+✔ browser management smoke creates the platform kernel layout (0.169041ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.224792ms)
+✔ profile test browser smoke validates a public kernel directory (9.599167ms)
+✔ profile test browser smoke finds a session below the manager root (4.256917ms)
+✔ packaged smoke cannot silently select external health mode (0.73775ms)
+✔ cleanup rejects after the final deadline if the child never exits (12.64425ms)
+✔ cleanup observes close without requiring exit (0.344583ms)
+✔ cleanup rejects a child process error (0.247334ms)
+✔ required path exists: apps/desktop/package.json (0.781208ms)
+✔ required path exists: apps/backend/pyproject.toml (0.106917ms)
+✔ root scripts expose the foundation checks (0.177875ms)
+(node:83546) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (14.016083ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 834.408542

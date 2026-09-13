@@ -137,6 +137,30 @@ function sanitizeEdges(edges: any): any[] {
     }))
 }
 
+// Reject broken graph identity before import/merge mutates the current document.
+// Legacy coordinates still use the existing sanitizer; unknown node types remain readable.
+function hasValidImportGraph(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false
+  const doc = value as Record<string, unknown>
+  if (!Array.isArray(doc.nodes) || !Array.isArray(doc.edges)) return false
+  if (doc.variables !== undefined && !Array.isArray(doc.variables)) return false
+  const nodeIds = new Set<string>()
+  for (const node of doc.nodes) {
+    if (!node || typeof node.id !== 'string' || !node.id.trim() || nodeIds.has(node.id)) return false
+    nodeIds.add(node.id)
+  }
+  const edgeIds = new Set<string>()
+  for (const edge of doc.edges) {
+    if (!edge || !nodeIds.has(edge.source) || !nodeIds.has(edge.target)) return false
+    // Older documents may omit edge IDs; sanitizeEdges generates them.
+    if (edge.id !== undefined) {
+      if (typeof edge.id !== 'string' || !edge.id.trim() || edgeIds.has(edge.id)) return false
+      edgeIds.add(edge.id)
+    }
+  }
+  return true
+}
+
 // 底栏 Tab 类型
 export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
@@ -3207,9 +3231,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     try {
       // 支持字符串或对象
       const workflow = typeof json === 'string' ? JSON.parse(json) : json
-      if (!workflow.nodes || !workflow.edges) {
-        return false
-      }
+      if (!hasValidImportGraph(workflow)) return false
       
       // 转换节点类型：将后端格式转换为前端 ReactFlow 格式
       const convertedNodes = workflow.nodes.map((node: any) => {
@@ -3284,21 +3306,20 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   mergeWorkflow: (json, position) => {
     try {
       const workflow = JSON.parse(json)
-      if (!workflow.nodes || !workflow.edges) {
-        return false
-      }
+      if (!hasValidImportGraph(workflow)) return false
       
       const state = get()
+      const importedNodes = sanitizeNodes(workflow.nodes)
       
       // 生成新的节点ID映射（旧ID -> 新ID）
       const idMap = new Map<string, string>()
-      workflow.nodes.forEach((node: any) => {
+      importedNodes.forEach((node: any) => {
         idMap.set(node.id, nanoid())
       })
       
       // 计算导入节点的边界框
       let minX = Infinity, minY = Infinity
-      workflow.nodes.forEach((node: any) => {
+      importedNodes.forEach((node: any) => {
         if (node.position.x < minX) minX = node.position.x
         if (node.position.y < minY) minY = node.position.y
       })
@@ -3308,7 +3329,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const offsetY = position ? position.y - minY : 0
       
       // 转换节点（更新ID、位置和类型）
-      const newNodes: Node<NodeData>[] = workflow.nodes.map((node: any) => {
+      const newNodes: Node<NodeData>[] = importedNodes.map((node: any) => {
         let frontendType = node.type
         let moduleType = node.data?.moduleType || node.type
         
