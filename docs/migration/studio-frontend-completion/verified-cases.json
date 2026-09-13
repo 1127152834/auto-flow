@@ -24174,5 +24174,43 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.event-ownership.memory",
+    "capability": "execution-event-ownership",
+    "preconditions": {
+      "workflow": "active paused pending",
+      "transport": "memory"
+    },
+    "steps": [
+      "依次推送其他流程节点、数据、完成、停止事件",
+      "等待有序marker确认消费",
+      "推送当前流程数据及成功终态"
+    ],
+    "expectedUI": "当前暂停位置保持；本例为Store/SSE协议层",
+    "expectedIO": "按SSE顺序消费且不采用外来身份",
+    "stateAssertion": "外来事件不污染节点/数据/状态；当前流程能完成",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/execution-event-ownership.test.ts"
+  },
+  {
+    "id": "F3.event-ownership.http",
+    "capability": "execution-event-ownership",
+    "preconditions": {
+      "workflow": "active paused pending",
+      "transport": "http"
+    },
+    "steps": [
+      "依次推送其他流程节点、数据、完成、停止事件",
+      "等待有序marker确认消费",
+      "推送当前流程数据及成功终态"
+    ],
+    "expectedUI": "当前暂停位置保持；本例为Store/SSE协议层",
+    "expectedIO": "按SSE顺序消费且不采用外来身份",
+    "stateAssertion": "外来事件不污染节点/数据/状态；当前流程能完成",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/execution-event-ownership.test.ts"
   }
 ]

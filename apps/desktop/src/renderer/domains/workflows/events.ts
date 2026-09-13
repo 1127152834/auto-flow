@@ -282,6 +282,13 @@ class SocketService {
       }
     })
 
+    // A different workflow's delayed terminal/data event cannot mutate the active run.
+    // This is document ownership only; repeated runs still need an independent run identity.
+    const belongsToCurrentExecution = (workflowId: string) => {
+      const current = useWorkflowStore.getState().currentExecutionWorkflowId
+      return !current || current === workflowId
+    }
+
     // 执行开始
     this.socket.on('execution:started', (data: { workflowId: string }) => {
       console.log('Execution started:', data.workflowId)
@@ -302,12 +309,14 @@ class SocketService {
 
     // 节点开始执行 → 高亮"运行中"
     this.socket.on('execution:node_start', (data: { workflowId: string; nodeId: string }) => {
+      if (!belongsToCurrentExecution(data.workflowId)) return
       // 运行状态高亮开关（默认关闭）：关闭时不写入运行态，画布不闪烁，避免大型工作流高速运行卡顿
       if (!useGlobalConfigStore.getState().config.display?.runStatusHighlight) return
       if (data?.nodeId) useNodeRunStore.getState().setStatus(data.nodeId, 'running')
     })
     // 节点执行完成 → 高亮"成功/失败"
     this.socket.on('execution:node_complete', (data: { workflowId: string; nodeId: string; success: boolean }) => {
+      if (!belongsToCurrentExecution(data.workflowId)) return
       if (!useGlobalConfigStore.getState().config.display?.runStatusHighlight) return
       if (data?.nodeId) useNodeRunStore.getState().setStatus(data.nodeId, data.success ? 'success' : 'failed')
     })
@@ -523,6 +532,7 @@ class SocketService {
         this.pendingInputPrompt = null
         this.inputPromptCallback?.(null)
       }
+      if (!belongsToCurrentExecution(data.workflowId)) return
       useDebugStore.getState().clearPaused()
       
       // 立即冲刷日志缓冲，确保完成日志和最后的执行日志全部显示
@@ -588,7 +598,7 @@ class SocketService {
       workflowId: string
       row: Record<string, unknown>
     }) => {
-      if (!isExecuting) return
+      if (!isExecuting || !belongsToCurrentExecution(data.workflowId)) return
       
       const store = useWorkflowStore.getState()
       store.addDataRow(data.row)
@@ -599,14 +609,15 @@ class SocketService {
       workflowId: string
       rows: Array<Record<string, unknown>>
     }) => {
-      if (!isExecuting) return
+      if (!isExecuting || !belongsToCurrentExecution(data.workflowId)) return
       if (!Array.isArray(data.rows) || data.rows.length === 0) return
       const store = useWorkflowStore.getState()
       store.addDataRows(data.rows)
     })
 
     // 执行停止
-    this.socket.on('execution:stopped', (_data: { workflowId: string }) => {
+    this.socket.on('execution:stopped', (data: { workflowId: string }) => {
+      if (!belongsToCurrentExecution(data.workflowId)) return
       isExecuting = false  // 停止接收实时数据行
       useDebugStore.getState().clearPaused()
       // 停止所有音频播放

@@ -1,0 +1,85 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/execution-event-ownership.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:25345) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+Execution started: active
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'foreign',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 },
+  collectedData: [ { unexpected: 'terminal' } ]
+}
+[Socket] 立即设置执行状态为: failed
+[Socket] completed 数据( 1 )不多于已流式接收( 2 )，保留现有不覆盖
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 连接到后端: http://127.0.0.1:55808
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+Execution started: active
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'foreign',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 },
+  collectedData: [ { unexpected: 'terminal' } ]
+}
+[Socket] 立即设置执行状态为: failed
+[Socket] completed 数据( 1 )不多于已流式接收( 2 )，保留现有不覆盖
+[Socket] 前端状态已全部更新完成！
+
+ ❯ src/renderer/domains/workflows/tests/execution-event-ownership.test.ts (2 tests | 2 failed) 330ms
+   × foreign terminal and data events do not end the active workflow over memory 164ms
+   × foreign terminal and data events do not end the active workflow over http 165ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+ FAIL  src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+AssertionError: expected 'stopped' to be 'running' // Object.is equality
+
+Expected: "running"
+Received: "stopped"
+
+ ❯ src/renderer/domains/workflows/tests/execution-event-ownership.test.ts:22:44
+     20|   const marker=vi.fn();socketService.on('ownership-marker',marker);moc…
+     21|   await vi.waitFor(()=>expect(marker).toHaveBeenCalledTimes(1))
+     22|   expect(store.getState().executionStatus).toBe('running')
+       |                                            ^
+     23|   expect(store.getState().currentExecutionWorkflowId).toBe('active')
+     24|   expect(useDebugStore.getState().isPaused).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  06:18:32
+   Duration  1.32s (transform 203ms, setup 91ms, import 249ms, tests 330ms, environment 535ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/execution-event-ownership.test.ts

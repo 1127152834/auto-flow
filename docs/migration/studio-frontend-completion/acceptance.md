@@ -123,3 +123,7 @@ F0仍需完整字段/动态工具依赖核对；F1仍需全部操作schema和独
 ## 定位协议增量
 
 定位测试成功响应运行时校验、生成schema和显式Mock场景已接通，详见 selector-protocol-validation.md。新增前端28、后端18项通过，正式页面组件的预览点击已记录；全量138文件1690项、类型/lint、Ruff/mypy、构建、21脚本及OpenAPI通过。F0–F6整体缺口仍按上述清单保留。
+
+## 写回与运行事件归属增量
+
+修复建议绑定启动源文档，确认期间校验旧字段，整批可撤销；见selector-healing-validation.md。外来终态/节点/数据事件不污染当前流程，输入请求按自身身份回收；见event-ownership-validation.md。最新全量141文件1706项通过，类型/lint/构建通过。独立runId、会话所有权、原生宿主和F0–F6整体门槛仍未完成。
