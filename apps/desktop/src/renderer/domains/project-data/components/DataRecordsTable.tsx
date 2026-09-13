@@ -111,6 +111,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
               {columns.map((field) => (
                 <col key={field.ref.fieldId} />
               ))}
+              {columns.length === 0 ? <col data-record-column="remainder" /> : null}
               <col data-record-column="status" style={{ width: 160 }} />
               <col data-record-column="actions" style={{ width: 112 }} />
             </colgroup>
@@ -131,6 +132,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                     </span>
                   </TableHead>
                 ))}
+                {columns.length === 0 ? <TableHead aria-hidden="true" data-record-remainder /> : null}
                 <TableHead className="w-40">业务状态</TableHead>
                 <TableHead className="w-28">操作</TableHead>
               </TableRow>
@@ -164,6 +166,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                         </TableCell>
                       )
                     })}
+                    {columns.length === 0 ? <TableCell aria-hidden="true" data-record-remainder className="py-2" /> : null}
                     <TableCell className="py-2">
                       {onStatusChange ? (
                         <Button size="sm" variant="ghost" disabled={readonly || loading || disabled} aria-label={`修改状态 ${identity}`} onClick={() => onStatusChange(record)}>

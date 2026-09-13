@@ -51,7 +51,8 @@ export function RecordQueryToolbar({ fields, statuses, query, visibleFieldIds, q
   const applySearch=(next:QuickSearch)=>{if(onApplySearch(next)===false){setSubmitError(true);return false}setSubmitError(false);setSearch(next);appliedSearchRef.current=next;return true}
   const submitSearch=(event:FormEvent)=>{event.preventDefault();const next={fieldId:search.fieldId,keyword:search.keyword.trim()};if(same(next,quickSearch)){setSubmitError(false);setSearch(next);appliedSearchRef.current=next;return}applySearch(next)}
   const enabled=!disabled, canSearch=textFields.length>0
-  const appliedFilter=query.filter.type!=='all'||query.filter.items.length>0, appliedSort=query.orderBy.length>0, appliedColumns=visibleFieldIds!==null&&!same(visibleFieldIds,fields.map(field=>field.ref.fieldId))
+  const visibleSet=new Set(visibleFieldIds), allColumnsVisible=visibleFieldIds!==null&&visibleSet.size===fields.length&&fields.every(field=>visibleSet.has(field.ref.fieldId))
+  const appliedFilter=query.filter.type!=='all'||query.filter.items.length>0, appliedSort=query.orderBy.length>0, appliedColumns=visibleFieldIds!==null&&!allColumnsVisible
   const showQueryError=submitError||Boolean(queryError), queryErrorMessage=queryError??'应用失败，请检查后重试。'
   return <section aria-label="记录查询工具" className="grid min-w-0 gap-3">
     <div role="toolbar" aria-label="记录工具" className="flex min-w-0 flex-wrap items-center gap-2">

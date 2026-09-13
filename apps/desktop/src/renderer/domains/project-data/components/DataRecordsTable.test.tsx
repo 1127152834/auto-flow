@@ -65,6 +65,13 @@ it.each([0, 2])('reserves the declared column widths for %i business columns bef
   expect(screen.getByRole('table')).toHaveStyle({ minWidth: `${112 + 160 + 112 + count * 200}px` })
 })
 
+it('uses a decorative remainder column when there are no business columns', () => {
+  render(<DataRecordsTable {...props} fields={[]} page={page([row({ type: 'text', value: '1' })])} />)
+  expect(document.querySelector('col[data-record-column="remainder"]')).toBeInTheDocument()
+  expect(document.querySelectorAll('[data-record-remainder]')).toHaveLength(2)
+  expect(Array.from(document.querySelectorAll('[data-record-remainder]')).every(node => node.getAttribute('aria-hidden') === 'true')).toBe(true)
+})
+
 it('renders a clickable status badge and keeps the original status callback', async () => {
   const record={...row({type:'uuid',value:'12345678-1234-1234-1234-123456789abc'}),statusId:'open'},onStatusChange=vi.fn()
   render(<DataRecordsTable {...props} statuses={[{statusId:'open',name:'进行中',color:'#123456',order:0,statusRevision:1}]} page={page([record])} onStatusChange={onStatusChange}/>)
