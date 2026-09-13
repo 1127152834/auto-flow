@@ -81,3 +81,7 @@ R1工程交付退出：自动E1用户路径必测及E2/E4集成故障回归按�
 每张截图和断言记录 stateSource（ui/api-fixture/fault-injection/direct-route/preload-direct）、navigation（pointer/keyboard/hash）、route、viewport、zoom、DPR、前置断言和结果。真实控件用户路径才记E1端到端；API/preload调用后结果记E2集成；hash直接到达记E3展示；fetch/dialog替身记E4合成故障。UI主路径不得用E2–E4替代，原生文件面板替身不算面板实测。故障注入通过仅证明指定故障恢复，不能称真实网络中断通过。
 
 工程交付通过只表示可交用户验收；用户手测仍pending，不能写用户验收通过。用户确认后才推进R2。原B0 manifest保留成稿时待审状态，后续用户批准记录参见原R1执行卡；本轮新应用金图尚未得到用户确认。
+
+### 本机视口实施记录
+
+macOS屏幕工作区限制使原生窗口请求1440×1024时 renderer 高度实际996–1000，已有失败记录保留。自动视觉用例使用CDP桌面viewport override取得1440×1024 CSS基准，并在报告显式记录windowContentSize/viewportMode/DPR/zoom；它仍是Electron+真实后端用户路径，但不冒充原生窗口几何实测。200%同时保存逻辑视口与实际缩放值；原生窗口最大化和200%仍需电脑工具/用户手测单独确认。

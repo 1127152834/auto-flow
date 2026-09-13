@@ -19,12 +19,13 @@ export async function assertOwnedWorkspace(owner, candidate) {
 }
 
 async function main() {
-  const root=resolve(import.meta.dirname,'..'), manual=process.argv.includes('--manual')
+  const root=resolve(import.meta.dirname,'..'), manual=process.argv.includes('--manual'), visualDirectory=process.argv.includes('--visual-directory')
   const {stdout:gitHead}=await promisify(execFile)('git',['rev-parse','HEAD'],{cwd:root})
   const scriptSha256=createHash('sha256').update(await readFile(new URL(import.meta.url))).digest('hex')
   const buildRoot=join(root,'apps/desktop/out'), buildHash=createHash('sha256')
   for(const file of (await readdir(buildRoot,{recursive:true})).filter(name=>/\.(js|css|html)$/.test(name)).sort())buildHash.update(file).update(await readFile(join(buildRoot,file)))
-  const provenance={gitHead:gitHead.trim(),scriptSha256,desktopBuildSha256:buildHash.digest('hex')}
+  const {stdout:workingChanges}=await promisify(execFile)('git',['diff','--name-only','HEAD'],{cwd:root})
+  const provenance={gitHead:gitHead.trim(),dirtyFiles:workingChanges.trim().split('\n').filter(Boolean),scriptSha256,desktopBuildSha256:buildHash.digest('hex')}
   const owner=await realpath(await mkdtemp(join(tmpdir(),'autoflow-r1-qa-')))
   await writeFile(join(owner,'.r1-qa.json'),JSON.stringify({kind:'autoflow-r1-qa',version:1}))
   const userData=join(owner,'workspace-a'), other=join(owner,'workspace-b')
@@ -32,10 +33,10 @@ async function main() {
   for(const path of [userData,other]) await writeFile(join(path,'.autoflow-workspace.json'),JSON.stringify({schemaVersion:1,kind:'autoflow-workspace'}))
   await writeFile(join(userData,'desktop-settings.json'),JSON.stringify({schemaVersion:1,currentPath:userData,previousPath:other,preferences:{zoom:100,motion:'system'}}))
   const evidenceParent=join(root,'docs/project-management/design-alignment/acceptance/r1/runs');await mkdir(evidenceParent,{recursive:true})
-  const evidence=await mkdtemp(join(evidenceParent,'run-')), checks=[], injections=[], commandErrors=[]
+  const evidence=await mkdtemp(join(evidenceParent,'run-')), checks=[], injections=[], commandErrors=[], screenshots=[]
   await promisify(execFile)('uv',['run','--project',join(root,'apps/backend'),'python','-c',`from openpyxl import Workbook; b=Workbook(); s=b.active; s.title='资料'; s.append(['标题','链接']); s.append(['温室管理清单','https://example.com/greenhouse']); s.append(['花园记录','https://example.com/garden']); b.save(${JSON.stringify(join(owner,'sample.xlsx'))})`])
   let desktop,renderer,native,fixture,clean=false
-  const report=async(result,error)=>writeFile(join(evidence,'result.json'),JSON.stringify({result,checkedAt:new Date().toISOString(),platform:process.platform,arch:process.arch,mode:manual?'manual-tool':'automatic',provenance,checks,injections,commandErrors,error,workspace:owner,excluded:['Windows','其他架构','打包应用','用户手动执行结果']},null,2)+'\n')
+  const report=async(result,error)=>writeFile(join(evidence,'result.json'),JSON.stringify({result,checkedAt:new Date().toISOString(),platform:process.platform,arch:process.arch,mode:manual?'manual-tool':visualDirectory?'visual-directory':'automatic',visualReview:'pending',provenance,checks,injections,commandErrors,screenshots,error,workspace:owner,excluded:['Windows','其他架构','打包应用','用户手动执行结果']},null,2)+'\n')
   const checkpoint=message=>{checks.push(message);console.log(message)}
   async function launch(){desktop=await launchElectron(root,{launchArgs:[`--user-data-dir=${userData}`,'--inspect=0'],cliArgs:[]});renderer=desktop.cdp;native=await connectCdp(desktop.inspectorUrl);await native.evaluate("globalThis.qaElectron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');qaElectron.BrowserWindow.getAllWindows()[0].setContentSize(1440,1024);true");await visible('本地服务正常',30000)}
   async function shutdown(){renderer?.close();native?.close();await stop(desktop?.child);desktop=renderer=native=undefined}
@@ -52,8 +53,50 @@ async function main() {
   async function input(selector,value){await renderer.evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});if(!el)throw Error('input missing');el.focus();el.select()})()`);await renderer.command('Input.insertText',{text:value})}
   async function key(value){for(const type of ['keyDown','keyUp'])await renderer.command('Input.dispatchKeyEvent',{type,key:value,code:value});await wait(150)}
   async function route(hash){await renderer.evaluate(`location.hash=${JSON.stringify(hash)}`);await wait(250)}
-  async function capture(name){const {data}=await renderer.command('Page.captureScreenshot',{format:'png'});await writeFile(join(evidence,`${name}.png`),Buffer.from(data,'base64'))}
-  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);await wait(250)}
+  async function capture(name, source={stateSource:'mixed-unclassified',navigation:'notClassified',level:'unclassified'}) {
+    await renderer.evaluate('document.fonts.ready.then(()=>true)')
+    const state=await renderer.evaluate(`({route:location.hash,viewport:{width:innerWidth,height:innerHeight},dpr:devicePixelRatio,fonts:document.fonts.status})`)
+    let geometry=null, previous=''
+    for(let attempt=0;attempt<15;attempt++){
+      const current=await renderer.evaluate(`JSON.stringify([...document.querySelectorAll('h1,[aria-label=项目目录] article')].map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}}))`)
+      if(current===previous){geometry=JSON.parse(current);break}previous=current;await wait(100)
+    }
+    assert.ok(geometry,'截图前布局必须稳定')
+    await renderer.command('DOM.enable');await renderer.command('CSS.enable')
+    const {root:dom}=await renderer.command('DOM.getDocument')
+    const {nodeId}=await renderer.command('DOM.querySelector',{nodeId:dom.nodeId,selector:'h1'})
+    const platformFonts=nodeId?(await renderer.command('CSS.getPlatformFontsForNode',{nodeId})).fonts:[]
+    const zoomFactor=await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()')
+    const windowContentSize=await native.evaluate('qaElectron.BrowserWindow.getAllWindows()[0].getContentSize()')
+    const {data}=await renderer.command('Page.captureScreenshot',{format:'png'})
+    await writeFile(join(evidence,`${name}.png`),Buffer.from(data,'base64'))
+    screenshots.push({id:name,file:`${name}.png`,...source,...state,zoom:zoomFactor,windowContentSize,viewportMode:visualDirectory?'CDP desktop viewport override (physical macOS work area limited)':'native',platformFonts,geometry,checks:[...checks],visualReview:'pending'})
+  }
+  async function directoryGeometry() {
+    const geometry=await renderer.evaluate(`(()=>{const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}};return {h1:document.querySelectorAll('h1').length,width:innerWidth,scrollWidth:document.documentElement.scrollWidth,cards:[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>({card:box(e),icon:e.querySelector('[data-project-icon]')?box(e.querySelector('[data-project-icon]')):null,info:e.querySelector('[data-project-info]')?box(e.querySelector('[data-project-info]')):null,menu:e.querySelector('[data-project-menu]')?box(e.querySelector('[data-project-menu]')):null}))}})()`)
+    assert.equal(geometry.h1,1,'项目目录只有一个主标题')
+    assert.ok(geometry.scrollWidth<=geometry.width+1,'项目目录无全页横向溢出')
+    for(const item of geometry.cards){assert.ok(item.icon&&item.info&&item.menu,'项目图标/信息/菜单区域存在');assert.ok(item.icon.x+item.icon.w<=item.info.x+1,'图标在业务信息左侧');assert.ok(item.menu.x+item.menu.w/2>item.card.x+item.card.w*2/3,'更多菜单位于卡片右侧');assert.ok(item.menu.y+item.menu.h/2<item.card.y+item.card.h/2,'更多菜单位于卡片上半部')}
+    await writeFile(join(evidence,`directory-geometry-${Date.now()}.json`),JSON.stringify(geometry,null,2));return geometry
+  }
+  async function visualDirectoryFlow() {
+    const source={stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'}
+    const created=['内容采集项目','客户跟进项目']
+    for(const name of created){await click('新建项目');await input('#project-name',name);await input('#project-description',name==='内容采集项目'?'自动采集电商商品信息并生成结构化数据':'管理客户信息并自动生成跟进记录');await click('创建项目');await visible('项目资料');await click('返回项目目录')}
+    await click('查看全部项目');await click(created[0]);await visible('项目资料');await click('返回项目目录');await click(created[1]);await visible('项目资料');await click('返回项目目录');await click('返回最近')
+    await directoryGeometry();checkpoint('E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过')
+    const names=await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].map(e=>e.textContent)");assert.ok(names[0].includes(created[1])&&names[1].includes(created[0]))
+    await capture('VR-A01-recent',source)
+    const before=await renderer.evaluate('location.hash');await click(`更多${created[1]}操作`);await click('编辑项目','[role=menuitem]');await visible('编辑项目');assert.equal(await renderer.evaluate('location.hash'),before);await click('取消');checkpoint('E1: 更多编辑打开表单不导航')
+    await api('/projects',{method:'POST',body:{name:'这是一个用于验证长名称换行和更多操作始终可见的未访问项目',description:'用于长文本边界。API准备，不代表UI创建通过。'}})
+    await click('查看全部项目');await visible('这是一个用于验证');await directoryGeometry();await capture('VR-A02-all',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径'})
+    await input('[aria-label=搜索项目]','不存在的资料');await visible('没有匹配的项目');await capture('VR-A04-no-match',source);await input('[aria-label=搜索项目]','');await visible(created[0]);await click('返回最近')
+    assert.equal(await renderer.evaluate("[...document.querySelectorAll('[aria-label=项目目录] article')].some(e=>e.textContent.includes('未访问项目'))"),false);checkpoint('E1: 未访问项目仅在全部目录可见；UI无匹配可恢复')
+    await click('查看全部项目');await click('这是一个用于验证长名称换行和更多操作始终可见的未访问项目');await visible('项目资料');await click('返回项目目录');await click('返回最近')
+    await zoom(2);await directoryGeometry();await capture('VR-A01-recent-200',{...source,stateSource:'ui-with-api-fixture',setupLevel:'E2',fixture:'长名fixture经UI打开成为最近记录'});await zoom(1)
+    await report('passed');clean=true;console.log(`VR1目录E2E通过，视觉审查待填：${evidence}`)
+  }
+  async function zoom(value){await native.evaluate(`qaElectron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(${value});true`);if(visualDirectory)await renderer.command('Emulation.setDeviceMetricsOverride',{width:Math.round(1440/value),height:Math.round(1024/value),deviceScaleFactor:value,mobile:false});await wait(250)}
   async function fits(){assert.ok(await renderer.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),'页面不得横向撑宽');assert.ok(await renderer.evaluate(`(()=>{const input=document.querySelector('[aria-label=文本搜索]'),button=[...document.querySelectorAll('[data-query-panel-trigger]')].find(e=>e.textContent==='筛选');if(!input||!button)return true;const a=input.getBoundingClientRect(),b=button.getBoundingClientRect();return a.right<=b.left+1||b.right<=a.left+1||a.bottom<=b.top+1||b.bottom<=a.top+1})()`),'搜索框与筛选按钮不得重叠')}
   async function seed(){
     for(let index=1;index<=52;index++)await api('/projects',{method:'POST',body:{name:`R1分页${String(index).padStart(3,'0')}`,description:'工具生成的分页边界资料'}})
@@ -86,7 +129,13 @@ async function main() {
   }
   async function switchWorkspace(){await renderer.evaluate("(async()=>{const c=await window.autoflow.chooseWorkspace('previous');if(!c.ok||!c.value)throw Error('无目标');const r=await window.autoflow.confirmWorkspace(c.value.id);if(!r.ok)throw Error(r.error.message);return true})()");await visible('本地服务正常',30000);await wait(500);const current=await renderer.evaluate('(async()=> (await window.autoflow.getRuntimeContext()).workspaceKey)()');await assertOwnedWorkspace(owner,current);checkpoint('切换到工具创建的另一工作区')}
   try {
-    await launch();await route('#/projects');await visible('尚无最近访问');await capture('r1-a-empty')
+    await launch();
+    if(visualDirectory){
+      await renderer.command('Emulation.setDeviceMetricsOverride',{width:1440,height:1024,deviceScaleFactor:1,mobile:false});await wait(100)
+      assert.deepEqual(await renderer.evaluate('({w:innerWidth,h:innerHeight})'),{w:1440,h:1024},'实际renderer视口基准')
+    }
+    await click('项目','[aria-label=全局导航] button');await visible('尚无最近访问');await capture('r1-a-empty',{stateSource:'ui',navigation:'pointer',level:'E1',reference:'R1-A'})
+    if(visualDirectory){await visualDirectoryFlow();return}
     if(manual){
       console.log(`R1 隔离应用已打开。测试目录：${owner}\n证据：${evidence}\n命令：seed（52/120资料，仅一次）、fixture（打开分页表）、conflict、readfail（一次失败自动重试）、readerror（本轮含重试均失败）、lost、restore（恢复fetch）、service、restart、switch、shot、entries（其他模块入口回归）、zoom200、zoom100、quit（保留目录）、clean（退出并清理本次目录）`)
       const lines=createInterface({input:process.stdin,output:process.stdout})
