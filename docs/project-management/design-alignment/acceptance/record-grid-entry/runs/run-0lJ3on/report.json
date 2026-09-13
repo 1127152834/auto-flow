@@ -1,0 +1,59 @@
+{
+  "started": "2026-09-13T18:15:40.992Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-i6stzD",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-0lJ3on",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "044bd73ec9bbf584b861a1b1183db79cbf4dffe509fe5246c0fd0bf23ff4af65",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "details": "Real clipboard paste preserves leading-zero text and adds exactly two rows",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "details": "Invalid required cell is focused and no records are written",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "details": "Cancelled tab leave preserves grid draft",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "viewport": {
+    "width": 1487,
+    "height": 993,
+    "dpr": 2,
+    "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+    "scrollWidth": 1475
+  },
+  "status": "partial",
+  "remaining": [
+    "E05",
+    "E07",
+    "E08",
+    "E09",
+    "E10",
+    "E12",
+    "E13",
+    "E14",
+    "E15",
+    "E16",
+    "visual-review"
+  ],
+  "finished": "2026-09-13T18:15:48.516Z"
+}

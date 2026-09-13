@@ -1,0 +1,15 @@
+{
+  "started": "2026-09-13T18:12:41.828Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-eOost2",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-ZIyJoz",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "044bd73ec9bbf584b861a1b1183db79cbf4dffe509fe5246c0fd0bf23ff4af65",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "status": "failed",
+  "error": "Error: timed out waiting for 打开数据表：资料库: null",
+  "finished": "2026-09-13T18:13:00.089Z"
+}

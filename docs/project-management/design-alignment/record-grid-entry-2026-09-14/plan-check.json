@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-09-13T17:44:41.363228+00:00",
+  "status": "passed",
+  "scope": "Only newly created plan/specification/assets; no business execution",
+  "links": 5,
+  "rules": 9,
+  "e2eCasesDefined": 16,
+  "imageHashVerified": true,
+  "errors": [],
+  "firstCheckFinding": "Expanded GE-09 reference and added explicit rule-to-test matrix. Recheck passed.",
+  "businessTests": "notRun",
+  "electronE2E": "notRun",
+  "windows": "notRun",
+  "packaging": "notRun",
+  "files": {
+    "docs/superpowers/specs/2026-09-14-record-grid-entry.md": "89e40b3c71150a23919238014c0262438614f00a451216451ce490325e4f7f4d",
+    "docs/superpowers/plans/2026-09-14-record-grid-entry.md": "9f473b00f9bd040748f6d3a57b58e0581285c63d8eee6438a256fdd263ffe306"
+  },
+  "gitNote": "Files are untracked; whitespace was checked directly rather than relying on git diff --check."
+}

@@ -1,0 +1,9 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T18:26:53.826Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET"
+  ],
+  "error": "input label missing: 比较值"
+}

@@ -15,6 +15,7 @@ export class DataCommandUncertain extends Error {
 export type DataCommandPolicy = {
   acceptedResponse?: boolean
   lookupOnly?: boolean
+  retryIfNotAccepted?: boolean
   canSubmit?: () => boolean
 }
 
@@ -75,7 +76,7 @@ export function createDataCommand(client: StreamingApiClient, projectId: string)
       return project(operation)
     } catch (error) {
       if (!(error instanceof ApiClientError && error.status === 404 && error.code === 'OPERATION_NOT_FOUND')) throw new DataCommandUncertain(error)
-      if (policy.lookupOnly) throw new DataCommandNotAccepted()
+      if (policy.lookupOnly || policy.retryIfNotAccepted === false) throw new DataCommandNotAccepted()
       try { return await submit() } catch (retryError) {
         if (definitive(retryError)) throw retryError
         throw new DataCommandUncertain(retryError)

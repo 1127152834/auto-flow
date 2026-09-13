@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/apps/desktop
+
+
+ Test Files  131 passed (131)
+      Tests  1027 passed (1027)
+   Start at  02:43:49
+   Duration  145.85s (transform 2.92s, setup 0ms, import 111.62s, tests 89.22s, environment 70.76s)

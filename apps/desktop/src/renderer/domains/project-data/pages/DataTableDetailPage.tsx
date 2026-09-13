@@ -1,3 +1,6 @@
+import { useRecordGridEntry } from "../use-record-grid-entry";
+import { RecordDraftRows } from "../components/RecordDraftRows";
+import { RecordDraftSaveBar } from "../components/RecordDraftSaveBar";
 import { FileText } from "@phosphor-icons/react";
 import { DataTablePageFrame } from "../components/DataTablePageFrame";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -70,7 +73,7 @@ export type DataTableDetailPageProps = {
   tableId: string;
   tab: DataTableTab;
   record?: RecordLocation;
-  onRecordNavigate?(record?: RecordLocation): void;
+  onRecordNavigate?(record?: RecordLocation, options?: { replace?: boolean }): void;
   client: StreamingApiClient;
   disabled?: boolean;
   readonly?: boolean;
@@ -140,6 +143,18 @@ function DataTableDetail({
   registerLeaveGuard,
 }: DataTableDetailPageProps) {
   const cache = useQueryClient();
+  const gridDirtyRef = useRef(false);
+  const gridLeaveApproved = useRef(false);
+  const [gridLeave, setGridLeave] = useState<null | { resolve(value: boolean): void; action?: () => void }>(null);
+  const [gridDiscard, setGridDiscard] = useState(false);
+  const gridLeaveRef = useRef(gridLeave); gridLeaveRef.current = gridLeave;
+  const requestGridLeave = (action?: () => void) => new Promise<boolean>(resolve => {
+    if (gridLeaveApproved.current) { gridLeaveApproved.current = false; action?.(); resolve(true); return }
+    if (!gridDirtyRef.current) { action?.(); resolve(true); return }
+    if (gridLeaveRef.current) { resolve(false); return }
+    const request = { resolve, action }; gridLeaveRef.current = request; setGridLeave(request);
+  });
+  useEffect(() => () => { gridLeaveRef.current?.resolve(false) }, []);
   const viewStateKey = tableViewKey(workspaceKey, projectId, tableId);
   const initialView = useRef<TableViewState | null>(null);
   if (!initialView.current) initialView.current = readTableView(viewStateKey);
@@ -202,7 +217,7 @@ function DataTableDetail({
     if (
       table &&
       table.datasetGeneration !== next.datasetGeneration &&
-      (editorDirtyRef.current || workflowDirtyRef.current)
+      (editorDirtyRef.current || workflowDirtyRef.current || gridDirtyRef.current)
     ) {
       setGenerationWarning("数据已更新，请先处理当前编辑草稿再载入。");
       return;
@@ -371,9 +386,29 @@ function DataTableDetail({
       });
     },
   });
+  const grid = useRecordGridEntry({
+    scope: { workspaceId: workspaceKey, projectId, tableId, datasetGeneration: generation ?? "" },
+    instanceKey: instanceId, fields, tableRevision: catalogQuery.data?.[0].tableRevision ?? table?.tableRevision ?? 1,
+    writable: Boolean(context && !readonly && !disabled && !generationWarning && !editing.recoveryBlocked),
+    busy: Boolean(workflow || editing.editor || editing.busy || editing.recoveryPending), client, storage: localStorage,
+    onSaved: (count, key) => {
+      void tableQuery.refetch(); void catalogQuery.refetch(); void recordsQuery.refetch();
+      void cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, "project-data", projectId, "tables"] });
+      setQueryNotice(`已新增 ${count} 条记录；列表继续使用原筛选和分页；未显示的新记录可清空筛选后查看。`);
+      notify({ title: `已新增 ${count} 条记录`, tone: "success", operationId: JSON.stringify([workspaceKey, key]) });
+    },
+  });
+  useEffect(() => {
+    if (grid.state === "stale") { void tableQuery.refetch(); void catalogQuery.refetch(); void recordsQuery.refetch(); }
+  }, [grid.state, cache, prefix]);
+  gridDirtyRef.current = grid.dirty || grid.pending;
+  const gridColumns = fields.filter(field => visibleFieldIds === null || visibleFieldIds.includes(field.ref.fieldId)
+    || grid.rows.length > 0 && (field.required || table?.identity.mode === "field" && table.identity.fieldId === field.ref.fieldId));
+  const legacyCreateStarted = useRef(false);
   const activatedRecordRoute = useRef<string | null>(null);
   const routeIdentity = recordLocation ? JSON.stringify(recordLocation) : null;
   useEffect(() => {
+    if (!recordLocation) legacyCreateStarted.current = false;
     if (activatedRecordRoute.current !== routeIdentity) {
       if (editing.recoveryBlocked || !editing.canLeave()) return;
       if (editing.editor && !editing.close()) return;
@@ -381,7 +416,11 @@ function DataTableDetail({
       if (!recordLocation) { activatedRecordRoute.current = null; return }
       if (!context || disabled || generationWarning) return;
       if (recordLocation.mode !== "create" && (!detailQuery.data || recordLocation.datasetGeneration !== generation)) return;
-      if (recordLocation.mode === "create") editing.open({ kind: "recordCreate" });
+      if (recordLocation.mode === "create") {
+        if (editing.recoveryPending || editing.recoveryBlocked) return;
+        if (!legacyCreateStarted.current && (grid.editable || readonly)) { legacyCreateStarted.current = true; if (!readonly && fields.some(field => field.writable && !field.formula)) grid.addRow(); onRecordNavigate?.(undefined, { replace: true }); }
+        return;
+      }
       else if (recordLocation.mode === "edit") editing.open({ kind: "recordEdit", record: detailQuery.data! });
       activatedRecordRoute.current = routeIdentity;
     }
@@ -425,7 +464,8 @@ function DataTableDetail({
     [],
   );
   useLayoutEffect(() => {
-    registerLeaveGuard(() => {
+    registerLeaveGuard(async () => {
+      if (gridDirtyRef.current && !(await requestGridLeave())) return false;
       if (!editing.canLeave() || workflowBusyRef.current) return Promise.resolve(false);
       return !editorDirtyRef.current && !workflowDirtyRef.current
         ? Promise.resolve(true)
@@ -440,6 +480,7 @@ function DataTableDetail({
     [],
   );
   const acceptLatestGeneration = () => {
+    if (gridDirtyRef.current) { setQueryNotice("请先核验保存结果，或复制并放弃旧数据的新增草稿，再载入新数据。"); return }
     if (!editing.canLeave()) return;
     void askDiscardOnce("all", () => {
       const next = tableQuery.data;
@@ -476,7 +517,7 @@ function DataTableDetail({
     context && !readonly && !disabled && !generationWarning && !editing.recoveryBlocked,
   );
   const openWorkflow = (kind: "batch" | "replace" | "export") => {
-    if (disabled || workflow || editing.editor || (kind === "export" && !effectiveQuery) || (kind !== "export" && !writable) || (kind === "batch" && selection.count === 0)) return;
+    if (disabled || gridDirtyRef.current || workflow || editing.editor || (kind === "export" && !effectiveQuery) || (kind !== "export" && !writable) || (kind === "batch" && selection.count === 0)) return;
     workflowDirtyRef.current = false; workflowBusyRef.current = false;
     setWorkflow({ kind, session: crypto.randomUUID() });
   };
@@ -592,7 +633,7 @@ function DataTableDetail({
       </section>
     );
   return (
-    <Tabs value={tab} onValueChange={value => onTabChange(value as DataTableTab)} data-table-detail>
+    <Tabs value={tab} onValueChange={value => { void requestGridLeave(() => onTabChange(value as DataTableTab)) }} data-table-detail>
       <DataTablePageFrame notice={null} header={<div className="flex min-w-0 gap-5">
         <span className="flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"><FileText size={32} /></span>
         <div className="min-w-0">
@@ -624,6 +665,7 @@ function DataTableDetail({
         <TabsContent value="records" className="grid gap-3">
           {!recordLocation ? <>
           <RecordQueryToolbar
+            createLabel="新增行" createDisabled={!grid.editable || !fields.some(field => field.writable && !field.formula)} queryLocked={grid.dirty || grid.pending}
             totalCount={page?.total}
             onReimport={writable ? () => openWorkflow("replace") : undefined}
             fields={fields} statuses={statuses} query={query} visibleFieldIds={visibleFieldIds} quickSearch={quickSearch}
@@ -631,7 +673,7 @@ function DataTableDetail({
             disabled={disabled || Boolean(generationWarning) || !catalogQuery.data || Boolean(workflow || editing.editor)} readonly={!writable}
             exportDisabled={!effectiveQuery} queryError={queryError ?? undefined}
             selectionCount={selection.count} onClearSelection={selection.clear}
-            onCreate={() => onRecordNavigate ? onRecordNavigate({ mode: "create" }) : editing.open({ kind: "recordCreate" })} onBatchStatus={() => openWorkflow("batch")} onExport={() => { if (effectiveQuery) openWorkflow("export") }}
+            onCreate={() => grid.addRow()} onBatchStatus={() => openWorkflow("batch")} onExport={() => { if (effectiveQuery) openWorkflow("export") }}
             onApplyQuery={next => { try { composeRecordQuery(fields, next, quickSearch); setQuery(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
             onApplySearch={next => { try { composeRecordQuery(fields, query, next); setQuickSearch(next); setRecordPage(1); setQueryError(null); return true } catch (error) { setQueryError(errorMessage(error)); return false } }}
             onApplyColumns={setVisibleFieldIds}
@@ -643,7 +685,9 @@ function DataTableDetail({
             page={page}
             fields={fields}
             statuses={statuses}
-            visibleFieldIds={visibleFieldIds ?? undefined}
+            visibleFieldIds={gridColumns.map(field => field.ref.fieldId)}
+            queryLocked={grid.dirty || grid.pending}
+            draftRows={(grid.rows.length > 0 || writable && !recordLocation) ? <RecordDraftRows rows={grid.rows} fields={gridColumns} identityFieldId={table.identity.mode === "field" ? table.identity.fieldId : undefined} errors={grid.errors} selectionColumn disabled={!grid.editable} focusCell={grid.focusCell} onAdd={grid.addRow} onRemove={grid.removeRow} onCellChange={grid.changeCell} onPaste={(row, column, text) => grid.paste(gridColumns, row, column, text)} onSave={() => void grid.save()} onUndo={grid.undo} /> : undefined}
             loading={recordsQuery.isFetching || catalogQuery.isFetching}
             error={
               recordsQuery.error
@@ -668,35 +712,28 @@ function DataTableDetail({
             }
             onCreate={
               writable
-                ? () => onRecordNavigate ? onRecordNavigate({ mode: "create" }) : editing.open({ kind: "recordCreate" })
+                ? () => grid.addRow()
                 : undefined
             }
-            onStatusChange={
-              writable
-                ? (record) => {
-                    originRowKey.current = record.ref.recordKey;
-              if (onRecordNavigate) { openRecordFromList(record); return }
-                    setDetailIntent("status");
-                    setDetailTarget({
-                      key: record.ref.recordKey,
-                      generation: record.ref.datasetGeneration,
-                    });
-                  }
-                : undefined
-            }
-            onOpen={(record) => {
+            onStatusChange={writable ? record => { void requestGridLeave(() => {
               originRowKey.current = record.ref.recordKey;
               if (onRecordNavigate) { openRecordFromList(record); return }
-              setDetailIntent("view");
-              setDetailTarget({
-                key: record.ref.recordKey,
-                generation: record.ref.datasetGeneration,
-              });
-            }}
-            onEdit={writable ? record => onRecordNavigate ? openRecordFromList(record, "edit") : editing.open({ kind: "recordEdit", record }) : undefined}
-            onDelete={writable ? record => editing.open({ kind: "recordDelete", record }) : undefined}
-            onPageChange={setRecordPage}
+              setDetailIntent("status"); setDetailTarget({ key: record.ref.recordKey, generation: record.ref.datasetGeneration });
+            }) } : undefined}
+            onOpen={record => { void requestGridLeave(() => {
+              originRowKey.current = record.ref.recordKey;
+              if (onRecordNavigate) { openRecordFromList(record); return }
+              setDetailIntent("view"); setDetailTarget({ key: record.ref.recordKey, generation: record.ref.datasetGeneration });
+            }) }}
+            onEdit={writable ? record => { void requestGridLeave(() => onRecordNavigate ? openRecordFromList(record, "edit") : editing.open({ kind: "recordEdit", record })) } : undefined}
+            onDelete={writable ? record => { void requestGridLeave(() => editing.open({ kind: "recordDelete", record })) } : undefined}
+            onPageChange={next => { if (!gridDirtyRef.current) setRecordPage(next) }}
           />
+          {grid.rows.length > 0 || grid.state !== "draft" ? <>
+            {grid.dirty || grid.pending ? <p className="text-xs text-muted">请先保存或放弃新增，再调整筛选、排序、分页和显示列。选中单元格可粘贴多行，双击可编辑长文本。</p> : null}
+            {grid.state === "stale" ? <div role="alert"><p>{grid.message}</p><Button disabled={catalogQuery.isFetching || tableQuery.isFetching} onClick={grid.adoptSchema}>确认最新字段并继续</Button></div> : null}
+            <RecordDraftSaveBar count={grid.count} state={grid.state} disabled={disabled || !generation || tableQuery.isLoading || catalogQuery.isLoading} saveDisabled={!writable} message={grid.message} onSave={() => void grid.save()} onReconcile={() => void grid.reconcile()} onDiscard={() => grid.dirty ? setGridDiscard(true) : grid.discard()} />
+          </> : null}
           </> : recordContent}
         </TabsContent>
         <TabsContent value="fields">
@@ -1081,6 +1118,8 @@ function DataTableDetail({
         filter={base64url(effectiveQuery.filter)} orderBy={base64url(effectiveQuery.orderBy)} readonly={readonly} disabled={disabled || Boolean(generationWarning)}
         onClose={closeWorkflow} onDirtyChange={value => { workflowDirtyRef.current = value }} onBusyChange={value => { workflowBusyRef.current = value }}
         onCompleted={operation => { closeWorkflow(); notify({ title: "Excel 导出已完成", tone: "success", operationId: JSON.stringify([workspaceKey, operation.operationId]) }) }} /> : null}
+      <AlertDialog open={gridDiscard} onOpenChange={setGridDiscard}><AlertDialogContent><AlertDialogTitle>放弃新增草稿？</AlertDialogTitle><AlertDialogDescription>这些新增行尚未写入数据表，放弃后将清除本次输入。</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus>继续录入</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="danger" onClick={() => { grid.discard(); setGridDiscard(false) }}>放弃新增</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
+      <AlertDialog open={Boolean(gridLeave)} onOpenChange={open => { if (!open) { gridLeaveRef.current?.resolve(false); gridLeaveRef.current = null; setGridLeave(null) } }}><AlertDialogContent><AlertDialogTitle>离开当前新增记录？</AlertDialogTitle><AlertDialogDescription>{grid.pending ? "保存结果仍需核验，离开视图不会取消已发送的操作；返回后可继续查询。" : "新增草稿将保留，返回此数据表可继续录入。"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button autoFocus>继续录入</Button></AlertDialogCancel><AlertDialogAction asChild><Button onClick={() => { const request = gridLeaveRef.current; gridLeaveRef.current = null; setGridLeave(null); gridLeaveApproved.current = Boolean(request?.action); request?.action?.(); queueMicrotask(() => { gridLeaveApproved.current = false }); request?.resolve(true) }}>保留草稿并离开</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog>
       <AlertDialog open={Boolean(conflictLatest || conflictError)} onOpenChange={open => { if (!open && !conflictLoading) { setConflictLatest(null); setConflictError(null) } }}><AlertDialogContent><AlertDialogTitle>用最新资料重新编辑？</AlertDialogTitle><AlertDialogDescription>{conflictError ?? conflictLatest?.summary ?? "正在载入最新资料…"}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button disabled={conflictLoading}>保留当前草稿</Button></AlertDialogCancel>{conflictLatest ? <AlertDialogAction asChild><Button disabled={disabled || editing.busy || editing.recoveryPending} onClick={() => { if (conflictLatest.session !== editing.editor?.session || disabled || editing.busy || editing.recoveryPending) return; editing.replaceEditor(conflictLatest.context, conflictLatest.input); setConflictLatest(null); setConflictError(null); setEditorDirty(false) }}>重新编辑</Button></AlertDialogAction> : <Button disabled={conflictLoading} onClick={() => void loadConflictLatest()}>重试载入</Button>}</div></AlertDialogContent></AlertDialog>
       <AlertDialog
         open={leaveOpen}

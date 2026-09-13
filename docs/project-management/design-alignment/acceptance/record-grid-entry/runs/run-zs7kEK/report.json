@@ -1,0 +1,90 @@
+{
+  "started": "2026-09-13T18:37:38.473Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-5eSItl",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-zs7kEK",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "5bd35cd134a918182deeb9acddc7eb9fec49e5367417bb62105e1fc6bc0884e1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "details": "Real clipboard paste preserves leading-zero text and adds exactly two rows",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "details": "Invalid required cell is focused and no records are written",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "details": "Cancelled tab leave preserves grid draft",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E05",
+      "status": "passed",
+      "details": "Over-wide, over-100-row and over-1-MiB clipboard pastes leave original draft unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E09",
+      "status": "passed",
+      "details": "Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E12-service-reconnect",
+      "status": "passed",
+      "details": "Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E15",
+      "status": "passed",
+      "details": "Actual Electron 200% zoom preserves window width and draft; screenshot captured",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E16-edit",
+      "status": "passed",
+      "details": "Saved record edit still uses existing detail/edit flow and persists through UI",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E10",
+      "status": "passed",
+      "details": "Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E08",
+      "status": "passed",
+      "details": "Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E14-list",
+      "status": "passed",
+      "details": "Nonmatching row is saved, applied search and visible count stay unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "sourceContentSha256": "2d5d5db2a152af260c81bd2091e51fa2fdc52cc663cf76d69eff876506bc185f",
+  "buildContentSha256": "57ddef5936222d8680a09808263d0abcbefd585271481320cf25d3e0979a58be",
+  "status": "failed",
+  "error": "Error: timed out waiting for 客户: null",
+  "finished": "2026-09-13T18:38:17.932Z"
+}

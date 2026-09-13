@@ -376,3 +376,8 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ## 项目管理Gallery还原资料（2026-09-13）
 
 `docs/project-management/design-alignment/gallery-baseline/` 保存原始图库路径/hash/尺寸索引、历史验收适用性勘误和本轮文档静态核验。原PNG仍在主项目只读图库，不重新生成副本。当前规格与计划分别为 `docs/superpowers/specs/2026-09-13-project-management-gallery-fidelity.md`、`docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md`；B0资产仅历史参考。拟新增DataTablePageFrame为展示组合组件，尚未创建，不代表交付。
+
+
+## 行尾连续录入（2026-09-14）
+
+独立实现分支 `codex/record-grid-entry`：`domains/project-data/record-grid-{draft,clipboard,storage}.ts` 分别负责草稿纯逻辑、TSV、持久信封；`use-record-grid-entry.ts` 负责一次批量命令及恢复；三个 `RecordGridCellEditor` / `RecordDraftRows` / `RecordDraftSaveBar` 组件组合进现有表体。后台 records 领域沿原分层增加 create_many，无新迁移或通用任务队列。受控测试入口为 `scripts/qa-record-grid-entry.mjs`，清理校验为 `qa-record-grid-files.mjs`。

@@ -138,6 +138,7 @@ def projects_router(service: ProjectService) -> APIRouter:
             "mutateField",
             "mutateStatus",
             "createRecord",
+            "createRecords",
             "updateRecord",
             "setRecordStatus",
             "deleteRecord",

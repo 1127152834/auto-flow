@@ -10,7 +10,11 @@ from .project_data_catalog_schemas import (
     StatusResourceLocator,
 )
 from .project_data_deletion_schemas import RecordDeleteResult, StatusDeleteResult
-from .project_data_record_schemas import DataRecordView, RecordResourceLocator
+from .project_data_record_schemas import (
+    DataRecordBatchResult,
+    DataRecordView,
+    RecordResourceLocator,
+)
 from .project_data_schemas import DataTableView, TableResourceLocator
 from .project_data_status_batch_schemas import (
     CancelRecordStatusesResult,
@@ -112,6 +116,7 @@ class ProjectOperationView(ApiModel):
         "mutateField",
         "mutateStatus",
         "createRecord",
+        "createRecords",
         "updateRecord",
         "setRecordStatus",
         "deleteRecord",
@@ -139,6 +144,7 @@ class ProjectOperationView(ApiModel):
         | StatusMutationResult
         | StatusDeleteResult
         | DataRecordView
+        | DataRecordBatchResult
         | RecordDeleteResult
         | RecordStatusBatchOutcome
         | ExcelInspectionView
@@ -189,3 +195,7 @@ class ProjectPatch(ApiModel):
 
     def payload(self):
         return self.model_dump(by_alias=True, exclude_unset=True)
+
+
+class DataRecordBatchResponse(DataRecordBatchResult):
+    operation: ProjectOperationView

@@ -1,0 +1,104 @@
+[
+  {
+    "path": "engineering/openapi.log",
+    "originalSha256": "bc36b857cd70dec8e241b735781f712ab7481a86d8b15fb2d9a643e5c142485f",
+    "normalizedSha256": "d25c78dea5394a532a586bbed5977202df5ac777779205e6b0af7a9c010114cf",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "engineering/lint.log",
+    "originalSha256": "8c51f199f85a9891eaa822d53a89a63a04913e7876b341f58a8dce4204e5c099",
+    "normalizedSha256": "6061943cc08dcd9ce667c10ee586f1b9c665fdc85c50d0b2b1429968bf5b7caa",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "engineering/typecheck.log",
+    "originalSha256": "6698d07215069efcdfd14f4dec1032b348778f3f2282a184a862e442170de611",
+    "normalizedSha256": "a6ee7570145f5275bd9c692883cf53675fb7c99389233ba651dd32d5ef1751f1",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "engineering/vitest-final.log",
+    "originalSha256": "f008586cb01cf1f56a8d9540eea0e18ca8fa3a238eb6c44bd5de4eac6a13e164",
+    "normalizedSha256": "6e13c09ba3fb31fb0645df623bf0c13ecf7ff2115f151942d6f682d2702390c5",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "engineering/page-final.log",
+    "originalSha256": "99f4abfd5b6b5a5199eaedd9d4b3ecfa7686b9e266fd4ae00be784cd8afb8b47",
+    "normalizedSha256": "7997b694d4718bea376660ac80b120c8862e01aefd4f2283f779089e90acf1f5",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-I4OKnd/failure-dom.txt",
+    "originalSha256": "2f9e07eb8ad834ebf9840db58fff86f03f908c218fa5dd11daace733515e93cb",
+    "normalizedSha256": "2da81b5701996ed9765f0efb02d8fcb1f3b07f19c88863343b63cae1a4f05fc9",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-RNQtHk/failure-dom.txt",
+    "originalSha256": "97a8542b5e3fdc572ac16342de3d43eb3bfaaa065ea69c242f8103a9ea09c73f",
+    "normalizedSha256": "e484afc10ea882d68d8b948e07fc01876d13741f005532a380494e75878b94a9",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-cZNtUG/failure-dom.txt",
+    "originalSha256": "98eb768dd70066d1fa6eea1e7847e1de38c25b7b04d0924e96bf399fa2de6485",
+    "normalizedSha256": "3204bad81ad1b5fababed2f89660f9780731be2e44a49ffd8a9e254e9a47ff29",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-4g5GyZ/failure-dom.txt",
+    "originalSha256": "bb213dc43ec16cc24edf39ccbb0e43f66e4e5cd986bb8b6dc55055cdd1d507c0",
+    "normalizedSha256": "6f77c93d43cce11e16a56655031f02d538d331af4329fb27ae8a27623e949a1c",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-XyW50g/failure-dom.txt",
+    "originalSha256": "6584d0a493c186ef366cf33bf27ad2f96b895be791da5ad25c2152d711638efb",
+    "normalizedSha256": "a62bb36bf4b3dc49426bdba6407e48f098117507a4e32701101f47b6c4acd4f4",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-xpOCRY/failure-dom.txt",
+    "originalSha256": "318428c610813c3261cca6f3bb42dd842f17d839e47c049be19e085b60e9beaf",
+    "normalizedSha256": "49667ec30e57b88a7f80bc01fc0e516fd6c4670804c0d1600785c4ed0662776a",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-ZIyJoz/failure-dom.txt",
+    "originalSha256": "2f9e07eb8ad834ebf9840db58fff86f03f908c218fa5dd11daace733515e93cb",
+    "normalizedSha256": "2da81b5701996ed9765f0efb02d8fcb1f3b07f19c88863343b63cae1a4f05fc9",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-ETcgHK/failure-dom.txt",
+    "originalSha256": "f9a00e5f957286b1c2a13cf2bd9dd9336c4151f825410d1d4cc440620cf1d34f",
+    "normalizedSha256": "14d97e8b94e8a070a9ec0e284d8cd1e916bfa2dec0cdafb97004cb7dc1d5eb15",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-eKKDPy/failure-dom.txt",
+    "originalSha256": "b673e2b195518740336928dab93888ab85981cd35d35b66f7c6cc36b0b447f04",
+    "normalizedSha256": "5e8533c70d63b6a223bdc087c1583d60873733cf59287726dbe383f383f87fb4",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-5MHnNW/failure-dom.txt",
+    "originalSha256": "7b673a335645c4dae1a102ac8e839e8470b5f9b5f8a808460a50d341c6c370dd",
+    "normalizedSha256": "61e31ef2cd7657b12d4674c57a909d3d0dd519cfa384d875558ed591ea77acd9",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-tV2rFP/failure-dom.txt",
+    "originalSha256": "402dc01ed49f382381abf01e7c7839018a9d0a5ef703a0b4f139bec280e09ac5",
+    "normalizedSha256": "c131f3b5d07e75a61365877f31a5641f7f1decddbc3fca5da2392f8252b629b7",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  },
+  {
+    "path": "runs/run-zs7kEK/failure-dom.txt",
+    "originalSha256": "13989461415dabe1fa4f6f247012a683232f6b23b3c682c2d7c3da7444ab62db",
+    "normalizedSha256": "1993490bd5de986373ac02920ea17bbe36c24875c870b1896fbb0c23aed6dce4",
+    "change": "Only trailing whitespace and final empty lines normalized; screenshots and report.json unchanged"
+  }
+]

@@ -1,0 +1,61 @@
+{
+  "date": "2026-09-14",
+  "status": "candidate",
+  "implementation": "G1-G3 implemented",
+  "g4Exit": false,
+  "baseCommit": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "sourceContentSha256": "4a87c2267246f2bd0667758a995663e4d774181009ed449bf22a86113cfe92f3",
+  "buildContentSha256": "f5bdcd766243e62f8181ed0bc241d1106a428d2f21b0315e3fa1655a930fe60e",
+  "platform": {
+    "tested": "macOS arm64 development Electron",
+    "windows": "notRun",
+    "otherArchitectures": "notRun",
+    "packaging": "notRun"
+  },
+  "automatic": {
+    "pytest": {
+      "passed": 773,
+      "warnings": 2
+    },
+    "vitest": {
+      "files": 131,
+      "passed": 1027
+    },
+    "ruff": "passed",
+    "mypy": {
+      "sourceFiles": 195,
+      "result": "passed"
+    },
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapi": "passed",
+    "scripts": {
+      "passed": 26
+    },
+    "structure": {
+      "passed": 3
+    },
+    "diffCheck": "passed",
+    "jsonParse": "passed"
+  },
+  "e2e": {
+    "run": "runs/run-YA1gy6/report.json",
+    "executedChecksPassed": true,
+    "entirePlannedMatrixComplete": false,
+    "scope": "cases.json"
+  },
+  "review": {
+    "selfReview": "review.md",
+    "independentReview": "notExecuted: side-conversation constraints",
+    "visualNumericGate": "notClosed",
+    "userManual": "notRun"
+  },
+  "knownRemaining": [
+    "E13 legacy pending and reimport generation combined E2E",
+    "native Chinese IME and comprehensive assistive-technology keyboard audit",
+    "independent per-screen visual scoring and user acceptance"
+  ],
+  "otherWorkspaces": "Read only in this task; ongoing parent/main changes were not copied or committed",
+  "logs": "engineering"
+}

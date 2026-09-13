@@ -564,3 +564,14 @@ PM0历史报告不回写。PM2新增表身份策略、写入值形状、Excel创
 `DataTableView.source` 可选，兼容已有历史 Operation 快照；本次表查询和新结果返回 `kind`，Excel 表另含 `filename`、`sheetName`、`importedAt`。这些字段来自当前数据代次，不公开文件路径、授权、内部工作表 ID 或指纹。导入原子发布同时保存一条唯一 `DataChange`，重发不重复记账。
 
 新的导入命令必须仍持有当前工作区、当前服务实例的检查授权；重启后的旧检查快照可查询，但不能授权新的文件读取。已接受同键同请求先找回原 Operation，不重新验证旧令牌或读取文件。
+
+
+## 行内记录新增扩展（2026-09-14，实施分支）
+
+`POST /api/v1/projects/{projectId}/tables/{tableId}/records/batch`，Operation kind `createRecords`，resource 为 table。沿用认证、项目准入、QuiesceGate 与 `Idempotency-Key`；不取代单条创建接口。
+
+请求 `DataRecordBatchCreate`：`datasetGeneration`、`expectedTableRevision`、`rows`（1–100）；行包含 UUID `clientRowId` 与 `values:[{fieldId,value}]`。应用层规范字段顺序后 UTF-8 JSON 最大 1 MiB；重复行/字段身份拒绝。省略字段、null、空文本、0、false 不合并。
+
+成功响应 `{operation,records:[{clientRowId,record}]}`，同一快照位于 `operation.result.records`，首次 201、同键重放 200。结果为提交时快照。记录、每行 DataChange 与 Operation 同事务提交，任意一行失败整批不写。验证错误提供 `error.details.rowErrors:[{clientRowId,fieldId,code,message}]`；身份重复 409，结构冲突 409，类型/必填错误 422，超字节 413。错误归属继续受项目和表作用域约束。
+
+结果未知先查询既有 `/operations/by-idempotency-key/{key}`。可信 OPERATION_NOT_FOUND 后才允许显式使用原 key/payload 重发；查询失败继续待核验。前端核验完整 clientRowId 映射、项目、表、代次后才清草稿。旧数据代次的已知操作允许查询，结果不能解释成对新代次新增。

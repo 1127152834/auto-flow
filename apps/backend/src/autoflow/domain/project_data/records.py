@@ -16,6 +16,15 @@ class ProjectDataRecords(Protocol):
         values: dict[str, object],
         operation: ProjectOperation,
     ) -> tuple[dict[str, Any], ProjectOperation, bool]: ...
+    def create_many(
+        self,
+        project_id: str,
+        table_id: str,
+        generation: str,
+        expected: int,
+        rows: list[tuple[str, dict[str, object]]],
+        operation: ProjectOperation,
+    ) -> tuple[dict[str, Any], ProjectOperation, bool]: ...
     def get(
         self, project_id: str, table_id: str, generation: str, key: RecordKey
     ) -> dict[str, Any] | None: ...

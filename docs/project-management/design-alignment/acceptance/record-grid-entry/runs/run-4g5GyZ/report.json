@@ -1,0 +1,22 @@
+{
+  "started": "2026-09-13T18:14:29.674Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-W770u0",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-4g5GyZ",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "044bd73ec9bbf584b861a1b1183db79cbf4dffe509fe5246c0fd0bf23ff4af65",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "status": "failed",
+  "error": "Error: timed out waiting for 保存 2 行: false",
+  "finished": "2026-09-13T18:14:52.246Z"
+}

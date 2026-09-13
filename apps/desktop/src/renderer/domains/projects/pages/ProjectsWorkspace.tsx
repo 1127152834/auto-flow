@@ -21,7 +21,7 @@ export type ProjectsWorkspaceProps = {
   instanceId: string
   client: StreamingApiClient
   disabled: boolean
-  onNavigate(route: ProjectRoute): void
+  onNavigate(route: ProjectRoute, options?: { replace?: boolean }): void
   registerLeaveGuard(guard: (() => Promise<boolean>) | null): void
 }
 
@@ -202,7 +202,7 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
     {route.projectId && project ? <ProjectOverviewPage onTableBack={() => onNavigate({ projectId: project.projectId, tab: "data" })} tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
       {route.tab === 'data' ? route.tableId
-        ? <DataTableDetailPage key={`${workspaceKey}:${project.projectId}:${route.tableId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} record={route.record} onRecordNavigate={record => onNavigate({ ...route, dataTab: 'records', record })} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab, record: undefined })} />
+        ? <DataTableDetailPage key={`${workspaceKey}:${project.projectId}:${route.tableId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} record={route.record} onRecordNavigate={(record, options) => onNavigate({ ...route, dataTab: 'records', record }, options)} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab, record: undefined })} />
         : <DataTableDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onOpen={tableId => onNavigate({ projectId: project.projectId, tab: 'data', tableId, dataTab: 'records' })} />
         : undefined}
       </ProjectOverviewPage>

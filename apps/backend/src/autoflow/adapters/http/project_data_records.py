@@ -10,6 +10,7 @@ from autoflow.application.project_data.records import DataRecordService
 from .errors import browser_error_responses
 from .project_data import CanonicalId, Key
 from .project_data_record_schemas import (
+    DataRecordBatchCreate,
     DataRecordCreate,
     DataRecordPage,
     DataRecordPatch,
@@ -17,6 +18,8 @@ from .project_data_record_schemas import (
     DataRecordView,
     RecordKeyType,
 )
+from .project_schemas import DataRecordBatchResponse
+from .projects import _op
 
 
 def project_records_router(
@@ -73,6 +76,32 @@ def project_records_router(
         if replay:
             response.status_code = 200
         return snapshot
+
+    @router.post(
+        "/batch",
+        response_model=DataRecordBatchResponse,
+        status_code=201,
+        responses={
+            200: {"model": DataRecordBatchResponse},
+            **browser_error_responses(401, 404, 409, 410, 412, 413, 422, 423),
+        },
+    )
+    def create_batch(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: DataRecordBatchCreate,
+        response: Response,
+        idempotency_key: Key,
+    ):
+        result, operation, replay = service.create_many(
+            str(projectId),
+            str(tableId),
+            str(idempotency_key),
+            body.model_dump(by_alias=True),
+        )
+        if replay:
+            response.status_code = 200
+        return {**result, "operation": _op(operation)}
 
     @router.get(
         "/{recordKey}",
