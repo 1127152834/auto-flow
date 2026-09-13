@@ -3074,7 +3074,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   setWorkflowName: (name) => {
-    set({ name })
+    if (get().name !== name) set({ name, hasUnsavedChanges: true })
   },
   
   // 设置工作流名称并保存历史（用于需要记录历史的场景，如失焦时）
@@ -3083,7 +3083,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 只有名称真正改变时才保存历史
     if (state.name !== name) {
       get().pushHistory()
-      set({ name })
+      set({ name, hasUnsavedChanges: true })
     }
   },
 

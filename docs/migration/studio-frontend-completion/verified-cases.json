@@ -12681,5 +12681,255 @@
     "level": "browser UI",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/connection-composition.md"
+  },
+  {
+    "id": "F5.document-new.save",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "新建 → 保存后继续"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "先保存包含变量的文档再清空",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.discard",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "新建 → 放弃修改"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "不保存，清空一次",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.save-failed",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "新建 → 保存后继续，返回507"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "变量和脏状态保持",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.save-edited",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "新建 → 保存中修改变量 → 返回成功"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "新变量保留且仍未保存",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.overwrite-cancel",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "新建 → 保存后继续 → 取消覆盖"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "不发保存，不清空",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.duplicate",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "连续新建请求 → 放弃"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "只新建一次",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.decision-edited",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "确认期间修改 → 放弃"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "确认失效，保留新修改",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-new.name-only",
+    "capability": "文档离开保护",
+    "preconditions": {
+      "document": "仅有变量或名称的未保存草稿",
+      "service": "受控 Mock transport"
+    },
+    "steps": [
+      "仅修改名称且未失焦 → 新建 → 取消"
+    ],
+    "expectedUI": "显示保存后继续、放弃修改、取消及相关结果",
+    "expectedIO": "仅保存选择允许发出保存请求，失败不继续",
+    "stateAssertion": "名称与脏状态保持",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.cancel",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "cancel",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "不替换",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.allow",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "allow",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "替换为目标",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.close",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "close",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "关闭后响应失效",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.edit",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "edit",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "加载期间修改使响应失效",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.unmount",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "unmount",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "卸载后响应失效",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
+  },
+  {
+    "id": "F5.document-open.404",
+    "capability": "打开流程保护",
+    "preconditions": {
+      "document": "未保存变量草稿",
+      "file": "destination.json"
+    },
+    "steps": [
+      "点击目标文件",
+      "404",
+      "返回受控响应"
+    ],
+    "expectedUI": "关闭或保留列表与决策一致；错误写入日志",
+    "expectedIO": "读取文件，不隐式保存",
+    "stateAssertion": "不要求放弃且保留草稿",
+    "level": "component interaction",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx"
   }
 ]

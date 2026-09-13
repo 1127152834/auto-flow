@@ -1,3 +1,4 @@
+import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, components/workflow/LocalWorkflowDialog.tsx; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from '../api/transport'
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -12,6 +13,7 @@ import { getBackendBaseUrl } from '../api/config'
 import { useVirtualizer } from '../hooks/useVirtualizer'
 
 interface LocalWorkflowDialogProps {
+  beforeReplace: () => Promise<boolean>
   isOpen: boolean
   onClose: () => void
   onLog: (level: 'info' | 'success' | 'warning' | 'error', message: string) => void
@@ -24,7 +26,7 @@ interface WorkflowInfo {
   size: number
 }
 
-export function LocalWorkflowDialog({ isOpen, onClose, onLog }: LocalWorkflowDialogProps) {
+export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: LocalWorkflowDialogProps) {
   const { config } = useGlobalConfigStore()
   const importWorkflow = useWorkflowStore((state) => state.importWorkflow)
   const [workflows, setWorkflows] = useState<WorkflowInfo[]>([])
@@ -32,6 +34,13 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog }: LocalWorkflowDia
   const [searchTerm, setSearchTerm] = useState('')
   const [defaultFolder, setDefaultFolder] = useState('')
   const { confirm, ConfirmDialog } = useConfirm()
+
+  const openVersion = useRef(0)
+  const opening = useRef(false)
+  useEffect(() => {
+    openVersion.current++
+    return () => { openVersion.current++ }
+  }, [isOpen])
 
   const currentFolder = config.workflow?.localFolder || defaultFolder
 
@@ -80,6 +89,10 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog }: LocalWorkflowDia
   }, [isOpen, defaultFolder, config.workflow?.localFolder])
 
   const handleOpen = async (workflow: WorkflowInfo) => {
+    if (opening.current) return
+    opening.current = true
+    const version = openVersion.current
+    const original = snapshotKey(useWorkflowStore.getState().exportWorkflow())
     try {
       const API_BASE = getBackendBaseUrl()
       const response = await studioFetch(
@@ -87,7 +100,13 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog }: LocalWorkflowDia
       )
       const data = await response.json()
 
-      if (data.success && data.content) {
+      if (version !== openVersion.current) return
+      if (snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original) {
+        onLog('warning', '加载期间草稿已修改，请重新打开工作流')
+        return
+      }
+      if (response.ok && data.success && data.content) {
+        if (!(await beforeReplace()) || version !== openVersion.current) return
         const success = importWorkflow(JSON.stringify(data.content))
         if (success) {
           onLog('success', `已打开工作流: ${workflow.name}`)
@@ -99,8 +118,8 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog }: LocalWorkflowDia
         onLog('error', `打开失败: ${data.error}`)
       }
     } catch (e) {
-      onLog('error', `打开工作流出错: ${e}`)
-    }
+      if (version === openVersion.current) onLog('error', `打开工作流出错: ${e}`)
+    } finally { opening.current = false }
   }
 
   const handleDelete = async (workflow: WorkflowInfo) => {

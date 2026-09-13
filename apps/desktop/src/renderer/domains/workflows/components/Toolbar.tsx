@@ -1,3 +1,4 @@
+import { useDraftProtection } from '../hooks/useDraftProtection'
 import { CalendarClock } from 'lucide-react'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
@@ -370,7 +371,7 @@ export function Toolbar() {
     let currentFolder = config.workflow?.localFolder || defaultFolder
     if (!currentFolder) {
       const result = await localWorkflowApi.getDefaultFolder()
-      if (result.error) { addLog({ level: 'error', message: result.error }); return }
+      if (result.error) { addLog({ level: 'error', message: result.error }); return false }
       currentFolder = result.data?.folder || ''
       if (currentFolder) setDefaultFolder(currentFolder)
     }
@@ -378,7 +379,7 @@ export function Toolbar() {
       if (!skipConfirm) {
         addLog({ level: 'error', message: '未配置工作流保存路径' })
       }
-      return
+      return false
     }
 
     try {
@@ -410,7 +411,7 @@ export function Toolbar() {
           )
           if (!shouldOverwrite) {
             addLog({ level: 'info', message: '已取消保存' })
-            return
+            return false
           }
         }
       }
@@ -432,7 +433,9 @@ export function Toolbar() {
         if (!skipConfirm) {
           addLog({ level: 'success', message: `工作流已保存: ${data.filename}` })
         }
-        if (snapshotKey(exportWorkflow()) === savedContent) markAsSaved()  // A late save response cannot acknowledge newer edits.
+        const unchanged = snapshotKey(exportWorkflow()) === savedContent
+        if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
+        return unchanged
       } else {
         if (!skipConfirm) {
           addLog({ level: 'error', message: `保存失败: ${data.error}` })
@@ -443,6 +446,7 @@ export function Toolbar() {
         addLog({ level: 'error', message: `保存出错: ${e}` })
       }
     }
+    return false
   }, [config.workflow?.localFolder, config.workflow?.showOverwriteConfirm, config.workflow?.autoSaveCopy, defaultFolder, exportWorkflow, addLog, confirm])
 
   const handleNewWorkflow = useCallback(() => {
@@ -451,17 +455,10 @@ export function Toolbar() {
     addLog({ level: 'info', message: '已创建新工作流' })
   }, [clearWorkflow, addLog])
 
-  // 所有新建入口都按文档脏状态确认，包括仅有变量或名称的草稿。
+  const { confirmLeave, draftDialog } = useDraftProtection(handleSave)
   const handleNewWorkflowClick = useCallback(async () => {
-    if (useWorkflowStore.getState().hasUnsavedChanges) {
-      const ok = await confirm('新建工作流会清空当前画布，未保存的内容将丢失。确定要新建吗？', {
-        type: 'warning',
-        title: '新建工作流',
-      })
-      if (!ok) return
-    }
-    handleNewWorkflow()
-  }, [confirm, handleNewWorkflow])
+    if (await confirmLeave()) handleNewWorkflow()
+  }, [confirmLeave, handleNewWorkflow])
 
   // 智能整理（基于 ELKJS 的自动排版）
   const handleAutoLayout = useCallback(async () => {
@@ -1759,6 +1756,7 @@ export function Toolbar() {
       
       {/* 本地工作流对话框 */}
       <LocalWorkflowDialog
+        beforeReplace={confirmLeave}
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
         onLog={(level, message) => addLog({ level, message })}
@@ -1792,6 +1790,7 @@ export function Toolbar() {
       
       {/* 确认对话框 */}
       <ConfirmDialog />
+      {draftDialog}
       {/* 加密密码输入弹窗 */}
       {passwordDialog}
       

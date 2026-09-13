@@ -4174,3 +4174,14 @@ Object.assign(PHRASES, {
   '请求不是合法 JSON 或 multipart 数据': 'Request is not valid JSON or multipart data',
 })
 Object.assign(PHRASES, { '关闭录制器': 'Close recorder' })
+
+Object.assign(UI_DICT, {
+  '保存当前工作流？': 'Save the current workflow?',
+  '保存后继续': 'Save and continue',
+  '放弃修改': 'Discard changes',
+  '加载期间草稿已修改，请重新打开工作流': 'The draft changed while loading. Please open the workflow again.',
+  '确认期间草稿已修改，请重新操作': 'The draft changed while confirming. Please try again.',
+  '保存期间草稿已修改，已保留当前编辑内容': 'The draft changed while saving. Your current edits have been kept.',
+  '当前工作流有未保存的修改，请选择如何处理。': 'The current workflow has unsaved changes. Choose how to proceed.',
+})
+Object.assign(PHRASES, { '无法完成保存保护': 'Unable to complete save protection' })

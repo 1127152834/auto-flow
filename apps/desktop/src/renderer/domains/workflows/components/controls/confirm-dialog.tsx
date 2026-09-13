@@ -12,6 +12,8 @@ interface ConfirmDialogProps {
   message: string
   confirmText?: string
   cancelText?: string
+  secondaryText?: string
+  onSecondary?: () => void
   onConfirm: () => void
   onCancel?: () => void
 }
@@ -25,6 +27,8 @@ export function ConfirmDialog({
   cancelText = '取消',
   onConfirm,
   onCancel,
+  secondaryText,
+  onSecondary,
 }: ConfirmDialogProps) {
   const confirmBtnRef = useRef<HTMLButtonElement>(null)
 
@@ -145,6 +149,9 @@ export function ConfirmDialog({
             <Button variant="secondary" size="sm" onClick={onCancel}>
               {cancelText}
             </Button>
+          )}
+          {onSecondary && (
+            <Button variant="secondary" size="sm" onClick={onSecondary}>{secondaryText}</Button>
           )}
           <Button
             ref={confirmBtnRef}
