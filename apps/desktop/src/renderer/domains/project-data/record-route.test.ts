@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { decodeRecordKey, encodeRecordKey } from './record-route'
 
 describe('record route identity', () => {
-  it.each(['001', '1', '中文/📄?x=1', '文'.repeat(8000)])('round trips text without changing its identity', value => {
+  it.each(['001', '1', '中文/📄?x=1', '\uFEFF记录', '\uFEFF', '文'.repeat(8000)])('round trips text without changing its identity', value => {
     expect(decodeRecordKey('text', encodeRecordKey({ type: 'text', value }))).toEqual({ type: 'text', value })
   })
 

@@ -38,7 +38,7 @@ function decodeUtf8Base64url(encoded: string): string {
   try { binary = atob(encoded.replaceAll('-', '+').replaceAll('_', '/') + padding) } catch { throw new Error('记录键编码无效') }
   const bytes = Uint8Array.from(binary, character => character.charCodeAt(0))
   let value: string
-  try { value = new TextDecoder('utf-8', { fatal: true }).decode(bytes) } catch { throw new Error('记录键不是有效 UTF-8') }
+  try { value = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes) } catch { throw new Error('记录键不是有效 UTF-8') }
   if (encodeUtf8Base64url(value) !== encoded) throw new Error('记录键编码不规范')
   return value
 }
