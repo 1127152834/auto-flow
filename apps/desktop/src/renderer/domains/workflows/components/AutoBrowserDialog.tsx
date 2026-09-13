@@ -22,7 +22,9 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [url, setUrl] = useState('')
   const [copied, setCopied] = useState(false)
   const [lastSelector, setLastSelector] = useState('')
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const statusRequest = useRef(0)
+  const onLogRef = useRef(onLog)
+  useEffect(() => { onLogRef.current = onLog }, [onLog])
   // 记录上一次已处理的选择器，避免轮询期间对同一结果重复复制/记日志
   const lastHandledRef = useRef('')
   // 打开浏览器因缺功能模块包而失败时，用这两个状态把安装引导弹出来
@@ -30,90 +32,92 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [showFeaturePacks, setShowFeaturePacks] = useState(false)
   const { config } = useGlobalConfigStore()
 
-  // 检查浏览器状态
+  // Status failures preserve the last confirmed browser state; they do not prove closure.
   const checkStatus = async () => {
+    const request = ++statusRequest.current
     try {
       const result = await browserApi.getStatus()
-      if (result.data) {
+      if (request !== statusRequest.current) return
+      if (result.error) {
+        onLogRef.current('error', `读取浏览器状态失败: ${result.error}`)
+      } else if (result.data) {
         setBrowserOpen(result.data.isOpen)
         setPickerActive(result.data.pickerActive)
       }
-    } catch {
-      setBrowserOpen(false)
-      setPickerActive(false)
+    } catch (error) {
+      if (request === statusRequest.current) onLogRef.current('error', `读取浏览器状态失败: ${error}`)
     }
   }
 
   useEffect(() => {
-    if (isOpen) {
-      checkStatus()
-    }
+    if (isOpen) void checkStatus()
+    return () => { statusRequest.current += 1 }
   }, [isOpen])
 
-  // 轮询检查选择结果
+  // One polling request at a time; a hidden/unmounted panel must not copy late results.
   useEffect(() => {
-    if (pickerActive) {
-      // 每次开始拾取重置去重标记，使再次选中同一元素也能重新复制
-      lastHandledRef.current = ''
-      pollingRef.current = setInterval(async () => {
-        // 是否自动复制选择器到剪贴板（全局配置，默认开启）
+    if (!pickerActive || !isOpen) return
+    let cancelled = false
+    let pending = false
+    let reportedError = false
+    lastHandledRef.current = ''
+    const timer = setInterval(async () => {
+      if (pending) return
+      pending = true
+      try {
         const autoCopy = useGlobalConfigStore.getState().config.browser?.autoCopySelector !== false
-
-        // 检查单元素选择
         const singleResult = await elementPickerApi.getSelected()
+        if (cancelled) return
+        if (singleResult.error) throw new Error(singleResult.error)
         if (singleResult.data?.selected && singleResult.data.element) {
           const selector = singleResult.data.element.selector
           if (selector && selector !== lastHandledRef.current) {
             lastHandledRef.current = selector
             setLastSelector(selector)
-            onLog('success', `已选择元素: ${selector}`)
-            if (autoCopy) autoCopySelector(selector)
+            onLogRef.current('success', `已选择元素: ${selector}`)
+            if (autoCopy) await autoCopySelector(selector, () => !cancelled)
           }
         }
-
-        // 检查相似元素选择
+        if (cancelled) return
         const similarResult = await elementPickerApi.getSimilar()
+        if (cancelled) return
+        if (similarResult.error) throw new Error(similarResult.error)
         if (similarResult.data?.selected && similarResult.data.similar) {
           const pattern = similarResult.data.similar.pattern
           const count = similarResult.data.similar.count
           if (pattern && pattern !== lastHandledRef.current) {
             lastHandledRef.current = pattern
             setLastSelector(pattern)
-            onLog('success', `已选择 ${count} 个相似元素: ${pattern}`)
-            if (autoCopy) autoCopySelector(pattern)
+            onLogRef.current('success', `已选择 ${count} 个相似元素: ${pattern}`)
+            if (autoCopy) await autoCopySelector(pattern, () => !cancelled)
           }
         }
-      }, 500)
-    } else {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current)
-        pollingRef.current = null
-      }
-    }
-
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current)
-        pollingRef.current = null
-      }
-    }
-  }, [pickerActive, onLog])
+        reportedError = false
+      } catch (error) {
+        if (!cancelled && !reportedError) onLogRef.current('error', `读取拾取结果失败: ${error}`)
+        reportedError = true
+      } finally { pending = false }
+    }, 500)
+    return () => { cancelled = true; clearInterval(timer) }
+  }, [pickerActive, isOpen])
 
   // 自动复制选择器：改由后端写系统剪贴板（焦点无关）。
   // 拾取元素时焦点在自动化浏览器窗口，编辑器失焦，navigator.clipboard 会以
   // "document is not focused" 拒绝复制，故这里走后端 pyperclip/win32 写入。
-  const autoCopySelector = async (text: string) => {
+  const autoCopySelector = async (text: string, isCurrent: () => boolean) => {
     try {
       const res = await systemApi.setClipboard(text)
+      if (!isCurrent()) return
       if (res.error) {
-        onLog('warning', `选择器复制到剪贴板失败: ${res.error}`)
+        onLogRef.current('warning', `选择器复制到剪贴板失败: ${res.error}`)
         return
       }
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-      onLog('success', '选择器已复制到剪贴板')
+      onLogRef.current('success', '选择器已复制到剪贴板')
     } catch (e) {
-      onLog('warning', `选择器复制到剪贴板失败: ${e instanceof Error ? e.message : e}`)
+      if (!isCurrent()) return
+      onLogRef.current('warning', `选择器复制到剪贴板失败: ${e instanceof Error ? e.message : e}`)
     }
   }
 
@@ -189,6 +193,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
         // 用户看到提示却没有任何入口，只能自己去菜单里翻。
         await maybePromptMissingPacks(result.error)
       } else {
+        statusRequest.current += 1
         setBrowserOpen(true)
         const browserName = config.browser?.type === 'chrome' ? 'Chrome' : 
                            config.browser?.type === 'firefox' ? 'Firefox' :
@@ -206,7 +211,9 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const handleCloseBrowser = async () => {
     setLoading(true)
     try {
-      await browserApi.close()
+      const result = await browserApi.close()
+      if (result.error) { onLog('error', `关闭浏览器失败: ${result.error}`); return }
+      statusRequest.current += 1
       setBrowserOpen(false)
       setPickerActive(false)
       onLog('info', '浏览器已关闭')
@@ -239,6 +246,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       if (result.error) {
         onLog('error', `启动选择器失败: ${result.error}`)
       } else {
+        statusRequest.current += 1
         setPickerActive(true)
         onLog('info', '元素选择器已启动 - Ctrl+点击选择单个元素，Alt+点击选择相似元素')
       }
@@ -249,11 +257,13 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
 
   const handleStopPicker = async () => {
     try {
-      await browserApi.stopPicker()
+      const result = await browserApi.stopPicker()
+      if (result.error) { onLog('error', `停止选择器失败: ${result.error}`); return }
+      statusRequest.current += 1
       setPickerActive(false)
       onLog('info', '元素选择器已停止')
-    } catch {
-      setPickerActive(false)
+    } catch (error) {
+      onLog('error', `停止选择器失败: ${error}`)
     }
   }
 

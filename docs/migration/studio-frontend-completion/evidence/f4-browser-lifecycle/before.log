@@ -1,0 +1,794 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:57243) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx (6 tests | 6 failed) 3246ms
+   × keeps confirmed browser state when close returns a cleanup error 1145ms
+   × keeps confirmed browser state when stop returns a cleanup error 1036ms
+   × keeps the last confirmed state on a failed refresh instead of claiming closure 1030ms
+   × does not copy a late selected element after close-panel 15ms
+   × does not copy a late selected element after unmount 11ms
+   × keeps at most one polling request in flight 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > keeps confirmed browser state when close returns a cleanup error
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'error', StringContaining "清理失败" ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "error",
+-   StringContaining "清理失败",
++   "info",
++   "浏览器已关闭",
+  ]
+
+
+Number of calls: 1
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] animate-fade-in p-4"[39m
+      [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modern-dialog w-full max-w-[520px] max-h-[90vh] flex flex-col animate-scale-in-bounce"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modern-dialog-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modern-dialog-header-icon modern-dialog-header-icon-success"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-globe w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h20"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex-1 min-w-0"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"modern-dialog-title flex items-center gap-2"[39m
+            [36m>[39m
+              [0m自动化浏览器[0m
+            [36m</h3>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"modern-dialog-subtitle"[39m
+            [36m>[39m
+              [0m登录账号、抓取选择器一站式[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M18 6 6 18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 6 12 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 overflow-y-auto p-5 space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-block"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-header"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"icon-chip icon-chip-info !w-6 !h-6"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-globe w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2 12h20"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [0m功能说明[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-body !py-3"[39m
+            [36m>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"space-y-1.5 text-[12px] text-[hsl(var(--slate-700))]"[39m
+              [36m>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m在此浏览器中登录的账号，运行工作流时会保持登录状态[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m支持元素选择器，选中后自动复制到剪贴板[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m相似元素自动用 [0m
+                    [36m<code[39m
+                      [33mclass[39m=[32m"variable-tag"[39m
+                    [36m>[39m
+                      [0m{index}[0m
+                    [36m</code>[39m
+                    [0m 替换变化部分[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--violet-600))] mt-0.5 font-bold"[39m
+                  [36m>[39m
+                    [0m★[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-[hsl(var(--violet-700))]"[39m
+                  [36m>[39m
+                    [0m按 [0m
+                    [36m<kbd[39m
+                      [33mclass[39m=[32m"px-1.5 py-0.5 bg-[hsl(var(--violet-100))] border border-[hsl(var(--violet-500)/0.3)] rounded text-[10px] font-mono shadow-xs"[39m
+                    [36m>[39m
+                      [0mAlt+X[0m
+                    [36m</kbd>[39m
+                    [0m 使用高级元素选择器（推荐）[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+              [36m</ul>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-10 px-5 text-[14px] rounded-[8px] flex-1"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-globe w-4 h-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M2 12h20"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0m打开浏览器[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"dialog-footer-bar"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] border border-[hsl(var(--slate-200))] hover:bg-[hsl(var(--slate-200))] hover:border-[hsl(var(--slate-300))] hover:text-[hsl(var(--slate-900))] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+          [36m>[39m
+            [0m关闭[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:23:35
+     21|   await screen.findByRole('button', { name: '停止选择' })
+     22|   fireEvent.click(screen.getByRole('button', { name: action === 'close…
+     23|   await waitFor(() => expect(log).toHaveBeenCalledWith('error', expect…
+       |                                   ^
+     24|   expect(screen.getByRole('button', { name: '关闭浏览器' })).toBeDefined()
+     25|   expect(screen.getByRole('button', { name: '停止选择' })).toBeDefined()
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > keeps confirmed browser state when stop returns a cleanup error
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'error', StringContaining "清理失败" ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "error",
+-   StringContaining "清理失败",
++   "info",
++   "元素选择器已停止",
+  ]
+
+
+Number of calls: 1
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] animate-fade-in p-4"[39m
+      [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modern-dialog w-full max-w-[520px] max-h-[90vh] flex flex-col animate-scale-in-bounce"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modern-dialog-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modern-dialog-header-icon modern-dialog-header-icon-success"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-globe w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h20"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex-1 min-w-0"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"modern-dialog-title flex items-center gap-2"[39m
+            [36m>[39m
+              [0m自动化浏览器[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"badge badge-success"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-1.5 h-1.5 rounded-full bg-[hsl(var(--success-500))] animate-pulse"[39m
+                [36m/>[39m
+                [0m已打开[0m
+              [36m</span>[39m
+            [36m</h3>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"modern-dialog-subtitle"[39m
+            [36m>[39m
+              [0m登录账号、抓取选择器一站式[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M18 6 6 18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 6 12 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 overflow-y-auto p-5 space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-block"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-header"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"icon-chip icon-chip-info !w-6 !h-6"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-globe w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2 12h20"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [0m功能说明[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-body !py-3"[39m
+            [36m>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"space-y-1.5 text-[12px] text-[hsl(var(--slate-700))]"[39m
+              [36m>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m在此浏览器中登录的账号，运行工作流时会保持登录状态[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m支持元素选择器，选中后自动复制到剪贴板[0m
+       ...
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:23:35
+     21|   await screen.findByRole('button', { name: '停止选择' })
+     22|   fireEvent.click(screen.getByRole('button', { name: action === 'close…
+     23|   await waitFor(() => expect(log).toHaveBeenCalledWith('error', expect…
+       |                                   ^
+     24|   expect(screen.getByRole('button', { name: '关闭浏览器' })).toBeDefined()
+     25|   expect(screen.getByRole('button', { name: '停止选择' })).toBeDefined()
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > keeps the last confirmed state on a failed refresh instead of claiming closure
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'error', StringContaining "offline" ]
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] animate-fade-in p-4"[39m
+      [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modern-dialog w-full max-w-[520px] max-h-[90vh] flex flex-col animate-scale-in-bounce"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modern-dialog-header"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modern-dialog-header-icon modern-dialog-header-icon-success"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-globe w-5 h-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"10"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M2 12h20"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex-1 min-w-0"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"modern-dialog-title flex items-center gap-2"[39m
+            [36m>[39m
+              [0m自动化浏览器[0m
+            [36m</h3>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"modern-dialog-subtitle"[39m
+            [36m>[39m
+              [0m登录账号、抓取选择器一站式[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M18 6 6 18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m6 6 12 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 overflow-y-auto p-5 space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"section-block"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-header"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"icon-chip icon-chip-info !w-6 !h-6"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-globe w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2 12h20"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</div>[39m
+              [0m功能说明[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"section-block-body !py-3"[39m
+            [36m>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"space-y-1.5 text-[12px] text-[hsl(var(--slate-700))]"[39m
+              [36m>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m在此浏览器中登录的账号，运行工作流时会保持登录状态[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m支持元素选择器，选中后自动复制到剪贴板[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--brand-600))] mt-0.5"[39m
+                  [36m>[39m
+                    [0m•[0m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0m相似元素自动用 [0m
+                    [36m<code[39m
+                      [33mclass[39m=[32m"variable-tag"[39m
+                    [36m>[39m
+                      [0m{index}[0m
+                    [36m</code>[39m
+                    [0m 替换变化部分[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+                [36m<li[39m
+                  [33mclass[39m=[32m"flex items-start gap-1.5"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"text-[hsl(var(--violet-600))] mt-0.5 font-bold"[39m
+                  [36m>[39m
+                    [0m★[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"font-semibold text-[hsl(var(--violet-700))]"[39m
+                  [36m>[39m
+                    [0m按 [0m
+                    [36m<kbd[39m
+                      [33mclass[39m=[32m"px-1.5 py-0.5 bg-[hsl(var(--violet-100))] border border-[hsl(var(--violet-500)/0.3)] rounded text-[10px] font-mono shadow-xs"[39m
+                    [36m>[39m
+                      [0mAlt+X[0m
+                    [36m</kbd>[39m
+                    [0m 使用高级元素选择器（推荐）[0m
+                  [36m</span>[39m
+                [36m</li>[39m
+              [36m</ul>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-10 px-5 text-[14px] rounded-[8px] flex-1"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-globe w-4 h-4"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M2 12h20"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0m打开浏览器[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"dialog-footer-bar"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] border border-[hsl(var(--slate-200))] hover:bg-[hsl(var(--slate-200))] hover:border-[hsl(var(--slate-300))] hover:text-[hsl(var(--slate-900))] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+          [36m>[39m
+            [0m关闭[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:33:35
+     31|   vi.mocked(browserApi.getStatus).mockRejectedValueOnce(new Error('off…
+     32|   fireEvent.click(screen.getByTitle('刷新状态'))
+     33|   await waitFor(() => expect(log).toHaveBeenCalledWith('error', expect…
+       |                                   ^
+     34|   expect(screen.getByRole('button', { name: '关闭浏览器' })).toBeDefined()
+     35|   expect(screen.getByRole('button', { name: '停止选择' })).toBeDefined()
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > does not copy a late selected element after close-panel
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > does not copy a late selected element after unmount
+AssertionError: expected "setClipboard" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st setClipboard call:
+
+    Array [
+      "#late",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:49:20
+     47|   else view.rerender(<AutoBrowserDialog isOpen={false} onClose={vi.fn(…
+     48|   await act(async () => release({ success: true, data: { selected: tru…
+     49|   expect(copy).not.toHaveBeenCalled()
+       |                    ^
+     50|   expect(elementPickerApi.getSimilar).not.toHaveBeenCalled()
+     51|   expect(log).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > keeps at most one polling request in flight
+AssertionError: expected "getSelected" to be called once, but got 5 times
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:60:40
+     58|   await act(async () => {})
+     59|   await act(async () => { vi.advanceTimersByTime(2500) })
+     60|   expect(elementPickerApi.getSelected).toHaveBeenCalledOnce()
+       |                                        ^
+     61|   await act(async () => release({ success: true, data: { selected: fal…
+     62| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  02:34:01
+   Duration  4.47s (transform 266ms, setup 97ms, import 465ms, tests 3.25s, environment 546ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx

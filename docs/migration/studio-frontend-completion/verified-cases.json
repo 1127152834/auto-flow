@@ -15210,5 +15210,167 @@
     "level": "integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-authenticated-transport/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.close-error",
+    "capability": "关闭返回清理错误",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "点击关闭浏览器"
+    ],
+    "expectedUI": "显示关闭失败，保留已打开与停止选择按钮",
+    "expectedIO": "close 返回 error，无已关闭日志",
+    "stateAssertion": "显示关闭失败，保留已打开与停止选择按钮",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.stop-error",
+    "capability": "停止返回清理错误",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "点击停止选择"
+    ],
+    "expectedUI": "显示停止失败，保留停止选择按钮",
+    "expectedIO": "stopPicker 返回 error，无已停止日志",
+    "stateAssertion": "显示停止失败，保留停止选择按钮",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.refresh-error",
+    "capability": "状态刷新异常",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "刷新状态请求抛错"
+    ],
+    "expectedUI": "保留已确认状态并提示错误",
+    "expectedIO": "getStatus 失败，不推断关闭",
+    "stateAssertion": "保留已确认状态并提示错误",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.hidden-result",
+    "capability": "关闭面板后迟到结果",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "启动轮询后隐藏面板，再返回元素"
+    ],
+    "expectedUI": "不展示迟到选择器",
+    "expectedIO": "不调用剪贴板及后续 similar 请求",
+    "stateAssertion": "不展示迟到选择器",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.unmount-result",
+    "capability": "卸载后迟到结果",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "轮询等待中卸载，再返回元素"
+    ],
+    "expectedUI": "无迟到日志",
+    "expectedIO": "不调用剪贴板及后续 similar 请求",
+    "stateAssertion": "无迟到日志",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.single-flight",
+    "capability": "慢轮询",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "推进 2500ms 不返回 selected"
+    ],
+    "expectedUI": "状态仍保持拾取中",
+    "expectedIO": "仅一个 getSelected 请求",
+    "stateAssertion": "状态仍保持拾取中",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.old-status",
+    "capability": "旧刷新响应",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "刷新等待中停止成功，再返回旧状态"
+    ],
+    "expectedUI": "保持已停止",
+    "expectedIO": "旧 getStatus 不覆盖停止结果",
+    "stateAssertion": "保持已停止",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.poll-recovery",
+    "capability": "轮询失败恢复",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "连续失败，成功一次，再失败"
+    ],
+    "expectedUI": "每段连续失败提示一次，保留拾取状态",
+    "expectedIO": "轮询继续，错误不代表停止",
+    "stateAssertion": "每段连续失败提示一次，保留拾取状态",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
+  },
+  {
+    "id": "PICKER.browser-panel.late-similar",
+    "capability": "相似元素迟到",
+    "preconditions": {
+      "browser": "已确认打开",
+      "picker": "已确认活动",
+      "service": "API spy，独立测试状态"
+    },
+    "steps": [
+      "similar 等待中隐藏面板，再返回"
+    ],
+    "expectedUI": "无相似元素结果和日志",
+    "expectedIO": "不调用剪贴板",
+    "stateAssertion": "无相似元素结果和日志",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-lifecycle/target.log"
   }
 ]
