@@ -11,6 +11,13 @@ const deleted = { target: { type: 'record' as const, recordRef: ref }, deleted: 
 const deleteOperation = { ...operation, kind: 'deleteRecord', result: deleted }
 function api(request: StreamingApiClient['request']) { return createRecordsApi({ request, health: vi.fn(), stream: vi.fn() }, scope) }
 
+it('keeps desktop workspace identity out of the strict record preview payload', async () => {
+  const request = vi.fn().mockResolvedValue({})
+  const context = { ...scope, workspaceKey: 'private-local-workspace' }
+  await createRecordsApi({ request, health: vi.fn(), stream: vi.fn() }, context).previewDelete(ref.recordKey)
+  expect(request.mock.calls[0][1].body.target.recordRef).toEqual(ref)
+})
+
 it('encodes Unicode record identities as UTF8 base64url exactly once and keeps key type', async () => {
   const request = vi.fn().mockResolvedValueOnce(record)
   const signal = new AbortController().signal

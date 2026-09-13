@@ -21,7 +21,7 @@ function base64url(value: string): string {
 }
 
 export function createRecordsApi(client: StreamingApiClient, context: CatalogScope) {
-  const scope = { ...context }
+  const scope = { projectId: context.projectId, tableId: context.tableId, datasetGeneration: context.datasetGeneration }
   const base = `/api/v1/projects/${encode(scope.projectId)}/tables/${encode(scope.tableId)}/records`
   const command = createDataCommand(client, scope.projectId)
   const path = (key: RecordKey) => `${base}/${base64url(key.value)}`

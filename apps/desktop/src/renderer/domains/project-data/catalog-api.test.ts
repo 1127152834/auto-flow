@@ -17,6 +17,13 @@ const statusDelete = { action: 'delete' as const, statusId: 's', deleted: true a
 const deletedStatusOperation = { ...statusOperation, result: statusDelete }
 function api(request: StreamingApiClient['request']) { return createDataCatalogApi({ request, health: vi.fn(), stream: vi.fn() }, scope) }
 
+it('projects only wire identity fields from a desktop editing context', async () => {
+  const request = vi.fn().mockResolvedValue({})
+  const context = { ...scope, workspaceKey: 'private-local-workspace' }
+  await createDataCatalogApi({ request, health: vi.fn(), stream: vi.fn() }, context).previewField('f', definition)
+  expect(request.mock.calls[0][1].body.target.fieldRef).toEqual(ref)
+})
+
 it('recovers field creation from the original immutable operation', async () => {
   const request = vi.fn().mockRejectedValueOnce(new TypeError('network')).mockResolvedValueOnce(fieldOperation)
   await expect(api(request).createField(fieldBody, 'k')).resolves.toEqual({ field, tableRevision: 2 })

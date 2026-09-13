@@ -12,7 +12,7 @@ const encode = encodeURIComponent
 const mismatch = () => new Error('操作结果与当前字段或状态请求不一致')
 
 export function createDataCatalogApi(client: StreamingApiClient, context: CatalogScope) {
-  const scope = { ...context }
+  const scope = { projectId: context.projectId, tableId: context.tableId, datasetGeneration: context.datasetGeneration }
   const project = `/api/v1/projects/${encode(scope.projectId)}`
   const base = `${project}/tables/${encode(scope.tableId)}`
   const sameScope = (ref: Schema['DataFieldRef']) => ref.projectId === scope.projectId && ref.tableId === scope.tableId && ref.datasetGeneration === scope.datasetGeneration
