@@ -6,6 +6,7 @@ import type { StudioTransport } from '../../api/transport'
 export async function startHttpStudioFixture(handler: StudioTransport) {
   const responses = new Set<ServerResponse>()
   let cancelledStreams = 0
+  const droppedResponses = new Set<string>()
   const server = createServer(async (request, response) => {
     const abort = new AbortController()
     responses.add(response)
@@ -21,6 +22,11 @@ export async function startHttpStudioFixture(handler: StudioTransport) {
       const result = await handler(new Request(`http://autoflow-studio.mock${request.url}`, {
         method: request.method, headers, ...(bytes.length ? { body: bytes } : {}), signal: abort.signal,
       }))
+      if (droppedResponses.delete(request.url)) {
+        await result.body?.cancel()
+        response.destroy()
+        return
+      }
       response.writeHead(result.status, Object.fromEntries(result.headers.entries()))
       response.flushHeaders()
       if (!result.body) { response.end(); return }
@@ -52,6 +58,7 @@ export async function startHttpStudioFixture(handler: StudioTransport) {
   if (!address || typeof address === 'string') throw new Error('Expected a loopback port')
   return {
     origin: `http://127.0.0.1:${address.port}`,
+    dropNextResponse(path: string) { droppedResponses.add(path) },
     get cancelledStreams() { return cancelledStreams },
     async close() {
       for (const response of responses) response.destroy()

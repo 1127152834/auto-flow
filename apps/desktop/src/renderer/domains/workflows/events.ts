@@ -211,6 +211,10 @@ class SocketService {
 
     this.socket = new Socket(socketUrl)
     this.socket.on('command_error', (error: unknown) => {
+      if (error && typeof error === 'object' && 'status' in error && error.status === 'unconfirmed') {
+        useWorkflowStore.getState().addLog({ level: 'warning', message: '命令结果尚未确认' + ': ' + JSON.stringify(error) })
+        return
+      }
       useWorkflowStore.getState().addLog({ level: 'error', message: `Studio command failed: ${error instanceof Error ? error.message : JSON.stringify(error)}` })
     })
 

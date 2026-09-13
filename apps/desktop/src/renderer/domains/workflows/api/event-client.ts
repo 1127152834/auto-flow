@@ -21,13 +21,37 @@ export class StudioEventClient {
     return this
   }
   removeAllListeners() { this.listeners.clear() }
-  emit(event: string, data: unknown) {
-    void studioFetch(`${this.baseUrl}/api/events/commands`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ commandId: crypto.randomUUID(), event, data }), signal: this.controller.signal,
-    }).then(async response => {
-      if (!response.ok) this.dispatch('command_error', await response.json())
-    }).catch(error => { if (!this.controller.signal.aborted) this.dispatch('command_error', error) })
+  emit(event: string, data: unknown, commandId = crypto.randomUUID()) {
+    void this.sendCommand(commandId, event, data)
+    return commandId
+  }
+  async queryCommand(commandId: string): Promise<Record<string, unknown>> {
+    const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
+    const result = await response.json() as Record<string, unknown>
+    if (!response.ok || result.commandId !== commandId || typeof result.httpStatus !== 'number') throw new Error('Command result is unavailable')
+    return result
+  }
+  private async sendCommand(commandId: string, event: string, data: unknown) {
+    try {
+      const response = await studioFetch(`${this.baseUrl}/api/events/commands`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ commandId, event, data }), signal: this.controller.signal,
+      })
+      const result = await response.json()
+      if (this.controller.signal.aborted) return
+      this.dispatch(response.ok && result.success !== false ? 'command_result' : 'command_error', { ...result, commandId })
+    } catch (error) {
+      if (this.controller.signal.aborted) return
+      // Query identity after a lost response; never repeat a possibly-applied action.
+      try {
+        const result = await this.queryCommand(commandId)
+        if (!this.controller.signal.aborted) this.dispatch(Number(result.httpStatus) >= 400 || result.success === false ? 'command_error' : 'command_result', result)
+      } catch {
+        if (!this.controller.signal.aborted) this.dispatch('command_error', {
+          commandId, status: 'unconfirmed', error: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
   }
   private dispatch(event: string, data?: unknown) {
     for (const handler of this.listeners.get(event) ?? []) handler(...[data] as never[])

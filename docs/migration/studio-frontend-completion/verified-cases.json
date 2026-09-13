@@ -12460,5 +12460,80 @@
     "level": "component + transport",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx"
+  },
+  {
+    "id": "CMD.stop.target.memory",
+    "capability": "命令身份/停止/恢复",
+    "preconditions": "活跃run-target",
+    "steps": [
+      "用old-target走HTTP和execution_stop",
+      "正确目标停止后重复请求"
+    ],
+    "expectedUI": "由确认结果或未确认提示驱动；本例不挂载完整Studio",
+    "expectedIO": "错误409不串线；成功只产生一次终态",
+    "stateAssertion": "错误409不串线；成功只产生一次终态",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-parity.test.ts"
+  },
+  {
+    "id": "CMD.stop.target.http",
+    "capability": "命令身份/停止/恢复",
+    "preconditions": "loopback活跃run-target",
+    "steps": [
+      "用old-target走HTTP和execution_stop",
+      "正确目标停止后重复请求"
+    ],
+    "expectedUI": "由确认结果或未确认提示驱动；本例不挂载完整Studio",
+    "expectedIO": "错误409不串线；成功只产生一次终态",
+    "stateAssertion": "错误409不串线；成功只产生一次终态",
+    "level": "HTTP protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/transport-parity.test.ts"
+  },
+  {
+    "id": "CMD.response.recover",
+    "capability": "命令身份/停止/恢复",
+    "preconditions": "POST响应丢失，原命令可查询",
+    "steps": [
+      "发送一次命令",
+      "读原ID"
+    ],
+    "expectedUI": "由确认结果或未确认提示驱动；本例不挂载完整Studio",
+    "expectedIO": "得到原结果，仅一次POST",
+    "stateAssertion": "得到原结果，仅一次POST",
+    "level": "client protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-recovery.test.ts"
+  },
+  {
+    "id": "CMD.response.unknown",
+    "capability": "命令身份/停止/恢复",
+    "preconditions": "POST和查询结果均不可确认",
+    "steps": [
+      "发送一次命令",
+      "查询404"
+    ],
+    "expectedUI": "由确认结果或未确认提示驱动；本例不挂载完整Studio",
+    "expectedIO": "status=unconfirmed，无重发",
+    "stateAssertion": "status=unconfirmed，无重发",
+    "level": "client protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-recovery.test.ts"
+  },
+  {
+    "id": "CMD.response.http-close",
+    "capability": "命令身份/停止/恢复",
+    "preconditions": "loopback在处理POST后销毁socket",
+    "steps": [
+      "发送一次命令",
+      "前端自动GET原ID"
+    ],
+    "expectedUI": "由确认结果或未确认提示驱动；本例不挂载完整Studio",
+    "expectedIO": "恢复同一commandId，HTTP服务只收到一次POST",
+    "stateAssertion": "恢复同一commandId，HTTP服务只收到一次POST",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/command-http-recovery.test.ts"
   }
 ]

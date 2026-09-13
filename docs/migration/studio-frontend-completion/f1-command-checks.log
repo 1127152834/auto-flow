@@ -1,0 +1,15 @@
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+
+> lint
+> npm --workspace @autoflow/desktop run lint
+
+
+> @autoflow/desktop@0.1.0 lint
+> eslint .

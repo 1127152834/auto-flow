@@ -6,6 +6,9 @@ export const UI_DICT: Record<string, string> = {
   '列表值必须是 JSON 数组': 'List values must be JSON arrays', '字典值必须是 JSON 对象': 'Dictionary values must be JSON objects',
   '确认添加变量': 'Confirm variable', '取消添加变量': 'Cancel variable',
   '无法确认目标文件状态': 'Unable to verify the target file state',
+  '缺少目标工作流标识': 'Missing target workflow ID', '停止请求不属于当前运行': 'Stop request targets a different run',
+  '目标工作流没有活跃运行': 'The target workflow is not running', '命令不存在': 'Command not found',
+  '缺少命令标识或事件名': 'Missing command ID or event name', '命令结果尚未确认': 'Command outcome is unconfirmed',
   // 工具栏
   '新建': 'New', '保存': 'Save', '打开': 'Open', '导出': 'Export',
   '运行': 'Run', '停止': 'Stop', '设置': 'Settings', '文档': 'Docs', '教学文档': 'Tutorials',

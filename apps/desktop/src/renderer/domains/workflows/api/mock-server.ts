@@ -38,7 +38,7 @@ const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
 let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; variables: ObjectValue; timer?: ReturnType<typeof setTimeout> } | null = null
-const commandResults = new Map<string, { fingerprint: string; response: ObjectValue }>()
+const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
 const failure = (message: string, status = 400) => response({ success: false, error: message, detail: message }, status)
 const encode = (e: EventRecord) => encoder.encode(`id: ${e.sequence}\nevent: ${e.event}\ndata: ${JSON.stringify(e.data)}\n\n`)
@@ -66,13 +66,21 @@ export function selectMockElement(selector: string) {
   if (!picking) throw new Error('请先开启元素拾取')
   picked = { selector, tag: 'button', tagName:'BUTTON', attributes:{id:selector.replace(/^#/, '')}, text: 'Mock 目标', hints: { selectors: [selector] } }
 }
+const finishedWorkflows = new Set<string>()
 function finish(status: string) {
   if (!run) return
   clearTimeout(run.timer)
   emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
   finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
+  finishedWorkflows.add(run.id)
   run = null
+}
+function stopRun(id: unknown): Response {
+  if (typeof id !== 'string' || !id.trim()) return failure('缺少目标工作流标识', 400)
+  if (run?.id === id) { finish('stopped'); return response({ success: true }) }
+  if (finishedWorkflows.has(id)) return response({ success: true })
+  return failure(run ? '停止请求不属于当前运行' : '目标工作流没有活跃运行', 409)
 }
 function tick(skipBreakpoint = false) {
   if (!run) return
@@ -133,6 +141,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         })) return failure('工作流包含已排除节点', 422)
         const index = body.startNodeId ? nodes.findIndex(n => n.id === body.startNodeId) : 0
         if (index < 0) return failure('起点不存在')
+        finishedWorkflows.delete(id)
         runRows.set(id, [])
         run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: (body.breakpoints || []) as string[], variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
         tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
@@ -183,15 +192,21 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     })
     if (scheduledResult) return scheduledResult
     if (path === '/events/stream') return streamResponse(Number(target.searchParams.get('afterSeq') || 0), signal)
+    const commandQuery = path.match(/^\/events\/commands\/([^/]+)$/)
+    if (commandQuery && method === 'GET') {
+      const previous = commandResults.get(decodeURIComponent(commandQuery[1]))
+      return previous ? response({ ...previous.response, httpStatus: previous.status }) : failure('命令不存在', 404)
+    }
     if (path === '/events/commands') {
-      const id = String(body.commandId)
+      if (typeof body.commandId !== 'string' || !body.commandId.trim() || typeof body.event !== 'string' || !body.event.trim()) return failure('缺少命令标识或事件名', 400)
+      const id = body.commandId
       const fingerprint = JSON.stringify(body)
       const previous = commandResults.get(id)
-      if (previous) return previous.fingerprint === fingerprint ? response(previous.response) : failure('命令 ID 冲突', 409)
-      if (body.event === 'execution_stop') finish('stopped')
-      const result = { success: true, commandId: id }
-      commandResults.set(id, { fingerprint, response: result })
-      return response(result)
+      if (previous) return previous.fingerprint === fingerprint ? response(previous.response, previous.status) : failure('命令 ID 冲突', 409)
+      const outcome = body.event === 'execution_stop' ? stopRun((body.data as ObjectValue | undefined)?.workflowId) : response({ success: true })
+      const result = { ...await outcome.json(), commandId: id }
+      commandResults.set(id, { fingerprint, response: result, status: outcome.status })
+      return response(result, outcome.status)
     }
     if (path === '/local-workflows/default-folder' || path === '/local-workflows/active-folder') {
       if (method === 'POST') persist({ ...db, folder: String(body.folder || empty().folder) })
@@ -241,7 +256,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (action === '/variable-tracking') { if(method === 'DELETE') tracking.delete(id); return response({tracking:tracking.get(id) || [], mock:true}) }
       if (action === '/export-playwright' || action === '/export-script') return response({ code: '# Mock 导出：本文件用于校验下载交互，并非可运行脚本\n# Workflow: ' + String(db.workflows[id]?.name), filename: 'mock-workflow.txt', target: 'mock' })
       if (action === '/execute') return startRun(id, db.workflows[id], body)
-      if (action === '/stop') { finish('stopped'); return response({ success: true }) }
+      if (action === '/stop') return stopRun(id)
       if (action.startsWith('/debug/')) {
         if (!run || run.id !== id) return failure('没有活跃运行', 409)
         if (action === '/debug/breakpoints') run.breakpoints = body.breakpoints as string[]

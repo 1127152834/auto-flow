@@ -93,6 +93,25 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     expect(await (await request('/events/commands', json(command))).json()).toEqual(first)
     expect((await request('/events/commands', json({ ...command, data: { enabled: false } }))).status).toBe(409)
   })
+  it('never stops a different active workflow through a stale HTTP or event command', async () => {
+    await request('/workflows', json({ id: 'run-target', nodes: [{ id: 'n', type: 'open_page', data: {} }], edges: [] }))
+    await request('/workflows/run-target/execute', json({ breakpoints: ['n'] }))
+    expect((await request('/workflows/old-target/stop', json({}))).status).toBe(409)
+    expect(server.mockSnapshot().run).toBe('run-target')
+    expect((await request('/events/commands', json({ commandId: 'stale-stop', event: 'execution_stop', data: { workflowId: 'old-target' } }))).status).toBe(409)
+    expect(server.mockSnapshot().run).toBe('run-target')
+    expect(await (await request('/events/commands/stale-stop')).json()).toMatchObject({ commandId: 'stale-stop', success: false, httpStatus: 409 })
+    const stop = { commandId: 'correct-stop', event: 'execution_stop', data: { workflowId: 'run-target' } }
+    expect((await request('/events/commands', json(stop))).status).toBe(200)
+    expect(server.mockSnapshot().run).toBeNull()
+    const afterStop = server.mockSnapshot().sequence
+    expect((await request('/events/commands', json(stop))).status).toBe(200)
+    expect((await request('/workflows/run-target/stop', json({}))).status).toBe(200)
+    expect(server.mockSnapshot().sequence).toBe(afterStop)
+    expect(await (await request('/events/commands/correct-stop')).json()).toMatchObject({ commandId: 'correct-stop', success: true, httpStatus: 200 })
+    expect((await request('/events/commands/missing')).status).toBe(404)
+    expect((await request('/events/commands', json({ event: 'execution_stop', data: {} }))).status).toBe(400)
+  })
   it('resumes numbered SSE with Unicode intact and cancels the previous stream', async () => {
     server.emitMockEvent('execution:log', { message: '第一条😀' })
     const abort = new AbortController(); aborts.push(abort)

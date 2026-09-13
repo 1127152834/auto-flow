@@ -1,0 +1,52 @@
+
+> test
+> npm --workspace @autoflow/desktop test --run src/renderer/domains/workflows/tests/transport-parity.test.ts
+
+npm warn "src/renderer/domains/workflows/tests/transport-parity.test.ts" is being parsed as a normal command line argument.
+npm warn Unknown cli config "--run". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/transport-parity.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/workflows/tests/transport-parity.test.ts (16 tests | 2 failed) 2779ms
+     × never stops a different active workflow through a stale HTTP or event command 5ms
+     × never stops a different active workflow through a stale HTTP or event command 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/transport-parity.test.ts > shared protocol assertions: memory > never stops a different active workflow through a stale HTTP or event command
+ FAIL  src/renderer/domains/workflows/tests/transport-parity.test.ts > shared protocol assertions: http > never stops a different active workflow through a stale HTTP or event command
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/transport-parity.test.ts:99:76
+     97|     await request('/workflows', json({ id: 'run-target', nodes: [{ id:…
+     98|     await request('/workflows/run-target/execute', json({ breakpoints:…
+     99|     expect((await request('/workflows/old-target/stop', json({}))).sta…
+       |                                                                            ^
+    100|     expect(server.mockSnapshot().run).toBe('run-target')
+    101|     expect((await request('/events/commands', json({ commandId: 'stale…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  23:27:40
+   Duration  3.50s (transform 94ms, setup 0ms, import 53ms, tests 2.78s, environment 558ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/transport-parity.test.ts
