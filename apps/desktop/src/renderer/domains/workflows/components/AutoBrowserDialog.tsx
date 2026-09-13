@@ -66,7 +66,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
 
   // One polling request at a time; a hidden/unmounted panel must not copy late results.
   useEffect(() => {
-    if (!pickerActive || !isOpen) return
+    if (!pickerActive || !isOpen || loading) return
     let cancelled = false
     let pending = false
     let reportedError = false
@@ -109,7 +109,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       } finally { pending = false }
     }, 500)
     return () => { cancelled = true; clearInterval(timer) }
-  }, [pickerActive, isOpen])
+  }, [pickerActive, isOpen, loading])
 
   // 自动复制选择器：改由后端写系统剪贴板（焦点无关）。
   // 拾取元素时焦点在自动化浏览器窗口，编辑器失焦，navigator.clipboard 会以

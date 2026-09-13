@@ -23,6 +23,7 @@ STUDIO_SCHEMAS = (
     schemas.StudioSelectorTestRequest,
     schemas.StudioSelectorTestResult,
     schemas.StudioSimilarPickerResult,
+    schemas.StudioBrowserStatus,
 )
 
 

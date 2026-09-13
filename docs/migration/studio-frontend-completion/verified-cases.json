@@ -24583,5 +24583,185 @@
     "level": "http-integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx"
+  },
+  {
+    "id": "F4.browser-status.memory",
+    "capability": "内存状态往返",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "内存状态往返",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.http",
+    "capability": "HTTP 状态往返",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "HTTP 状态往返",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-1",
+    "capability": "畸形状态响应 1",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 1",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-2",
+    "capability": "畸形状态响应 2",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 2",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-3",
+    "capability": "畸形状态响应 3",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 3",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-4",
+    "capability": "畸形状态响应 4",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 4",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-5",
+    "capability": "畸形状态响应 5",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 5",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.invalid-6",
+    "capability": "畸形状态响应 6",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形状态响应 6",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.refresh-preserves",
+    "capability": "畸形刷新保留已打开状态",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "畸形刷新保留已打开状态",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
+  },
+  {
+    "id": "F4.browser-status.stop-late-pick",
+    "capability": "停止期间迟到结果不复制",
+    "preconditions": {
+      "service": "隔离 Mock 或受控响应",
+      "browser": "由用例建立状态"
+    },
+    "steps": [
+      "执行对应命名测试中的请求或组件操作",
+      "验证返回状态与迟到响应处理"
+    ],
+    "expectedUI": "状态错误可见且保留最后确认状态；协议测试不挂载 UI",
+    "expectedIO": "读取 /browser/status；停止场景保持 stop 请求在途",
+    "stateAssertion": "停止期间迟到结果不复制",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-browser-status/after.log"
   }
 ]

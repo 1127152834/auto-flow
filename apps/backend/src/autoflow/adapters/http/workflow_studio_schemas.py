@@ -176,3 +176,10 @@ class StudioSimilarPickerResult(ApiModel):
         if self.selected and self.similar is None:
             raise ValueError("selected results must contain similar elements")
         return self
+
+
+class StudioBrowserStatus(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    is_open: bool
+    picker_active: bool

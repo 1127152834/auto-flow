@@ -6,6 +6,7 @@ vi.hoisted(() => {
 })
 import { AutoBrowserDialog } from '../components/AutoBrowserDialog'
 import { browserApi, elementPickerApi, systemApi } from '../api'
+import {configureStudioConnection} from '../api/config'
 const log = vi.fn()
 beforeEach(() => {
   log.mockClear()
@@ -117,4 +118,33 @@ it.each(['start','stop','navigate'] as const)('serializes %s with other browser 
  await act(async()=>release({success:false,error:'命令被拒绝'}))
  expect((button as HTMLButtonElement).disabled).toBe(false)
  expect(log).toHaveBeenCalledWith('error',expect.stringContaining('命令被拒绝'))
+})
+
+it('preserves an open browser after a malformed status response through the actual API',async()=>{
+ vi.mocked(browserApi.getStatus).mockRestore()
+ let malformed=false
+ const restore=configureStudioConnection('http://browser-status.test',async()=>Response.json(malformed?{isOpen:'false',pickerActive:false}:{isOpen:true,pickerActive:false}))
+ try{
+  render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
+  await screen.findByRole('button',{name:'关闭浏览器'})
+  malformed=true;fireEvent.click(screen.getByTitle('刷新状态'))
+  await waitFor(()=>expect(log).toHaveBeenCalledWith('error','读取浏览器状态失败: 浏览器状态响应格式错误，保留最后确认状态'))
+  expect(screen.getByRole('button',{name:'关闭浏览器'})).toBeTruthy()
+ }finally{restore()}
+})
+it('does not copy a pending pick result once a stop command has begun',async()=>{
+ vi.useFakeTimers()
+ let selected!:(value:Awaited<ReturnType<typeof elementPickerApi.getSelected>>)=>void
+ let stopped!:(value:{success:boolean})=>void
+ vi.mocked(elementPickerApi.getSelected).mockImplementation(()=>new Promise(resolve=>{selected=resolve}))
+ vi.spyOn(browserApi,'stopPicker').mockImplementation(()=>new Promise<{success:boolean}>(resolve=>{stopped=resolve}))
+ const copy=vi.spyOn(systemApi,'setClipboard').mockResolvedValue({success:true})
+ render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>);await act(async()=>{})
+ await act(async()=>vi.advanceTimersByTimeAsync(500))
+ fireEvent.click(screen.getByRole('button',{name:'停止选择'}))
+ await act(async()=>selected({success:true,data:{selected:true,element:{selector:'#late'}}}))
+ expect(copy).not.toHaveBeenCalled()
+ expect(log).not.toHaveBeenCalledWith('success','已选择元素: #late')
+ await act(async()=>stopped({success:true}))
+ expect(screen.getByRole('button',{name:'启动选择器'})).toBeTruthy()
 })

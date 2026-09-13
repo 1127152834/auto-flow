@@ -286,7 +286,15 @@ export const scheduledTaskApi = {
 
 // ==================== 自动化浏览器 API ====================
 export const browserApi = {
-  getStatus: () => apiRequest('/browser/status'),
+  getStatus: async () => {
+    type Result = components['schemas']['StudioBrowserStatus']
+    const result = await apiRequest<Result>('/browser/status')
+    if (!result.success) return result
+    if (!result.data || typeof result.data.isOpen !== 'boolean' || typeof result.data.pickerActive !== 'boolean') {
+      return {success:false,error:'浏览器状态响应格式错误，保留最后确认状态'} as ApiResponse<Result>
+    }
+    return result
+  },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
   open: (url?: string, browserConfig?: any) =>

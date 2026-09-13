@@ -2336,6 +2336,15 @@ export type components = {
             /** Height */
             height: number;
         };
+        /** StudioBrowserStatus */
+        StudioBrowserStatus: {
+            /** Isopen */
+            isOpen: boolean;
+            /** Pickeractive */
+            pickerActive: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioCommandLookup */
         StudioCommandLookup: {
             /** Commandid */
