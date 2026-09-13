@@ -14,7 +14,9 @@ export function RecordEditorDialog({ open, onOpenChange, onRequestClose, saving=
   const [dirty,setDirty]=useState(false),[formSaving,setFormSaving]=useState(false),[confirmClose,setConfirmClose]=useState(false)
   const closeLock=useRef(false),requestEpoch=useRef(0),guard=useRef({open,saving,recoveryPending})
   const busy=saving||formSaving
-  useEffect(()=>{requestEpoch.current++;closeLock.current=false;guard.current={open,saving,recoveryPending};if(!open||recoveryPending)setConfirmClose(false)},[open,props.sessionKey,props.submissionEpoch,recoveryPending,saving])
+  useEffect(()=>{requestEpoch.current++;closeLock.current=false;guard.current={open,saving,recoveryPending}},[open,props.sessionKey,props.submissionEpoch,recoveryPending,saving])
+  useEffect(()=>setConfirmClose(false),[props.sessionKey,props.submissionEpoch])
+  useEffect(()=>{if(!open||recoveryPending)setConfirmClose(false)},[open,recoveryPending])
   useEffect(()=>()=>{requestEpoch.current++},[])
   const requestClose=()=>{
     if(busy||closeLock.current)return

@@ -156,6 +156,12 @@ it('removes an open discard confirmation when recovery becomes pending',async()=
   view.rerender(<RecordEditorDialog {...props} recoveryPending/>);expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
+it('removes an open discard confirmation when the record session changes',async()=>{
+  const user=userEvent.setup(),props={open:true,mode:'edit' as const,fields:[field('x')],onOpenChange:vi.fn(),onSubmit:vi.fn()}
+  const view=render(<RecordEditorDialog {...props} sessionKey="A" submissionEpoch="one" initialRecord={record([cell('x','a')])}/>);await user.type(screen.getByLabelText('x'),'dirty');await user.click(screen.getByRole('button',{name:'取消'}));expect(screen.getByRole('alertdialog')).toBeVisible()
+  view.rerender(<RecordEditorDialog {...props} sessionKey="B" submissionEpoch="two" initialRecord={record([cell('x','b')])}/>);expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
 it('keeps legacy dialog actions in the modal footer',()=>{
   render(<RecordEditorDialog open mode="create" sessionKey="fixed-footer" fields={[]} onOpenChange={vi.fn()} onSubmit={vi.fn()}/>)
   expect(screen.getByRole('button',{name:'取消'}).closest('footer')).toBeInTheDocument()
