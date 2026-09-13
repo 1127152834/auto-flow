@@ -372,3 +372,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `scripts/qa-project-alignment-r1.mjs`：隔离 Electron/CDP 验收与手测辅助；只使用工具创建的工作区，不增加生产调试接口。`docs/project-management/design-alignment/acceptance/r1/` 保存报告、截图、审查、手测和静态覆盖核验。
 
 来源：R1 提交与本机验收；HTTP/IPC/数据库/生成 DTO 未变。记录整页和字段整体草稿尚未实施。
+
+## 项目管理Gallery还原资料（2026-09-13）
+
+`docs/project-management/design-alignment/gallery-baseline/` 保存原始图库路径/hash/尺寸索引、历史验收适用性勘误和本轮文档静态核验。原PNG仍在主项目只读图库，不重新生成副本。当前规格与计划分别为 `docs/superpowers/specs/2026-09-13-project-management-gallery-fidelity.md`、`docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md`；B0资产仅历史参考。拟新增DataTablePageFrame为展示组合组件，尚未创建，不代表交付。

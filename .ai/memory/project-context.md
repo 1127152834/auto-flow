@@ -59,3 +59,7 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 ## 对齐设计批准与执行计划（2026-09-13，confirmed）
 
 来源：用户“ok没问题，开始设计后续实施计划”及 `.ai/decisions/2026-09-13-project-alignment-design-approved.md`。4688353设计的推荐参数权威和有界聚合回填已确认，旧“待用户确认”当前状态superseded；缺图/业务实现不因此完成。已形成B0+R1/R2/R3三个切片计划，主入口`docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`。本轮仅文档；PM3保留工程准入，参数归属不再阻塞用户决策。
+
+## 原始Gallery直接还原（2026-09-13，confirmed）
+
+用户明确只有全局左菜单改现有顶部导航，其他页面布局/交互跟随gallery具体原PNG。B0衍生图不再是视觉依据；“B0视觉通过”等当前交付解释superseded，功能证据仍只适用其原版本。R1视觉重开，R2部分实现且视觉未通过，R3未完成。当前修订计划与边界见 `.ai/decisions/2026-09-13-project-gallery-only-navigation-change.md`。原图索引共112文件，latest91；本轮重新看17图，其余不冒称再次视觉审阅。

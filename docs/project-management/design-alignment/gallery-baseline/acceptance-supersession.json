@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-13",
+  "reason": "User explicitly requires original gallery content unchanged except global navigation. B0 intermediary altered layouts.",
+  "historicalReportsRetained": [
+    "acceptance/r1-visual/continuous-visual-review.json",
+    "acceptance/r1-visual/continuous-machine-report.json"
+  ],
+  "currentMilestoneGate": {
+    "R1": "reopened-for-original-gallery-visual-and-integration-validation",
+    "R2": "not-passed",
+    "R3": "not-passed"
+  },
+  "preserved": "Actual historical functional test results apply only to their recorded source/build and cases.",
+  "invalidated": "B0-based score cannot prove original-gallery fidelity or permit stage exit.",
+  "userManualAcceptance": "not-executed"
+}

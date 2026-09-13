@@ -1,12 +1,12 @@
 {
   "date": "2026-09-13",
   "baseline": "205fa64",
-  "status": "R1-ready-for-user-acceptance",
+  "status": "gallery-realignment-plan-revised",
   "owner": "root",
   "milestones": [
     {
       "id": "B0",
-      "status": "accepted",
+      "status": "superseded-as-visual-baseline",
       "userAcceptance": "confirmedByUser",
       "evidence": {
         "automatic": "acceptance/b0/verification.json",
@@ -14,13 +14,25 @@
         "electron": null,
         "windows": null
       },
-      "acceptanceSource": "2026-09-13 用户确认方案并要求实施 R1"
+      "acceptanceSource": "2026-09-13 用户确认方案并要求实施 R1",
+      "historicalStateBeforeGalleryCorrection": {
+        "status": "accepted",
+        "userAcceptance": "confirmedByUser",
+        "evidence": {
+          "automatic": "acceptance/b0/verification.json",
+          "visual": "acceptance/b0/review-resolution.md",
+          "electron": null,
+          "windows": null
+        },
+        "acceptanceSource": "2026-09-13 用户确认方案并要求实施 R1"
+      },
+      "currentVisualEvidence": null
     },
     {
       "id": "R1",
-      "status": "readyForUserAcceptance",
+      "status": "visual-revalidation-required",
       "dependsOn": [
-        "B0-userAcceptance"
+        "G0-gallery-source-and-frame"
       ],
       "userAcceptance": "pending",
       "evidence": {
@@ -28,21 +40,49 @@
         "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
         "windows": null,
         "manual": "acceptance/r1/manual-test.md"
-      }
+      },
+      "historicalStateBeforeGalleryCorrection": {
+        "status": "readyForUserAcceptance",
+        "dependsOn": [
+          "B0-userAcceptance"
+        ],
+        "userAcceptance": "pending",
+        "evidence": {
+          "automatic": "acceptance/r1/verification.json",
+          "electron": "acceptance/r1/runs/run-tpXDVQ/result.json",
+          "windows": null,
+          "manual": "acceptance/r1/manual-test.md"
+        }
+      },
+      "currentVisualEvidence": null
     },
     {
       "id": "R2",
-      "status": "notStarted",
+      "status": "partially-implemented-visual-not-accepted",
       "dependsOn": [
-        "R1-userAcceptance"
-      ]
+        "R1-gallery-engineering-e2e-visual-gate"
+      ],
+      "historicalStateBeforeGalleryCorrection": {
+        "status": "notStarted",
+        "dependsOn": [
+          "R1-userAcceptance"
+        ]
+      },
+      "currentVisualEvidence": null
     },
     {
       "id": "R3",
-      "status": "notStarted",
+      "status": "not-complete",
       "dependsOn": [
-        "R2-userAcceptance"
-      ]
+        "R2-gallery-engineering-e2e-visual-gate"
+      ],
+      "historicalStateBeforeGalleryCorrection": {
+        "status": "notStarted",
+        "dependsOn": [
+          "R2-userAcceptance"
+        ]
+      },
+      "currentVisualEvidence": null
     }
   ],
   "tasks": [
@@ -1019,5 +1059,15 @@
     "docs/migration/project-data-directory-qa/run-VoRvWR/",
     "docs/migration/project-management-regression-qa/run-W6Td3i/"
   ],
-  "executionBaseline": "1e79c7b"
+  "executionBaseline": "1e79c7b",
+  "galleryRevision": {
+    "date": "2026-09-13",
+    "status": "plan-revised-awaiting-review",
+    "source": "gallery-baseline/source-manifest.json",
+    "spec": "../../superpowers/specs/2026-09-13-project-management-gallery-fidelity.md",
+    "plan": "../../superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+    "navigationException": "global-sidebar-to-existing-top-navigation-only",
+    "historicalB0VisualResults": "not-valid-for-gallery-acceptance",
+    "implementationThisRevision": false
+  }
 }

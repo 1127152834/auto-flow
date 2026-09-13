@@ -1,5 +1,7 @@
 # 项目管理完整原型对齐设计
 
+> **当前状态（2026-09-13）：原Gallery重新对齐，计划修订中，未继续改页面。** 先读[当前规格](../../superpowers/specs/2026-09-13-project-management-gallery-fidelity.md)与[当前计划](../../superpowers/plans/2026-09-13-project-management-gallery-realignment.md)；[原图锁定清单](gallery-baseline/source-manifest.json)。B0及下文旧阶段状态为历史记录，不能用于当前视觉通过判断。
+
 - 日期：2026-09-13。
 - 当前状态：**设计已获用户确认；B0图稿交付中，业务未开始**。批准依据见[决策记录](../../../.ai/decisions/2026-09-13-project-alignment-design-approved.md)，实施入口见[总计划](../../superpowers/plans/2026-09-13-project-management-alignment-implementation.md)。本目录其余proposed与历史核验记录保留原成稿语境；当前B0已生成5组图覆盖3项DATA缺口，等待用户验收，AUTO两项与ENV一项尚未生成。
 - 工作区：`autoflow-project-management-implementation`，基线 `88efe07`。主项目图库与旧仓只读。

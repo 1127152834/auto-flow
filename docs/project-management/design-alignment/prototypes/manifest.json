@@ -1,6 +1,6 @@
 {
   "date": "2026-09-13",
-  "status": "readyForUserReview",
+  "status": "historical-generated-assets-not-authoritative-for-gallery",
   "mode": "built-in imagegen; byte-for-byte copy; no HTML substitute",
   "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13",
   "baseline": "205fa64",
@@ -283,5 +283,15 @@
     "ALIGN-AUTO-01",
     "ALIGN-AUTO-02",
     "ALIGN-ENV-01"
-  ]
+  ],
+  "galleryRevision": {
+    "date": "2026-09-13",
+    "status": "plan-revised-awaiting-review",
+    "source": "gallery-baseline/source-manifest.json",
+    "spec": "../../superpowers/specs/2026-09-13-project-management-gallery-fidelity.md",
+    "plan": "../../superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+    "navigationException": "global-sidebar-to-existing-top-navigation-only",
+    "historicalB0VisualResults": "not-valid-for-gallery-acceptance",
+    "implementationThisRevision": false
+  }
 }

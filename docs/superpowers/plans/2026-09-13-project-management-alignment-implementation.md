@@ -1,5 +1,7 @@
 # 项目管理原型对齐 Implementation Plan
 
+> **2026-09-13 当前修订：** 视觉基准及页面组合任务已由[Gallery直接还原计划](2026-09-13-project-management-gallery-realignment.md)替代。用户只允许原全局左菜单改现有顶部导航，其余按原图。B0不再是基准；R1视觉重新验收、R2已有业务实现但视觉未通过、R3未完成。本文后续B0/紧凑头/用户逐阶段确认等描述仅保留历史语境；有效的事务、身份、恢复和业务测试任务继续执行，以新计划为当前入口。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 保留顶部导航及已验证PM2能力，按已确认原型完成项目入口、数据页面和字段统一保存的前后端纠偏，再满足条件后恢复PM3。

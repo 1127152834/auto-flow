@@ -1,5 +1,7 @@
 # 项目管理视觉整改 Implementation Plan
 
+> **2026-09-13 当前修订：** 视觉基准及页面组合任务已由[Gallery直接还原计划](2026-09-13-project-management-gallery-realignment.md)替代。用户只允许原全局左菜单改现有顶部导航，其余按原图。B0不再是基准；R1视觉重新验收、R2已有业务实现但视觉未通过、R3未完成。本文后续B0/紧凑头/用户逐阶段确认等描述仅保留历史语境；有效的事务、身份、恢复和业务测试任务继续执行，以新计划为当前入口。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement task-by-task; each package has specification review followed by engineering review. Use verification-before-completion before claims.
 
 **Goal:** 修复R1审查中的真实结构偏差，并以真实端到端流程和逐画面截图对照共同验收，再按既定顺序交付R2/R3。
