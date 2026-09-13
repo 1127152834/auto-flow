@@ -45,18 +45,20 @@ export function ProjectDirectory({ mode = 'all', onModeChange, recentItems = [],
   const search = (query: string) => { update({ query, page: 1 }); if (mode === 'recent') onModeChange?.('all') }
 
   return <section aria-label="项目目录" className="grid gap-4">
-    <header className="flex flex-wrap items-end justify-between gap-3">
-      <div><h1 className="m-0 text-2xl font-semibold text-ink">项目</h1><p className="mb-0 mt-1 text-sm text-muted">创建并打开本地自动化工作空间。</p></div>
-      <div className="flex gap-2"><Button variant="ghost" disabled={refreshing} onClick={onRefresh}><ArrowClockwise className={refreshing ? 'animate-spin' : ''} />刷新</Button><Button variant="primary" disabled={disabled} onClick={onCreate}><Plus />新建项目</Button></div>
+    <header>
+      <h1 className="m-0 text-2xl font-semibold text-ink">项目</h1><p className="mb-0 mt-1 text-sm text-muted">创建并打开本地自动化工作空间。</p>
     </header>
-    <div className="flex flex-wrap gap-3 rounded-card border border-line bg-surface p-3">
-      <SearchInput className="min-w-56 flex-1" aria-label="搜索项目" placeholder="搜索名称或描述" value={mode === 'recent' ? '' : conditions.query} onChange={event => search(event.target.value)} onClear={() => search('')} />
-      {mode === 'all' ? <><Select aria-label="项目状态" clearable={false} value={conditions.lifecycle} options={lifecycleOptions} onValueChange={value => update({ lifecycle: value as ProjectListConditions['lifecycle'], page: 1 })} /><Select aria-label="项目排序" clearable={false} value={conditions.sort} options={sortOptions} onValueChange={value => update({ sort: value as ProjectListConditions['sort'], page: 1 })} /></> : null}
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-2"><Button variant="primary" disabled={disabled} onClick={onCreate}><Plus aria-hidden="true" />新建项目</Button><Button variant="ghost" disabled={refreshing} onClick={onRefresh}><ArrowClockwise aria-hidden="true" className={refreshing ? 'animate-spin' : ''} />刷新</Button></div>
+      <div className="ml-auto flex min-w-0 flex-1 flex-wrap justify-end gap-2">
+        <div className="w-full min-w-56 sm:w-72"><SearchInput aria-label="搜索项目" placeholder="搜索名称或描述" value={mode === 'recent' ? '' : conditions.query} onChange={event => search(event.target.value)} onClear={() => search('')} /></div>
+        {mode === 'all' ? <><Select aria-label="项目状态" clearable={false} value={conditions.lifecycle} options={lifecycleOptions} onValueChange={value => update({ lifecycle: value as ProjectListConditions['lifecycle'], page: 1 })} /><Select aria-label="项目排序" clearable={false} value={conditions.sort} options={sortOptions} onValueChange={value => update({ sort: value as ProjectListConditions['sort'], page: 1 })} /></> : null}
+      </div>
     </div>
     {currentError ? <div role="alert" className="rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm">{currentError}{items.length ? '。当前仍显示上次成功载入的内容。' : '。'}</div> : null}
-    <div className="flex items-center justify-between gap-3"><h2 className="m-0 text-lg font-semibold text-ink">{mode === 'recent' ? '最近打开' : '全部项目'}{items.length ? <span className="ml-2 text-sm font-normal text-muted">{mode === 'recent' ? `${items.length} 个项目` : page ? `${page.total} 个项目` : ''}</span> : null}</h2><Button variant="ghost" onClick={() => onModeChange?.(mode === 'recent' ? 'all' : 'recent')}>{mode === 'recent' ? <>查看全部项目<CaretRight /></> : <><ArrowLeft />返回最近</>}</Button></div>
+    <div className="flex flex-wrap items-center gap-2"><h2 className="m-0 text-lg font-semibold text-ink">{mode === 'recent' ? '最近打开' : '全部项目'}</h2>{items.length ? <span className="text-sm text-muted">{mode === 'recent' ? `${items.length} 个项目` : page ? `${page.total} 个项目` : ''}</span> : null}<Button variant="ghost" onClick={() => onModeChange?.(mode === 'recent' ? 'all' : 'recent')}>{mode === 'recent' ? <>查看全部项目<CaretRight aria-hidden="true" /></> : <><ArrowLeft aria-hidden="true" />返回最近</>}</Button></div>
     <ScrollArea ref={viewport} onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)} className="max-h-[min(62vh,44rem)]" viewportClassName="max-h-[min(62vh,44rem)]">
-      {items.length ? <div className={mode === 'recent' ? 'grid gap-3 md:grid-cols-2' : 'grid gap-2'}>{items.map(project => <ProjectCard key={project.projectId} project={project} compact={mode === 'all'} disabled={disabled} onOpen={onOpen} onEdit={onEdit} />)}</div> : null}
+      {items.length ? <div className={mode === 'recent' ? 'grid gap-4 lg:grid-cols-2' : 'grid gap-2'}>{items.map(project => <ProjectCard key={project.projectId} project={project} compact={mode === 'all'} disabled={disabled} onOpen={onOpen} onEdit={onEdit} />)}</div> : null}
       {currentLoading ? <p role="status" className="m-0 rounded-card border border-line bg-surface px-6 py-14 text-center text-muted">正在加载项目…</p> : !items.length ? <div role="status" className="rounded-card border border-line bg-surface px-6 py-14 text-center text-muted"><p className="m-0">{mode === 'recent' ? '尚无最近访问，可从上方查看全部项目或新建项目。' : conditions.query.trim() || conditions.lifecycle !== 'active' ? '没有匹配的项目' : '还没有项目'}</p></div> : null}
     </ScrollArea>
     {mode === 'all' && page && page.total > page.pageSize ? <Pagination offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={refreshing} onOffsetChange={offset => update({ page: Math.floor(offset / page.pageSize) + 1 })} /> : null}

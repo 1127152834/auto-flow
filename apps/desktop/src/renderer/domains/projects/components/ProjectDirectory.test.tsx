@@ -34,6 +34,17 @@ it('opens from the compact card and keeps edit as a separate action', async () =
   expect(screen.queryByText(/运行次数|自动化数量/)).not.toBeInTheDocument()
 })
 
+it('keeps keyboard menu editing separate from opening the project', async () => {
+  const onOpen = vi.fn(); const onEdit = vi.fn(); const user = userEvent.setup()
+  render(<ProjectDirectory page={page([summary])} conditions={{ query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={onOpen} onEdit={onEdit} />)
+  const menu = screen.getByRole('button', { name: '更多客户采集操作' })
+  menu.focus()
+  await user.keyboard('{Enter}')
+  await user.keyboard('{Enter}')
+  expect(onEdit).toHaveBeenCalledWith(summary)
+  expect(onOpen).not.toHaveBeenCalled()
+})
+
 it('shows at most six visited active projects in recent mode', () => {
   const visited = Array.from({ length: 7 }, (_, index) => ({ ...summary, projectId: `p${index}`, name: `项目${index}` }))
   const unvisited = { ...summary, projectId: 'never', name: '从未访问', lastOpenedAt: null }
@@ -78,10 +89,21 @@ it('opens a project card without letting its edit menu trigger open', async () =
   expect(onOpen).toHaveBeenCalledTimes(1)
 })
 
-it('allows an unbroken project name to wrap inside the open button', () => {
+it('exposes the full project name when its visible label is truncated', () => {
   const longName = '甲'.repeat(36)
   render(<ProjectDirectory mode="recent" recentItems={[{ ...summary, name: longName }]} page={page([])} conditions={{ query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
-  expect(screen.getByRole('button', { name: longName })).toHaveClass('break-all', 'whitespace-normal')
+  expect(screen.getByRole('button', { name: longName })).toHaveAttribute('title', longName)
+})
+
+it('orders the title, directory actions, section heading, and results semantically', () => {
+  render(<ProjectDirectory mode="recent" recentItems={[summary]} page={page([])} conditions={{ query: '', lifecycle: 'active', sort: '-lastOpenedAt', page: 1, pageSize: 50 }} loading={false} refreshing={false} disabled={false} error={null} onConditionsChange={vi.fn()} onRefresh={vi.fn()} onCreate={vi.fn()} onOpen={vi.fn()} onEdit={vi.fn()} />)
+  const title = screen.getByRole('heading', { name: '项目', level: 1 })
+  const create = screen.getByRole('button', { name: '新建项目' })
+  const section = screen.getByRole('heading', { name: /最近打开/, level: 2 })
+  const card = screen.getByRole('article')
+  expect(title.compareDocumentPosition(create) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(create.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(section.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
 })
 
 it('keeps stale rows visible and reports a refresh failure', () => {
