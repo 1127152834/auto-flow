@@ -176,3 +176,7 @@ DELETE的202结果与原操作查询使用相同identity/kind/succeeded及领域
 ## C2c Task1b 实际目录恢复准入（2026-09-13）
 
 目录表API四个命令入口透传动态策略。scope包含workspace/project/client/instance/session，发送前校验，恢复只查询；精确未接受保原key/body，可明确重试或放弃未接受请求。client改变推进独立submissionEpoch，草稿保留。RED新增7反例失败：五种撤权仍发生第二次POST、两项缺恢复操作；修复后目录/API/表单41测试通过，独立审查同41测试+7仓外探针通过，包括readonly成功核对、新client、非精确404、双击及迟到结果。TypeScript与限定ESLint通过；更后并行Editor写入期间出现的全仓类型暂态不算本包验收。最终目录和两客户端联合102测试通过。
+
+## C2c Task2 删除客户端（2026-09-13）
+
+两真实客户端增加status/record预检及DELETE；7个原写方法透传policy。每个删除强制accepted投影，验证完整resource与result身份、动作、deleted和状态tableRevision安全范围。25项缺方法/策略RED，另2项revision边界RED修复后61项定向通过。pm2_deletion_client_review独立规格→工程通过，61测试、四文件ESLint、按项目配置检查入口及传递依赖无类型错误；99项仓外边界探针通过。最终与目录5文件102测试通过。三Editor并行编辑导致全仓tsc的临时缺props错误已明确区分，未冒充全仓通过。

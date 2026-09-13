@@ -1,6 +1,7 @@
 import { expect, it, vi } from 'vitest'
 import { ApiClientError, createApiClient, type StreamingApiClient } from '../../shared/api/client'
 import { DataCommandUncertain } from './api'
+import { DataCommandNotAccepted } from './data-command'
 import { createDataCatalogApi } from './catalog-api'
 
 const scope = { projectId: 'p', tableId: 't', datasetGeneration: 'g' }
@@ -12,6 +13,8 @@ const status = { statusId: 's', name: '就绪', color: '#aabbcc', order: 0, stat
 const statusBody = { name: '就绪', color: '#aabbcc', order: 0, expectedTableRevision: 1 }
 const fieldOperation = { projectId: 'p', idempotencyKey: 'k', kind: 'mutateField', status: 'succeeded', resource: { type: 'field', fieldRef: ref }, result: { action: 'create', field, tableRevision: 2 } }
 const statusOperation = { ...fieldOperation, kind: 'mutateStatus', resource: { type: 'status', projectId: 'p', tableId: 't', statusId: 's' }, result: { action: 'create', status, tableRevision: 2 } }
+const statusDelete = { action: 'delete' as const, statusId: 's', deleted: true as const, tableRevision: 3 }
+const deletedStatusOperation = { ...statusOperation, result: statusDelete }
 function api(request: StreamingApiClient['request']) { return createDataCatalogApi({ request, health: vi.fn(), stream: vi.fn() }, scope) }
 
 it('recovers field creation from the original immutable operation', async () => {
@@ -27,6 +30,41 @@ it('recovers status creation and edits using distinct actions', async () => {
   await expect(catalog.createStatus(statusBody, 'k', true)).resolves.toEqual(status)
   await expect(catalog.updateStatus('s', { name: 'Done', expectedTableRevision: 2, expectedStatusRevision: 1 }, 'k', true)).resolves.toEqual(status)
   expect(request.mock.calls.every(call => String(call[0]).includes('/operations/by-idempotency-key/'))).toBe(true)
+})
+
+it('extracts status deletion from accepted and recovered operations', async () => {
+  const request = vi.fn().mockResolvedValueOnce({ operation: deletedStatusOperation }).mockResolvedValueOnce(deletedStatusOperation)
+  const catalog = api(request)
+  const body = { expectedStatusRevision: 1, expectedTableRevision: 2, impactRevision: 7 }
+  await expect(catalog.deleteStatus('s', body, 'k')).resolves.toEqual(statusDelete)
+  await expect(catalog.deleteStatus('s', body, 'k', true, { lookupOnly: true })).resolves.toEqual(statusDelete)
+  expect(request.mock.calls[0]).toEqual(['/api/v1/projects/p/tables/t/statuses/s', { method: 'DELETE', headers: { 'Idempotency-Key': 'k' }, body }])
+  expect(request).toHaveBeenCalledTimes(2)
+})
+
+it.each([
+  { ...deletedStatusOperation, resource: { ...deletedStatusOperation.resource, projectId: 'other' } },
+  { ...deletedStatusOperation, resource: { ...deletedStatusOperation.resource, tableId: 'other' } },
+  { ...deletedStatusOperation, resource: { ...deletedStatusOperation.resource, statusId: 'other' } },
+  { ...deletedStatusOperation, result: { ...statusDelete, action: 'create' } },
+  { ...deletedStatusOperation, result: { ...statusDelete, statusId: 'other' } },
+  { ...deletedStatusOperation, result: { ...statusDelete, deleted: false } },
+  { ...deletedStatusOperation, result: { ...statusDelete, tableRevision: NaN } },
+  { ...deletedStatusOperation, result: { ...statusDelete, tableRevision: 0 } },
+  { ...deletedStatusOperation, result: { ...statusDelete, tableRevision: 9_007_199_254_740_992 } },
+])('rejects mismatched status deletion without resending', async wrong => {
+  const request = vi.fn().mockResolvedValueOnce(wrong)
+  await expect(api(request).deleteStatus('s', { expectedStatusRevision: 1, expectedTableRevision: 2, impactRevision: 7 }, 'k', true)).rejects.toBeInstanceOf(DataCommandUncertain)
+  expect(request).toHaveBeenCalledTimes(1)
+})
+
+it.each(['createStatus', 'updateStatus'] as const)('does not let %s accept a delete result', async method => {
+  const request = vi.fn().mockResolvedValueOnce(deletedStatusOperation)
+  const catalog = api(request)
+  const promise = method === 'createStatus'
+    ? catalog.createStatus(statusBody, 'k', true)
+    : catalog.updateStatus('s', { name: 'Done', expectedTableRevision: 2, expectedStatusRevision: 1 }, 'k', true)
+  await expect(promise).rejects.toBeInstanceOf(DataCommandUncertain)
 })
 
 it.each([
@@ -81,9 +119,32 @@ it('passes cancellation to reads and uses a scoped pure impact request', async (
   await catalog.fields(signal)
   await catalog.statuses(signal)
   await catalog.previewField('f', definition, signal)
+  await catalog.previewStatusDelete('s', signal)
   expect(request.mock.calls[0]).toEqual(['/api/v1/projects/p/tables/t/fields', { signal }])
   expect(request.mock.calls[1]).toEqual(['/api/v1/projects/p/tables/t/statuses', { signal }])
   expect(request.mock.calls[2]).toEqual(['/api/v1/projects/p/mutation-impact', { method: 'POST', signal, body: { action: 'updateField', target: { type: 'field', fieldRef: ref }, change: definition } }])
+  expect(request.mock.calls[3]).toEqual(['/api/v1/projects/p/mutation-impact', { method: 'POST', signal, body: { action: 'deleteStatus', target: { type: 'status', projectId: 'p', tableId: 't', statusId: 's' } } }])
+  expect(request.mock.calls[3][1]).not.toHaveProperty('headers')
+})
+
+it('passes a dynamic submit guard through every catalog write', async () => {
+  const request = vi.fn().mockRejectedValue(new ApiClientError('absent', 404, 'OPERATION_NOT_FOUND'))
+  const canSubmit = vi.fn(() => false)
+  const catalog = api(request)
+  const calls = [
+    catalog.createField(fieldBody, 'k', true, { canSubmit }),
+    catalog.updateField('f', { definition, expectedTableRevision: 1, expectedFieldRevision: 1, impactRevision: 1 }, 'k', true, { canSubmit }),
+    catalog.createStatus(statusBody, 'k', true, { canSubmit }),
+    catalog.updateStatus('s', { name: 'Done', expectedTableRevision: 2, expectedStatusRevision: 1 }, 'k', true, { canSubmit }),
+  ]
+  await Promise.all(calls.map(call => expect(call).rejects.toBeInstanceOf(DataCommandUncertain)))
+  expect(canSubmit).toHaveBeenCalledTimes(4)
+})
+
+it('lookup-only status deletion never submits after operation-not-found', async () => {
+  const request = vi.fn().mockRejectedValueOnce(new ApiClientError('absent', 404, 'OPERATION_NOT_FOUND'))
+  await expect(api(request).deleteStatus('s', { expectedStatusRevision: 1, expectedTableRevision: 2, impactRevision: 7 }, 'k', false, { lookupOnly: true })).rejects.toBeInstanceOf(DataCommandNotAccepted)
+  expect(request).toHaveBeenCalledTimes(1)
 })
 
 it('rejects a non-finite backfill default before actual JSON serialization', async () => {

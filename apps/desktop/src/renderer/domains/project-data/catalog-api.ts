@@ -1,6 +1,6 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
-import { createDataCommand } from './data-command'
+import { createDataCommand, type DataCommandPolicy } from './data-command'
 
 type Schema = components['schemas']
 export type CatalogScope = Pick<Schema['DataFieldRef'], 'projectId' | 'tableId' | 'datasetGeneration'>
@@ -35,15 +35,29 @@ export function createDataCatalogApi(client: StreamingApiClient, context: Catalo
     }
   }
 
+  function deletedStatusResult(statusId: string) {
+    return ({ resource, result }: Operation): Schema['StatusDeleteResult'] => {
+      if (resource.type !== 'status' || resource.projectId !== scope.projectId || resource.tableId !== scope.tableId || resource.statusId !== statusId
+        || !result || !('action' in result) || result.action !== 'delete' || !('statusId' in result) || result.statusId !== statusId
+        || !('deleted' in result) || result.deleted !== true || !Number.isInteger(result.tableRevision)
+        || result.tableRevision < 1 || result.tableRevision > 9_007_199_254_740_991) throw mismatch()
+      return result
+    }
+  }
+
   return {
     fields: (signal?: AbortSignal) => client.request<Schema['DataFieldDirectory']>(`${base}/fields`, { signal }),
     statuses: (signal?: AbortSignal) => client.request<Schema['DataStatusDirectory']>(`${base}/statuses`, { signal }),
     previewField: (fieldId: string, definition: Schema['DataFieldWrite'], signal?: AbortSignal) => client.request<Schema['FieldImpactReport']>(`${project}/mutation-impact`, {
       method: 'POST', signal, body: { action: 'updateField', target: { type: 'field', fieldRef: { ...scope, fieldId } }, change: definition },
     }),
-    createField: (body: Schema['DataFieldCreate'], key: string, resume = false) => command(`${base}/fields`, 'POST', body, key, 'mutateField', resume, fieldResult('create')),
-    updateField: (fieldId: string, body: Schema['DataFieldPatch'], key: string, resume = false) => command(`${base}/fields/${encode(fieldId)}`, 'PATCH', body, key, 'mutateField', resume, fieldResult('update', fieldId)),
-    createStatus: (body: Schema['DataStatusCreate'], key: string, resume = false) => command(`${base}/statuses`, 'POST', body, key, 'mutateStatus', resume, statusResult('create')),
-    updateStatus: (statusId: string, body: Schema['DataStatusPatch'], key: string, resume = false) => command(`${base}/statuses/${encode(statusId)}`, 'PATCH', body, key, 'mutateStatus', resume, statusResult('update', statusId)),
+    previewStatusDelete: (statusId: string, signal?: AbortSignal) => client.request<Schema['DeletionImpactReport']>(`${project}/mutation-impact`, {
+      method: 'POST', signal, body: { action: 'deleteStatus', target: { type: 'status', projectId: scope.projectId, tableId: scope.tableId, statusId } },
+    }),
+    createField: (body: Schema['DataFieldCreate'], key: string, resume = false, policy?: DataCommandPolicy) => command(`${base}/fields`, 'POST', body, key, 'mutateField', resume, fieldResult('create'), policy),
+    updateField: (fieldId: string, body: Schema['DataFieldPatch'], key: string, resume = false, policy?: DataCommandPolicy) => command(`${base}/fields/${encode(fieldId)}`, 'PATCH', body, key, 'mutateField', resume, fieldResult('update', fieldId), policy),
+    createStatus: (body: Schema['DataStatusCreate'], key: string, resume = false, policy?: DataCommandPolicy) => command(`${base}/statuses`, 'POST', body, key, 'mutateStatus', resume, statusResult('create'), policy),
+    updateStatus: (statusId: string, body: Schema['DataStatusPatch'], key: string, resume = false, policy?: DataCommandPolicy) => command(`${base}/statuses/${encode(statusId)}`, 'PATCH', body, key, 'mutateStatus', resume, statusResult('update', statusId), policy),
+    deleteStatus: (statusId: string, body: Schema['StatusDelete'], key: string, resume = false, policy?: DataCommandPolicy) => command(`${base}/statuses/${encode(statusId)}`, 'DELETE', body, key, 'mutateStatus', resume, deletedStatusResult(statusId), { ...policy, acceptedResponse: true }),
   }
 }

@@ -195,7 +195,7 @@ resumePatch: (tableId: string, body: TablePatch, key: string, policy?: DataComma
 
 **Files:** `apps/desktop/src/renderer/domains/project-data/{catalog-api.ts,catalog-api.test.ts,records-api.ts,records-api.test.ts}`。
 
-- [ ] 在已有 API 测试内先增加 RED：status delete 首次 202 和 recover 均得到 StatusDeleteResult；record delete 首次与 recover 均得到 RecordDeleteResult；输入 literal text `001 / 😀` 路径一次编码，integer `1` 与 text `1` 不同；wrong action/target/generation/deleted=false 均 uncertain 且不重发；preview body 无 key。
+- [x] 在已有 API 测试内先增加 RED：status delete 首次 202 和 recover 均得到 StatusDeleteResult；record delete 首次与 recover 均得到 RecordDeleteResult；输入 literal text `001 / 😀` 路径一次编码，integer `1` 与 text `1` 不同；wrong action/target/generation/deleted=false 均 uncertain 且不重发；preview body 无 key。
 
 ```ts
 // 追加 catalog-api.test.ts，复用本文件 scope/api/statusOperation。
@@ -212,8 +212,8 @@ it('extracts status deletion rather than a status definition', async () => {
 })
 ```
 
-- [ ] 运行 `npm test -- src/renderer/domains/project-data/catalog-api.test.ts src/renderer/domains/project-data/records-api.test.ts`，预期缺方法失败。
-- [ ] 两文件 import `DataCommandPolicy`；所有现有写方法末尾添加 `policy?: DataCommandPolicy`，将其作为共享 command 最后一个参数。保持现有 `resume=false` 位置，旧调用不改。catalog 增加以下函数及返回方法：
+- [x] 运行 `npm test -- src/renderer/domains/project-data/catalog-api.test.ts src/renderer/domains/project-data/records-api.test.ts`，预期缺方法失败。
+- [x] 两文件 import `DataCommandPolicy`；所有现有写方法末尾添加 `policy?: DataCommandPolicy`，将其作为共享 command 最后一个参数。保持现有 `resume=false` 位置，旧调用不改。catalog 增加以下函数及返回方法：
 
 ```ts
 function deletedStatusResult(statusId: string) {
@@ -231,7 +231,7 @@ deleteStatus: (statusId: string, body: Schema['StatusDelete'], key: string, resu
   command(`${base}/statuses/${encode(statusId)}`, 'DELETE', body, key, 'mutateStatus', resume, deletedStatusResult(statusId), { ...policy, acceptedResponse: true }),
 ```
 
-- [ ] records 增加以下函数/返回方法（复用本文件 path/sameScope/sameKey；API 仍在 closure 中复制 scope）：
+- [x] records 增加以下函数/返回方法（复用本文件 path/sameScope/sameKey；API 仍在 closure 中复制 scope）：
 
 ```ts
 function deletedRecordResult(key: RecordKey) {
@@ -250,8 +250,8 @@ delete: (recordKey: RecordKey, body: Omit<Schema['RecordDelete'], 'datasetGenera
   command(path(recordKey), 'DELETE', { ...body, datasetGeneration: scope.datasetGeneration, recordKeyType: recordKey.type }, key, 'deleteRecord', resume, deletedRecordResult({ ...recordKey }), { ...policy, acceptedResponse: true }),
 ```
 
-- [ ] 在 API 测试用 `it.each` 分别验证 resource 与 result 两处 target 身份，不只验证 resource；status create/update 收到 delete result 也拒绝。preview 返回内容由 controller 检验为冻结会话 target/revisions；transport method 负责精确请求。
-- [ ] 运行两个 API 测试与 `npm run typecheck`，预期通过。提交 `feat(project-data): add scoped status and record deletion clients`。
+- [x] 在 API 测试用 `it.each` 分别验证 resource 与 result 两处 target 身份，不只验证 resource；status create/update 收到 delete result 也拒绝。preview 返回内容由 controller 检验为冻结会话 target/revisions；transport method 负责精确请求。
+- [x] 运行两个 API 测试与 `npm run typecheck`，预期通过。提交 `feat(project-data): add scoped status and record deletion clients`。
 
 ## Task 3：建立唯一详情写入 controller 与冻结命令
 
