@@ -1,0 +1,100 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/log-event-timestamps.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:20437) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+[Socket] 连接到后端: http://127.0.0.1:64299
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+ ❯ src/renderer/domains/workflows/tests/log-event-timestamps.test.ts (2 tests | 2 failed) 331ms
+   × preserves source timestamps for live and replayed single/batch logs over memory 165ms
+   × preserves source timestamps for live and replayed single/batch logs over http 166ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+AssertionError: expected [ [ '历史单条日志', …(1) ], …(1) ] to deeply equal [ [ '历史单条日志', …(1) ], …(1) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "历史单条日志",
+-     "2020-01-02T03:04:05.000Z",
++     "2026-09-13T21:38:27.749Z",
+    ],
+    [
+      "历史批量日志",
+-     "2020-01-02T03:04:06.000Z",
++     "2026-09-13T21:38:27.750Z",
+    ],
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/log-event-timestamps.test.ts:19:82
+     17|   emitMockEvent('execution:log_batch',{workflowId:'timestamp-run',logs…
+     18|   await vi.waitFor(()=>expect(useWorkflowStore.getState().logs).toHave…
+     19|   expect(useWorkflowStore.getState().logs.map(log=>[log.message,log.ti…
+       |                                                                                  ^
+     20|   socketService.disconnect();useWorkflowStore.getState().clearLogs();s…
+     21|   await vi.waitFor(()=>expect(useWorkflowStore.getState().logs).toHave…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+AssertionError: expected [ [ '历史单条日志', …(1) ], …(1) ] to deeply equal [ [ '历史单条日志', …(1) ], …(1) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "历史单条日志",
+-     "2020-01-02T03:04:05.000Z",
++     "2026-09-13T21:38:27.919Z",
+    ],
+    [
+      "历史批量日志",
+-     "2020-01-02T03:04:06.000Z",
++     "2026-09-13T21:38:27.919Z",
+    ],
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/log-event-timestamps.test.ts:19:82
+     17|   emitMockEvent('execution:log_batch',{workflowId:'timestamp-run',logs…
+     18|   await vi.waitFor(()=>expect(useWorkflowStore.getState().logs).toHave…
+     19|   expect(useWorkflowStore.getState().logs.map(log=>[log.message,log.ti…
+       |                                                                                  ^
+     20|   socketService.disconnect();useWorkflowStore.getState().clearLogs();s…
+     21|   await vi.waitFor(()=>expect(useWorkflowStore.getState().logs).toHave…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  05:38:26
+   Duration  1.12s (transform 200ms, setup 91ms, import 228ms, tests 331ms, environment 365ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/log-event-timestamps.test.ts

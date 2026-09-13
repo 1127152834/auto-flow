@@ -22588,5 +22588,49 @@
     "level": "HTTP integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-http.test.tsx"
+  },
+  {
+    "id": "F3.log-timestamps.memory",
+    "capability": "日志原始时间与重放",
+    "preconditions": {
+      "mode": "memory",
+      "singleTimestamp": "2020-01-02T03:04:05.000Z",
+      "batchTimestamp": "2020-01-02T03:04:06.000Z"
+    },
+    "steps": [
+      "连接事件客户端",
+      "发送execution:log和execution:log_batch",
+      "检查两条日志时间",
+      "断开并清空当前显示日志",
+      "创建新事件客户端从0重放并再次检查"
+    ],
+    "expectedUI": "不挂载UI；实际Store显示数据保留历史记录时间",
+    "expectedIO": "同一协议的单条、批量SSE及afterSeq=0补读",
+    "stateAssertion": "实时与重放阶段均恰好2条，message/timestamp与原事件相同",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
+  },
+  {
+    "id": "F3.log-timestamps.http",
+    "capability": "日志原始时间与重放",
+    "preconditions": {
+      "mode": "http",
+      "singleTimestamp": "2020-01-02T03:04:05.000Z",
+      "batchTimestamp": "2020-01-02T03:04:06.000Z"
+    },
+    "steps": [
+      "连接事件客户端",
+      "发送execution:log和execution:log_batch",
+      "检查两条日志时间",
+      "断开并清空当前显示日志",
+      "创建新事件客户端从0重放并再次检查"
+    ],
+    "expectedUI": "不挂载UI；实际Store显示数据保留历史记录时间",
+    "expectedIO": "同一协议的单条、批量SSE及afterSeq=0补读",
+    "stateAssertion": "实时与重放阶段均恰好2条，message/timestamp与原事件相同",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
   }
 ]

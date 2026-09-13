@@ -323,7 +323,7 @@ class SocketService {
     // 这样无论后端多快，前端始终保持 ≥ 12fps 的批处理节奏，体感丝滑。
     const LOG_BATCH_INTERVAL_MS = 80
     const LOG_BATCH_MAX_SIZE = 200
-    let logBuffer: Array<{ level: LogLevel; message: string; nodeId?: string; duration?: number }> = []
+    let logBuffer: Array<{ level: LogLevel; message: string; nodeId?: string; duration?: number; timestamp?: string }> = []
     let logFlushTimer: ReturnType<typeof setTimeout> | null = null
 
     const flushLogBuffer = () => {
@@ -404,6 +404,7 @@ class SocketService {
       }
 
       logBuffer.push({
+        timestamp: log.timestamp,
         level: log.level,
         message: log.message,
         nodeId: log.nodeId,
@@ -433,6 +434,7 @@ class SocketService {
           continue
         }
         logBuffer.push({
+          timestamp: log.timestamp,
           level: log.level,
           message: log.message,
           nodeId: log.nodeId,
