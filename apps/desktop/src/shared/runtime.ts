@@ -13,7 +13,10 @@ export type DesktopRuntimeContext = {
   operation: DesktopSettingsSnapshot['operation']
 }
 
+export type WorkflowExportRequest = { workspaceKey: string; runId: string; kind: 'logs' | 'results' | 'diagnostics'; throughSeq: number; filters?: Record<string, string> }
+
 export type RuntimeBridge = {
+  exportWorkflow?(request: WorkflowExportRequest): Promise<{ saved: boolean }>
   getRuntimeContext(): Promise<DesktopRuntimeContext>
   onRuntimeContextChanged(handler: (context: DesktopRuntimeContext) => void): () => void
 }

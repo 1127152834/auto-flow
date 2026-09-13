@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-13T05:40:56.415245+00:00",
+  "platform": "darwin",
+  "arch": "arm64",
+  "backend": {
+    "ruff": "passed",
+    "mypy": "passed (162 source files)",
+    "pytestFullRegression": 570,
+    "finalWorkerProtocolRegression": 38
+  },
+  "frontend": {
+    "vitest": 427,
+    "files": 66,
+    "typescript": "passed",
+    "eslint": "passed"
+  },
+  "engineering": {
+    "openapi": "passed",
+    "structureTests": 3,
+    "scriptTests": 12,
+    "rendererMainPreload": "passed",
+    "pyinstaller": "passed",
+    "electronPackageDir": "passed"
+  },
+  "realBrowser": {
+    "source": 8,
+    "frozen": 8,
+    "kernel": "145.0.7632.109.2"
+  },
+  "studio": {
+    "development": 4,
+    "builtHtml": 4,
+    "packaged": 4
+  },
+  "regression": {
+    "M1": 13,
+    "M2": 8,
+    "M3": 8,
+    "M4": 7
+  },
+  "platforms": {
+    "macOS_arm64": "passed",
+    "Windows_x64": "not tested on hardware",
+    "macOS_Intel": "not tested on hardware"
+  },
+  "evidence": "Adjacent scenario JSON files and screenshots; detailed coverage and limits in ../automation-studio-m5-validation.md"
+}

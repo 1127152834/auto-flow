@@ -33,7 +33,7 @@ let child, base, profile
 const checks=[]
 const executable = arg('--executable')
 const mode = executable ? 'frozen' : 'source'
-const qa=join(root,'docs/migration/automation-studio-m4-qa')
+const qa=arg('--qa-directory') ? resolve(arg('--qa-directory')) : join(root,'docs/migration/automation-studio-m4-qa')
 await mkdir(qa,{recursive:true})
 const wait = ms => new Promise(resolve=>setTimeout(resolve,ms))
 async function until(fn,label,ms=20000) { const end=Date.now()+ms;while(Date.now()<end){const v=await fn();if(v)return v;await wait(80)}throw new Error(`Timeout: ${label}`) }

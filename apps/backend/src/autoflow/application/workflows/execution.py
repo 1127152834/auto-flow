@@ -9,6 +9,7 @@ from time import monotonic
 from typing import Any
 from uuid import uuid4
 
+from autoflow.application.workflows.debug import WorkflowDebug
 from autoflow.domain.workflows.control_values import (
     UNARY,
     compare,
@@ -28,19 +29,29 @@ class WorkflowExecution:
     def __init__(self, variables: dict[str, Any], emit: Callable[[dict[str, Any]], None],
                  action: Callable[[dict[str, Any], dict[str, Any], float], Awaitable[dict[str, Any] | None]],
                  page_condition: Callable[[dict[str, Any], float], Awaitable[bool]],
-                 error_of: Callable[[Exception, str], dict[str, Any]]) -> None:
+                 error_of: Callable[[Exception, str], dict[str, Any]], debug: WorkflowDebug | None = None) -> None:
         self.variables, self.emit = variables, emit
         self.action, self.page_condition, self.error_of = action, page_condition, error_of
+        self.debug = debug
         self.count = 0
         self.nodes: dict[str, dict[str, Any]] = {}
 
     async def run(self, document: dict[str, Any], plan: list[dict[str, Any]]) -> dict[str, Any]:
         self.nodes = {node['id']: node for node in document['nodes']}
+        if self.debug:
+            self.debug.bind(document)
+            self.debug.identity = {'nodeId': plan[0]['nodeId'], 'loopPath': []}
+            self.debug.checkpoint('initial')
         self.emit({'type': 'ready', 'message': '浏览器已启动'})
         try:
             await self._sequence(plan, [])
         except _ExecutionFailed as error:
+            if self.debug and self.debug.failure is None:
+                self.debug.identity = {'nodeId': error.error.get('nodeId'), 'loopPath': []}
+                await self.debug.failed(error.error)
             return {'state': 'failed', 'error': error.error}
+        if self.debug:
+            self.debug.finish()
         return {'state': 'succeeded', 'error': None}
 
     async def _dispatch(self, node_id: str, path: list[dict[str, Any]], operation: Callable[[float], Awaitable[dict[str, Any]]]) -> dict[str, Any]:
@@ -52,8 +63,10 @@ class WorkflowExecution:
                 error = self.error_of(exception, node_id)
                 self.emit({'type': 'log', 'level': 'error', 'nodeId': node_id, 'message': error['message'], 'error': error, 'loopPath': deepcopy(path)})
                 raise _ExecutionFailed(error) from None
-        self.count += 1
         identity = {'nodeId': node_id, 'executionId': uuid4().hex, 'loopPath': deepcopy(path)}
+        if self.debug:
+            await self.debug.before(identity)
+        self.count += 1
         start = monotonic()
         self.emit({'type': 'node_started', 'message': '节点开始执行', **identity})
         try:
@@ -66,6 +79,8 @@ class WorkflowExecution:
             error = self.error_of(exception, node_id)
             self.emit({'type': 'node_failed', 'level': 'error', 'message': error['message'], 'error': error,
                        'durationMs': round((monotonic() - start) * 1000), **identity})
+            if self.debug:
+                await self.debug.failed(error)
             raise _ExecutionFailed(error) from None
         artifact = result.get('artifact')
         if artifact is not None:
@@ -102,14 +117,23 @@ class WorkflowExecution:
             branch = 'true' if await self._condition(node, deadline) else 'false'
             return {'branch': branch, 'message': '条件成立' if branch == 'true' else '条件不成立'}
         if kind == 'set_variable':
+            name = node['config']['variableName']
+            existed = name in self.variables
             set_value(node['config'], self.variables, node['id'])
+            if self.debug:
+                append = node['config']['operation'] == 'append'
+                self.debug.changes([{'name': name, 'operation': 'append' if append else 'replace' if existed else 'create', 'value': deepcopy(self.variables[name][-1] if append else self.variables[name]), 'scope': None}])
             return {'message': '运行变量已更新'}
         if kind in {'break_loop', 'continue_loop'}:
             return {'branch': kind, 'message': '退出最近一层循环' if kind == 'break_loop' else '跳过本轮剩余步骤'}
         if kind in {'condition_end', 'loop_end'}:
             return {}
         config = resolve_node_config(node, self.variables)
+        output_existed = config.get('variableName') in self.variables
         artifact = await self.action(node, config, deadline)
+        if self.debug and node['type'] in {'get_element_info', 'screenshot'}:
+            name = config['variableName']
+            self.debug.changes([{'name': name, 'operation': 'replace' if output_existed else 'create', 'value': deepcopy(self.variables[name]), 'scope': None}])
         return {'artifact': artifact} if artifact is not None else {}
 
     async def _sequence(self, steps: list[dict[str, Any]], path: list[dict[str, Any]]) -> str | None:
@@ -161,6 +185,10 @@ class WorkflowExecution:
             self.variables[c['indexVariable']] = iteration
             if c['mode'] == 'foreach':
                 self.variables[c['itemVariable']] = deepcopy(source[iteration - 1])
+            local_names = [c['indexVariable']] + ([c['itemVariable']] if c['mode'] == 'foreach' else [])
+            if self.debug:
+                self.debug.scopes.update({name: identifier for name in local_names})
+                self.debug.changes([{'name': name, 'operation': 'create', 'value': deepcopy(self.variables[name]), 'scope': identifier} for name in local_names], 'scope')
             try:
                 transfer = await self._sequence(step['body'], local_path)
                 if transfer == 'break_loop':
@@ -169,6 +197,10 @@ class WorkflowExecution:
                     end = self.nodes[step['endNodeId']]
                     await self._dispatch(end['id'], local_path, partial(self._unit, end))
             finally:
+                if self.debug:
+                    for name in local_names:
+                        self.debug.scopes.pop(name, None)
+                    self.debug.changes([{'name': name, 'operation': 'remove', 'scope': identifier} for name in local_names], 'scope')
                 self.variables.pop(c['indexVariable'], None)
                 if c['mode'] == 'foreach':
                     self.variables.pop(c['itemVariable'], None)

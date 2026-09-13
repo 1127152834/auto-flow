@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import logging
+from builtins import list as ListType
 from collections.abc import Awaitable, Callable, Iterator, Sequence
 from contextlib import AbstractContextManager, ExitStack, contextmanager
 from copy import deepcopy
@@ -21,6 +22,7 @@ from autoflow.application.workflows.browser_resources import (
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
+from autoflow.domain.workflows.debug import prepare_debug
 from autoflow.domain.workflows.models import WorkflowError, WorkflowIssue
 from autoflow.domain.workflows.run_validation import PreparedWorkflow, prepare_run
 from autoflow.domain.workflows.runs import (
@@ -41,6 +43,7 @@ class _ActiveRun:
     stop_task: asyncio.Task[None] | None = None
     cleanup_task: asyncio.Task[None] | None = None
     cleanup_failed: bool = False
+    debug_failure: dict[str, Any] | None = None
     guards: ExitStack | None = None
     result: dict[str, Any] | None = None
 
@@ -59,6 +62,8 @@ class WorkflowRunService:
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None], launcher: WorkflowRunLauncher,
         artifact_path: Callable[[str, str], Path],
+        read_json: Callable[[Path], Any] | None = None,
+        archive: Callable[[list[tuple[Path, dict[str, Any]]]], Iterator[bytes]] | None = None,
     ) -> None:
         self.repository = repository
         self._profiles = profiles
@@ -68,6 +73,9 @@ class WorkflowRunService:
         self._read_license = read_license
         self._launcher = launcher
         self._artifact_path = artifact_path
+        self._read_json = read_json
+        self._archive = archive
+        self._command_locks: dict[str, asyncio.Lock] = {}
         self._active: dict[str, _ActiveRun] = {}
         self._pending_completions: dict[str, _PendingCompletion] = {}
         self._completion_lock = RLock()
@@ -106,12 +114,13 @@ class WorkflowRunService:
 
     async def start(
         self, run_id: str, document: dict[str, Any], layout: dict[str, Any], profile_id: str,
+        mode: str = "run", debug: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         # No await between admission, resource guards, persistence and task ownership.
         self._loop = asyncio.get_running_loop()
         self._retry_completions()
         request_hash = hashlib.sha256(json.dumps(
-            [document, layout, profile_id], sort_keys=True, ensure_ascii=False, allow_nan=False,
+            [document, {key: value for key, value in layout.items() if key != "breakpoints" or value}, profile_id] + ([mode, debug] if mode == "debug" else []), sort_keys=True, ensure_ascii=False, allow_nan=False,
         ).encode()).hexdigest()
         existing = self.repository.get(run_id)
         if existing is not None:
@@ -124,16 +133,19 @@ class WorkflowRunService:
             raise WorkflowError("INSPECTION_ACTIVE", "请先关闭拾取浏览器后运行", 409)
         if self.busy():
             raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
-        prepared = prepare_run(document, layout)
+        prepared = prepare_debug(document, layout, debug or {"start": "entry"}) if mode == "debug" else prepare_run(document, layout)
         guards = ExitStack()
         try:
             profile, executable = acquire_browser(guards, self._profiles, self._kernel_guard, self._installed_kernels, profile_id)
             now = datetime.now(UTC).isoformat()
             snapshot = {_camel(key): value for key, value in asdict(profile.spec).items()}
             snapshot.update(id=profile.id, fingerprintSeed=profile.fingerprint_seed)
+            if mode == "debug":
+                snapshot["headless"] = False
             record = RunRecord(request_hash, {
                 "runId": run_id, "workflowId": document["id"], "name": document["name"],
                 "profileId": profile_id, "profileName": profile.spec.name,
+                "mode": mode, "debug": {"state": "starting", "controlRevision": 0, "pauseId": None, "breakpoints": (debug or {}).get("breakpoints", []), "checkpointId": None} if mode == "debug" else None, "debugOptions": debug,
                 "state": "starting", "document": deepcopy(document), "layout": deepcopy(layout),
                 "profileSnapshot": snapshot, "nodeOrder": list(prepared.node_ids),
                 "currentNodeId": None, "startedAt": now, "finishedAt": None,
@@ -156,6 +168,101 @@ class WorkflowRunService:
         except Exception as error:  # noqa: BLE001 - normalize process/resource failures without exposing credentials
             guards.close()
             raise _resource_error(error) from None
+
+    def debug_command(self, run_id: str, identifier: str) -> dict[str, Any]:
+        self.get(run_id)
+        result = self.repository.command(run_id, identifier)
+        if result is None:
+            raise WorkflowError('DEBUG_COMMAND_NOT_FOUND', '调试命令不存在', 404)
+        return result
+
+    async def send_debug(self, run_id: str, command: dict[str, Any]) -> dict[str, Any]:
+        async with self._command_locks.setdefault(run_id, asyncio.Lock()):
+            record = self.get(run_id)
+            digest = hashlib.sha256(json.dumps(command, sort_keys=True, allow_nan=False).encode()).hexdigest()
+            existing = self.repository.command(run_id, command['commandId'])
+            if existing is not None:
+                self.repository.command(run_id, command['commandId'], digest)
+                return existing
+            if record.get('mode') != 'debug' or run_id not in self._active or self._active[run_id].stopping or record['state'] in {'starting', 'finishing', 'stopping'}:
+                raise WorkflowError('DEBUG_UNAVAILABLE', '调试已结束或正在停止', 409)
+            self.repository.command(run_id, command['commandId'], digest)
+            try:
+                await self._launcher.command(run_id, command)
+            except WorkflowError as error:
+                rejected = {'commandId': command['commandId'], 'state': 'rejected', 'debug': record.get('debug'), 'data': None, 'error': {'code': error.code, 'message': error.message}}
+                self._append(run_id, {'type': 'debug_response', 'response': rejected}, {'_command': rejected})
+            except Exception:  # noqa: BLE001 -- do not resend an uncertain command; its ID remains queryable.
+                return self.debug_command(run_id, command['commandId'])
+            return self.debug_command(run_id, command['commandId'])
+
+    def variables(self, run_id: str, checkpoint_id: str | None, offset: int, limit: int, after: int) -> dict[str, Any]:
+        run = self.get(run_id)
+        checkpoint_id = checkpoint_id or (run.get('debug') or {}).get('checkpointId')
+        items = []
+        next_offset = None
+        if checkpoint_id:
+            path, artifact = self.artifact(run_id, checkpoint_id)
+            if artifact.get('purpose') != 'diagnostic' or self._read_json is None:
+                raise WorkflowError('DEBUG_CHECKPOINT_INVALID', '变量检查点不存在', 404)
+            checkpoint = self._read_json(path)
+            if checkpoint.get('kind') != 'checkpoint':
+                raise WorkflowError('DEBUG_CHECKPOINT_INVALID', '此记录不是变量检查点', 422)
+            values = checkpoint['variables']
+            for value in values[offset:offset + limit]:
+                text = json.dumps(value['value'], ensure_ascii=False, allow_nan=False)
+                items.append({**{key: value[key] for key in ('name', 'scope', 'source')}, 'type': type(value['value']).__name__, 'preview': text[:240], 'artifactId': checkpoint_id})
+            next_offset = offset + limit if len(values) > offset + limit else None
+        diagnostics = self.repository.artifacts(run_id, after, limit + 1, purpose='diagnostic')
+        return {'checkpointId': checkpoint_id, 'items': items, 'nextOffset': next_offset,
+                'diagnosticArtifacts': diagnostics[:limit], 'nextCursor': diagnostics[limit - 1]['ordinal'] if len(diagnostics) > limit else None}
+
+    def filtered_events(self, run_id: str, after: int, limit: int, through: int | None, filters: dict[str, str], tail: bool = False) -> dict[str, Any]:
+        run = self.get(run_id)
+        through = min(through if through is not None else run['latestSeq'], run['latestSeq'])
+        items = self.repository.filtered_events(run_id, after, limit if tail else limit + 1, through, filters, tail)
+        return {'items': items[:limit], 'hasMore': len(items) > limit, 'nextSeq': items[limit-1]['seq'] if len(items) > limit else through}
+
+    def export(self, run_id: str, kind: str, through: int | None, filters: dict[str, str]) -> Iterator[bytes]:
+        run = self.get(run_id)
+        through = min(through if through is not None else run['latestSeq'], run['latestSeq'])
+        if kind == 'logs':
+            return self._export_logs(run_id, through, filters)
+        entries: ListType[tuple[Path, dict[str, Any]]] = []
+        cursor = 0
+        while True:
+            batch = self.repository.artifacts(run_id, cursor, 100, purpose='result' if kind == 'results' else 'diagnostic', through_seq=through)
+            if not batch:
+                break
+            for item in batch:
+                path, _ = self.artifact(run_id, item['id'])
+                entries.append((path, item))
+            cursor = batch[-1]['ordinal']
+        if kind == 'results':
+            assert self._archive is not None
+            return self._archive(entries)
+        return self._export_diagnostics(entries)
+
+    def _export_logs(self, run_id: str, through: int, filters: dict[str, str]) -> Iterator[bytes]:
+        cursor = 0
+        while cursor < through:
+            batch = self.repository.filtered_events(run_id, cursor, 200, through, filters)
+            if not batch:
+                break
+            for item in batch:
+                yield (json.dumps(item, ensure_ascii=False) + '\n').encode()
+            cursor = batch[-1]['seq']
+
+    def _export_diagnostics(self, entries: ListType[tuple[Path, dict[str, Any]]]) -> Iterator[bytes]:
+        assert self._read_json is not None
+        yield b'['
+        for index, (path, item) in enumerate(entries):
+            if index:
+                yield b','
+            # Stream JSON encoding; one registered diagnostic file is read at a time.
+            for part in json.JSONEncoder(ensure_ascii=False).iterencode({'artifact': item, 'diagnostic': self._read_json(path)}):
+                yield part.encode()
+        yield b']'
 
     async def stop(self, run_id: str) -> dict[str, Any]:
         operation = self._active.get(run_id)
@@ -331,6 +438,7 @@ class WorkflowRunService:
     async def _finish(self, run_id: str, operation: _ActiveRun) -> bool:
         if self._active.get(run_id) is not operation:
             return True
+        record = None
         try:
             record = self.repository.get(run_id)
             if record is not None and record.data['state'] in {'starting', 'running'}:
@@ -346,17 +454,25 @@ class WorkflowRunService:
         if self._active.get(run_id) is not operation:
             return True
         assert operation.result is not None
-        state = "cancelled" if operation.stopping else operation.result["state"]
-        outcome_error = None if state == "cancelled" else operation.result.get("error")
+        state = "failed" if operation.debug_failure else "cancelled" if operation.stopping else operation.result["state"]
+        outcome_error = operation.debug_failure or (None if state == "cancelled" else operation.result.get("error"))
+        debug_state = None
+        current_record = record
+        if current_record is not None and current_record.data.get('debug'):
+            debug_state = deepcopy(current_record.data['debug'])
+            if debug_state.get('pausedAt'):
+                debug_state['pauseDurationMs'] = debug_state.get('pauseDurationMs', 0) + max(0, round((datetime.now(UTC) - datetime.fromisoformat(debug_state['pausedAt'])).total_seconds() * 1000))
+            debug_state.update(state=state, pauseId=None, pausedAt=None)
         completion = _PendingCompletion({"type": state, "level": "error" if state == "failed" else "info", "message": {
             "succeeded": "运行完成，浏览器已关闭", "failed": "运行失败，浏览器已关闭", "cancelled": "运行已停止，浏览器已关闭",
-        }[state], "error": outcome_error}, {"state": state, "finishedAt": datetime.now(UTC).isoformat(), "error": outcome_error})
+        }[state], "error": outcome_error}, {"state": state, "finishedAt": datetime.now(UTC).isoformat(), "error": outcome_error, **({"debug": debug_state} if debug_state else {})})
         with self._completion_lock:
             self._pending_completions[run_id] = completion
         self._retry_completions(run_id)
         if operation.guards is not None:
             operation.guards.close()
         self._active.pop(run_id, None)
+        self._command_locks.pop(run_id, None)
         return True
 
     async def _worker_event(self, run_id: str, operation: _ActiveRun, event: dict[str, Any]) -> None:
@@ -369,14 +485,29 @@ class WorkflowRunService:
         if kind == "ready" and not operation.stopping:
             changes["state"] = "running"
         elif kind == "node_started":
+            if not operation.stopping:
+                changes["state"] = "running"
+            changes["nodeExecutionCounts"] = {**record.get("nodeExecutionCounts", {}), node_id: record.get("nodeExecutionCounts", {}).get(node_id, 0) + 1}
             changes.update(currentNodeId=node_id, currentExecutionId=event.get("executionId"), currentLoopPath=event.get("loopPath", []), executionCount=record.get("executionCount", 0) + 1)
         elif kind == "node_succeeded":
             completed = record["completedNodeIds"]
             if node_id not in completed:
                 changes["completedNodeIds"] = [*completed, node_id]
         elif kind == "node_failed" and not operation.stopping:
-            changes["state"] = "finishing"
-        stored: dict[str, Any] = {key: event[key] for key in ("type", "nodeId", "level", "message", "durationMs", "error", "executionId", "loopPath", "branch") if key in event}
+            if record.get('mode') == 'debug':
+                operation.debug_failure = event.get('error')
+            else:
+                changes["state"] = "finishing"
+        if kind in {'debug_state', 'debug_checkpoint'}:
+            changes['debug'] = event['debug']
+            if not operation.stopping:
+                changes['state'] = event['debug']['state']
+            if event.get('error'):
+                operation.debug_failure = event['error']
+                changes['error'] = event['error']
+        if kind == 'debug_response':
+            changes['_command'] = event['response']
+        stored: dict[str, Any] = {key: event[key] for key in ("type", "nodeId", "level", "message", "durationMs", "error", "executionId", "loopPath", "branch", "debug", "reason", "response") if key in event}
         artifact = event.get("artifact")
         if artifact is not None:
             self._artifact_path(run_id, artifact["relativePath"])

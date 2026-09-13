@@ -759,3 +759,17 @@ while not stopped.is_set():
     assert (await execution)['state'] == 'cancelled'
     assert len(observed) == count and not manager.busy()
     await manager.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_debug_state_supports_catalog_size_breakpoint_metadata(tmp_path, valid_profile_values):
+    executable = tmp_path / 'chrome'
+    executable.write_bytes(b'kernel')
+    script = "import json,sys; json.loads(sys.stdin.readline()); print(json.dumps({'type':'debug_state','debug':{'state':'paused','breakpoints':[str(i)+'😀'*110 for i in range(2000)]}}),flush=True); print(json.dumps({'type':'finished','state':'succeeded','error':None}),flush=True)"
+    manager = WorkflowWorkerManager(tmp_path / 'temp', tmp_path / 'runs', command=(sys.executable, '-c', script))
+    events = []
+    async def on_event(event): events.append(event)
+    result = await manager.execute('run', prepared(), profile(valid_profile_values), executable, None, None, on_event)
+    assert result['state'] == 'succeeded'
+    assert len(events[0]['debug']['breakpoints']) == 2000
+    assert not manager.busy()

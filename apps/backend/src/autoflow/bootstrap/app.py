@@ -81,6 +81,10 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.filesystem.workflow_artifacts import artifact_path
+from autoflow.infrastructure.filesystem.workflow_diagnostics import (
+    read_workflow_json,
+    result_archive,
+)
 from autoflow.infrastructure.process.inspection_worker import InspectionWorkerManager
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
@@ -182,6 +186,7 @@ def create_app(
         run_repository, profile_service, catalog_provider.installed, workflow_kernel_guard,
         proxy_runtime.resolve_profile, license_store.read, workflow_workers,
         partial(artifact_path, paths.workspace / "runs"),
+        read_json=read_workflow_json, archive=result_archive,
     )
 
     inspection_workers = InspectionWorkerManager(paths.temp)

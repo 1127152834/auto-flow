@@ -77,6 +77,7 @@ class WorkflowViewport(WorkflowPosition):
 
 
 class WorkflowLayout(ApiModel):
+    breakpoints: list[Identifier] = Field(default_factory=list, max_length=2000)
     nodes: dict[str, WorkflowPosition]
     viewport: WorkflowViewport
 

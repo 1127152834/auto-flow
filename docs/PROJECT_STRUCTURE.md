@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs；M4 增加 0007_workflow_artifacts，索引历史及逐次执行产物。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs；M4 增加 0007_workflow_artifacts，索引历史及逐次执行产物；M5 增加 0008_workflow_debug，区分结果/诊断并持久化幂等调试命令。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3/M4 范围和验收以 superpowers 规格与 migration 记录为准。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3/M4/M5 范围和验收以 superpowers 规格与 migration 记录为准。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -182,7 +182,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；条件、循环与变量处理按 M4 实现；子流程、录制和 Debug 留给后续里程碑。
+- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；条件、循环与变量处理按 M4 实现；M5 已接入调试和诊断；子流程、录制留给后续里程碑。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -281,3 +281,15 @@ reference/
 - `infrastructure/database/migrations/versions/0007_workflow_artifacts.py`：增量创建产物索引、迁入旧登记；仓储在一个事务内写产物/事件/状态，不再每轮重写完整产物数组。
 - `renderer/domains/workflows/control-model.ts`：控制块成员、整体操作和引用；`components/{ControlFields,ValueSourceEditor,ArtifactPanel}.tsx`：专用规则、值来源和分页结果组件。React Flow 尺寸、运行标记及日志加载均为会话状态，不进入持久化格式。
 - `scripts/smoke-workflow-control.mjs` 与 `smoke-workflow-control-studio.mjs`：真实 worker 与正式 Electron 的可重跑验收；证据位于 `docs/migration/automation-studio-m4-qa/`。
+
+## M5 调试与运行诊断（2026-09-13）
+
+- `domain/workflows/debug.py`：全图结构验证、顶层后缀编译及运行初值校验；嵌套起点不伪造上下文。
+- `application/workflows/debug.py`：原调度器节点边界的暂停许可、修订号、断点、运行变量原子修改、检查点和增量变化。页面命令通过注入的 provider 入口调用。
+- `providers/browser/workflow_worker.py`：一个 stdin 读取方与串行有限命令分发，暂停心跳。父进程 EOF 优先取消；结束检查点与网页成功消息分别处理。
+- `infrastructure/process/workflow_worker.py`：同一个运行 worker 的命令传输、心跳期限和资源归属；正常调试停止允许最终诊断提交，超时仍回收进程树，清理阶段不补记未确认动作。
+- `infrastructure/database/migrations/versions/0008_workflow_debug.py`：旧产物默认 result，新增 purpose/event_seq 与命令记录；继续使用原事件序号和事务。
+- `infrastructure/filesystem/workflow_diagnostics.py`：诊断读取及分块 ZIP 文件适配器；application 从已登记索引生成固定截止序号的导出。
+- `renderer/domains/workflows/components/{DebugStart,DebugPanel,RunLogs}.tsx`、`hooks/useWorkflowDebug.ts`：快照调试、变量分页/编辑、服务端日志筛选和命令原编号确认；面板分页与 SSE 分离。
+- `main/ipc/workflow-export.ts`：登记 Studio 主 frame 的固定导出操作，原生保存对话框、工作区/sidecar 复核、认证响应流写入临时文件后替换。Electron 不执行浏览器动作。
+- `scripts/smoke-workflow-debug.mjs` 与 `smoke-workflow-debug-studio.mjs`：独立临时工作区、真实 CloakBrowser 和正式 Electron 验收；证据位于 `docs/migration/automation-studio-m5-qa/`。

@@ -33,6 +33,8 @@ def validate_structure(document: dict[str, Any], layout: dict[str, Any]) -> None
             if isinstance(reference, str) and reference and not any(n['id'] == reference for n in nodes):
                 error('MISSING_NODE', '配对引用了不存在的节点', ['config', field], node['id'])
     ids = {node["id"] for node in nodes}
+    if not set(layout.get('breakpoints', [])) <= ids:
+        error('DEBUG_BREAKPOINT_INVALID', '断点引用了不存在的节点', ['layout', 'breakpoints'])
     if len(ids) != len(nodes):
         error("DUPLICATE_NODE", "节点标识重复", ["nodes"])
     if ids != set(layout["nodes"]):

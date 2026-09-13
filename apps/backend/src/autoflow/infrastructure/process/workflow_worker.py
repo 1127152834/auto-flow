@@ -53,6 +53,9 @@ class WorkflowWorkerManager:
         self._stopping: set[str] = set()
         self._started: set[str] = set()
         self._shutting_down = False
+        self._processes: dict[str, asyncio.subprocess.Process] = {}
+        self._debug_runs: set[str] = set()
+        self._failures: dict[str, dict[str, Any]] = {}
         self._pending_cleanup: dict[str, tuple[asyncio.subprocess.Process, Path, Path, int | None]] = {}
 
     async def execute(
@@ -83,6 +86,17 @@ class WorkflowWorkerManager:
             self._stopping.add(run_id)
             task = asyncio.create_task(self._retry_cleanup(run_id))
             self._tasks[run_id] = task
+        elif run_id in self._debug_runs and run_id not in self._stopping:
+            # Let the single protocol consumer persist the final diagnostic only.
+            # Cancellation still interrupts the action immediately via stdin EOF.
+            self._stopping.add(run_id)
+            process = self._processes.get(run_id)
+            if process is not None and process.stdin is not None:
+                process.stdin.close()
+            try:
+                await asyncio.wait_for(asyncio.shield(task), self._termination_timeout + 1)
+            except TimeoutError:
+                task.cancel()
         else:
             self._cancel(run_id)
         await self._wait_cleanup(task)
@@ -149,7 +163,10 @@ class WorkflowWorkerManager:
             spawn = asyncio.create_task(asyncio.create_subprocess_exec(
                 *self._command, stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
-                env=env, limit=64 * 1024, **_process_group_options(),
+                # Up to 2000 saved breakpoints, each a 120-character identifier,
+                # can exceed 64 KiB in a state message (including JSON escaping).
+                # Variable values and results still travel only as file references.
+                env=env, limit=4 * 1024 * 1024, **_process_group_options(),
             ))
             try:
                 process = await asyncio.shield(spawn)
@@ -160,6 +177,9 @@ class WorkflowWorkerManager:
                 raise
             assert process.stdin is not None and process.stdout is not None
             payload = self._payload(run_id, prepared, profile, proxy, license_key)
+            self._processes[run_id] = process
+            if prepared.debug is not None:
+                self._debug_runs.add(run_id)
             result = await self._exchange(process, payload, prepared, on_event)
         except asyncio.CancelledError:
             result = {"state": "cancelled", "error": None}
@@ -182,6 +202,10 @@ class WorkflowWorkerManager:
             self._stopping.discard(run_id)
             self._started.discard(run_id)
             self._tasks.pop(run_id, None)
+            self._processes.pop(run_id, None)
+            self._debug_runs.discard(run_id)
+            if run_id in self._failures:
+                result = {'state': 'failed', 'error': self._failures.pop(run_id)}
         return result
 
     async def _cleanup_process(self, process: asyncio.subprocess.Process, directory: Path, executable: Path, birth: int | None) -> None:
@@ -207,8 +231,18 @@ class WorkflowWorkerManager:
             "runId": run_id, "headless": profile.spec.headless,
             "document": prepared.document, "nodeIds": prepared.node_ids,
             "variables": prepared.variables, "executionPlan": prepared.plan, "runsRoot": str(self._runs_root),
+            "debug": prepared.debug,
         })
+        if prepared.debug is not None:
+            payload["headless"] = False
         return payload
+
+    async def command(self, run_id: str, command: dict[str, Any]) -> Any:
+        process = self._processes.get(run_id)
+        if process is None or process.stdin is None or run_id in self._stopping:
+            raise WorkflowError("DEBUG_UNAVAILABLE", "调试进程尚未就绪或正在停止", 409)
+        process.stdin.write((json.dumps(command, ensure_ascii=False, allow_nan=False) + "\n").encode())
+        await asyncio.wait_for(process.stdin.drain(), 5)
 
     async def _exchange(self, process: asyncio.subprocess.Process, payload: dict[str, Any],
                         prepared: PreparedWorkflow,
@@ -222,25 +256,41 @@ class WorkflowWorkerManager:
         # total budget inside the worker; the parent allows bounded event/IO overhead.
         read_timeout = self._start_timeout
         nodes = {node["id"]: node for node in prepared.document["nodes"]}
+        deadline = asyncio.get_running_loop().time() + read_timeout
+        paused = False
         while True:
-            async with asyncio.timeout(read_timeout):
+            async with asyncio.timeout_at(deadline):
                 raw = await process.stdout.readline()
             if not raw:
                 break
             event = json.loads(raw)
             if not isinstance(event, dict):
                 raise TypeError("Invalid worker event")
+            if event.get('type') == 'heartbeat':
+                if paused:
+                    deadline = asyncio.get_running_loop().time() + 10
+                continue
+            was_paused = paused
+            if event.get('type') == 'debug_state':
+                paused = event['debug']['state'] in {'paused', 'failed_paused'}
+                if paused:
+                    read_timeout = 10
+                if event.get('error'):
+                    self._failures[payload['runId']] = event['error']
             if event.get("type") == "finished":
                 if event.get("state") not in {"succeeded", "failed", "cancelled"}:
                     raise ValueError("Invalid worker result")
                 result = {"state": event["state"], "error": event.get("error")}
                 break
-            if event.get("type") not in {"ready", "node_started", "node_succeeded", "node_failed", "log"}:
+            if event.get("type") not in {"ready", "node_started", "node_succeeded", "node_failed", "log", "debug_state", "debug_response", "debug_checkpoint", "variables_changed"}:
                 raise ValueError("Invalid worker event")
             if event["type"] == "node_started":
                 node = nodes[event["nodeId"]]
                 read_timeout = float(node["config"]["timeoutSeconds"]) + self._termination_timeout + 1
-            else:
+            elif event['type'] in {'ready', 'node_succeeded', 'node_failed'}:
                 read_timeout = self._start_timeout
-            await on_event(event)
+            if event['type'] in {'node_started', 'node_succeeded', 'node_failed', 'ready'} or event['type'] == 'debug_state' and (paused or was_paused):
+                deadline = asyncio.get_running_loop().time() + (10 if paused else read_timeout)
+            if payload.get('runId') not in self._stopping or event['type'] == 'debug_checkpoint' and event.get('artifact', {}).get('reason') == 'ended':
+                await on_event(event)
         return result

@@ -4,10 +4,12 @@ import asyncio
 from collections.abc import Callable
 from typing import Any
 
+from autoflow.application.workflows.debug import WorkflowDebug
 from autoflow.application.workflows.execution import WorkflowExecution
 from autoflow.domain.workflows.control import compile_control
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifacts
+from autoflow.providers.browser.inspection import BrowserInspection
 from autoflow.providers.browser.workflow_locator import (
     NodeFailure,
     locate_element,
@@ -24,12 +26,27 @@ class WorkflowExecutor:
         self.variables, self.emit = variables, emit
         self.page: Any = None
         self.deadline = 0.0
+        self.debug: WorkflowDebug | None = None
+        self.inspection: BrowserInspection | None = None
 
     async def run(self, document: dict[str, Any], node_ids: list[str], plan: list[dict[str, Any]] | None = None) -> dict[str, Any]:
         if plan is None:
             plan = compile_control(document) if document.get("schemaVersion") == 2 else [{"nodeId": identifier} for identifier in node_ids]
-        scheduler = WorkflowExecution(self.variables, self.emit, self.execute_action, self.check_page, self._error)
+        scheduler = WorkflowExecution(self.variables, self.emit, self.execute_action, self.check_page, self._error, self.debug)
         return await scheduler.run(document, plan)
+
+    async def enable_debug(self, options: dict[str, Any]) -> None:
+        self.inspection = BrowserInspection(self.context)
+        self.page = await self.context.new_page()
+        self.debug = WorkflowDebug(options, self.variables, self.emit, self.artifacts.save_json, self.debug_page)
+
+    async def debug_page(self, command: dict[str, Any]) -> dict[str, Any]:
+        assert self.inspection is not None
+        if command['action'] == 'page':
+            await self.inspection.command(command)
+            self.page = self.inspection.page(command['pageId'])
+        self.inspection.target = next((key for key, page in self.inspection.pages.items() if page is self.page and not page.is_closed()), None)
+        return await self.inspection.snapshot()
 
     async def execute_action(self, node: dict[str, Any], config: dict[str, Any], deadline: float) -> dict[str, Any] | None:
         self.deadline = deadline

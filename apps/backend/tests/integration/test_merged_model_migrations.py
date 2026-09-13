@@ -16,7 +16,7 @@ def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: 
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["0007_workflow_artifacts"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0008_workflow_debug"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -35,7 +35,7 @@ def test_merge_upgrade_preserves_each_branch_database(tmp_path: Path, revision: 
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0007_workflow_artifacts",)
+            ("0008_workflow_debug",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables

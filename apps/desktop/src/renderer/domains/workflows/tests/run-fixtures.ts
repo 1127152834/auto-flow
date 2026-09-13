@@ -3,7 +3,7 @@ import type { WorkflowRunApi } from '../run-api'
 import type { RunEvent, RunRead } from '../run-types'
 
 export function runRecord(overrides: Partial<RunRead> = {}): RunRead {
-  return { executionCount: 0, artifactCount: 0,
+  return { mode: 'run', artifactOrdinal: 0, executionCount: 0, artifactCount: 0,
     runId: 'run-1', workflowId: 'flow-1', name: '快照流程', profileId: 'profile-1', profileName: '真实配置', state: 'running',
     document: { id: 'flow-1', name: '快照流程', schemaVersion: 1, nodes: [{ id: 'node-1', type: 'open_page', label: '快照节点', config: { url: 'https://example.test', timeoutSeconds: 60 } }], edges: [], variables: [] },
     layout: { nodes: { 'node-1': { x: 0, y: 0 } }, viewport: { x: 0, y: 0, zoom: 1 } },
@@ -16,6 +16,11 @@ export function runEvent(seq: number, overrides: Partial<RunEvent> = {}): RunEve
 }
 export function runApi(record: RunRead | null = null): WorkflowRunApi {
   return {
+    debugCommand: vi.fn(async request => ({ commandId: request, state: 'applied' as const })),
+    debugCommandStatus: vi.fn(async (_id, commandId) => ({ commandId, state: 'applied' as const })),
+    variables: vi.fn(async () => ({ items: [], diagnosticArtifacts: [] })),
+    logs: vi.fn(async () => ({ items: [], hasMore: false, nextSeq: 0 })),
+    export: vi.fn(async () => new Blob(['[]'])),
     list: vi.fn(async () => ({ items: record ? [record] : [], activeRunId: record?.state === 'running' ? record.runId : null, nextOffset: null })),
     get: vi.fn(async () => record ?? runRecord()),
     start: vi.fn(async request => runRecord({ ...request, workflowId: request.document.id, name: request.document.name })),

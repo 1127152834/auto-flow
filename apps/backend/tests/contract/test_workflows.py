@@ -54,7 +54,7 @@ def test_save_load_update_and_retry_are_atomic_and_idempotent(client):
     assert created.status_code == 201
     initial = created.json()
     assert initial["document"] == payload["document"]
-    assert initial["layout"] == payload["layout"]
+    assert initial["layout"] == {**payload["layout"], "breakpoints": []}
     assert initial["issues"] == []
     assert initial["revision"] == 1
     assert client.post(ROOT, json=payload).json() == initial
@@ -69,7 +69,7 @@ def test_save_load_update_and_retry_are_atomic_and_idempotent(client):
     assert saved["revision"] == 2
     assert saved["createdAt"] == initial["createdAt"]
     assert saved["document"] == changed["document"]
-    assert saved["layout"] == changed["layout"]
+    assert saved["layout"] == {**changed["layout"], "breakpoints": []}
     assert client.put(endpoint, json={**changed, "expectedRevision": 1}).json() == saved
     conflict = client.put(endpoint, json={**payload, "expectedRevision": 1})
     assert conflict.status_code == 409

@@ -22,6 +22,7 @@ class PreparedWorkflow:
     variables: dict[str, Any]
     warnings: list[WorkflowIssue]
     plan: list[dict[str, Any]] = dataclass_field(default_factory=list)
+    debug: dict[str, Any] | None = None
 
 
 def _fail(code: str, message: str, path: list[str], node_id: str | None = None) -> None:
