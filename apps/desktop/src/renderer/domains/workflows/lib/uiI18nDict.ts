@@ -4135,3 +4135,16 @@ Object.assign(PHRASES, {
   '此节点已排除，保留原配置，仅供查看和导出': 'Excluded node: original configuration retained for viewing and export',
   '工作流包含已排除节点': 'This workflow contains excluded nodes',
 })
+
+Object.assign(PHRASES, {
+  '服务连接不可用，当前草稿仍保留。请检查连接后重试。': 'Service unavailable. Your draft is retained. Check the connection and retry.',
+  '正在检查连接': 'Checking connection',
+  '重试连接': 'Retry connection',
+})
+
+Object.assign(PHRASES, {
+  '关闭小助手': 'Close assistant',
+  '我可以帮助你配置网页自动化流程、编辑画布和排查节点问题。服务能力以当前接口模式和配置为准。': 'I can help configure web workflows, edit the canvas and diagnose nodes. Available services depend on the current adapter and configuration.',
+  '框架路径需要在目标页面中验证': 'Frame paths must be verified on the target page',
+  '页面状态和登录步骤需要实际核对': 'Page state and login steps need to be checked',
+})

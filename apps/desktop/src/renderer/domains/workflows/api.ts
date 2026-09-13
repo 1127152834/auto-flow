@@ -34,24 +34,6 @@ export interface ApiResponse<T = any> {
   error?: string
 }
 
-// 判断是否为网络连接错误
-function isConnectionError(error: unknown): boolean {
-  if (error instanceof TypeError) {
-    const message = error.message.toLowerCase()
-    return (
-      message.includes('failed to fetch') ||
-           message.includes('network') || 
-           message.includes('fetch')
-    )
-  }
-  return false
-}
-
-// Connection errors stay in the current UI; a retry must not reload and lose a draft.
-async function showConnectionErrorDialog() {
-  window.dispatchEvent(new CustomEvent('studio:connection-error'))
-}
-
 // 调用 API 请求
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -102,13 +84,6 @@ export async function apiRequest<T = any>(
     const data = await response.json()
     return { success: true, data }
   } catch (error) {
-    if (isConnectionError(error)) {
-      const shown = sessionStorage.getItem('connection-error-shown')
-      if (!shown) {
-        sessionStorage.setItem('connection-error-shown', 'true')
-        await showConnectionErrorDialog()
-      }
-    }
     return { success: false, error: error instanceof Error ? error.message : '请求失败' }
   }
 }

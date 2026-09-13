@@ -45,3 +45,16 @@ capabilities.json 和 test-cases.json 由 scripts/inventory-studio-completion.mj
 - 旧节点专属表单改为配置 JSON 预览；通用备注与高级设置仍可编辑，不声称整个文档只读。
 - 284 个入口分类提取为纯 lib/moduleCatalog.ts，AI/Mock 不再反向依赖 React 侧栏组件。component-tools.json 增加函数式组件依赖候选，未解析项仍需核对，不能作为完整覆盖证明。
 - 当前全量回归：79 个测试文件、769 项通过；TypeScript、ESLint 通过。renderer/main/preload 构建通过，见 evidence/f0-legacy-build.txt；测试输出见 evidence/f0-legacy-tests.txt。
+
+## 工作台装配修复（F0 审计发现，F2.1 局部实施）
+
+- INT-HOTKEY-001：挂载、配置修改、重连均下发当前快捷键；卸载后不重复处理；studio-integration.test.tsx 通过。
+- INT-HOTKEY-002：服务触发已登记 action 恰好一次，未知/原型属性名拒绝；卸载后不触发；同上通过。
+- INT-HOTKEY-003：富文本后代输入和按键长按不启动流程，普通快捷键阻止默认动作并触发一次；同上通过。
+- INT-CONNECTION-001：错误可重复提示，失败重试保留提示、成功清除；connection-notice.test.tsx 通过。
+- INT-CONNECTION-002：并发重试只发一次，旧成功响应不隐藏新错误；同上通过。
+- INT-TRANSPORT-001/002：直接传输调用也通知网络异常；主动取消/409 业务错误不误报离线；transport-errors.test.ts 通过。
+- INT-UI-001：CUA 打开 AI 面板，截图核实主编辑区和顶部场景区让出右侧 440px；工具栏按编辑区宽度使用折叠菜单；关闭按钮可明确访问。小画布内搜索/视图控件仍拥挤，容量布局用例未通过，不计 F2.1 完成。
+- INT-UI-002：在线导入一节点测试包并确认节点可见，修改名称为 F0 离线节点草稿；服务离线→保存，记录 Mock network offline，节点保留；恢复连接→重试→保存，提示工作流已保存: F0 离线节点草稿.json。真实浏览器 UI + Mock，不是原生 Electron/后端执行。首次尝试导入时仍离线而失败、空流程保存被拒绝，这些失败没有记作通过。
+
+全量回归 82 文件/776 项通过，TypeScript/ESLint/renderer-main-preload 构建通过。见 evidence/f0-integration-tests.txt 和 f0-integration-build.txt。全局 Tooltip、原浮动 AI 入口、全局热键真实宿主注册及其它 F2.1 项仍待完成。

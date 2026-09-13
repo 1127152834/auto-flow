@@ -1070,7 +1070,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             </>
           )}
           {!standalone && (
-            <Button variant="ghost" size="icon-sm" onClick={() => setOpen(false)}>
+            <Button variant="ghost" size="icon-sm" aria-label="关闭小助手" onClick={() => setOpen(false)}>
               <X className="w-3.5 h-3.5" />
             </Button>
           )}
@@ -1215,8 +1215,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                 </>
               ) : (
                 <>
-                  我了解 WebRPA 的方方面面，能帮你搭建工作流、运行任务、答疑解惑；不止于此，我还能直接操作你的电脑——
-                  打开软件、管理文件、执行命令、控制鼠标键盘等都不在话下。
+                  我可以帮助你配置网页自动化流程、编辑画布和排查节点问题。服务能力以当前接口模式和配置为准。
                 </>
               )}
             </div>
@@ -1264,8 +1263,8 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                 </p>
                 <ul className="list-disc list-inside space-y-0.5 pl-1 text-[11px] text-[hsl(var(--slate-600))]">
                   <li>网页元素 Selector 难以准确预测</li>
-                  <li>桌面控件路径需要拾取器实地获取</li>
-                  <li>手机屏幕坐标无法凭空判断</li>
+                  <li>框架路径需要在目标页面中验证</li>
+                  <li>页面状态和登录步骤需要实际核对</li>
                 </ul>
                 <p className="text-[11px] text-[hsl(var(--slate-600))] mt-1">
                   绝大多数情况下都需要人工干预，请合理预期。

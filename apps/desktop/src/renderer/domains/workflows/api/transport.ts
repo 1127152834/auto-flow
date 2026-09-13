@@ -8,4 +8,13 @@ export function setStudioTransport(next: StudioTransport): () => void {
   transport = next
   return () => { transport = previous }
 }
-export const studioFetch: StudioTransport = (input, init) => transport(input, init)
+export const studioFetch: StudioTransport = async (input, init) => {
+  try {
+    return await transport(input, init)
+  } catch (error) {
+    if (!init?.signal?.aborted && error instanceof TypeError && /fetch|network/i.test(error.message)) {
+      window.dispatchEvent(new CustomEvent('studio:connection-error'))
+    }
+    throw error
+  }
+}

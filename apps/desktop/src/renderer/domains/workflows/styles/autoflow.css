@@ -18,7 +18,7 @@
 }
 html,body,#root { height:100%; margin:0; overflow:hidden; }
 .studio-shell { height:100dvh; display:flex; flex-direction:column; background:#f1eee7; color:#34322e; }
-.studio-mock-banner { display:flex; align-items:center; justify-content:space-between; min-height:28px; padding:4px 14px; font-size:11px; background:#f2e3d7; border-bottom:1px solid #d8d3c9; gap:12px; }
+.studio-mock-banner { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; min-height:28px; padding:4px 14px; font-size:11px; background:#f2e3d7; border-bottom:1px solid #d8d3c9; gap:12px; }
 .studio-mock-banner b { color:#88492c; margin-left:8px; }
 .studio-mock-banner button,.studio-mock-tools button { cursor:pointer; border:1px solid #c7c0b5; border-radius:5px; padding:2px 7px; background:#fbfaf7; white-space:nowrap; }
 .studio-mock-tools { display:flex; flex-wrap:wrap; gap:6px; padding:8px; font-size:11px; border-bottom:1px solid #d8d3c9; }

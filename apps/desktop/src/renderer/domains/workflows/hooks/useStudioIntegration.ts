@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { imageAssetApi } from '../api'
+import { imageAssetApi, systemApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
@@ -23,13 +23,31 @@ export function useStudioIntegration() {
   },[])
   useEffect(()=>{
     const handler=(event:KeyboardEvent)=>{
-      const target=event.target as HTMLElement
-      if(target?.matches('input,textarea,[contenteditable="true"]'))return
+      const target=event.target
+      if(target instanceof Element && target.closest('input,textarea,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return
       const combo=eventToCombo(event)
       const id=Object.entries(shortcuts || {}).find(([,value])=>value===combo)?.[0]
+      if(event.repeat)return
       if(id && SHORTCUT_ACTION_MAP[id]){event.preventDefault();SHORTCUT_ACTION_MAP[id].run()}
     }
     window.addEventListener('keydown',handler)
     return ()=>window.removeEventListener('keydown',handler)
   },[shortcuts])
+  useEffect(() => {
+    const register = () => { void systemApi.setCustomHotkeys(shortcuts || {}) }
+    register()
+    window.addEventListener('socket:reconnected', register)
+    return () => window.removeEventListener('socket:reconnected', register)
+  }, [shortcuts])
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const actionId: unknown = (event as CustomEvent<{ actionId?: unknown }>).detail?.actionId
+      if (typeof actionId === 'string' && Object.hasOwn(SHORTCUT_ACTION_MAP, actionId)) {
+        SHORTCUT_ACTION_MAP[actionId].run()
+      }
+    }
+    window.addEventListener('hotkey:custom_action', handler)
+    return () => window.removeEventListener('hotkey:custom_action', handler)
+  }, [])
+
 }

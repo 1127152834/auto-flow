@@ -1398,7 +1398,7 @@ export function Toolbar() {
         <span className="text-[15px] font-bold tracking-tight text-[hsl(var(--brand-700))]" aria-label="AutoFlow">AutoFlow</span>
       </div>
 
-      <div className="hidden md:block h-5 w-px bg-[hsl(var(--border))]" />
+      <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
       {/* 自定义模块编辑模式按钮 */}
       {editingCustomModuleId && (
@@ -1431,7 +1431,7 @@ export function Toolbar() {
             退出
           </Button>
 
-          <div className="hidden md:block h-5 w-px bg-[hsl(var(--border))]" />
+          <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
         </>
       )}
 
@@ -1453,12 +1453,12 @@ export function Toolbar() {
           onChange={(e) => setWorkflowName(e.target.value)}
           onFocus={handleNameFocus}
           onBlur={handleNameBlur}
-          className="w-32 sm:w-44 md:w-56 h-7 text-[12.5px]"
+          className="w-32 @[40rem]:w-44 @[48rem]:w-56 h-7 text-[12.5px]"
           placeholder="工作流名称"
         />
       </div>
 
-      <div className="hidden md:block h-5 w-px bg-[hsl(var(--border))]" />
+      <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
       {/* 执行控制 */}
       <div className="flex items-center gap-1.5">
@@ -1468,7 +1468,7 @@ export function Toolbar() {
               <Button size="sm" variant="success" noMotion>
                 <Play className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">运行</span>
-                <span className="hidden lg:inline text-[10px] opacity-70 font-normal">F5</span>
+                <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
                 <ChevronDown className="w-3 h-3" />
               </Button>
             </DropdownMenuTrigger>
@@ -1492,15 +1492,15 @@ export function Toolbar() {
           >
             <Square className="w-3.5 h-3.5 fill-current" />
             <span className="hidden sm:inline">停止</span>
-            <span className="hidden lg:inline text-[10px] opacity-70 font-normal">Shift+F5</span>
+            <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">Shift+F5</span>
           </Button>
         )}
       </div>
 
-      <div className="hidden md:block h-5 w-px bg-[hsl(var(--border))]" />
+      <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
       {/* 文件操作 - 大屏幕显示全部，小屏幕使用下拉菜单 */}
-      <div className="hidden lg:flex items-center gap-1">
+      <div className="hidden @[64rem]:flex items-center gap-1">
         <Button
           variant="tonal"
           size="sm"
@@ -1544,7 +1544,7 @@ export function Toolbar() {
 
       {/* 文件操作下拉菜单 - 小屏幕显示 */}
       <DropdownMenu>
-        <DropdownMenuTrigger asChild className="lg:hidden">
+        <DropdownMenuTrigger asChild className="@[64rem]:hidden">
           <Button 
             variant="outline" 
             size="sm" 
@@ -1580,7 +1580,7 @@ export function Toolbar() {
       </DropdownMenu>
 
       {/* 分隔线 - 小屏幕隐藏 */}
-      <div className="hidden md:block h-6 w-px bg-[hsl(var(--border))]" />
+      <div className="hidden @[48rem]:block h-6 w-px bg-[hsl(var(--border))]" />
 
       {/* 节点对齐 - 下拉菜单 */}
       <DropdownMenu>
@@ -1653,7 +1653,7 @@ export function Toolbar() {
           title="自动化浏览器"
         >
           <Globe className="w-4 h-4 sm:mr-1" />
-          <span className="hidden lg:inline">自动化浏览器</span>
+          <span className="hidden @[64rem]:inline">自动化浏览器</span>
         </Button>
 
         {/* 录制 / 回放 - 归纳为一个下拉，避免顶栏拥挤 */}
@@ -1661,7 +1661,7 @@ export function Toolbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" title="录制生成节点">
               <Video className="w-4 h-4 sm:mr-1" />
-              <span className="hidden lg:inline">录制</span>
+              <span className="hidden @[64rem]:inline">录制</span>
               <ChevronDown className="w-3 h-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>

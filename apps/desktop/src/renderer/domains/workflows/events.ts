@@ -415,6 +415,7 @@ class SocketService {
     this.socket.on('connect', () => {
       console.log('Socket connected')
       this.connected = true
+      window.dispatchEvent(new CustomEvent('socket:reconnected'))
       
       // 绑定外部待绑定的事件监听器
       this.bindPendingListeners()
