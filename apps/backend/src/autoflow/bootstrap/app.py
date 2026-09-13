@@ -213,6 +213,7 @@ def create_app(
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *(["workflow_run_active"] if workflow_runs.busy() else []),
             *(["workflow_inspection_active"] if inspection.busy() else []),
+            *(["android_management_active"] if android.management.busy() else []),
         ],
         quiesce_gate,
     )
@@ -238,7 +239,7 @@ def create_app(
 
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown(),
-                workflow_runs.shutdown(), inspection.shutdown()
+                workflow_runs.shutdown(), inspection.shutdown(), android.management.shutdown()
             )
         finally:
             try:

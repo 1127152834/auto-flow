@@ -1,0 +1,8 @@
+{
+  "device": "af-ios-demo",
+  "status": "failed",
+  "steps": [],
+  "scope": "真实 socket 指令和画面回读；不证明 App 业务流程正确",
+  "error": "设备不存在；请先从终端创建真实 iOS 环境",
+  "output": "/Users/zhangtiancheng/Documents/projects/autoflow/reference/vphone-demo/.data/runs/20260913-110042"
+}

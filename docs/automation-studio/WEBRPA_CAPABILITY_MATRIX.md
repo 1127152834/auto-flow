@@ -229,3 +229,18 @@ verification
 8. 通过黄金流程与 WebRPA 快照进行行为对照，最后再做局部重构。
 
 代码级复刻阶段禁止同时改变“模块语义、数据格式和界面行为”。每次提交应尽量只做一类变化，以便定位差异来源。
+
+## M4 实施差异（2026-09-13）
+
+本节按用户明确批准的 M4 规格更新，优先于本文早期“字段必须不变”的迁移建议。仍不承诺 WebRPA 文件/协议兼容或全部核心能力已完成。
+
+| 来源（固定基线 5ccb900e） | AutoFlow 目标 | 动作与已批准差异 | 验证 |
+| --- | --- | --- | --- |
+| `backend/app/executors/control.py:17` ConditionExecutor | `domain/workflows/control_values.py`、`application/workflows/execution.py` | adapt：保留条件分支能力，改为 all/any 可视化规则和 typed literal/variable；不沿用字符串真假值转换，字段/索引缺失明确失败 | 严格值规则单测、真实页面短路/零匹配/非法定位 |
+| `control.py:241` LoopExecutor 与 `control.py:307` ForeachExecutor | `domain/workflows/control.py`、`application/workflows/execution.py` | adapt：统一 loop.mode=count/foreach/while、配对结束节点，不展开列表或绘制回边；1-based只读局部变量、列表快照、每循环和全局调度上限 | 嵌套 break/continue、列表变更不改变遍历、1000轮及上限测试 |
+| `control.py:349` BreakLoopExecutor、`:364` ContinueLoopExecutor | 同上 | adapt：仅最近一层循环，不提供普通后继连线；分支可以提前转移，正常路径必须汇合 | 结构编译、真实 worker 与条件内 continue |
+| `basic_variable.py:58` IncrementDecrementExecutor | `control_values.py:set_value` | adapt：合入 set_variable 的 assign/add/subtract/append；不把缺失值自动初始化为0，不将字符串隐式转数字 | 严格类型、深复制、真实浏览器累积结果 |
+| 原控制节点/编辑交互与 React Flow 画布 | `control-model.ts`、`ControlFields.tsx`、`WorkflowCanvas.tsx` | adapt：以现有 AutoFlow 文档/布局/会话分层实现；配对整块复制/删除，32层结构化控制范围，手动保存 v2 | 编辑测试、正式 Electron 保存重开与执行 |
+| 原结果/日志能力 | 原 seq/SSE 加 executionId/loopPath、SQLite 产物索引 | adapt：每次执行和产物独立标识，不用静态节点完成数判断终态，首屏50产物及游标分页 | 历史迁移、55次真实提取与断点续读、重启后读取 |
+
+M4 未移入：range/infinite 等额外循环入口、调度、子流程、错误分支、重试、Debug、录制。未完成项仍由顶部核心对齐目标追踪。[专项验收与证据](../migration/automation-studio-m4-validation.md)。

@@ -1,0 +1,12 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "dev",
+  "kernelVersion": "145.0.7632.109.2",
+  "checks": [
+    "formal canvas creates paired loop/condition, configures typed count and iframe extraction, connects distinct handles and saves v2",
+    "saved document reopens and independent browser executes condition/loop/iframe twice; canvas shows repeated execution",
+    "formal results and logs retain separate execution IDs and loop iterations"
+  ],
+  "complete": true
+}

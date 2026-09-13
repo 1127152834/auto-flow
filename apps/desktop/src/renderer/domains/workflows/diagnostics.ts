@@ -1,3 +1,4 @@
+import { controlTypes } from './control-model'
 import { referencedVariables } from './editor-model'
 import type { NodeDefinition, WorkflowContent, WorkflowIssue } from './types'
 
@@ -45,11 +46,15 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
     const name = node.config.variableName
     if (validName(name)) { names.add(name); outputs.set(name, (outputs.get(name) ?? 0) + 1) }
   }
+  for (const node of nodes) if (node.type === 'loop') for (const field of node.config.mode === 'foreach' ? ['indexVariable', 'itemVariable'] : ['indexVariable']) { const name = node.config[field]; if (validName(name)) names.add(name) }
   const checkReferences = (value: unknown, path: string[], nodeId: string | null = null) => {
     const pending: { value: unknown; path: string[] }[] = [{ value, path }]
     while (pending.length) {
       const current = pending.pop()!
       if (current.value && typeof current.value === 'object') {
+        const source = current.value as Record<string, unknown>
+        if (nodeId !== null && source.kind === 'literal') continue
+        if (nodeId !== null && source.kind === 'variable') { if (!names.has(String(source.name))) issue('UNKNOWN_VARIABLE', `变量 ${String(source.name)} 尚未声明`, [...current.path, 'name'], nodeId); continue }
         for (const [key, child] of Object.entries(current.value)) pending.push({ value: child, path: [...current.path, key] })
       } else if (typeof current.value === 'string') {
         const recognized = new Set(referencedVariables(current.value))
@@ -75,6 +80,26 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
   for (const node of nodes) {
     const definition = definitions.get(node.type)
     if (!definition) { issue('UNKNOWN_NODE', '节点定义尚不可用', [], node.id); continue }
+    if (node.type === 'loop') {
+      if (!Number.isInteger(node.config.maxIterations) || Number(node.config.maxIterations) < 1 || Number(node.config.maxIterations) > 100000) issue('LOOP_LIMIT_INVALID', '循环上限须为 1 至 100000 的整数', ['config', 'maxIterations'], node.id)
+      for (const field of node.config.mode === 'foreach' ? ['indexVariable', 'itemVariable'] : ['indexVariable']) if (!validName(node.config[field])) issue('LOOP_VARIABLE_INVALID', '循环变量名无效', ['config', field], node.id)
+    }
+    if (['loop', 'condition'].includes(node.type)) {
+      const end = nodes.find(n => n.id === node.config.endNodeId)
+      if (!end || end.type !== `${node.type}_end` || end.config.ownerNodeId !== node.id) issue('BLOCK_PAIR_INVALID', '控制块缺少正确配对的结束节点', ['config', 'endNodeId'], node.id)
+      for (const port of node.type === 'condition' ? ['true', 'false'] : ['body']) if (!edges.some(e => e.source === node.id && e.sourceHandle === port)) issue('BLOCK_NOT_CONNECTED', '请连接控制块分支或循环体', ['edges', port], node.id)
+    }
+    if (controlTypes.has(node.type)) {
+      const pending = [{ value: node.config as unknown, path: ['config'] }]
+      while (pending.length) {
+        const current = pending.pop()!
+        if (!current.value || typeof current.value !== 'object') continue
+        const source = current.value as Record<string, unknown>
+        if (source.kind === 'literal') { if (typeof source.valueType === 'string' && (source.valueType === 'null' ? source.value !== null : !matchesType(source.value, source.valueType))) issue('VALUE_TYPE_MISMATCH', '固定值与所选类型不符，请完成输入', [...current.path, 'value'], node.id); continue }
+        if (source.kind === 'page' && (typeof source.selector !== 'string' || !source.selector.trim())) issue('REQUIRED', '请填写元素选择器', [...current.path, 'selector'], node.id)
+        for (const [key, value] of Object.entries(source)) pending.push({ value, path: [...current.path, key] })
+      }
+    }
     const schema = definition.configSchema as ConfigSchema
     const required = new Set(schema.required ?? [])
     if (node.type === 'screenshot' && node.config.screenshotType === 'element') required.add('selector')
@@ -97,7 +122,7 @@ export function collectIssues(content: WorkflowContent, catalog: NodeDefinition[
     }
   }
   if (!nodes.length) issue('EMPTY_WORKFLOW', '添加节点后开始编排', ['nodes'])
-  else if (nodes.length > 1) {
+  else if (nodes.length > 1 && !nodes.some(n => controlTypes.has(n.type))) {
     const neighbors = new Map(nodes.map((node) => [node.id, new Set<string>()]))
     for (const edge of edges) {
       neighbors.get(edge.source)?.add(edge.target)

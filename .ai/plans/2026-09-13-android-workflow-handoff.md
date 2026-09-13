@@ -9,3 +9,5 @@
 - 首版专用新设备与旧 Demo 隔离，不接管现有三台；完整创建 UI、批量、混合图和 Windows 实测延期。
 - 验证方式：正式 API、单元/契约/React 测试、源码及冻结 sidecar 真实 Android、Mac 打包应用 CUA、浏览器/M3 回归。详见 docs/migration/android-workflow-handoff-validation.md。
 - 分支 codex/android-workflow-handoff；与并行 M4 合并待其稳定，不能覆盖其未提交契约和迁移。
+
+2026-09-13 更新：上述“完整创建 UI 延期、M4 合并等待”已 superseded。本轮用户授权并实施正式设备管理与 M4 接入；见 2026-09-13-android-management.md。批量并行与 Windows 仍不在本轮范围。

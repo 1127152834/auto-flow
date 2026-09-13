@@ -477,6 +477,41 @@ export type paths = {
         /** Devices */
         get: operations["devices_api_v1_android_devices_get"];
         put?: never;
+        /** Create */
+        post: operations["create_api_v1_android_devices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/devices/{device_id}/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Operation */
+        post: operations["operation_api_v1_android_devices__device_id__operations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/devices/{device_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview */
+        get: operations["preview_api_v1_android_devices__device_id__preview_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -498,7 +533,8 @@ export type paths = {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Rename */
+        patch: operations["rename_api_v1_android_devices__device_id__patch"];
         trace?: never;
     };
     "/health": {
@@ -1295,6 +1331,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows/runs/{run_id}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifacts */
+        get: operations["artifacts_api_v1_workflows_runs__run_id__artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflows/runs/{run_id}/artifacts/{artifact_id}": {
         parameters: {
             query?: never;
@@ -1485,6 +1538,66 @@ export type components = {
             resource?: components["schemas"]["SyncSnapshot"] | null;
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** AndroidCreate */
+        AndroidCreate: {
+            /** Name */
+            name: string;
+            /**
+             * Deviceid
+             * Format: uuid
+             */
+            deviceId: string;
+            /** Imageid */
+            imageId: string;
+            /**
+             * Width
+             * @default 720
+             */
+            width: number;
+            /**
+             * Height
+             * @default 1280
+             */
+            height: number;
+            /**
+             * Dpi
+             * @default 320
+             */
+            dpi: number;
+            /**
+             * Cpu
+             * @default 1
+             */
+            cpu: number;
+            /**
+             * Memorymb
+             * @default 1536
+             */
+            memoryMb: number;
+            /**
+             * Start
+             * @default true
+             */
+            start: boolean;
+        };
+        /** AndroidDeviceCommand */
+        AndroidDeviceCommand: {
+            /**
+             * Requestid
+             * Format: uuid
+             */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "start" | "stop" | "restart" | "delete" | "recover";
+            /**
+             * Deletedata
+             * @default false
+             */
+            deleteData: boolean;
+        };
         /** AndroidDeviceRead */
         AndroidDeviceRead: {
             /** Deviceid */
@@ -1509,6 +1622,42 @@ export type components = {
             androidStatus: string;
             /** Lasterror */
             lastError: string | null;
+            /**
+             * Cpu
+             * @default 1
+             */
+            cpu: number;
+            /**
+             * Memorymb
+             * @default 1536
+             */
+            memoryMb: number;
+            /**
+             * Dpi
+             * @default 320
+             */
+            dpi: number;
+            /**
+             * Androidversion
+             * @default 13
+             */
+            androidVersion: string;
+            /**
+             * Architecture
+             * @default arm64
+             */
+            architecture: string;
+            /**
+             * Dataretained
+             * @default false
+             */
+            dataRetained: boolean;
+            /**
+             * Deleted
+             * @default false
+             */
+            deleted: boolean;
+            operation?: components["schemas"]["AndroidOperation"] | null;
         };
         /** AndroidEnvironment */
         AndroidEnvironment: {
@@ -1520,6 +1669,52 @@ export type components = {
             runtimeId: string;
             /** Message */
             message: string;
+            /** Images */
+            images?: components["schemas"]["AndroidImage"][];
+            /**
+             * Cpucount
+             * @default 0
+             */
+            cpuCount: number;
+            /**
+             * Memorymb
+             * @default 0
+             */
+            memoryMb: number;
+        };
+        /** AndroidImage */
+        AndroidImage: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string;
+        };
+        /** AndroidOperation */
+        AndroidOperation: {
+            /** Id */
+            id: string;
+            /** Action */
+            action: string;
+            /** State */
+            state: string;
+            /** Stage */
+            stage: string;
+            /** Error */
+            error: string | null;
+            /**
+             * Startedat
+             * Format: date-time
+             */
+            startedAt: string;
+            /** Finishedat */
+            finishedAt: string | null;
+        };
+        /** AndroidRename */
+        AndroidRename: {
+            /** Name */
+            name: string;
         };
         /** AndroidTarget */
         AndroidTarget: {
@@ -2195,6 +2390,13 @@ export type components = {
              */
             availability: "available" | "unavailable" | "unknown";
         };
+        /** LoopIteration */
+        LoopIteration: {
+            /** Loopnodeid */
+            loopNodeId: string;
+            /** Iteration */
+            iteration: number;
+        };
         /** ModelDiscoveryRead */
         ModelDiscoveryRead: {
             /**
@@ -2868,6 +3070,12 @@ export type components = {
         };
         /** RunArtifact */
         RunArtifact: {
+            /** Executionid */
+            executionId?: string | null;
+            /** Looppath */
+            loopPath?: components["schemas"]["LoopIteration"][];
+            /** Ordinal */
+            ordinal?: number | null;
             /** Id */
             id: string;
             /** Nodeid */
@@ -2888,6 +3096,13 @@ export type components = {
             /** Preview */
             preview: string;
         };
+        /** RunArtifacts */
+        RunArtifacts: {
+            /** Items */
+            items: components["schemas"]["RunArtifact"][];
+            /** Nextcursor */
+            nextCursor: number | null;
+        };
         /** RunError */
         RunError: {
             /** Code */
@@ -2901,6 +3116,12 @@ export type components = {
         };
         /** RunEvent */
         RunEvent: {
+            /** Executionid */
+            executionId?: string | null;
+            /** Looppath */
+            loopPath?: components["schemas"]["LoopIteration"][];
+            /** Branch */
+            branch?: string | null;
             /** Runid */
             runId: string;
             /** Seq */
@@ -2947,6 +3168,20 @@ export type components = {
         };
         /** RunRead */
         RunRead: {
+            /**
+             * Executioncount
+             * @default 0
+             */
+            executionCount: number;
+            /** Currentexecutionid */
+            currentExecutionId?: string | null;
+            /** Currentlooppath */
+            currentLoopPath?: components["schemas"]["LoopIteration"][];
+            /**
+             * Artifactcount
+             * @default 0
+             */
+            artifactCount: number;
             /** Runid */
             runId: string;
             /** Workflowid */
@@ -2980,6 +3215,8 @@ export type components = {
             /** Completednodeids */
             completedNodeIds: string[];
             error: components["schemas"]["RunError"] | null;
+            /** Nextartifactcursor */
+            nextArtifactCursor?: number | null;
             document: components["schemas"]["WorkflowDocument"];
             layout: components["schemas"]["WorkflowLayout"];
             /** Profilesnapshot */
@@ -3011,6 +3248,20 @@ export type components = {
         };
         /** RunSummary */
         RunSummary: {
+            /**
+             * Executioncount
+             * @default 0
+             */
+            executionCount: number;
+            /** Currentexecutionid */
+            currentExecutionId?: string | null;
+            /** Currentlooppath */
+            currentLoopPath?: components["schemas"]["LoopIteration"][];
+            /**
+             * Artifactcount
+             * @default 0
+             */
+            artifactCount: number;
             /** Runid */
             runId: string;
             /** Workflowid */
@@ -3147,9 +3398,9 @@ export type components = {
             name: string;
             /**
              * Schemaversion
-             * @constant
+             * @enum {integer}
              */
-            schemaVersion: 1;
+            schemaVersion: 1 | 2;
             /** Nodes */
             nodes: components["schemas"]["WorkflowNode"][];
             /** Edges */
@@ -3167,9 +3418,9 @@ export type components = {
             target: string;
             /**
              * Sourcehandle
-             * @constant
+             * @enum {string}
              */
-            sourceHandle: "out";
+            sourceHandle: "out" | "true" | "false" | "body" | "done";
             /**
              * Targethandle
              * @constant
@@ -3208,7 +3459,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual" | "condition" | "condition_end" | "loop" | "loop_end" | "break_loop" | "continue_loop" | "set_variable";
             /** Label */
             label: string;
             /** Config */
@@ -3222,7 +3473,7 @@ export type components = {
              * Type
              * @enum {string}
              */
-            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual";
+            type: "open_page" | "click_element" | "input_text" | "wait_element" | "get_element_info" | "screenshot" | "android_launch_app" | "android_tap" | "android_key" | "android_screenshot" | "android_manual" | "condition" | "condition_end" | "loop" | "loop_end" | "break_loop" | "continue_loop" | "set_variable";
             /** Title */
             title: string;
             /** Description */
@@ -3240,7 +3491,7 @@ export type components = {
             /** Inputports */
             inputPorts: "in"[];
             /** Outputports */
-            outputPorts: "out"[];
+            outputPorts: ("out" | "true" | "false" | "body" | "done")[];
             /** Runnable */
             runnable: boolean;
         };
@@ -4892,6 +5143,103 @@ export interface operations {
             };
         };
     };
+    create_api_v1_android_devices_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AndroidCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidDeviceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_api_v1_android_devices__device_id__operations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AndroidDeviceCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidDeviceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_v1_android_devices__device_id__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     device_api_v1_android_devices__device_id__get: {
         parameters: {
             query?: never;
@@ -4902,6 +5250,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AndroidDeviceRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_api_v1_android_devices__device_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AndroidRename"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -8244,6 +8627,87 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunEvents"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    artifacts_api_v1_workflows_runs__run_id__artifacts_get: {
+        parameters: {
+            query?: {
+                after?: number;
+                limit?: number;
+                nodeId?: string | null;
+                executionId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunArtifacts"];
                 };
             };
             /** @description Unauthorized */

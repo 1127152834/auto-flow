@@ -56,6 +56,8 @@ class AndroidWorkflowWorker:
                 event = json.loads(line)
                 if event.get("type") != "heartbeat":
                     await events.put(event)
+                    if event.get("type") == "finished":
+                        await asyncio.Event().wait()
 
         async def connected(awaitable: Awaitable[Any]) -> Any:
             action = asyncio.ensure_future(awaitable)
@@ -71,7 +73,7 @@ class AndroidWorkflowWorker:
 
         reader = asyncio.create_task(read())
         try:
-            payload = {"document": prepared.document, "nodeIds": prepared.node_ids, "variables": prepared.variables}
+            payload = {"document": prepared.document, "nodeIds": prepared.node_ids, "variables": prepared.variables, "plan": prepared.plan}
             encoded = (json.dumps(payload, ensure_ascii=False) + "\n").encode()
             if len(encoded) > 65536:
                 raise AndroidError("ANDROID_WORKER_PAYLOAD", "安卓执行快照超过 64 KiB", 422)
@@ -85,7 +87,7 @@ class AndroidWorkflowWorker:
                     response = await connected(command(event))
                     process.stdin.write((json.dumps({"requestId": event["requestId"], **response}) + "\n").encode())
                     await process.stdin.drain()
-                elif event["type"] in {"ready", "node_started", "node_succeeded", "node_failed"}:
+                elif event["type"] in {"ready", "node_started", "node_succeeded", "node_failed", "log"}:
                     await on_event(event)
                 else:
                     raise AndroidError("ANDROID_WORKER_PROTOCOL", "无效的安卓执行事件", 502)

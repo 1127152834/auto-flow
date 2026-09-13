@@ -32,6 +32,8 @@ class SqlAlchemyDeviceRepository:
     def claim(self, device_id: str, run_id: str) -> dict[str, Any]:
         with self.sessions.begin() as session:
             device = self.get(device_id)
+            if device.get("deleted"):
+                raise AndroidError("ANDROID_NOT_FOUND", "设备已删除", 404)
             if device.get("control") != "idle":
                 raise AndroidError("ANDROID_BUSY", "设备已占用或需要恢复")
             device.update(ownerRunId=run_id, control="workflow", generation=device.get("generation", 0) + 1)

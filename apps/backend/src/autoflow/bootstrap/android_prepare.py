@@ -75,8 +75,9 @@ async def prepare(data_dir: Path, archive: Path | None, recover: bool) -> dict:
                 repo.save(device)
             return {"recovered": True}
         install_client(root, archive)
-        if repo.list():
-            return repo.list()[0]
+        registered = [device for device in repo.list() if not device.get("deleted")]
+        if registered:
+            return registered[0]
         image = "redroid/redroid:13.0.0_64only-latest"
         image_info = json.loads(await docker("image", "inspect", image))[0]
         if image_info["Os"] != "linux" or image_info["Architecture"] != "arm64":

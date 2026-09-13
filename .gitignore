@@ -14,6 +14,8 @@ __pycache__/
 reference/WebRPA/
 reference/RedroidManager/
 reference/redroid-script/
+reference/vphone-aio/
+reference/vphone-cli/
 
 .superpowers/verification/
 

@@ -1,0 +1,29 @@
+{
+  "deviceId": "9a7d2a6f-dc7e-4f4b-bc62-70cf6bcaab89",
+  "name": "管理验收 1",
+  "runtimeId": "autoflow-redroid",
+  "ownerRunId": null,
+  "control": "idle",
+  "generation": 0,
+  "width": 540,
+  "height": 960,
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "androidStatus": "ready",
+  "lastError": null,
+  "cpu": 1,
+  "memoryMb": 768,
+  "dpi": 240,
+  "androidVersion": "13",
+  "architecture": "arm64",
+  "dataRetained": false,
+  "deleted": false,
+  "operation": {
+    "id": "9a7d2a6f-dc7e-4f4b-bc62-70cf6bcaab89",
+    "action": "create",
+    "state": "succeeded",
+    "stage": "已完成",
+    "error": null,
+    "startedAt": "2026-09-13T05:06:41.003360Z",
+    "finishedAt": "2026-09-13T05:06:56.710649Z"
+  }
+}

@@ -1,9 +1,11 @@
 import asyncio
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
+from time import monotonic
 from typing import Any
 from uuid import uuid4
 
+from autoflow.application.android.management import AndroidManagement
 from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
 
 Emit = Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]]
@@ -12,6 +14,7 @@ Emit = Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]]
 class AndroidDeviceService:
     def __init__(self, repository: DeviceRepository, runtime: AndroidRuntime) -> None:
         self.repository, self.runtime = repository, runtime
+        self.management = AndroidManagement(repository, runtime)
         self.device: dict[str, Any] | None = None
         self.handoff: dict[str, Any] | None = None
         self.continued = asyncio.Event()
@@ -22,6 +25,9 @@ class AndroidDeviceService:
         self.continue_task: asyncio.Task[None] | None = None
         self.stopping = False
         self.emit: Emit | None = None
+        self.preview_slots = asyncio.Semaphore(2)
+        self.preview_locks: dict[str, asyncio.Lock] = {}
+        self.previews: dict[str, tuple[float, bytes]] = {}
 
     async def environment(self) -> dict[str, Any]:
         return await self.runtime.environment()
@@ -29,6 +35,8 @@ class AndroidDeviceService:
     async def devices(self) -> list[dict[str, Any]]:
         result = []
         for device in self.repository.list():
+            if device.get("deleted"):
+                continue
             try:
                 observed = await self.runtime.inspect(device)
                 # Container running alone is not Android readiness.
@@ -36,8 +44,23 @@ class AndroidDeviceService:
                 error = device.get("lastError")
             except (AndroidError, OSError, TimeoutError):
                 status, error = "unknown", "无法核实设备或运行环境"
-            result.append({key: device.get(key) for key in ("deviceId", "name", "runtimeId", "ownerRunId", "control", "generation", "width", "height", "imageId")} | {"androidStatus": status, "lastError": error})
+            result.append(device_view(device) | {"androidStatus": status, "lastError": error})
         return result
+
+    async def preview(self, device_id: str) -> bytes:
+        self.repository.get(device_id)
+        async with self.preview_locks.setdefault(device_id, asyncio.Lock()), self.preview_slots:
+            device = self.repository.get(device_id)
+            if device.get("deleted") or device.get("control") in {"managing", "recovery_required"}:
+                raise AndroidError("ANDROID_PREVIEW_UNAVAILABLE", "当前设备状态无法核实")
+            cached = self.previews.get(device_id)
+            if cached and monotonic() - cached[0] < 1:
+                return cached[1]
+            data = await self.runtime.preview(device)
+            if len(self.previews) >= 20:
+                self.previews.pop(next(iter(self.previews)))
+            self.previews[device_id] = (monotonic(), data)
+            return data
 
     def claim(self, device_id: str, run_id: str) -> dict[str, Any]:
         self.runtime.lock()
@@ -216,7 +239,7 @@ class AndroidDeviceService:
             raise
 
     async def recover(self) -> None:
-        records = [d for d in self.repository.list() if d.get("ownerRunId") or d.get("control") != "idle"]
+        records = [d for d in self.repository.list() if not d.get("deleted") and (d.get("ownerRunId") or d.get("control") != "idle")]
         if not records:
             return
         try:
@@ -228,6 +251,11 @@ class AndroidDeviceService:
                 device["control"] = "recovery_required"
                 self.repository.save(device)
                 try:
+                    if device.get("operation", {}).get("state") in {"running", "interrupted", "failed"}:
+                        device["operation"].update(state="interrupted", stage="等待核实", error="服务已重启，请核实设备状态")
+                        device["lastError"] = "管理操作中断，请点击核实状态"
+                        self.repository.save(device)
+                        continue
                     await self.runtime.recover(device)
                     device.update(ownerRunId=None, control="idle", lastError=None)
                 except (AndroidError, OSError, TimeoutError):
@@ -235,3 +263,8 @@ class AndroidDeviceService:
                 self.repository.save(device)
         finally:
             self.runtime.unlock()
+
+
+def device_view(device: dict[str, Any]) -> dict[str, Any]:
+    fields = ("deviceId", "name", "runtimeId", "ownerRunId", "control", "generation", "width", "height", "imageId")
+    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": "13", "architecture": "arm64", "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation")}

@@ -13,3 +13,7 @@
 ## 设备页直接操作入口补充（2026-09-13，confirmed）
 
 来源：用户指出设备卡片点击无反应。原先“设备页仅查看”的范围现已 superseded：新增明确的打开按钮，通过既有运行接口创建仅含一个人工节点的手动会话，并在此次点击对应的会话进入等待后开窗。结束操作复用 continue；无后续自动节点。页面刷新、导航重进和关窗不自动开新会话，不改变占用/清理规则。预算为页面明确提示的 60 分钟。
+
+## M4 与设备管理补充（2026-09-13，confirmed）
+
+来源：用户确认按原型开发设备管理第一版。此前“等待并行 M4 稳定”和“仅准备命令登记设备”的描述已 superseded：接入已提交 M4，使用0008显式迁移汇合；安卓使用共享结构化调度与逐次产物。设备生命周期、保留数据恢复及原生入口集中于正式 Android service/provider，继续保留单运行/VM控制器边界。规格和验证见 docs/superpowers/specs/2026-09-13-android-management-design.md 与 docs/migration/android-management-validation.md。

@@ -726,3 +726,36 @@ async def test_worker_transport_does_not_swallow_stop_when_io_completes(tmp_path
     finally:
         owner.cancel()
         await asyncio.gather(owner, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_stop_drains_flooded_output_without_committing_shutdown_messages(tmp_path, valid_profile_values):
+    executable = tmp_path / 'chrome'
+    executable.write_bytes(b'kernel')
+    script = """import json,sys,threading
+json.loads(sys.stdin.readline())
+stopped=threading.Event()
+def watch():
+    sys.stdin.read()
+    stopped.set()
+threading.Thread(target=watch,daemon=True).start()
+print(json.dumps({'type':'ready'}),flush=True)
+while not stopped.is_set():
+    print(json.dumps({'type':'log','message':'x'*4000}),flush=True)
+"""
+    manager = WorkflowWorkerManager(tmp_path / 'temp', tmp_path / 'runs', command=(sys.executable, '-c', script), termination_timeout=2)
+    arrived = asyncio.Event()
+    observed = []
+    async def on_event(event):
+        observed.append(event)
+        if event['type'] == 'log':
+            arrived.set()
+            await asyncio.sleep(10)  # Leave the producer blocked on a full pipe.
+    execution = asyncio.create_task(manager.execute('flood', prepared(), profile(valid_profile_values), executable, None, None, on_event))
+    await asyncio.wait_for(arrived.wait(), 3)
+    await asyncio.sleep(.1)
+    count = len(observed)
+    await asyncio.wait_for(manager.stop('flood'), 2)
+    assert (await execution)['state'] == 'cancelled'
+    assert len(observed) == count and not manager.busy()
+    await manager.shutdown()

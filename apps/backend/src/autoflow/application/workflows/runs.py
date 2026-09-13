@@ -24,7 +24,11 @@ from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.models import WorkflowError, WorkflowIssue
-from autoflow.domain.workflows.run_validation import PreparedWorkflow, prepare_run
+from autoflow.domain.workflows.run_validation import (
+    PreparedWorkflow,
+    prepare_run,
+    validate_runtime,
+)
 from autoflow.domain.workflows.runs import (
     ACTIVE_RUN_STATES,
     RunRecord,
@@ -97,6 +101,8 @@ class WorkflowRunService:
         record = self.repository.get(run_id)
         if record is None:
             raise WorkflowError("WORKFLOW_RUN_NOT_FOUND", "运行记录不存在", 404)
+        page = self.artifacts(run_id, 0, 50)
+        record.data.update(artifacts=page["items"], nextArtifactCursor=page["nextCursor"])
         operation = self._active.get(run_id)
         if operation is not None and operation.cleanup_failed:
             return {**record.data, "state": "stopping" if operation.stopping else "finishing", "error": _cleanup_error_data()}
@@ -137,8 +143,7 @@ class WorkflowRunService:
         if self.busy():
             raise WorkflowError("WORKFLOW_RUN_BUSY", "当前工作区已有运行，请先停止或等待完成", 409)
         prepared = prepare_run(document, layout)
-        if any(node["type"].startswith("android_") != is_android for node in prepared.document["nodes"]):
-            raise WorkflowError("WORKFLOW_RUNTIME_MISMATCH", "首版不能混合安卓与浏览器节点，请选择匹配的运行资源", 422)
+        validate_runtime(prepared.document, is_android)
         guards = ExitStack()
         try:
             profile = None
@@ -164,7 +169,7 @@ class WorkflowRunService:
                 "state": "starting", "document": deepcopy(document), "layout": deepcopy(layout),
                 "profileSnapshot": snapshot if not is_android else None, "nodeOrder": list(prepared.node_ids),
                 "currentNodeId": None, "startedAt": now, "finishedAt": None,
-                "latestSeq": 1, "completedNodeIds": [], "error": None, "artifacts": [],
+                "latestSeq": 1, "completedNodeIds": [], "artifactCount": 0, "executionCount": 0, "currentExecutionId": None, "currentLoopPath": [], "error": None, "artifacts": [],
                 "warnings": [_issue(issue) for issue in prepared.warnings],
             })
             saved = self.repository.create(record)
@@ -282,16 +287,23 @@ class WorkflowRunService:
                 self._subscribers.pop(run_id, None)
 
     def artifact(self, run_id: str, artifact_id: str) -> tuple[Path, dict[str, Any]]:
-        for artifact in self.get(run_id)["artifacts"]:
-            if artifact["id"] == artifact_id:
-                try:
-                    path = self._artifact_path(run_id, artifact["relativePath"])
-                    if not path.is_file():
-                        raise OSError
-                except (OSError, ValueError):
-                    raise WorkflowError("WORKFLOW_ARTIFACT_UNAVAILABLE", "产物文件不存在或路径不安全", 404) from None
-                return path, artifact
+        artifact = self.repository.artifact(run_id, artifact_id)
+        if artifact is not None:
+            try:
+                path = self._artifact_path(run_id, artifact["relativePath"])
+                if not path.is_file():
+                    raise OSError
+            except (OSError, ValueError):
+                raise WorkflowError("WORKFLOW_ARTIFACT_UNAVAILABLE", "产物文件不存在或路径不安全", 404) from None
+            return path, artifact
         raise WorkflowError("WORKFLOW_ARTIFACT_NOT_FOUND", "运行产物不存在", 404)
+
+    def artifacts(self, run_id: str, after: int, limit: int, node_id: str | None = None, execution_id: str | None = None) -> dict[str, Any]:
+        if self.repository.get(run_id) is None:
+            raise WorkflowError("WORKFLOW_RUN_NOT_FOUND", "运行记录不存在", 404)
+        rows = self.repository.artifacts(run_id, after, limit + 1, node_id, execution_id)
+        page = rows[:limit]
+        return {"items": page, "nextCursor": page[-1]["ordinal"] if len(rows) > limit else None}
 
     async def _execute(
         self, run_id: str, operation: _ActiveRun, prepared: PreparedWorkflow,
@@ -351,7 +363,8 @@ class WorkflowRunService:
                 receipts = dict(self.get(run_id).get("handoffReceipts", {}))
                 receipts[handoff["handoffId"]] = dict(handoff["receipts"])
                 changes = {**changes, "handoffReceipts": receipts}
-            self._append(run_id, event, changes)
+            record = self.get(run_id)
+            self._append(run_id, {**event, "executionId": record.get("currentExecutionId"), "loopPath": record.get("currentLoopPath", [])}, changes)
 
         async def command(event: dict[str, Any]) -> dict[str, Any]:
             assert self.android is not None
@@ -367,8 +380,7 @@ class WorkflowRunService:
                 if event["operation"] == "android_screenshot":
                     assert self.save_android_image is not None
                     result = self.save_android_image(run_id, node_id, data)
-                    await self._worker_event(run_id, operation, {"type": "log", "nodeId": node_id, "message": "安卓截图已保存", "artifact": result["artifact"]})
-                    return {"result": result["value"]}
+                    return {"result": result["value"], "artifact": result["artifact"]}
                 return {"result": None}
             except (AndroidError, TimeoutError) as error:
                 return {"error": {"code": error.code if isinstance(error, AndroidError) else "ANDROID_TIMEOUT", "message": error.message if isinstance(error, AndroidError) else "安卓动作超时", "nodeId": node_id, "path": []}}
@@ -421,6 +433,12 @@ class WorkflowRunService:
     async def _finish(self, run_id: str, operation: _ActiveRun) -> bool:
         if self._active.get(run_id) is not operation:
             return True
+        try:
+            record = self.repository.get(run_id)
+            if record is not None and record.data['state'] in {'starting', 'running'}:
+                self._append(run_id, {'type': 'finishing', 'message': '调度结束，正在确认资源清理'}, {'state': 'stopping' if operation.stopping else 'finishing'})
+        except Exception:  # noqa: BLE001 -- storage failure must not prevent browser cleanup.
+            logger.warning('workflow finishing state could not be saved: run_id=%s', run_id)
         if operation.executing:
             try:
                 await self._cleanup(run_id, operation)
@@ -444,27 +462,27 @@ class WorkflowRunService:
         return True
 
     async def _worker_event(self, run_id: str, operation: _ActiveRun, event: dict[str, Any]) -> None:
-        record = self.get(run_id)
+        stored_record = self.repository.get(run_id)
+        assert stored_record is not None
+        record = stored_record.data
         changes: dict[str, Any] = {}
         kind = event.get("type", "log")
         node_id = event.get("nodeId")
         if kind == "ready" and not operation.stopping:
             changes["state"] = "running"
         elif kind == "node_started":
-            changes["currentNodeId"] = node_id
+            changes.update(currentNodeId=node_id, currentExecutionId=event.get("executionId"), currentLoopPath=event.get("loopPath", []), executionCount=record.get("executionCount", 0) + 1)
         elif kind == "node_succeeded":
             completed = record["completedNodeIds"]
             if node_id not in completed:
                 changes["completedNodeIds"] = [*completed, node_id]
-            if len(changes.get("completedNodeIds", completed)) == len(record["nodeOrder"]) and not operation.stopping:
-                changes["state"] = "finishing"
         elif kind == "node_failed" and not operation.stopping:
             changes["state"] = "finishing"
-        stored: dict[str, Any] = {key: event[key] for key in ("type", "nodeId", "level", "message", "durationMs", "error") if key in event}
+        stored: dict[str, Any] = {key: event[key] for key in ("type", "nodeId", "level", "message", "durationMs", "error", "executionId", "loopPath", "branch") if key in event}
         artifact = event.get("artifact")
         if artifact is not None:
             self._artifact_path(run_id, artifact["relativePath"])
-            changes["artifacts"] = [*record["artifacts"], deepcopy(artifact)]
+            changes["_artifact"] = deepcopy(artifact)
             stored["artifactId"] = artifact["id"]
         self._append(run_id, stored, changes)
 

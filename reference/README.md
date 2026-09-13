@@ -1,5 +1,38 @@
 # Reference projects
 
+## vphone iOS automation demo
+
+- Start: [`vphone-demo/README.md`](./vphone-demo/README.md); [verification](./vphone-demo/VERIFICATION.md); [bounded experiment plan](./vphone-demo/PLAN.md).
+- Date: 2026-09-13; status: demo implemented, upstream host/guest binaries built; actual iOS boot blocked by current host policy (research guests disabled, signed host binary exits 137).
+- Independent Python standard-library + React console: <http://127.0.0.1:8083>. Real host checks, VM discovery, controlled lifecycle, screenshot/touch/swipe/keys/clipboard and step replay. No fake devices; not an AutoFlow production dependency.
+- Default isolated runtime data: `~/.vphone-autoflow-demo`; generated evidence and logs: `vphone-demo/.data/` (ignored).
+
+### vphone-cli
+
+- Local source: [`vphone-cli`](./vphone-cli)
+- Upstream: <https://github.com/Lakr233/vphone-cli>
+- Pinned commit: `9c23c8adcd4b362120988ab9d228b959bcc23ae3` (detached HEAD, recursive submodules initialized).
+- License: MIT; [`vphone-cli/LICENSE`](./vphone-cli/LICENSE).
+- Sources remain unchanged; ignored `.build`, `.tools`, `.venv` contain this experiment's locally built artifacts. Host security settings were not changed.
+
+### vphone-aio
+
+- Local source: [`vphone-aio`](./vphone-aio)
+- Upstream: <https://github.com/34306/vphone-aio>
+- Pinned commit: `1db79dccd95391d6247c41f3cc4eac523567f295` (detached HEAD).
+- Cloned with `GIT_LFS_SKIP_SMUDGE=1`; seven large archive files are LFS pointers. The approximately 12GB prebuilt iOS archive was not downloaded; no archive extraction or aio launcher execution occurred.
+- No top-level license file was found in this snapshot. Retained for inspection; no aio code/archive copied into Demo.
+
+Both nested repositories retain their Git metadata and are ignored by AutoFlow. Restore the same sources with:
+
+```sh
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/34306/vphone-aio.git reference/vphone-aio
+git -C reference/vphone-aio checkout --detach 1db79dccd95391d6247c41f3cc4eac523567f295
+git clone --recurse-submodules https://github.com/Lakr233/vphone-cli.git reference/vphone-cli
+git -C reference/vphone-cli checkout --detach 9c23c8adcd4b362120988ab9d228b959bcc23ae3
+git -C reference/vphone-cli submodule update --init --recursive
+```
+
 ## redroid management demo
 
 - Start: [`redroid-demo/README.md`](./redroid-demo/README.md); [verification](./redroid-demo/VERIFICATION.md); [approved plan](./redroid-demo/PLAN.md).

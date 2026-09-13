@@ -2,11 +2,12 @@ from fastapi import APIRouter, Query
 from fastapi.responses import FileResponse
 
 from autoflow.application.workflows.runs import WorkflowRunService
-from autoflow.domain.workflows.run_validation import prepare_run
+from autoflow.domain.workflows.run_validation import prepare_run, validate_runtime
 
 from .errors import browser_error_responses
 from .workflow_run_schemas import (
     HandoffCommand,
+    RunArtifacts,
     RunEvents,
     RunList,
     RunRead,
@@ -32,6 +33,7 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
     @router.post("/validate", response_model=list[dict[str, str]])
     async def validate(body: RunStart) -> list[dict[str, str]]:
         prepared = prepare_run(body.document.model_dump(by_alias=True), body.layout.model_dump(by_alias=True))
+        validate_runtime(prepared.document, body.target is not None and body.target.kind == "android")
         return [{"code": issue.code, "message": issue.message} for issue in prepared.warnings]
 
     @router.get("", response_model=RunList)
@@ -67,6 +69,11 @@ def workflow_runs_router(service: WorkflowRunService) -> APIRouter:
         limit: int = Query(200, ge=1, le=1000),
     ) -> RunEvents:
         return RunEvents.model_validate(service.events(run_id, after_seq, limit))
+
+    @router.get("/{run_id}/artifacts", response_model=RunArtifacts)
+    def artifacts(run_id: str, after: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200),
+                  node_id: str | None = Query(None, alias="nodeId"), execution_id: str | None = Query(None, alias="executionId")) -> RunArtifacts:
+        return RunArtifacts.model_validate(service.artifacts(run_id, after, limit, node_id, execution_id))
 
     @router.get("/{run_id}/artifacts/{artifact_id}", response_class=FileResponse)
     def artifact(run_id: str, artifact_id: str) -> FileResponse:

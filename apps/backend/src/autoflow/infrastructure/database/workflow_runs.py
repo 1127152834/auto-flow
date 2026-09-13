@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.runs import ACTIVE_RUN_STATES, RunRecord
 
-from .models import WorkflowRunEventRow, WorkflowRunRow
+from .models import WorkflowRunArtifactRow, WorkflowRunEventRow, WorkflowRunRow
 
 
 class SqlAlchemyWorkflowRunRepository:
@@ -73,6 +73,12 @@ class SqlAlchemyWorkflowRunRepository:
             payload = {**row.payload, **deepcopy(changes)}
             seq = row.payload["latestSeq"] + 1
             timestamp = datetime.now(UTC).isoformat()
+            artifact = changes.get("_artifact")
+            payload.pop("_artifact", None)
+            if artifact is not None:
+                ordinal = row.payload.get("artifactCount", 0) + 1
+                payload["artifactCount"] = ordinal
+                session.add(WorkflowRunArtifactRow(run_id=run_id, id=artifact["id"], ordinal=ordinal, node_id=artifact["nodeId"], execution_id=artifact.get("executionId"), payload=deepcopy(artifact)))
             stored = {
                 "runId": run_id, "seq": seq, "timestamp": timestamp,
                 "type": "log", "nodeId": None, "level": "info", "message": "",
@@ -93,6 +99,20 @@ class SqlAlchemyWorkflowRunRepository:
                     WorkflowRunEventRow.run_id == run_id, WorkflowRunEventRow.seq > after_seq,
                 ).order_by(WorkflowRunEventRow.seq).limit(limit)
             )]
+
+    def artifacts(self, run_id: str, after: int, limit: int, node_id: str | None = None, execution_id: str | None = None) -> list[dict[str, Any]]:
+        query = select(WorkflowRunArtifactRow).where(WorkflowRunArtifactRow.run_id == run_id, WorkflowRunArtifactRow.ordinal > after)
+        if node_id is not None:
+            query = query.where(WorkflowRunArtifactRow.node_id == node_id)
+        if execution_id is not None:
+            query = query.where(WorkflowRunArtifactRow.execution_id == execution_id)
+        with self._sessions() as session:
+            return [{**deepcopy(row.payload), "ordinal": row.ordinal} for row in session.scalars(query.order_by(WorkflowRunArtifactRow.ordinal).limit(limit))]
+
+    def artifact(self, run_id: str, artifact_id: str) -> dict[str, Any] | None:
+        with self._sessions() as session:
+            row = session.get(WorkflowRunArtifactRow, (run_id, artifact_id))
+            return deepcopy(row.payload) if row else None
 
     def recover_interrupted(self) -> None:
         run_id = self.active_id()

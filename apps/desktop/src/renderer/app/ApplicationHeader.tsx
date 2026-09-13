@@ -1,7 +1,7 @@
 import { GearSix } from '@phosphor-icons/react'
 
 export type AppRoute = 'dashboard' | 'profiles' | 'proxies' | 'models' | 'android' | 'settings'
-const tabs: { key: AppRoute; label: string }[] = [{ key: 'dashboard', label: '总览' }, { key: 'profiles', label: '浏览器配置' }, { key: 'proxies', label: '代理管理' }, { key: 'models', label: '模型管理' }, { key: 'android', label: '安卓设备' }]
+const tabs: { key: AppRoute; label: string }[] = [{ key: 'dashboard', label: '总览' }, { key: 'profiles', label: '浏览器配置' }, { key: 'proxies', label: '代理管理' }, { key: 'models', label: '模型管理' }, { key: 'android', label: '安卓模拟器' }]
 export function routeFromHash(): AppRoute {
   const route = window.location.hash.replace(/^#\/?/, '').split('?')[0]
   return [...tabs.map(tab => tab.key), 'settings'].includes(route) ? route as AppRoute : 'dashboard'

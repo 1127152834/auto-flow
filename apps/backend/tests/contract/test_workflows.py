@@ -12,11 +12,12 @@ def test_catalog_and_openapi_have_one_explicit_editing_contract(client):
     response = client.get(f"{ROOT}/node-catalog")
     assert response.status_code == 200
     assert response.json()["items"] == node_catalog()
-    assert len(response.json()["items"]) == 11
+    assert len(response.json()["items"]) == 18
     for item in response.json()["items"]:
         assert item["runnable"] is True
         assert item["defaultConfig"]["timeoutSeconds"] == ({"android_launch_app": 30, "android_manual": 600}.get(item["type"], 15) if item["type"].startswith("android_") else 60)
-        assert item["inputPorts"] == ["in"] and item["outputPorts"] == ["out"]
+        expected_ports = {'condition': ['true', 'false'], 'loop': ['body', 'done'], 'loop_end': [], 'break_loop': [], 'continue_loop': []}.get(item['type'], ['out'])
+        assert item["inputPorts"] == ["in"] and item["outputPorts"] == expected_ports
         assert set(item["defaultConfig"]) == set(item["configSchema"]["properties"])
     assert (
         client.get(
@@ -194,7 +195,7 @@ def test_damaged_structures_are_rejected_without_modifying_saved_content(
     broken = deepcopy(payload)
     doc = broken["document"]
     if defect == "schema":
-        doc["schemaVersion"] = 2
+        doc["schemaVersion"] = 3
     elif defect == "boolean_schema":
         doc["schemaVersion"] = True
     elif defect == "unknown_node":

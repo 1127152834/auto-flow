@@ -78,6 +78,7 @@ class MacAndroidRuntime:
         tools = all(shutil.which(tool) for tool in ("adb", "limactl", "ssh"))
         vendor = (self.root / VENDOR / "scrcpy").is_file()
         ready = False
+        info: dict[str, Any] = {}
         if supported and tools:
             try:
                 info = json.loads(await docker("info", "--format", "{{json .}}", timeout=5))
@@ -85,8 +86,20 @@ class MacAndroidRuntime:
                 ready = info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"} and b"binder" in filesystems
             except (AndroidError, TimeoutError, OSError, ValueError):
                 pass
-        return {"available": supported and tools and vendor and ready, "platformSupported": supported,
+        from autoflow.providers.android.management import images
+
+        cached = await images() if ready else []
+        return {"images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported,
                 "runtimeId": VM, "message": "运行环境可用" if supported and tools and vendor and ready else "需要 Apple Silicon Mac、Lima Linux、ADB 和固定版 scrcpy；请运行设备准备命令"}
+
+    def new_device(self, config: dict[str, Any]) -> dict[str, Any]:
+        name = "autoflow-android-" + config["deviceId"]
+        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+
+    async def manage(self, device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
+        from autoflow.providers.android.management import manage
+
+        await manage(self, device, request, stage, save)
 
     def lock(self) -> None:
         if platform.system() != "Darwin":
@@ -100,6 +113,12 @@ class MacAndroidRuntime:
         self._locked = False
 
     async def inspect(self, device: dict[str, Any]) -> dict[str, Any]:
+        if device.get("dataRetained"):
+            from autoflow.providers.android.management import verify
+
+            containers, volumes = await verify(device, self.workspace_id)
+            if not containers:
+                return {"androidStatus": "retained" if volumes else "missing", "dockerStatus": "missing", "imageId": device["imageId"], "ports": {}}
         obj = json.loads(await docker("inspect", device["containerId"], timeout=8))[0]
         labels = obj["Config"].get("Labels") or {}
         if device["workspaceId"] != self.workspace_id or labels.get(LABEL) != self.workspace_id or labels.get("io.autoflow.android.device") != device["deviceId"]:
@@ -121,6 +140,14 @@ class MacAndroidRuntime:
                 android_status = "unknown"
         return {"dockerStatus": state, "androidStatus": android_status, "imageId": obj["Image"], "ports": obj["NetworkSettings"]["Ports"]}
 
+    async def preview(self, device: dict[str, Any]) -> bytes:
+        observed = await self.inspect(device)
+        if observed["androidStatus"] != "ready":
+            raise AndroidError("ANDROID_PREVIEW_UNAVAILABLE", "设备尚未就绪，无法读取画面")
+        data = await docker("exec", device["containerId"], "screencap", "-p", timeout=8)
+        png_size(data)
+        return data
+
     def _remember(self, name: str, process: subprocess.Popen[bytes]) -> None:
         assert self.device is not None
         self.device.setdefault("processes", {})[name] = {"pid": process.pid, "birth": process_birth(process.pid)}
@@ -130,6 +157,8 @@ class MacAndroidRuntime:
     async def connect(self, device: dict[str, Any], save: Callable[[], None]) -> None:
         self.device, self.save = device, save
         observed = await self.inspect(device)
+        if observed["dockerStatus"] == "missing":
+            raise AndroidError("ANDROID_DATA_RETAINED", "请先从设备页恢复实例，再打开窗口或运行工作流")
         if observed["dockerStatus"] != "running":
             await docker("start", device["containerId"])
         deadline = time.monotonic() + 180

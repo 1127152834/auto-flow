@@ -1,0 +1,195 @@
+{
+  "executionCount": 9,
+  "currentExecutionId": "4dc1da41041d449cbfd14eaad53ce462",
+  "currentLoopPath": [
+    {
+      "loopNodeId": "loop",
+      "iteration": 3
+    }
+  ],
+  "artifactCount": 2,
+  "runId": "8a48a1c8-cfef-47e4-b73e-91a1a6107098",
+  "workflowId": "72160b57-4060-4819-a535-4d5a4c6dfa8c",
+  "name": "安卓 M4 真实验收",
+  "profileId": null,
+  "profileName": null,
+  "target": {
+    "kind": "android",
+    "deviceId": "9a7d2a6f-dc7e-4f4b-bc62-70cf6bcaab89"
+  },
+  "targetName": "管理验收 已重命名",
+  "state": "succeeded",
+  "currentNodeId": "loop",
+  "startedAt": "2026-09-13T05:08:11.559377Z",
+  "finishedAt": "2026-09-13T05:08:14.692524Z",
+  "latestSeq": 28,
+  "completedNodeIds": [
+    "loop",
+    "screen",
+    "manual",
+    "end"
+  ],
+  "error": null,
+  "nextArtifactCursor": null,
+  "document": {
+    "id": "72160b57-4060-4819-a535-4d5a4c6dfa8c",
+    "name": "安卓 M4 真实验收",
+    "schemaVersion": 2,
+    "nodes": [
+      {
+        "id": "loop",
+        "type": "loop",
+        "label": "两轮",
+        "config": {
+          "mode": "count",
+          "source": {
+            "kind": "literal",
+            "value": 2
+          },
+          "indexVariable": "index",
+          "endNodeId": "end",
+          "maxIterations": 3
+        }
+      },
+      {
+        "id": "screen",
+        "type": "android_screenshot",
+        "label": "每轮截图",
+        "config": {
+          "variableName": "screen"
+        }
+      },
+      {
+        "id": "manual",
+        "type": "android_manual",
+        "label": "每轮人工处理",
+        "config": {
+          "prompt": "第 ${index} 轮",
+          "timeoutSeconds": 30
+        }
+      },
+      {
+        "id": "end",
+        "type": "loop_end",
+        "label": "循环结束",
+        "config": {
+          "ownerNodeId": "loop"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "0",
+        "source": "loop",
+        "target": "screen",
+        "sourceHandle": "body",
+        "targetHandle": "in"
+      },
+      {
+        "id": "1",
+        "source": "screen",
+        "target": "manual",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      },
+      {
+        "id": "2",
+        "source": "manual",
+        "target": "end",
+        "sourceHandle": "out",
+        "targetHandle": "in"
+      }
+    ],
+    "variables": []
+  },
+  "layout": {
+    "nodes": {
+      "loop": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "screen": {
+        "x": 240.0,
+        "y": 0.0
+      },
+      "manual": {
+        "x": 480.0,
+        "y": 0.0
+      },
+      "end": {
+        "x": 720.0,
+        "y": 0.0
+      }
+    },
+    "viewport": {
+      "x": 0.0,
+      "y": 0.0,
+      "zoom": 1.0
+    }
+  },
+  "profileSnapshot": null,
+  "targetSnapshot": {
+    "deviceId": "9a7d2a6f-dc7e-4f4b-bc62-70cf6bcaab89",
+    "name": "管理验收 已重命名",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "width": 540,
+    "height": 960
+  },
+  "handoff": {
+    "handoffId": "f661f614-3cdb-49f6-a67a-7887404f4261",
+    "nodeId": "manual",
+    "state": "completed",
+    "prompt": "第 2 轮",
+    "deadlineAt": "2026-09-13T05:08:44.495055Z",
+    "nativeSessionId": null,
+    "error": null,
+    "receipts": {
+      "4c44dcdb-e552-4c78-90f1-73e2736c699a": "continue"
+    }
+  },
+  "nodeOrder": [
+    "loop",
+    "screen",
+    "manual",
+    "end"
+  ],
+  "artifacts": [
+    {
+      "executionId": "9e7ef34cefc847229880d7b050c35db6",
+      "loopPath": [
+        {
+          "loopNodeId": "loop",
+          "iteration": 1
+        }
+      ],
+      "ordinal": 1,
+      "id": "df118fd52b2a4343bc56f815af65eedd",
+      "nodeId": "screen",
+      "kind": "image",
+      "name": "df118fd52b2a4343bc56f815af65eedd.png",
+      "mimeType": "image/png",
+      "relativePath": "df118fd52b2a4343bc56f815af65eedd.png",
+      "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-management-smoke/workspace/runs/8a48a1c8-cfef-47e4-b73e-91a1a6107098/artifacts/df118fd52b2a4343bc56f815af65eedd.png",
+      "preview": "Android · 540 × 960"
+    },
+    {
+      "executionId": "fb8c22da299c44e3a158c8602049bdcd",
+      "loopPath": [
+        {
+          "loopNodeId": "loop",
+          "iteration": 2
+        }
+      ],
+      "ordinal": 2,
+      "id": "d80dbabc66414961a656271a46fc3d0c",
+      "nodeId": "screen",
+      "kind": "image",
+      "name": "d80dbabc66414961a656271a46fc3d0c.png",
+      "mimeType": "image/png",
+      "relativePath": "d80dbabc66414961a656271a46fc3d0c.png",
+      "outputPath": "/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/.local/android-management-smoke/workspace/runs/8a48a1c8-cfef-47e4-b73e-91a1a6107098/artifacts/d80dbabc66414961a656271a46fc3d0c.png",
+      "preview": "Android · 540 × 960"
+    }
+  ],
+  "warnings": []
+}

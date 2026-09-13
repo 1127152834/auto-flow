@@ -11,6 +11,7 @@ import type { NodeDefinition, WorkflowIssue, WorkflowNode, WorkflowVariable } fr
 
 type Props = {
   selectorTools?: React.ReactNode
+  controlFields?: React.ReactNode
   node: WorkflowNode | null
   definition?: NodeDefinition
   variables: WorkflowVariable[]
@@ -31,7 +32,7 @@ export function NodeInspector(props: Props) {
   return <NodeFields key={props.node.id} {...props} node={props.node} />
 }
 
-function NodeFields({ node, definition, variables, issues, selectorTools, onChange, onLabelChange, onEditStart, onEditEnd, disabled = false }: Props & { node: WorkflowNode }) {
+function NodeFields({ node, definition, variables, issues, selectorTools, controlFields, onChange, onLabelChange, onEditStart, onEditEnd, disabled = false }: Props & { node: WorkflowNode }) {
   const activeInput = useRef<{ field: string; input: HTMLInputElement | HTMLTextAreaElement; start: number; end: number } | null>(null)
   const [hasTarget, setHasTarget] = useState(false)
   const nodeIssues = issues.filter((issue) => issue.nodeId === node.id)
@@ -111,6 +112,7 @@ function NodeFields({ node, definition, variables, issues, selectorTools, onChan
         {text('savePath', '保存路径', '留空表示执行时使用默认产物目录。')}
         {text('variableName', '输出变量', '保存截图路径的变量名。', false, false)}
       </> : null}
+      {controlFields}
       <FormField htmlFor={`node-${node.id}-timeout`} label="超时（秒）" hint="节点执行时允许等待的最长时间。" error={fieldError('timeoutSeconds')}>
         <Input type="number" min="0" step="any" value={value('timeoutSeconds')} disabled={disabled} onFocus={() => { clearTextTarget(); onEditStart?.() }} onBlur={onEditEnd} onChange={(event) => {
           const raw = event.target.value
@@ -126,6 +128,6 @@ function NodeFields({ node, definition, variables, issues, selectorTools, onChan
       </DropdownMenu>
       <p className="text-xs leading-5 text-muted">{!variables.length ? '先在流程变量中添加变量，再选择文本字段插入引用。' : '先将光标放入地址、选择器、输入文本或保存路径，再插入引用。'}</p>
     </div>
-    {nodeIssues.length ? <div className="rounded-control border border-clay/20 bg-clay-soft/50 p-3"><p className="mb-2 text-xs font-semibold text-clay">待完成提示 · 可保存编辑进度</p><ul className="space-y-1 text-xs leading-5 text-muted">{nodeIssues.map((issue, index) => <li key={`${issue.code}-${index}`}>{issue.message}</li>)}</ul></div> : null}
+    {nodeIssues.length ? <div className="rounded-control border border-clay/20 bg-clay-soft/50 p-3"><p className="mb-2 text-xs font-semibold text-clay">待完成提示 · 可保存编辑进度</p><ul className="space-y-1 text-xs leading-5 text-muted">{nodeIssues.map((issue, index) => <li key={`${issue.code}-${index}`}>{issue.path.join(' / ')}：{issue.message}</li>)}</ul></div> : null}
   </section>
 }

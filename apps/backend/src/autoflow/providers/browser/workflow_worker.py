@@ -56,7 +56,7 @@ async def _run(command: dict[str, Any], stopped: Event, stdout: TextIO) -> int:
             WorkflowArtifacts(Path(command["runsRoot"]), command["runId"]),
             command["variables"], lambda event: _write(stdout, event),
         )
-        return await executor.run(command["document"], command["nodeIds"])
+        return await executor.run(command["document"], command["nodeIds"], command.get("executionPlan") or None)
 
     async def watch_stop() -> None:
         while not stopped.is_set():

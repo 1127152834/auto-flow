@@ -4,10 +4,12 @@ import json
 from collections.abc import Callable, Iterator
 from copy import deepcopy
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from typing import Any
 from urllib.parse import urlsplit
 
 from .catalog import node_catalog
+from .control import CONTROL_TYPES, compile_control
 from .models import WorkflowError, WorkflowIssue
 from .references import REFERENCE_PATTERN, is_variable_name
 from .validation import validate_structure, workflow_issues
@@ -19,6 +21,7 @@ class PreparedWorkflow:
     node_ids: list[str]
     variables: dict[str, Any]
     warnings: list[WorkflowIssue]
+    plan: list[dict[str, Any]] = dataclass_field(default_factory=list)
 
 
 def _fail(code: str, message: str, path: list[str], node_id: str | None = None) -> None:
@@ -111,6 +114,9 @@ def prepare_run(document: dict[str, Any], layout: dict[str, Any]) -> PreparedWor
     if errors:
         raise WorkflowError("WORKFLOW_RUN_INVALID", "请完成流程配置后再运行", 422, errors)
     variables = initial_values(effective)
+    if effective.get("schemaVersion", 1) == 2:
+        plan = compile_control(effective)
+        return PreparedWorkflow(effective, [node["id"] for node in effective["nodes"]], variables, warnings, plan)
     nodes = {node["id"]: node for node in effective["nodes"]}
     outgoing = {edge["source"]: edge["target"] for edge in effective["edges"]}
     targets = {edge["target"] for edge in effective["edges"]}
@@ -161,3 +167,13 @@ def resolve_node_config(node: dict[str, Any], variables: dict[str, Any]) -> dict
         if not valid:
             _fail("INVALID_URL", "变量解析后须为有效 HTTP/HTTPS 网址", ["config", "url"], node["id"])
     return config
+
+
+def validate_runtime(document: dict[str, Any], android: bool) -> None:
+    for node in document["nodes"]:
+        kind = node["type"]
+        mismatch = kind not in CONTROL_TYPES and kind.startswith("android_") != android
+        page_rule = android and kind in {"condition", "loop"} and any(r.get("kind") == "page" for r in node["config"].get("rules", []))
+        if mismatch or page_rule:
+            message = "安卓与浏览器动作不能混合运行，安卓流程不支持网页条件"
+            raise WorkflowError("WORKFLOW_RUNTIME_MISMATCH", message, 422, [WorkflowIssue(node["id"], ["config", "rules"] if page_rule else ["type"], "WORKFLOW_RUNTIME_MISMATCH", message)])

@@ -83,7 +83,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/database/migrations/` | Alembic 元数据环境与浏览器资源首个可重复迁移。 |
 | `apps/backend/src/autoflow/infrastructure/database/profiles.py` | ProfileSpec 的 SQLAlchemy 映射与仓储实现。 |
 | `apps/backend/src/autoflow/infrastructure/database/proxy_options.py` | 代理/代理池本地资源查询适配器。 |
-| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/` | 已启用的 Alembic 增量迁移脚本；M1 新增 0005_workflow_documents；M2 在其后增量增加 0006_workflow_runs；M4 增加 0007_workflow_artifacts，索引历史及逐次执行产物。 |
 | `apps/backend/src/autoflow/infrastructure/database/repositories/` | 按领域命名的仓储实现；ORM 不向领域层泄漏。 |
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
@@ -144,7 +144,7 @@ reference/
 | `apps/desktop/tests/e2e/` | 真实 Electron 与 sidecar 的用户流程。 |
 | `apps/desktop/tests/fixtures/` | 桌面端脱敏测试数据。 |
 | `docs/architecture/` | 批准的运行边界、依赖方向和基础验证报告。 |
-| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3 范围和验收以 superpowers 规格与 migration 记录为准。 |
+| `docs/automation-studio/` | 自动化编排的研究与历史方案；正式 M1/M2/M3/M4 范围和验收以 superpowers 规格与 migration 记录为准。 |
 | `docs/migration/` | 能力清单、来源对应、迁移状态和验收证据。 |
 | `docs/references/` | 外部资料与来源记录。 |
 | `docs/superpowers/plans/` | 正式实施计划。 |
@@ -154,8 +154,10 @@ reference/
 | `packages/ui/src/layouts/` | 跨领域工作台布局基元；不包含业务导航配置。 |
 | `packages/ui/src/styles/` | 计划中的 Tailwind 主题、设计令牌和组件样式。 |
 | `packages/ui/tests/` | 组件交互、可访问性和状态测试。 |
-| `reference/` | 上游源码保持只读，不作为运行时依赖；`redroid-demo/` 是用户授权的独立 Python + React 管理 Demo，自有源码由主仓库跟踪；Android / Windows / root 实机验收状态见其 `VERIFICATION.md`。 |
+| `reference/` | 上游源码保持只读，不作为正式应用的运行时依赖；`redroid-demo/` 和 `vphone-demo/` 是用户授权的独立 Python + React 实验，自有源码由主仓库跟踪；各平台实机验收状态见各自的 `VERIFICATION.md`。 |
 | `reference/redroid-demo/scripts/native_monitor.py` | 2026-09-13 新增的 Mac 原生窗口验证启动器；配合 React `/native` 页面和固定版 scrcpy，运行文件在被忽略的 `.data/native-monitor/`。小闭环与输入限制见 `NATIVE_MAC_TEST.md`，不属于正式工作流执行器。 |
+| `reference/vphone-aio/`、`reference/vphone-cli/` | 2026-09-13 用户授权克隆的 iOS 上游参考仓库，独立 Git、固定 commit；aio 镜像保留 LFS 指针，CLI 递归子模块已初始化并生成本机编译产物。源码不纳入主仓库。 |
+| `reference/vphone-demo/` | 用户授权的独立 Python + React iOS 实验：宿主诊断、设备管理、截图触控与步骤回放；当前实际 iOS 启动受宿主研究虚拟机策略阻塞，见 `VERIFICATION.md`。未接入正式工作流。 |
 | `scripts/` | 现有构建、类型生成、冒烟和仓库验证脚本。 |
 
 ## 依赖与维护规则
@@ -180,7 +182,7 @@ reference/
 - 前端顺序：设计令牌 → 基础控件 → 通用布局 → 领域组件 → 页面。`packages/ui` 不依赖业务领域；页面使用领域 hooks，hooks 经共享客户端调用 API。
 - `domain/proxies` 同时管理代理与代理池；`domain/models` 同时管理供应商与模型目录，避免为每张表建立独立模块。
 - HTTP adapter 先使用按领域命名的文件，只有职责确实需要拆分时再建立子目录；不预生成空 service、repository 或类型文件。
-- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；控制流、录制和 Debug 留给后续已确认里程碑。
+- 不预设项目管理模块。工作流执行已按用户确认的 M2 在现有 workflows 领域实现；条件、循环与变量处理按 M4 实现；子流程、录制和 Debug 留给后续里程碑。
 - 空目录使用 `.gitkeep` 保留；首次加入真实文件时删除该占位。占位目录不会自动成为可运行 Python 包或 npm workspace。
 - Agent 新增、移动、删除目录或改变职责时，须在同一变更更新本文档；新增边界或解决路径冲突时同步记录 `.ai/decisions/`。
 - `.ai/plans` 维护索引与状态，正式计划在 `docs/superpowers/plans`，不要复制正文造成漂移。
@@ -279,3 +281,20 @@ reference/
 - `renderer/domains/android` 提供设备状态和选择组件；`ManualHandoffPanel` 接入正式 Studio。
 - `scripts/open-android-demo.command` 与 `scripts/smoke-android-handoff.py` 是 Mac 打开/验收入口。
 - 完成范围和运行方式见 `docs/migration/android-workflow-handoff-validation.md`。
+
+## M4 结构化控制流（2026-09-13）
+
+- `domain/workflows/control.py`：配对块编译、端口与区域验证、正常到达路径的变量可用性；`control_values.py`：固定值/结构化变量来源、严格比较和赋值。现有文档 JSON 格式支持 1/2，不改变历史文档迁移。
+- `application/workflows/execution.py`：顺序/条件/循环计划调度，每步 executionId、loopPath、局部作用域、取消和调度上限；浏览器动作通过注入的明确入口执行。
+- `providers/browser/workflow_executor.py`：原六类浏览器动作及只读网页条件，共用 M3 的定位入口。原 worker 命令携带结构化计划，沿用进程与资源归属。清理阶段排空未提交的 stdout，防止高频日志阻塞退出。
+- `infrastructure/database/migrations/versions/0007_workflow_artifacts.py`：增量创建产物索引、迁入旧登记；仓储在一个事务内写产物/事件/状态，不再每轮重写完整产物数组。
+- `renderer/domains/workflows/control-model.ts`：控制块成员、整体操作和引用；`components/{ControlFields,ValueSourceEditor,ArtifactPanel}.tsx`：专用规则、值来源和分页结果组件。React Flow 尺寸、运行标记及日志加载均为会话状态，不进入持久化格式。
+- `scripts/smoke-workflow-control.mjs` 与 `smoke-workflow-control-studio.mjs`：真实 worker 与正式 Electron 的可重跑验收；证据位于 `docs/migration/automation-studio-m4-qa/`。
+
+## 安卓设备管理与 M4 接入（2026-09-13）
+
+- `application/android/management.py` 负责持久设备操作意图、去重、串行任务与中断状态；`providers/android/management.py` 负责固定 Docker 命令、资源预算、容器/卷标签校验、完成标记和保留数据恢复。
+- `adapters/http/android.py` 增加创建、命令、重命名与只读 PNG；生成类型供 Android 前端使用。
+- `providers/android/workflow_worker.py` 注入共享 `WorkflowExecution`，输入仍归父进程；截图与人工交接带逐次执行信息。`0008_merge_android_m4` 汇合两个已经使用的0007。
+- `renderer/domains/android/components` 包含卡片、预览、创建表单、设备详情；`pages/AndroidPage.tsx` 组合真实设备查询、生命周期确认与既有人工会话。
+- 可重跑实机入口 `scripts/smoke-android-management.py`；范围与证据见 `docs/migration/android-management-validation.md`。

@@ -140,6 +140,27 @@ _DEFINITIONS[-1]["configSchema"]["allOf"] = [
 ]
 
 
+_VALUE = {"type": "object"}
+_RULES = {"type": "array"}
+_CONDITION = {"match": _enum("all", "any"), "rules": _RULES}
+_RULE_DEFAULT = {"kind": "value", "operator": "eq", "left": {"kind": "literal", "value": True}, "right": {"kind": "literal", "value": True}}
+_CONTROLS: list[tuple[str, str, dict[str, Any], dict[str, Any], list[str]]] = [
+    ("condition", "条件判断", {**_CONDITION, "endNodeId": _TEXT}, {"match": "all", "rules": [_RULE_DEFAULT], "endNodeId": ""}, ["true", "false"]),
+    ("condition_end", "条件结束", {"ownerNodeId": _TEXT}, {"ownerNodeId": ""}, ["out"]),
+    ("loop", "循环", {**_CONDITION, "endNodeId": _TEXT, "mode": _enum("count", "foreach", "while"), "source": _VALUE, "indexVariable": _TEXT, "itemVariable": _TEXT, "maxIterations": {"type": "number"}},
+     {"endNodeId": "", "mode": "count", "source": {"kind": "literal", "value": 1}, "indexVariable": "index", "itemVariable": "item", "maxIterations": 1000, "match": "all", "rules": [_RULE_DEFAULT]}, ["body", "done"]),
+    ("loop_end", "循环结束", {"ownerNodeId": _TEXT}, {"ownerNodeId": ""}, []),
+    ("break_loop", "退出循环", {}, {}, []),
+    ("continue_loop", "跳过本次循环", {}, {}, []),
+    ("set_variable", "设置变量", {"variableName": _TEXT, "operation": _enum("assign", "add", "subtract", "append"), "value": _VALUE},
+     {"variableName": "", "operation": "assign", "value": {"kind": "literal", "value": 1}}, ["out"]),
+]
+for kind, title, properties, defaults, outputs in _CONTROLS:
+    definition = _definition(kind, title, title, properties, defaults, ["variableName"] if kind == "set_variable" else [])
+    definition.update(category="流程控制", outputPorts=outputs)
+    _DEFINITIONS.append(definition)
+
+
 def node_catalog() -> list[dict[str, Any]]:
     from autoflow.domain.android.catalog import android_definitions
     return deepcopy([*_DEFINITIONS, *android_definitions()])

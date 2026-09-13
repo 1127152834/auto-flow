@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -162,4 +163,15 @@ class AndroidDeviceRow(Base):
     __tablename__ = "android_devices"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     owner_run_id: Mapped[str | None] = mapped_column(String(36))
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowRunArtifactRow(Base):
+    __tablename__ = "workflow_run_artifacts"
+    __table_args__ = (UniqueConstraint("run_id", "ordinal", name="uq_workflow_artifact_ordinal"), Index("ix_workflow_artifacts_node", "run_id", "node_id", "ordinal"), Index("ix_workflow_artifacts_execution", "run_id", "execution_id", "ordinal"))
+    run_id: Mapped[str] = mapped_column(ForeignKey("workflow_runs.id", ondelete="CASCADE"), primary_key=True)
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    ordinal: Mapped[int] = mapped_column(Integer, nullable=False)
+    node_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    execution_id: Mapped[str | None] = mapped_column(String(120))
     payload: Mapped[dict] = mapped_column(JSON, nullable=False)

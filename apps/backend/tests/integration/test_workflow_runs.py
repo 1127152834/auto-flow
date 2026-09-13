@@ -162,7 +162,9 @@ async def test_persisted_events_resume_without_loss_and_full_results_are_files(t
     migrate_database(database)
     factory = create_session_factory(database)
     reopened = SqlAlchemyWorkflowRunRepository(factory)
-    assert reopened.get(run_id).data == result
+    stored = reopened.get(run_id).data
+    assert stored == {key: ([] if key == 'artifacts' else value) for key, value in result.items() if key != 'nextArtifactCursor'}
+    assert reopened.artifacts(run_id, 0, 50) == result['artifacts']
     assert reopened.events(run_id, 2, 1000) == events
     factory.dispose()
 

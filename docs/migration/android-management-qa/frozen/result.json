@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "two independent instances ready; create retry idempotent",
+    "stop/start/restart; remove runtime retaining data and restore; other device unchanged",
+    "M4 two iterations, separate handoffs/artifacts; busy lifecycle rejection",
+    "second device data remains isolated through entire workflow"
+  ],
+  "cleanup": [
+    {
+      "deviceId": "9a7d2a6f-dc7e-4f4b-bc62-70cf6bcaab89",
+      "deleted": true
+    },
+    {
+      "deviceId": "4406da18-ba1a-477d-8fd1-c16af4d86e00",
+      "deleted": true
+    }
+  ]
+}
