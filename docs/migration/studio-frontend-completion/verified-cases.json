@@ -21579,5 +21579,450 @@
     "level": "browser UI with mock service",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-input-protocol/browser-ui.md"
+  },
+  {
+    "id": "F3.input-recovery.pending-lock",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.rejected-draft",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.unconfirmed-query",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.late-command",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.cancel-ack",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.lost-response",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.lost-response-query-offline",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.restore-pending",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.replay-answered",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.replay-cancelled",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.replay-expired",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.late-query-and-retry",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-delivery-http.test.tsx"
+  },
+  {
+    "id": "F3.input-recovery.memory-state-answered",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.memory-state-cancelled",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.memory-state-expired",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.memory-state-unknown",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.http-state-answered",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.http-state-cancelled",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.http-state-expired",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.input-recovery.http-state-unknown",
+    "capability": "输入请求确认与恢复",
+    "preconditions": {
+      "fixture": "独立输入请求与可控响应；具体参数见测试对应命名用例"
+    },
+    "steps": [
+      "建立等待中的输入请求",
+      "按用例注入确认、拒绝、丢响应、重连或迟到响应",
+      "执行界面或HTTP操作并读取状态"
+    ],
+    "expectedUI": "等待确认保留输入；只有当前有效请求显示；终态历史不重开（协议层不挂载UI）",
+    "expectedIO": "稳定commandId提交/查询或GET输入请求状态；不重复提交",
+    "stateAssertion": "以对应测试中的请求次数、请求身份、变量值和弹窗断言为准",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/input-command-protocol.test.ts"
+  },
+  {
+    "id": "F1.input-state-schema.pending",
+    "capability": "输入请求状态DTO",
+    "preconditions": {
+      "status": "pending"
+    },
+    "steps": [
+      "校验StudioInputPromptState",
+      "检查别名输出或拒绝未知状态"
+    ],
+    "expectedUI": "不适用：契约测试",
+    "expectedIO": "不适用：无网络",
+    "stateAssertion": "四种合法状态按原字段返回；unknown拒绝",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "F1.input-state-schema.answered",
+    "capability": "输入请求状态DTO",
+    "preconditions": {
+      "status": "answered"
+    },
+    "steps": [
+      "校验StudioInputPromptState",
+      "检查别名输出或拒绝未知状态"
+    ],
+    "expectedUI": "不适用：契约测试",
+    "expectedIO": "不适用：无网络",
+    "stateAssertion": "四种合法状态按原字段返回；unknown拒绝",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "F1.input-state-schema.cancelled",
+    "capability": "输入请求状态DTO",
+    "preconditions": {
+      "status": "cancelled"
+    },
+    "steps": [
+      "校验StudioInputPromptState",
+      "检查别名输出或拒绝未知状态"
+    ],
+    "expectedUI": "不适用：契约测试",
+    "expectedIO": "不适用：无网络",
+    "stateAssertion": "四种合法状态按原字段返回；unknown拒绝",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "F1.input-state-schema.expired",
+    "capability": "输入请求状态DTO",
+    "preconditions": {
+      "status": "expired"
+    },
+    "steps": [
+      "校验StudioInputPromptState",
+      "检查别名输出或拒绝未知状态"
+    ],
+    "expectedUI": "不适用：契约测试",
+    "expectedIO": "不适用：无网络",
+    "stateAssertion": "四种合法状态按原字段返回；unknown拒绝",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
+  },
+  {
+    "id": "F1.input-state-schema.unknown",
+    "capability": "输入请求状态DTO",
+    "preconditions": {
+      "status": "unknown"
+    },
+    "steps": [
+      "校验StudioInputPromptState",
+      "检查别名输出或拒绝未知状态"
+    ],
+    "expectedUI": "不适用：契约测试",
+    "expectedIO": "不适用：无网络",
+    "stateAssertion": "四种合法状态按原字段返回；unknown拒绝",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_input_schemas.py"
   }
 ]

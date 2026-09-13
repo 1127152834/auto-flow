@@ -55,10 +55,20 @@ export function InputPromptDialog() {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [error, setError] = useState('')
   const activeRequest = useRef<string | null>(null)
+  type Delivery = { requestId: string; commandId: string; status: 'sending' | 'unconfirmed' }
+  const [delivery, setDelivery] = useState<Delivery | null>(null)
+  const deliveryRef = useRef<Delivery | null>(null)
 
-  const handlePromptRequest = useCallback((data: PromptData) => {
+  const handlePromptRequest = useCallback((data: PromptData | null) => {
+    if (!data) {
+      activeRequest.current = null; deliveryRef.current = null
+      setPromptData(null); setDelivery(null); setError('')
+      return
+    }
     if (activeRequest.current === data.requestId) return
     activeRequest.current = data.requestId
+    deliveryRef.current = null
+    setDelivery(null)
     try {
       // 归一化默认值为字符串：defaultValue 可能是数字（如 integer 模式配了 8），
       // 若直接存进 inputValue 状态，后续 inputValue.split / inputValue.trim 会因
@@ -158,19 +168,46 @@ export function InputPromptDialog() {
     }
   }
 
-  const submitValue = (raw: unknown): boolean => {
-    if (!promptData || activeRequest.current !== promptData.requestId) return false
+  const applyDeliveryResult = (pending: Delivery, result: Awaited<ReturnType<typeof socketService.sendInputResult>>): boolean => {
+    if (activeRequest.current !== pending.requestId || deliveryRef.current?.commandId !== pending.commandId) return false
+    if (result.commandId !== pending.commandId || ('status' in result && result.status === 'unconfirmed')) {
+      const uncertain = { ...pending, status: 'unconfirmed' as const }
+      deliveryRef.current = uncertain; setDelivery(uncertain)
+      setError('提交结果尚未确认，请查询原命令结果。')
+      return false
+    }
+    deliveryRef.current = null; setDelivery(null)
+    if (!result.success) { setError(typeof result.error === 'string' ? result.error : '提交失败，输入已保留'); return false }
+    activeRequest.current = null
+    setPromptData(null); setInputValue(''); setCheckboxValue(false); setSliderValue(0); setSelectedItems([]); setError('')
+    return true
+  }
+
+  const deliverValue = async (value: string | null): Promise<boolean> => {
+    if (!promptData || activeRequest.current !== promptData.requestId || deliveryRef.current) return false
+    const pending: Delivery = { requestId: promptData.requestId, commandId: crypto.randomUUID(), status: 'sending' }
+    deliveryRef.current = pending; setDelivery(pending); setError('')
+    try {
+      return applyDeliveryResult(pending, await socketService.sendInputResult(pending.requestId, value, pending.commandId))
+    } catch {
+      return applyDeliveryResult(pending, { commandId: pending.commandId, success: false, status: 'unconfirmed' })
+    }
+  }
+
+  const queryDelivery = async () => {
+    const pending = deliveryRef.current
+    if (!pending || pending.status !== 'unconfirmed') return
+    const querying = { ...pending, status: 'sending' as const }
+    deliveryRef.current = querying; setDelivery(querying)
+    try { applyDeliveryResult(querying, await socketService.queryInputResult(pending.commandId)) }
+    catch { applyDeliveryResult(querying, { commandId: pending.commandId, success: false, status: 'unconfirmed' }) }
+  }
+
+  const submitValue = async (raw: unknown): Promise<boolean> => {
+    if (!promptData || activeRequest.current !== promptData.requestId || deliveryRef.current) return false
     const result = validatePromptValue(promptData, raw)
     if ('error' in result) { setError(result.error); return false }
-    activeRequest.current = null
-    socketService.sendInputResult(promptData.requestId, result.value)
-    setPromptData(null)
-    setInputValue('')
-    setCheckboxValue(false)
-    setSliderValue(0)
-    setSelectedItems([])
-    setError('')
-    return true
+    return deliverValue(result.value)
   }
 
   const handleSubmit = () => {
@@ -179,21 +216,10 @@ export function InputPromptDialog() {
       : mode === 'slider_int' || mode === 'slider_float' ? sliderValue
       : mode === 'select_single' ? (selectedItems[0] ?? '')
       : mode === 'select_multiple' ? selectedItems : inputValue
-    submitValue(raw)
+    void submitValue(raw)
   }
 
-  const handleCancel = () => {
-    if (promptData && activeRequest.current === promptData.requestId) {
-      activeRequest.current = null
-      socketService.sendInputResult(promptData.requestId, null)
-      setPromptData(null)
-      setInputValue('')
-      setCheckboxValue(false)
-      setSliderValue(0)
-      setSelectedItems([])
-      setError('')
-    }
-  }
+  const handleCancel = () => { void deliverValue(null) }
 
   // ====== 弹窗注册：让 AI 能感知并自主操作此弹窗 ======
   useEffect(() => {
@@ -238,14 +264,14 @@ export function InputPromptDialog() {
           label: '提交输入值',
           primary: true,
           params: { value: submitParam },
-          handler: (params) => {
-            if (!submitValue(params?.value)) throw new Error('输入未通过验证或请求已过期')
+          handler: async (params) => {
+            if (!await submitValue(params?.value)) throw new Error('输入未通过验证或请求已过期')
           },
         },
         {
           name: 'cancel',
           label: '取消输入',
-          handler: () => handleCancel(),
+          handler: async () => { if (!await deliverValue(null)) throw new Error('取消输入尚未确认或请求已过期') },
         },
       ],
     })
@@ -289,6 +315,7 @@ export function InputPromptDialog() {
   
   // 列表选择的切换函数
   const toggleSelectItem = (item: string) => {
+    if (deliveryRef.current) return
     if (isSelectSingle) {
       setSelectedItems([item])
     } else if (isSelectMultiple) {
@@ -358,12 +385,14 @@ export function InputPromptDialog() {
           </div>
           <button
             onClick={handleCancel}
+            disabled={!!delivery}
+            aria-label="取消输入"
             className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="px-5 py-4 space-y-4">
+        <fieldset disabled={!!delivery} className="px-5 py-4 space-y-4">
           <div className="space-y-2">
             <Label className="text-[hsl(var(--slate-800))] text-[13px]">{promptData.message || '请输入值:'}</Label>
             {isSelect ? (
@@ -597,12 +626,14 @@ export function InputPromptDialog() {
               </div>
             )}
           </div>
-        </div>
+        </fieldset>
+        {delivery && <p className="px-5 text-sm" role="status">{delivery.status === 'sending' ? '正在确认提交结果…' : '输入已保留，等待命令确认。'}</p>}
         <div className="dialog-footer-bar">
-          <Button variant="secondary" size="sm" onClick={handleCancel}>
+          {delivery?.status === 'unconfirmed' && <Button variant="secondary" size="sm" onClick={() => void queryDelivery()}>查询提交结果</Button>}
+          <Button variant="secondary" size="sm" disabled={!!delivery} onClick={handleCancel}>
             取消
           </Button>
-          <Button variant="success" size="sm" onClick={handleSubmit}>
+          <Button variant="success" size="sm" disabled={!!delivery} onClick={handleSubmit}>
             确定
           </Button>
         </div>

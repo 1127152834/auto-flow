@@ -1,3 +1,4 @@
+import { inputPromptApi } from './api'
 import type { InputPromptRequest } from './types/workflow'
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
 import { StudioEventClient as Socket } from './api/event-client'
@@ -9,7 +10,7 @@ import type { LogLevel } from './types/index'
 import { getBackendBaseUrl } from './api/config'
 
 // 输入弹窗回调
-type InputPromptCallback = (data: InputPromptRequest) => void
+type InputPromptCallback = (data: InputPromptRequest | null) => void
 
 // 浏览器被占用错误回调
 type BrowserBusyCallback = () => void
@@ -37,6 +38,9 @@ let isExecuting = false
 class SocketService {
   private socket: Socket | null = null
   private connected = false
+  private inputPromptSequence = 0
+  private pendingInputPrompt: (InputPromptRequest & {workflowId?: string}) | null = null
+  private inputPromptRetry: ReturnType<typeof setTimeout> | undefined
   private inputPromptCallback: InputPromptCallback | null = null
   private browserBusyCallback: BrowserBusyCallback | null = null
   private browserClosedCallback: BrowserClosedCallback | null = null
@@ -58,6 +62,27 @@ class SocketService {
   // 设置输入弹窗回调
   setInputPromptCallback(callback: InputPromptCallback | null) {
     this.inputPromptCallback = callback
+    if (callback && this.pendingInputPrompt) void this.confirmInputPrompt(this.pendingInputPrompt)
+  }
+
+  private async confirmInputPrompt(data: InputPromptRequest & {workflowId?: string}) {
+    const sequence = ++this.inputPromptSequence
+    clearTimeout(this.inputPromptRetry)
+    this.pendingInputPrompt = data
+    const result = await inputPromptApi.getState(data.requestId)
+    if (sequence !== this.inputPromptSequence) return
+    if (result.httpStatus === 404 || result.httpStatus === 410) { this.pendingInputPrompt = null; return }
+    if (!result.success || !result.data) {
+      // The journal cursor has already advanced. Retry the read, never replay a command.
+      this.inputPromptRetry = setTimeout(() => {
+        if (sequence === this.inputPromptSequence && this.connected) void this.confirmInputPrompt(data)
+      }, 1000)
+      return
+    }
+    const state = result.data
+    if (state.requestId !== data.requestId || (data.workflowId && state.workflowId !== data.workflowId)) return
+    if (state.status === 'pending') this.inputPromptCallback?.(data)
+    else this.pendingInputPrompt = null
   }
 
   // 设置浏览器被占用错误回调
@@ -71,9 +96,18 @@ class SocketService {
   }
 
   // 发送输入结果
-  sendInputResult(requestId: string, value: string | null) {
-    if (this.socket?.connected) {
-      this.socket.emit('input_prompt_result', { requestId, value })
+  sendInputResult(requestId: string, value: string | null, commandId: string = crypto.randomUUID()) {
+    if (this.socket) return this.socket.command('input_prompt_result', { requestId, value }, commandId)
+    return Promise.resolve({ commandId, success: false, error: '服务未连接，输入尚未提交' })
+  }
+
+  async queryInputResult(commandId: string) {
+    try {
+      if (!this.socket) throw new Error('服务未连接，无法确认输入结果')
+      const result = await this.socket.queryCommand(commandId)
+      return { ...result, success: result.success && result.httpStatus < 400 }
+    } catch (error) {
+      return { commandId, success: false, status: 'unconfirmed', error: error instanceof Error ? error.message : String(error) }
     }
   }
 
@@ -215,6 +249,7 @@ class SocketService {
     this.socket.on('connect', () => {
       console.log('Socket connected')
       this.connected = true
+      if (this.pendingInputPrompt) void this.confirmInputPrompt(this.pendingInputPrompt)
       window.dispatchEvent(new CustomEvent('socket:reconnected'))
       
       // 绑定外部待绑定的事件监听器
@@ -406,13 +441,8 @@ class SocketService {
     })
 
     // 输入弹窗请求
-    this.socket.on('execution:input_prompt', (data: Omit<InputPromptRequest, 'inputMode'> & { inputMode?: InputPromptRequest['inputMode'] }) => {
-      if (this.inputPromptCallback) {
-        this.inputPromptCallback({
-          ...data,
-          inputMode: data.inputMode || 'single'
-        })
-      }
+    this.socket.on('execution:input_prompt', (data: Omit<InputPromptRequest, 'inputMode'> & { inputMode?: InputPromptRequest['inputMode']; workflowId?: string }) => {
+      void this.confirmInputPrompt({...data, inputMode: data.inputMode || 'single'})
     })
 
     // 语音合成请求
@@ -477,6 +507,12 @@ class SocketService {
       healedSelectors?: { nodeId?: string; configKey?: string; oldSelector?: string; newSelector?: string }[]
     }) => {
       console.log('[Socket] 收到 execution:completed 事件 - 后端执行完成！', data)
+      if (this.pendingInputPrompt?.workflowId === data.workflowId && data.result.status !== 'completed') {
+        this.inputPromptSequence++
+        clearTimeout(this.inputPromptRetry)
+        this.pendingInputPrompt = null
+        this.inputPromptCallback?.(null)
+      }
       useDebugStore.getState().clearPaused()
       
       // 立即冲刷日志缓冲，确保完成日志和最后的执行日志全部显示
@@ -617,6 +653,9 @@ class SocketService {
   }
 
   disconnect() {
+    this.inputPromptSequence++
+    clearTimeout(this.inputPromptRetry)
+    this.pendingInputPrompt = null
     if (this.socket) {
       this.socket.removeAllListeners()
       this.socket.disconnect()

@@ -56,6 +56,18 @@ describe.each(['memory','http'])('input command protocol over %s',mode=>{
   expect(server.mockSnapshot()).toMatchObject({run:null,sequence:before})
   expect((await journal()).filter(e=>e.event==='execution:node_start').map(e=>e.data.nodeId)).toEqual(['prompt'])
  })
+ it.each(['answered','cancelled','expired'] as const)('queries pending input and its %s terminal state without exposing values',async status=>{
+  const prompt=await start()
+  const path=`/events/input-prompts/${prompt.requestId}`
+  expect(await(await request(path)).json()).toEqual({requestId:prompt.requestId,workflowId:'input-run',nodeId:'prompt',status:'pending'})
+  if(status==='expired')await request('/workflows/input-run/stop',{})
+  else await command(prompt.requestId,status==='cancelled'?null:'private-value')
+  expect(await(await request(path)).json()).toEqual({requestId:prompt.requestId,workflowId:'input-run',nodeId:'prompt',status})
+  expect((await request(path,{})).status).toBe(405)
+ })
+ it('reports unknown input identities as missing',async()=>{
+  expect((await request('/events/input-prompts/unknown')).status).toBe(404)
+ })
  it('rejects unimplemented commands explicitly and makes the rejection queryable',async()=>{
   const payload={commandId:'unsupported',event:'not_implemented',data:{}}
   expect((await request('/events/commands',payload)).status).toBe(501)

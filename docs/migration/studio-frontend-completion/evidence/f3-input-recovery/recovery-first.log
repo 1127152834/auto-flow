@@ -1,0 +1,133 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts src/renderer/domains/workflows/tests/input-delivery-http.test.tsx src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:17439) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17462) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=false
+[Socket] 连接到后端: http://127.0.0.1:59375
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=false
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=false
+Execution started: delivery-http
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=true
+[Socket] 连接到后端: http://127.0.0.1:59389
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=true
+Execution started: delivery-http
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is pending
+[Socket] 连接到后端: http://127.0.0.1:59402
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is pending
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is answered
+[Socket] 连接到后端: http://127.0.0.1:59407
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is answered
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is cancelled
+[Socket] 连接到后端: http://127.0.0.1:59415
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is cancelled
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is expired
+[Socket] 连接到后端: http://127.0.0.1:59427
+
+stdout | src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is expired
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+ ❯ src/renderer/domains/workflows/tests/input-delivery-http.test.tsx (6 tests | 6 failed) 6290ms
+   × keeps a recoverable input submission over real HTTP with queryInitiallyOffline=false 1126ms
+   × keeps a recoverable input submission over real HTTP with queryInitiallyOffline=true 1113ms
+   × replays the HTTP journal safely when the input is pending 1014ms
+   × replays the HTTP journal safely when the input is answered 1011ms
+   × replays the HTTP journal safely when the input is cancelled 1011ms
+   × replays the HTTP journal safely when the input is expired 1015ms
+(node:17471) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17472) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=false
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > keeps a recoverable input submission over real HTTP with queryInitiallyOffline=true
+TestingLibraryElementError: Unable to find an element with the display value: before.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/input-delivery-http.test.tsx:34:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is pending
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is answered
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is cancelled
+ FAIL  src/renderer/domains/workflows/tests/input-delivery-http.test.tsx > replays the HTTP journal safely when the input is expired
+TestingLibraryElementError: Unable to find an element with the display value: 恢复输入.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/input-delivery-http.test.tsx:67:16
+     65|   render(<InputPromptDialog />);socketService.connect()
+     66|   await post('/workflows/recovery-input/execute',{})
+     67|   await screen.findByDisplayValue('恢复输入')
+       |                ^
+     68|   if(status==='answered'||status==='cancelled'){
+     69|    fireEvent.click(screen.getByRole('button',{name:status==='answered'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  6 failed | 77 passed (83)
+   Start at  05:16:06
+   Duration  27.48s (transform 285ms, setup 125ms, import 935ms, tests 24.23s, environment 1.76s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-command-protocol.test.ts src/renderer/domains/workflows/tests/input-delivery-http.test.tsx src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx src/renderer/domains/workflows/tests/input-prompt-validation.test.tsx

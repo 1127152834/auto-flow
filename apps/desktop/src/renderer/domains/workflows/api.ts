@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { studioFetch } from './api/transport'
-import { getBackendBaseUrl } from './api/config'
+import { getBackendBaseUrl, preloadConfig } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -34,6 +34,7 @@ export interface ApiResponse<T = any> {
   success: boolean
   data?: T
   error?: string
+  httpStatus?: number
   errorDetails?: ApiWireError
 }
 
@@ -44,7 +45,6 @@ export async function apiRequest<T = any>(
 ): Promise<ApiResponse<T>> {
   try {
     // 确保配置已加载
-    const { preloadConfig } = await import('./api/config')
     await preloadConfig()
     
     const url = `${getApiBase()}${endpoint}`
@@ -86,7 +86,7 @@ export async function apiRequest<T = any>(
         // 忽略 JSON 解析失败
       }
       const baseError = `HTTP ${response.status}: ${response.statusText}`
-      return { success: false, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError, ...(errorDetails ? { errorDetails } : {}) }
+      return { success: false, httpStatus: response.status, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError, ...(errorDetails ? { errorDetails } : {}) }
     }
     const data = await response.json()
     if (data && !Array.isArray(data) && data.success === false) {
@@ -575,4 +575,8 @@ export const featurePackApi = {
     apiRequest<{ success: boolean; pack: { id: string; name: string; installed: boolean } | null }>(
       `/feature-packs/module-hint/${encodeURIComponent(moduleType)}`
     ),
+}
+
+export const inputPromptApi = {
+  getState: (requestId: string) => apiRequest<components['schemas']['StudioInputPromptState']>(`/events/input-prompts/${encodeURIComponent(requestId)}`),
 }

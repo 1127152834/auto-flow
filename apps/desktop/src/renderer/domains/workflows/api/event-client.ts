@@ -35,6 +35,9 @@ export class StudioEventClient {
     void this.sendCommand(commandId, event, data)
     return commandId
   }
+  command(event: string, data: unknown, commandId: string = crypto.randomUUID()): Promise<StudioCommandReceipt> {
+    return this.sendCommand(commandId, event, data)
+  }
   async queryCommand(commandId: string): Promise<StudioCommandLookup> {
     const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
     const result: unknown = await response.json()
@@ -44,31 +47,36 @@ export class StudioEventClient {
     }
     return result as StudioCommandLookup
   }
-  private async sendCommand(commandId: string, event: string, data: unknown) {
+  private async sendCommand(commandId: string, event: string, data: unknown): Promise<StudioCommandReceipt> {
+    const interrupted = { commandId, success: false, status: 'unconfirmed', error: '连接已中断，命令结果尚未确认' }
     try {
       const response = await studioFetch(`${this.baseUrl}/api/events/commands`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commandId, event, data }), signal: this.controller.signal,
       })
       const result: unknown = await response.json()
-      if (this.controller.signal.aborted) return
+      if (this.controller.signal.aborted) return interrupted
       if (!response.ok) {
-        this.dispatch('command_error', { ...(typeof result === 'object' && result !== null ? result : {}), commandId })
-        return
+        const rejected = { ...(typeof result === 'object' && result !== null ? result : {}), commandId, success: false }
+        this.dispatch('command_error', rejected)
+        return rejected
       }
       if (!isCommandReceipt(result, commandId)) throw new Error('命令响应无效或身份不匹配')
       this.dispatch(result.success ? 'command_result' : 'command_error', result)
-
+      return result
     } catch (error) {
-      if (this.controller.signal.aborted) return
+      if (this.controller.signal.aborted) return interrupted
       // Query identity after a lost response; never repeat a possibly-applied action.
       try {
         const result = await this.queryCommand(commandId)
-        if (!this.controller.signal.aborted) this.dispatch(Number(result.httpStatus) >= 400 || result.success === false ? 'command_error' : 'command_result', result)
+        if (this.controller.signal.aborted) return interrupted
+        const confirmed = { ...result, success: result.success && result.httpStatus < 400 }
+        this.dispatch(confirmed.success ? 'command_result' : 'command_error', confirmed)
+        return confirmed
       } catch {
-        if (!this.controller.signal.aborted) this.dispatch('command_error', {
-          commandId, status: 'unconfirmed', error: error instanceof Error ? error.message : String(error),
-        })
+        const unconfirmed = { commandId, success: false, status: 'unconfirmed', error: error instanceof Error ? error.message : String(error) }
+        if (!this.controller.signal.aborted) this.dispatch('command_error', unconfirmed)
+        return unconfirmed
       }
     }
   }

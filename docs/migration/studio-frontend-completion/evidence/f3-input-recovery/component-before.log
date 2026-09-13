@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:15843) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx (5 tests | 4 failed) 142ms
+   × keeps the prompt and disables repeated submission until command confirmation 109ms
+   × preserves a rejected input for correction instead of discarding the draft 10ms
+   × queries an unconfirmed command without resubmitting the possibly applied value 1ms
+   × keeps a cancelled prompt until cancellation is confirmed 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx > keeps the prompt and disables repeated submission until command confirmation
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx:17:43
+     15|  vi.spyOn(socketService,'sendInputResult').mockImplementation(()=>new …
+     16|  open();fireEvent.click(confirm())
+     17|  expect(screen.queryByRole('dialog')).not.toBeNull()
+       |                                           ^
+     18|  expect((confirm() as HTMLButtonElement).disabled).toBe(true)
+     19|  fireEvent.click(confirm());expect(socketService.sendInputResult).toHa…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx > preserves a rejected input for correction instead of discarding the draft
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx:26:48
+     24|  vi.spyOn(socketService,'sendInputResult').mockResolvedValue({commandI…
+     25|  open();await act(async()=>fireEvent.click(confirm()))
+     26|  expect(screen.queryByDisplayValue('草稿值')).not.toBeNull()
+       |                                                ^
+     27|  expect(screen.queryByText('输入请求校验失败')).not.toBeNull()
+     28|  expect((confirm() as HTMLButtonElement).disabled).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx > queries an unconfirmed command without resubmitting the possibly applied value
+Error: The property "queryInputResult" is not defined on the object.
+ ❯ src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx:32:17
+     30| it('queries an unconfirmed command without resubmitting the possibly a…
+     31|  vi.spyOn(socketService,'sendInputResult').mockResolvedValue({commandI…
+     32|  const query=vi.spyOn(socketService,'queryInputResult').mockResolvedVa…
+       |                 ^
+     33|  open();await act(async()=>fireEvent.click(confirm()))
+     34|  expect(screen.queryByDisplayValue('草稿值')).not.toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx > keeps a cancelled prompt until cancellation is confirmed
+AssertionError: expected null not to be null
+ ❯ src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx:53:43
+     51|  vi.spyOn(socketService,'sendInputResult').mockImplementation(()=>new …
+     52|  open();fireEvent.click(screen.getByRole('button',{name:'取消'}))
+     53|  expect(screen.queryByRole('dialog')).not.toBeNull()
+       |                                           ^
+     54|  expect(socketService.sendInputResult).toHaveBeenCalledWith('delivery-…
+     55|  await act(async()=>release({commandId:'cancelled',success:true}))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  05:00:47
+   Duration  1.09s (transform 236ms, setup 91ms, import 379ms, tests 142ms, environment 371ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/input-prompt-delivery.test.tsx

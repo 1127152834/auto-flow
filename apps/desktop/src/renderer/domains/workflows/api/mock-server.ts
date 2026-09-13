@@ -40,6 +40,7 @@ const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
 let run: { id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
 const failure = (message: string, status = 400) => response({ success: false, error: message, detail: message }, status)
@@ -73,6 +74,7 @@ const finishedWorkflows = new Set<string>()
 function finish(status: string) {
   if (!run) return
   clearTimeout(run.timer)
+  if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
   emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
   finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
@@ -107,6 +109,8 @@ function submitInput(data: Json | undefined): Response {
     run.variables[pending.variableName] = value
   }
   // Consume the pending identity before scheduling: another command cannot answer it again.
+  const request = inputRequests.get(pending.requestId)
+  if (request) request.status = value === null ? 'cancelled' : 'answered'
   run.input = undefined
   emitMockEvent('execution:log', {workflowId: run.id, log: {id: crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:value === null ? '[Mock] 用户取消输入，变量保持不变' : '[Mock] 已接收输入结果',isSystemLog:true}})
   emitMockEvent('execution:node_complete', {workflowId:run.id,nodeId:pending.nodeId,success:true})
@@ -155,6 +159,7 @@ function tick(skipBreakpoint = false) {
       const mode = typeof data?.inputMode === 'string' ? data.inputMode : 'single'
       const requestId = crypto.randomUUID()
       current.input = {requestId,nodeId,variableName,mode}
+      inputRequests.set(requestId, {requestId, workflowId:current.id, nodeId, status:'pending'})
       const configuredOptions = data?.selectOptions
       const options = Array.isArray(configuredOptions) ? configuredOptions : typeof configuredOptions === 'string' ? current.variables[configuredOptions.replace(/^\{(.*)\}$/, '$1')] : []
       emitMockEvent('execution:input_prompt', {
@@ -277,6 +282,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (!Number.isSafeInteger(after) || after < 0) return failure('Invalid event cursor', 400)
       if (after > events.length) return failure('Event cursor exceeds the current journal', 409)
       return streamResponse(after, signal)
+    }
+    const inputQuery = path.match(/^\/events\/input-prompts\/([^/]+)$/)
+    if (inputQuery) {
+      if (method !== 'GET') return failure('输入状态查询只接受 GET 请求', 405)
+      const request = inputRequests.get(decodeURIComponent(inputQuery[1]))
+      return request ? response(request) : failure('输入请求不存在', 404)
     }
     const commandQuery = path.match(/^\/events\/commands\/([^/]+)$/)
     if (commandQuery && method === 'GET') {

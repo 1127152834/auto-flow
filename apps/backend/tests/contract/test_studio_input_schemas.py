@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioInputPromptRequest,
     StudioInputPromptResult,
+    StudioInputPromptState,
 )
 
 PROMPT = {
@@ -70,3 +71,16 @@ def test_result_is_literal_text_or_explicit_cancellation(value):
 def test_result_rejects_non_wire_value_types(value):
     with pytest.raises(ValidationError):
         StudioInputPromptResult.model_validate({"requestId": "input-1", "value": value})
+
+
+@pytest.mark.parametrize("status", ["pending", "answered", "cancelled", "expired"])
+def test_input_state_is_readable_without_input_values(status):
+    data = {"requestId": "input-1", "workflowId": "flow", "nodeId": "node", "status": status}
+    assert StudioInputPromptState.model_validate(data).model_dump(by_alias=True) == data
+
+
+def test_input_state_rejects_unknown_status():
+    with pytest.raises(ValidationError):
+        StudioInputPromptState.model_validate(
+            {"requestId": "input-1", "workflowId": "flow", "nodeId": "node", "status": "unknown"}
+        )

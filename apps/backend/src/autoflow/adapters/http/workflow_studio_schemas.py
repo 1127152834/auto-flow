@@ -95,3 +95,10 @@ class StudioInputPromptResult(ApiModel):
 
     request_id: str = Field(min_length=1)
     value: str | None
+
+
+class StudioInputPromptState(ApiModel):
+    request_id: str
+    workflow_id: str
+    node_id: str
+    status: Literal["pending", "answered", "cancelled", "expired"]

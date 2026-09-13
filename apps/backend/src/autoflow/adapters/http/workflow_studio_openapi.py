@@ -19,6 +19,7 @@ STUDIO_SCHEMAS = (
     schemas.StudioImageMoved,
     schemas.StudioInputPromptRequest,
     schemas.StudioInputPromptResult,
+    schemas.StudioInputPromptState,
 )
 
 

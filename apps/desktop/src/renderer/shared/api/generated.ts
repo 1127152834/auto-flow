@@ -2475,6 +2475,20 @@ export type components = {
             /** Value */
             value: string | null;
         };
+        /** StudioInputPromptState */
+        StudioInputPromptState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "answered" | "cancelled" | "expired";
+        };
     };
     responses: never;
     parameters: never;
