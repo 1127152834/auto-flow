@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { choiceTestEnvironment, chooseOption } from '../../../shared/testing/choice-user'
@@ -55,3 +55,40 @@ it('reports an unknown import as guarded and confirms leaving without losing its
   expect(JSON.parse(localStorage.getItem('autoflow:excel-import:w:p')!).key).toBe('original')
 })
 // @vitest-environment jsdom
+
+it('revokes the previous replacement impact while checking a revised mapping', async () => {
+  let rejectImpact!: (error: Error) => void
+  const api = { inspect: vi.fn().mockResolvedValue(inspectOperation), lookupInspection: vi.fn(), startImport: vi.fn(), replace: vi.fn(), lookupImport: vi.fn(), replaceImpact: vi.fn().mockResolvedValueOnce({ impactRevision: 'first', recordCount: 1, blockers: [] }).mockImplementationOnce(() => new Promise((_, reject) => { rejectImpact = reject })) }
+  render(<ExcelImportWizard open mode="replace" sessionKey="replace" scopeKey="w:p:t" contextKey="i:p:t" table={{ tableId: 't', name: '客户', datasetGeneration: 'g', tableRevision: 1 } as never} api={api as never} files={{ chooseInput: vi.fn().mockResolvedValue(selection as never) }} onClose={vi.fn()} onCompleted={vi.fn()} />)
+  await userEvent.click(screen.getByRole('button', { name: '选择 Excel 文件' }))
+  await userEvent.click(await screen.findByRole('button', { name: '检查文件' }))
+  await chooseOption(userEvent.setup(), await screen.findByRole('combobox', { name: '工作表' }), 's')
+  await userEvent.click(screen.getByRole('button', { name: '继续字段映射' }))
+  await userEvent.click(screen.getByRole('button', { name: '继续导入' }))
+  expect(await screen.findByText('1 条原记录将被替换。')).toBeVisible()
+  await userEvent.click(screen.getByRole('button', { name: '返回映射' }))
+  await userEvent.click(screen.getByRole('button', { name: '继续导入' }))
+  expect(screen.getByRole('button', { name: '确认并开始导入' })).toBeDisabled()
+  await act(async () => rejectImpact(new Error('影响检查失败')))
+  expect(await screen.findByRole('alert')).toHaveTextContent('影响检查失败')
+  expect(screen.getByRole('button', { name: '确认并开始导入' })).toBeDisabled()
+  expect(api.replace).not.toHaveBeenCalled()
+})
+
+it('ignores an older impact response after returning to mapping and starting another review', async () => {
+  let finishOld!: (value: unknown) => void
+  const api = { inspect: vi.fn().mockResolvedValue(inspectOperation), lookupInspection: vi.fn(), startImport: vi.fn(), replace: vi.fn(), lookupImport: vi.fn(), replaceImpact: vi.fn().mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve })).mockResolvedValueOnce({ impactRevision: 'new', recordCount: 2, blockers: ['数据已变化，请重新检查'] }) }
+  render(<ExcelImportWizard open mode="replace" sessionKey="replace" scopeKey="w:p:t" contextKey="i:p:t" table={{ tableId: 't', name: '客户', datasetGeneration: 'g', tableRevision: 1 } as never} api={api as never} files={{ chooseInput: vi.fn().mockResolvedValue(selection as never) }} onClose={vi.fn()} onCompleted={vi.fn()} />)
+  await userEvent.click(screen.getByRole('button', { name: '选择 Excel 文件' }))
+  await userEvent.click(await screen.findByRole('button', { name: '检查文件' }))
+  await chooseOption(userEvent.setup(), await screen.findByRole('combobox', { name: '工作表' }), 's')
+  await userEvent.click(screen.getByRole('button', { name: '继续字段映射' }))
+  await userEvent.click(screen.getByRole('button', { name: '继续导入' }))
+  await userEvent.click(screen.getByRole('button', { name: '返回映射' }))
+  await userEvent.click(screen.getByRole('button', { name: '继续导入' }))
+  await screen.findByText('2 条原记录将被替换。')
+  await act(async () => finishOld({ impactRevision: 'old', recordCount: 1, blockers: [] }))
+  expect(screen.getByText('2 条原记录将被替换。')).toBeVisible()
+  expect(screen.getByRole('button', { name: '确认并开始导入' })).toBeDisabled()
+  expect(screen.getByRole('alert')).toHaveTextContent('数据已变化，请重新检查')
+})

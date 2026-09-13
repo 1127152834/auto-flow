@@ -80,3 +80,7 @@
 2026-09-13：前端完整112文件/803测试通过，typecheck、OpenAPI、build、任务范围ESLint和diff检查通过；全量lint仍有原编辑任务测试文件第18行unused参数。原6文件哈希确认未变。新表Excel目录真实流程、全局5入口、200%目录/初始向导、Escape焦点、Select宽度与冷重启验证通过，证据run-BHSroO；原生文件面板仍为测试注入，非人工验收。旧run-IwnO1p曾清localStorage，已修正文档限制，不作为连续恢复证明。一万行后台/文件闭环实测及表头0行→普通新增记录反例通过。前端组件均经规格/工程审查与反例修复；详情页接入及其完整交互验收仍等待原任务独立提交，PM2保持inProgress。
 
 本轮独立提交：`32e424e`后台，`a9c0b75`批量选择/状态组件，`747395b`Excel组件与目录真实导入。原任务六处文件未提交；SHA-256保护核对见docs/project-management/implementation/pm2-worktree-isolation.json。等待原编辑任务提交后，按pm2-page-integration-handoff.md继续详情页接入和完整验收。
+
+2026-09-13（继续实施）：重新核对 HEAD 0f07fcd，原任务六个文件仍未提交且 SHA-256 均与保护快照一致；已询问是否完成交接，未收到明确答复前不接管。独立审查和失败测试确认并修复三处组件缺口：批状态部分失败缺少事实刷新通知；切换上下文时已加载旧终态可能误投新回调；替换导入重复影响检查沿用过期确认。新增 onSettled 只用于当前作用域刷新、显式 operation 来源归属和影响检查撤权。历史测试和实际应用证据不改写，本轮只登记组件回归，不认定详情页或完整 PM2 已验收。连续实施 PM2–PM9 的旧 .ai 授权已标 superseded，当前停在 PM2。
+
+本轮增量核验：[组件恢复核验](../../project-management/implementation/pm2-component-recovery-verification.json)。38 个项目数据测试文件、349 项测试、类型检查、四个修改文件的 ESLint 和构建通过；原六个文件仍与保护快照一致。没有追加真实应用或跨平台通过记录。

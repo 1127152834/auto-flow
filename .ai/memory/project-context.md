@@ -24,7 +24,7 @@
 
 - 2026-09-13（confirmed，来源：用户PM1实施授权、真实源码与自动/本机Electron验证）：`codex/project-management-pm1`从1f80f97+PM0构建，已实现项目目录/表单/上下文和10项HTTP；pm01_projects从0005派生，两张表原子保存项目与幂等快照。其余业务能力明确notImplemented。统一控件选择性接入1fb58e1，保留最新基线Studio M1与会话桥；没有第二执行器。见PM1执行卡和机器核验。PM1等待用户验收，旧“项目尚无业务实现”的当前描述superseded，PM2+未开始。
 
-- 2026-09-13（confirmed，用户持续目标）：PM2–PM9已授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。
+- 2026-09-13（superseded，历史用户持续目标；已被后续 PM2 修订计划覆盖）：PM2–PM9曾授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。
 
 - 2026-09-13（confirmed，实际源码与独立审查）：PM2基础包已交付typed身份、原子持久结构、XLSX流式适配、表资料API与组件，字段/状态目录进入真实HTTP集成，字段影响确认已有持久事实绑定。完整记录、五页签、文件IPC仍实施中。主线9490924现有正式Studio M2，旧“核心仍全部WIP”现状superseded；实施分支尚未接入，PM3须核对契约与0006/pm02迁移汇合。证据见pm2-review-foundation.md及current-baseline.md。
 
@@ -35,3 +35,5 @@
 - 2026-09-13（confirmed，实际代码/独立审查/最终自动验证）：PM2记录客户端、共享命令恢复、四类型值编辑、字段影响编辑、冻结记录草稿与记录表格已提交至737ce3e；最终564前端/86文件通过，typecheck/lint/build及OpenAPI/scripts/structure通过。后端本轮无源码变化，698测试仍指上轮报告。正式数据五页签和文件IPC尚未挂载，PM2不完整；最新pm2-editors-verification.json，继续C2/删除与耐久批状态/B2。状态删除不能物理清除历史FK引用，下一包采用软删除保持历史事实。
 
 - 2026-09-13（confirmed，实际代码与自动/隔离Electron核验）：PM2状态历史墓碑和删除HTTP已交付，head pm02_status_tombstones；正式数据目录与五页签读取已接通。719后端/606前端及本机macOS arm64目录创建/编辑/冲突/重连/重启、已有模块回归通过。旧“正式数据页未挂载”当前结论superseded；记录/字段/状态写UI、批状态、Excel发布仍待C2c/A2h/B2完成，PM2整体未完成。报告pm2-directory-deletions-verification.json；后续共享命令每次原key重发须动态校验scope/只读准入。
+
+- 2026-09-13（confirmed，来源：用户后续批准 PM2 修订实施计划）：当前只实施 PM2，完成后停在 PM2 验收点，不自动进入 PM3。此前连续实施 PM2–PM9 的授权记录已 superseded。原编辑任务六个 WIP 文件仍等待原任务提交；后续接管须依据明确交接。现有组件、后台及目录导入证据不替代详情页完整验收。

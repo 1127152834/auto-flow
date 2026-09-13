@@ -96,10 +96,44 @@ it('blocks every write after readonly changes and hides stop for terminal operat
 })
 
 it('acknowledges success and lets the next session start a new batch', async () => {
-  const succeeded = { operationId: 'op', idempotencyKey: 'key', kind: 'setRecordStatuses', status: 'succeeded', statusRevision: 2, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { blocks: [], changedCount: 1, conflictCount: 0, notStartedCount: 0, cancelled: false }, error: null }, completed = vi.fn()
+  const succeeded = { operationId: 'op', idempotencyKey: 'key', kind: 'setRecordStatuses', status: 'succeeded', statusRevision: 2, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { blocks: [], changedCount: 1, conflictCount: 0, notStartedCount: 0, cancelled: false }, error: null }, completed = vi.fn(), settled = vi.fn()
   localStorage.setItem('autoflow:status-batch:w:p:t', 'key')
-  render(<RecordStatusBatchDialog open sessionKey="reopen" contextKey="w:i:p:t" storageScopeKey="w:p:t" records={[record]} statuses={[status]} api={{ lookup: vi.fn().mockResolvedValue(succeeded) } as never} onClose={vi.fn()} onCompleted={completed} />)
-  await waitFor(() => expect(completed).toHaveBeenCalledOnce()); expect(localStorage.getItem('autoflow:status-batch:w:p:t')).toBeNull()
+  render(<RecordStatusBatchDialog open sessionKey="reopen" contextKey="w:i:p:t" storageScopeKey="w:p:t" records={[record]} statuses={[status]} api={{ lookup: vi.fn().mockResolvedValue(succeeded) } as never} onClose={vi.fn()} onCompleted={completed} onSettled={settled} />)
+  await waitFor(() => expect(completed).toHaveBeenCalledOnce()); expect(settled).toHaveBeenCalledWith(succeeded); expect(localStorage.getItem('autoflow:status-batch:w:p:t')).toBeNull()
+})
+
+it('reports a partially applied failed operation once and keeps its evidence', async () => {
+  const failed = { operationId: 'partial', idempotencyKey: 'key', kind: 'setRecordStatuses', status: 'failed', statusRevision: 4, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { blocks: [], changedCount: 100, conflictCount: 1, notStartedCount: 50, cancelled: false }, error: { message: '部分记录未处理' } }, settled = vi.fn(), completed = vi.fn()
+  localStorage.setItem('autoflow:status-batch:w:p:t', 'key')
+  const props = { open: true, sessionKey: 'reopen', contextKey: 'w:i:p:t', storageScopeKey: 'w:p:t', records: [record], statuses: [status], api: { lookup: vi.fn().mockResolvedValue(failed) } as never, onClose: vi.fn(), onCompleted: completed, onSettled: settled }
+  const view = render(<RecordStatusBatchDialog {...props} />)
+  await waitFor(() => expect(settled).toHaveBeenCalledOnce()); view.rerender(<RecordStatusBatchDialog {...props} />)
+  await waitFor(() => expect(settled).toHaveBeenCalledOnce())
+  expect(settled).toHaveBeenCalledWith(failed); expect(completed).not.toHaveBeenCalled(); expect(localStorage.getItem('autoflow:status-batch:w:p:t')).toBe('key')
+})
+
+it('does not report a terminal result returned by the previous service instance', async () => {
+  const failed = { operationId: 'old', idempotencyKey: 'key', kind: 'setRecordStatuses', status: 'failed', statusRevision: 4, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { blocks: [], changedCount: 1, conflictCount: 0, notStartedCount: 0, cancelled: false }, error: null }, settled = vi.fn()
+  let finishOld!: (value: typeof failed) => void
+  const lookup = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finishOld = resolve })).mockResolvedValue({ ...failed, operationId: 'current', status: 'accepted' })
+  localStorage.setItem('autoflow:status-batch:w:p:t', 'key')
+  const props = { open: true, sessionKey: 'reopen', storageScopeKey: 'w:p:t', records: [record], statuses: [status], api: { lookup } as never, onClose: vi.fn(), onSettled: settled }
+  const view = render(<RecordStatusBatchDialog {...props} contextKey="w:i1:p:t" />)
+  await waitFor(() => expect(lookup).toHaveBeenCalledTimes(1)); view.rerender(<RecordStatusBatchDialog {...props} contextKey="w:i2:p:t" />)
+  await waitFor(() => expect(lookup).toHaveBeenCalledTimes(2)); finishOld(failed); await Promise.resolve()
+  expect(settled).not.toHaveBeenCalled()
+})
+
+it('does not deliver an already loaded terminal operation to a new scope callback', async () => {
+  const failed = { operationId: 'old', idempotencyKey: 'old-key', kind: 'setRecordStatuses', status: 'failed', statusRevision: 4, resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { blocks: [], changedCount: 1, conflictCount: 0, notStartedCount: 0, cancelled: false }, error: null }
+  localStorage.setItem('autoflow:status-batch:w:p:t', 'old-key'); localStorage.setItem('autoflow:status-batch:w:p:next', 'new-key')
+  const oldSettled = vi.fn(), newSettled = vi.fn(), oldApi = { lookup: vi.fn().mockResolvedValue(failed) }
+  const view = render(<RecordStatusBatchDialog open sessionKey="same" contextKey="w:i1:p:t" storageScopeKey="w:p:t" records={[record]} statuses={[status]} api={oldApi as never} onClose={vi.fn()} onSettled={oldSettled} />)
+  await waitFor(() => expect(oldSettled).toHaveBeenCalledOnce())
+  const newApi = { lookup: vi.fn(() => new Promise(() => undefined)) }
+  view.rerender(<RecordStatusBatchDialog open sessionKey="same" contextKey="w:i2:p:next" storageScopeKey="w:p:next" records={[record]} statuses={[status]} api={newApi as never} onClose={vi.fn()} onSettled={newSettled} />)
+  await waitFor(() => expect(newApi.lookup).toHaveBeenCalledOnce()); await Promise.resolve()
+  expect(newSettled).not.toHaveBeenCalled()
 })
 
 it('keeps the cancel identity when restoring the original key cannot be persisted', async () => {

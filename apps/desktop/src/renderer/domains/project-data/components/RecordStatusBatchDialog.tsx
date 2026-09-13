@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from '../../../shared/components/ui/alert-dialog'
@@ -15,21 +15,24 @@ type Stored = { key: string; request?: StatusBatchRequest; cancel?: Omit<CancelP
 export type RecordStatusBatchDialogProps = {
   open: boolean; sessionKey: string; contextKey: string; storageScopeKey: string; disabled?: boolean; readonly?: boolean
   records?: Schema['DataRecordView'][]; targets?: Schema['RecordStatusTarget'][]; statuses: Schema['DataStatusView'][]; api: StatusBatchApi
-  onClose(): void; onCompleted?(operation: ProjectOperation): void; onDirtyChange?(dirty: boolean): void; onBusyChange?(busy: boolean): void
+  onClose(): void; onCompleted?(operation: ProjectOperation): void
+  /** Refresh current-scope facts for either terminal result; a reconnected scope may receive it again. Not a success notification. */
+  onSettled?(operation: ProjectOperation): void; onDirtyChange?(dirty: boolean): void; onBusyChange?(busy: boolean): void
 }
 const storageKey = (scope: string) => `autoflow:status-batch:${scope}`
 const message = (error: unknown) => error instanceof Error ? error.message : '批量状态操作失败'
 const terminal = (operation: ProjectOperation) => operation.status === 'succeeded' || operation.status === 'failed'
 
-export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageScopeKey, records = [], targets, statuses, api, disabled, readonly, onClose, onCompleted, onDirtyChange, onBusyChange }: RecordStatusBatchDialogProps) {
+export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageScopeKey, records = [], targets, statuses, api, disabled, readonly, onClose, onCompleted, onSettled, onDirtyChange, onBusyChange }: RecordStatusBatchDialogProps) {
   const [statusId, setStatusId] = useState<string | null>(null), [preview, setPreview] = useState<StatusBatchPreview | null>(null), [frozen, setFrozen] = useState<StatusBatchRequest | null>(null)
   const [operation, setOperation] = useState<ProjectOperation | null>(null), [startPending, setStartPending] = useState<StartPending | null>(null), [cancelPending, setCancelPending] = useState<CancelPending | null>(null)
   const [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null)
-  const epoch = `${contextKey}:${storageScopeKey}:${sessionKey}:${open}`, currentEpoch = useRef(''), lock = useRef(false), abort = useRef<AbortController | null>(null), delivered = useRef<string | null>(null)
+  const epoch = `${contextKey}:${storageScopeKey}:${sessionKey}:${open}`, currentEpoch = useRef(''), operationEpoch = useRef<string | null>(null), lock = useRef(false), abort = useRef<AbortController | null>(null), delivered = useRef<string | null>(null), settled = useRef<string | null>(null)
   const selectedTargets = useMemo(() => targets ? structuredClone(targets) : records.map(record => ({ recordRef: structuredClone(record.ref), expectedStatusRevision: record.statusRevision })), [records, targets])
   const request = useMemo<StatusBatchRequest>(() => ({ statusId, targets: selectedTargets, blockSize: 100 }), [selectedTargets, sessionKey, statusId])
   const allowed = () => open && !disabled && !readonly
   const current = (ticket: string) => () => currentEpoch.current === ticket
+  const showOperation = useCallback((value: ProjectOperation, ticket: string) => { operationEpoch.current = ticket; setOperation(value) }, [])
   const persist = (value: Stored) => localStorage.setItem(storageKey(storageScopeKey), JSON.stringify(value))
   useLayoutEffect(() => { currentEpoch.current = epoch; return () => { currentEpoch.current = ''; abort.current?.abort() } }, [epoch])
   useEffect(() => onDirtyChange?.(Boolean(startPending || cancelPending)), [cancelPending, onDirtyChange, startPending])
@@ -37,7 +40,7 @@ export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageS
   useEffect(() => () => { onDirtyChange?.(false); onBusyChange?.(false) }, [onBusyChange, onDirtyChange])
 
   useEffect(() => {
-    abort.current?.abort(); lock.current = false; setBusy(false); setPreview(null); setFrozen(null); setOperation(null); setStartPending(null); setCancelPending(null); setError(null); delivered.current = null
+    abort.current?.abort(); lock.current = false; setBusy(false); setPreview(null); setFrozen(null); operationEpoch.current = null; setOperation(null); setStartPending(null); setCancelPending(null); setError(null); delivered.current = null; settled.current = null
     if (!open) return
     let raw: string | null
     try { raw = localStorage.getItem(storageKey(storageScopeKey)) } catch (cause) { setError(message(cause)); return }
@@ -47,17 +50,21 @@ export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageS
     const ticket = epoch
     if (saved.cancel) setCancelPending({ key: saved.key, ...saved.cancel, retry: false }); else setStartPending({ key: saved.key, request: saved.request, retry: false })
     const lookup = saved.cancel ? api.lookupCancel(saved.key, current(ticket)).then(() => api.lookup(saved.cancel!.originalKey, current(ticket))) : api.lookup(saved.key, current(ticket))
-    void lookup.then(value => { if (current(ticket)() && value) { setStartPending(null); setCancelPending(null); setOperation(value) } }).catch(cause => { if (!current(ticket)()) return; if (cause instanceof DataCommandNotAccepted) { if (saved.cancel) setCancelPending({ key: saved.key, ...saved.cancel, retry: true }); else setStartPending({ key: saved.key, request: saved.request, retry: true }) }; setError(message(cause)) })
-  }, [api, epoch, open, storageScopeKey])
+    void lookup.then(value => { if (current(ticket)() && value) { setStartPending(null); setCancelPending(null); showOperation(value, ticket) } }).catch(cause => { if (!current(ticket)()) return; if (cause instanceof DataCommandNotAccepted) { if (saved.cancel) setCancelPending({ key: saved.key, ...saved.cancel, retry: true }); else setStartPending({ key: saved.key, request: saved.request, retry: true }) }; setError(message(cause)) })
+  }, [api, epoch, open, showOperation, storageScopeKey])
   useEffect(() => {
     if (!open || !operation || terminal(operation)) return
-    const ticket = epoch, timer = setTimeout(() => { void api.lookup(operation.idempotencyKey, current(ticket)).then(value => { if (current(ticket)() && value) setOperation(value) }).catch(cause => { if (current(ticket)()) setError(message(cause)) }) }, 500)
+    const ticket = epoch, timer = setTimeout(() => { void api.lookup(operation.idempotencyKey, current(ticket)).then(value => { if (current(ticket)() && value) showOperation(value, ticket) }).catch(cause => { if (current(ticket)()) setError(message(cause)) }) }, 500)
     return () => clearTimeout(timer)
-  }, [api, epoch, open, operation])
+  }, [api, epoch, open, operation, showOperation])
   useEffect(() => {
-    if (!operation || operation.status !== 'succeeded' || delivered.current === operation.operationId || !onCompleted) return
+    if (!operation || operationEpoch.current !== epoch || !terminal(operation) || settled.current === operation.operationId || !onSettled) return
+    settled.current = operation.operationId; onSettled(operation)
+  }, [epoch, onSettled, operation])
+  useEffect(() => {
+    if (!operation || operationEpoch.current !== epoch || operation.status !== 'succeeded' || delivered.current === operation.operationId || !onCompleted) return
     delivered.current = operation.operationId; try { localStorage.removeItem(storageKey(storageScopeKey)) } catch { /* result delivery is authoritative */ }; setStartPending(null); setCancelPending(null); onCompleted(operation)
-  }, [onCompleted, operation, storageScopeKey])
+  }, [epoch, onCompleted, operation, storageScopeKey])
 
   const inspect = async () => {
     if (lock.current || !allowed() || selectedTargets.length === 0 || selectedTargets.length > 1000 || startPending) return
@@ -68,32 +75,32 @@ export function RecordStatusBatchDialog({ open, sessionKey, contextKey, storageS
     const body = startPending?.request ?? frozen; if (!body || lock.current || !allowed() || startPending && !startPending.retry) return
     const ticket = epoch, key = startPending?.key ?? crypto.randomUUID(); lock.current = true; setBusy(true); setError(null)
     let persisted = false
-    try { persist({ key, request: body }); persisted = true; setStartPending({ key, request: body, retry: false }); const value = await api.start(structuredClone(body), key, current(ticket)); if (current(ticket)()) { setStartPending(null); setOperation(value) } }
+    try { persist({ key, request: body }); persisted = true; setStartPending({ key, request: body, retry: false }); const value = await api.start(structuredClone(body), key, current(ticket)); if (current(ticket)()) { setStartPending(null); showOperation(value, ticket) } }
     catch (cause) { if (current(ticket)()) { if (!persisted || !(cause instanceof DataCommandUncertain || cause instanceof DataCommandNotAccepted)) { if (persisted) try { localStorage.removeItem(storageKey(storageScopeKey)) } catch { /* the original error is more useful */ }; setStartPending(null) } else setStartPending({ key, request: body, retry: cause instanceof DataCommandNotAccepted }); setError(message(cause)) } }
     finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
   }
   const recoverStart = async () => {
     if (!startPending || lock.current) return; const ticket = epoch; lock.current = true; setBusy(true); setError(null)
-    try { const value = await api.lookup(startPending.key, current(ticket)); if (current(ticket)()) { setStartPending(null); setOperation(value) } } catch (cause) { if (current(ticket)()) { setStartPending({ ...startPending, retry: cause instanceof DataCommandNotAccepted }); setError(message(cause)) } } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
+    try { const value = await api.lookup(startPending.key, current(ticket)); if (current(ticket)()) { setStartPending(null); showOperation(value, ticket) } } catch (cause) { if (current(ticket)()) { setStartPending({ ...startPending, retry: cause instanceof DataCommandNotAccepted }); setError(message(cause)) } } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
   }
   const refresh = async () => {
     if (!operation || lock.current) return; const ticket = epoch; lock.current = true; setBusy(true); setError(null)
-    try { const value = await api.lookup(operation.idempotencyKey, current(ticket)); if (current(ticket)()) setOperation(value) } catch (cause) { if (current(ticket)()) setError(message(cause)) } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
+    try { const value = await api.lookup(operation.idempotencyKey, current(ticket)); if (current(ticket)()) showOperation(value, ticket) } catch (cause) { if (current(ticket)()) setError(message(cause)) } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
   }
   const stop = async () => {
     if ((!operation && !cancelPending) || lock.current || !allowed() || operation && terminal(operation)) return
     const operationId = cancelPending?.operationId ?? operation!.operationId, expectedRevision = cancelPending?.expectedRevision ?? operation!.statusRevision, originalKey = cancelPending?.originalKey ?? operation!.idempotencyKey, key = cancelPending?.key ?? crypto.randomUUID(), ticket = epoch
     lock.current = true; setBusy(true); setError(null)
     let persisted = false
-    try { persist({ key, cancel: { operationId, expectedRevision, originalKey } }); persisted = true; setCancelPending({ key, operationId, expectedRevision, originalKey, retry: false }); await api.cancel(operationId, expectedRevision, key, current(ticket)); const value = await api.lookup(originalKey, current(ticket)); if (current(ticket)()) { setCancelPending(null); setOperation(value) } }
+    try { persist({ key, cancel: { operationId, expectedRevision, originalKey } }); persisted = true; setCancelPending({ key, operationId, expectedRevision, originalKey, retry: false }); await api.cancel(operationId, expectedRevision, key, current(ticket)); const value = await api.lookup(originalKey, current(ticket)); if (current(ticket)()) { setCancelPending(null); showOperation(value, ticket) } }
     catch (cause) { if (current(ticket)()) { if (!persisted) setCancelPending(null); else if (cause instanceof DataCommandUncertain || cause instanceof DataCommandNotAccepted) setCancelPending({ key, operationId, expectedRevision, originalKey, retry: cause instanceof DataCommandNotAccepted }); else { try { persist({ key: originalKey }); setCancelPending(null) } catch (storageCause) { setCancelPending({ key, operationId, expectedRevision, originalKey, retry: false }); setError(message(storageCause)); return } }; setError(message(cause)) } }
     finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
   }
   const recoverCancel = async () => {
     if (!cancelPending || lock.current) return; const ticket = epoch; lock.current = true; setBusy(true); setError(null)
-    try { await api.lookupCancel(cancelPending.key, current(ticket)); const value = await api.lookup(cancelPending.originalKey, current(ticket)); if (current(ticket)()) { setCancelPending(null); setOperation(value) } } catch (cause) { if (current(ticket)()) { setCancelPending({ ...cancelPending, retry: cause instanceof DataCommandNotAccepted }); setError(message(cause)) } } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
+    try { await api.lookupCancel(cancelPending.key, current(ticket)); const value = await api.lookup(cancelPending.originalKey, current(ticket)); if (current(ticket)()) { setCancelPending(null); showOperation(value, ticket) } } catch (cause) { if (current(ticket)()) { setCancelPending({ ...cancelPending, retry: cause instanceof DataCommandNotAccepted }); setError(message(cause)) } } finally { if (current(ticket)()) { lock.current = false; setBusy(false) } }
   }
-  const startNew = () => { if (!operation || !terminal(operation)) return; try { localStorage.removeItem(storageKey(storageScopeKey)) } catch (cause) { setError(message(cause)); return }; setOperation(null); setStartPending(null); setCancelPending(null); setPreview(null); setFrozen(null); setError(null) }
+  const startNew = () => { if (!operation || !terminal(operation)) return; try { localStorage.removeItem(storageKey(storageScopeKey)) } catch (cause) { setError(message(cause)); return }; operationEpoch.current = null; setOperation(null); setStartPending(null); setCancelPending(null); setPreview(null); setFrozen(null); setError(null) }
   const blockers = preview?.blocks.flatMap(block => block.blockers) ?? [], writeBlocked = Boolean(disabled || readonly)
   return <Dialog open={open} onOpenChange={next => { if (!next) onClose() }}><DialogContent busy={busy}><DialogTitle>批量设置业务状态</DialogTitle><DialogDescription>已选择 {selectedTargets.length} 条记录，提交后按每块 100 条处理。</DialogDescription>
     {operation ? <DataOperationStatus operation={operation} error={error ?? (operation.error && typeof operation.error.message === 'string' ? operation.error.message : null)} busy={busy} onRefresh={refresh}>
