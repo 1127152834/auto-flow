@@ -39,6 +39,14 @@ it('maps nested field and status errors to their simple controls',()=>{
   expect(screen.getByRole('alert')).toHaveTextContent('业务状态已失效')
 })
 
+it('keeps a loaded multiline string lossless while editing',async()=>{
+  const user=userEvent.setup(),onChange=vi.fn(),filter=recordQueryDraft({filter:{type:'compare',fieldId:'name',operator:'contains',value:'A\nB'},orderBy:[]}).filter
+  renderFilter(filter,onChange)
+  const value=screen.getByLabelText('比较值');expect(value.tagName).toBe('TEXTAREA');expect(value).toHaveValue('A\nB')
+  await user.type(value,'C')
+  expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({type:'compare',value:expect.objectContaining({text:'A\nBC'})}))
+})
+
 it('opens complex trees in advanced mode and refuses a lossy simple switch',async()=>{
   const complex:FilterDraft={type:'any',items:[{type:'not',item:{type:'status',operator:'eq',statusId:'open'}}]};renderFilter(complex)
   expect(screen.getByText('条件组')).toBeVisible()
