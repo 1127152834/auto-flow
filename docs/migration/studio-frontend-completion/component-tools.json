@@ -5798,7 +5798,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 151,
+    "line": 154,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5807,7 +5807,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 397,
+    "line": 400,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5816,7 +5816,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 412,
+    "line": 415,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5825,7 +5825,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 437,
+    "line": 440,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5834,7 +5834,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 586,
+    "line": 589,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5843,7 +5843,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 627,
+    "line": 630,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5852,7 +5852,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 785,
+    "line": 790,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -5861,7 +5861,7 @@
   {
     "component": "API_BASE",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 897,
+    "line": 902,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9591,7 +9591,7 @@
   {
     "component": "DocumentationDialog",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 20,
+    "line": 21,
     "fields": [],
     "tools": [],
     "conditions": [],
@@ -9754,7 +9754,7 @@
   {
     "component": "Toolbar",
     "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-    "line": 70,
+    "line": 72,
     "fields": [
       "asset",
       "assetId",
@@ -9785,6 +9785,7 @@
       "AutoBrowserDialog",
       "BookOpen",
       "Button",
+      "CalendarClock",
       "ChevronDown",
       "Code",
       "ConfirmDialog",
@@ -9809,6 +9810,7 @@
       "Play",
       "RecorderPanel",
       "Save",
+      "ScheduledTasksDialog",
       "ScreenshotErrorDialog",
       "ScreenshotNameDialog",
       "Settings",
@@ -9821,458 +9823,458 @@
     ],
     "conditions": [
       {
-        "line": 135,
+        "line": 138,
         "expression": "nameOnFocusRef.current !== name"
       },
       {
-        "line": 155,
+        "line": 158,
         "expression": "data.folder"
       },
       {
-        "line": 169,
+        "line": 172,
         "expression": "moduleId && moduleName"
       },
       {
-        "line": 197,
+        "line": 200,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 202,
+        "line": 205,
         "expression": "findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)"
       },
       {
-        "line": 209,
+        "line": 212,
         "expression": "startNodeId"
       },
       {
-        "line": 217,
+        "line": 220,
         "expression": "startNodeId"
       },
       {
-        "line": 219,
+        "line": 222,
         "expression": "headless"
       },
       {
-        "line": 225,
+        "line": 228,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 250,
+        "line": 253,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 282,
+        "line": 285,
         "expression": "updateResult.error"
       },
       {
-        "line": 287,
+        "line": 290,
         "expression": "config.browser"
       },
       {
-        "line": 300,
+        "line": 303,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 312,
+        "line": 315,
         "expression": "executeResult.error"
       },
       {
-        "line": 318,
+        "line": 321,
         "expression": "startNodeId"
       },
       {
-        "line": 320,
+        "line": 323,
         "expression": "headless"
       },
       {
-        "line": 340,
+        "line": 343,
         "expression": "nodeId"
       },
       {
-        "line": 347,
+        "line": 350,
         "expression": "workflowId"
       },
       {
-        "line": 355,
+        "line": 358,
         "expression": "result.error"
       },
       {
-        "line": 365,
+        "line": 368,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 366,
+        "line": 369,
         "expression": "!skipConfirm"
       },
       {
-        "line": 373,
+        "line": 376,
         "expression": "!currentFolder"
       },
       {
-        "line": 375,
+        "line": 378,
         "expression": "result.error"
-      },
-      {
-        "line": 377,
-        "expression": "currentFolder"
-      },
-      {
-        "line": 379,
-        "expression": "!currentFolder"
       },
       {
         "line": 380,
+        "expression": "currentFolder"
+      },
+      {
+        "line": 382,
+        "expression": "!currentFolder"
+      },
+      {
+        "line": 383,
         "expression": "!skipConfirm"
       },
       {
-        "line": 396,
+        "line": 399,
         "expression": "!skipConfirm && autoSaveCopy"
       },
       {
-        "line": 404,
+        "line": 407,
         "expression": "checkData.exists"
       },
       {
-        "line": 411,
+        "line": 414,
         "expression": "!skipConfirm && showOverwriteConfirm"
       },
       {
-        "line": 424,
+        "line": 427,
         "expression": "checkData.exists"
       },
       {
-        "line": 429,
+        "line": 432,
         "expression": "!shouldOverwrite"
       },
       {
-        "line": 449,
+        "line": 452,
         "expression": "data.success"
       },
       {
-        "line": 450,
+        "line": 453,
         "expression": "!skipConfirm"
       },
       {
-        "line": 453,
+        "line": 456,
         "expression": "snapshotKey(exportWorkflow()) === savedContent"
       },
       {
-        "line": 455,
+        "line": 458,
         "expression": "!skipConfirm"
       },
       {
-        "line": 460,
+        "line": 463,
         "expression": "!skipConfirm"
       },
       {
-        "line": 474,
+        "line": 477,
         "expression": "nodes.length > 0"
       },
       {
-        "line": 479,
+        "line": 482,
         "expression": "!ok"
       },
       {
-        "line": 486,
+        "line": 489,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 490,
+        "line": 493,
         "expression": "isAutoLayouting"
       },
       {
-        "line": 494,
+        "line": 497,
         "expression": "res.ok"
       },
       {
-        "line": 510,
+        "line": 513,
         "expression": "!config.workflow?.autoSave"
       },
       {
-        "line": 513,
+        "line": 516,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 527,
+        "line": 530,
         "expression": "e.key === 'F5'"
       },
       {
-        "line": 529,
+        "line": 532,
         "expression": "e.shiftKey"
       },
       {
-        "line": 533,
+        "line": 536,
         "expression": "(e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'"
-      },
-      {
-        "line": 542,
-        "expression": "isInInput"
       },
       {
         "line": 545,
+        "expression": "isInInput"
+      },
+      {
+        "line": 548,
         "expression": "(e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's'"
       },
       {
-        "line": 550,
+        "line": 553,
         "expression": "e.altKey && e.key === 'n'"
       },
       {
-        "line": 564,
+        "line": 567,
         "expression": "nodes.length > 0 && hasUnsavedChanges"
       },
       {
-        "line": 597,
+        "line": 600,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 619,
+        "line": 622,
         "expression": "isScreenshotting"
       },
       {
-        "line": 640,
+        "line": 643,
         "expression": "data.success && data.assetId"
       },
       {
-        "line": 648,
+        "line": 651,
         "expression": "data.success && data.asset"
       },
       {
-        "line": 654,
+        "line": 657,
         "expression": "data.cancelled"
       },
       {
-        "line": 657,
+        "line": 660,
         "expression": "data.error === 'timeout'"
       },
       {
-        "line": 693,
+        "line": 696,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 699,
+        "line": 702,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 731,
+        "line": 734,
         "expression": "!isRunningRef.current"
       },
       {
-        "line": 732,
+        "line": 735,
         "expression": "p?.headless"
       },
       {
-        "line": 740,
+        "line": 743,
         "expression": "isRunningRef.current"
       },
       {
-        "line": 783,
+        "line": 788,
         "expression": "!screenshotAsset"
       },
       {
-        "line": 794,
+        "line": 799,
         "expression": "response.ok"
       },
       {
-        "line": 817,
+        "line": 822,
         "expression": "screenshotAsset"
       },
       {
-        "line": 828,
+        "line": 833,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 837,
+        "line": 842,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 862,
+        "line": 867,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 901,
+        "line": 906,
         "expression": "data.code"
       },
       {
-        "line": 924,
+        "line": 929,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 936,
+        "line": 941,
         "expression": "!currentWorkflowId"
       },
       {
-        "line": 938,
+        "line": 943,
         "expression": "createResult.error || !createResult.data?.id"
       },
       {
-        "line": 949,
+        "line": 954,
         "expression": "data?.code"
       },
       {
-        "line": 959,
+        "line": 964,
         "expression": "target === 'selenium'"
       },
       {
-        "line": 971,
+        "line": 976,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1018,
+        "line": 1023,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1028,
+        "line": 1033,
         "expression": "!password"
       },
       {
-        "line": 1029,
+        "line": 1034,
         "expression": "password.length < 4"
       },
       {
-        "line": 1060,
+        "line": 1065,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1071,
+        "line": 1076,
         "expression": "res.error || !res.data?.bundle"
       },
       {
-        "line": 1097,
+        "line": 1102,
         "expression": "!file"
       },
       {
-        "line": 1101,
+        "line": 1106,
         "expression": "res.error || !res.data?.success || !res.data.workflow"
       },
       {
-        "line": 1123,
+        "line": 1128,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1143,
+        "line": 1148,
         "expression": "v === undefined || v === null"
       },
       {
-        "line": 1144,
+        "line": 1149,
         "expression": "typeof v === 'string'"
       },
       {
-        "line": 1145,
+        "line": 1150,
         "expression": "v === ''"
       },
       {
-        "line": 1147,
+        "line": 1152,
         "expression": "v.includes('\\n')"
       },
       {
-        "line": 1150,
+        "line": 1155,
         "expression": "typeof v === 'number' || typeof v === 'boolean'"
       },
       {
-        "line": 1153,
+        "line": 1158,
         "expression": "s.length > 200"
       },
       {
-        "line": 1167,
+        "line": 1172,
         "expression": "variables.length > 0"
       },
       {
-        "line": 1172,
+        "line": 1177,
         "expression": "v.value === undefined || v.value === null || v.value === ''"
       },
       {
-        "line": 1174,
+        "line": 1179,
         "expression": "typeof v.value === 'object'"
       },
       {
-        "line": 1191,
+        "line": 1196,
         "expression": "data.remark"
       },
       {
-        "line": 1197,
+        "line": 1202,
         "expression": "META_FIELDS.has(k)"
       },
       {
-        "line": 1198,
+        "line": 1203,
         "expression": "v === undefined || v === null || v === ''"
       },
       {
-        "line": 1199,
+        "line": 1204,
         "expression": "typeof v === 'function'"
       },
       {
-        "line": 1203,
+        "line": 1208,
         "expression": "configEntries.length > 0"
       },
       {
-        "line": 1213,
+        "line": 1218,
         "expression": "edges.length > 0"
       },
       {
-        "line": 1280,
+        "line": 1285,
         "expression": "!editingCustomModuleId"
       },
       {
-        "line": 1285,
+        "line": 1290,
         "expression": "nodes.length === 0"
       },
       {
-        "line": 1316,
+        "line": 1321,
         "expression": "result.error"
       },
       {
-        "line": 1322,
+        "line": 1327,
         "expression": "result.data"
       },
       {
-        "line": 1325,
+        "line": 1330,
         "expression": "m.id === editingCustomModuleId"
       },
       {
-        "line": 1343,
+        "line": 1348,
         "expression": "!shouldContinue"
       },
       {
-        "line": 1365,
+        "line": 1370,
         "expression": "backupRaw"
       },
       {
-        "line": 1424,
+        "line": 1429,
         "expression": "shouldExit"
       },
       {
-        "line": 1443,
+        "line": 1448,
         "expression": "isRunning"
       },
       {
-        "line": 1445,
+        "line": 1450,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1449,
+        "line": 1454,
         "expression": "isRunning"
       },
       {
-        "line": 1449,
+        "line": 1454,
         "expression": "hasUnsavedChanges"
       },
       {
-        "line": 1465,
+        "line": 1470,
         "expression": "!isRunning"
       },
       {
-        "line": 1603,
+        "line": 1608,
         "expression": "isAutoLayouting"
       }
     ],
     "bindings": [
       {
-        "line": 1452,
+        "line": 1457,
         "attribute": "value",
         "expression": "{name}"
       },
       {
-        "line": 1453,
+        "line": 1458,
         "attribute": "onChange",
         "expression": "{(e) => setWorkflowName(e.target.value)}"
       }
@@ -40696,6 +40698,1338 @@
     "fields": [],
     "tools": [],
     "conditions": [],
+    "bindings": []
+  },
+  {
+    "component": "NotificationConfigEditor",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/NotificationConfigEditor.tsx",
+    "line": 29,
+    "fields": [],
+    "tools": [
+      "Bell",
+      "Button",
+      "Input",
+      "Label",
+      "Plus",
+      "Switch",
+      "Trash2"
+    ],
+    "conditions": [
+      {
+        "line": 36,
+        "expression": "i === idx"
+      },
+      {
+        "line": 48,
+        "expression": "type === 'number'"
+      }
+    ],
+    "bindings": [
+      {
+        "line": 47,
+        "attribute": "value",
+        "expression": "{(list[idx][key] as string | number | undefined) ?? ''}"
+      },
+      {
+        "line": 48,
+        "attribute": "onChange",
+        "expression": "{(e) => updateChannel(idx, { [key]: type === 'number' ? Number(e.target.value) : e.target.value } as Partial<NotifyChannel>)}"
+      },
+      {
+        "line": 64,
+        "attribute": "checked",
+        "expression": "{notifyOnFailure}"
+      },
+      {
+        "line": 64,
+        "attribute": "onCheckedChange",
+        "expression": "{(v) => onChange({ notifyOnFailure: v })}"
+      },
+      {
+        "line": 68,
+        "attribute": "checked",
+        "expression": "{notifyOnSuccess}"
+      },
+      {
+        "line": 68,
+        "attribute": "onCheckedChange",
+        "expression": "{(v) => onChange({ notifyOnSuccess: v })}"
+      },
+      {
+        "line": 82,
+        "attribute": "checked",
+        "expression": "{c.enabled !== false}"
+      },
+      {
+        "line": 82,
+        "attribute": "onCheckedChange",
+        "expression": "{(v) => updateChannel(idx, { enabled: v })}"
+      }
+    ]
+  },
+  {
+    "component": "ScheduledTasksDialog",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/ScheduledTasksDialog.tsx",
+    "line": 10,
+    "fields": [],
+    "tools": [
+      "DialogPortal",
+      "ScheduledTasksPage"
+    ],
+    "conditions": [
+      {
+        "line": 11,
+        "expression": "!open"
+      }
+    ],
+    "bindings": []
+  },
+  {
+    "component": "ScheduledTasksPage",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/ScheduledTasksPage.tsx",
+    "line": 16,
+    "fields": [],
+    "tools": [
+      "BarChart3",
+      "Button",
+      "Clock",
+      "ConfirmDialog",
+      "Edit",
+      "FileText",
+      "Play",
+      "Plus",
+      "Power",
+      "Square",
+      "StatisticsPanel",
+      "TaskCreateDialog",
+      "TaskEditDialog",
+      "TaskLogsDialog",
+      "Trash2",
+      "Webhook",
+      "X",
+      "Zap"
+    ],
+    "conditions": [
+      {
+        "line": 60,
+        "expression": "confirmed"
+      },
+      {
+        "line": 84,
+        "expression": "confirmed"
+      },
+      {
+        "line": 102,
+        "expression": "trigger.type === 'time'"
+      },
+      {
+        "line": 119,
+        "expression": "trigger.type === 'hotkey'"
+      },
+      {
+        "line": 121,
+        "expression": "trigger.type === 'startup'"
+      },
+      {
+        "line": 123,
+        "expression": "trigger.type === 'webhook'"
+      },
+      {
+        "line": 131,
+        "expression": "!dateStr"
+      },
+      {
+        "line": 144,
+        "expression": "task.total_executions === 0"
+      },
+      {
+        "line": 198,
+        "expression": "loading && tasks.length === 0"
+      },
+      {
+        "line": 203,
+        "expression": "tasks.length === 0"
+      },
+      {
+        "line": 228,
+        "expression": "task.enabled"
+      },
+      {
+        "line": 236,
+        "expression": "task.is_running"
+      },
+      {
+        "line": 237,
+        "expression": "task.enabled"
+      },
+      {
+        "line": 238,
+        "expression": "task.trigger.type === 'time'"
+      },
+      {
+        "line": 239,
+        "expression": "task.trigger.type === 'hotkey'"
+      },
+      {
+        "line": 240,
+        "expression": "task.trigger.type === 'startup'"
+      },
+      {
+        "line": 269,
+        "expression": "task.enabled"
+      },
+      {
+        "line": 273,
+        "expression": "task.enabled"
+      },
+      {
+        "line": 356,
+        "expression": "task.last_execution_status === 'success'"
+      },
+      {
+        "line": 357,
+        "expression": "task.last_execution_status === 'success'"
+      },
+      {
+        "line": 368,
+        "expression": "task.is_running"
+      }
+    ],
+    "bindings": []
+  },
+  {
+    "component": "StatisticsPanel",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/StatisticsPanel.tsx",
+    "line": 13,
+    "fields": [],
+    "tools": [
+      "Button",
+      "CheckCircle2",
+      "Clock",
+      "DialogPortal",
+      "Power",
+      "TrendingUp",
+      "X",
+      "XCircle",
+      "Zap"
+    ],
+    "conditions": [
+      {
+        "line": 17,
+        "expression": "open"
+      },
+      {
+        "line": 22,
+        "expression": "!open || !statistics"
+      },
+      {
+        "line": 53,
+        "expression": "!a.last_execution_time"
+      },
+      {
+        "line": 54,
+        "expression": "!b.last_execution_time"
+      },
+      {
+        "line": 221,
+        "expression": "task.total_executions > 0"
+      }
+    ],
+    "bindings": []
+  },
+  {
+    "component": "TaskCreateDialog",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+    "line": 23,
+    "fields": [],
+    "tools": [
+      "Button",
+      "Clock",
+      "DatePicker",
+      "DialogPortal",
+      "Input",
+      "Label",
+      "NotificationConfigEditor",
+      "Power",
+      "Repeat",
+      "Select",
+      "SelectContent",
+      "SelectItem",
+      "SelectTrigger",
+      "SelectValue",
+      "Switch",
+      "Textarea",
+      "TimePicker",
+      "Webhook",
+      "X",
+      "Zap"
+    ],
+    "conditions": [
+      {
+        "line": 83,
+        "expression": "open"
+      },
+      {
+        "line": 96,
+        "expression": "!folder"
+      },
+      {
+        "line": 101,
+        "expression": "listResponse.data?.workflows"
+      },
+      {
+        "line": 114,
+        "expression": "workflow"
+      },
+      {
+        "line": 121,
+        "expression": "request !== workflowRequest.current"
+      },
+      {
+        "line": 122,
+        "expression": "!r.success || !r.data?.success"
+      },
+      {
+        "line": 124,
+        "expression": "request === workflowRequest.current"
+      },
+      {
+        "line": 131,
+        "expression": "request !== workflowRequest.current"
+      },
+      {
+        "line": 132,
+        "expression": "!response.success || !response.data?.success"
+      },
+      {
+        "line": 134,
+        "expression": "request === workflowRequest.current"
+      },
+      {
+        "line": 138,
+        "expression": "weeklyDays.includes(day)"
+      },
+      {
+        "line": 156,
+        "expression": "e.ctrlKey"
+      },
+      {
+        "line": 157,
+        "expression": "e.altKey"
+      },
+      {
+        "line": 158,
+        "expression": "e.shiftKey"
+      },
+      {
+        "line": 159,
+        "expression": "e.metaKey"
+      },
+      {
+        "line": 192,
+        "expression": "e.key && !['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)"
+      },
+      {
+        "line": 197,
+        "expression": "/^[a-z0-9]$/i.test(e.key)"
+      },
+      {
+        "line": 203,
+        "expression": "mainKey"
+      },
+      {
+        "line": 208,
+        "expression": "keys.length > 0"
+      },
+      {
+        "line": 221,
+        "expression": "isRecording"
+      },
+      {
+        "line": 235,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 236,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 239,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 263,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 265,
+        "expression": "triggerType === 'startup'"
+      },
+      {
+        "line": 267,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 275,
+        "expression": "!name.trim()"
+      },
+      {
+        "line": 276,
+        "expression": "!workflowId"
+      },
+      {
+        "line": 278,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 279,
+        "expression": "scheduleType === 'once'"
+      },
+      {
+        "line": 280,
+        "expression": "!startDate"
+      },
+      {
+        "line": 281,
+        "expression": "!startTime"
+      },
+      {
+        "line": 282,
+        "expression": "scheduleType === 'weekly'"
+      },
+      {
+        "line": 283,
+        "expression": "weeklyDays.length === 0"
+      },
+      {
+        "line": 284,
+        "expression": "scheduleType === 'interval'"
+      },
+      {
+        "line": 285,
+        "expression": "intervalSeconds <= 0"
+      },
+      {
+        "line": 287,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 288,
+        "expression": "!hotkey"
+      },
+      {
+        "line": 289,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 290,
+        "expression": "!webhookPath.trim()"
+      },
+      {
+        "line": 293,
+        "expression": "!path.startsWith('/')"
+      },
+      {
+        "line": 294,
+        "expression": "!/^[a-zA-Z0-9\\-_\\/]+$/.test(path)"
+      },
+      {
+        "line": 297,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 298,
+        "expression": "repeatCount !== null && repeatCount <= 0"
+      },
+      {
+        "line": 299,
+        "expression": "repeatInterval <= 0"
+      },
+      {
+        "line": 307,
+        "expression": "validationError"
+      },
+      {
+        "line": 376,
+        "expression": "!open"
+      },
+      {
+        "line": 422,
+        "expression": "loadingWorkflows"
+      },
+      {
+        "line": 425,
+        "expression": "workflows.length === 0"
+      },
+      {
+        "line": 459,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 468,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 477,
+        "expression": "triggerType === 'startup'"
+      },
+      {
+        "line": 486,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 564,
+        "expression": "weeklyDays.includes(index)"
+      },
+      {
+        "line": 617,
+        "expression": "intervalSeconds >= 60"
+      },
+      {
+        "line": 642,
+        "expression": "recordingHotkey"
+      },
+      {
+        "line": 759,
+        "expression": "patch.notifyOnFailure !== undefined"
+      },
+      {
+        "line": 760,
+        "expression": "patch.notifyOnSuccess !== undefined"
+      },
+      {
+        "line": 761,
+        "expression": "patch.channels !== undefined"
+      },
+      {
+        "line": 790,
+        "expression": "e.target.value"
+      },
+      {
+        "line": 827,
+        "expression": "loading"
+      }
+    ],
+    "bindings": [
+      {
+        "line": 401,
+        "attribute": "value",
+        "expression": "{name}"
+      },
+      {
+        "line": 402,
+        "attribute": "onChange",
+        "expression": "{(e) => setName(e.target.value)}"
+      },
+      {
+        "line": 411,
+        "attribute": "value",
+        "expression": "{description}"
+      },
+      {
+        "line": 412,
+        "attribute": "onChange",
+        "expression": "{(e) => setDescription(e.target.value)}"
+      },
+      {
+        "line": 420,
+        "attribute": "value",
+        "expression": "{workflowId || ''}"
+      },
+      {
+        "line": 420,
+        "attribute": "onValueChange",
+        "expression": "{handleWorkflowChange}"
+      },
+      {
+        "line": 429,
+        "attribute": "value",
+        "expression": "{workflow.filename}"
+      },
+      {
+        "line": 449,
+        "attribute": "checked",
+        "expression": "{selfHeal}"
+      },
+      {
+        "line": 449,
+        "attribute": "onCheckedChange",
+        "expression": "{handleToggleSelfHeal}"
+      },
+      {
+        "line": 501,
+        "attribute": "value",
+        "expression": "{scheduleType}"
+      },
+      {
+        "line": 501,
+        "attribute": "onValueChange",
+        "expression": "{(v: any) => setScheduleType(v)}"
+      },
+      {
+        "line": 506,
+        "attribute": "value",
+        "expression": "\"once\""
+      },
+      {
+        "line": 507,
+        "attribute": "value",
+        "expression": "\"daily\""
+      },
+      {
+        "line": 508,
+        "attribute": "value",
+        "expression": "\"weekly\""
+      },
+      {
+        "line": 509,
+        "attribute": "value",
+        "expression": "\"monthly\""
+      },
+      {
+        "line": 510,
+        "attribute": "value",
+        "expression": "\"interval\""
+      },
+      {
+        "line": 521,
+        "attribute": "value",
+        "expression": "{startDate}"
+      },
+      {
+        "line": 522,
+        "attribute": "onChange",
+        "expression": "{(v) => setStartDate(v)}"
+      },
+      {
+        "line": 529,
+        "attribute": "value",
+        "expression": "{startTime}"
+      },
+      {
+        "line": 530,
+        "attribute": "onChange",
+        "expression": "{(v) => setStartTime(v)}"
+      },
+      {
+        "line": 537,
+        "attribute": "value",
+        "expression": "{endDate}"
+      },
+      {
+        "line": 538,
+        "attribute": "onChange",
+        "expression": "{(v) => setEndDate(v)}"
+      },
+      {
+        "line": 549,
+        "attribute": "value",
+        "expression": "{dailyTime}"
+      },
+      {
+        "line": 550,
+        "attribute": "onChange",
+        "expression": "{(v) => setDailyTime(v)}"
+      },
+      {
+        "line": 577,
+        "attribute": "value",
+        "expression": "{weeklyTime}"
+      },
+      {
+        "line": 578,
+        "attribute": "onChange",
+        "expression": "{(v) => setWeeklyTime(v)}"
+      },
+      {
+        "line": 592,
+        "attribute": "value",
+        "expression": "{monthlyDay}"
+      },
+      {
+        "line": 593,
+        "attribute": "onChange",
+        "expression": "{(e) => setMonthlyDay(parseInt(e.target.value) || 1)}"
+      },
+      {
+        "line": 600,
+        "attribute": "value",
+        "expression": "{monthlyTime}"
+      },
+      {
+        "line": 601,
+        "attribute": "onChange",
+        "expression": "{(v) => setMonthlyTime(v)}"
+      },
+      {
+        "line": 613,
+        "attribute": "value",
+        "expression": "{intervalSeconds}"
+      },
+      {
+        "line": 614,
+        "attribute": "onChange",
+        "expression": "{(e) => setIntervalSeconds(parseInt(e.target.value) || 300)}"
+      },
+      {
+        "line": 631,
+        "attribute": "value",
+        "expression": "{hotkey}"
+      },
+      {
+        "line": 632,
+        "attribute": "onChange",
+        "expression": "{(e) => setHotkey(e.target.value)}"
+      },
+      {
+        "line": 660,
+        "attribute": "value",
+        "expression": "{startupDelay}"
+      },
+      {
+        "line": 661,
+        "attribute": "onChange",
+        "expression": "{(e) => setStartupDelay(parseInt(e.target.value) || 0)}"
+      },
+      {
+        "line": 676,
+        "attribute": "value",
+        "expression": "{webhookPath}"
+      },
+      {
+        "line": 677,
+        "attribute": "onChange",
+        "expression": "{(e) => setWebhookPath(e.target.value)}"
+      },
+      {
+        "line": 730,
+        "attribute": "checked",
+        "expression": "{openMonitor}"
+      },
+      {
+        "line": 731,
+        "attribute": "onCheckedChange",
+        "expression": "{setOpenMonitor}"
+      },
+      {
+        "line": 746,
+        "attribute": "checked",
+        "expression": "{headless}"
+      },
+      {
+        "line": 747,
+        "attribute": "onCheckedChange",
+        "expression": "{setHeadless}"
+      },
+      {
+        "line": 758,
+        "attribute": "onChange",
+        "expression": "{(patch) => {\n                if (patch.notifyOnFailure !== undefined) setNotifyOnFailure(patch.notifyOnFailure)\n                if (patch.notifyOnSuccess !== undefined) setNotifyOnSuccess(patch.notifyOnSuccess)\n                if (patch.channels !== undefined) setNotifyChannels(patch.channels)\n              }}"
+      },
+      {
+        "line": 777,
+        "attribute": "checked",
+        "expression": "{repeatEnabled}"
+      },
+      {
+        "line": 778,
+        "attribute": "onCheckedChange",
+        "expression": "{setRepeatEnabled}"
+      },
+      {
+        "line": 789,
+        "attribute": "value",
+        "expression": "{repeatCount || ''}"
+      },
+      {
+        "line": 790,
+        "attribute": "onChange",
+        "expression": "{(e) => setRepeatCount(e.target.value ? parseInt(e.target.value) : null)}"
+      },
+      {
+        "line": 803,
+        "attribute": "value",
+        "expression": "{repeatInterval}"
+      },
+      {
+        "line": 804,
+        "attribute": "onChange",
+        "expression": "{(e) => setRepeatInterval(parseInt(e.target.value) || 60)}"
+      }
+    ]
+  },
+  {
+    "component": "TaskEditDialog",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx",
+    "line": 25,
+    "fields": [],
+    "tools": [
+      "Button",
+      "Clock",
+      "ConfirmDialog",
+      "DatePicker",
+      "DialogPortal",
+      "Input",
+      "Label",
+      "NotificationConfigEditor",
+      "Play",
+      "Power",
+      "Repeat",
+      "Select",
+      "SelectContent",
+      "SelectItem",
+      "SelectTrigger",
+      "SelectValue",
+      "Square",
+      "Switch",
+      "Textarea",
+      "TimePicker",
+      "Webhook",
+      "X",
+      "Zap"
+    ],
+    "conditions": [
+      {
+        "line": 89,
+        "expression": "open"
+      },
+      {
+        "line": 139,
+        "expression": "updatedTask"
+      },
+      {
+        "line": 152,
+        "expression": "!folder"
+      },
+      {
+        "line": 158,
+        "expression": "listResponse.data?.workflows"
+      },
+      {
+        "line": 171,
+        "expression": "workflow"
+      },
+      {
+        "line": 177,
+        "expression": "weeklyDays.includes(day)"
+      },
+      {
+        "line": 195,
+        "expression": "e.ctrlKey"
+      },
+      {
+        "line": 196,
+        "expression": "e.altKey"
+      },
+      {
+        "line": 197,
+        "expression": "e.shiftKey"
+      },
+      {
+        "line": 198,
+        "expression": "e.metaKey"
+      },
+      {
+        "line": 231,
+        "expression": "e.key && !['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)"
+      },
+      {
+        "line": 236,
+        "expression": "/^[a-z0-9]$/i.test(e.key)"
+      },
+      {
+        "line": 242,
+        "expression": "mainKey"
+      },
+      {
+        "line": 247,
+        "expression": "keys.length > 0"
+      },
+      {
+        "line": 260,
+        "expression": "isRecording"
+      },
+      {
+        "line": 274,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 275,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 278,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 302,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 304,
+        "expression": "triggerType === 'startup'"
+      },
+      {
+        "line": 306,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 314,
+        "expression": "!name.trim()"
+      },
+      {
+        "line": 315,
+        "expression": "!workflowId"
+      },
+      {
+        "line": 317,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 318,
+        "expression": "scheduleType === 'once'"
+      },
+      {
+        "line": 319,
+        "expression": "!startDate"
+      },
+      {
+        "line": 320,
+        "expression": "!startTime"
+      },
+      {
+        "line": 321,
+        "expression": "scheduleType === 'weekly'"
+      },
+      {
+        "line": 322,
+        "expression": "weeklyDays.length === 0"
+      },
+      {
+        "line": 323,
+        "expression": "scheduleType === 'interval'"
+      },
+      {
+        "line": 324,
+        "expression": "intervalSeconds <= 0"
+      },
+      {
+        "line": 326,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 327,
+        "expression": "!hotkey"
+      },
+      {
+        "line": 328,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 329,
+        "expression": "!webhookPath.trim()"
+      },
+      {
+        "line": 332,
+        "expression": "!path.startsWith('/')"
+      },
+      {
+        "line": 333,
+        "expression": "!/^[a-zA-Z0-9\\-_\\/]+$/.test(path)"
+      },
+      {
+        "line": 336,
+        "expression": "repeatEnabled"
+      },
+      {
+        "line": 337,
+        "expression": "repeatCount !== null && repeatCount <= 0"
+      },
+      {
+        "line": 338,
+        "expression": "repeatInterval <= 0"
+      },
+      {
+        "line": 366,
+        "expression": "confirmed"
+      },
+      {
+        "line": 378,
+        "expression": "validationError"
+      },
+      {
+        "line": 410,
+        "expression": "!open"
+      },
+      {
+        "line": 454,
+        "expression": "loadingWorkflows"
+      },
+      {
+        "line": 457,
+        "expression": "workflows.length === 0"
+      },
+      {
+        "line": 476,
+        "expression": "triggerType === 'time'"
+      },
+      {
+        "line": 485,
+        "expression": "triggerType === 'hotkey'"
+      },
+      {
+        "line": 494,
+        "expression": "triggerType === 'startup'"
+      },
+      {
+        "line": 503,
+        "expression": "triggerType === 'webhook'"
+      },
+      {
+        "line": 581,
+        "expression": "weeklyDays.includes(index)"
+      },
+      {
+        "line": 634,
+        "expression": "intervalSeconds >= 60"
+      },
+      {
+        "line": 659,
+        "expression": "recordingHotkey"
+      },
+      {
+        "line": 760,
+        "expression": "e.target.value"
+      },
+      {
+        "line": 824,
+        "expression": "patch.notifyOnFailure !== undefined"
+      },
+      {
+        "line": 825,
+        "expression": "patch.notifyOnSuccess !== undefined"
+      },
+      {
+        "line": 826,
+        "expression": "patch.channels !== undefined"
+      },
+      {
+        "line": 842,
+        "expression": "currentTask.is_running"
+      },
+      {
+        "line": 870,
+        "expression": "loading"
+      }
+    ],
+    "bindings": [
+      {
+        "line": 433,
+        "attribute": "value",
+        "expression": "{name}"
+      },
+      {
+        "line": 434,
+        "attribute": "onChange",
+        "expression": "{(e) => setName(e.target.value)}"
+      },
+      {
+        "line": 443,
+        "attribute": "value",
+        "expression": "{description}"
+      },
+      {
+        "line": 444,
+        "attribute": "onChange",
+        "expression": "{(e) => setDescription(e.target.value)}"
+      },
+      {
+        "line": 452,
+        "attribute": "value",
+        "expression": "{workflowId || ''}"
+      },
+      {
+        "line": 452,
+        "attribute": "onValueChange",
+        "expression": "{handleWorkflowChange}"
+      },
+      {
+        "line": 461,
+        "attribute": "value",
+        "expression": "{workflow.filename}"
+      },
+      {
+        "line": 518,
+        "attribute": "value",
+        "expression": "{scheduleType}"
+      },
+      {
+        "line": 518,
+        "attribute": "onValueChange",
+        "expression": "{(v: any) => setScheduleType(v)}"
+      },
+      {
+        "line": 523,
+        "attribute": "value",
+        "expression": "\"once\""
+      },
+      {
+        "line": 524,
+        "attribute": "value",
+        "expression": "\"daily\""
+      },
+      {
+        "line": 525,
+        "attribute": "value",
+        "expression": "\"weekly\""
+      },
+      {
+        "line": 526,
+        "attribute": "value",
+        "expression": "\"monthly\""
+      },
+      {
+        "line": 527,
+        "attribute": "value",
+        "expression": "\"interval\""
+      },
+      {
+        "line": 538,
+        "attribute": "value",
+        "expression": "{startDate}"
+      },
+      {
+        "line": 539,
+        "attribute": "onChange",
+        "expression": "{(v) => setStartDate(v)}"
+      },
+      {
+        "line": 546,
+        "attribute": "value",
+        "expression": "{startTime}"
+      },
+      {
+        "line": 547,
+        "attribute": "onChange",
+        "expression": "{(v) => setStartTime(v)}"
+      },
+      {
+        "line": 554,
+        "attribute": "value",
+        "expression": "{endDate}"
+      },
+      {
+        "line": 555,
+        "attribute": "onChange",
+        "expression": "{(v) => setEndDate(v)}"
+      },
+      {
+        "line": 566,
+        "attribute": "value",
+        "expression": "{dailyTime}"
+      },
+      {
+        "line": 567,
+        "attribute": "onChange",
+        "expression": "{(v) => setDailyTime(v)}"
+      },
+      {
+        "line": 594,
+        "attribute": "value",
+        "expression": "{weeklyTime}"
+      },
+      {
+        "line": 595,
+        "attribute": "onChange",
+        "expression": "{(v) => setWeeklyTime(v)}"
+      },
+      {
+        "line": 609,
+        "attribute": "value",
+        "expression": "{monthlyDay}"
+      },
+      {
+        "line": 610,
+        "attribute": "onChange",
+        "expression": "{(e) => setMonthlyDay(parseInt(e.target.value) || 1)}"
+      },
+      {
+        "line": 617,
+        "attribute": "value",
+        "expression": "{monthlyTime}"
+      },
+      {
+        "line": 618,
+        "attribute": "onChange",
+        "expression": "{(v) => setMonthlyTime(v)}"
+      },
+      {
+        "line": 630,
+        "attribute": "value",
+        "expression": "{intervalSeconds}"
+      },
+      {
+        "line": 631,
+        "attribute": "onChange",
+        "expression": "{(e) => setIntervalSeconds(parseInt(e.target.value) || 300)}"
+      },
+      {
+        "line": 648,
+        "attribute": "value",
+        "expression": "{hotkey}"
+      },
+      {
+        "line": 649,
+        "attribute": "onChange",
+        "expression": "{(e) => setHotkey(e.target.value)}"
+      },
+      {
+        "line": 677,
+        "attribute": "value",
+        "expression": "{startupDelay}"
+      },
+      {
+        "line": 678,
+        "attribute": "onChange",
+        "expression": "{(e) => setStartupDelay(parseInt(e.target.value) || 0)}"
+      },
+      {
+        "line": 693,
+        "attribute": "value",
+        "expression": "{webhookPath}"
+      },
+      {
+        "line": 694,
+        "attribute": "onChange",
+        "expression": "{(e) => setWebhookPath(e.target.value)}"
+      },
+      {
+        "line": 747,
+        "attribute": "checked",
+        "expression": "{repeatEnabled}"
+      },
+      {
+        "line": 748,
+        "attribute": "onCheckedChange",
+        "expression": "{setRepeatEnabled}"
+      },
+      {
+        "line": 759,
+        "attribute": "value",
+        "expression": "{repeatCount || ''}"
+      },
+      {
+        "line": 760,
+        "attribute": "onChange",
+        "expression": "{(e) => setRepeatCount(e.target.value ? parseInt(e.target.value) : null)}"
+      },
+      {
+        "line": 773,
+        "attribute": "value",
+        "expression": "{repeatInterval}"
+      },
+      {
+        "line": 774,
+        "attribute": "onChange",
+        "expression": "{(e) => setRepeatInterval(parseInt(e.target.value) || 60)}"
+      },
+      {
+        "line": 795,
+        "attribute": "checked",
+        "expression": "{openMonitor}"
+      },
+      {
+        "line": 796,
+        "attribute": "onCheckedChange",
+        "expression": "{setOpenMonitor}"
+      },
+      {
+        "line": 811,
+        "attribute": "checked",
+        "expression": "{headless}"
+      },
+      {
+        "line": 812,
+        "attribute": "onCheckedChange",
+        "expression": "{setHeadless}"
+      },
+      {
+        "line": 823,
+        "attribute": "onChange",
+        "expression": "{(patch) => {\n                if (patch.notifyOnFailure !== undefined) setNotifyOnFailure(patch.notifyOnFailure)\n                if (patch.notifyOnSuccess !== undefined) setNotifyOnSuccess(patch.notifyOnSuccess)\n                if (patch.channels !== undefined) setNotifyChannels(patch.channels)\n              }}"
+      }
+    ]
+  },
+  {
+    "component": "TaskLogsDialog",
+    "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskLogsDialog.tsx",
+    "line": 15,
+    "fields": [],
+    "tools": [
+      "Button",
+      "CheckCircle2",
+      "Clock",
+      "ConfirmDialog",
+      "DialogPortal",
+      "RefreshCw",
+      "Trash2",
+      "X",
+      "XCircle"
+    ],
+    "conditions": [
+      {
+        "line": 21,
+        "expression": "open"
+      },
+      {
+        "line": 46,
+        "expression": "confirmed"
+      },
+      {
+        "line": 64,
+        "expression": "seconds === undefined || seconds === null"
+      },
+      {
+        "line": 65,
+        "expression": "seconds < 60"
+      },
+      {
+        "line": 109,
+        "expression": "!open"
+      },
+      {
+        "line": 126,
+        "expression": "loading"
+      },
+      {
+        "line": 149,
+        "expression": "loading && logs.length === 0"
+      },
+      {
+        "line": 153,
+        "expression": "logs.length === 0"
+      },
+      {
+        "line": 238,
+        "expression": "wlog.level === 'error'"
+      },
+      {
+        "line": 239,
+        "expression": "wlog.level === 'warning'"
+      },
+      {
+        "line": 240,
+        "expression": "wlog.level === 'success'"
+      },
+      {
+        "line": 241,
+        "expression": "wlog.level === 'info'"
+      },
+      {
+        "line": 242,
+        "expression": "!['error', 'warning', 'success', 'info'].includes(wlog.level)"
+      }
+    ],
     "bindings": []
   }
 ]

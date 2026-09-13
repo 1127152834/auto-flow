@@ -900,7 +900,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1312,
+          "line": 1317,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "customModulesApi.update(editingCustomModuleId, {\n        workflow: workflowData\n      })"
         },
@@ -1971,8 +1971,20 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 374,
+          "line": 377,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
+          "call": "localWorkflowApi.getDefaultFolder()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "line": 97,
+          "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "call": "localWorkflowApi.getDefaultFolder()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx",
+          "line": 153,
+          "source": "frontend/src/components/scheduled-tasks/TaskEditDialog.tsx",
           "call": "localWorkflowApi.getDefaultFolder()"
         },
         {
@@ -1998,7 +2010,14 @@
           "source": "frontend/src/services/api.ts"
         }
       ],
-      "consumers": [],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "line": 120,
+          "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "call": "localWorkflowApi.getSelfHeal(filename)"
+        }
+      ],
       "status": "待核对"
     },
     {
@@ -2044,6 +2063,18 @@
           "line": 30,
           "source": "frontend/src/components/workflow/config-panels/RunWorkflowFileConfig.tsx",
           "call": "localWorkflowApi.list()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "line": 100,
+          "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "call": "localWorkflowApi.list(folder || undefined)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx",
+          "line": 157,
+          "source": "frontend/src/components/scheduled-tasks/TaskEditDialog.tsx",
+          "call": "localWorkflowApi.list(folder || undefined)"
         }
       ],
       "status": "待核对"
@@ -2122,7 +2153,14 @@
           "source": "frontend/src/services/api.ts"
         }
       ],
-      "consumers": [],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "line": 130,
+          "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "call": "localWorkflowApi.setSelfHeal(workflowId, value)"
+        }
+      ],
       "status": "待核对"
     },
     {
@@ -2869,6 +2907,12 @@
           "line": 1390,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.clearAllLogs()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 297,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.clearAllLogs()"
         }
       ],
       "status": "待核对"
@@ -2893,6 +2937,12 @@
           "line": 1389,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.clearTaskLogs(id)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 285,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.clearTaskLogs(taskId)"
         }
       ],
       "status": "待核对"
@@ -2917,6 +2967,12 @@
           "line": 1308,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.create(payload || {})"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 182,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.create(task)"
         }
       ],
       "status": "待核对"
@@ -2941,6 +2997,12 @@
           "line": 1332,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.delete(id)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 214,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.delete(id)"
         }
       ],
       "status": "待核对"
@@ -2964,6 +3026,12 @@
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
           "line": 1355,
           "source": "frontend/src/services/aiAssistantSkills.ts",
+          "call": "scheduledTaskApi.execute(id)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 239,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
           "call": "scheduledTaskApi.execute(id)"
         }
       ],
@@ -3013,6 +3081,12 @@
           "line": 1379,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.getAllLogs(limit)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 276,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.getAllLogs(limit)"
         }
       ],
       "status": "待核对"
@@ -3036,6 +3110,12 @@
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
           "line": 1399,
           "source": "frontend/src/services/aiAssistantSkills.ts",
+          "call": "scheduledTaskApi.getStatistics()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 307,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
           "call": "scheduledTaskApi.getStatistics()"
         }
       ],
@@ -3061,6 +3141,12 @@
           "line": 1378,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.getTaskLogs(id, limit)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 266,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.getTaskLogs(taskId, limit)"
         }
       ],
       "status": "待核对"
@@ -3084,6 +3170,12 @@
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
           "line": 1287,
           "source": "frontend/src/services/aiAssistantSkills.ts",
+          "call": "scheduledTaskApi.list()"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 172,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
           "call": "scheduledTaskApi.list()"
         }
       ],
@@ -3109,6 +3201,12 @@
           "line": 1366,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.stop(id)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 252,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.stop(id)"
         }
       ],
       "status": "待核对"
@@ -3132,6 +3230,12 @@
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
           "line": 1344,
           "source": "frontend/src/services/aiAssistantSkills.ts",
+          "call": "scheduledTaskApi.toggle(id, enabled)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 227,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
           "call": "scheduledTaskApi.toggle(id, enabled)"
         }
       ],
@@ -3157,6 +3261,12 @@
           "line": 1321,
           "source": "frontend/src/services/aiAssistantSkills.ts",
           "call": "scheduledTaskApi.update(id, data)"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+          "line": 198,
+          "source": "frontend/src/store/scheduledTaskStore.ts",
+          "call": "scheduledTaskApi.update(id, updates)"
         }
       ],
       "status": "待核对"
@@ -3595,19 +3705,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 226,
+          "line": 229,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 838,
+          "line": 843,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 937,
+          "line": 942,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create(payload)"
         }
@@ -3699,7 +3809,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 304,
+          "line": 307,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.execute(currentWorkflowId, { \n        headless,\n        browserConfig,\n        breakpoints: Array.from(useDebugStore.getState().breakpoints),\n        stepMode: useDebugStore.getState().stepMode,\n        startNodeId: startNodeId || undefined,\n      })"
         }
@@ -3723,7 +3833,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 947,
+          "line": 952,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.exportScript(currentWorkflowId!, target)"
         }
@@ -3852,7 +3962,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 354,
+          "line": 357,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.stop(workflowId)"
         }
@@ -3876,19 +3986,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 259,
+          "line": 262,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 871,
+          "line": 876,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 945,
+          "line": 950,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, payload)"
         }
@@ -3912,7 +4022,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1070,
+          "line": 1075,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.export(name, content)"
         }
@@ -3936,7 +4046,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1100,
+          "line": 1105,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.import(bundle)"
         }
@@ -3977,7 +4087,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 572,
+          "line": 575,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4021,7 +4131,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 762,
+          "line": 767,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4041,7 +4151,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 760,
+          "line": 765,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4061,7 +4171,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 756,
+          "line": 759,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4081,7 +4191,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 758,
+          "line": 763,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4098,7 +4208,14 @@
     {
       "id": "event:close_scheduled_tasks",
       "name": "close_scheduled_tasks",
-      "subscriptions": [],
+      "subscriptions": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
+          "line": 761,
+          "source": "frontend/src/components/workflow/Toolbar.tsx",
+          "via": "onAssistantUiEvent"
+        }
+      ],
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
@@ -4114,7 +4231,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 764,
+          "line": 769,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4193,7 +4310,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 186,
+          "line": 189,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4208,7 +4325,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1361,
+          "line": 1366,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('editingModuleChanged')"
@@ -4503,7 +4620,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 747,
+          "line": 750,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4561,7 +4678,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 495,
+          "line": 498,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -4701,7 +4818,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 708,
+          "line": 711,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4741,7 +4858,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 710,
+          "line": 713,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4768,7 +4885,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 709,
+          "line": 712,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -4840,7 +4957,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 556,
+          "line": 559,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -4860,6 +4977,18 @@
           "file": "apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx",
           "line": 41,
           "source": "frontend/src/components/ui/confirm-dialog.tsx",
+          "via": "window.addEventListener"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "line": 216,
+          "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+          "via": "window.addEventListener"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx",
+          "line": 255,
+          "source": "frontend/src/components/scheduled-tasks/TaskEditDialog.tsx",
           "via": "window.addEventListener"
         },
         {
@@ -4916,7 +5045,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 744,
+          "line": 747,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4936,7 +5065,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 761,
+          "line": 766,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4956,7 +5085,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 759,
+          "line": 764,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4976,7 +5105,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 750,
+          "line": 753,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -4996,7 +5125,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 755,
+          "line": 758,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5016,7 +5145,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 757,
+          "line": 762,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5065,7 +5194,14 @@
     {
       "id": "event:open_scheduled_tasks",
       "name": "open_scheduled_tasks",
-      "subscriptions": [],
+      "subscriptions": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
+          "line": 760,
+          "source": "frontend/src/components/workflow/Toolbar.tsx",
+          "via": "onAssistantUiEvent"
+        }
+      ],
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts",
@@ -5081,7 +5217,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 763,
+          "line": 768,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5135,14 +5271,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 599,
-          "source": "frontend/src/components/workflow/Toolbar.tsx",
-          "via": "CustomEvent",
-          "call": "new CustomEvent('refresh:image-assets')"
-        },
-        {
-          "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 797,
+          "line": 602,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
@@ -5156,14 +5285,21 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 808,
+          "line": 807,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 820,
+          "line": 813,
+          "source": "frontend/src/components/workflow/Toolbar.tsx",
+          "via": "CustomEvent",
+          "call": "new CustomEvent('refresh:image-assets')"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
+          "line": 825,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
@@ -5221,7 +5357,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 730,
+          "line": 733,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5259,7 +5395,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 342,
+          "line": 345,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5280,7 +5416,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 727,
+          "line": 730,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5431,7 +5567,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 739,
+          "line": 742,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5457,7 +5593,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 183,
+          "line": 186,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5491,7 +5627,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 767,
+          "line": 772,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6499,49 +6635,49 @@
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 152,
+      "line": 155,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/default-folder`)"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 398,
+      "line": 401,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/check-exists`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ filename, content: { _folder: currentFolder } })\n        })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 413,
+      "line": 416,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/check-exists`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({\n            filename,\n            content: { _folder: currentFolder }\n          })\n        })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 439,
+      "line": 442,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/save-to-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({\n          filename,\n          content: { ...workflowData, _folder: currentFolder }\n        })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 589,
+      "line": 592,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/save-clipboard-image`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ name })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 631,
+      "line": 634,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/screenshot-tool`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ saveToAssets: true })\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 789,
+      "line": 794,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}`, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application/json' }\n      })"
     },
     {
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 898,
+      "line": 903,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
     },

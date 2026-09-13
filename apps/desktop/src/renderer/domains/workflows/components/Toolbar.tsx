@@ -1,3 +1,4 @@
+import { CalendarClock } from 'lucide-react'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
@@ -23,6 +24,7 @@ import { encryptWorkflow } from '../lib/workflowCrypto'
 import { AutoBrowserDialog } from './AutoBrowserDialog'
 import { RecorderPanel } from './RecorderPanel'
 import { useDebugStore } from '../hooks/stores/debugStore'
+import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { LocalWorkflowDialog } from './LocalWorkflowDialog'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
@@ -73,6 +75,7 @@ export function Toolbar() {
   const [showDocumentation, setShowDocumentation] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [showAutoBrowser, setShowAutoBrowser] = useState(false)
+  const [showScheduledTasks, setShowScheduledTasks] = useState(false)
   const [showLocalWorkflow, setShowLocalWorkflow] = useState(false)
   const [showVariableTracking, setShowVariableTracking] = useState(false)
   const [defaultFolder, setDefaultFolder] = useState('')
@@ -754,6 +757,8 @@ export function Toolbar() {
     // 弹窗 / 面板 - 打开
     offs.push(onAssistantUiEvent('open_global_config', () => setShowGlobalConfig(true)))
     offs.push(onAssistantUiEvent('close_global_config', () => setShowGlobalConfig(false)))
+    offs.push(onAssistantUiEvent('open_scheduled_tasks', () => setShowScheduledTasks(true)))
+    offs.push(onAssistantUiEvent('close_scheduled_tasks', () => setShowScheduledTasks(false)))
     offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalWorkflow(true)))
     offs.push(onAssistantUiEvent('close_local_workflow', () => setShowLocalWorkflow(false)))
     offs.push(onAssistantUiEvent('open_documentation', () => setShowDocumentation(true)))
@@ -1645,6 +1650,9 @@ export function Toolbar() {
         {/* 工作流仓库 - 紫色（语义：内容/收藏） */}
         
 
+        <Button variant="outline" size="sm" title="计划任务" onClick={() => setShowScheduledTasks(true)}>
+          <CalendarClock className="w-4 h-4" /><span className="hidden @[64rem]:inline">计划任务</span>
+        </Button>
         {/* 自动化浏览器 - 绿色 */}
         <Button 
           variant="tonal-success" 
@@ -1784,6 +1792,7 @@ export function Toolbar() {
       />
       
       {/* 计划任务对话框 */}
+      <ScheduledTasksDialog open={showScheduledTasks} onClose={() => setShowScheduledTasks(false)} />
       
       
       {/* 手机镜像对话框 */}

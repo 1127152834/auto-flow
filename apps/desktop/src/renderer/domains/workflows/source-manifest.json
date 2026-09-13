@@ -1248,5 +1248,45 @@
     "source": "frontend/src/lib/globalTooltip.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts",
     "sha256": "f651ed29ad11db1819dfafa084c7da13ca51cf9d2e53f4d5153994d8ff538d35"
+  },
+  {
+    "source": "frontend/src/store/scheduledTaskStore.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/hooks/stores/scheduledTaskStore.ts",
+    "sha256": "b1fbb785962d69cfc9601a1ae75aeb3d8b2e4e6aa33870cbd6eb6b65e65d6783"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/TaskEditDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx",
+    "sha256": "22ee2aceb2d0fdbefb6f5f031eff763b4afa77ede5a114e3fc3e112676934773"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/ScheduledTasksPage.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/ScheduledTasksPage.tsx",
+    "sha256": "33607bab554b5aeb1a40a3b143c354d37f1620c26cd12e085caf9356e08a7849"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/NotificationConfigEditor.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/NotificationConfigEditor.tsx",
+    "sha256": "ff9af29d9c30fa3adf532f455c9a94bf5bfe8724b4642659b2b4fa358eabda88"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/TaskCreateDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx",
+    "sha256": "4e7664d00e49b7b625c85075f2968aa21027d0ec3d60f19db9cf10f5957dd40a"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/StatisticsPanel.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/StatisticsPanel.tsx",
+    "sha256": "aa9d254518c75e9a5f199b06df018eab876014b968772f33387458749a48ad95"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/ScheduledTasksDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/ScheduledTasksDialog.tsx",
+    "sha256": "e67b836f960145cf814cb3d7cd4a7e45f935fac897ece6e6fe24c2b56c4b8d53"
+  },
+  {
+    "source": "frontend/src/components/scheduled-tasks/TaskLogsDialog.tsx",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskLogsDialog.tsx",
+    "sha256": "1fe53e3e00eebb03c175743d589bf3ed6be01eae649c91a022783e7047e27eea"
   }
 ]

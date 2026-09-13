@@ -36,6 +36,16 @@ describe.each(['memory', 'http'] as const)('shared protocol assertions: %s', mod
     expect((await request('/workflows', { method: 'POST', body: '{broken' })).status).toBe(400)
     expect((await request('/unknown')).status).toBe(501)
   })
+  it('round-trips scheduled configuration and fails missing workflows without a running record', async () => {
+    const created = await request('/scheduled-tasks', json({ name: '计划 HTTP', workflow_id: 'missing.json', enabled: true, trigger: { type: 'startup', startup_delay: 0 } }))
+    expect(created.status).toBe(200)
+    const task = await created.json()
+    expect(await (await request('/scheduled-tasks/list')).json()).toMatchObject([{ id: task.id, name: '计划 HTTP' }])
+    expect((await request(`/scheduled-tasks/${task.id}/execute`, json({}))).status).toBe(404)
+    expect(await (await request(`/scheduled-tasks/${task.id}/logs`)).json()).toEqual([])
+    expect((await request(`/scheduled-tasks/${task.id}`, { method: 'DELETE' })).ok).toBe(true)
+    expect(await (await request('/scheduled-tasks/list')).json()).toEqual([])
+  })
   it('keeps command identity stable across retries and rejects changed payloads', async () => {
     const command = { commandId: 'stable', event: 'set_verbose_log', data: { enabled: true } }
     const first = await (await request('/events/commands', json(command))).json()

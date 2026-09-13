@@ -92,3 +92,8 @@ AST 核对发现早期扫描将查询回调中的 open_page 比较扩展为整�
 - 284 面板注册与 284 保存往返通过；新增三个过期媒体事件回执及一个语音取消测试通过。
 - 首次全量回归发现新增失败文案缺英文词条，补入原字典后重跑，未削弱断言。逐字段交互、Electron 原生 E2E 尚未据此宣称通过。
 - 重跑全量结果：88 文件、1,086 项通过；TypeScript、ESLint、renderer/main/preload 构建通过。证据：evidence/f0-exclusive-tests.txt 与 evidence/f0-exclusive-build.txt。
+
+## 保留计划任务配套迁入
+
+八个源 UI/Store 文件、Toolbar/AI 消费者及 Mock 协议已接通，详见 scheduled-tasks.md。新增任务协议五项、组件两项、memory/http各一项；全量 90 文件、1,095 项通过。真实浏览器实测创建、重载、修改触发器及422失败提示；不计原生 Electron 或后台调度通过。源列表错误不显示及源 Store 误判成功已修复。首次组件断言错用英文错误而运行器返回既有中文错误，已改为断言规范中文，不放宽错误语义。
+TypeScript、ESLint、renderer/main/preload 构建通过；证据 f0-scheduled-tests.txt、f0-scheduled-build.txt。日志仅规范尾部空白。类型检查发现测试误用 Playwright exact 选项，已移除并沿用 RTL 默认精确匹配；lint 的多余 let 已修复。

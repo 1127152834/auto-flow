@@ -1,3 +1,4 @@
+import { mockScheduledRequest, finishScheduledFixture } from './mock-scheduled-tasks'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { mockSettingsRequest } from './mock-settings'
 import { mockAssetRequest } from './mock-assets'
@@ -67,6 +68,7 @@ function finish(status: string) {
   if (!run) return
   clearTimeout(run.timer)
   emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
+  finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
   run = null
 }
@@ -118,6 +120,23 @@ function streamResponse(after: number, signal?: AbortSignal | null) {
   })
   return new Response(body, { headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } })
 }
+function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): Response {
+        if (run || recording || picking) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
+        if (!doc) return failure('工作流不存在', 404)
+        // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
+        const nodes = structuredClone(doc.nodes) as ObjectValue[]
+        if (findExcludedModuleType(nodes, moduleId => {
+          const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
+          return Array.isArray(children) ? children : undefined
+        })) return failure('工作流包含已排除节点', 422)
+        const index = body.startNodeId ? nodes.findIndex(n => n.id === body.startNodeId) : 0
+        if (index < 0) return failure('起点不存在')
+        runRows.set(id, [])
+        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: (body.breakpoints || []) as string[], variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
+        tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
+        run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
+        return response({ success: true, workflowId: id, mock: true })
+}
 export async function mockRequest(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   if (init.signal?.aborted) throw new DOMException('Aborted', 'AbortError')
   if (offline) throw new TypeError('Mock network offline')
@@ -138,6 +157,17 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (assistantResult) return assistantResult
     // Another preview/renderer may have saved since this module was loaded.
     db = readDatabase()
+    const scheduledResult = await mockScheduledRequest(path, method, target.searchParams, body, {
+      start: async task => {
+        const file = Object.values(db.files).find(file => file.filename === task.workflow_id && (file.folder || db.folder) === db.folder)
+        return startRun(`scheduled-${task.id}`, file?.content, {})
+      },
+      stop: async task => {
+        if (run?.id !== `scheduled-${task.id}`) return failure('Task is not running', 409)
+        finish('stopped'); return response({ success: true })
+      },
+    })
+    if (scheduledResult) return scheduledResult
     if (path === '/events/stream') return streamResponse(Number(target.searchParams.get('afterSeq') || 0), init.signal)
     if (path === '/events/commands') {
       const id = String(body.commandId)
@@ -164,9 +194,10 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     if (path === '/local-workflows/save-to-folder' || path === '/local-workflows/import') {
       if (failNextSave) { failNextSave = false; return failure('Mock：磁盘写入失败，草稿未保存', 507) }
-      const content = body.content as ObjectValue
+      let content = body.content as ObjectValue
       if (!content || !Array.isArray(content.nodes)) return failure('工作流缺少 nodes')
       const filename = `${String(body.filename ?? content.name ?? '未命名流程').replace(/\.json$/, '')}.json`
+      if (content.selfHeal === undefined && findFile(filename)?.content.selfHeal !== undefined) content = { ...content, selfHeal: findFile(filename)!.content.selfHeal }
       const file = { folder, filename, name: String(content.name || filename), modifiedTime: new Date().toISOString(), size: new Blob([JSON.stringify(content)]).size, content }
       persist({ ...db, files: { ...db.files, [fileKey(filename)]: file } })
       return response({ success: true, filename })
@@ -195,24 +226,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       }
       if (action === '/variable-tracking') { if(method === 'DELETE') tracking.delete(id); return response({tracking:tracking.get(id) || [], mock:true}) }
       if (action === '/export-playwright' || action === '/export-script') return response({ code: '# Mock 导出：本文件用于校验下载交互，并非可运行脚本\n# Workflow: ' + String(db.workflows[id]?.name), filename: 'mock-workflow.txt', target: 'mock' })
-      if (action === '/execute') {
-        if (run || recording || picking) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
-        const doc = db.workflows[id]
-        if (!doc) return failure('工作流不存在', 404)
-        // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
-        const nodes = structuredClone(doc.nodes) as ObjectValue[]
-        if (findExcludedModuleType(nodes, moduleId => {
-          const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
-          return Array.isArray(children) ? children : undefined
-        })) return failure('工作流包含已排除节点', 422)
-        const index = body.startNodeId ? nodes.findIndex(n => n.id === body.startNodeId) : 0
-        if (index < 0) return failure('起点不存在')
-        runRows.set(id, [])
-        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: (body.breakpoints || []) as string[], variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).map(v => [String(v.name), v.value])) }
-        tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
-        run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
-        return response({ success: true, workflowId: id, mock: true })
-      }
+      if (action === '/execute') return startRun(id, db.workflows[id], body)
       if (action === '/stop') { finish('stopped'); return response({ success: true }) }
       if (action.startsWith('/debug/')) {
         if (!run || run.id !== id) return failure('没有活跃运行', 409)
@@ -293,8 +307,19 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/system/select-file') return response({success:true,path:'mock://AutoFlow/example.csv',file:'mock://AutoFlow/example.csv'})
     if (path === '/system/browser-config' || path === '/system/config') { const configKey=key+path; if(method==='POST')localStorage.setItem(configKey,JSON.stringify(body.config || body));return response({success:true,config:JSON.parse(localStorage.getItem(configKey)||'{}'),mock:true}) }
     if (path === '/system/custom-hotkeys') return response({success:true,mock:true})
-    if (path === '/local-workflows/self-heal') return response({success:true,enabled:body.enabled})
-    if (path.startsWith('/local-workflows/self-heal/')) return response({success:true,enabled:false})
+    if (path === '/local-workflows/self-heal' || path.startsWith('/local-workflows/self-heal/')) {
+      const filename = method === 'POST' ? String(body.filename || '') : path.slice('/local-workflows/self-heal/'.length)
+      const original = findFile(filename)
+      if (!original) return failure('Workflow not found', 404)
+      const selfHeal = { ...original.content.selfHeal as ObjectValue }
+      if (method === 'POST') {
+        if (typeof body.enabled !== 'boolean') return failure('enabled must be boolean', 422)
+        selfHeal.enabled = body.enabled
+        const content = { ...original.content, selfHeal }
+        persist({ ...db, files: { ...db.files, [fileKey(filename)]: { ...original, content, modifiedTime: new Date().toISOString(), size: new Blob([JSON.stringify(content)]).size } } })
+      } else if (method !== 'GET') return failure('Method not allowed', 405)
+      return response({ success: true, enabled: selfHeal.enabled === true, selfHeal, mock: true })
+    }
     if (path === '/system/info') return response({ platform:'mock', version:'AutoFlow Studio Mock', mock:true })
     if (path === '/security/status') return response({enabled:false,isLocal:true,token:null})
     if (path === '/image-assets' || path === '/data-assets') return response({assets:[],folders:[]})

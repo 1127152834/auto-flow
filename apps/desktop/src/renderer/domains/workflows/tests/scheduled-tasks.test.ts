@@ -1,0 +1,58 @@
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { mockRequest, configureMock } from '../api/mock-server'
+import { useScheduledTaskStore } from '../hooks/stores/scheduledTaskStore'
+const storage = new Map<string, string>()
+const request = (path: string, method = 'GET', body?: unknown) => mockRequest(`http://autoflow-studio.mock/api${path}`, { method, body: body === undefined ? undefined : JSON.stringify(body) })
+const payload = { name: '网页每日任务', workflow_id: 'scheduled.json', enabled: true, trigger: { type: 'time', schedule_type: 'daily', daily_time: '08:00:00' } }
+beforeEach(async () => {
+  vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), removeItem: (key: string) => storage.delete(key) })
+  storage.clear()
+  configureMock({ offline: false })
+  useScheduledTaskStore.setState({ tasks: [], logs: [], statistics: null, loading: false, error: null })
+  await request('/local-workflows/save-to-folder', 'POST', { filename: 'scheduled', content: { name: 'saved snapshot', nodes: [{ id: 'web', type: 'moduleNode', data: { moduleType: 'open_page', label: '网页' } }], edges: [], variables: [] } })
+})
+afterEach(async () => { configureMock({ offline: false }); await request('/workflows/current/stop', 'POST'); vi.unstubAllGlobals() })
+it('creates, reads, edits, toggles and deletes a persisted task through the actual API wrapper and Store', async () => {
+  const store = useScheduledTaskStore.getState()
+  const task = await store.createTask(payload as Parameters<typeof store.createTask>[0])
+  expect(task.id).toBeTruthy()
+  await store.updateTask(task.id, { name: 'changed' })
+  await store.toggleTask(task.id, false)
+  await store.fetchTasks()
+  expect(useScheduledTaskStore.getState().tasks).toMatchObject([{ name: 'changed', enabled: false }])
+  await store.fetchStatistics()
+  expect(useScheduledTaskStore.getState().statistics).toMatchObject({ total_tasks: 1, disabled_tasks: 1 })
+  await store.deleteTask(task.id)
+  expect(useScheduledTaskStore.getState().tasks).toEqual([])
+  expect((await request(`/scheduled-tasks/${task.id}`)).status).toBe(404)
+})
+it('preserves tasks on HTTP failure and rejects invalid create rather than reporting success', async () => {
+  const store = useScheduledTaskStore.getState()
+  const task = await store.createTask(payload as Parameters<typeof store.createTask>[0])
+  configureMock({ offline: true })
+  await expect(store.deleteTask(task.id)).rejects.toThrow('Mock network offline')
+  expect(useScheduledTaskStore.getState().tasks).toHaveLength(1)
+  configureMock({ offline: false })
+  expect((await request('/scheduled-tasks', 'POST', { ...payload, name: '' })).status).toBe(422)
+})
+it('uses the shared fixture run, rejects duplicate start/delete, and retains stopped logs', async () => {
+  const task = await (await request('/scheduled-tasks', 'POST', payload)).json()
+  expect((await request(`/scheduled-tasks/${task.id}/execute`, 'POST')).ok).toBe(true)
+  expect((await request(`/scheduled-tasks/${task.id}/execute`, 'POST')).status).toBe(409)
+  expect((await request(`/scheduled-tasks/${task.id}`, 'DELETE')).status).toBe(409)
+  expect((await request(`/scheduled-tasks/${task.id}/stop`, 'POST')).ok).toBe(true)
+  expect(await (await request(`/scheduled-tasks/${task.id}/logs`)).json()).toMatchObject([{ status: 'stopped', task_id: task.id }])
+  expect((await (await request(`/scheduled-tasks/${task.id}`)).json()).is_running).toBe(false)
+})
+it('does not leave running state or fabricated logs when workflow resolution fails', async () => {
+  const task = await (await request('/scheduled-tasks', 'POST', { ...payload, workflow_id: 'missing.json' })).json()
+  expect((await request(`/scheduled-tasks/${task.id}/execute`, 'POST')).status).toBe(404)
+  expect((await (await request(`/scheduled-tasks/${task.id}`)).json()).is_running).toBe(false)
+  expect(await (await request(`/scheduled-tasks/${task.id}/logs`)).json()).toEqual([])
+})
+it('persists workflow self-healing settings, preserves them on ordinary saves and isolates missing files', async () => {
+  expect((await request('/local-workflows/self-heal', 'POST', { filename: 'scheduled.json', enabled: true })).ok).toBe(true)
+  await request('/local-workflows/save-to-folder', 'POST', { filename: 'scheduled', content: { name: 'new content', nodes: [], edges: [] } })
+  expect(await (await request('/local-workflows/self-heal/scheduled.json')).json()).toMatchObject({ enabled: true })
+  expect((await request('/local-workflows/self-heal', 'POST', { filename: 'missing.json', enabled: true })).status).toBe(404)
+})
