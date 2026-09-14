@@ -105,3 +105,7 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 ## PM3 管理功能优先（2026-09-15，confirmed）
 
 来源：用户明确调整执行组织，随后排除 Studio demo 联合测试。保留 Task 2/3 与 Task 4 有效成果；自动化管理后端与组件并行推进，原执行卡更新顺序和责任。Studio transport/画布/bridge 联调暂停，不作为管理验收前置。真实管理页面 E2E、截图以及管理端运行所需幂等/原子性/停止/撤权/恢复不变。先完成 Studio 保存运行 UI 的旧门槛 superseded，历史证据保留；不进入 PM4。
+
+### 2026-09-15 PM3 管理配置优先（confirmed）
+
+用户明确 Studio 是 demo，不做联合测试。管理自动化配置持久化、五项 HTTP 与操作恢复已装配；只读工作流目录来自 WorkflowService，不能当作 Studio 集成。运行准入 resource/capability 适配未完成，因此不把保存配置展示为运行可用。详见 PM3 原执行卡及 management-backend-verification.json。主项目仍只读。

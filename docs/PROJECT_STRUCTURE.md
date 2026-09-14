@@ -445,3 +445,5 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `0010_workflow_document_commands` 保存文档命令事实；`0011_workflow_runtime_contracts` 从 0010 顺序升级，保留历史运行证据并中断旧活动执行。有准备/运行证据时禁止有损降级，空库允许降级。历史 PM0–PM2 报告不改写。
 - `application/workflows/{browser_resources,dispatcher}.py` 解析受控资源、持久状态与事件、调度容量和清理恢复；`infrastructure/process/{workflow_worker,workflow_recovery}.py` 管理进程及原生归属；`providers/browser/{workflow_executor,workflow_worker}.py` 只执行已确认四节点。`bootstrap/workflows.py` 注册生命周期及资源锁。
 - Task 4 真实后端与 CloakBrowser 链已核验；项目自动化配置与组件进行中，HTTP/批次/运行页面尚未交付。按本轮用户指令管理端优先，Studio demo 联合验收取消。
+
+- PM3 管理配置：`domain/project_automations` 负责配置规则和身份，`application/project_automations` 协调管理命令，`infrastructure/database/project_automations.py` 在短事务中保存配置及冻结 Operation。`adapters/http/workflow_catalog.py` 仅把既有 WorkflowService 事实提供给管理资源选择；不承担 Studio demo 联调。新增迁移 `pm03_project_automations` 顺接 `0011_workflow_runtime_contracts`。

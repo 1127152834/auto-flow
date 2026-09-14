@@ -6,6 +6,7 @@ from typing import Any
 from fastapi import FastAPI
 
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
     ProxyHttpServices,
@@ -36,6 +37,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     configure_openapi(app, api_version=api_version)
     register_proxy_routes(app, proxies)
     register_management_routes(app, management, api_version=api_version, instance_id='schema-export')
+    app.include_router(workflow_catalog_router(unavailable))
     projects = ProjectHttpServices(**{field.name: unavailable for field in fields(ProjectHttpServices)})
     register_project_routes(app, projects)
     return app.openapi()

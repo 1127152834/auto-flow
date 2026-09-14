@@ -34,6 +34,7 @@ from autoflow.domain.profiles.errors import (
     ProxyUnavailable,
 )
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.models import WorkflowError
 
 _MODEL_ERROR_MESSAGES = {
     "VALIDATION_ERROR": "请求参数无效",
@@ -137,6 +138,12 @@ def _safe_model_details(details: dict[str, Any]) -> dict[str, Any]:
 
 
 def install_error_handlers(app: FastAPI) -> None:
+    @app.exception_handler(WorkflowError)
+    async def workflow_error(_request: Request, error: WorkflowError) -> JSONResponse:
+        return error_response(
+            error.status, error.code, error.message, jsonable_encoder(error.details)
+        )
+
     @app.exception_handler(ProjectError)
     async def project_error(_request: Request, error: ProjectError) -> JSONResponse:
         details = dict(error.details)

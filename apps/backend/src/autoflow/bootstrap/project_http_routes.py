@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
+from autoflow.adapters.http.project_automations import project_automations_router
 from autoflow.adapters.http.project_data import project_data_router
 from autoflow.adapters.http.project_data_deletions import project_data_deletion_router
 from autoflow.adapters.http.project_data_impacts import project_data_impact_router
@@ -18,6 +19,7 @@ from autoflow.adapters.http.project_excel import (
 from autoflow.adapters.http.project_excel_exports import project_excel_exports_router
 from autoflow.adapters.http.project_excel_imports import project_excel_import_router
 from autoflow.adapters.http.projects import projects_router
+from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
 from autoflow.application.project_data.excel import ProjectExcelService
@@ -34,6 +36,7 @@ from autoflow.application.projects.service import ProjectService
 @dataclass(frozen=True)
 class ProjectHttpServices:
     projects: ProjectService
+    automations: ProjectAutomationService
     tables: DataTableService
     catalog: DataCatalogService
     records: DataRecordService
@@ -48,6 +51,7 @@ class ProjectHttpServices:
 
 def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None:
     app.include_router(projects_router(services.projects))
+    app.include_router(project_automations_router(services.automations))
     app.include_router(project_records_router(services.records, services.queries))
     app.include_router(project_data_router(services.tables, services.catalog))
     app.include_router(project_data_impact_router(services.catalog, services.deletions))

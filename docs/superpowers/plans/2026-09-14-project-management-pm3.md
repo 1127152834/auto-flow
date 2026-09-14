@@ -14,7 +14,7 @@
 
 ### 2026-09-15 执行收紧（confirmed，覆盖下文旧执行顺序）
 
-来源：用户要求提高管理功能交付效率，随后明确“Studio 还是 demo，不需要联合 Studio 测试，只需要把管理功能做好”。核对 HEAD `8e1f676`，Task 2、3 已提交；Task 4 有效实现保留，尚未整体交付。主项目只读。
+来源：用户要求提高管理功能交付效率，随后明确“Studio 还是 demo，不需要联合 Studio 测试，只需要把管理功能做好”。核对 HEAD `bd5aba5`，Task 2、3、4 已提交；Task 4 仅后台核心范围，不代表管理页面通过。主项目只读。
 
 - 交付主线改为 Task 7–10 自动化管理 → Task 11–16 管理端批次/运行记录/停止恢复 → Task 17–19 管理页面 E2E 和截图。Task 4 已发现的清理问题定向闭合，不阻塞独立管理组件开发。
 - Task 5 仅按管理端消费者接入必要工作流/Run HTTP 和事件查询；Studio transport、Store、画布和 demo IPC 联调暂停。本轮不修改 `domains/workflows/api.ts`、`events.ts` 或增加 demo runtime facade。
@@ -26,9 +26,9 @@
 | 当前阻断/交付包 | 唯一负责人及文件所有权 | 完成证据与现状 | 依赖/下一步 |
 |---|---|---|---|
 | Task 4 acquire 失败后 shutdown 不可抹除未知 owner | 主协调：dispatcher、bootstrap、共享进程文件 | 规格、工程通过；shutdown 失败保留与成功恢复均定向闭合 | 完成；管理端运行接口后续复用 |
-| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | 进行中，未装配正式服务 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
-| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 进行中，未联调 | 冻结参数/政策合同，复用统一表格和小圆角 |
-| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 尚未实现 | 真实配置接口及组件先行，不使用 demo 结果 |
+| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | 创建/列表/详情/聚合更新与 Operation 恢复已装配真实服务；资源准入适配仍待接入 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
+| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 受控组件已完成并复核；管理页正在真实联调 | 冻结参数/政策合同，复用统一表格和小圆角 |
+| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 目录、四页签、恢复已接入；真实 Electron 验收进行中 | 真实配置接口及组件先行，不使用 demo 结果 |
 | Task 11–16 批次/运行记录/停止恢复 | 主协调：契约、事务、调度竞争和集成 | 尚未实现 | 复用 CoreRun；Task 4 基础检查不等于完整业务通过 |
 
 保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
@@ -763,3 +763,12 @@ PM3 只有同时满足以下条件才完成：
 - PM4–PM9 未被假实现，主项目和其他工作区未被本阶段修改。
 
 交付后停在 PM3 验收点，不自动进入 PM4。
+
+### 2026-09-15 管理配置后台检查点（范围已核验）
+
+- Task 7 持久层及 Task 8 创建/目录/详情/聚合更新/Operation 查询已真实装配。管理工作流目录只读接口已接入 `/api/v1/workflows`，不连接 Studio demo。
+- 当前配置已保存与运行可用保持分离：resource/capability query 尚未装配，validation 明确 unavailable。不能据此宣称 PM3.1 整阶段完成。
+- 规格/工程审查修正：查询表达式先校验形状与预算；小数秒有限正数；超大 timeout/default 数字返回 422；原始省略值不补 null；冻结 Automation 结果包括空 capabilityRequirements，与首次响应相同；工作流不存在返回 404。
+- 后台当前执行结果见 `docs/project-management/implementation/pm3/management-backend-verification.json`。前端组件/页面测试和 Electron 验收另记，不用后台检查替代。
+- 图稿与冻结 DTO 的两处待对齐：参数说明列尚无持久字段；自动化级模型提供方覆盖尚无字段。临时环境结束后关闭属于当前固定行为，不添加虚构 retentionPolicy。尚未宣称这些原型项完成。
+- 管理页验收脚本首次启动失败是 QA 设置资料遗漏 required previousPath，已修正工具；未修改生产设置校验。失败截图保留，不计功能通过。

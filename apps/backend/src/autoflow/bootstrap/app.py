@@ -9,10 +9,12 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
 from autoflow.application.project_data.excel import ProjectExcelService
@@ -28,6 +30,7 @@ from autoflow.application.project_data.status_batches import (
 from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
@@ -60,6 +63,9 @@ from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
+from autoflow.infrastructure.database.project_automations import (
+    SqlAlchemyProjectAutomations,
+)
 from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_catalog import (
     SqlAlchemyProjectDataCatalog,
@@ -94,6 +100,7 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
+from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
@@ -347,8 +354,14 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
+    workflow_service = WorkflowService(SqlAlchemyWorkflowRepository(session_factory))
+    app.include_router(workflow_catalog_router(workflow_service))
     register_project_routes(app, ProjectHttpServices(
         projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        automations=ProjectAutomationService(
+            SqlAlchemyProjects(session_factory), SqlAlchemyProjectAutomations(session_factory),
+            workflow_service=workflow_service,
+        ),
         tables=DataTableService(SqlAlchemyProjectData(session_factory)),
         catalog=DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory)),
         records=DataRecordService(SqlAlchemyProjectDataRecords(session_factory)),

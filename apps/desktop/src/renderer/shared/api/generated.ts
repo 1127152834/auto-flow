@@ -1004,6 +1004,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Workflows */
+        get: operations["list_workflows_api_v1_workflows_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflows/{workflowId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Workflow */
+        get: operations["get_workflow_api_v1_workflows__workflowId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects": {
         parameters: {
             query?: never;
@@ -1134,6 +1168,59 @@ export type paths = {
         };
         /** Workspace Operation */
         get: operations["workspace_operation_api_v1_workspace_operations_by_idempotency_key__key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Automations */
+        get: operations["list_automations_api_v1_projects__projectId__automations_get"];
+        put?: never;
+        /** Create Automation */
+        post: operations["create_automation_api_v1_projects__projectId__automations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Automation */
+        get: operations["get_automation_api_v1_projects__projectId__automations__automationId__get"];
+        /** Update Automation */
+        put: operations["update_automation_api_v1_projects__projectId__automations__automationId__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/validation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate Automation */
+        get: operations["validate_automation_api_v1_projects__projectId__automations__automationId__validation_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1657,6 +1744,130 @@ export type components = {
              */
             api_key: string;
         };
+        /** AutomationPage */
+        AutomationPage: {
+            /** Items */
+            items: components["schemas"]["AutomationView"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Total */
+            total: number;
+            /** Sort */
+            sort: string;
+        };
+        /** AutomationResourceLocator */
+        AutomationResourceLocator: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "automation";
+            /** Projectid */
+            projectId: string;
+            /** Automationid */
+            automationId: string;
+        };
+        /** AutomationUpdate */
+        AutomationUpdate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+            /** Expectedmanagementrevision */
+            expectedManagementRevision: number;
+        };
+        /** AutomationValidationIssue */
+        AutomationValidationIssue: {
+            /** Path */
+            path: string[];
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Resource */
+            resource?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** AutomationValidationView */
+        AutomationValidationView: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "draft" | "blocked" | "unavailable";
+            /** Valid */
+            valid: boolean;
+            /** Runnable */
+            runnable: boolean;
+            /** Issues */
+            issues: components["schemas"]["AutomationValidationIssue"][];
+            /** Capabilityrequirements */
+            capabilityRequirements: components["schemas"]["CapabilityRequirement"][];
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+        };
+        /** AutomationView */
+        AutomationView: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+            /** Automationid */
+            automationId: string;
+            /** Projectid */
+            projectId: string;
+            /** Managementrevision */
+            managementRevision: number;
+            /** Capabilityrequirements */
+            capabilityRequirements?: components["schemas"]["CapabilityRequirement"][];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** AutomationWrite */
+        AutomationWrite: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Workflowid */
+            workflowId: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+        };
         /** BrowserApiError */
         BrowserApiError: {
             /** Code */
@@ -1701,6 +1912,17 @@ export type components = {
             constraints?: {
                 [key: string]: unknown;
             };
+        };
+        /** CapabilityRequirement */
+        CapabilityRequirement: {
+            /** Capability */
+            capability: string;
+            /** Required */
+            required: boolean;
+            /** Available */
+            available: boolean;
+            /** Reason */
+            reason?: string | null;
         };
         /** ColumnExcelIdentity */
         ColumnExcelIdentity: {
@@ -2588,6 +2810,18 @@ export type components = {
             /** Expected Revision */
             expected_revision: number;
         };
+        /** FieldEqualsRelation */
+        FieldEqualsRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "fieldEquals";
+            /** Sourceinputid */
+            sourceInputId: string;
+            sourceFieldRef: components["schemas"]["DataFieldRef"];
+            targetFieldRef: components["schemas"]["DataFieldRef"];
+        };
         /** FieldImpactReport */
         FieldImpactReport: {
             /** Impactrevision */
@@ -2648,6 +2882,18 @@ export type components = {
             mode: "field";
             /** Fieldid */
             fieldId: string;
+        };
+        /** FixedEnvironment */
+        FixedEnvironment: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "fixedEnvironment";
+            /** Environmentid */
+            environmentId: string;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
         };
         /** FixedProxy */
         FixedProxy: {
@@ -2774,6 +3020,62 @@ export type components = {
              */
             source: "local_probe" | "provider_probe" | "none";
             error?: components["schemas"]["ApiError"] | null;
+        };
+        /** InputDefinition */
+        InputDefinition: {
+            /** Inputid */
+            inputId: string;
+            /** Alias */
+            alias: string;
+            /** Tableid */
+            tableId: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "independent" | "fixedRecord" | "related";
+            /** Required */
+            required: boolean;
+            fixedRecord?: components["schemas"]["DataRecordRef"] | null;
+            /** Relation */
+            relation?: (components["schemas"]["RecordSlotRelation"] | components["schemas"]["FieldEqualsRelation"] | components["schemas"]["SameRecordRelation"]) | null;
+            /** Fieldbindings */
+            fieldBindings: components["schemas"]["InputFieldBinding"][];
+            /** Filter */
+            filter: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Orderby */
+            orderBy: {
+                [key: string]: string;
+            }[];
+        };
+        /** InputEnvironment */
+        InputEnvironment: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "inputEnvironment";
+            /** Inputid */
+            inputId: string;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+        };
+        /** InputFieldBinding */
+        InputFieldBinding: {
+            /** Inputfieldid */
+            inputFieldId: string;
+            /** Inputfieldalias */
+            inputFieldAlias: string;
+            fieldRef: components["schemas"]["DataFieldRef"];
+        };
+        /** InputPlan */
+        InputPlan: {
+            /** Inputs */
+            inputs: components["schemas"]["InputDefinition"][];
         };
         /** InstalledKernelList */
         InstalledKernelList: {
@@ -3218,6 +3520,18 @@ export type components = {
             /** Message */
             message: string;
         };
+        /** NewFromProfile */
+        NewFromProfile: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "newFromProfile";
+            /** Profileid */
+            profileId?: string | null;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+        };
         /** NewTarget */
         NewTarget: {
             /**
@@ -3265,6 +3579,22 @@ export type components = {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** ParameterDefinition */
+        ParameterDefinition: {
+            /** Parameterid */
+            parameterId: string;
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "boolean";
+            /** Required */
+            required: boolean;
+            /** Defaultvalue */
+            defaultValue?: string | number | boolean | null;
         };
         /** PoolOption */
         PoolOption: {
@@ -3600,7 +3930,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation";
             /**
              * Status
              * @enum {string}
@@ -3609,9 +3939,9 @@ export type components = {
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
-            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;
@@ -3873,6 +4203,18 @@ export type components = {
             type: "record";
             recordRef: components["schemas"]["DataRecordRef"];
         };
+        /** RecordSlotRelation */
+        RecordSlotRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "recordSlot";
+            /** Slotid */
+            slotId: string;
+            /** Sourceinputid */
+            sourceInputId: string;
+        };
         /** RecordStatusBatchBlocker */
         RecordStatusBatchBlocker: {
             /** Code */
@@ -4026,6 +4368,21 @@ export type components = {
              */
             interval_minutes: 5 | 10 | 30 | 60;
         };
+        /** RunPolicy */
+        RunPolicy: {
+            /** Maxtasks */
+            maxTasks: number;
+            /** Concurrency */
+            concurrency: number;
+            /** Maxliveinstances */
+            maxLiveInstances: number;
+            /** Continueafterfailure */
+            continueAfterFailure: boolean;
+            /** Automaticexecutiontimeoutseconds */
+            automaticExecutionTimeoutSeconds: number;
+            /** Manualdeadlineseconds */
+            manualDeadlineSeconds: number;
+        };
         /** RuntimePaths */
         RuntimePaths: {
             /** Workspace */
@@ -4052,6 +4409,16 @@ export type components = {
             paths: components["schemas"]["RuntimePaths"];
             /** Blockers */
             blockers: string[];
+        };
+        /** SameRecordRelation */
+        SameRecordRelation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sameRecord";
+            /** Sourceinputid */
+            sourceInputId: string;
         };
         /** SourceDefaultProxy */
         SourceDefaultProxy: {
@@ -4235,6 +4602,78 @@ export type components = {
             width: number;
             /** Height */
             height: number;
+        };
+        /** WorkflowCatalogDetail */
+        WorkflowCatalogDetail: {
+            /** Workflowid */
+            workflowId: string;
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Checksum */
+            checksum: string;
+            validation: components["schemas"]["WorkflowCatalogValidation"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** WorkflowCatalogIssue */
+        WorkflowCatalogIssue: {
+            /** Nodeid */
+            nodeId: string | null;
+            /** Path */
+            path: string[];
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+        };
+        /** WorkflowCatalogItem */
+        WorkflowCatalogItem: {
+            /** Workflowid */
+            workflowId: string;
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Checksum */
+            checksum: string;
+            validation: components["schemas"]["WorkflowCatalogValidation"];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+        };
+        /** WorkflowCatalogList */
+        WorkflowCatalogList: {
+            /** Items */
+            items: components["schemas"]["WorkflowCatalogItem"][];
+        };
+        /** WorkflowCatalogValidation */
+        WorkflowCatalogValidation: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "blocked";
+            /** Runnable */
+            runnable: boolean;
+            /** Issues */
+            issues: components["schemas"]["WorkflowCatalogIssue"][];
         };
         /** StudioBrowserScriptContext */
         StudioBrowserScriptContext: {
@@ -8651,6 +9090,102 @@ export interface operations {
             };
         };
     };
+    list_workflows_api_v1_workflows_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowCatalogList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_workflow_api_v1_workflows__workflowId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workflowId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowCatalogDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
     list_projects_api_v1_projects_get: {
         parameters: {
             query?: {
@@ -8991,9 +9526,9 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
+                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
-                resourceType?: ("project" | "table" | "field" | "status" | "record") | null;
+                resourceType?: ("project" | "table" | "field" | "status" | "record" | "automation") | null;
             };
             header?: never;
             path: {
@@ -9181,6 +9716,325 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_automations_api_v1_projects__projectId__automations_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                page?: number;
+                pageSize?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_automation_api_v1_projects__projectId__automations_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationWrite"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_automation_api_v1_projects__projectId__automations__automationId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    update_automation_api_v1_projects__projectId__automations__automationId__put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AutomationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    validate_automation_api_v1_projects__projectId__automations__automationId__validation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationValidationView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -3,6 +3,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
+from .project_automation_schemas import AutomationView
 from .project_data_catalog_schemas import (
     FieldMutationResult,
     FieldResourceLocator,
@@ -105,6 +106,12 @@ class ProjectResourceLocator(ApiModel):
     project_id: str
 
 
+class AutomationResourceLocator(ApiModel):
+    type: Literal["automation"]
+    project_id: str
+    automation_id: str
+
+
 class ProjectOperationView(ApiModel):
     operation_id: str
     project_id: str | None
@@ -112,6 +119,8 @@ class ProjectOperationView(ApiModel):
     kind: Literal[
         "createProject",
         "updateProject",
+        "createAutomation",
+        "updateAutomation",
         "createTable",
         "updateTable",
         "mutateField",
@@ -133,6 +142,7 @@ class ProjectOperationView(ApiModel):
     status_revision: int
     resource: Annotated[
         ProjectResourceLocator
+        | AutomationResourceLocator
         | TableResourceLocator
         | FieldResourceLocator
         | StatusResourceLocator
@@ -141,6 +151,7 @@ class ProjectOperationView(ApiModel):
     ]
     result: (
         ProjectView
+        | AutomationView
         | DataTableView
         | FieldMutationResult
         | DataSchemaResult
