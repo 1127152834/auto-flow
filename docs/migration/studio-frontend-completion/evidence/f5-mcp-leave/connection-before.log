@@ -1,0 +1,285 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:8502) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx (7 tests | 7 failed) 1234ms
+   × config rejects a receipt from the previous connection 7ms
+   × status rejects a receipt from the previous connection 1ms
+   × save rejects a receipt from the previous connection 1ms
+   × reload rejects a receipt from the previous connection 0ms
+   × keeps a new server draft and blocks sending it after the connection changes 166ms
+   × ignores the previous configuration when its first read finishes after connection replacement 15ms
+   × a failed reload read disables writes against the stale configuration 1044ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > config rejects a receipt from the previous connection
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > status rejects a receipt from the previous connection
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > save rejects a receipt from the previous connection
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > reload rejects a receipt from the previous connection
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx:24:26
+     22|   resolve(Response.json(operation.value))
+     23|   const result = await pending
+     24|   expect(result.success).toBe(false)
+       |                          ^
+     25|   expect(result.data).toBeUndefined()
+     26| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > keeps a new server draft and blocks sending it after the connection changes
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "http://next.fixture/api/ai-assistant/mcp/config",
+      Object {
+        "body": "{"config":{"mcpServers":{"fixture":{"command":"node","disabled":false},"draft":{"transport":"stdio","command":"node","args":[],"env":{},"disabled":false}}}}",
+        "headers": Object {
+          "Content-Type": "application/json",
+        },
+        "method": "PUT",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx:37:20
+     35|   await act(async () => { restoreNext = configureStudioConnection('htt…
+     36|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     37|   expect(next).not.toHaveBeenCalled()
+       |                    ^
+     38|   expect(screen.getByPlaceholderText('例如 filesystem / weather / github…
+     39|   await screen.findByText(/连接已变更/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > ignores the previous configuration when its first read finishes after connection replacement
+AssertionError: expected <span …(1)></span> to be null
+
+- Expected:
+null
+
++ Received:
+<span
+  class="font-medium text-sm text-gray-900 truncate"
+>
+  fixture
+</span>
+
+ ❯ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx:49:41
+     47|     resolve(Response.json(config))
+     48|   })
+     49|   expect(screen.queryByText('fixture')).toBeNull()
+       |                                         ^
+     50|   expect((screen.getByRole('button', { name: '添加' }) as HTMLButtonElem…
+     51|   await screen.findByText(/连接已变更/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx > a failed reload read disables writes against the stale configuration
+AssertionError: expected false to be true // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 rounded-md bg-violet-50 border border-violet-200/50 text-xs text-violet-800 leading-relaxed"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start gap-2"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-server w-4 h-4 mt-0.5 flex-shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mry[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mx[39m=[32m"2"[39m
+                [33my[39m=[32m"2"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mry[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mx[39m=[32m"2"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"6"[39m
+                [33mx2[39m=[32m"6.01"[39m
+                [33my1[39m=[32m"6"[39m
+                [33my2[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"6"[39m
+                [33mx2[39m=[32m"6.01"[39m
+                [33my1[39m=[32m"18"[39m
+                [33my2[39m=[32m"18"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<div>[39m
+              [36m<strong>[39m
+                [0mMCP（Model Context Protocol）[0m
+              [36m</strong>[39m
+              [0m 让你接入第三方工具到 AutoFlow 小助手。 支持 [0m
+              [36m<code[39m
+                [33mclass[39m=[32m"px-1 bg-violet-100 rounded"[39m
+              [36m>[39m
+                [0mstdio[0m
+              [36m</code>[39m
+              [0m（本地命令）、[0m
+              [36m<code[39m
+                [33mclass[39m=[32m"px-1 bg-violet-100 rounded mx-0.5"[39m
+              [36m>[39m
+                [0msse[0m
+              [36m</code>[39m
+              [0m 和[0m
+              [36m<code[39m
+                [33mclass[39m=[32m"px-1 bg-violet-100 rounded ml-0.5"[39m
+              [36m>[39m
+                [0mhttp[0m
+              [36m</code>[39m
+              [0m（远程服务）。 配置格式与 Claude Desktop 兼容。[0m
+              [36m<a[39m
+                [33mclass[39m=[32m"ml-2 text-violet-700 underline inline-flex items-center gap-0.5"[39m
+                [33mhref[39m=[32m"https://github.com/modelcontextprotocol/servers"[39m
+                [33mrel[39m=[32m"noreferrer"[39m
+                [33mtarget[39m=[32m"_blank"[39m
+              [36m>[39m
+                [0m官方 server 列表 [0m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-external-link w-3 h-3"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M15 3h6v6"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M10 14 21 3"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</a>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-gray-600"[39m
+          [36m>[39m
+            [0m共 [0m
+            [36m<strong>[39m
+              [0m1[0m
+            [36m</strong>[39m
+            [0m 个服务器[0m
+            [0m · [0m
+            [0m已连接 [0m
+            [36m<strong[39m
+              [33mclass[39m=[32m"text-green-600"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</strong>[39m
+            [0m · [0m
+            [0m注入 [0m
+            [36m<strong[39m
+              [33mclass[39m=[32m"text-violet-600"[39m
+            [36m>[39m
+              [0m0[0m
+            [36m</strong>[39m
+            [0m 个工具[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-sparkles w-3.5 h-3.5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linec...
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx:64:106
+     62|   fireEvent.click(screen.getByRole('button', { name: '重新连接' }))
+     63|   await screen.findByText(/读取失败/)
+     64|   await waitFor(() => expect((screen.getByRole('button', { name: '添加' …
+       |                                                                                                          ^
+     65| })
+     66|
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  14:28:40
+   Duration  2.33s (transform 210ms, setup 135ms, import 265ms, tests 1.23s, environment 573ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/mcp-connection-protection.test.tsx

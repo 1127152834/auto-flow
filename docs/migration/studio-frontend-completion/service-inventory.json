@@ -2262,7 +2262,7 @@
       "id": "service:mcpApi.config",
       "operation": "mcpApi.config",
       "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-      "line": 10,
+      "line": 13,
       "source": null,
       "requests": [
         {
@@ -2272,14 +2272,14 @@
           "responseType": null,
           "call": "apiRequest('/ai-assistant/mcp/config')",
           "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-          "line": 10,
+          "line": 13,
           "source": null
         }
       ],
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-          "line": 53,
+          "line": 66,
           "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
           "call": "mcpApi.config()"
         }
@@ -2290,7 +2290,7 @@
       "id": "service:mcpApi.reload",
       "operation": "mcpApi.reload",
       "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-      "line": 13,
+      "line": 16,
       "source": null,
       "requests": [
         {
@@ -2300,14 +2300,14 @@
           "responseType": null,
           "call": "apiRequest('/ai-assistant/mcp/reload',{method:'POST'})",
           "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-          "line": 13,
+          "line": 16,
           "source": null
         }
       ],
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-          "line": 101,
+          "line": 125,
           "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
           "call": "mcpApi.reload()"
         }
@@ -2318,7 +2318,7 @@
       "id": "service:mcpApi.save",
       "operation": "mcpApi.save",
       "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-      "line": 12,
+      "line": 15,
       "source": null,
       "requests": [
         {
@@ -2328,14 +2328,14 @@
           "responseType": null,
           "call": "apiRequest('/ai-assistant/mcp/config',{method:'PUT',body:JSON.stringify({config})})",
           "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-          "line": 12,
+          "line": 15,
           "source": null
         }
       ],
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-          "line": 79,
+          "line": 103,
           "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
           "call": "mcpApi.save(next)"
         }
@@ -2346,7 +2346,7 @@
       "id": "service:mcpApi.status",
       "operation": "mcpApi.status",
       "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-      "line": 11,
+      "line": 14,
       "source": null,
       "requests": [
         {
@@ -2356,14 +2356,14 @@
           "responseType": null,
           "call": "apiRequest('/ai-assistant/mcp/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
-          "line": 11,
+          "line": 14,
           "source": null
         }
       ],
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-          "line": 53,
+          "line": 66,
           "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
           "call": "mcpApi.status()"
         }
@@ -5830,6 +5830,12 @@
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
           "line": 94,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
+          "via": "window.addEventListener"
+        },
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+          "line": 91,
+          "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
           "via": "window.addEventListener"
         },
         {

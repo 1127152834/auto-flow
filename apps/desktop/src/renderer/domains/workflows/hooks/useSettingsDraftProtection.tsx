@@ -21,25 +21,25 @@ export function useSettingsDraftProtection(
     mounted.current = true
     return () => { mounted.current = false; resolve.current?.('cancel'); resolve.current = null }
   }, [])
+  const confirmLeave = useCallback(async () => {
+    if (busy || deciding.current || !mounted.current) return false
+    if (!dirty) return true
+    deciding.current = true
+    setPending(true)
+    try {
+      const choice = await new Promise<'save' | 'discard' | 'cancel'>(done => { resolve.current = done; setOpen(true) })
+      if (!mounted.current || choice === 'cancel') return false
+      if (choice === 'discard') return true
+      return await save() && mounted.current
+    } finally {
+      deciding.current = false
+      if (mounted.current) setPending(false)
+    }
+  }, [dirty, busy, save])
   useEffect(() => {
-    if (!register) return
-    register(async () => {
-      if (busy || deciding.current || !mounted.current) return false
-      if (!dirty) return true
-      deciding.current = true
-      setPending(true)
-      try {
-        const choice = await new Promise<'save' | 'discard' | 'cancel'>(done => { resolve.current = done; setOpen(true) })
-        if (!mounted.current || choice === 'cancel') return false
-        if (choice === 'discard') return true
-        return await save() && mounted.current
-      } finally {
-        deciding.current = false
-        if (mounted.current) setPending(false)
-      }
-    })
-    return () => register(null)
-  }, [register, title, dirty, busy, save])
+    register?.(confirmLeave)
+    return () => register?.(null)
+  }, [register, confirmLeave])
   const choose = useCallback((choice: 'save' | 'discard' | 'cancel') => {
     resolve.current?.(choice)
     resolve.current = null
@@ -56,7 +56,7 @@ export function useSettingsDraftProtection(
     ] })
     return () => registry.unregister(id)
   }, [open, title, choose])
-  return { pending, dialog: <ConfirmDialog isOpen={open} title={title}
+  return { pending, confirmLeave, dialog: <ConfirmDialog isOpen={open} title={title}
     message="当前配置有未提交的修改，请选择如何处理。" confirmText="保存后继续" secondaryText="放弃修改"
     onConfirm={() => choose('save')} onSecondary={() => choose('discard')} onCancel={() => choose('cancel')} /> }
 }

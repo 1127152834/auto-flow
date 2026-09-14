@@ -1108,7 +1108,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
 
           {activeTab === 'mcp' && (
             <>
-              <MCPConfigPanel />
+              <MCPConfigPanel registerLeaveGuard={registerLeaveGuard} />
             </>
           )}
 

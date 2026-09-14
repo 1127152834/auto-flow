@@ -1,4 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/MCPConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
+import { useSettingsDraftProtection, type RegisterSettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
+import { getStudioTransportRevision } from '../api/transport'
 import { mcpApi } from '../api/mcp'
 import type {McpConfig, McpServerConfig as MCPServerConfig, McpStatus as MCPStatus} from '../lib/mcpContract'
 import { mcpFormTransport, parseMcpMapping } from '../lib/mcpConfigText'
@@ -29,7 +31,7 @@ const DEFAULT_NEW_SERVER: MCPServerConfig = {
   autoApprove: [],
 }
 
-export function MCPConfigPanel() {
+export function MCPConfigPanel({ registerLeaveGuard }: { registerLeaveGuard?: RegisterSettingsLeaveGuard }) {
   const [config, setConfig] = useState<McpConfig>({ mcpServers: {} })
   const [status, setStatus] = useState<MCPStatus | null>(null)
   const [loading, setLoading] = useState(false)
@@ -43,89 +45,112 @@ export function MCPConfigPanel() {
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const busy = useRef(false)
+  const mounted = useRef(true)
+  const reads = useRef(0)
+  const loadedRevision = useRef<number | null>(null)
   const { confirm, ConfirmDialog } = useConfirm()
+  useEffect(() => {
+    if (editingName !== null) return
+    registerLeaveGuard?.(async () => !busy.current)
+    return () => registerLeaveGuard?.(null)
+  }, [registerLeaveGuard, editingName])
 
-  // 拉取当前配置 + 状态
+  // Only confirmed reads from the current connection may enable editing.
   const refresh = useCallback(async () => {
+    const sequence = ++reads.current
+    const revision = getStudioTransportRevision()
+    const current = () => mounted.current && sequence === reads.current && revision === getStudioTransportRevision()
     setLoading(true)
     setError(null)
     try {
-      const [cfgRes, stRes] = await Promise.all([mcpApi.config(),mcpApi.status()])
+      const [cfgRes, stRes] = await Promise.all([mcpApi.config(), mcpApi.status()])
+      if (!current()) return false
       if (!cfgRes.success || !cfgRes.data) throw new Error(cfgRes.error)
       if (!stRes.success || !stRes.data) throw new Error(stRes.error)
       setConfig(cfgRes.data)
       setStatus(stRes.data)
+      loadedRevision.current = revision
       setLoaded(true)
       return true
     } catch (e: any) {
-      setError(e?.message || '加载失败')
+      if (current()) { setError(e?.message || '加载失败'); setLoaded(false) }
       return false
-    } finally {
-      setLoading(false)
-    }
+    } finally { if (current()) setLoading(false) }
   }, [])
 
   useEffect(() => {
-    refresh()
+    mounted.current = true
+    void refresh()
+    const invalidate = () => {
+      reads.current++
+      loadedRevision.current = null
+      busy.current = false
+      setLoaded(false); setLoading(false); setSaving(false); setReloading(false); setSavedFlash(false)
+      setError('服务连接已变更，原编辑内容已保留；请关闭编辑后重新读取配置')
+    }
+    window.addEventListener('studio:transport-changed', invalidate)
+    return () => { mounted.current = false; reads.current++; window.removeEventListener('studio:transport-changed', invalidate) }
   }, [refresh])
 
-  // 保存配置
   const saveConfig = async (next: McpConfig) => {
-    if (busy.current || !loaded) return false
+    const revision = getStudioTransportRevision()
+    if (busy.current || !loaded || loadedRevision.current !== revision) return false
+    const current = () => mounted.current && revision === getStudioTransportRevision()
     busy.current = true
     setSaving(true)
     setSavedFlash(false)
     try {
       const result = await mcpApi.save(next)
+      if (!current()) return false
       if (!result.success) throw new Error(result.error)
       setConfig(next)
       setSavedFlash(true)
-      setTimeout(() => setSavedFlash(false), 1500)
+      setTimeout(() => { if (current()) setSavedFlash(false) }, 1500)
       setError(null)
       return true
     } catch (e: any) {
-      setError(`保存失败：${e?.message || e}`)
+      if (current()) setError(`保存失败：${e?.message || e}`)
       return false
-    } finally {
-      busy.current = false
-      setSaving(false)
-    }
+    } finally { if (current()) { busy.current = false; setSaving(false) } }
   }
 
   const reload = async () => {
-    if (busy.current) return
+    const revision = getStudioTransportRevision()
+    if (busy.current || !loaded || loadedRevision.current !== revision) return
+    const current = () => mounted.current && revision === getStudioTransportRevision()
     busy.current = true
     setReloading(true)
     setError(null)
     try {
       const result = await mcpApi.reload()
+      if (!current()) return
       if (!result.success) throw new Error(result.error)
-      if (await refresh() && result.data?.failed.length) {
+      if (await refresh() && result.data?.failed.length && current()) {
         setError(`部分 MCP 服务器连接失败：${result.data.failed.map(server => `${server.name}：${server.error}`).join('；')}`)
       }
     } catch (e: any) {
-      setError(`重连失败：${e?.message || e}`)
-    } finally {
-      busy.current = false
-      setReloading(false)
-    }
+      if (current()) setError(`重连失败：${e?.message || e}`)
+    } finally { if (current()) { busy.current = false; setReloading(false) } }
   }
 
-  const upsertServer = async (name: string, server: MCPServerConfig, oldName?: string) => {
+  const upsertServer = async (name: string, server: MCPServerConfig, oldName?: string, keepOpen = false) => {
     name = name.trim()
     if (!name || (name !== oldName && Object.hasOwn(config.mcpServers,name))) {
       setError(name ? '服务器名称已存在' : '服务器名称不能为空')
-      return
+      return false
     }
     const next = { ...config, mcpServers: {...config.mcpServers, [name]:server} }
     if (oldName && oldName !== name) delete next.mcpServers[oldName]
-    if (await saveConfig(next)) setEditingName(null)
+    if (!(await saveConfig(next))) return false
+    if (!keepOpen) setEditingName(null)
+    return true
   }
 
   const deleteServer = async (name: string) => {
-    if (busy.current) return
+    const revision = getStudioTransportRevision()
+    if (busy.current || !loaded || loadedRevision.current !== revision) return
     const ok = await confirm(`确认删除 MCP 服务器 "${name}"？`, { type: 'warning', title: '删除 MCP 服务器', confirmText: '删除', cancelText: '取消' })
-    if (!ok) return
+    if (!ok || !mounted.current || revision !== getStudioTransportRevision() || loadedRevision.current !== revision) return
     const next = { ...config, mcpServers: {...config.mcpServers} }
     delete next.mcpServers[name]
     if (await saveConfig(next)) await reload()
@@ -263,21 +288,21 @@ export function MCPConfigPanel() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button
-                    disabled={saving || reloading || loading}
+                    disabled={saving || reloading || loading || !loaded}
                     onClick={() => toggleDisabled(name)}
                     className="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-100 text-gray-700"
                   >
                     {server.disabled ? '启用' : '禁用'}
                   </button>
                   <button
-                    disabled={saving || reloading || loading}
+                    disabled={saving || reloading || loading || !loaded}
                     onClick={() => setEditingName(name)}
                     className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50"
                   >
                     编辑
                   </button>
                   <button
-                    disabled={saving || reloading || loading}
+                    disabled={saving || reloading || loading || !loaded}
                     aria-label={`删除 MCP 服务器 ${name}`}
                     onClick={() => deleteServer(name)}
                     className="text-xs p-1 rounded border border-red-200 text-red-600 hover:bg-red-50"
@@ -323,9 +348,11 @@ export function MCPConfigPanel() {
           existingNames={serverNames}
           isNew={editingName === '__new__'}
           saving={saving}
+          canSave={loaded}
+          registerLeaveGuard={registerLeaveGuard}
           error={error}
           onClose={() => { if (!busy.current) { setEditingName(null); setEditingTemplate(null); setError(null) } }}
-          onSave={(name, server) => upsertServer(name, server, editingName === '__new__' ? undefined : editingName)}
+          onSave={(name, server, keepOpen) => upsertServer(name, server, editingName === '__new__' ? undefined : editingName, keepOpen)}
         />
       )}
 
@@ -369,16 +396,18 @@ function templateToServerConfig(tpl: MCPTemplate): MCPServerConfig {
 interface ServerEditModalProps {
   isNew: boolean
   saving: boolean
+  canSave: boolean
+  registerLeaveGuard?: RegisterSettingsLeaveGuard
   error: string | null
   name: string
   server: MCPServerConfig
   template?: MCPTemplate | null
   existingNames: string[]
   onClose: () => void
-  onSave: (name: string, server: MCPServerConfig) => void | Promise<void>
+  onSave: (name: string, server: MCPServerConfig, keepOpen: boolean) => Promise<boolean>
 }
 
-function ServerEditModal({ name: initialName, server: initialServer, template, existingNames, isNew, saving, error, onClose, onSave }: ServerEditModalProps) {
+function ServerEditModal({ name: initialName, server: initialServer, template, existingNames, isNew, saving, canSave, registerLeaveGuard, error, onClose, onSave }: ServerEditModalProps) {
   const [name, setName] = useState(initialName)
   const [transport, setTransport] = useState<'stdio' | 'sse' | 'http'>(mcpFormTransport(initialServer))
   const [command, setCommand] = useState(initialServer.command || '')
@@ -398,9 +427,12 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
   const [formError, setFormError] = useState<string | null>(null)
   const nameConflict = isNew && existingNames.includes(name.trim())
 
-  const handleSave = () => {
-    if (saving || !name.trim()) return
-    if (nameConflict) return
+  const signature = JSON.stringify([name, transport, command, args, envText, cwd, url, headersText, autoApproveText])
+  const initialSignature = useRef(signature)
+  const handleSave = async (keepOpen = false) => {
+    if (saving || !canSave) return false
+    if (!name.trim() || nameConflict) { setFormError(nameConflict ? '服务器名称已存在' : '服务器名称不能为空'); return false }
+    if (transport === 'stdio' && !command.trim()) { setFormError('启动命令不能为空'); return false }
 
     let env: Record<string,string> = {}, headers: Record<string,string> = {}
     try {
@@ -413,7 +445,7 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
       setFormError(null)
     } catch (failure) {
       setFormError(failure instanceof Error ? failure.message : '配置文本格式错误')
-      return
+      return false
     }
 
     const autoApprove = autoApproveText.split('\n').map(l => l.trim()).filter(Boolean)
@@ -436,15 +468,23 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
       disabled: initialServer.disabled || false,
       ...(autoApprove.length > 0 ? { autoApprove } : {}),
     }
-    onSave(name.trim(), server)
+    return onSave(name.trim(), server, keepOpen)
   }
 
+  const leave = useSettingsDraftProtection(registerLeaveGuard, '保存 MCP 编辑？', signature !== initialSignature.current, saving, () => handleSave(true))
+  const closeEditor = async () => { if (await leave.confirmLeave()) onClose() }
+
   return (
+    <>
     <div
       className="fixed inset-0 z-[10001] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 py-14"
-      onClick={onClose}
+      data-testid="mcp-edit-backdrop"
+      onClick={() => void closeEditor()}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={isNew ? '添加 MCP 服务器' : `编辑：${initialName}`}
         className="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col overflow-hidden"
         style={{ maxHeight: 'min(calc(100vh - 7rem), 620px)' }}
         onClick={(e) => e.stopPropagation()}
@@ -454,11 +494,11 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
           <h3 className="font-semibold text-gray-800">
             {isNew ? '添加 MCP 服务器' : `编辑：${initialName}`}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-lg leading-none">×</button>
+          <button aria-label="关闭 MCP 编辑" onClick={() => void closeEditor()} className="text-gray-500 hover:text-gray-800 text-lg leading-none">×</button>
         </div>
 
         {/* Body（中间区域滚动） */}
-        <fieldset disabled={saving} className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
+        <fieldset disabled={saving || leave.pending} className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
           {(formError || error) && <p role="alert" className="text-sm text-red-700">{formError || error}</p>}
           {/* 模板来源提示 */}
           {template && (
@@ -599,13 +639,15 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
 
         {/* Footer（固定不滚动） */}
         <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2 flex-shrink-0 bg-white">
-          <Button variant="outline" onClick={onClose} disabled={saving}>取消</Button>
-          <Button onClick={handleSave} disabled={saving || !name.trim() || nameConflict || (transport === 'stdio' ? !command.trim() : !url.trim())}>
+          <Button variant="outline" onClick={() => void closeEditor()} disabled={saving || leave.pending}>取消</Button>
+          <Button onClick={() => void handleSave()} disabled={saving || leave.pending || !canSave || !name.trim() || nameConflict || (transport === 'stdio' ? !command.trim() : !url.trim())}>
             保存
           </Button>
         </div>
       </div>
     </div>
+    {leave.dialog}
+    </>
   )
 }
 

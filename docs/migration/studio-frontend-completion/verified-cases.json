@@ -40076,5 +40076,640 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.connection-config",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "pending": "config",
+      "connection": "旧"
+    },
+    "steps": [
+      "更换连接",
+      "完成旧响应"
+    ],
+    "expectedUI": "返回失败，无旧 data",
+    "expectedIO": "返回失败，无旧 data",
+    "stateAssertion": "返回失败，无旧 data",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.connection-status",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "pending": "status",
+      "connection": "旧"
+    },
+    "steps": [
+      "更换连接",
+      "完成旧响应"
+    ],
+    "expectedUI": "返回失败，无旧 data",
+    "expectedIO": "返回失败，无旧 data",
+    "stateAssertion": "返回失败，无旧 data",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.connection-save",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "pending": "save",
+      "connection": "旧"
+    },
+    "steps": [
+      "更换连接",
+      "完成旧响应"
+    ],
+    "expectedUI": "返回失败，无旧 data",
+    "expectedIO": "返回失败，无旧 data",
+    "stateAssertion": "返回失败，无旧 data",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.connection-reload",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "pending": "reload",
+      "connection": "旧"
+    },
+    "steps": [
+      "更换连接",
+      "完成旧响应"
+    ],
+    "expectedUI": "返回失败，无旧 data",
+    "expectedIO": "返回失败，无旧 data",
+    "stateAssertion": "返回失败，无旧 data",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.draft-connection",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "新增草稿"
+    },
+    "steps": [
+      "更换连接",
+      "点击保存"
+    ],
+    "expectedUI": "不向新服务写入，保留名称与连接提示",
+    "expectedIO": "不向新服务写入，保留名称与连接提示",
+    "stateAssertion": "不向新服务写入，保留名称与连接提示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.read-connection",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "首次读取等待"
+    },
+    "steps": [
+      "更换连接",
+      "旧读取返回"
+    ],
+    "expectedUI": "旧 fixture 不出现，新增禁用",
+    "expectedIO": "旧 fixture 不出现，新增禁用",
+    "stateAssertion": "旧 fixture 不出现，新增禁用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.reload-failure",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已读取 fixture"
+    },
+    "steps": [
+      "重新连接",
+      "随后配置读取失败"
+    ],
+    "expectedUI": "读取失败，新增禁用",
+    "expectedIO": "读取失败，新增禁用",
+    "stateAssertion": "读取失败，新增禁用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.delete-connection",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "删除确认等待"
+    },
+    "steps": [
+      "更换连接",
+      "确认删除"
+    ],
+    "expectedUI": "无新服务写入，旧记录保留",
+    "expectedIO": "无新服务写入，旧记录保留",
+    "stateAssertion": "无新服务写入，旧记录保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.late-save",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "禁用写入等待"
+    },
+    "steps": [
+      "更换连接",
+      "旧写入确认"
+    ],
+    "expectedUI": "不显示已保存，不更新已确认启用状态",
+    "expectedIO": "不显示已保存，不更新已确认启用状态",
+    "stateAssertion": "不显示已保存，不更新已确认启用状态",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.reread",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "连接改变后旧列表"
+    },
+    "steps": [
+      "显式重新读取配置"
+    ],
+    "expectedUI": "显示 next，旧 fixture 移除，新增启用",
+    "expectedIO": "显示 next，旧 fixture 移除，新增启用",
+    "stateAssertion": "显示 next，旧 fixture 移除，新增启用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭 MCP 编辑.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭 MCP 编辑",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭 MCP 编辑.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭 MCP 编辑",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭 MCP 编辑.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭 MCP 编辑",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.取消.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 取消",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.取消.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 取消",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.取消.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 取消",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.编辑背景.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 编辑背景",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.编辑背景.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 编辑背景",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.编辑背景.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 编辑背景",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.系统.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 系统",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.系统.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 系统",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.系统.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 系统",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭全局配置.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭全局配置",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭全局配置.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭全局配置",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.关闭全局配置.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 关闭全局配置",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.完成保存.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 完成保存",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.完成保存.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 完成保存",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.完成保存.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 完成保存",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.配置背景.取消",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 配置背景",
+      "选择 取消"
+    ],
+    "expectedUI": "保留草稿，不写入不关闭",
+    "expectedIO": "保留草稿，不写入不关闭",
+    "stateAssertion": "保留草稿，不写入不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.配置背景.放弃修改",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 配置背景",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写入，执行原离开目的",
+    "expectedIO": "不写入，执行原离开目的",
+    "stateAssertion": "不写入，执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.配置背景.保存后继续",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "已填写名称 mcp-leave-fixture 与命令 node"
+    },
+    "steps": [
+      "点击 配置背景",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "确认一次写入后执行原离开目的",
+    "expectedIO": "确认一次写入后执行原离开目的",
+    "stateAssertion": "确认一次写入后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.failed-save",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "保存返回不可写"
+    },
+    "steps": [
+      "请求关闭",
+      "保存后继续"
+    ],
+    "expectedUI": "显示失败，保留草稿，不关闭",
+    "expectedIO": "显示失败，保留草稿，不关闭",
+    "stateAssertion": "显示失败，保留草稿，不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.missing-command",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "填写名称但清空命令"
+    },
+    "steps": [
+      "请求关闭",
+      "保存后继续"
+    ],
+    "expectedUI": "启动命令不能为空，不发请求",
+    "expectedIO": "启动命令不能为空，不发请求",
+    "stateAssertion": "启动命令不能为空，不发请求",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.ordinary-save",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "state": "合法新增草稿"
+    },
+    "steps": [
+      "点击普通保存"
+    ],
+    "expectedUI": "一次写入，编辑层关闭，列表显示新名称",
+    "expectedIO": "一次写入，编辑层关闭，列表显示新名称",
+    "stateAssertion": "一次写入，编辑层关闭，列表显示新名称",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.browser-cancel",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "origin": "localhost:5175",
+      "service": "Mock"
+    },
+    "steps": [
+      "编辑测试目录",
+      "关闭→取消"
+    ],
+    "expectedUI": "恢复可编辑，保留测试目录",
+    "expectedIO": "恢复可编辑，保留测试目录",
+    "stateAssertion": "恢复可编辑，保留测试目录",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.browser-save",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "origin": "localhost:5175",
+      "service": "Mock"
+    },
+    "steps": [
+      "关闭→保存后继续",
+      "重新编辑"
+    ],
+    "expectedUI": "已保存，目录回显",
+    "expectedIO": "已保存，目录回显",
+    "stateAssertion": "已保存，目录回显",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.mcp.leave.browser-restore",
+    "capability": "mcp:settings",
+    "preconditions": {
+      "origin": "localhost:5175",
+      "service": "Mock"
+    },
+    "steps": [
+      "目录恢复空白",
+      "普通保存",
+      "关闭全局配置"
+    ],
+    "expectedUI": "编辑和配置关闭，服务器仍禁用",
+    "expectedIO": "编辑和配置关闭，服务器仍禁用",
+    "stateAssertion": "编辑和配置关闭，服务器仍禁用",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/browser-validation.md"
   }
 ]
