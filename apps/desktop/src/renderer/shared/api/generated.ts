@@ -4339,6 +4339,17 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioConditionalRequired */
+        StudioConditionalRequired: {
+            /** Field */
+            field: string;
+            /** Default */
+            default: string | null;
+            /** Map */
+            map: {
+                [key: string]: string[];
+            };
+        };
         /** StudioImageAsset */
         StudioImageAsset: {
             /** Id */
@@ -4535,6 +4546,27 @@ export type components = {
              * @default null
              */
             claimId: string | null;
+        };
+        /** StudioModuleRequiredFields */
+        StudioModuleRequiredFields: {
+            /** Schemarevision */
+            schemaRevision: string;
+            /** Coveredmodules */
+            coveredModules: string[];
+            /** Requiredfields */
+            requiredFields: {
+                [key: string]: string[];
+            };
+            /** Conditionalrequired */
+            conditionalRequired: {
+                [key: string]: components["schemas"]["StudioConditionalRequired"];
+            };
+            /** Fieldlabels */
+            fieldLabels: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
         };
         /** StudioRequestClaim */
         StudioRequestClaim: {

@@ -27,6 +27,7 @@ export function StudioMockTools() {
       <button onClick={() => action(() => selectMockSimilarElements())}>拾取：四个相似元素</button>
       {([['none', '零匹配'], ['single', '单匹配'], ['multiple', '多匹配'], ['error', '服务失败']] as const).map(([scenario, label]) =>
         <button key={scenario} onClick={() => action(() => configureMock({ selectorTest: scenario }))}>定位：{label}</button>)}
+      <button onClick={() => action(() => { configureMock({failNextRequiredFields:true}); window.dispatchEvent(new Event('studio:connection-restored')) })}>字段规则：刷新失败</button>
       <button onClick={() => action(() => configureMock({scriptTest:{result:{title:'模拟返回值',count:3}}}))}>脚本测试：返回对象</button>
       <button onClick={() => action(() => configureMock({scriptTest:{}}))}>脚本测试：无返回值</button>
       <button onClick={() => action(() => configureMock({scriptTest:{error:'模拟页面脚本失败'}}))}>脚本测试：失败</button>

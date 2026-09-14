@@ -2,6 +2,8 @@
 export type StudioTransport = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 let transport: StudioTransport = (input, init) => fetch(input, init)
 let transportRevision = 0
+export const getStudioTransportRevision = () => transportRevision
+const connectionChanged = () => { if (typeof window !== 'undefined') window.dispatchEvent(new Event('studio:transport-changed')) }
 let failureRevision = 0
 let unavailable = false
 export function setStudioTransport(next: StudioTransport): () => void {
@@ -9,7 +11,8 @@ export function setStudioTransport(next: StudioTransport): () => void {
   transport = next
   transportRevision++
   unavailable = false
-  return () => { transport = previous; transportRevision++; unavailable = false }
+  connectionChanged()
+  return () => { transport = previous; transportRevision++; unavailable = false; connectionChanged() }
 }
 export const studioFetch: StudioTransport = async (input, init) => {
   const origin = transportRevision

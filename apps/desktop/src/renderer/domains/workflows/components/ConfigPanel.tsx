@@ -221,7 +221,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   
   const nodes = useWorkflowStore((state) => state.nodes)
   const documentId = useWorkflowStore((state) => state.id)
-  const requiredFieldsMap = useRequiredFields()
+  const requiredFields = useRequiredFields()
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
   const deleteNode = useWorkflowStore((state) => state.deleteNode)
   const addLog = useWorkflowStore((state) => state.addLog)
@@ -1513,7 +1513,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
               <div key={`${documentId}:${selectedNodeId}`} className="space-y-4 animate-fade-in">
                 {/* 必填校验提示 */}
                 {(() => {
-                  const missing = getMissingRequiredLabels(String(nodeData.moduleType), nodeData as Record<string, unknown>, requiredFieldsMap)
+                  if (requiredFields.loading) return <p role="status" className="text-xs text-muted-foreground">正在读取必填字段规则…</p>
+                  if (requiredFields.error) return <div role="alert" className="text-xs text-[hsl(var(--danger-600))]">
+                    <p>必填字段规则未加载：{requiredFields.error}</p>
+                    <Button size="sm" variant="outline" onClick={requiredFields.retry}>重新读取字段规则</Button>
+                  </div>
+                  if (!requiredFields.data?.coveredModules.includes(String(nodeData.moduleType))) return <p className="text-xs text-muted-foreground">此节点尚未提供必填字段规则，请核对配置。</p>
+                  const missing = getMissingRequiredLabels(String(nodeData.moduleType), nodeData as Record<string, unknown>, requiredFields.data.requiredFields, requiredFields.data)
                   if (missing.length === 0) return null
                   return (
                     <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[hsl(var(--warning-50))] border border-[hsl(var(--warning-500)/0.3)] text-[hsl(var(--warning-700))]">

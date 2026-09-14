@@ -35,3 +35,14 @@ test('inventory and matrix regenerate deterministically', () => {
   assert.equal(fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8'), before)
   assert.equal(fs.readFileSync(path.join(directory, 'contract-matrix.md'), 'utf8'), matrix)
 })
+test('direct apiRequest helpers outside Api objects remain visible in the contract inventory',()=>{
+  const metadata=inventory.directRequests.find(row=>row.file.endsWith('/lib/requiredFields.ts') && row.endpoint === "'/system/module-required-fields'")
+  assert.ok(metadata);assert.equal(metadata.method,'GET');assert.equal(metadata.responseType,'RequiredFieldMetadata')
+  const wrapper=inventory.directRequests.find(row=>row.file.endsWith('/api/browserScriptTests.ts') && row.endpoint==='path')
+  assert.ok(wrapper);assert.equal(wrapper.method,'dynamic')
+})
+test('plain Event emissions are recorded alongside CustomEvent emissions',()=>{
+  const changed=inventory.events.find(row=>row.name==='studio:transport-changed')
+  assert.ok(changed.emissions.some(row=>row.file.endsWith('/api/transport.ts') && row.via==='Event'))
+  assert.ok(changed.subscriptions.some(row=>row.file.endsWith('/lib/requiredFields.ts')))
+})

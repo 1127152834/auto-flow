@@ -1,3 +1,4 @@
+import requiredFieldMetadata from '../development/module-required-fields.json'
 import {mockBrowserScriptTests,mockScriptTestBusy,invalidateMockScriptTests,configureMockScriptTest} from './mock-browser-script-tests'
 import { isSpeechRequest } from '../lib/runSpeech'
 import type { components } from '../../../shared/api/generated'
@@ -36,6 +37,7 @@ const runRows = new Map<string, ObjectValue[]>()
 const tracking = new Map<string, ObjectValue[]>()
 let lastVariables: ObjectValue = {}
 const clientSettings = { verboseLog: true, workflowId: 'current' }
+let failNextRequiredFields = false
 let browser = false
 let url = 'about:blank'
 let recording = false
@@ -59,7 +61,8 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
-export function configureMock(options: { scriptTest?: {result?:unknown;error?:string;hold?:boolean}; offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+export function configureMock(options: { failNextRequiredFields?: boolean; scriptTest?: {result?:unknown;error?:string;hold?:boolean}; offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+  if (options.failNextRequiredFields !== undefined) failNextRequiredFields = options.failNextRequiredFields
   if (options.scriptTest !== undefined) configureMockScriptTest(options.scriptTest)
   if (options.selectorTest !== undefined) selectorTest = options.selectorTest
   if (options.executionOrder !== undefined) nextExecutionOrder = options.executionOrder === null ? null : [...options.executionOrder]
@@ -608,6 +611,11 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
         persist({ ...db, files: { ...db.files, [fileKey(filename)]: { ...original, content, modifiedTime: new Date().toISOString(), size: new Blob([JSON.stringify(content)]).size } } })
       } else if (method !== 'GET') return failure('Method not allowed', 405)
       return response({ success: true, enabled: selfHeal.enabled === true, selfHeal, mock: true })
+    }
+    if (path === '/system/module-required-fields') {
+      if (method !== 'GET') return failure('只支持读取字段规则',405)
+      if (failNextRequiredFields) { failNextRequiredFields = false; return failure('模拟字段规则服务暂不可用',503) }
+      return response(requiredFieldMetadata)
     }
     if (path === '/system/info') return response({ platform:'mock', version:'AutoFlow Studio Mock', mock:true })
     if (path === '/security/status') return response({enabled:false,isLocal:true,token:null})

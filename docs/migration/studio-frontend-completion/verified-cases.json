@@ -30352,5 +30352,73 @@
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/static-number-preflight.md",
     "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F1.required-fields.service",
+    "capability": "规则加载/缓存/连接隔离/非法结构/组件重试",
+    "preconditions": {
+      "source": "冻结 WebRPA 规则，独立测试数据",
+      "boundary": "69覆盖/215未覆盖，Mock不是执行器"
+    },
+    "steps": [
+      "运行该文件全部34项；各参数化条件按源码逐项断言"
+    ],
+    "expectedUI": "失败保留配置；旧响应不写新连接；未知覆盖区别于空规则",
+    "expectedIO": "GET /api/system/module-required-fields；错误/恢复按各用例核验",
+    "stateAssertion": "失败保留配置；旧响应不写新连接；未知覆盖区别于空规则",
+    "level": "component + protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/required-field-service.test.tsx"
+  },
+  {
+    "id": "F1.required-fields.protocol",
+    "capability": "内存与 HTTP 元数据及方法拒绝",
+    "preconditions": {
+      "source": "冻结 WebRPA 规则，独立测试数据",
+      "boundary": "69覆盖/215未覆盖，Mock不是执行器"
+    },
+    "steps": [
+      "分别使用内存与真实本地 HTTP 执行读取及非法方法"
+    ],
+    "expectedUI": "两传输返回相同冻结规则，POST返回405",
+    "expectedIO": "GET /api/system/module-required-fields；错误/恢复按各用例核验",
+    "stateAssertion": "两传输返回相同冻结规则，POST返回405",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/required-field-protocol.test.ts"
+  },
+  {
+    "id": "F1.required-fields.dto",
+    "capability": "字段规则结构合同",
+    "preconditions": {
+      "source": "冻结 WebRPA 规则，独立测试数据",
+      "boundary": "69覆盖/215未覆盖，Mock不是执行器"
+    },
+    "steps": [
+      "执行14项合法与非法 DTO 用例"
+    ],
+    "expectedUI": "覆盖列表、字段、条件与标签一致性严格校验",
+    "expectedIO": "GET /api/system/module-required-fields；错误/恢复按各用例核验",
+    "stateAssertion": "覆盖列表、字段、条件与标签一致性严格校验",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_required_fields.py"
+  },
+  {
+    "id": "F1.required-fields.ui",
+    "capability": "配置规则错误重试",
+    "preconditions": {
+      "source": "冻结 WebRPA 规则，独立测试数据",
+      "boundary": "69覆盖/215未覆盖，Mock不是执行器"
+    },
+    "steps": [
+      "拖入打开网页；空URL；触发503；重试；填写URL；Cmd+S"
+    ],
+    "expectedUI": "错误可见且可重试；输入保留，保存成功",
+    "expectedIO": "GET /api/system/module-required-fields；错误/恢复按各用例核验",
+    "stateAssertion": "错误可见且可重试；输入保留，保存成功",
+    "level": "browser UI + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/required-field-service-validation.md"
   }
 ]

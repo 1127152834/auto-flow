@@ -6,8 +6,8 @@ let backendOrigin: string | undefined
 export function configureStudioConnection(origin: string, transport: StudioTransport): () => void {
   const normalizedOrigin = normalizeStudioOrigin(origin)
   const previous = backendOrigin
-  const restoreTransport = setStudioTransport(transport)
   backendOrigin = normalizedOrigin
+  const restoreTransport = setStudioTransport(transport)
   return () => { backendOrigin = previous; restoreTransport() }
 }
 

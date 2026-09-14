@@ -15,6 +15,7 @@ const files = dir => fs.readdirSync(path.join(root, dir), { withFileTypes: true 
 const sources = [...files(domain), 'apps/desktop/src/renderer/app/StudioApp.tsx'].map(file => ({ file, tree: ts.createSourceFile(file, fs.readFileSync(path.join(root, file), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX) }))
 const site = (file, tree, node) => ({ file, line: tree.getLineAndCharacterOfPosition(node.getStart(tree)).line + 1, source: manifest.get(file) ?? null })
 const services = new Map(), events = new Map(), directRequests = [], assistantActions = []
+const registeredRequests = new Set()
 function event(name) {
   if (!events.has(name)) events.set(name, { id: `event:${name}`, name, subscriptions: [], emissions: [] })
   return events.get(name)
@@ -40,6 +41,7 @@ for (const { file, tree } of sources) walk(tree, node => {
     const requests = []
     walk(member, child => {
       if (!ts.isCallExpression(child) || !/^(apiRequest|studioFetch|fetch)$/.test(child.expression.getText(tree))) return
+      registeredRequests.add(`${file}:${child.pos}`)
       requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
     })
     services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '待核对' })
@@ -50,15 +52,15 @@ for (const { file, tree } of sources) walk(tree, node => {
     const callee = node.expression.getText(tree)
     const known = services.get(callee)
     if (known) known.consumers.push({ ...site(file, tree, node), call: node.getText(tree) })
-    if (/^(studioFetch|fetch)$/.test(callee)) directRequests.push({ ...requestContract(node, tree), ...site(file, tree, node), call: node.getText(tree) })
+    if (/^(studioFetch|fetch)$/.test(callee) || (callee === 'apiRequest' && !registeredRequests.has(`${file}:${node.pos}`))) directRequests.push({ ...requestContract(node, tree), ...site(file, tree, node), call: node.getText(tree) })
     const first = node.arguments[0]
     if (first && ts.isStringLiteral(first)) {
       if (/^(onAssistantUiEvent|window\.addEventListener|(?:this\.)?socket\.on)$/.test(callee)) event(first.text).subscriptions.push({ ...site(file, tree, node), via: callee })
       if (/^(emitAssistantUiEvent|(?:this\.)?socket\??\.emit)$/.test(callee)) event(first.text).emissions.push({ ...site(file, tree, node), via: callee })
     }
   }
-  if (ts.isNewExpression(node) && node.expression.getText(tree) === 'CustomEvent' && node.arguments?.[0] && ts.isStringLiteral(node.arguments[0])) {
-    event(node.arguments[0].text).emissions.push({ ...site(file, tree, node), via: 'CustomEvent', call: node.getText(tree) })
+  if (ts.isNewExpression(node) && ['CustomEvent', 'Event'].includes(node.expression.getText(tree)) && node.arguments?.[0] && ts.isStringLiteral(node.arguments[0])) {
+    event(node.arguments[0].text).emissions.push({ ...site(file, tree, node), via: node.expression.getText(tree), call: node.getText(tree) })
   }
   if (file.endsWith('/aiAssistantSkills.ts') && ts.isCaseClause(node) && ts.isStringLiteral(node.expression)) {
     let parent = node.parent
@@ -87,6 +89,7 @@ const lines = [
   '| 图像元数据和变更响应 | 上传/重命名 asset 包络，目录位置及删除数量；见 image-schema-validation.md、image-command-validation.md | 全量网络运行时校验、实际文件系统及宿主资源端点 |',
   '| HTTP/SSE | 共用受控传输；空行确认事件，序号补读，EOF 半包不提交；见 authenticated-transport.md、sse-framing-validation.md | epoch/服务重启后的状态重建 |',
   '| Debug | 只接受 POST resume/step/breakpoints；404 未知动作，405 方法错误，409 状态冲突，422 断点非法；见 debug-command-validation.md | pauseId、控制修订、真正执行和清理 |',
+  '| 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |',
   '| 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |', '',
   '## 静态服务方法', '',
   '| 操作 ID | 方法与端点表达式 | 请求体表达式 | 声明的响应类型 | 静态消费者数 | 定义位置 | 验收状态 |',

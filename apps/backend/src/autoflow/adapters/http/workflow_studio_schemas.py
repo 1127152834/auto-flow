@@ -349,3 +349,40 @@ class StudioBrowserScriptState(ApiModel):
         if not self.has_result and self.result is not None:
             raise ValueError("没有返回值时result必须为null")
         return self
+
+
+class StudioConditionalRequired(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    field: str = Field(min_length=1, pattern=r"\S")
+    default: str | None
+    map: dict[str, list[str]]
+
+    @model_validator(mode="after")
+    def valid_fields(self) -> Self:
+        if any(not key.strip() or any(not field.strip() for field in fields) or len(fields) != len(set(fields)) for key, fields in self.map.items()):
+            raise ValueError("条件必填字段无效或重复")
+        return self
+
+
+class StudioModuleRequiredFields(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    schema_revision: str = Field(min_length=1, pattern=r"\S")
+    covered_modules: list[str]
+    required_fields: dict[str, list[str]]
+    conditional_required: dict[str, StudioConditionalRequired]
+    field_labels: dict[str, dict[str, str]]
+
+    @model_validator(mode="after")
+    def valid_coverage(self) -> Self:
+        covered = set(self.covered_modules)
+        if len(covered) != len(self.covered_modules) or any(not name.strip() for name in covered):
+            raise ValueError("模块覆盖列表无效或重复")
+        if any(not set(mapping).issubset(covered) for mapping in [self.required_fields.keys(), self.conditional_required.keys(), self.field_labels.keys()]):
+            raise ValueError("字段规则不属于覆盖模块")
+        if any(any(not field.strip() for field in fields) or len(fields) != len(set(fields)) for fields in self.required_fields.values()):
+            raise ValueError("必填字段无效或重复")
+        if any(not field.strip() or not label.strip() for labels in self.field_labels.values() for field, label in labels.items()):
+            raise ValueError("字段标签无效")
+        return self
