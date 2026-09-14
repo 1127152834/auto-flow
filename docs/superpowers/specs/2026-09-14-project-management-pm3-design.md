@@ -80,10 +80,10 @@ Studio/core 不依赖项目领域。项目模块只通过 application port 组�
 
 | 对象 | 关键字段 | 规则 |
 |---|---|---|
-| `WorkflowDocument` | `workflowId, name, document, layout, revision` | 当前可编辑文档；CAS 保存；同内容保存不推进修订。 |
-| `PreparedContent` | `preparedContentId, workflowId, sourceRevision, checksum, document, layout, capabilityRequirements` | 启动时服务端校验并冻结；创建后不可变；Run 不读取后来编辑的文档。 |
-| `CoreRun` | `runId, runRequestId, preparedContentId, status, statusRevision, executionGeneration, resourceRequest, capabilityBindings` | core 唯一拥有执行状态和终态；`runRequestId` 幂等唯一。 |
-| `RunEvent` | `runId, sequence, type, nodeId?, timestamp, payload` | 单 Run 单调序号；事件可重复投递，消费者按序号去重并补缺口。 |
+| `WorkflowDocument` | `workflowId, source, format, content, revision` | `source={product:'WebRPA',commit}`、`format={kind:'webrpa-workflow',version:1}`；content 是当前 Studio 导出模型的受控投影。CAS 保存；同内容且当前修订保存不推进修订；保存命令以 `saveOperationId` 持久恢复。 |
+| `PreparedContent` | `preparedContentId, prepareOperationId, requestDigest, workflowId, sourceRevision, checksum, document, executionPlan, adapterVersion, capabilityRequirements` | `sourceRevision` 是数字 workflowRevision；启动时服务端校验并冻结文档、确定执行计划和适配器版本。创建后不可变；Run 不读取后来编辑的文档或按新代码重新编译。旧运行迁移的 `sourceRevision=null`，并保存明确 legacy provenance。 |
+| `CoreRun` | `runId, runRequestId, requestDigest, preparedContentId, parameters, inputSnapshotRef, status, statusRevision, executionGeneration, resourceRequest, capabilityBindings, lastSequence, createdAt, updatedAt, startedAt?, completedAt?, error?` | core 唯一拥有执行状态和终态；`runRequestId` 幂等唯一。 |
+| `RunEvent` | `eventId, runId, sequence, generation, kind, nodeId?, nodeVisitId?, attempt?, occurredAt, payload` | 单 Run 单调序号；事件可重复投递，消费者按 eventId/sequence 去重并补缺口；旧 generation 不能提交。 |
 | `RunArtifact` | `runId, artifactId, ordinal, purpose, nodeId, eventSequence, metadata` | 文件由后端受控目录管理，公开接口只返回受控下载入口。 |
 
 `CoreRun` 的 PM3 状态集合为：
@@ -108,6 +108,8 @@ queued | running → stopping → cancelled
 | `Operation` | `operationId, kind, status, resource, result, error` | 复用项目持久操作体系；`startBatch/stopBatch/forceStopBatch` 均可按原身份查询。 |
 
 修订保持分离：Studio 文档使用 `workflowRevision`；自动化配置使用 `managementRevision`；Batch/Task/CoreRun 使用各自 `statusRevision`。任何通用 `revision` 都不能跨对象复用。
+
+WorkflowDocument 只保留可恢复编辑所需的节点、连线和变量字段。显式用户尺寸使用 `width/height/style`，React Flow 的 `selected/dragging/resizing/measured/dimensions`、运行高亮及 AI 生成瞬态不落库；`data.moduleType` 与导出的节点 `type` 必须遵守 WebRPA 映射。当前 Studio 已知凭据字段（含 `apiKey/azureApiKey/authCode/password/accessToken/appSecret/token/secret/privateKey` 及现存 snake_case 变体）的非空明文拒绝进入文档，错误不得回显值；后续通过 secretRef 或宿主资源解析。未知节点允许保存和再次编辑，但 PM3 运行预检只接受由 `open_page/input_text/click_element/get_element_info` 组成的非空、单入口、无分支单链；所有节点必须恰好遍历一次，执行顺序从连线推导，并在冻结前验证四类节点的必填字段、类型、适用枚举和有限非负 timeout。`get_element_info.attribute` 沿用源执行器语义，接受任意非空属性名；`0` timeout 表示不限制。
 
 ## 5. 自动化配置
 

@@ -18,7 +18,8 @@
 
 ```text
 0009_merge_project_data
-  → 0010_workflow_runtime_contracts
+  → 0010_workflow_document_commands
+  → 0011_workflow_runtime_contracts
   → pm03_project_automations
   → pm04_project_runs
 ```
@@ -66,46 +67,51 @@ git commit -m "docs(pm3): add automation detail and launch prototypes"
 
 ### Task 2：恢复工作流文档领域和持久化
 
+> **2026-09-14 执行勘误（confirmed）：** 首轮恢复虽然通过 1114 项后端测试，但独立规格审查证明其恢复了已被当前 Studio 取代的 M1–M5 `schemaVersion/config/layout` IR，因此未提交。Task 2 以当前 `editor-store.ts` 的 WebRPA 导出文档为唯一输入模型；存储使用 `source:{product,commit}` 与 `format:{kind:'webrpa-workflow',version:1}` 包装和字段投影，保留 `data/moduleType`、端口、组关系、位置、显式宽高、样式与变量，排除 `selected/dragging/resizing/measured/dimensions`、运行高亮和 AI 生成瞬态。未知节点允许保存，只有当前 worker 支持的基础网页链可运行。冻结 XE-C01 要求保存操作身份和未知结果恢复，因此新增独立文档命令迁移；不借用项目领域的 `project_operations`。
+
 **Files:**
 
 - Restore and adapt: `apps/backend/src/autoflow/domain/workflows/models.py`
 - Restore and adapt: `apps/backend/src/autoflow/domain/workflows/references.py`
 - Restore and adapt: `apps/backend/src/autoflow/domain/workflows/validation.py`
-- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/control_values.py`
-- Restore and adapt: `apps/backend/src/autoflow/domain/workflows/control.py`
 - Restore and adapt: `apps/backend/src/autoflow/domain/workflows/catalog.py`
 - Restore and adapt: `apps/backend/src/autoflow/domain/workflows/run_validation.py`
 - Restore and adapt: `apps/backend/src/autoflow/application/workflows/service.py`
 - Restore and adapt: `apps/backend/src/autoflow/infrastructure/database/workflows.py`
 - Modify: `apps/backend/src/autoflow/infrastructure/database/models.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_workflow_document_commands.py`
 - Restore and adapt tests: `apps/backend/tests/fixtures/workflows.py`
 - Restore and adapt tests: `apps/backend/tests/unit/test_workflow_drafts.py`
-- Restore and adapt tests: `apps/backend/tests/unit/test_workflow_control.py`
 - Restore and adapt tests: `apps/backend/tests/unit/test_workflow_run_validation.py`
 - Restore and adapt tests: `apps/backend/tests/integration/test_workflow_repository.py`
+- Create: `apps/backend/tests/integration/test_workflow_document_migration.py`
+- Modify: `apps/backend/tests/integration/test_merged_model_migrations.py`
+- Modify: `apps/backend/tests/integration/test_project_data_migrations.py`
+- Modify: `apps/backend/tests/integration/test_project_data_status_migration.py`
+- Modify: `apps/backend/tests/integration/test_project_migration.py`
 
-- [ ] **Step 1: 恢复测试并确认 RED。** 从归档逐文件复制测试内容后，删除对旧 bootstrap 和旧错误 envelope 的假设，增加：文档 UUID、CAS、同内容不增修订、布尔 `true` 与数字 `1` 不等价、当前冻结节点目录外节点不可运行。
+- [x] **Step 1: 恢复测试并确认 RED。** 测试夹具直接使用当前 Studio WebRPA 载荷，不恢复旧 IR。增加：规范文档 UUID、严格 JSON、字段投影、CAS（包括同内容的 stale/future revision 冲突）、同内容且当前 revision 不增修订、布尔 `true` 与数字 `1` 不等价、未知节点可保存但不可运行，以及保存操作的同键同请求恢复和异载荷冲突。
 
 ```bash
-uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_control.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py -q
+uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py tests/integration/test_workflow_document_migration.py -q
 ```
 
 预期：因为当前工作流领域和仓储不存在而失败。
 
-- [ ] **Step 2: 从归档选择性恢复领域算法。** 保留纯校验、引用替换和控制流编译；把可执行节点目录限制为当前服务端明确支持的基础网页链。未知或仅前端展示的节点返回 `WORKFLOW_NOT_RUNNABLE`。
-- [ ] **Step 3: 恢复文档服务和仓储。** 复用现有 `workflow_documents` 表；服务只接收当前文档和 expected revision，不写 Run。所有 JSON 编码使用 `allow_nan=False`，错误改为当前领域错误形状。
-- [ ] **Step 4: 运行定向测试并修复。**
+- [x] **Step 2: 实现当前文档投影和运行校验。** 保存校验保证 WebRPA 包装、导出后的 `type` 与 `data.moduleType` 映射、节点/连线身份、严格 JSON、当前 Studio 已知凭据字段不落文档和可恢复字段安全；未知节点不阻断编辑。运行预检只把 `open_page/input_text/click_element/get_element_info` 组成的唯一无分支单链投影为有序执行计划，并拒绝多起点、断链、分支、合流、循环、自环和重复边；同时校验四类节点的必填字段、类型、适用枚举和有限非负 timeout，不能把确定错误推迟到 worker。其他节点返回 `WORKFLOW_NOT_RUNNABLE`。不恢复 M1–M5 的配对控制图、`timeoutSeconds/framePath` 契约或第二份变量解释器。
+- [x] **Step 3: 恢复文档服务、仓储与保存命令。** 复用现有 `workflow_documents` 表，新增 `workflow_document_operations` 保存规范 UUID `saveOperationId`、请求摘要和冻结结果。CAS 必须先于同内容短路；同键同规范请求返回原结果，同键不同请求返回 `OPERATION_PAYLOAD_MISMATCH`，并可按操作身份查询。旧 M1–M5 行保持原始事实但不污染当前格式列表，按 ID 读取返回受控不支持结果。所有 JSON 编码使用 `allow_nan=False`，非对象输入也返回当前领域错误形状。
+- [x] **Step 4: 运行定向测试并修复。**
 
 ```bash
-uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_control.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py -q
+uv run --directory apps/backend pytest tests/unit/test_workflow_drafts.py tests/unit/test_workflow_run_validation.py tests/integration/test_workflow_repository.py tests/integration/test_workflow_document_migration.py -q
 uv run --directory apps/backend ruff check src/autoflow/domain/workflows src/autoflow/application/workflows/service.py src/autoflow/infrastructure/database/workflows.py
 uv run --directory apps/backend mypy src/autoflow/domain/workflows src/autoflow/application/workflows/service.py
 ```
 
-- [ ] **Step 5: 提交。**
+- [x] **Step 5: 提交。**
 
 ```bash
-git add apps/backend/src/autoflow/domain/workflows apps/backend/src/autoflow/application/workflows/service.py apps/backend/src/autoflow/infrastructure/database/workflows.py apps/backend/src/autoflow/infrastructure/database/models.py apps/backend/tests/fixtures/workflows.py apps/backend/tests/unit/test_workflow_drafts.py apps/backend/tests/unit/test_workflow_control.py apps/backend/tests/unit/test_workflow_run_validation.py apps/backend/tests/integration/test_workflow_repository.py
+git add apps/backend/src/autoflow/domain/workflows apps/backend/src/autoflow/application/workflows/service.py apps/backend/src/autoflow/infrastructure/database/workflows.py apps/backend/src/autoflow/infrastructure/database/models.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_workflow_document_commands.py apps/backend/tests/fixtures/workflows.py apps/backend/tests/unit/test_workflow_drafts.py apps/backend/tests/unit/test_workflow_run_validation.py apps/backend/tests/integration/test_workflow_repository.py apps/backend/tests/integration/test_workflow_document_migration.py apps/backend/tests/integration/test_merged_model_migrations.py apps/backend/tests/integration/test_project_data_migrations.py apps/backend/tests/integration/test_project_data_status_migration.py apps/backend/tests/integration/test_project_migration.py
 git commit -m "feat(workflows): restore document validation and persistence"
 ```
 
@@ -117,16 +123,16 @@ git commit -m "feat(workflows): restore document validation and persistence"
 - Create: `apps/backend/src/autoflow/application/workflows/runtime.py`
 - Create: `apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py`
 - Create: `apps/backend/src/autoflow/infrastructure/database/workflow_runtime_models.py`
-- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_workflow_runtime_contracts.py`
+- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/0011_workflow_runtime_contracts.py`
 - Modify: `apps/backend/src/autoflow/infrastructure/database/migrations/env.py`
 - Create: `apps/backend/tests/unit/test_workflow_runtime.py`
 - Create: `apps/backend/tests/integration/test_workflow_runtime_repository.py`
 - Create: `apps/backend/tests/integration/test_workflow_runtime_migration.py`
 
-- [ ] **Step 1: 写状态机和幂等 RED 测试。** 覆盖 `runRequestId` 唯一、PreparedContent 不可变、queued 创建、合法转换、终态不可逆、旧 `executionGeneration` 拒绝、RunEvent 单调 sequence 和重复事件不重复提交。
-- [ ] **Step 2: 写迁移 RED 测试。** 从空库和包含 0005–0008 旧运行样例的数据库升级；验证旧表数据保留、PreparedContent 可回溯、项目/浏览器/代理/模型/PM2 表不变。
-- [ ] **Step 3: 实现领域对象和 port。** `prepare_run(..., uow)` 只向调用者工作单元登记 queued CoreRun；`dispatch_run/query_run/cancel_run/force_stop` 使用明确 CAS。不得在 port 内提交。
-- [ ] **Step 4: 实现迁移。** 新建 `workflow_prepared_contents`；为 `workflow_runs` 增加规范身份、状态、修订、执行代次、资源请求和 prepared content 引用。旧 payload 按确定映射回填；无法证明的旧活动运行统一迁成 `interrupted`，不自动重放。
+- [ ] **Step 1: 写状态机和幂等 RED 测试。** 覆盖 `runRequestId` 唯一及其规范请求摘要、PreparedContent 的 `prepareOperationId/requestDigest/workflowId/sourceRevision/checksum/document/executionPlan/adapterVersion/capabilityRequirements` 不可变、queued 创建、合法转换、终态不可逆、旧 `executionGeneration` 拒绝，以及 RunEvent 的 `eventId/generation/kind/nodeVisitId/attempt/occurredAt/payload`、单调 sequence 和重复事件不重复提交。
+- [ ] **Step 2: 写迁移 RED 测试。** 从空库和包含 0005–0008 旧运行样例的数据库升级；验证旧活动状态统一终结为 `interrupted` 且不自动重放，旧文档的 `sourceRevision=null` 并带明确 legacy provenance；项目/浏览器/代理/模型/PM2 表不变，SQLite 外键检查通过。
+- [ ] **Step 3: 实现领域对象和 port。** CoreRun 保存 `requestDigest/parameters/inputSnapshotRef/status/statusRevision/executionGeneration/preparedContentId/lastSequence/createdAt/updatedAt/startedAt/completedAt/error`；PreparedContent 冻结 Task 2 生成的确定 `executionPlan` 和 `adapterVersion`，不得在进程重启或代码升级后重新编译。`prepare_run(..., uow)` 只向调用者工作单元登记 queued CoreRun，`dispatch_run/query_run/cancel_run/force_stop` 使用明确 CAS。数据库 writer 接受调用方 Session/UoW 且没有 `commit` 能力。
+- [ ] **Step 4: 实现迁移。** 新建 `workflow_prepared_contents`，以 SQLite 安全重建方式升级 `workflow_runs/workflow_run_events`；不得把旧 `active_slot` 当成所有权。旧 payload 按确定映射回填；无法证明的旧活动运行统一迁成 `interrupted`，不恢复为 queued/reconciling/running，也不自动重放。
 - [ ] **Step 5: 实现仓储和数据库工作单元适配。** 同一 SQLAlchemy Session 可以由项目协调器传入；独立 Studio 启动则由 core application service 创建短工作单元。
 - [ ] **Step 6: 验证。**
 
@@ -135,7 +141,7 @@ uv run --directory apps/backend pytest tests/unit/test_workflow_runtime.py tests
 uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/alembic.ini heads
 ```
 
-预期：唯一 head 为 `0010_workflow_runtime_contracts`。
+预期：唯一 head 为 `0011_workflow_runtime_contracts`。
 
 - [ ] **Step 7: 提交。**
 
