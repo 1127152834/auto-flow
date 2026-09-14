@@ -83,10 +83,10 @@ def _native_arguments(pid: int) -> tuple[Path, list[str], dict[str, str]] | None
         return None
 
 
-def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool:
+def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool | None:
     native = _native_arguments(pid)
     if native is None:
-        return False
+        return None
     actual, arguments, environment = native
     if environment.get("CLOAKBROWSER_CACHE_DIR") != str(directory):
         return False
@@ -109,7 +109,7 @@ def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool:
 
 def capture_processes(
     pid: int, birth: int | None, directory: Path | None, executable: Path | None,
-    previous: OwnedProcesses | None = None,
+    previous: OwnedProcesses | None = None, *, strict_ownership: bool = False,
 ) -> OwnedProcesses:
     output = subprocess.check_output(["ps", "-ax", "-o", "pid=,ppid=,pgid=,command="], text=True)
     rows = [line.split(None, 3) for line in output.splitlines()]
@@ -131,8 +131,12 @@ def capture_processes(
             # inherited per-run marker make the ownership decision below.
             command = row[3] if len(row) == 4 else ""
             if (str(directory) in command or "--test-browser-worker" in command
-                or "/playwright/driver/" in command) and _belongs_to_run(item, directory, executable):
-                owned.add(item)
+                or "--workflow-worker" in command or "/playwright/driver/" in command):
+                belongs = _belongs_to_run(item, directory, executable)
+                if belongs is None and strict_ownership and _process_exists(item):
+                    raise RuntimeError("Candidate browser process ownership is unavailable")
+                if belongs:
+                    owned.add(item)
     old: set[int] = set()
     while old != owned:
         old = owned.copy()

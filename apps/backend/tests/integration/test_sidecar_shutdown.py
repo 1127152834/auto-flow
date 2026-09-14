@@ -17,6 +17,32 @@ from autoflow.infrastructure.database.kernel_operations import (
 from autoflow.infrastructure.database.session import create_session_factory
 
 
+@pytest.mark.asyncio
+async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monkeypatch):
+    from unittest.mock import AsyncMock, Mock
+
+    from autoflow.bootstrap.app import create_app
+    from autoflow.bootstrap.config import Settings
+
+    app = create_app(Settings(data_dir=str(tmp_path / 'shutdown-data'), instance_id='shutdown-fixture'))
+    failed = AsyncMock(side_effect=RuntimeError('synthetic workflow cleanup failure'))
+    monkeypatch.setattr(app.state.workflow_dispatcher, 'shutdown', failed)
+    browser = AsyncMock(wraps=app.state.test_browser_worker_manager.shutdown)
+    kernel = AsyncMock(wraps=app.state.kernel_worker_manager.shutdown)
+    exports = Mock(wraps=app.state.excel_exports.shutdown)
+    batches = Mock(wraps=app.state.status_batch_coordinator.shutdown)
+    monkeypatch.setattr(app.state.test_browser_worker_manager, 'shutdown', browser)
+    monkeypatch.setattr(app.state.kernel_worker_manager, 'shutdown', kernel)
+    monkeypatch.setattr(app.state.excel_exports, 'shutdown', exports)
+    monkeypatch.setattr(app.state.status_batch_coordinator, 'shutdown', batches)
+    with pytest.raises(RuntimeError, match='synthetic workflow cleanup failure'):
+        await app.router.on_shutdown[-1]()
+    browser.assert_awaited_once()
+    kernel.assert_awaited_once()
+    exports.assert_called_once()
+    batches.assert_called_once()
+
+
 @pytest.mark.parametrize("shutdown", ["host", "signal"])
 @pytest.mark.parametrize("active_worker", [False, True])
 def test_open_sse_does_not_block_shutdown_or_worker_cleanup(

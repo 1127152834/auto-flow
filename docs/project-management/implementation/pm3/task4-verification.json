@@ -1,0 +1,75 @@
+{
+  "stage": "PM3 Task 4",
+  "status": "verifiedBackendScope",
+  "recordedAt": "2026-09-14T18:52:21.248143+00:00",
+  "baseCommit": "8e1f676",
+  "scope": "real browser worker, durable dispatcher, resource cleanup and recovery; no management UI delivery",
+  "sourceSha256": {
+    "apps/backend/src/autoflow/__main__.py": "db19db00d007a16897f0ef75f6b267d23aef19fe9bccd90da2e3a190c7d28920",
+    "apps/backend/src/autoflow/bootstrap/app.py": "4e1708099905f3c2521797a7ca3d9d93b3ab025746a04ec752a691a84c8b3355",
+    "apps/backend/src/autoflow/bootstrap/workflows.py": "57343e06904b35da4f91dbd9bdda6f54d45b7c41f45bf0450a5b9cffc5f73908",
+    "apps/backend/src/autoflow/bootstrap/workflow_worker.py": "8a5b24fbf12f37896467cd39bfd65a1d6ef6e47566845fc959b3ea0b82af2d5d",
+    "apps/backend/src/autoflow/application/workflows/browser_resources.py": "9bf869ba683b2f1c8743ce608befa30cf2da9e7e9df5dd8a41e483723de9b973",
+    "apps/backend/src/autoflow/application/workflows/dispatcher.py": "3b92a7e599f39d33c69fd4e9e17cf2ae3db203ad8c11b91b4c2997b7bd588760",
+    "apps/backend/src/autoflow/infrastructure/process/browser_processes.py": "5e8f686aec071e664d381a9589a728c67bb4bfadaf42b97220cd980cd356fd3a",
+    "apps/backend/src/autoflow/infrastructure/process/test_browser_worker.py": "87910fa4b50764fce581db8d489849b0388341189780fdb15ea21da69343d0c4",
+    "apps/backend/src/autoflow/infrastructure/process/workflow_worker.py": "a1eec7b765cf88a0ddf38bf46be8060f8ef83aee026135df0788f0f8741795da",
+    "apps/backend/src/autoflow/infrastructure/process/workflow_recovery.py": "48894ca55950d7aad92c91075b19fec13d4b7ff23c0a6edea8f1e572bb76d508",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "028bc25180213c0570352baeaf20bf02dc74fcfc4a62b6a67734ea9be4d5e040",
+    "apps/backend/src/autoflow/providers/browser/workflow_executor.py": "6254019629f8dfc5d36d6e8b274a0ea88d44f98c1e8fda3e4cf94d667ccf7ddb"
+  },
+  "checks": [
+    {
+      "name": "dispatcher/process/resources/recovery/shutdown regression",
+      "result": "passed",
+      "tests": 78,
+      "seconds": 25.53,
+      "log": "task4-final-targeted.log"
+    },
+    {
+      "name": "native installed CloakBrowser",
+      "result": "passed",
+      "tests": 4,
+      "seconds": 16.93,
+      "log": "task4-cloakbrowser.log",
+      "coverage": [
+        "input append and four-node result",
+        "stop before navigation",
+        "timeout blocks later action",
+        "SQLite persisted frozen content and service object recreation"
+      ]
+    },
+    {
+      "name": "ruff changed runtime scope",
+      "result": "passed"
+    },
+    {
+      "name": "mypy runtime integration scope",
+      "result": "passed",
+      "sourceFiles": 15
+    }
+  ],
+  "historicalRegression": {
+    "tests": 1256,
+    "skipped": 4,
+    "log": "task4-pytest.log",
+    "scope": "before final targeted shutdown/strict-ownership changes; not a final full-suite rerun"
+  },
+  "review": "task4-review.md",
+  "notExecuted": [
+    "management Electron E2E",
+    "management screenshot comparison",
+    "full sidecar process restart E2E",
+    "Windows",
+    "other architectures",
+    "packaged builds",
+    "user manual acceptance"
+  ],
+  "excludedByUser": [
+    "Studio demo integration and E2E"
+  ],
+  "limitations": [
+    "Windows orphan ownership after service restart stays reconciling; native verification unavailable."
+  ],
+  "next": "automation management backend and components, then real page integration"
+}

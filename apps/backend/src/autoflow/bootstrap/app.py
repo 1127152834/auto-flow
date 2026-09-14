@@ -41,6 +41,7 @@ from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
     configure_proxy_management,
 )
+from autoflow.bootstrap.workflows import configure_workflow_runtime
 from autoflow.domain.credentials import CredentialStore
 from autoflow.domain.models.ports import ModelGateway
 from autoflow.domain.profiles.ports import (
@@ -239,6 +240,12 @@ def create_app(
         license_store.read,
         test_browser_workers,
     )
+    workflow_dispatcher = configure_workflow_runtime(
+        app, session_factory=session_factory, profiles=profile_service,
+        installed=catalog_provider.installed, resolve_proxy=proxy_runtime.resolve_profile,
+        read_license=license_store.read, usage_guard=usage_guard,
+        installations=installations, temp_dir=paths.temp, gate=quiesce_gate,
+    )
 
     settings_runtime = SettingsRuntimeService(
         SqlAlchemySettingsRuntimeRepository(session_factory, paths.profiles),
@@ -252,6 +259,7 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
+            *workflow_dispatcher.blockers(),
             *(
                 ["project_excel_operation_active"]
                 if project_excel.pending_operations()
@@ -287,17 +295,31 @@ def create_app(
     async def shutdown() -> None:
         try:
             import asyncio
+            from inspect import isawaitable
 
-            excel_exports.shutdown()
-            await asyncio.to_thread(excel_export_executor.shutdown, wait=True)
-            excel_imports.shutdown()
-            project_excel.shutdown()
-            status_batch_coordinator.shutdown()
-            await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
+            async def close(action):
+                result = action()
+                if isawaitable(result):
+                    await result
 
-            await asyncio.gather(
-                test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
+            # One failed owner must not skip another owner's shutdown. Keep the
+            # proxy runtime and database available until every close has settled.
+            results = await asyncio.gather(
+                *(close(action) for action in (
+                    workflow_dispatcher.shutdown, excel_exports.shutdown,
+                    excel_imports.shutdown, project_excel.shutdown,
+                    status_batch_coordinator.shutdown, test_browser_workers.shutdown,
+                    kernel_worker_manager.shutdown,
+                )), return_exceptions=True,
             )
+            results.extend(await asyncio.gather(
+                asyncio.to_thread(excel_export_executor.shutdown, wait=True),
+                asyncio.to_thread(status_batch_executor.shutdown, wait=True),
+                return_exceptions=True,
+            ))
+            for result in results:
+                if isinstance(result, BaseException):
+                    raise result
         finally:
             try:
                 from inspect import isawaitable

@@ -1,0 +1,59 @@
+"""Reconcile owned browser directories without re-executing a workflow."""
+from __future__ import annotations
+
+import asyncio
+import shutil
+import signal
+import sys
+from pathlib import Path
+from uuid import UUID
+
+from autoflow.infrastructure.process.browser_processes import (
+    capture_processes,
+    living_processes,
+    signal_processes,
+)
+
+
+async def recover_worker_directories(
+    temp_dir: Path, run_id: str, executable: Path, *, timeout: float = 3,
+) -> None:
+    if str(UUID(run_id)) != run_id:
+        raise RuntimeError("Invalid workflow cleanup identity")
+    root = temp_dir.resolve() / "workflow-runs"
+    run = root / run_id
+    if root.is_symlink() or run.is_symlink():
+        raise RuntimeError("Workflow cleanup ownership path is invalid")
+    if not run.exists():
+        return
+    directories = list(run.iterdir())
+    for directory in directories:
+        suffix = directory.name.removeprefix("generation-")
+        if (not directory.name.startswith("generation-") or not suffix.isdecimal()
+            or str(int(suffix)) != suffix or int(suffix) < 1
+            or directory.is_symlink() or not directory.is_dir()):
+            raise RuntimeError("Workflow cleanup generation path is invalid")
+    if directories and sys.platform == "win32":
+        # Never infer process death from an absent old parent. Until native restart
+        # ownership is available, retain reconciling instead of reporting success.
+        raise RuntimeError("Windows workflow restart cleanup needs native ownership verification")
+    for directory in directories:
+        owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, strict_ownership=True)
+        await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        deadline = asyncio.get_running_loop().time() + timeout
+        while await asyncio.to_thread(living_processes, owned):
+            if asyncio.get_running_loop().time() >= deadline:
+                break
+            await asyncio.sleep(.02)
+        owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, owned, strict_ownership=True)
+        await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+        deadline = asyncio.get_running_loop().time() + timeout
+        while await asyncio.to_thread(living_processes, owned):
+            if asyncio.get_running_loop().time() >= deadline:
+                raise RuntimeError("Workflow orphan cleanup did not finish")
+            await asyncio.sleep(.02)
+        # No directory or process evidence is removed before native cleanup succeeds.
+        try:
+            await asyncio.to_thread(shutil.rmtree, directory)
+        except FileNotFoundError:
+            pass

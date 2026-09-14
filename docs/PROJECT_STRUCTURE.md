@@ -441,6 +441,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 本节仅描述 `codex/project-management-pm3` 实施分支，不能代表主目录已经合入。
 
 - `domain/workflows/{models,validation,references,catalog,run_validation}.py` 与 `application/workflows/service.py`、`infrastructure/database/workflows.py`：当前 WebRPA 包装文档、验证、能力预检、保存及原命令结果找回，Task 2 提交 `ffa8df2`。未知节点可保存，最小四节点链通过预检才可准备执行。
-- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；真实 worker 仍待 Task 4 装配。
+- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；Task 4 已装配真实 worker，尚无项目管理端运行入口。
 - `0010_workflow_document_commands` 保存文档命令事实；`0011_workflow_runtime_contracts` 从 0010 顺序升级，保留历史运行证据并中断旧活动执行。有准备/运行证据时禁止有损降级，空库允许降级。历史 PM0–PM2 报告不改写。
-- 本阶段仍未装配真实网页执行、HTTP/SSE、项目自动化、批次或运行页面；按 PM3 Task 4–19 顺序继续。
+- `application/workflows/{browser_resources,dispatcher}.py` 解析受控资源、持久状态与事件、调度容量和清理恢复；`infrastructure/process/{workflow_worker,workflow_recovery}.py` 管理进程及原生归属；`providers/browser/{workflow_executor,workflow_worker}.py` 只执行已确认四节点。`bootstrap/workflows.py` 注册生命周期及资源锁。
+- Task 4 真实后端与 CloakBrowser 链已核验；项目自动化配置与组件进行中，HTTP/批次/运行页面尚未交付。按本轮用户指令管理端优先，Studio demo 联合验收取消。

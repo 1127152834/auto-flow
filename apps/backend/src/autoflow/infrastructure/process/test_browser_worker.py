@@ -138,7 +138,7 @@ class TestBrowserWorkerManager:
                     raise ProfileTestBrowserUnavailable
                 self._starting[profile.id] = process
             assert process.stdin is not None and process.stdout is not None
-            payload = _worker_payload(session_id, profile, proxy, license_key)
+            payload = browser_worker_payload(session_id, profile, proxy, license_key)
             process.stdin.write((json.dumps(payload) + "\n").encode())
             await process.stdin.drain()
             raw = await asyncio.wait_for(
@@ -181,7 +181,7 @@ class TestBrowserWorkerManager:
                 self._stopping.add(profile.id)
             if process is not None:
                 cleanup = asyncio.create_task(self._stop_process_tree(process, directory))
-                await _wait_for_cleanup(cleanup)
+                await wait_for_cleanup(cleanup)
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._starting.pop(profile.id, None)
@@ -344,7 +344,7 @@ class TestBrowserWorkerManager:
         self._executables.pop(process.pid, None)
 
 
-def _worker_payload(
+def browser_worker_payload(
     session_id: str,
     profile: Profile,
     proxy: ProfileBrowserProxy | None,
@@ -394,7 +394,7 @@ async def _wait_for_spawn(
     return task.result()
 
 
-async def _wait_for_cleanup(task: asyncio.Task[Any]) -> Any:
+async def wait_for_cleanup(task: asyncio.Task[Any]) -> Any:
     while not task.done():
         try:
             await asyncio.shield(task)
@@ -423,7 +423,7 @@ async def stop_process_tree(
 async def force_process_tree(
     process: asyncio.subprocess.Process, termination_timeout: float,
     directory: Path | None = None, executable: Path | None = None, birth: int | None = None,
-    owned: OwnedProcesses | None = None,
+    owned: OwnedProcesses | None = None, *, strict_ownership: bool = False,
 ) -> None:
     if sys.platform == "win32":
         killer = await asyncio.create_subprocess_exec(
@@ -435,14 +435,14 @@ async def force_process_tree(
             process.kill()
             await process.wait()
         return
-    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned)
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
     await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
     if process.returncode is None:
         try:
             await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
         except TimeoutError:
             pass
-    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned)
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
     await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
     if process.returncode is None:
         # A missing native identity must retain cleanup ownership, never hang shutdown.

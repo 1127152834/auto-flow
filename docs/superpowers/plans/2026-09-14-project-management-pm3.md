@@ -12,6 +12,32 @@
 
 ## 0. 执行规则与当前基线
 
+### 2026-09-15 执行收紧（confirmed，覆盖下文旧执行顺序）
+
+来源：用户要求提高管理功能交付效率，随后明确“Studio 还是 demo，不需要联合 Studio 测试，只需要把管理功能做好”。核对 HEAD `8e1f676`，Task 2、3 已提交；Task 4 有效实现保留，尚未整体交付。主项目只读。
+
+- 交付主线改为 Task 7–10 自动化管理 → Task 11–16 管理端批次/运行记录/停止恢复 → Task 17–19 管理页面 E2E 和截图。Task 4 已发现的清理问题定向闭合，不阻塞独立管理组件开发。
+- Task 5 仅按管理端消费者接入必要工作流/Run HTTP 和事件查询；Studio transport、Store、画布和 demo IPC 联调暂停。本轮不修改 `domains/workflows/api.ts`、`events.ts` 或增加 demo runtime facade。
+- Task 6 取消 Studio 保存/运行 UI 路径；保留真实后端 + CloakBrowser 验证，管理端关联并启动持久测试工作流。资料经受控 fixture/真实服务准备，不制造成功事件，明确区分资料准备与用户操作。
+- Task 10 不扩展 Studio demo bridge；真实 workflowId 关联及配置/工作流独立修订要求不变。现有入口保持现状，不标为已完成真实编辑器集成。
+- Task 17–19 移除 Studio demo 联合测试及 `smoke:studio` 门槛。管理页面创建、四页签保存、查询、冲突、重连、隔离及批次/停止/恢复仍须真实 Electron + FastAPI + SQLite E2E 和逐图截图。
+- 停止、重复提交、事务原子性、旧代次撤权、未知结果恢复仍是管理端运行能力必需条件；不扩建未来节点/通用调度，不进入 PM4。
+
+| 当前阻断/交付包 | 唯一负责人及文件所有权 | 完成证据与现状 | 依赖/下一步 |
+|---|---|---|---|
+| Task 4 acquire 失败后 shutdown 不可抹除未知 owner | 主协调：dispatcher、bootstrap、共享进程文件 | 规格、工程通过；shutdown 失败保留与成功恢复均定向闭合 | 完成；管理端运行接口后续复用 |
+| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | 进行中，未装配正式服务 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
+| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 进行中，未联调 | 冻结参数/政策合同，复用统一表格和小圆角 |
+| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 尚未实现 | 真实配置接口及组件先行，不使用 demo 结果 |
+| Task 11–16 批次/运行记录/停止恢复 | 主协调：契约、事务、调度竞争和集成 | 尚未实现 | 复用 CoreRun；Task 4 基础检查不等于完整业务通过 |
+
+保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
+
+下一演示：管理端创建自动化、关联持久工作流、修改参数/资源/运行政策并统一保存，刷新读回、冲突保留输入。预计 2–4 小时（后端和独立组件已并行；资源解析和页面恢复尚待装配，有不确定性）。此前“Studio 保存运行”演示目标 superseded。
+
+审查只复核已发现问题及受影响范围；日常定向检查，阶段集成全量。检查点记录可操作能力、真实证据、具体阻断和下次演示估时。未执行平台及用户手测继续记未执行。
+
+
 工作目录固定为 `/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3`，分支固定为 `codex/project-management-pm3`。计划起点为 `73a6c71`；开工前允许主线产生新提交，但不得把主目录未提交文件复制进来。需要同步主线时先记录差异，再选择性 cherry-pick 已提交变更。
 
 当前唯一 Alembic head 已实测为 `0009_merge_project_data`。本计划新增迁移顺序固定为：
@@ -158,10 +184,14 @@ git commit -m "feat(workflows): add immutable prepared content and core runs"
 >
 > 参数在 CoreRun/输入快照中保持 JsonScalar 原类型；四节点 url/selector/text 当前均为字符串配置，变量插入遵循当前 UI 的 `{name}` 并转成文本，不自动解析表达式或递归替换结果，不给整个配置树增加隐式类型转换。执行协议采用单 stdin 消费者和持久事件 ACK：当前事件提交后才允许下一步动作；EOF、写库失败或撤权不得继续网页操作。全部动作与进程清理在短数据库事务之外。
 
+> **执行核对补充（2026-09-15）：** 四节点 `data.timeout` 的单位是秒（源 `ConfigPanel.tsx`、`editor-store.ts` 和 `run_validation.py` 默认 60），保留小数秒，不能除以 1000 或截断。派发先在短事务中 CAS 取得 running 代次，再申请资源和启动子进程；运行中包含启动过程，以避免外部启动先于持久占用造成重复执行。状态转换与 status 事件同事务，返回提交后的序号。启动/清理恢复失败保留 reconciling 和容量阻断，不重放网页。Windows 遗留目录目前保留待核验，尚未完成原生重启归属核验；不得用 macOS 测试替代这一限制。
+
 **Files:**
 
 - Restore and adapt: `apps/backend/src/autoflow/application/workflows/browser_resources.py`
 - Create: `apps/backend/src/autoflow/application/workflows/dispatcher.py`
+- Create: `apps/backend/src/autoflow/bootstrap/workflows.py`（运行资源与生命周期装配）
+- Create: `apps/backend/src/autoflow/infrastructure/process/workflow_recovery.py`（已知运行的原生进程清理）
 - Modify: `apps/backend/src/autoflow/__main__.py`（受控 `--workflow-worker` 入口）
 - Modify: `apps/backend/src/autoflow/bootstrap/app.py`（资源、dispatcher、shutdown 和 quiesce 装配）
 - Modify as needed: `apps/backend/src/autoflow/infrastructure/process/browser_processes.py`（复用同一进程所有权机制）
@@ -173,19 +203,23 @@ git commit -m "feat(workflows): add immutable prepared content and core runs"
 - Restore and adapt: `apps/backend/tests/fixtures/workflow_runs.py`
 - Restore and adapt: `apps/backend/tests/unit/test_workflow_worker.py`
 - Create: `apps/backend/tests/integration/test_workflow_dispatch.py`
+- Create: `apps/backend/tests/integration/test_workflow_worker_process.py`
+- Create: `apps/backend/tests/integration/test_workflow_recovery.py`
+- Create: `apps/backend/tests/integration/test_workflow_real_cloakbrowser.py`（显式指定真实已安装内核；未指定时跳过并如实登记）
+- Create: `apps/backend/tests/unit/test_workflow_browser_resources.py`
 - Modify: `apps/backend/tests/integration/test_sidecar_shutdown.py`
 
-- [ ] **Step 1: 写 worker 生命周期 RED 测试。** 覆盖页面导航、输入、点击、文本读取、事件顺序、节点失败回收、普通停止后无新网页动作、worker 失联、sidecar 退出不遗留进程。
-- [ ] **Step 2: 恢复进程协议和网页执行器。** 只恢复 PM3 fixture 使用的基础网页节点及其公共依赖；浏览器会话必须从 Profile、已安装 CloakBrowser 内核和代理服务解析，不能启动通用 Playwright 浏览器。
-- [ ] **Step 3: 实现 dispatcher。** queued Run 通过 CAS 取得当前执行代次，创建 worker 后进入 running；容量固定 1。进程输出先验证 runId 和 executionGeneration，再持久化事件。
-- [ ] **Step 4: 实现停止与清理。** 普通停止发取消并等待清理；强停撤销 executionGeneration、杀 worker、关闭 CloakBrowser，再写明确终态或 `reconciling`。清理失败不得显示成功。
-- [ ] **Step 5: 验证。**
+- [x] **Step 1: 写 worker 生命周期 RED 测试。** 覆盖页面导航、输入、点击、文本读取、事件顺序、节点失败回收、普通停止后无新网页动作、worker 失联、sidecar 退出不遗留进程。
+- [x] **Step 2: 恢复进程协议和网页执行器。** 只恢复 PM3 fixture 使用的基础网页节点及其公共依赖；浏览器会话必须从 Profile、已安装 CloakBrowser 内核和代理服务解析，不能启动通用 Playwright 浏览器。
+- [x] **Step 3: 实现 dispatcher。** queued Run 通过 CAS 原子进入 running 并取得执行代次，再启动 worker，避免外部动作前重复分配；容量固定 1。进程输出先验证 runId 和 executionGeneration，再持久化事件。
+- [x] **Step 4: 实现停止与清理。** 普通停止发取消并等待清理；强停撤销 executionGeneration、杀 worker、关闭 CloakBrowser，再写明确终态或 `reconciling`。清理失败不得显示成功。
+- [x] **Step 5: 验证。**
 
 ```bash
 uv run --directory apps/backend pytest tests/unit/test_workflow_worker.py tests/integration/test_workflow_dispatch.py tests/integration/test_sidecar_shutdown.py -q
 ```
 
-- [ ] **Step 6: 提交。**
+- [x] **Step 6: 提交。**
 
 ```bash
 git add apps/backend/src/autoflow/application/workflows apps/backend/src/autoflow/bootstrap/workflow_worker.py apps/backend/src/autoflow/infrastructure/process/workflow_worker.py apps/backend/src/autoflow/providers/browser apps/backend/tests/fixtures/workflow-page.html apps/backend/tests/fixtures/workflow_runs.py apps/backend/tests/unit/test_workflow_worker.py apps/backend/tests/integration/test_workflow_dispatch.py apps/backend/tests/integration/test_sidecar_shutdown.py
@@ -363,7 +397,7 @@ git commit -m "feat(projects): expose project automation contracts"
 - Create: `apps/desktop/src/renderer/domains/project-automations/components/RunPolicyEditor.tsx`
 
 - [ ] **Step 1: 写组件 RED 测试。** 覆盖 gallery 的自动化目录状态、更多菜单、四页签单一草稿、错误页签计数、未保存保护、CAS 冲突、资源缺失和 PM4 输入 blocker；更多菜单不得出现尚未交付的删除动作。
-- [ ] **Step 2: 实现 API 恢复逻辑。** 创建/保存/删除结果不明时先按原 Idempotency-Key 查询 Operation；旧工作区或实例响应不能关闭当前编辑器。
+- [ ] **Step 2: 实现 API 恢复逻辑。** 创建/保存结果不明时先按原 Idempotency-Key 查询 Operation；旧工作区或实例响应不能关闭当前编辑器。
 - [ ] **Step 3: 实现组件。** 复用 shared controls、细网格和小圆角；组件只接收数据与回调，不自行读取全局 runtime。四页签共享 React Hook Form，参数 ID 和输入 ID 不随重命名变化。
 - [ ] **Step 4: 验证。**
 
