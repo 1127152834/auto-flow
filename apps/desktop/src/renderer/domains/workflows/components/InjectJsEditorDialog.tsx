@@ -66,7 +66,6 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
   const monacoRef = useRef<Monaco | null>(null)
   
   const variables = useWorkflowStore((state) => state.variables)
-  const nodes = useWorkflowStore((state) => state.nodes)
   const testVariables = useMemo(() => Object.fromEntries(variables.filter(variable => variable.value !== undefined).map(variable => [variable.name,variable.value])),[variables])
   const scriptTest = useBrowserScriptTest(isOpen,currentCode,testVariables)
 
@@ -82,27 +81,27 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
     editorRef.current = editor
     monacoRef.current = monaco
 
-    // 收集所有变量名用于自动补全
-    const varNames = new Set<string>()
-    variables.forEach(v => varNames.add(v.name))
-    nodes.forEach(node => {
-      const data = node.data as Record<string, unknown>
-      const fields = ['variableName', 'resultVariable', 'itemVariable', 'indexVariable', 'loopIndexVariable', 
-                      'saveToVariable', 'saveNewElementSelector', 'saveChangeInfo', 'variableNameX', 'variableNameY',
-                      'stdoutVariable', 'stderrVariable', 'returnCodeVariable', 'columnName', 'outputVariable',
-                      'targetVariable', 'dataVariable']
-      fields.forEach(field => {
-        const val = data[field]
-        if (typeof val === 'string' && val.trim()) {
-          varNames.add(val)
-        }
-      })
-    })
-
     // 注册自定义补全提供器
     registerEditorCompletions(editor, monaco, 'javascript', {
        
       provideCompletionItems: (model: any, position: any) => {
+        // 每次请求读取当前文档，避免打开编辑器后变量提示过期。
+        const {variables,nodes} = useWorkflowStore.getState()
+        const varNames = new Set<string>()
+        variables.forEach(v => varNames.add(v.name))
+        nodes.forEach(node => {
+          const data = node.data as Record<string, unknown>
+          const fields = ['variableName', 'resultVariable', 'itemVariable', 'indexVariable', 'loopIndexVariable',
+                          'saveToVariable', 'saveNewElementSelector', 'saveChangeInfo', 'variableNameX', 'variableNameY',
+                          'stdoutVariable', 'stderrVariable', 'returnCodeVariable', 'columnName', 'outputVariable',
+                          'targetVariable', 'dataVariable']
+          fields.forEach(field => {
+            const val = data[field]
+            if (typeof val === 'string' && val.trim()) {
+              varNames.add(val)
+            }
+          })
+        })
         const word = model.getWordUntilPosition(position)
         const range = {
           startLineNumber: position.lineNumber,

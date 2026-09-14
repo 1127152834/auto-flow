@@ -32703,5 +32703,47 @@
     "level": "browser UI",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-debug-pause/browser-ui.md"
+  },
+  {
+    "id": "EDITOR.completions.live.javascript",
+    "capability": "tool:code-completions",
+    "preconditions": {
+      "editor": "javascript",
+      "variable": "before",
+      "nodes": []
+    },
+    "steps": [
+      "打开编辑器并检查 vars.before",
+      "保持挂载，将声明改名为 after 并新增 new_output 节点输出",
+      "再次请求补全",
+      "删除变量和节点后再次请求补全"
+    ],
+    "expectedUI": "补全显示 after/new_output，旧 before 消失；删除后两者均消失",
+    "expectedIO": "本例无网络；Monaco 适配器模拟",
+    "stateAssertion": "仅注册一个补全提供器；测试退出恢复 Store",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "EDITOR.completions.live.injected-javascript",
+    "capability": "tool:code-completions",
+    "preconditions": {
+      "editor": "injected-javascript",
+      "variable": "before",
+      "nodes": []
+    },
+    "steps": [
+      "打开编辑器并检查 vars.before",
+      "保持挂载，将声明改名为 after 并新增 new_output 节点输出",
+      "再次请求补全",
+      "删除变量和节点后再次请求补全"
+    ],
+    "expectedUI": "补全显示 after/new_output，旧 before 消失；删除后两者均消失",
+    "expectedIO": "本例无网络；Monaco 适配器模拟",
+    "stateAssertion": "仅注册一个补全提供器；测试退出恢复 Store",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
   }
 ]

@@ -1,0 +1,52 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/code-editor-completions.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:46476) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx (8 tests | 2 failed) 82ms
+   × JavaScript uses current variable names and output names without remounting 10ms
+   × 页面注入 uses current variable names and output names without remounting 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > JavaScript uses current variable names and output names without remounting
+AssertionError: expected [ 'vars', 'vars.before', 'main', …(9) ] to include 'vars.after'
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:62:24
+     60|    useWorkflowStore.getState().addNode('get_element_info',{x:0,y:0},{v…
+     61|   })
+     62|   expect(await read()).toContain('vars.after')
+       |                        ^
+     63|   expect(await read()).toContain('vars.new_output')
+     64|   expect(await read()).not.toContain('vars.before')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > 页面注入 uses current variable names and output names without remounting
+AssertionError: expected [ 'vars', 'vars.before', …(15) ] to include 'vars.after'
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:62:24
+     60|    useWorkflowStore.getState().addNode('get_element_info',{x:0,y:0},{v…
+     61|   })
+     62|   expect(await read()).toContain('vars.after')
+       |                        ^
+     63|   expect(await read()).toContain('vars.new_output')
+     64|   expect(await read()).not.toContain('vars.before')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  12:00:21
+   Duration  1.07s (transform 263ms, setup 122ms, import 378ms, tests 82ms, environment 386ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/code-editor-completions.test.tsx
