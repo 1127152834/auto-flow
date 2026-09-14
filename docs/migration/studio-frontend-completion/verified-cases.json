@@ -26480,5 +26480,193 @@
     "level": "browser E2E / Mock coordination",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-variable-tracking/browser-ui.md"
+  },
+  {
+    "id": "F2.editor-completion.JavaScript.scope",
+    "capability": "补全只针对自己的模型",
+    "preconditions": {
+      "editor": "JavaScript",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F2.editor-completion.JavaScript.dispose",
+    "capability": "关闭释放及重开独立注册",
+    "preconditions": {
+      "editor": "JavaScript",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F2.editor-completion.页面注入.scope",
+    "capability": "补全只针对自己的模型",
+    "preconditions": {
+      "editor": "页面注入",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F2.editor-completion.页面注入.dispose",
+    "capability": "关闭释放及重开独立注册",
+    "preconditions": {
+      "editor": "页面注入",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F2.editor-completion.Python.scope",
+    "capability": "补全只针对自己的模型",
+    "preconditions": {
+      "editor": "Python",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F2.editor-completion.Python.dispose",
+    "capability": "关闭释放及重开独立注册",
+    "preconditions": {
+      "editor": "Python",
+      "model": "独立Monaco最小替身模型及外来模型"
+    },
+    "steps": [
+      "挂载真实编辑器组件",
+      "请求本模型和其它模型补全，或关闭重开再卸载"
+    ],
+    "expectedUI": "保留原补全项目；不出现其它编辑器建议",
+    "expectedIO": "本地Monaco注册/销毁，无HTTP请求",
+    "stateAssertion": "foreign suggestions为空；close/unmount dispose一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "F3.event-context.memory.start-log",
+    "capability": "重复/外来开始与日志不重置活跃流程",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "active/foreign/old",
+      "data": "现有数据行、暂停节点及旧时间戳日志"
+    },
+    "steps": [
+      "按具名用例发送顺序事件",
+      "等待SSE标记帧确认消费",
+      "核对运行/暂停/数据/日志；或断开并新建文档"
+    ],
+    "expectedUI": "重复/外来开始与日志不重置活跃流程",
+    "expectedIO": "原SSE事件和afterSeq续读，未新增执行接口",
+    "stateAssertion": "原数据和高亮保留；新文档日志为空；正常结果仍可写入",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/execution-event-ownership.test.ts"
+  },
+  {
+    "id": "F3.event-context.memory.buffer",
+    "capability": "断开后旧日志缓冲不写入新文档",
+    "preconditions": {
+      "transport": "memory",
+      "workflow": "active/foreign/old",
+      "data": "现有数据行、暂停节点及旧时间戳日志"
+    },
+    "steps": [
+      "按具名用例发送顺序事件",
+      "等待SSE标记帧确认消费",
+      "核对运行/暂停/数据/日志；或断开并新建文档"
+    ],
+    "expectedUI": "断开后旧日志缓冲不写入新文档",
+    "expectedIO": "原SSE事件和afterSeq续读，未新增执行接口",
+    "stateAssertion": "原数据和高亮保留；新文档日志为空；正常结果仍可写入",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
+  },
+  {
+    "id": "F3.event-context.http.start-log",
+    "capability": "重复/外来开始与日志不重置活跃流程",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "active/foreign/old",
+      "data": "现有数据行、暂停节点及旧时间戳日志"
+    },
+    "steps": [
+      "按具名用例发送顺序事件",
+      "等待SSE标记帧确认消费",
+      "核对运行/暂停/数据/日志；或断开并新建文档"
+    ],
+    "expectedUI": "重复/外来开始与日志不重置活跃流程",
+    "expectedIO": "原SSE事件和afterSeq续读，未新增执行接口",
+    "stateAssertion": "原数据和高亮保留；新文档日志为空；正常结果仍可写入",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/execution-event-ownership.test.ts"
+  },
+  {
+    "id": "F3.event-context.http.buffer",
+    "capability": "断开后旧日志缓冲不写入新文档",
+    "preconditions": {
+      "transport": "http",
+      "workflow": "active/foreign/old",
+      "data": "现有数据行、暂停节点及旧时间戳日志"
+    },
+    "steps": [
+      "按具名用例发送顺序事件",
+      "等待SSE标记帧确认消费",
+      "核对运行/暂停/数据/日志；或断开并新建文档"
+    ],
+    "expectedUI": "断开后旧日志缓冲不写入新文档",
+    "expectedIO": "原SSE事件和afterSeq续读，未新增执行接口",
+    "stateAssertion": "原数据和高亮保留；新文档日志为空；正常结果仍可写入",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
   }
 ]

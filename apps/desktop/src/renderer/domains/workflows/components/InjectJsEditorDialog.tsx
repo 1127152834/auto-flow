@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/InjectJsEditorDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import { registerEditorCompletions } from '../lib/editorCompletions'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Editor, { type Monaco, loader } from '@monaco-editor/react'
@@ -98,7 +99,7 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
     })
 
     // 注册自定义补全提供器
-    monaco.languages.registerCompletionItemProvider('javascript', {
+    registerEditorCompletions(editor, monaco, 'javascript', {
        
       provideCompletionItems: (model: any, position: any) => {
         const word = model.getWordUntilPosition(position)

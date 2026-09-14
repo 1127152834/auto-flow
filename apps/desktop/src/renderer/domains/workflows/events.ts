@@ -46,6 +46,7 @@ class SocketService {
 
   private socket: Socket | null = null
   private connected = false
+  private releaseLogBuffer: (() => void) | null = null
   private inputPromptSequence = 0
   private pendingInputPrompt: (InputPromptRequest & {workflowId?: string}) | null = null
   private inputPromptRetry: ReturnType<typeof setTimeout> | undefined
@@ -267,6 +268,8 @@ class SocketService {
       return
     }
 
+    this.releaseLogBuffer?.()
+    this.releaseLogBuffer = null
     // 如果已有socket实例，先清理
     if (this.socket) {
       this.socket.removeAllListeners()
@@ -326,6 +329,7 @@ class SocketService {
 
     // 执行开始
     this.socket.on('execution:started', (data: { workflowId: string }) => {
+      if (isExecuting) return // Duplicate or foreign start cannot replace a confirmed active run.
       console.log('Execution started:', data.workflowId)
       isExecuting = true
       // 新一轮执行：实时日志计数归零
@@ -373,23 +377,31 @@ class SocketService {
     // 这样无论后端多快，前端始终保持 ≥ 12fps 的批处理节奏，体感丝滑。
     const LOG_BATCH_INTERVAL_MS = 80
     const LOG_BATCH_MAX_SIZE = 200
-    let logBuffer: Array<{ level: LogLevel; message: string; nodeId?: string; duration?: number; timestamp?: string }> = []
+    let logBuffer: Array<{ workflowId: string; documentId: string; level: LogLevel; message: string; nodeId?: string; duration?: number; timestamp?: string }> = []
     let logFlushTimer: ReturnType<typeof setTimeout> | null = null
 
     const flushLogBuffer = () => {
       if (logBuffer.length === 0) return
-      const batch = logBuffer
+      const batch = logBuffer.filter(log => log.documentId === useWorkflowStore.getState().id && belongsToCurrentExecution(log.workflowId))
+        .map(({workflowId: _workflowId, documentId: _documentId, ...log}) => log)
       logBuffer = []
       if (logFlushTimer !== null) {
         clearTimeout(logFlushTimer)
         logFlushTimer = null
       }
       try {
+        if (!batch.length) return
         useWorkflowStore.getState().addLogBatch(batch)
         this.realtimeLogsSinceStart += batch.length
       } catch (e) {
         console.error('[Socket] flush log buffer failed:', e)
       }
+    }
+
+    this.releaseLogBuffer = () => {
+      flushLogBuffer()
+      if (logFlushTimer !== null) clearTimeout(logFlushTimer)
+      logFlushTimer = null
     }
 
     const scheduleLogFlush = () => {
@@ -443,6 +455,7 @@ class SocketService {
         isSystemLog?: boolean
       }
     }) => {
+      if (!belongsToCurrentExecution(data.workflowId)) return
       const verboseLog = useWorkflowStore.getState().verboseLog
       const log = data.log
 
@@ -454,6 +467,7 @@ class SocketService {
       }
 
       logBuffer.push({
+        workflowId: data.workflowId, documentId: useWorkflowStore.getState().id,
         timestamp: log.timestamp,
         level: log.level,
         message: log.message,
@@ -477,6 +491,7 @@ class SocketService {
         isSystemLog?: boolean
       }>
     }) => {
+      if (!belongsToCurrentExecution(data.workflowId)) return
       const verboseLog = useWorkflowStore.getState().verboseLog
       for (const log of data.logs) {
         detectBrowserError(log.level, log.message)
@@ -484,6 +499,7 @@ class SocketService {
           continue
         }
         logBuffer.push({
+          workflowId: data.workflowId, documentId: useWorkflowStore.getState().id,
           timestamp: log.timestamp,
           level: log.level,
           message: log.message,
@@ -707,6 +723,8 @@ class SocketService {
   }
 
   disconnect() {
+    this.releaseLogBuffer?.()
+    this.releaseLogBuffer = null
     this.cancelJsScripts()
     this.jsRequests.clear()
     this.inputPromptSequence++

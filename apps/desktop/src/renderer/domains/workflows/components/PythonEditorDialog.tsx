@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/PythonEditorDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import { registerEditorCompletions } from '../lib/editorCompletions'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Editor, { type Monaco, loader } from '@monaco-editor/react'
@@ -124,7 +125,7 @@ export function PythonEditorDialog({ isOpen, code, onClose, onSave }: PythonEdit
     monacoRef.current = monaco
 
     // 注册自定义补全提供器
-    monaco.languages.registerCompletionItemProvider('python', {
+    registerEditorCompletions(editor, monaco, 'python', {
        
       provideCompletionItems: (model: any, position: any) => {
         const word = model.getWordUntilPosition(position)

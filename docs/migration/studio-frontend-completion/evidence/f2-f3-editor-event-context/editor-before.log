@@ -1,0 +1,631 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/code-editor-completions.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:37609) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx (6 tests | 6 failed) 65ms
+   × JavaScript completion suggestions are confined to their own editor model 35ms
+   × 页面注入 completion suggestions are confined to their own editor model 7ms
+   × Python completion suggestions are confined to their own editor model 7ms
+   × JavaScript releases completions on close and reopening does not retain earlier providers 5ms
+   × 页面注入 releases completions on close and reopening does not retain earlier providers 3ms
+   × Python releases completions on close and reopening does not retain earlier providers 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > JavaScript completion suggestions are confined to their own editor model
+AssertionError: expected { suggestions: [ { …(6) }, …(10) ] } to deeply equal { suggestions: [] }
+
+- Expected
++ Received
+
+  {
+-   "suggestions": [],
++   "suggestions": [
++     {
++       "detail": "工作流变量对象",
++       "documentation": "包含所有工作流变量的对象，如 vars.myVar",
++       "insertText": "vars",
++       "kind": 1,
++       "label": "vars",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "主函数模板",
++       "documentation": "定义 main 函数，接收 vars 参数，返回值将存入变量",
++       "insertText": "function main(vars) {
++   $0
++   return null;
++ }",
++       "insertTextRules": 4,
++       "kind": 3,
++       "label": "main",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "过滤列表",
++       "insertText": "const filtered = vars.${1:listName}.filter(item => ${2:item > 0});
++ return filtered;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "filter-list",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "映射列表",
++       "insertText": "const mapped = vars.${1:listName}.map(item => ${2:item * 2});
++ return mapped;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "map-list",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "归约列表",
++       "insertText": "const sum = vars.${1:listName}.reduce((acc, item) => acc + item, 0);
++ return sum;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "reduce-list",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "获取对象键",
++       "insertText": "const keys = Object.keys(vars.${1:dictName});
++ return keys;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "object-keys",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "获取对象值",
++       "insertText": "const values = Object.values(vars.${1:dictName});
++ return values;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "object-values",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "分割字符串",
++       "insertText": "const parts = vars.${1:text}.split('${2:,}');
++ return parts;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "string-split",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "替换字符串",
++       "insertText": "const result = vars.${1:text}.replace(/${2:pattern}/g, '${3:replacement}');
++ return result;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "string-replace",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "解析JSON",
++       "insertText": "const obj = JSON.parse(vars.${1:jsonString});
++ return obj;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "json-parse",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "序列化JSON",
++       "insertText": "const str = JSON.stringify(vars.${1:object}, null, 2);
++ return str;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "json-stringify",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++   ],
+  }
+
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:34:66
+     32|  expect(provider.provideCompletionItems(harness.editors[0].getModel(),…
+     33|  const foreign={getWordUntilPosition:()=>({startColumn:1,endColumn:2})}
+     34|  expect(provider.provideCompletionItems(foreign,position,{},{})).toEqu…
+       |                                                                  ^
+     35| })
+     36| it.each(dialogs)('%s releases completions on close and reopening does …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > 页面注入 completion suggestions are confined to their own editor model
+AssertionError: expected { suggestions: [ { …(6) }, …(15) ] } to deeply equal { suggestions: [] }
+
+- Expected
++ Received
+
+  {
+-   "suggestions": [],
++   "suggestions": [
++     {
++       "detail": "工作流变量对象",
++       "documentation": "包含所有工作流变量的对象，如 vars.myVar",
++       "insertText": "vars",
++       "kind": 1,
++       "label": "vars",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "通过ID获取元素",
++       "insertText": "const element = document.getElementById('${1:elementId}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "get-element-by-id",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "通过选择器获取元素",
++       "insertText": "const element = document.querySelector('${1:selector}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "query-selector",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "通过选择器获取所有元素",
++       "insertText": "const elements = document.querySelectorAll('${1:selector}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "query-selector-all",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "创建并添加元素",
++       "insertText": "const element = document.createElement('${1:div}');
++ element.textContent = '${2:内容}';
++ document.body.appendChild(element);",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "create-element",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "添加事件监听器",
++       "insertText": "element.addEventListener('${1:click}', (e) => {
++   ${2:// 处理事件}
++ });",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "add-event-listener",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "设置元素样式",
++       "insertText": "element.style.cssText = '${1:color: red; font-size: 16px;}';",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "set-style",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "获取元素属性",
++       "insertText": "const value = element.getAttribute('${1:attributeName}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "get-attribute",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "设置元素属性",
++       "insertText": "element.setAttribute('${1:attributeName}', '${2:value}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "set-attribute",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "获取元素文本",
++       "insertText": "const text = element.textContent;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "get-text-content",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "设置元素文本",
++       "insertText": "element.textContent = '${1:新文本}';",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "set-text-content",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "获取元素HTML",
++       "insertText": "const html = element.innerHTML;",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "get-inner-html",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "设置元素HTML",
++       "insertText": "element.innerHTML = '${1:<div>新内容</div>}';",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "set-inner-html",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "添加CSS类",
++       "insertText": "element.classList.add('${1:className}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "add-class",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "移除CSS类",
++       "insertText": "element.classList.remove('${1:className}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "remove-class",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "切换CSS类",
++       "insertText": "element.classList.toggle('${1:className}');",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "toggle-class",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++   ],
+  }
+
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:34:66
+     32|  expect(provider.provideCompletionItems(harness.editors[0].getModel(),…
+     33|  const foreign={getWordUntilPosition:()=>({startColumn:1,endColumn:2})}
+     34|  expect(provider.provideCompletionItems(foreign,position,{},{})).toEqu…
+       |                                                                  ^
+     35| })
+     36| it.each(dialogs)('%s releases completions on close and reopening does …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > Python completion suggestions are confined to their own editor model
+AssertionError: expected { suggestions: [ { …(6) }, …(9) ] } to deeply equal { suggestions: [] }
+
+- Expected
++ Received
+
+  {
+-   "suggestions": [],
++   "suggestions": [
++     {
++       "detail": "主函数模板",
++       "insertText": "def main():
++     \"\"\"主函数\"\"\"
++     $0
++     return 0
++
++ if __name__ == \"__main__\":
++     exit(main())",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "main",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "for 循环",
++       "insertText": "for ${1:item} in ${2:items}:
++     $0",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "for-loop",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "while 循环",
++       "insertText": "while ${1:condition}:
++     $0",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "while-loop",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "if-else 语句",
++       "insertText": "if ${1:condition}:
++     $0
++ else:
++     pass",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "if-else",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "异常处理",
++       "insertText": "try:
++     $0
++ except Exception as e:
++     print(f\"错误: {e}\")",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "try-except",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "读取文件",
++       "insertText": "with open('${1:filename}', 'r', encoding='utf-8') as f:
++     content = f.read()
++     $0",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "read-file",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "写入文件",
++       "insertText": "with open('${1:filename}', 'w', encoding='utf-8') as f:
++     f.write(${2:content})
++     $0",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "write-file",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "列表推导式",
++       "insertText": "[${1:item} for ${1:item} in ${2:items} if ${3:condition}]",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "list-comprehension",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "字典推导式",
++       "insertText": "{${1:key}: ${2:value} for ${1:key}, ${2:value} in ${3:items}}",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "dict-comprehension",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++     {
++       "detail": "类定义",
++       "insertText": "class ${1:ClassName}:
++     def __init__(self):
++         $0
++         pass",
++       "insertTextRules": 4,
++       "kind": 4,
++       "label": "class",
++       "range": {
++         "endColumn": 2,
++         "endLineNumber": 1,
++         "startColumn": 1,
++         "startLineNumber": 1,
++       },
++     },
++   ],
+  }
+
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:34:66
+     32|  expect(provider.provideCompletionItems(harness.editors[0].getModel(),…
+     33|  const foreign={getWordUntilPosition:()=>({startColumn:1,endColumn:2})}
+     34|  expect(provider.provideCompletionItems(foreign,position,{},{})).toEqu…
+       |                                                                  ^
+     35| })
+     36| it.each(dialogs)('%s releases completions on close and reopening does …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > JavaScript releases completions on close and reopening does not retain earlier providers
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > 页面注入 releases completions on close and reopening does not retain earlier providers
+ FAIL  src/renderer/domains/workflows/tests/code-editor-completions.test.tsx > Python releases completions on close and reopening does not retain earlier providers
+AssertionError: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/renderer/domains/workflows/tests/code-editor-completions.test.tsx:39:75
+     37|  const props={code:'test',onClose:vi.fn(),onSave:vi.fn()}
+     38|  const view=render(<Dialog {...props} isOpen/>);const first=harness.re…
+     39|  view.rerender(<Dialog {...props} isOpen={false}/>);expect(first.dispo…
+       |                                                                           ^
+     40|  view.rerender(<Dialog {...props} isOpen/>);expect(harness.registratio…
+     41|  view.unmount();expect(first.dispose).toHaveBeenCalledOnce();expect(se…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  07:51:14
+   Duration  1.30s (transform 229ms, setup 97ms, import 419ms, tests 65ms, environment 566ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/code-editor-completions.test.tsx
