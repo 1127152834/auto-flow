@@ -96,3 +96,16 @@ it('rejects a service claiming cleanup success while still holding the session',
   expect(await promise).toBe(false)
   await waitFor(()=>expect(store.getState().logs.some(log=>log.message.includes('当前流程已保留'))).toBe(true))
 })
+it('session transitions keep the editor draft and may preserve its browsing container',async()=>{
+ const {requestSessionTransition}=await import('../lib/documentLeave')
+ let browser:LeaveResource|null={id:'browser:1',kind:'browser',label:'浏览器',release:vi.fn(async()=>{browser=null;return true})}
+ const unregisterBrowser=registerDocumentLeaveResource(()=>browser)
+ try{
+  render(<Protection/>);let pending!:Promise<boolean>
+  await act(async()=>{pending=requestSessionTransition(true)})
+  await choose('结束会话后继续')
+  expect(await pending).toBe(true);expect(save).not.toHaveBeenCalled()
+  expect(store.getState().hasUnsavedChanges).toBe(true)
+  expect(getDocumentLeaveResources().map(item=>item.id)).toEqual(['browser:1'])
+ }finally{unregisterBrowser()}
+})

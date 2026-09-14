@@ -840,10 +840,10 @@ class SocketService {
   }
 
   // 发送停止执行请求
-  stopExecution(workflowId: string) {
+  stopExecution(workflowId: string, runId?:string) {
     if (!this.cancelSpeech(workflowId)) this.stopAllAudio()
     if (this.socket?.connected) {
-      this.socket.emit('execution_stop', { workflowId })
+      this.socket.emit('execution_stop', { workflowId,runId })
     }
   }
 

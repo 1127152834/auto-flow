@@ -4,6 +4,31 @@ vi.hoisted(()=>{const values=new Map<string,string>();vi.stubGlobal('localStorag
 import {AutoBrowserDialog} from '../components/AutoBrowserDialog'
 import {configureStudioConnection} from '../api/config'
 import {startHttpStudioFixture} from './fixtures/http-studio-server'
+import {browserApi,currentBrowserSession} from '../api'
+
+it('keeps uncertain startup occupied until status confirms the browser identity before cleanup',async()=>{
+ let recovered=false
+ const closeBodies:unknown[]=[]
+ const server=await startHttpStudioFixture(async(input)=>{
+  const url=(input as Request).url
+  if(url.endsWith('/browser/open'))return Response.json({error:'启动回执丢失'},{status:503})
+  if(url.endsWith('/browser/status'))return recovered?Response.json({isOpen:true,pickerActive:false,sessionId:'confirmed-browser'}):Response.json({error:'离线'},{status:503})
+  if(url.endsWith('/browser/close')){closeBodies.push(await (input as Request).json());return Response.json({success:true})}
+  return Response.json({error:'unexpected'},{status:404})
+ })
+ const restore=configureStudioConnection(server.origin,fetch)
+ try{
+  expect((await browserApi.open()).success).toBe(false)
+  expect(currentBrowserSession()).toBeTruthy()
+  expect((await browserApi.close()).success).toBe(false)
+  expect(closeBodies).toEqual([])
+  expect(currentBrowserSession()).toBeTruthy()
+  recovered=true
+  expect((await browserApi.close()).success).toBe(true)
+  expect(closeBodies).toEqual([{sessionId:'confirmed-browser'}])
+  expect(currentBrowserSession()).toBeNull()
+ }finally{restore();await server.close()}
+})
 it('does not interleave close with picker startup through the real HTTP adapter',async()=>{
  vi.resetModules();const mock=await import('../api/mock-server')
  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve});let starts=0;let closes=0

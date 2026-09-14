@@ -120,3 +120,51 @@ it('lets the renderer veto quit and accepts only an explicit discard', async()=>
   expect(veto.preventDefault).toHaveBeenCalledOnce()
   expect(await studio.closeForQuit()).toBe(true)
 })
+
+it('waits for the registered Studio save/cleanup decision and coalesces repeated quit requests',async()=>{
+ await studio.open(event());const window=FakeWindow.instances[0]!
+ const sender={sender:window.webContents,senderFrame:window.webContents.mainFrame}
+ studio.registerLeaveReady(sender)
+ window.minimized=true;window.focus.mockClear()
+ const first=studio.closeForQuit(),second=studio.closeForQuit()
+ expect(window.restore).toHaveBeenCalledOnce()
+ expect(window.focus).toHaveBeenCalledOnce()
+ const message=window.webContents.send.mock.calls.find(call=>call[0]==='autoflow:studio-prepare-leave')![1]
+ expect(window.destroyed).toBe(false)
+ expect(window.webContents.send.mock.calls.filter(call=>call[0]==='autoflow:studio-prepare-leave')).toHaveLength(1)
+ studio.completeLeave(sender,{id:message.id,allowed:false})
+ expect(await first).toBe(false);expect(await second).toBe(false);expect(window.destroyed).toBe(false)
+ const retry=studio.closeForQuit()
+ const next=window.webContents.send.mock.calls.filter(call=>call[0]==='autoflow:studio-prepare-leave').at(-1)![1]
+ expect(()=>studio.completeLeave(sender,{id:message.id,allowed:true})).toThrow('过期')
+ studio.completeLeave(sender,{id:next.id,allowed:true})
+ expect(await retry).toBe(true);expect(window.destroyed).toBe(true)
+})
+it('protects native close and rejects another window or child-frame acknowledgement',async()=>{
+ await studio.open(event());const window=FakeWindow.instances[0]!
+ const sender={sender:window.webContents,senderFrame:window.webContents.mainFrame}
+ expect(()=>studio.registerLeaveReady(event())).toThrow()
+ studio.registerLeaveReady(sender);window.close()
+ const message=window.webContents.send.mock.calls.filter(call=>call[0]==='autoflow:studio-prepare-leave').at(-1)![1]
+ expect(window.destroyed).toBe(false)
+ expect(()=>studio.completeLeave({...sender,senderFrame:{}},{id:message.id,allowed:true})).toThrow()
+ studio.completeLeave(sender,{id:message.id,allowed:true})
+ await vi.waitFor(()=>expect(window.destroyed).toBe(true))
+})
+it('does not treat a crashed renderer as approval to leave',async()=>{
+ await studio.open(event());const window=FakeWindow.instances[0]!
+ studio.registerLeaveReady({sender:window.webContents,senderFrame:window.webContents.mainFrame})
+ const pending=studio.closeForQuit();window.webContents.emit('render-process-gone')
+ expect(await pending).toBe(false);expect(window.destroyed).toBe(false)
+})
+it('keeps the source window on workspace failure and opens an isolated partition only after success',async()=>{
+ let partition='persist:workspace-a'
+ const controller=new (await import('./automation-studio')).StudioWindowController({mainSenderId:()=>7,preferences:()=>({zoom:100,motion:'system'}),preloadPath:'/preload',rendererFile:'/studio.html',workspacePartition:()=>partition})
+ await controller.open(event());const source=FakeWindow.instances[0]!
+ await controller.finishWorkspaceTransition(false)
+ expect(source.destroyed).toBe(false)
+ expect(source.webContents.send).toHaveBeenCalledWith('autoflow:studio-transition-end')
+ partition='persist:workspace-b';await controller.finishWorkspaceTransition(true)
+ expect(source.destroyed).toBe(true)
+ expect(FakeWindow.instances[1]!.options.webPreferences).toMatchObject({partition:'persist:workspace-b'})
+})

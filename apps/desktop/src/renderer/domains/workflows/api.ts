@@ -1,3 +1,4 @@
+import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
@@ -171,8 +172,9 @@ export const workflowApi = {
     apiRequest(`/workflows/${id}`, { method: 'DELETE' }),
   execute: (id: string, params?: any) =>
     apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify(params || {}) }),
-  stop: (id: string) =>
-    apiRequest(`/workflows/${id}/stop`, { method: 'POST' }),
+  stop: (id: string, runId?:string) =>
+    apiRequest(`/workflows/${id}/stop`, { method: 'POST', body:JSON.stringify({runId}) }),
+  getRun: (runId:string) => apiRequest<components['schemas']['StudioWorkflowRunSummary']>(`/workflow-runs/${encodeURIComponent(runId)}`),
   /** 调试：从暂停处继续 */
   debugResume: (id: string, context: DebugControlRequest) =>
     sendDebugControl(id,'resume',context),
@@ -322,14 +324,24 @@ export const scheduledTaskApi = {
 }
 
 // ==================== 自动化浏览器 API ====================
+let browserSession:{id:string;connection:number;unconfirmed?:boolean;starting?:string}|null=null
+let browserStatusRequest=0
+export function currentBrowserSession(){
+ if(browserSession?.connection!==getStudioTransportRevision())browserSession=null
+ return browserSession?.id??null
+}
 type BrowserPages = components['schemas']['StudioBrowserPages']
 async function browserPagesRequest(options?:RequestInit):Promise<ApiResponse<BrowserPages>> {
   const revision=getStudioTransportRevision()
+  if(options)browserStatusRequest++
+  const request=browserStatusRequest
   const result=await apiRequest<BrowserPages>('/browser/pages',options)
   if(revision!==getStudioTransportRevision())return {success:false,error:'浏览器所属服务已变更，响应未应用'}
+  if(request!==browserStatusRequest)return {success:false,error:'浏览器页面查询已过期，未应用旧状态'}
   if(!result.success)return result
   const data=result.data
   if(!data || typeof data.sessionId!=='string' || !data.sessionId || !Number.isSafeInteger(data.revision) || data.revision<0 || !Array.isArray(data.pages) || data.pages.some(page=>!page || typeof page.pageId!=='string' || !page.pageId || typeof page.url!=='string' || typeof page.title!=='string') || new Set(data.pages.map(page=>page.pageId)).size!==data.pages.length || (data.targetPageId!==null&&!data.pages.some(page=>page.pageId===data.targetPageId)))return {success:false,error:'浏览器页面列表结构或目标身份无效'}
+  browserSession={id:data.sessionId,connection:revision,starting:browserSession?.starting}
   return result
 }
 
@@ -339,20 +351,52 @@ export const browserApi = {
   page: (command:components['schemas']['StudioBrowserPageCommand']) => browserPagesRequest({method:'POST',body:JSON.stringify(command)}),
   getStatus: async () => {
     type Result = components['schemas']['StudioBrowserStatus']
+    const revision=getStudioTransportRevision()
+    const request=browserStatusRequest
+    if(!currentBrowserSession())browserSession={id:crypto.randomUUID(),connection:revision,unconfirmed:true}
     const result = await apiRequest<Result>('/browser/status')
+    if(revision!==getStudioTransportRevision())return {success:false,error:'浏览器所属服务已变更，状态未应用'} as ApiResponse<Result>
+    if(request!==browserStatusRequest)return {success:false,error:'浏览器状态查询已过期，未应用旧状态'} as ApiResponse<Result>
     if (!result.success) return result
     if (!result.data || typeof result.data.isOpen !== 'boolean' || typeof result.data.pickerActive !== 'boolean') {
       return {success:false,error:'浏览器状态响应格式错误，保留最后确认状态'} as ApiResponse<Result>
     }
+    if(!result.data.isOpen){if(!browserSession?.starting)browserSession=null}
+    else if(typeof result.data.sessionId==='string'&&result.data.sessionId)browserSession={id:result.data.sessionId,connection:getStudioTransportRevision(),starting:browserSession?.starting}
     return result
   },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
-  open: (url?: string, browserConfig?: any, profileId?: string) =>
-    apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig, profileId }) }),
+  open: async (url?: string, browserConfig?: any, profileId?: string) => {
+    const revision=getStudioTransportRevision()
+    const provisional=!currentBrowserSession()?crypto.randomUUID():null
+    if(provisional)browserSession={id:provisional,connection:revision,unconfirmed:true,starting:provisional}
+    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig, profileId }) })
+    if(browserSession?.starting===provisional)browserSession.starting=undefined
+    if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
+    if(!result.success&&result.httpStatus&&result.httpStatus<500&&browserSession?.id===provisional)browserSession=null
+    else await browserApi.getStatus()
+    if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
+    return result
+  },
   launch: (url?: string) =>
     apiRequest('/browser/launch', { method: 'POST', body: JSON.stringify({ url }) }),
-  close: () => apiRequest('/browser/close', { method: 'POST' }),
+  close: async (sessionId=currentBrowserSession()??undefined) => {
+    const revision=getStudioTransportRevision()
+    if(browserSession?.starting)return {success:false,error:'浏览器启动请求仍在处理中，保留占用，请稍后重试清理'}
+    if(browserSession&&browserSession.id===sessionId&&browserSession.unconfirmed){
+      const status=await browserApi.getStatus()
+      if(revision!==getStudioTransportRevision()||!status.success)return {success:false,error:'浏览器启动结果尚未确认，保留占用，请恢复连接后重试'}
+      if(status.data?.isOpen===false)return {success:true,data:{success:true}}
+      if(browserSession?.unconfirmed||!currentBrowserSession())return {success:false,error:'浏览器会话身份尚未确认，未发送关闭请求'}
+      sessionId=currentBrowserSession()!
+    }
+    browserStatusRequest++
+    const result=await apiRequest('/browser/close',{method:'POST',body:JSON.stringify({sessionId})})
+    if(revision!==getStudioTransportRevision())return {success:false,error:'浏览器所属服务已变更，关闭结果未应用'}
+    if(result.success&&result.data?.success!==false)browserSession=null
+    return result
+  },
   navigate: (url: string) =>
     apiRequest('/browser/navigate', { method: 'POST', body: JSON.stringify({ url }) }),
   getUrl: () => apiRequest('/browser/url'),
@@ -400,14 +444,20 @@ export const elementPickerApi = {
    * @param browserConfig 可选，浏览器配置
    */
   start: async (url?: string, browserConfig?: any) => {
-    const previous=currentPickerSession()
-    const sessionId=previous||crypto.randomUUID()
     const revision=getStudioTransportRevision()
+    let previous=currentPickerSession()
+    if(!previous&&!await requestSessionTransition(true))return {success:false,error:'已取消切换到元素拾取'}
+    if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，未启动拾取'}
+    previous=currentPickerSession()
+    const sessionId=previous||crypto.randomUUID()
     pickerSessionId=sessionId
+    const provisionalBrowser=!currentBrowserSession()?crypto.randomUUID():null
+    if(provisionalBrowser)browserSession={id:provisionalBrowser,connection:revision,unconfirmed:true,starting:provisionalBrowser}
     let result=checkedPickerSession(await apiRequest('/element-picker/start', {
       method: 'POST',
       body: JSON.stringify({sessionId,url:url||null,browserConfig:browserConfig||null}),
     }),sessionId)
+    if(browserSession?.starting===provisionalBrowser)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
     if(!result.success&&(!result.httpStatus||result.httpStatus>=500)){
       const recovered=checkedPickerSession(await apiRequest(`/element-picker/status${pickerQuery(sessionId)}`),sessionId)
@@ -415,12 +465,18 @@ export const elementPickerApi = {
       if(recovered.success&&recovered.data?.active)result=recovered
       else if(recovered.httpStatus===404||recovered.httpStatus===409){
         if(!previous)pickerSessionId=null
+        if(browserSession?.id===provisionalBrowser)browserSession=null
         return recovered
       }
       else if(!recovered.success)return {...result,outcomeUnknown:true}
     }
-    if(!result.success&&result.httpStatus&&result.httpStatus<500&&!previous)pickerSessionId=null
+    if(!result.success&&result.httpStatus&&result.httpStatus<500&&!previous){
+      pickerSessionId=null
+      if(browserSession?.id===provisionalBrowser)browserSession=null
+    }
     if(result.success&&!result.data?.active)return {success:false,error:'拾取会话未启动'}
+    if(result.success)await browserApi.getStatus()
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
     return result
   },
   stop: async () => {

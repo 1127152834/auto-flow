@@ -130,8 +130,8 @@ it('can stop an accepted startup without sending another execution request',asyn
  const view=render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
  await waitFor(()=>expect(view.getByRole('status').textContent).toContain('等待启动确认'))
  fireEvent.click(view.getByRole('button',{name:'停止启动请求'}))
- await waitFor(()=>expect(stop).toHaveBeenCalledWith('start-fixture'))
- expect(signal).toHaveBeenCalledWith('start-fixture');expect(workflowApi.execute).toHaveBeenCalledTimes(1)
+ await waitFor(()=>expect(stop).toHaveBeenCalledWith('start-fixture',vi.mocked(workflowApi.execute).mock.calls[0][1].runId))
+ expect(signal).toHaveBeenCalledWith('start-fixture',vi.mocked(workflowApi.execute).mock.calls[0][1].runId);expect(workflowApi.execute).toHaveBeenCalledTimes(1)
  expect(view.getByRole('status').textContent).toContain('等待启动确认')
 })
 it('does not reuse a prepared server identifier for a different editor document',async()=>{

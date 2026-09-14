@@ -6,7 +6,7 @@ import { RecorderStepEditor } from './RecorderStepEditor'
 import { buildRecordedNodes, type RecEvent } from '../lib/recordingGeneration'
 import { Circle, Square, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
 import { recorderApi, browserApi } from '../api'
-import { registerDocumentLeaveResource } from '../lib/documentLeave'
+import { registerDocumentLeaveResource,requestSessionTransition } from '../lib/documentLeave'
 import {getStudioTransportRevision} from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
@@ -41,6 +41,10 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const [page,setPage] = useState(0)
   const [reviewRevision,setReviewRevision]=useState<{documentId:string;revision:number}|null>(null)
   const [savedReview,setSavedReview]=useState('')
+  const savedReviewRef=useRef(savedReview)
+  savedReviewRef.current=savedReview
+  const reviewRevisionRef=useRef(reviewRevision)
+  reviewRevisionRef.current=reviewRevision
   const shownPage=Math.min(page,Math.max(0,Math.ceil(events.length/100)-1))
 
   const [busy, setBusy] = useState(false)
@@ -87,8 +91,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const appendEvents = useCallback((incoming: RecEvent[]) => {
     if (!incoming || !incoming.length) return
     const frameSig = (e?: RecEvent) => JSON.stringify(e?._frame || null)
-    setEvents((prev) => {
-      const next = [...prev]
+      const next = [...eventsRef.current]
       for (const original of incoming) {
         const ev = original.type === 'input' && original.sensitive ? {...original,value:'',needsValue:true} : original
         const last = next[next.length - 1]
@@ -111,8 +114,8 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           next.push(ev)
         }
       }
-      return next
-    })
+      eventsRef.current=next
+      setEvents(next)
   }, [])
 
   const acceptBatch = useCallback((sessionId: string, response: any, stopping = false) => {
@@ -167,8 +170,9 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     const owner=pendingStartRef.current&&originRef.current?originRef.current:{documentId:source.id,name:source.name,connection:getStudioTransportRevision()}
     originRef.current=owner
     const current=()=>mountedRef.current&&owner.connection===getStudioTransportRevision()&&useWorkflowStore.getState().id===owner.documentId
-    pendingStartRef.current = sessionId
     try {
+      if(!pendingStartRef.current&&!await requestSessionTransition(true))return
+      pendingStartRef.current = sessionId
       if(eventsRef.current.length && !await confirm('开始新录制会替换当前审查步骤。请先保存需要保留的审查，是否继续？',{title:'开始新录制'})){pendingStartRef.current=null;return}
       if(!current()){pendingStartRef.current=null;return}
       // 录制前先检查自动化浏览器是否已启动，未启动则明确提示（不用浏览器原生弹窗）
@@ -265,13 +269,24 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   }, [addLog, acceptBatch, stopPolling])
 
   useEffect(() => registerDocumentLeaveResource(() => {
-    const sessionId = activeSessionRef.current || (commandBusyRef.current ? pendingStartRef.current : null)
-    if (!sessionId) return null
-    const revision = originRef.current?.connection
-    return { id: `recorder:${revision}:${sessionId}`, label: '网页录制', release: async () => {
-      if (revision !== getStudioTransportRevision() || sessionId !== activeSessionRef.current) return false
-      return stopRecording()
-    } }
+    const sessionId=activeSessionRef.current || (commandBusyRef.current?pendingStartRef.current:null)
+    const owner=originRef.current
+    const reviewDirty=(eventsRef.current.length>0||Boolean(savedReviewRef.current))&&savedReviewRef.current!==JSON.stringify([eventsRef.current,autoWaitRef.current])
+    if(!owner||(!sessionId&&!reviewDirty))return null
+    return {id:`recorder:${owner.connection}:${owner.documentId}:${sessionId||'review'}`,label:sessionId?'网页录制及审查':'未保存录制审查',release:async()=>{
+      if(owner.connection!==getStudioTransportRevision()||owner.documentId!==originRef.current?.documentId)return false
+      if(sessionId&&!(await stopRecording()))return false
+      if(commandBusyRef.current)return false
+      const signature=JSON.stringify([eventsRef.current,autoWaitRef.current])
+      if((!eventsRef.current.length&&!savedReviewRef.current)||savedReviewRef.current===signature)return true
+      const revision=reviewRevisionRef.current
+      const result=await recorderApi.saveReview(owner.documentId,{expectedRevision:revision?.documentId===owner.documentId?revision.revision:0,autoWait:autoWaitRef.current,events:eventsRef.current as any})
+      if(!result.success||!result.data||result.data.documentId!==owner.documentId||!Number.isSafeInteger(result.data.revision)||result.data.revision<1||owner.connection!==getStudioTransportRevision()){setError(result.error||'录制审查保存未确认，当前步骤已保留');return false}
+      const next={documentId:owner.documentId,revision:result.data.revision}
+      reviewRevisionRef.current=next;setReviewRevision(next)
+      savedReviewRef.current=signature;setSavedReview(signature)
+      return signature===JSON.stringify([eventsRef.current,autoWaitRef.current])
+    }}
   }), [stopRecording])
 
   const reviewRequest = async (operation: 'save'|'read') => {
@@ -395,7 +410,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       </div>
 
       {!recording && <div className="px-3 py-2 text-xs flex gap-2">
-        <button disabled={busy || !!editing || !events.length || originChanged} onClick={()=>reviewRequest('save')}>保存审查</button>
+        <button disabled={busy || !!editing || (!events.length&&!savedReview) || originChanged} onClick={()=>reviewRequest('save')}>保存审查</button>
         <button disabled={busy || !!editing} onClick={()=>reviewRequest('read')}>读取审查</button>
         {events.length>0&&<span>{savedReview===JSON.stringify([events,autoWait])?'审查已保存':'审查未保存'}</span>}
       </div>}

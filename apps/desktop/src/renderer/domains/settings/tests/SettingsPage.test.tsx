@@ -110,6 +110,20 @@ it('does not let polling overwrite a preference while its save is pending', asyn
   await waitFor(() => expect(zoom).toBeEnabled())
 })
 
+it('keeps the original workspace without reporting a permission failure when Studio declines departure', async () => {
+  const confirmWorkspace = vi.fn(async () => ({ok: false as const, error: {code: 'STUDIO_LEAVE_DECLINED', message: '工作台未确认离开，已保留当前工作区'}}))
+  const user = userEvent.setup()
+  render(<SettingsPage bridge={bridge({confirmWorkspace})} restartService={vi.fn()} />)
+  await screen.findByText('运行正常')
+  await user.click(screen.getByRole('tab', {name: '工作区'}))
+  await user.click(screen.getByRole('button', {name: '切换工作区'}))
+  await user.click(within(await screen.findByRole('dialog')).getByRole('button', {name: '确认切换'}))
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  expect(screen.queryByText('工作区切换未完成')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', {name: '切换工作区'})).toBeEnabled()
+  expect(confirmWorkspace).toHaveBeenCalledOnce()
+})
+
 it('moves a consumed workspace choice to a visible result state', async () => {
   const confirmWorkspace = vi.fn(async () => ({ ok: false as const, error: { code: 'SWITCH_FAILED', message: '切换失败，已恢复原工作区' } }))
   const api = bridge({ confirmWorkspace })

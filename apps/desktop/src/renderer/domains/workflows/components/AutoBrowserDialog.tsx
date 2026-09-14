@@ -10,6 +10,7 @@ import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { DialogPortal } from './controls/dialog-portal'
 import { MissingPacksDialog, type MissingPackGroup } from './MissingPacksDialog'
 import { FeaturePackDialog } from './FeaturePackDialog'
+import { requestSessionTransition } from '../lib/documentLeave'
 
 interface AutoBrowserDialogProps {
   isOpen: boolean
@@ -241,7 +242,13 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
 
   const handleCloseBrowser = async () => {
     if (!beginCommand()) return
+    const connection = getStudioTransportRevision()
     try {
+      if (!await requestSessionTransition(true)) return
+      if (connection !== getStudioTransportRevision()) {
+        onLog('error', '服务连接已变更，未关闭新工作区的浏览器')
+        return
+      }
       const result = await browserApi.close()
       if (result.error) { onLog('error', `关闭浏览器失败: ${result.error}`); return }
       statusRequest.current += 1

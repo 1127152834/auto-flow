@@ -1,4 +1,4 @@
-export type LeaveOptions = { preserveMainDocument?: boolean }
+export type LeaveOptions = { preserveMainDocument?: boolean; sessionsOnly?: boolean; keepBrowser?: boolean }
 type LeaveHandler = (options?: LeaveOptions) => Promise<boolean>
 let handler: LeaveHandler | undefined
 
@@ -15,6 +15,7 @@ export async function requestDocumentLeave(options?: LeaveOptions): Promise<bool
 
 export type LeaveResource = {
   id: string
+  kind?: 'browser'
   label: string
   release: () => Promise<boolean>
 }
@@ -28,5 +29,10 @@ export function registerDocumentLeaveResource(read: ResourceReader): () => void 
 }
 
 export function getDocumentLeaveResources(): LeaveResource[] {
-  return Array.from(resources, read => read()).filter((resource): resource is LeaveResource => resource !== null)
+  return Array.from(resources, read => read()).filter((resource): resource is LeaveResource => resource !== null).sort((a,b)=>Number(a.kind==='browser')-Number(b.kind==='browser'))
+}
+
+export async function requestSessionTransition(keepBrowser=false):Promise<boolean> {
+  if(!getDocumentLeaveResources().some(resource=>!keepBrowser||resource.kind!=='browser'))return true
+  return requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true,keepBrowser})
 }

@@ -221,8 +221,14 @@ function finish(status: string) {
   finishedWorkflows.add(run.id)
   run = null
 }
-function stopRun(id: unknown): Response {
+function stopRun(id: unknown, runId?:unknown): Response {
   if (typeof id !== 'string' || !id.trim()) return failure('缺少目标工作流标识', 400)
+  if(runId!==undefined){
+    if(typeof runId!=='string'||!runId.trim())return failure('运行标识无效',422)
+    const record=db.runs[runId]
+    if(!record||record.workflowId!==id)return failure('停止请求不属于目标运行',409)
+    if(run?.runId!==runId)return ['completed','failed','stopped','interrupted'].includes(record.status)?response({success:true}):failure('目标运行尚未确认停止',409)
+  }
   if (run?.id === id) { finish('stopped'); return response({ success: true }) }
   if (finishedWorkflows.has(id)) return response({ success: true })
   return failure(run ? '停止请求不属于当前运行' : '目标工作流没有活跃运行', 409)
@@ -329,7 +335,7 @@ function applyCommand(event: string, data: Json | undefined): Response {
   if (event === 'js_script_claim' || event === 'js_script_result') return submitJs(event, data)
   if (event === 'input_prompt_result') return submitInput(data)
   const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
-  if (event === 'execution_stop') return stopRun(payload.workflowId)
+  if (event === 'execution_stop') return stopRun(payload.workflowId,payload.runId)
   if (event === 'set_verbose_log') {
     if (typeof payload.enabled !== 'boolean') return failure('enabled 必须为布尔值', 422)
     clientSettings.verboseLog = payload.enabled
@@ -353,10 +359,14 @@ function tick(skipBreakpoint = false) {
     current.paused = true
     current.pauseId = crypto.randomUUID()
     current.controlRevision++
+    const record=db.runs[current.runId]
+    if(record)persist({...db,runs:{...db.runs,[current.runId]:{...record,status:'paused'}}})
     emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : 'breakpoint' })
     return
   }
   current.paused = false
+  const record=db.runs[current.runId]
+  if(record&&record.status!=='running')persist({...db,runs:{...db.runs,[current.runId]:{...record,status:'running'}}})
   emitMockEvent('execution:node_start', { workflowId: current.id, runId:current.runId, nodeId })
   current.timer = setTimeout(() => {
     if (run !== current) return
@@ -623,6 +633,14 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const items = rows.slice(cursor, cursor + limit).map(({ requestFingerprint: _fingerprint, ...item }) => item)
       return response({ items, total: rows.length, nextCursor: cursor + items.length < rows.length ? cursor + items.length : null })
     }
+    const runDetail=path.match(/^\/workflow-runs\/([^/]+)$/)
+    if(runDetail&&method==='GET'){
+      const record=db.runs[decodeURIComponent(runDetail[1])]
+      if(!record)return failure('运行不存在',404)
+      const {requestFingerprint,...summary}=record
+      void requestFingerprint
+      return response(summary)
+    }
     const executionLogs = path.match(/^\/workflow-runs\/([^/]+)\/logs(\/export)?$/)
     if (executionLogs) {
       if (method !== 'GET') return failure('运行日志只接受 GET 请求', 405)
@@ -674,7 +692,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       }
       if (action === '/export-playwright' || action === '/export-script') return response({ code: '# Mock 导出：本文件用于校验下载交互，并非可运行脚本\n# Workflow: ' + String(db.workflows[id]?.name), filename: 'mock-workflow.txt', target: 'mock' })
       if (action === '/execute') return startRun(id, db.workflows[id], body)
-      if (action === '/stop') return stopRun(id)
+      if (action === '/stop') return stopRun(id,body.runId)
       if (action.startsWith('/debug/')) {
         if (!['/debug/resume', '/debug/step', '/debug/breakpoints', '/debug/variables'].includes(action)) return failure('未知调试操作', 404)
         if (method !== 'POST') return failure('调试操作只接受 POST 请求', 405)
@@ -746,7 +764,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       }
       return response(browserPageState())
     }
-    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, url, mock: true })
+    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, sessionId:browserSessionId, url, mock: true })
     if (path === '/browser/chromium-status') return response({ installed: true, ready: true, mock: true })
     if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) {
       if(body.profileId!==undefined && !mockBrowserProfiles.some(profile=>profile.id===body.profileId))return response({error:'浏览器配置已不存在，请刷新后重试'},404)
@@ -757,7 +775,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if(target){target.url=url;browserPageRevision++}
       return response({success:true,isOpen:true,url,mock:true})
     }
-    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; browserPages=[];targetPageId=null;browserPageRevision++;closePickerSession(); recording = false; return response({success:true}) }
+    if (path === '/browser/close') { if(body.sessionId!==undefined&&body.sessionId!==browserSessionId)return failure('浏览器会话已变化',409);invalidateMockScriptTests(true); browser = false; browserPages=[];targetPageId=null;browserPageRevision++;closePickerSession(); recording = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     const recordingReview = path.match(/^\/recorder\/reviews\/([^/]+)$/)
@@ -818,6 +836,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
         : failure('拾取会话 ID 已用于不同的启动参数', 409)
       if (retiredPickerSessions.has(sessionId)) return failure('拾取会话已结束', 409)
       if (pickerSessionId || run || recording || mockScriptTestBusy()) return failure('Mock 浏览器被占用',409)
+      if(!browser){browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:String(body.url||'about:blank')}];url=browserPages[0].url}
       browser = true; picking = true; pickerSessionId = sessionId; pickerRequestFingerprint = fingerprint; picked = null; similarPicked = null
       return response({ ...pickerState(sessionId, true), isPicking: true })
     }

@@ -9,11 +9,12 @@ describe.each(['memory','http'] as const)('startup admission over %s',mode=>{
  let mock:typeof import('../api/mock-server')
  let server:Awaited<ReturnType<typeof startHttpStudioFixture>>|undefined
  let restore:()=>void
+ let queryUnavailable=false
  let lost:boolean
  let starts:number
  let request:(path:string,body?:unknown)=>Promise<Response>
  beforeEach(async()=>{
-  vi.resetModules();lost=false;starts=0
+  vi.resetModules();lost=false;starts=0;queryUnavailable=false
   const data=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>data.get(key)??null,setItem:(key:string,value:string)=>data.set(key,value),removeItem:(key:string)=>data.delete(key)})
   const {configureStudioConnection}=await import('../api/config')
   const {useDebugStore}=await import('../hooks/stores/debugStore')
@@ -23,6 +24,7 @@ describe.each(['memory','http'] as const)('startup admission over %s',mode=>{
   mock=await import('../api/mock-server');if(mode==='http')server=await startHttpStudioFixture(mock.mockRequest)
   const origin=server?.origin??'http://autoflow-studio.mock'
   restore=configureStudioConnection(origin,async(input,init)=>{
+   if(queryUnavailable&&/\/workflow-runs\/[^/]+$/.test(String(input)))return Response.json({error:'终态查询暂不可用'},{status:503})
    const isStart=/\/workflows\/[^/]+\/execute$/.test(String(input));if(isStart)starts++
    const response=await(server?fetch(input,init):mock.mockRequest(input,init))
    if(isStart && lost){lost=false;throw new TypeError('响应在启动接受后丢失')}
@@ -43,12 +45,14 @@ describe.each(['memory','http'] as const)('startup admission over %s',mode=>{
   await waitFor(()=>expect(store.getState().executionStatus).toBe('completed'),{timeout:2500})
   expect(screen.queryByText('等待启动确认')).toBeNull();expect(starts).toBe(1)
  })
- it('keeps the stop pending until a persisted terminal event is recovered',async()=>{
+ it.each([true,false])('requires confirmed terminal state from query or recovered event, queryUnavailable=%s',async unavailable=>{
+  queryUnavailable=unavailable
   render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
   await waitFor(()=>expect(store.getState().logs.some(log=>log.message.includes('启动请求已接受'))).toBe(true))
   fireEvent.click(screen.getByRole('button',{name:'停止启动请求'}))
   await waitFor(()=>expect(mock.mockSnapshot().run).toBeNull())
-  expect(screen.getByRole('status').textContent).toContain('等待启动确认')
+  if(unavailable)expect(screen.getByRole('status').textContent).toContain('等待启动确认')
+  else await waitFor(()=>expect(store.getState().executionStatus).toBe('stopped'))
   act(()=>socketService.connect())
   await waitFor(()=>expect(store.getState().executionStatus).toBe('stopped'),{timeout:2500})
   expect(screen.queryByText('等待启动确认')).toBeNull();expect(starts).toBe(1)

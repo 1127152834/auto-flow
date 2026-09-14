@@ -3,7 +3,7 @@ import {readImageAssetList} from '../lib/imageAssetContract'
 import {getStudioTransportRevision} from '../api/transport'
 import { installGlobalTooltip } from '../lib/globalTooltip'
 import { useEffect, useRef } from 'react'
-import { currentPickerSession, elementPickerApi, imageAssetApi, systemApi } from '../api'
+import { currentBrowserSession, browserApi, currentPickerSession, elementPickerApi, imageAssetApi, systemApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
@@ -21,6 +21,27 @@ export function useStudioIntegration() {
       return response.success && response.data?.active === false
     } }
   }), [])
+  useEffect(()=>registerDocumentLeaveResource(()=>{
+    const id=currentBrowserSession(),revision=getStudioTransportRevision()
+    if(!id)return null
+    return {id:`browser:${revision}:${id}`,kind:'browser',label:'自动化浏览器',release:async()=>{
+      if(revision!==getStudioTransportRevision()||id!==currentBrowserSession())return false
+      const result=await browserApi.close(id)
+      if(!result.success||revision!==getStudioTransportRevision())return false
+      const status=await browserApi.getStatus()
+      return status.success&&status.data?.isOpen===false
+    }}
+  }),[])
+  useEffect(()=>{
+    const recover=()=>{void browserApi.getStatus()}
+    recover()
+    window.addEventListener('socket:reconnected',recover)
+    window.addEventListener('studio:transport-changed',recover)
+    return()=>{
+      window.removeEventListener('socket:reconnected',recover)
+      window.removeEventListener('studio:transport-changed',recover)
+    }
+  },[])
   const hotkeyError = useRef<string | null>(null)
   const shortcuts=useGlobalConfigStore(s=>s.config.shortcuts)
   const theme=useGlobalConfigStore(s=>s.config.display?.theme || 'default')

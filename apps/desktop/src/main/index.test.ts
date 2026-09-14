@@ -20,7 +20,7 @@ class FakeWindow extends EventEmitter {
   isMinimized() { return false }
   destroy() { this.destroyed = true; this.emit('closed') }
   close() { if (this.unsaved) { const veto={preventDefault:vi.fn()}; this.webContents.emit('will-prevent-unload',veto); if (!veto.preventDefault.mock.calls.length) return } const event = { preventDefault: vi.fn() }; this.emit('close', event); if (!event.preventDefault.mock.calls.length) this.destroy() }
-  constructor() { super(); FakeWindow.instances.push(this) }
+  constructor(readonly options?: {webPreferences?: {partition?: string}}) { super(); FakeWindow.instances.push(this) }
 }
 
 const runtime = (): DesktopRuntimeContext => ({ workspaceKey: '/workspace-a', sidecar: { state: 'ready', apiVersion: 'v1', baseUrl: 'http://127.0.0.1:43127', token: 'public-token', port: 43127, instanceId: 'instance-a' }, preferences: { zoom: 100, motion: 'system' }, operation: 'idle' })
@@ -33,6 +33,7 @@ const invoke = (channel: string, window: FakeWindow, ...args: unknown[]) => hand
 
 beforeEach(async () => {
   vi.resetModules()
+  vi.doMock('node:fs', async () => ({...await vi.importActual<typeof import('node:fs')>('node:fs'), realpathSync: (path: string) => path.replace('/alias/', '/')}))
   vi.stubGlobal('__dirname', '/compiled/main')
   FakeWindow.instances = []
   handlers = new Map()
@@ -65,40 +66,52 @@ beforeEach(async () => {
   await import('./index')
   await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(1))
 })
-afterEach(() => { vi.unstubAllGlobals(); vi.doUnmock('electron'); vi.doUnmock('./settings/controller') })
+afterEach(() => { vi.unstubAllGlobals(); vi.doUnmock('electron'); vi.doUnmock('./settings/controller'); vi.doUnmock('node:fs') })
 
 async function openStudio() {
   await invoke('autoflow:open-automation-studio', FakeWindow.instances[0]!)
   return FakeWindow.instances[1]!
 }
 
-it('keeps service credentials, restart, settings and credential mutations main-only', async () => {
+function answerLeave(window:FakeWindow,allowed=true){
+ invoke('autoflow:studio-leave-ready',window)
+ window.webContents.send.mockImplementation((channel:string,request?:{id:string})=>{
+  if(channel==='autoflow:studio-prepare-leave')invoke('autoflow:studio-leave-result',window,{id:request!.id,allowed})
+ })
+}
+
+it('allows registered Studio runtime reads while protecting mutations and gating service restart', async () => {
   const main = FakeWindow.instances[0]!
   const studio = await openStudio()
   expect(invoke('autoflow:runtime-context', main)).toEqual(context)
-  expect(() => invoke('autoflow:runtime-context', studio)).toThrow()
-  expect(() => invoke('autoflow:sidecar-status', studio)).toThrow()
+  expect(invoke('autoflow:runtime-context', studio)).toEqual(context)
+  expect(invoke('autoflow:sidecar-status', studio)).toEqual(context.sidecar)
   expect(() => handlers.get('autoflow:runtime-context')!({ ...sender(main), senderFrame: {} })).toThrow()
   const stranger = new FakeWindow()
   expect(() => invoke('autoflow:runtime-context', stranger)).toThrow()
   await expect(invoke('autoflow:settings:preferences', studio, {})).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
   await expect(invoke('autoflow:copy-proxy-credentials', studio, {})).rejects.toThrow()
-  await expect(invoke('autoflow:sidecar-restart', studio)).rejects.toThrow()
+  answerLeave(studio,false)
+  await expect(invoke('autoflow:sidecar-restart', studio)).rejects.toThrow('请先结束')
   expect(settings.restart).not.toHaveBeenCalled()
+  answerLeave(studio,true)
   await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
   expect(settings.restart).toHaveBeenCalledOnce()
   expect(JSON.stringify(invoke('autoflow:runtime-context', main))).not.toContain('hostToken')
 })
 
-it('switches workspace without a Studio handshake and publishes credentials only to main', async () => {
+it('switches workspace only after Studio acknowledgement and recreates its isolated window', async () => {
   const main = FakeWindow.instances[0]!
   const studio = await openStudio()
+  answerLeave(studio)
   await expect(invoke('autoflow:settings:confirm-workspace', main, 'choice')).resolves.toMatchObject({ ok: true })
   expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
   expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:runtime-context-changed', context)
   expect(studio.webContents.send.mock.calls.map(call => call[0])).not.toContain('autoflow:runtime-context-changed')
   expect(handlers.has('autoflow:studio-ready')).toBe(false)
-  expect(handlers.has('autoflow:studio-leave-result')).toBe(false)
+  expect(handlers.has('autoflow:studio-leave-result')).toBe(true)
+  expect(studio.destroyed).toBe(true)
+  expect(FakeWindow.instances).toHaveLength(3)
   expect(handlers.has('autoflow:workflow-export')).toBe(false)
 })
 
@@ -106,6 +119,7 @@ it('keeps the old workspace and open windows on switch failure', async () => {
   const main = FakeWindow.instances[0]!
   const studio = await openStudio()
   settings.confirmWorkspace.mockRejectedValueOnce(new Error('target failed'))
+  answerLeave(studio)
   await expect(invoke('autoflow:settings:confirm-workspace', main, 'choice')).resolves.toMatchObject({ ok: false })
   expect(context.workspaceKey).toBe('/workspace-a')
   expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:runtime-context-changed', context)
@@ -178,4 +192,15 @@ it('registers controlled record links for the main frame only', async () => {
   expect(await invoke('autoflow:open-external-link', main, 'https://example.com')).toEqual({ ok: true, value: { opened: true } })
   const studio = await openStudio()
   expect(await invoke('autoflow:open-external-link', studio, 'https://example.com')).toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+})
+
+it('uses the same renderer storage partition for aliases of the same workspace', async () => {
+ context.workspaceKey = '/alias/workspace-a'
+ const first = await openStudio()
+ const partition = first.options?.webPreferences?.partition
+ first.destroy()
+ context.workspaceKey = '/workspace-a'
+ await invoke('autoflow:open-automation-studio', FakeWindow.instances[0]!)
+ expect(FakeWindow.instances.at(-1)?.options?.webPreferences?.partition).toBe(partition)
+ expect(partition).toMatch(/^persist:studio-/)
 })

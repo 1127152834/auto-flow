@@ -43,13 +43,14 @@ export function useDraftProtection(save: () => Promise<boolean>) {
     }
     if (busy.current || !mounted.current) return false
     const state = useWorkflowStore.getState()
-    const captured = getDocumentLeaveResources()
-    if (!state.hasUnsavedChanges && !captured.length) return true
-    const resourcesUnchanged = () => getDocumentLeaveResources().every(resource => captured.some(original => original.id === resource.id))
-    const dirty = state.hasUnsavedChanges
+    const readResources=()=>getDocumentLeaveResources().filter(resource=>!options?.keepBrowser||resource.kind!=='browser')
+    const captured = readResources()
+    const dirty = !options?.sessionsOnly && state.hasUnsavedChanges
+    if (!dirty && !captured.length) return true
+    const resourcesUnchanged = () => readResources().every(resource => captured.some(original => original.id === resource.id))
     setDialog(captured.length ? {
       title: '结束活跃会话后离开？',
-      message: `${captured.map(resource => resource.label).join('、')}仍活跃。${dirty ? '先处理未保存修改，再结束会话。' : '确认结束会话后继续。'}清理失败时保留当前流程。录制步骤保留在原流程的审查面板中。`,
+      message: `${captured.map(resource => resource.label).join('、')}仍活跃。${dirty ? '先处理未保存修改，再结束会话。' : '确认结束会话后继续。'}清理失败时保留当前流程。录制步骤会保存到原流程的审查；审查保存失败时不会离开。`,
       confirmText: dirty ? '保存并结束会话' : '结束会话后继续',
       secondaryText: dirty ? '放弃修改并结束会话' : '',
     } : { title: '保存当前工作流？', message: '当前工作流有未保存的修改，请选择如何处理。', confirmText: '保存后继续', secondaryText: '放弃修改' })
@@ -80,10 +81,10 @@ export function useDraftProtection(save: () => Promise<boolean>) {
       for (const resource of captured) {
         if (!stillSafe()) throw new Error('草稿或活跃会话已变更，请重新确认离开')
         // A session may have finished naturally while the save dialog was open.
-        if (!getDocumentLeaveResources().some(active => active.id === resource.id)) continue
+        if (!readResources().some(active => active.id === resource.id)) continue
         if (!(await resource.release())) throw new Error(`${resource.label}尚未确认结束，当前流程已保留`)
       }
-      if (!stillSafe() || getDocumentLeaveResources().length) throw new Error('清理期间草稿或会话已变更，当前流程已保留')
+      if (!stillSafe() || readResources().length) throw new Error('清理期间草稿或会话已变更，当前流程已保留')
       return true
     } catch (error) {
       useWorkflowStore.getState().addLog({ level: 'error', message: `无法完成保存保护: ${String(error)}` })

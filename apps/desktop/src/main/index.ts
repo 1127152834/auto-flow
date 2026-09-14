@@ -1,3 +1,5 @@
+import {createHash} from 'node:crypto'
+import { realpathSync } from 'node:fs'
 import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
@@ -16,6 +18,10 @@ let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
 const studio = new StudioWindowController({
   mainSenderId: () => mainWindow?.webContents.id,
+  workspacePartition:()=>{
+    const path=settings?.getRuntimeContext().workspaceKey
+    return `persist:studio-${createHash('sha256').update(path?realpathSync(path):'uninitialized').digest('hex')}`
+  },
   preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'system' },
   preloadPath: join(__dirname, '../preload/index.js'),
   rendererFile: join(__dirname, '../renderer/studio.html'),
@@ -23,7 +29,7 @@ const studio = new StudioWindowController({
 })
 
 function requireRuntimeSender(event: DesktopIpcEvent): void {
-  if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能访问本地服务')
+  if (!isWindowMainFrame(event, mainWindow?.webContents.id)&&!studio.isStudioSender(event)) throw new Error('此窗口不能访问本地服务')
 }
 
 function publishRuntimeContext(): void {
@@ -75,7 +81,13 @@ async function createWindow(): Promise<void> {
     'preferences': value => settings!.setPreferences(value),
     'choose-workspace': source => settings!.chooseWorkspace(source),
     'confirm-workspace': async id => {
-      try { return await settings!.confirmWorkspace(id) } finally { publishRuntimeContext() }
+      const previous=settings!.getRuntimeContext().workspaceKey
+      if(!await studio.prepareLeave('workspace'))throw new SettingsError('STUDIO_LEAVE_DECLINED', '工作台未确认离开，已保留当前工作区')
+      try {return await settings!.confirmWorkspace(id)}
+      finally{
+        publishRuntimeContext()
+        await studio.finishWorkspaceTransition(settings!.getRuntimeContext().workspaceKey!==previous)
+      }
     },
     'open-directory': directory => settings!.openDirectory(directory),
     'preview-diagnostics': includeLogs => settings!.previewDiagnostics(includeLogs),
@@ -90,6 +102,7 @@ async function createWindow(): Promise<void> {
   ipcMain.removeHandler('autoflow:sidecar-restart')
   ipcMain.handle('autoflow:sidecar-restart', async event => {
     requireRuntimeSender(event)
+    if(!await studio.prepareLeave('restart'))throw new Error('请先结束工作台的活跃会话，再重启服务')
     try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })
@@ -130,6 +143,8 @@ app.whenReady().then(async () => {
   void settings.start().catch(() => undefined)
 
   ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
+  ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
+  ipcMain.handle('autoflow:studio-leave-result',(event,result:unknown)=>studio.completeLeave(event,result))
   ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
   ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
   ipcMain.handle('autoflow:platform-paths', event => {

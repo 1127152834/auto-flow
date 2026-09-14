@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto'
+import type {StudioLeaveRequest} from '../../shared/automation-studio'
 import { BrowserWindow, dialog } from 'electron'
 import type { UiPreferences } from '../../shared/settings'
 
@@ -13,17 +15,25 @@ type StudioWindowOptions = {
   preloadPath: string
   rendererFile: string
   rendererUrl?: string
+  workspacePartition?():string
 }
 
 /** Owns the single independent Studio window. */
 export class StudioWindowController {
   private window: BrowserWindow | undefined
+  private ready=false
+  private everReady=false
+  private pendingLeave: {id:string;promise:Promise<boolean>;resolve:(allowed:boolean)=>void}|undefined
   private closeResult: ((closed: boolean) => void) | undefined
 
   constructor(private readonly options: StudioWindowOptions) {}
 
   async open(event: DesktopIpcEvent): Promise<void> {
     if (!isWindowMainFrame(event, this.options.mainSenderId())) throw new Error('此窗口不能打开工作流工作台')
+    return this.openWindow()
+  }
+
+  private async openWindow():Promise<void> {
     if (this.window && !this.window.isDestroyed()) {
       if (this.window.isMinimized()) this.window.restore()
       this.window.show(); this.window.focus()
@@ -32,11 +42,20 @@ export class StudioWindowController {
     const window = new BrowserWindow({
       title: '工作流工作台 · AutoFlow', width: 1440, height: 1024, minWidth: 800, minHeight: 600,
       backgroundColor: '#f1eee7', show: false,
-      webPreferences: { preload: this.options.preloadPath, contextIsolation: true, sandbox: true, nodeIntegration: false },
+      webPreferences: { ...(this.options.workspacePartition?{partition:this.options.workspacePartition()}:{}), preload: this.options.preloadPath, contextIsolation: true, sandbox: true, nodeIntegration: false },
     })
     this.window = window
+    this.ready=false;this.everReady=false
+    window.on('close',event=>{
+      if(!this.everReady)return
+      event.preventDefault()
+      void this.prepareLeave('close').then(allowed=>{if(allowed&&!window.isDestroyed())window.destroy()})
+    })
+    window.webContents.on('render-process-gone',()=>{this.ready=false;this.finishLeave(false)})
+    window.webContents.on('did-start-loading',()=>{this.ready=false;this.finishLeave(false)})
     window.once('closed', () => {
       if (this.window === window) this.window = undefined
+      this.finishLeave(false)
       this.closeResult?.(true); this.closeResult = undefined
     })
     window.webContents.on('will-prevent-unload', event => {
@@ -62,9 +81,53 @@ export class StudioWindowController {
     }
   }
 
+  isStudioSender(event:DesktopIpcEvent):boolean {
+    return isWindowMainFrame(event,this.window?.webContents.id)
+  }
+  registerLeaveReady(event:DesktopIpcEvent):void {
+    if(!this.isStudioSender(event))throw new Error('此窗口不能注册工作台离开协调')
+    this.ready=true;this.everReady=true
+  }
+  completeLeave(event:DesktopIpcEvent,value:unknown):void {
+    if(!this.isStudioSender(event))throw new Error('此窗口不能确认工作台离开')
+    if(!value||typeof value!=='object'||!('id' in value)||!('allowed' in value)||typeof value.allowed!=='boolean'||value.id!==this.pendingLeave?.id)throw new Error('离开确认已过期或格式无效')
+    this.finishLeave(value.allowed)
+  }
+  private finishLeave(allowed:boolean):void {
+    const pending=this.pendingLeave;this.pendingLeave=undefined;pending?.resolve(allowed)
+  }
+  async prepareLeave(reason:StudioLeaveRequest['reason']):Promise<boolean> {
+    if(!this.window||this.window.isDestroyed())return true
+    if(this.pendingLeave)return this.pendingLeave.promise
+    if(!this.ready)return false
+    const id=randomUUID()
+    let resolve!:(allowed:boolean)=>void
+    const promise=new Promise<boolean>(done=>{resolve=done})
+    this.pendingLeave={id,promise,resolve}
+    if (reason !== 'restart') {
+      if (this.window.isMinimized()) this.window.restore()
+      this.window.show()
+      this.window.focus()
+    }
+    this.window.webContents.send('autoflow:studio-prepare-leave',{id,reason})
+    return promise
+  }
+
   async closeForQuit(): Promise<boolean> {
     if (!this.window || this.window.isDestroyed()) return true
+    if(this.everReady){
+      const window=this.window
+      if(!await this.prepareLeave('quit'))return false
+      if(!window.isDestroyed())window.destroy()
+      return true
+    }
     return new Promise(resolve => { this.closeResult = resolve; this.window!.close() })
+  }
+
+  async finishWorkspaceTransition(changed:boolean):Promise<void> {
+    if(!this.window||this.window.isDestroyed())return
+    if(changed){this.window.destroy();await this.openWindow()}
+    else this.window.webContents.send('autoflow:studio-transition-end')
   }
 
   applyPreferences(preferences: UiPreferences): void {

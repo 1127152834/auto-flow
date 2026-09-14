@@ -9,3 +9,5 @@ export function registerSettingsCloseHandler(next: CloseHandler): () => void {
 export async function requestSettingsClose(): Promise<boolean> {
   return handler ? handler() : false
 }
+
+export const hasSettingsCloseHandler=()=>handler!==undefined

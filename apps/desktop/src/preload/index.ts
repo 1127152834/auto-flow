@@ -4,13 +4,29 @@ import type { SidecarStatus } from '../main/sidecar/supervisor'
 import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
-import type { AutomationStudioBridge } from '../shared/automation-studio'
+import type { AutomationStudioBridge, StudioLeaveRequest } from '../shared/automation-studio'
 import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { DesktopRuntimeContext } from '../shared/runtime'
 
 const automationStudioBridge: AutomationStudioBridge = {
   openAutomationStudio: () => ipcRenderer.invoke('autoflow:open-automation-studio'),
+  onStudioTransitionEnd:handler=>{
+    const listener=()=>handler()
+    ipcRenderer.on('autoflow:studio-transition-end',listener)
+    return()=>{ipcRenderer.removeListener('autoflow:studio-transition-end',listener)}
+  },
+  onPrepareStudioLeave: handler => {
+    let active=true
+    const listener=async(_event:Electron.IpcRendererEvent,request:StudioLeaveRequest)=>{
+      let allowed=false
+      try{allowed=active&&await handler(request)}catch{allowed=false}
+      await ipcRenderer.invoke('autoflow:studio-leave-result',{id:request.id,allowed:active&&allowed}).catch(()=>undefined)
+    }
+    ipcRenderer.on('autoflow:studio-prepare-leave',listener)
+    void ipcRenderer.invoke('autoflow:studio-leave-ready').catch(()=>undefined)
+    return()=>{active=false;ipcRenderer.removeListener('autoflow:studio-prepare-leave',listener)}
+  },
 }
 
 const externalLinkBridge: ExternalLinkBridge = { openExternalLink: url => ipcRenderer.invoke('autoflow:open-external-link', url) }

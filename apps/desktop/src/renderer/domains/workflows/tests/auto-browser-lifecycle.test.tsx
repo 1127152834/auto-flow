@@ -7,7 +7,24 @@ vi.hoisted(() => {
 import { AutoBrowserDialog } from '../components/AutoBrowserDialog'
 import { browserApi, elementPickerApi, systemApi } from '../api'
 import {configureStudioConnection} from '../api/config'
+import { registerDocumentLeaveHandler, registerDocumentLeaveResource } from '../lib/documentLeave'
 const log = vi.fn()
+it.each([true, false])('closes the browser only after active recording departure is confirmed: %s', async allowed => {
+  const removeResource = registerDocumentLeaveResource(() => ({id: 'recording', label: '网页录制', release: async () => true}))
+  let confirm!: (value: boolean) => void
+  const leave = vi.fn(() => new Promise<boolean>(resolve => { confirm = resolve }))
+  const removeHandler = registerDocumentLeaveHandler(leave)
+  const close = vi.spyOn(browserApi, 'close').mockResolvedValue({success: true})
+  try {
+    render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log} />)
+    fireEvent.click(await screen.findByRole('button', {name: '关闭浏览器'}))
+    expect(leave).toHaveBeenCalledWith({preserveMainDocument: true, sessionsOnly: true, keepBrowser: true})
+    expect(close).not.toHaveBeenCalled()
+    await act(async () => confirm(allowed))
+    expect(close).toHaveBeenCalledTimes(allowed ? 1 : 0)
+    if (!allowed) expect(screen.getByRole('button', {name: '关闭浏览器'})).toBeTruthy()
+  } finally { removeHandler(); removeResource() }
+})
 beforeEach(() => {
   log.mockClear()
   vi.spyOn(browserApi, 'pages').mockResolvedValue({success:true,data:{sessionId:'b',revision:0,targetPageId:'p',pages:[{pageId:'p',title:'页面',url:'about:blank'}]}})

@@ -15,10 +15,10 @@ beforeEach(async () => {
   await import('./index')
 })
 
-it('exposes only the Studio window opener without obsolete editor control channels', async () => {
+it('exposes the controlled Studio leave subscription without arbitrary editor access', async () => {
   await bridge.openAutomationStudio()
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:open-automation-studio')
-  expect(bridge).not.toHaveProperty('onPrepareStudioLeave')
+  expect(bridge.onPrepareStudioLeave).toBeTypeOf('function')
   expect(bridge).not.toHaveProperty('onStudioTransition')
   expect(bridge).not.toHaveProperty('exportWorkflow')
   expect(ipc.eventNames()).not.toContain('autoflow:studio-prepare-leave')
@@ -53,4 +53,15 @@ it('exposes only the named external link invocation', async () => {
   expect(ipc.invoke).toHaveBeenCalledWith('autoflow:open-external-link', 'https://example.com')
   expect(bridge).not.toHaveProperty('ipcRenderer')
   expect(bridge).not.toHaveProperty('shell')
+})
+
+it('forwards only the result of the registered leave handler and unsubscribes',async()=>{
+ const handler=vi.fn(async()=>false)
+ const unsubscribe=bridge.onPrepareStudioLeave(handler)
+ expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-leave-ready')
+ ipc.emit('autoflow:studio-prepare-leave',{}, {id:'close-1',reason:'quit'})
+ await Promise.resolve();await Promise.resolve()
+ expect(handler).toHaveBeenCalledWith({id:'close-1',reason:'quit'})
+ expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-leave-result',{id:'close-1',allowed:false})
+ unsubscribe();expect(ipc.listenerCount('autoflow:studio-prepare-leave')).toBe(0)
 })

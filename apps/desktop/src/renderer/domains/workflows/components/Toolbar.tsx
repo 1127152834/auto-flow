@@ -1,3 +1,5 @@
+import {registerDocumentLeaveResource,requestDocumentLeave,getDocumentLeaveResources} from '../lib/documentLeave'
+import {stopStudioRun} from '../lib/stopStudioRun'
 import { requestSettingsClose } from '../lib/settingsLeave'
 import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
@@ -85,6 +87,7 @@ export function Toolbar() {
     setServerWorkflow(id ? {documentId, id} : null)
   }, [documentId])
   const startPending = useRef(false)
+  const transitionPending = useRef(false)
   const awaitingStart = useRef<{ workflowId: string; runId: string } | null>(null)
   const [startPhase, setStartPhase] = useState<'preparing' | 'awaiting' | null>(null)
   useEffect(() => {
@@ -218,7 +221,7 @@ export function Toolbar() {
   // 通用执行函数
   // startNodeId：可选，从指定节点开始运行（调试用），为空则从默认起始节点运行
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
-    if (startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
+    if (transitionPending.current || startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
     const source = useWorkflowStore.getState()
     const { nodes, edges, variables, name, id: sourceDocumentId } = source
     if (nodes.length === 0) {
@@ -239,6 +242,16 @@ export function Toolbar() {
       return
     }
 
+    const debugOptions = {
+      breakpoints: Array.from(useDebugStore.getState().breakpoints),
+      stepMode: useDebugStore.getState().stepMode,
+    }
+    transitionPending.current=true
+    try {
+      if(getDocumentLeaveResources().length&&!await requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true}))return
+      if(sourceDocumentId!==useWorkflowStore.getState().id)return
+    } finally {transitionPending.current=false}
+
     // 从指定节点开始时，给出对应节点名称提示
     let startNodeLabel = ''
     if (startNodeId) {
@@ -246,10 +259,6 @@ export function Toolbar() {
       startNodeLabel = (sn?.data?.label as string) || startNodeId
     }
 
-    const debugOptions = {
-      breakpoints: Array.from(useDebugStore.getState().breakpoints),
-      stepMode: useDebugStore.getState().stepMode,
-    }
     startPending.current = true
     setStartPhase('preparing')
     clearLogs()
@@ -400,23 +409,35 @@ export function Toolbar() {
   }, [executeWorkflow])
 
   const handleStop = useCallback(async () => {
-    const stopWorkflowId = awaitingStart.current?.workflowId || useWorkflowStore.getState().currentExecutionWorkflowId || workflowId
-    if (stopWorkflowId) {
-      try {
-        socketService.stopExecution(stopWorkflowId)
-      } catch (e) {
-        console.error('[Toolbar] socketService.stopExecution 失败:', e)
-      }
-      try {
-        const result = await workflowApi.stop(stopWorkflowId)
-        if (result.error) { addLog({ level: 'error', message: result.error }); return }
-      } catch (e) {
-        addLog({ level: 'warning', message: `停止 API 调用失败: ${e}` })
-      }
-    }
-    // Only the confirmed terminal event changes execution state.
-    addLog({ level: 'warning', message: '停止请求已发送，等待确认' })
-  }, [workflowId, setExecutionStatus, addLog])
+    const state=useWorkflowStore.getState()
+    const target=awaitingStart.current || (state.currentExecutionWorkflowId&&state.currentExecutionRunId?{workflowId:state.currentExecutionWorkflowId,runId:state.currentExecutionRunId}:null)
+    if(!target)return false
+    const revision=getStudioTransportRevision()
+    socketService.stopExecution(target.workflowId,target.runId)
+    try {
+      const confirmed=await stopStudioRun(target.workflowId,target.runId)
+      if(!confirmed||revision!==getStudioTransportRevision()){addLog({level:'warning',message:'停止尚未确认，请重试；当前流程及运行占用已保留'});return false}
+      const current=useWorkflowStore.getState()
+      if(current.currentExecutionRunId&&current.currentExecutionRunId!==target.runId)return false
+      awaitingStart.current=null;setStartPhase(null)
+      current.setExecutionStatus(confirmed.status==='completed'?'completed':confirmed.status==='failed'||confirmed.status==='interrupted'?'failed':'stopped')
+      useDebugStore.getState().clearPaused()
+      return true
+    }catch(error){addLog({level:'error',message:`停止失败：${String(error)}`});return false}
+  }, [addLog])
+  useEffect(()=>registerDocumentLeaveResource(()=>{
+    const state=useWorkflowStore.getState()
+    if(startPending.current&&!awaitingStart.current)return {id:`run-preparing:${state.id}`,label:'运行启动准备',release:async()=>false}
+    const target=awaitingStart.current || (state.executionStatus==='running'&&state.currentExecutionWorkflowId&&state.currentExecutionRunId?{workflowId:state.currentExecutionWorkflowId,runId:state.currentExecutionRunId}:null)
+    if(!target)return null
+    const revision=getStudioTransportRevision()
+    return {id:`run:${revision}:${target.runId}`,label:'工作流运行或调试',release:async()=>{
+      if(revision!==getStudioTransportRevision())return false
+      const current=awaitingStart.current?.runId || useWorkflowStore.getState().currentExecutionRunId
+      if(current!==target.runId)return false
+      return handleStop()
+    }}
+  }),[handleStop])
 
   const handleSave = useCallback(async (skipConfirm = false) => {
     if (savingDocument.current || !mounted.current) return false

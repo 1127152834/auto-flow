@@ -9,8 +9,9 @@ const services = vi.hoisted(() => ({
   register: vi.fn<(...args: [Record<string, string>]) => Promise<{ success: boolean; error?: string }>>(async () => ({ success: true })),
   images: vi.fn<() => Promise<{success:boolean;data?:ImageAsset[];error?:string}>>(async () => ({ success: true, data: [] })),
   connect: vi.fn(), disconnect: vi.fn(), run: vi.fn(),
+  browserStatus: vi.fn(async()=>({success:true,data:{isOpen:false,pickerActive:false}})),
 }))
-vi.mock('../api', () => ({ imageAssetApi: { list: services.images }, systemApi: { setCustomHotkeys: services.register } }))
+vi.mock('../api', () => ({ browserApi:{getStatus:services.browserStatus}, currentBrowserSession:()=>null, currentPickerSession:()=>null, imageAssetApi: { list: services.images }, systemApi: { setCustomHotkeys: services.register } }))
 vi.mock('../events', () => ({ socketService: { connect: services.connect, disconnect: services.disconnect } }))
 vi.mock('../lib/customShortcuts', async importOriginal => ({
   ...await importOriginal<typeof import('../lib/customShortcuts')>(),
@@ -28,6 +29,15 @@ beforeEach(() => {
   useGlobalConfigStore.setState(state => ({ config: { ...state.config, shortcuts: { run_workflow: 'Alt+R' } } }))
 })
 afterEach(cleanup)
+it('recovers browser occupancy on mount and reconnect, removing the listener on unmount',()=>{
+ const {unmount}=renderHook(useStudioIntegration)
+ expect(services.browserStatus).toHaveBeenCalledOnce()
+ window.dispatchEvent(new Event('socket:reconnected'))
+ window.dispatchEvent(new Event('studio:transport-changed'))
+ expect(services.browserStatus).toHaveBeenCalledTimes(3)
+ unmount();window.dispatchEvent(new Event('socket:reconnected'))
+ expect(services.browserStatus).toHaveBeenCalledTimes(3)
+})
 it('registers current shortcuts on mount, edits and reconnect, then removes event handlers', async () => {
   const { unmount } = renderHook(useStudioIntegration)
   await waitFor(() => expect(services.register).toHaveBeenCalledWith({ run_workflow: 'Alt+R' }))
