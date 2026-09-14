@@ -1,0 +1,16 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/app/ApiProvider.test.tsx src/renderer/app/App.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/apps/desktop
+
+(node:62442) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62441) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  09:55:57
+   Duration  11.86s (transform 2.09s, setup 356ms, import 8.05s, tests 3.09s, environment 1.43s)

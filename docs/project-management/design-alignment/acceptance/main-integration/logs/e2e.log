@@ -1,0 +1,23 @@
+E01-E03: UI created project/table/fields and two inline rows; one visible batch save produced exactly two records
+E04: Real clipboard paste preserves leading-zero text and adds exactly two rows
+E06: Invalid required cell is focused and no records are written
+E11: Cancelled tab leave preserves grid draft
+E05: Over-wide, over-100-row and over-1-MiB clipboard pastes leave original draft unchanged
+E09: Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly
+E12-service-reconnect: Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives
+E15: Actual Electron 200% zoom preserves window width and draft; screenshot captured
+E16-edit: Saved record edit still uses existing detail/edit flow and persists through UI
+E10: Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record
+E08: Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save
+E14-list: Nonmatching row is saved, applied search and visible count stay unchanged
+E07: Real Excel identity table via wizard; duplicate batch and existing identity each reject every draft, unique batch succeeds, source bytes unchanged
+E04-rich-types: HTTP fixture fields plus real clipboard paste/undo/save preserve date, zero, false, quoted newline and formula-looking text
+E12-workspace-switch: Two real workspaces and two UI-created drafts stay isolated; controlled chooser IPC and direct route restoration explicitly used
+E11-history: Global navigation and browser-back cancellation keep URL and draft; confirmed leave then route restoration recovers input
+E14-export: Native save-result injection + real export UI writes only the applied quick-search result, independently checked by openpyxl
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-aW5Vxi",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-X9XA8D",
+  "manual": false
+}
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-X9XA8D

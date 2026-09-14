@@ -1,0 +1,15 @@
+
+> test:structure
+> node --test scripts/structure.test.mjs
+
+✔ required path exists: apps/desktop/package.json (0.587542ms)
+✔ required path exists: apps/backend/pyproject.toml (0.086667ms)
+✔ root scripts expose the foundation checks (0.199ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81.337584

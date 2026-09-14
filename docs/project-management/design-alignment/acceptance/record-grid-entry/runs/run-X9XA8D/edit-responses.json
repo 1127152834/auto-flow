@@ -1,0 +1,96 @@
+[
+  {
+    "url": "http://127.0.0.1:54553/api/v1/projects/aafafe25-809c-406d-8f59-bd8307d9a11b/tables/b53d7108-048f-4561-9cdf-fa95eb6598e2/records/MzdkMWEyMDEtZDNlMC00NjViLWI1NTMtOWIwZjBiNGI1MWUy?datasetGeneration=e2bba7ae-4e80-4999-b8e3-55bd9f904149&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "aafafe25-809c-406d-8f59-bd8307d9a11b",
+        "tableId": "b53d7108-048f-4561-9cdf-fa95eb6598e2",
+        "datasetGeneration": "e2bba7ae-4e80-4999-b8e3-55bd9f904149",
+        "recordKey": {
+          "type": "uuid",
+          "value": "37d1a201-d3e0-465b-b553-9b0f0b4b51e2"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "1d102622-0949-4bd4-a0ab-b747e78b5b12",
+          "value": "阳台种植观察",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 1,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T02:02:09.691518Z",
+      "updatedAt": "2026-09-14T02:02:09.691518Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:54553/api/v1/projects/aafafe25-809c-406d-8f59-bd8307d9a11b/tables/b53d7108-048f-4561-9cdf-fa95eb6598e2/records/MzdkMWEyMDEtZDNlMC00NjViLWI1NTMtOWIwZjBiNGI1MWUy",
+    "method": "PATCH",
+    "result": {
+      "ref": {
+        "projectId": "aafafe25-809c-406d-8f59-bd8307d9a11b",
+        "tableId": "b53d7108-048f-4561-9cdf-fa95eb6598e2",
+        "datasetGeneration": "e2bba7ae-4e80-4999-b8e3-55bd9f904149",
+        "recordKey": {
+          "type": "uuid",
+          "value": "37d1a201-d3e0-465b-b553-9b0f0b4b51e2"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "1d102622-0949-4bd4-a0ab-b747e78b5b12",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T02:02:09.691518Z",
+      "updatedAt": "2026-09-14T02:02:19.190773Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:54553/api/v1/projects/aafafe25-809c-406d-8f59-bd8307d9a11b/tables/b53d7108-048f-4561-9cdf-fa95eb6598e2/records/MzdkMWEyMDEtZDNlMC00NjViLWI1NTMtOWIwZjBiNGI1MWUy?datasetGeneration=e2bba7ae-4e80-4999-b8e3-55bd9f904149&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "aafafe25-809c-406d-8f59-bd8307d9a11b",
+        "tableId": "b53d7108-048f-4561-9cdf-fa95eb6598e2",
+        "datasetGeneration": "e2bba7ae-4e80-4999-b8e3-55bd9f904149",
+        "recordKey": {
+          "type": "uuid",
+          "value": "37d1a201-d3e0-465b-b553-9b0f0b4b51e2"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "1d102622-0949-4bd4-a0ab-b747e78b5b12",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T02:02:09.691518Z",
+      "updatedAt": "2026-09-14T02:02:19.190773Z"
+    }
+  }
+]

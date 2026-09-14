@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-14",
+  "status": "integration-verified",
+  "mainBase": "cda081dd212dbb93a98dbad8f57cfabf3227659b",
+  "mainLatest": "2f513991ab04482ee35fb2b4ade974e9a0e639fb",
+  "projectDelivery": "dcb1831",
+  "requestedCommit": "361d4fde83110f425025689b8dc08b32712b395a",
+  "integrationCode": "7f1ccb7817b95e99198417eb10d36671fce3d899",
+  "tests": {
+    "backendFull": 967,
+    "frontendFull": 2698,
+    "frontendFiles": 243,
+    "latestContracts": 19,
+    "latestStudioFrontend": 59,
+    "scripts": 44,
+    "structure": 3
+  },
+  "e2e": {
+    "report": "docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-X9XA8D/report.json",
+    "executedCasesPassed": true,
+    "caseCount": 17,
+    "originalG4Complete": false,
+    "remaining": [
+      "E13-legacy-and-reimport-E2E",
+      "E15-native-IME",
+      "visual-review"
+    ],
+    "sourceContentSha256": "7f44b9bf1bf10d8203458f2a7e0cfd16e8de7c99ca7059d1ca25d5e431ccf841",
+    "buildContentSha256": "a878ebf84154741c91acdd5d2ab5b85572e7f222dcb9140de49c37c29b542a28"
+  },
+  "platform": {
+    "macosArm64": "executed",
+    "windows": "notRun",
+    "packaging": "notRun",
+    "userManual": "notRun"
+  },
+  "handoff": "verified branch; final main HEAD and preservation checked during fast-forward"
+}

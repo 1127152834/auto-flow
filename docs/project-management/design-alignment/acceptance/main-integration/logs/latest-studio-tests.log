@@ -1,0 +1,20 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/browser-script-api.test.ts src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx src/renderer/domains/workflows/tests/browser-script-editor.test.tsx src/renderer/domains/workflows/tests/browser-script-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/apps/desktop
+
+(node:64311) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64310) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64309) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64308) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  4 passed (4)
+      Tests  59 passed (59)
+   Start at  10:01:23
+   Duration  12.26s (transform 1.99s, setup 1.32s, import 1.32s, tests 13.83s, environment 5.41s)

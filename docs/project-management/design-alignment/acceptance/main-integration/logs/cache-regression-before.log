@@ -1,0 +1,73 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/app/ApiProvider.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/apps/desktop
+
+(node:61904) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/app/ApiProvider.test.tsx (2 tests | 1 failed) 1060ms
+   × keeps live query observers and drafts attached to the same cache after a service reconnect 1045ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/app/ApiProvider.test.tsx > keeps live query observers and drafts attached to the same cache after a service reconnect
+TestingLibraryElementError: Unable to find an element with the text: saved. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<output>[39m
+      [0mnew[0m
+    [36m</output>[39m
+    [36m<input[39m
+      [33maria-label[39m=[32m"draft"[39m
+      [33mvalue[39m=[32m"unsaved"[39m
+    [36m/>[39m
+    [36m<button>[39m
+      [0msave[0m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<output>[39m
+      [0mnew[0m
+    [36m</output>[39m
+    [36m<input[39m
+      [33maria-label[39m=[32m"draft"[39m
+      [33mvalue[39m=[32m"unsaved"[39m
+    [36m/>[39m
+    [36m<button>[39m
+      [0msave[0m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/app/ApiProvider.test.tsx:24:23
+     22|   view.rerender(<ApiProvider baseUrl="http://new" token="new" instance…
+     23|   await screen.findByText('new'); fireEvent.click(screen.getByText('sa…
+     24|   expect(await screen.findByText('saved')).toBeVisible()
+       |                       ^
+     25|   expect(screen.getByLabelText('draft')).toHaveValue('unsaved')
+     26|   expect(new Set(seen).size).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  09:54:25
+   Duration  2.17s (transform 121ms, setup 107ms, import 187ms, tests 1.06s, environment 705ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-merge-project-grid/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/app/ApiProvider.test.tsx
