@@ -5858,6 +5858,12 @@
       "name": "studio:transport-changed",
       "subscriptions": [
         {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
+          "line": 39,
+          "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
+          "via": "window.addEventListener"
+        },
+        {
           "file": "apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx",
           "line": 45,
           "source": "frontend/src/components/ui/image-path-input.tsx",
@@ -7024,34 +7030,24 @@
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
     },
     {
-      "endpoint": "`${getBackendBaseUrl()}/api/local-workflows/webdav-config`",
+      "endpoint": "'/local-workflows/webdav-config'",
       "method": "GET",
       "body": null,
-      "responseType": null,
+      "responseType": "{config: unknown}",
       "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-      "line": 30,
+      "line": 49,
       "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
-      "call": "studioFetch(`${getBackendBaseUrl()}/api/local-workflows/webdav-config`)"
+      "call": "apiRequest<{config: unknown}>('/local-workflows/webdav-config')"
     },
     {
-      "endpoint": "`${getBackendBaseUrl()}/api/local-workflows/webdav-config`",
+      "endpoint": "action === 'save' ? '/local-workflows/webdav-config' : '/local-workflows/webdav-test'",
       "method": "POST",
-      "body": "body: JSON.stringify(cfg)",
-      "responseType": null,
+      "body": "body:JSON.stringify(cfg)",
+      "responseType": "{success: boolean; mock?: boolean}",
       "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-      "line": 42,
+      "line": 76,
       "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
-      "call": "studioFetch(`${getBackendBaseUrl()}/api/local-workflows/webdav-config`, {\n        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg),\n      })"
-    },
-    {
-      "endpoint": "`${getBackendBaseUrl()}/api/local-workflows/webdav-test`",
-      "method": "POST",
-      "body": "body: JSON.stringify(cfg)",
-      "responseType": null,
-      "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-      "line": 54,
-      "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
-      "call": "studioFetch(`${getBackendBaseUrl()}/api/local-workflows/webdav-test`, {\n        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cfg),\n      })"
+      "call": "apiRequest<{success: boolean; mock?: boolean}>(action === 'save' ? '/local-workflows/webdav-config' : '/local-workflows/webdav-test', {\n        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg),\n      })"
     },
     {
       "endpoint": "`${getBackendUrl()}/api/system/macro/hotkey/start`",

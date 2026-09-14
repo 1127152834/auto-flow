@@ -34350,5 +34350,248 @@
     "level": "backend contract",
     "status": "通过",
     "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "SETTINGS.webdav.read-http",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "读取HTTP503但JSON含success=true",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "读取HTTP503但JSON含success=true",
+      "操作当前表单"
+    ],
+    "expectedUI": "显示读取失败，禁止空白保存，可重试",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "显示读取失败，禁止空白保存，可重试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.read-business",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "读取业务失败",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "读取业务失败",
+      "操作当前表单"
+    ],
+    "expectedUI": "错误及重试",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "错误及重试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.read-invalid",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "enabled为字符串",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "enabled为字符串",
+      "操作当前表单"
+    ],
+    "expectedUI": "拒绝配置结构，可重试",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "拒绝配置结构，可重试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.save-http",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "保存HTTP500但JSON声称成功",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "保存HTTP500但JSON声称成功",
+      "操作当前表单"
+    ],
+    "expectedUI": "保留字段，不能报保存成功",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "保留字段，不能报保存成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.test-http",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "测试HTTP500但JSON声称成功",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "测试HTTP500但JSON声称成功",
+      "操作当前表单"
+    ],
+    "expectedUI": "不能报连接成功",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "不能报连接成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.serialized",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "保存挂起时再次点击测试",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "保存挂起时再次点击测试",
+      "操作当前表单"
+    ],
+    "expectedUI": "表单和两按钮互斥，一次请求，失败保留输入",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "表单和两按钮互斥，一次请求，失败保留输入",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.mock-save",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "Mock确认保存",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "Mock确认保存",
+      "操作当前表单"
+    ],
+    "expectedUI": "明确模拟配置未连接远程",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "明确模拟配置未连接远程",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.connection",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "连接更换",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "连接更换",
+      "操作当前表单"
+    ],
+    "expectedUI": "禁止提交旧配置到新服务，等显式重读",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "禁止提交旧配置到新服务，等显式重读",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.invalid-url",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "ftp地址测试",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "ftp地址测试",
+      "操作当前表单"
+    ],
+    "expectedUI": "本地拒绝，无POST",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "本地拒绝，无POST",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.late-save",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "scenario": "保存中换服务并重新读取",
+      "config": "隔离fixture"
+    },
+    "steps": [
+      "保存中换服务并重新读取",
+      "操作当前表单"
+    ],
+    "expectedUI": "旧保存不能覆盖新配置或显示迟到成功",
+    "expectedIO": "已有webdav-config/webdav-test接口；失败或本地拒绝不产生第二次提交",
+    "stateAssertion": "旧保存不能覆盖新配置或显示迟到成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-protection.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.roundtrip.memory",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "transport": "memory",
+      "url": "https://dav.fixture/",
+      "password": "一次性测试值"
+    },
+    "steps": [
+      "输入配置",
+      "保存",
+      "卸载重开",
+      "测试连接"
+    ],
+    "expectedUI": "模拟保存确认，地址重读一致，密码为空，测试明确未连接",
+    "expectedIO": "GET/POST config、POST test通过真实内存或本地HTTP服务；无外部连接",
+    "stateAssertion": "Mock存储不含一次性测试密码",
+    "level": "component + memory",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-http.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.roundtrip.http",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "transport": "http",
+      "url": "https://dav.fixture/",
+      "password": "一次性测试值"
+    },
+    "steps": [
+      "输入配置",
+      "保存",
+      "卸载重开",
+      "测试连接"
+    ],
+    "expectedUI": "模拟保存确认，地址重读一致，密码为空，测试明确未连接",
+    "expectedIO": "GET/POST config、POST test通过真实内存或本地HTTP服务；无外部连接",
+    "stateAssertion": "Mock存储不含一次性测试密码",
+    "level": "component + http",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/webdav-settings-http.test.tsx"
+  },
+  {
+    "id": "SETTINGS.webdav.browser",
+    "capability": "settings:webdav",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "initial": "空字段、禁用"
+    },
+    "steps": [
+      "更多操作→全局配置→存储",
+      "填写测试地址保存",
+      "测试连接",
+      "换标签重读",
+      "恢复空字段禁用配置"
+    ],
+    "expectedUI": "Mock保存和未连接提示明确；可重读",
+    "expectedIO": "Mock服务；未连接网盘",
+    "stateAssertion": "恢复原配置",
+    "level": "browser UI",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-webdav/browser-ui.md"
   }
 ]

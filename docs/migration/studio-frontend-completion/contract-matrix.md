@@ -13,6 +13,7 @@
 | 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |
 | 系统路径选择 | 生成请求/响应DTO、POST/405/422、成功/取消/失败校验；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框、运行中取消宿主请求、各平台实机 |
 | MCP 配置 | 生成 DTO、保存确认、重连部分失败及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md | 真实 MCP 服务、跨连接在途隔离和跨客户端 revision |
+| WebDAV 设置 | HTTP/业务确认、失败重试、互斥和迟到保护，Mock不声称真实连接；见 webdav-settings-protection.md | 生成DTO、写入修订、真实远程文件与凭据服务 |
 | 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |
 
 ## 静态服务方法
@@ -257,7 +258,7 @@
 | event:storage | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:208 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-error | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:15 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:32 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-restored | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:16; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:70 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:24; apps/desktop/src/renderer/domains/workflows/development/StudioMockTools.tsx:30 | 字段/关联身份/恢复语义仍需核对 |
-| event:studio:transport-changed | apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx:45; apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx:38; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:69 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:6 | 字段/关联身份/恢复语义仍需核对 |
+| event:studio:transport-changed | apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:39; apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx:45; apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx:38; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:69 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:6 | 字段/关联身份/恢复语义仍需核对 |
 | event:take_screenshot | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:794 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1602 | 字段/关联身份/恢复语义仍需核对 |
 | event:upload_image | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:333 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:999 | 字段/关联身份/恢复语义仍需核对 |
 | event:view_image_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:142 | 字段/关联身份/恢复语义仍需核对 |
@@ -290,9 +291,8 @@
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:656 | POST &#96;${API_BASE}/api/system/screenshot-tool&#96; | body: JSON.stringify({ saveToAssets: true }) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:816 | PUT &#96;${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:925 | GET &#96;${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:30 | GET &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-config&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:42 | POST &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-config&#96; | body: JSON.stringify(cfg) | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:54 | POST &#96;${getBackendBaseUrl()}/api/local-workflows/webdav-test&#96; | body: JSON.stringify(cfg) | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:49 | GET '/local-workflows/webdav-config' | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:76 | POST action === 'save' ? '/local-workflows/webdav-config' : '/local-workflows/webdav-test' | body:JSON.stringify(cfg) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1998 | POST &#96;${getBackendUrl()}/api/system/macro/hotkey/start&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:2003 | POST &#96;${getBackendUrl()}/api/system/macro/hotkey/stop&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:2015 | GET &#96;${getBackendUrl()}/api/system/macro/data&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
@@ -317,4 +317,4 @@
 
 对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。
 
-当前扫描：155 个服务方法、82 个事件、44 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
+当前扫描：155 个服务方法、82 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。

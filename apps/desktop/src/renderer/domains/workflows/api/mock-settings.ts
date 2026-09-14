@@ -35,7 +35,7 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
     if(method==='POST')save('webdav',{...body,password:''})
     return json({success:true,config:read('webdav'),mock:true})
   }
-  if(path==='/local-workflows/webdav-test')return json({success:false,error:'Mock: remote connection is not executed'})
+  if(path==='/local-workflows/webdav-test')return json({success:false,error:'Mock 未执行 WebDAV 远程连接'})
   if(path==='/ai-assistant/mcp/config') {
     if(method==='PUT'){
       if(!isMcpConfig(body.config))return json({success:false,error:'MCP 配置格式错误'},422)
