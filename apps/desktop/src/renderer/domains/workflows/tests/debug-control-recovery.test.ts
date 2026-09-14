@@ -1,7 +1,7 @@
 import {afterEach,expect,it,vi} from 'vitest'
-import {sendDebugControl} from '../api/debugControl'
+import {sendDebugControl,sendDebugVariables} from '../api/debugControl'
 import {configureStudioConnection} from '../api/config'
-const context={commandId:'command',pauseId:'pause',controlRevision:1}
+const context={commandId:'command',runId:'run',pauseId:'pause',controlRevision:1}
 const receipt={...context,workflowId:'workflow',action:'step',success:true,error:null}
 let restore=()=>{}
 afterEach(()=>restore())
@@ -45,4 +45,21 @@ it('returns a confirmed rejection without resending or clearing pause state',asy
  restore=configureStudioConnection('http://debug.fixture',transport)
  expect(await sendDebugControl('workflow','step',context)).toMatchObject({success:false,httpStatus:409,error:'暂停已过期'})
  expect(transport).toHaveBeenCalledOnce()
+})
+it.each(['lost','server-error','wrong-identity'] as const)('queries an uncertain variable command by its original ID after %s',async scenario=>{
+ const request={...context,changes:[{name:'count',value:2}]}
+ const variableReceipt={...request,workflowId:'workflow',success:true,error:null}
+ const requests:string[]=[]
+ restore=configureStudioConnection('http://debug.fixture',async(input,init)=>{
+  requests.push(`${init?.method||'GET'} ${String(input)}`)
+  if(init?.method==='POST'){
+   if(scenario==='lost')throw new TypeError('Failed to fetch')
+   if(scenario==='server-error')return Response.json({error:'after application'},{status:500})
+   return Response.json({...variableReceipt,runId:'foreign'})
+  }
+  return Response.json({...variableReceipt,httpStatus:200})
+ })
+ expect(await sendDebugVariables('workflow',request)).toMatchObject({success:true,data:variableReceipt})
+ expect(requests.filter(value=>value.startsWith('POST'))).toHaveLength(1)
+ expect(requests[1]).toBe('GET http://debug.fixture/api/events/commands/command')
 })

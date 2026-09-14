@@ -146,20 +146,22 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
       {/* 断点圆点：点击切换。命中时实心红，未命中时悬停才显形 */}
       <button
         className={cn(
-          'absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow z-10 transition-opacity duration-150 cursor-pointer',
+          'nodrag nopan absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow z-10 transition-opacity duration-150 cursor-pointer',
           hasBreakpoint ? 'bg-red-500 opacity-100' : 'bg-red-400/40 opacity-0 group-hover:opacity-100 hover:!bg-red-500'
         )}
         title={hasBreakpoint ? '移除断点' : '设置断点（运行到此暂停）'}
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); toggleBreakpoint(id) }}
       />
 
       {/* 从此节点开始运行：悬停显现的绿色播放按钮（调试用，跳过其上游节点） */}
       <button
         className={cn(
-          'absolute -left-2 -top-2 w-5 h-5 flex items-center justify-center rounded-full bg-emerald-500 text-white shadow ring-2 ring-white z-10 cursor-pointer',
+          'nodrag nopan absolute -left-2 -top-2 w-5 h-5 flex items-center justify-center rounded-full bg-emerald-500 text-white shadow ring-2 ring-white z-10 cursor-pointer',
           'opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-emerald-600 transition-all duration-150'
         )}
         title="从此节点开始运行（跳过其上游节点）"
+        onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
           window.dispatchEvent(new CustomEvent('run-from-node', { detail: { nodeId: id } }))

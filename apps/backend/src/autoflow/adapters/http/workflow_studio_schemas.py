@@ -676,6 +676,7 @@ class StudioMcpReloaded(ApiModel):
 
 class StudioDebugPauseContext(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    run_id: str = Field(min_length=1, pattern=r"\S")
     pause_id: str = Field(min_length=1, pattern=r"\S")
     control_revision: int = Field(ge=0, le=9007199254740991)
 
@@ -709,6 +710,42 @@ class StudioDebugControlLookup(StudioDebugControlReceipt):
     def consistent_http_status(self) -> Self:
         if self.success and self.http_status >= 400:
             raise ValueError("成功调试命令不能使用失败状态码")
+        return self
+
+
+class StudioDebugVariableChange(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    name: str = Field(min_length=1, max_length=128, pattern=r"^[A-Za-z_][A-Za-z0-9_]*$")
+    value: JsonValue
+
+
+class StudioDebugVariablesRequest(StudioDebugControlRequest):
+    changes: list[StudioDebugVariableChange] = Field(min_length=1, max_length=200)
+
+    @model_validator(mode="after")
+    def validate_changes(self) -> Self:
+        names = [change.name for change in self.changes]
+        if len(names) != len(set(names)):
+            raise ValueError("一次变量修改不能包含重复名称")
+        if len(self.model_dump_json(by_alias=True).encode("utf-8")) > 1024 * 1024:
+            raise ValueError("变量修改请求超过1MiB")
+        return self
+
+
+class StudioDebugVariablesReceipt(StudioDebugVariablesRequest):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    success: bool
+    error: str | None
+
+    @model_validator(mode="after")
+    def valid_outcome(self) -> Self:
+        if self.success and self.error is not None:
+            raise ValueError("成功变量命令不能包含错误")
+        if not self.success and (not self.error or not self.error.strip()):
+            raise ValueError("失败变量命令必须包含原因")
         return self
 
 

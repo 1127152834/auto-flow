@@ -4441,6 +4441,8 @@ export type components = {
         };
         /** StudioDebugControlLookup */
         StudioDebugControlLookup: {
+            /** Runid */
+            runId: string;
             /** Pauseid */
             pauseId: string;
             /** Controlrevision */
@@ -4465,6 +4467,8 @@ export type components = {
         };
         /** StudioDebugControlReceipt */
         StudioDebugControlReceipt: {
+            /** Runid */
+            runId: string;
             /** Pauseid */
             pauseId: string;
             /** Controlrevision */
@@ -4487,6 +4491,8 @@ export type components = {
         };
         /** StudioDebugControlRequest */
         StudioDebugControlRequest: {
+            /** Runid */
+            runId: string;
             /** Pauseid */
             pauseId: string;
             /** Controlrevision */
@@ -4496,10 +4502,52 @@ export type components = {
         };
         /** StudioDebugPauseContext */
         StudioDebugPauseContext: {
+            /** Runid */
+            runId: string;
             /** Pauseid */
             pauseId: string;
             /** Controlrevision */
             controlRevision: number;
+        };
+        /** StudioDebugVariableChange */
+        StudioDebugVariableChange: {
+            /** Name */
+            name: string;
+            value: components["schemas"]["JsonValue"];
+        };
+        /** StudioDebugVariablesReceipt */
+        StudioDebugVariablesReceipt: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Changes */
+            changes: components["schemas"]["StudioDebugVariableChange"][];
+            /** Workflowid */
+            workflowId: string;
+            /** Success */
+            success: boolean;
+            /** Error */
+            error: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioDebugVariablesRequest */
+        StudioDebugVariablesRequest: {
+            /** Runid */
+            runId: string;
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Changes */
+            changes: components["schemas"]["StudioDebugVariableChange"][];
         };
         /** StudioExecutionLogEntry */
         StudioExecutionLogEntry: {

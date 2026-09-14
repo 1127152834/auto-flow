@@ -351,6 +351,7 @@ class SocketService {
       // 记录当前执行的 workflowId，供"下载数据"按钮使用
       store.setCurrentExecutionWorkflowId(data.workflowId)
       store.setCurrentExecutionRunId(data.runId || this.executionDocument?.runId || null)
+      window.dispatchEvent(new CustomEvent('studio:run-history-changed', { detail: { workflowId:data.workflowId, runId:data.runId, status:'running' } }))
       // 清空之前的数据
       store.clearCollectedData()
       // 不要清空变量列表！变量应该保留，由后端的 variable_update 事件更新
@@ -372,9 +373,9 @@ class SocketService {
     })
 
     // 调试：命中断点/单步 → 暂停
-    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => {
+    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; reason?: 'breakpoint' | 'step' }) => {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
-      useDebugStore.getState().setPaused({ pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, reason: data.reason })
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, reason: data.reason })
     })
     // 调试：恢复
     this.socket.on('execution:resumed', (data: {workflowId: string; runId?: string; pauseId?:string}) => {
@@ -633,6 +634,7 @@ class SocketService {
       window.dispatchEvent(new CustomEvent('execution:completed', { 
         detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } 
       }))
+      window.dispatchEvent(new CustomEvent('studio:run-history-changed', { detail: { workflowId:data.workflowId, runId:data.runId, status } }))
 
       // 选择器自愈：若运行中有选择器被自愈，提示用户是否写回工作流（持久化）
       if (data.healedSelectors && data.healedSelectors.length > 0) {
@@ -686,6 +688,7 @@ class SocketService {
       isExecuting = false  // 停止接收实时数据行
       useDebugStore.getState().clearPaused()
       useWorkflowStore.getState().setExecutionStatus('stopped')
+      window.dispatchEvent(new CustomEvent('studio:run-history-changed', { detail: { workflowId:data.workflowId, runId:data.runId, status:'stopped' } }))
     })
     
     // 热键触发运行工作流

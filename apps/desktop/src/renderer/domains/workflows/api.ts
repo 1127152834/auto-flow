@@ -2,9 +2,9 @@ import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
-import {sendDebugControl} from './api/debugControl'
+import {sendDebugControl,sendDebugVariables} from './api/debugControl'
 import { checkedExecutionLogPage, checkedWorkflowRunPage } from './lib/executionLogContract'
-import type {DebugControlRequest} from './lib/debugControlContract'
+import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { studioFetch } from './api/transport'
@@ -181,6 +181,7 @@ export const workflowApi = {
   /** 调试：运行中更新断点 */
   debugBreakpoints: (id: string, breakpoints: string[]) =>
     apiRequest(`/workflows/${id}/debug/breakpoints`, { method: 'POST', body: JSON.stringify({ breakpoints }) }),
+  debugVariables: (id: string, request: DebugVariablesRequest) => sendDebugVariables(id, request),
   /** 获取本次执行收集到的完整数据（不限 20 条预览上限） */
   getFullData: (id: string) =>
     apiRequest<{ rows: Record<string, unknown>[]; columns: string[]; total: number }>(

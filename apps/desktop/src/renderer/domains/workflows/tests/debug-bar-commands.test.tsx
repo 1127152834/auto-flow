@@ -4,7 +4,7 @@ import {DebugBar} from '../components/DebugBar'
 import {useDebugStore} from '../hooks/stores/debugStore'
 import {useWorkflowStore} from '../editor-store'
 import {workflowApi} from '../api'
-beforeEach(()=>{useWorkflowStore.setState({currentExecutionWorkflowId:'debug-ui'});useDebugStore.getState().setPaused({pauseId:'pause-first',controlRevision:1,nodeId:'first',label:'首次暂停',variables:{value:1}})})
+beforeEach(()=>{useWorkflowStore.setState({currentExecutionWorkflowId:'debug-ui',currentExecutionRunId:'run-ui'});useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'pause-first',controlRevision:1,nodeId:'first',label:'首次暂停',variables:{value:1}})})
 afterEach(()=>{cleanup();useDebugStore.getState().clearPaused();vi.restoreAllMocks()})
 it('shows an explicit rejected command and permits correction without clearing the pause',async()=>{
  vi.spyOn(workflowApi,'debugStep').mockResolvedValue({success:false,httpStatus:409,error:'暂停上下文已过期'})
@@ -32,7 +32,7 @@ it('does not show a late failure in a newer pause, even at the same node',async(
  let reply!:(value:Awaited<ReturnType<typeof workflowApi.debugStep>>)=>void
  vi.spyOn(workflowApi,'debugStep').mockImplementation(()=>new Promise(resolve=>{reply=resolve}))
  render(<DebugBar />);fireEvent.click(screen.getByRole('button',{name:'单步'}))
- act(()=>useDebugStore.getState().setPaused({pauseId:'pause-second',controlRevision:3,nodeId:'first',label:'下一轮暂停',variables:{value:2}}))
+ act(()=>useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'pause-second',controlRevision:3,nodeId:'first',label:'下一轮暂停',variables:{value:2}}))
  await act(async()=>reply({success:false,httpStatus:409,error:'旧请求失败'}))
  expect(screen.queryByText('旧请求失败')).toBeNull()
  expect((screen.getByRole('button',{name:'单步'}) as HTMLButtonElement).disabled).toBe(false)
@@ -57,7 +57,7 @@ it('lets a confirmed next pause release the pending step',async()=>{
  await screen.findByText('等待执行状态确认')
  act(()=>useDebugStore.getState().clearPaused())
  expect(screen.queryByRole('button',{name:'单步'})).toBeNull()
- act(()=>useDebugStore.getState().setPaused({pauseId:'pause-next',controlRevision:3,nodeId:'next',label:'下一节点'}))
+ act(()=>useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'pause-next',controlRevision:3,nodeId:'next',label:'下一节点'}))
  expect((screen.getByRole('button',{name:'单步'}) as HTMLButtonElement).disabled).toBe(false)
 })
 it('does not let a superseded step response unlock a pending stop',async()=>{
@@ -77,12 +77,59 @@ it('disables resume and step when the service did not supply a pause identity',(
  expect(screen.getByRole('button',{name:'停止'})).toHaveProperty('disabled',false)
  expect(screen.getByText(/服务未提供暂停身份/)).toBeTruthy()
 })
+it('disables control when a delayed pause belongs to an older run',()=>{
+ useDebugStore.getState().setPaused({runId:'old-run',pauseId:'pause-old',controlRevision:1,nodeId:'first'})
+ render(<DebugBar/>)
+ expect(screen.getByRole('button',{name:'单步'})).toHaveProperty('disabled',true)
+ expect(screen.getByRole('button',{name:'继续'})).toHaveProperty('disabled',true)
+ expect(screen.getByRole('button',{name:'停止'})).toHaveProperty('disabled',false)
+})
 it('keeps a pending step locked when the same server pause is replayed',async()=>{
  vi.spyOn(workflowApi,'debugStep').mockResolvedValue({success:true})
  render(<DebugBar/>);fireEvent.click(screen.getByRole('button',{name:'单步'}))
  const revision=useDebugStore.getState().pauseRevision
- act(()=>useDebugStore.getState().setPaused({pauseId:'pause-first',controlRevision:1,nodeId:'first'}))
+ act(()=>useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'pause-first',controlRevision:1,nodeId:'first'}))
  expect(useDebugStore.getState().pauseRevision).toBe(revision)
  expect(screen.getByRole('button',{name:'单步'})).toHaveProperty('disabled',true)
- expect(workflowApi.debugStep).toHaveBeenCalledWith('debug-ui',expect.objectContaining({commandId:expect.any(String),pauseId:'pause-first',controlRevision:1}))
+ expect(workflowApi.debugStep).toHaveBeenCalledWith('debug-ui',expect.objectContaining({commandId:expect.any(String),runId:'run-ui',pauseId:'pause-first',controlRevision:1}))
+})
+it('submits changed and new variables as one pause-bound command',async()=>{
+ vi.spyOn(workflowApi,'debugVariables').mockResolvedValue({success:true})
+ render(<DebugBar/>);fireEvent.click(screen.getByRole('button',{name:/变量 1/}));fireEvent.click(screen.getByRole('button',{name:'编辑暂停变量'}))
+ fireEvent.change(screen.getByRole('textbox',{name:'变量 value 的 JSON 值'}),{target:{value:'2'}})
+ fireEvent.change(screen.getByRole('textbox',{name:'新调试变量名'}),{target:{value:'items'}})
+ fireEvent.change(screen.getByRole('textbox',{name:'新调试变量 JSON 值'}),{target:{value:'["first"]'}})
+ fireEvent.click(screen.getByRole('button',{name:/应用变量/}))
+ await waitFor(()=>expect(workflowApi.debugVariables).toHaveBeenCalledWith('debug-ui',{
+  runId:'run-ui',pauseId:'pause-first',controlRevision:1,commandId:expect.any(String),changes:[{name:'value',value:2},{name:'items',value:['first']}],
+ }))
+ expect(screen.getByRole('button',{name:'单步'})).toHaveProperty('disabled',true)
+ expect(screen.getByRole('button',{name:'停止'})).toHaveProperty('disabled',false)
+})
+it('keeps invalid JSON local and leaves debug commands available',async()=>{
+ const variableCommand=vi.spyOn(workflowApi,'debugVariables')
+ render(<DebugBar/>);fireEvent.click(screen.getByRole('button',{name:/变量 1/}));fireEvent.click(screen.getByRole('button',{name:'编辑暂停变量'}))
+ fireEvent.change(screen.getByRole('textbox',{name:'变量 value 的 JSON 值'}),{target:{value:'{'}})
+ fireEvent.click(screen.getByRole('button',{name:/应用变量/}))
+ expect((await screen.findByRole('alert')).textContent).toMatch(/JSON/)
+ expect(variableCommand).not.toHaveBeenCalled()
+ expect(screen.getByRole('button',{name:'单步'})).toHaveProperty('disabled',false)
+})
+it('unlocks a rejected variable edit but keeps an uncertain edit locked',async()=>{
+ const variableCommand=vi.spyOn(workflowApi,'debugVariables').mockResolvedValueOnce({success:false,httpStatus:409,error:'暂停已过期'}).mockResolvedValueOnce({success:false,error:'断线'})
+ render(<DebugBar/>);fireEvent.click(screen.getByRole('button',{name:/变量 1/}));fireEvent.click(screen.getByRole('button',{name:'编辑暂停变量'}))
+ fireEvent.change(screen.getByRole('textbox',{name:'变量 value 的 JSON 值'}),{target:{value:'2'}});fireEvent.click(screen.getByRole('button',{name:/应用变量/}))
+ await screen.findByText('暂停已过期');expect(screen.getByRole('button',{name:/应用变量/})).toHaveProperty('disabled',false)
+ fireEvent.click(screen.getByRole('button',{name:/应用变量/}));await screen.findByText(/请求结果尚未确认/)
+ expect(variableCommand).toHaveBeenCalledTimes(2);expect(screen.getByRole('button',{name:'等待确认'})).toHaveProperty('disabled',true)
+ expect(screen.getByRole('button',{name:'停止'})).toHaveProperty('disabled',false)
+})
+it('shows loop-local variables as read-only and excludes them from the batch',async()=>{
+ useDebugStore.getState().setPaused({runId:'run-ui',pauseId:'loop-pause',controlRevision:2,nodeId:'loop',variables:{count:1,index:0},variableMeta:{count:{scope:'workflow',readOnly:false,source:'设置变量'},index:{scope:'loop',readOnly:true,source:'循环局部变量'}}})
+ vi.spyOn(workflowApi,'debugVariables').mockResolvedValue({success:true})
+ render(<DebugBar/>);fireEvent.click(screen.getByRole('button',{name:/变量 2/}));fireEvent.click(screen.getByRole('button',{name:'编辑暂停变量'}))
+ expect(screen.getByRole('textbox',{name:'变量 index 的 JSON 值'})).toHaveProperty('disabled',true)
+ expect(screen.getByText('循环局部变量')).toBeTruthy()
+ fireEvent.change(screen.getByRole('textbox',{name:'变量 count 的 JSON 值'}),{target:{value:'2'}});fireEvent.click(screen.getByRole('button',{name:/应用变量/}))
+ await waitFor(()=>expect(workflowApi.debugVariables).toHaveBeenCalledWith('debug-ui',expect.objectContaining({changes:[{name:'count',value:2}]})))
 })

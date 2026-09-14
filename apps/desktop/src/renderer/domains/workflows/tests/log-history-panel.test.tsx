@@ -82,3 +82,13 @@ it('restores the latest persisted run when the live execution identity is absent
   fireEvent.click(await screen.findByRole('option', { name: /Mock 运行/ }))
   await screen.findByText('100/650')
 })
+
+it('refreshes the persisted run summary after a lifecycle event',async()=>{
+  const list=vi.spyOn(workflowApi,'listRuns')
+    .mockResolvedValueOnce({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'running',startedAt:'2026-09-14T00:00:00Z',finishedAt:null,logCount:650}],total:1,nextCursor:null}})
+    .mockResolvedValue({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'completed',startedAt:'2026-09-14T00:00:00Z',finishedAt:'2026-09-14T00:00:01Z',logCount:650}],total:1,nextCursor:null}})
+  render(<LogPanel/>);await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('running'))
+  window.dispatchEvent(new CustomEvent('studio:run-history-changed',{detail:{runId:'run-history',status:'completed'}}))
+  await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('completed'))
+  expect(list).toHaveBeenCalledTimes(2)
+})

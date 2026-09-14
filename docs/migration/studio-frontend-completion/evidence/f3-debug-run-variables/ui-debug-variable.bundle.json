@@ -1,0 +1,26 @@
+{
+  "type": "webrpa-workflow-bundle",
+  "version": 1,
+  "name": "调试变量浏览器验收",
+  "workflow": {
+    "name": "调试变量浏览器验收",
+    "nodes": [
+      {
+        "id": "debug-open",
+        "type": "moduleNode",
+        "position": { "x": 220, "y": 180 },
+        "data": {
+          "type": "open_page",
+          "label": "打开网页",
+          "config": { "url": "https://example.test", "waitUntil": "load" }
+        }
+      }
+    ],
+    "edges": [],
+    "variables": [
+      { "name": "count", "type": "number", "value": 1, "scope": "global" }
+    ]
+  },
+  "customModules": [],
+  "images": []
+}

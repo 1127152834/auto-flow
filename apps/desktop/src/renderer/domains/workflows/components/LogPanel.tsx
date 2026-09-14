@@ -213,7 +213,11 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     void loadRecentRuns()
     const reload = () => void loadRecentRuns()
     window.addEventListener('studio:connection-restored', reload)
-    return () => window.removeEventListener('studio:connection-restored', reload)
+    window.addEventListener('studio:run-history-changed', reload)
+    return () => {
+      window.removeEventListener('studio:connection-restored', reload)
+      window.removeEventListener('studio:run-history-changed', reload)
+    }
   }, [loadRecentRuns])
 
   useEffect(() => {

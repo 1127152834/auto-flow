@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+
+ Test Files  7 passed (7)
+      Tests  64 passed (64)
+   Start at  18:23:27
+   Duration  3.22s (transform 987ms, setup 629ms, import 1.23s, tests 5.76s, environment 2.78s)
+

@@ -1,5 +1,5 @@
 import {isPathSelectionRequest} from '../lib/pathSelectionContract'
-import {isDebugControlRequest} from '../lib/debugControlContract'
+import {isDebugControlRequest,isDebugVariablesRequest} from '../lib/debugControlContract'
 import requiredFieldMetadata from '../development/module-required-fields.json'
 import {mockBrowserScriptTests,mockScriptTestBusy,invalidateMockScriptTests,configureMockScriptTest} from './mock-browser-script-tests'
 import { isSpeechRequest } from '../lib/runSpeech'
@@ -142,7 +142,7 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
     streams.clear()
   }
 }
-export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
+export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
 export function seedMockRunHistory(options: { runId: string; workflowId: string; documentId: string; workflowName?: string; logs: Array<Omit<StoredExecutionLog, 'sequence'>> }) {
   const startedAt = new Date().toISOString()
   const logs = options.logs.map((log, index) => ({ ...structuredClone(log), sequence: index + 1 }))
@@ -199,6 +199,13 @@ function writeRunVariable(name: string, value: Json, nodeId: string, nodeName: s
   if (existed && JSON.stringify(old) === JSON.stringify(value)) return
   Object.defineProperty(run.variables, name, { value: structuredClone(value), enumerable: true, configurable: true, writable: true })
   tracking.get(run.id)?.push({timestamp:new Date().toISOString(),variable_name:name,old_value:existed ? structuredClone(old) : null,new_value:structuredClone(value),node_id:nodeId,node_name:nodeName,operation:existed?'update':'create',value_type:value===null?'null':Array.isArray(value)?'array':typeof value})
+}
+function currentVariableMeta(current:NonNullable<typeof run>):ObjectValue {
+  const records=tracking.get(current.id)||[]
+  return Object.fromEntries(Object.keys(current.variables).map(name=>{
+    const source=[...records].reverse().find(record=>record.variable_name===name)?.node_name
+    return [name,{scope:'workflow',readOnly:false,source:typeof source==='string'?source:'流程初值'}]
+  }))
 }
 function submitInput(data: Json | undefined): Response {
   if (!data || typeof data !== 'object' || Array.isArray(data)) return failure('缺少输入请求信息', 422)
@@ -311,7 +318,7 @@ function tick(skipBreakpoint = false) {
     current.paused = true
     current.pauseId = crypto.randomUUID()
     current.controlRevision++
-    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, reason: current.step ? 'step' : 'breakpoint' })
+    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : 'breakpoint' })
     return
   }
   current.paused = false
@@ -634,7 +641,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (action === '/execute') return startRun(id, db.workflows[id], body)
       if (action === '/stop') return stopRun(id)
       if (action.startsWith('/debug/')) {
-        if (!['/debug/resume', '/debug/step', '/debug/breakpoints'].includes(action)) return failure('未知调试操作', 404)
+        if (!['/debug/resume', '/debug/step', '/debug/breakpoints', '/debug/variables'].includes(action)) return failure('未知调试操作', 404)
         if (method !== 'POST') return failure('调试操作只接受 POST 请求', 405)
         if (action === '/debug/breakpoints') {
           if (!run || run.id !== id) return failure('没有活跃运行',409)
@@ -642,12 +649,34 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
           run.breakpoints = [...body.breakpoints]
           return response({success:true})
         }
+        if(action==='/debug/variables'){
+          if(!isDebugVariablesRequest(body))return failure('变量修改内容或暂停身份无效',422)
+          const fingerprint=JSON.stringify(['debug-variables',id,body])
+          return applyIdentifiedCommand(body.commandId,fingerprint,()=>{
+            const receipt={...body,workflowId:id}
+            if(!run || run.id!==id || run.runId!==body.runId || !run.paused || run.pauseId!==body.pauseId || run.controlRevision!==body.controlRevision){
+              return response({...receipt,success:false,error:'暂停上下文已过期或运行未暂停'},409)
+            }
+            const now=new Date().toISOString(),records=tracking.get(id)||[]
+            for(const change of body.changes){
+              const exists=Object.hasOwn(run.variables,change.name),oldValue=exists?run.variables[change.name]:null
+              const nextValue=structuredClone(change.value) as Json
+              run.variables[change.name]=nextValue
+              records.push({timestamp:now,variable_name:change.name,old_value:oldValue,new_value:nextValue,node_id:String(run.nodes[run.index]?.id||''),node_name:'[Mock] 人工调试修改',operation:exists?'update':'create',value_type:nextValue===null?'null':Array.isArray(nextValue)?'array':typeof nextValue})
+            }
+            tracking.set(id,records)
+            run.controlRevision++
+            const node=run.nodes[run.index]||{},nodeId=String(node.id||'')
+            emitMockEvent('execution:paused',{workflowId:id,runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision,node_id:nodeId,label:(node.data as ObjectValue|undefined)?.label??node.type,variables:structuredClone(run.variables),variableMeta:currentVariableMeta(run),reason:run.step?'step':'breakpoint'})
+            return response({...receipt,success:true,error:null})
+          })
+        }
         if(!isDebugControlRequest(body))return failure('缺少有效的调试命令和暂停标识',422)
         const controlAction=action==='/debug/step'?'step':'resume'
-        const fingerprint=JSON.stringify(['debug',id,controlAction,body.commandId,body.pauseId,body.controlRevision])
+        const fingerprint=JSON.stringify(['debug',id,body.runId,controlAction,body.commandId,body.pauseId,body.controlRevision])
         return applyIdentifiedCommand(body.commandId,fingerprint,()=>{
           const receipt={...body,workflowId:id,action:controlAction}
-          if(!run || run.id!==id || !run.paused || run.pauseId!==body.pauseId || run.controlRevision!==body.controlRevision) {
+          if(!run || run.id!==id || run.runId!==body.runId || !run.paused || run.pauseId!==body.pauseId || run.controlRevision!==body.controlRevision) {
             return response({...receipt,success:false,error:'暂停上下文已过期或运行未暂停'},409)
           }
           run.step=controlAction==='step'

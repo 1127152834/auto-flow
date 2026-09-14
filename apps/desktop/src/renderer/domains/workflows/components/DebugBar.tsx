@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/DebugBar.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Play, StepForward, Square, Bug, ChevronDown, ChevronUp } from 'lucide-react'
+import { Play, StepForward, Square, Bug, ChevronDown, ChevronUp, Pencil, Check, X, Plus } from 'lucide-react'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { useWorkflowStore } from '../editor-store'
 import { workflowApi, type ApiResponse } from '../api'
@@ -15,26 +15,32 @@ export function DebugBar() {
   const pausedLabel = useDebugStore((s) => s.pausedLabel)
   const pausedReason = useDebugStore((s) => s.pausedReason)
   const pausedVariables = useDebugStore((s) => s.pausedVariables)
+  const pausedVariableMeta = useDebugStore((s) => s.pausedVariableMeta)
   const wfId = useWorkflowStore((s) => s.currentExecutionWorkflowId)
+  const runId = useWorkflowStore((s) => s.currentExecutionRunId)
   const [showVars, setShowVars] = useState(false)
-  type Pending = 'control' | 'stop' | null
+  type Pending = 'control' | 'variables' | 'stop' | null
   const [busy, setBusy] = useState<Pending>(null)
   const busyRef = useRef<Pending>(null)
   const requestSequence = useRef(0)
   const [error, setError] = useState('')
+  const [editingVariables, setEditingVariables] = useState(false)
+  const [variableDrafts, setVariableDrafts] = useState<Record<string,string>>({})
+  const [newVariableName, setNewVariableName] = useState('')
+  const [newVariableValue, setNewVariableValue] = useState('null')
 
   useEffect(() => {
     requestSequence.current++
-    busyRef.current = null; setBusy(null); setError('')
-  }, [wfId, isPaused, pauseRevision])
+    busyRef.current = null; setBusy(null); setError(''); setEditingVariables(false); setVariableDrafts({}); setNewVariableName(''); setNewVariableValue('null')
+  }, [wfId, runId, isPaused, pauseRevision])
   useEffect(() => () => { requestSequence.current++ }, [])
 
   if (!isPaused) return null
 
   const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | ((id:string)=>Promise<ApiResponse>), kind: Exclude<Pending, null> = 'control') => {
-    if (!wfId || (kind==='control' && !pauseContext) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
+    if (!wfId || (kind==='control' && (!pauseContext || !runId || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
     const sequence = ++requestSequence.current
-    const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId
+    const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId && useWorkflowStore.getState().currentExecutionRunId === runId
     busyRef.current = kind; setBusy(kind); setError('')
     try {
       const result = kind==='stop'
@@ -58,6 +64,47 @@ export function DebugBar() {
   }
 
   const varEntries = Object.entries(pausedVariables || {}).filter(([k]) => k !== 'ERROR')
+
+  const jsonValue = (value:any) => {
+    const encoded=JSON.stringify(value)
+    return encoded===undefined?'null':encoded
+  }
+
+  const beginVariableEdit=()=>{
+    setVariableDrafts(Object.fromEntries(varEntries.map(([name,value])=>[name,jsonValue(value)])))
+    setEditingVariables(true);setShowVars(true);setError('')
+  }
+
+  const applyVariableChanges=async()=>{
+    if(!wfId || !runId || !pauseContext || pauseContext.runId!==runId || busyRef.current)return
+    const changes:Array<{name:string;value:any}>=[]
+    try{
+      for(const [name,current] of varEntries){
+        if(pausedVariableMeta[name]?.readOnly)continue
+        const value=JSON.parse(variableDrafts[name]??jsonValue(current))
+        if(JSON.stringify(value)!==JSON.stringify(current))changes.push({name,value})
+      }
+      const name=newVariableName.trim()
+      if(name){
+        if(!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name))throw new Error('新变量名只能包含英文字母、数字和下划线，且不能以数字开头')
+        if(Object.hasOwn(pausedVariables,name))throw new Error('新变量名已存在')
+        changes.push({name,value:JSON.parse(newVariableValue)})
+      }
+      if(!changes.length)throw new Error('没有需要提交的变量修改')
+    }catch(cause){setError(cause instanceof Error?cause.message:String(cause));return}
+    const sequence=++requestSequence.current
+    const isCurrent=()=>sequence===requestSequence.current && useDebugStore.getState().pauseRevision===pauseRevision && useWorkflowStore.getState().currentExecutionRunId===runId
+    busyRef.current='variables';setBusy('variables');setError('')
+    let result:ApiResponse
+    try{result=await workflowApi.debugVariables(wfId,{...pauseContext,commandId:crypto.randomUUID(),changes})}
+    catch(cause){result={success:false,error:cause instanceof Error?cause.message:String(cause)}}
+    if(!isCurrent())return
+    if(!result.success){
+      setError(result.httpStatus?result.error||'变量修改被拒绝':`请求结果尚未确认：${result.error||'连接异常'}。请等待状态同步，或停止运行。`)
+      if(result.httpStatus){busyRef.current=null;setBusy(null)}
+    }
+    // A successful HTTP receipt stays locked until a newer paused event confirms the values.
+  }
 
   const fmt = (v: any) => {
     try {
@@ -84,18 +131,23 @@ export function DebugBar() {
           变量 {varEntries.length}
           {showVars ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
+        {showVars && !editingVariables && (
+          <button aria-label="编辑暂停变量" disabled={!pauseContext || !runId || pauseContext.runId!==runId || !!busy} onClick={beginVariableEdit} className="inline-flex items-center gap-1 text-xs text-[hsl(var(--brand-600))] disabled:opacity-50">
+            <Pencil className="w-3 h-3" /> 编辑
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 px-4 py-2.5">
         <button
-          disabled={!wfId || !pauseContext || !!busy}
+          disabled={!wfId || !runId || !pauseContext || pauseContext.runId !== runId || !!busy}
           onClick={() => call(workflowApi.debugResume)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
         >
           <Play className="w-3.5 h-3.5 fill-current" /> 继续
         </button>
         <button
-          disabled={!wfId || !pauseContext || !!busy}
+          disabled={!wfId || !runId || !pauseContext || pauseContext.runId !== runId || !!busy}
           onClick={() => call(workflowApi.debugStep)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[hsl(var(--brand-600))] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
@@ -123,12 +175,28 @@ export function DebugBar() {
               <tbody>
                 {varEntries.map(([k, v]) => (
                   <tr key={k} className="border-b border-[hsl(var(--border))] last:border-0">
-                    <td className="py-1 pr-2 font-mono text-[hsl(var(--brand-600))] align-top whitespace-nowrap">{k}</td>
-                    <td className="py-1 text-[hsl(var(--muted-foreground))] break-all">{fmt(v)}</td>
+                    <td className="py-1 pr-2 font-mono text-[hsl(var(--brand-600))] align-top whitespace-nowrap">{k}{pausedVariableMeta[k]?.readOnly&&<span className="ml-1 rounded bg-slate-100 px-1 text-[10px] text-slate-500">只读</span>}<div className="font-sans text-[10px] text-[hsl(var(--muted-foreground))]">{pausedVariableMeta[k]?.source||''}</div></td>
+                    <td className="py-1 text-[hsl(var(--muted-foreground))] break-all">
+                      {editingVariables ? <textarea aria-label={`变量 ${k} 的 JSON 值`} disabled={pausedVariableMeta[k]?.readOnly} value={variableDrafts[k]??jsonValue(v)} onChange={event=>setVariableDrafts(current=>({...current,[k]:event.target.value}))} className="w-full min-h-12 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 font-mono disabled:opacity-60" /> : fmt(v)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          )}
+          {editingVariables && (
+            <div className="mt-2 space-y-2 border-t border-[hsl(var(--border))] pt-2">
+              <div className="flex items-center gap-2">
+                <Plus className="w-3.5 h-3.5" />
+                <input aria-label="新调试变量名" value={newVariableName} onChange={event=>setNewVariableName(event.target.value)} placeholder="可选：新变量名" className="h-8 w-36 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 font-mono" />
+                <input aria-label="新调试变量 JSON 值" value={newVariableValue} onChange={event=>setNewVariableValue(event.target.value)} className="h-8 min-w-0 flex-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 font-mono" />
+              </div>
+              <div className="text-[11px] text-[hsl(var(--muted-foreground))]">值使用 JSON：字符串需带双引号，支持数字、布尔、列表、对象和 null。</div>
+              <div className="flex justify-end gap-2">
+                <button disabled={!!busy} onClick={()=>{setEditingVariables(false);setError('')}} className="inline-flex items-center gap-1 rounded border px-2 py-1 disabled:opacity-50"><X className="w-3 h-3"/>取消</button>
+                <button disabled={!!busy} onClick={()=>void applyVariableChanges()} className="inline-flex items-center gap-1 rounded bg-[hsl(var(--brand-600))] px-2 py-1 text-white disabled:opacity-50"><Check className="w-3 h-3"/>{busy==='variables'?'等待确认':'应用变量'}</button>
+              </div>
+            </div>
           )}
         </div>
       )}

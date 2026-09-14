@@ -1,6 +1,7 @@
 // Source: WebRPA@5ccb900e, store/debugStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
 import {isDebugPauseContext, type DebugPauseContext} from '../../lib/debugControlContract'
+export interface DebugVariableMeta { scope:'workflow'|'loop'; readOnly:boolean; source?:string }
 
 /**
  * 可视化调试状态：断点集合 + 暂停态。
@@ -15,6 +16,7 @@ interface DebugState {
   pausedNodeId: string | null
   pausedLabel: string | null
   pausedVariables: Record<string, any>
+  pausedVariableMeta: Record<string,DebugVariableMeta>
   pausedReason: 'breakpoint' | 'step' | null
 
   toggleBreakpoint: (nodeId: string) => void
@@ -22,7 +24,7 @@ interface DebugState {
   hasBreakpoint: (nodeId: string) => boolean
   setStepMode: (v: boolean) => void
 
-  setPaused: (info: { pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => void
+  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' }) => void
   clearPaused: () => void
 }
 
@@ -35,6 +37,7 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   pausedNodeId: null,
   pausedLabel: null,
   pausedVariables: {},
+  pausedVariableMeta:{},
   pausedReason: null,
 
   toggleBreakpoint: (nodeId) => set((s) => {
@@ -47,7 +50,7 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   setStepMode: (v) => set({ stepMode: v }),
 
   setPaused: (info) => set((state) => {
-    const pauseContext=isDebugPauseContext(info)?{pauseId:info.pauseId,controlRevision:info.controlRevision}:null
+    const pauseContext=isDebugPauseContext(info)?{runId:info.runId,pauseId:info.pauseId,controlRevision:info.controlRevision}:null
     if(state.isPaused && pauseContext && state.pauseContext?.pauseId===pauseContext.pauseId && state.pauseContext.controlRevision===pauseContext.controlRevision)return state
     return {
       pauseContext,
@@ -56,8 +59,9 @@ export const useDebugStore = create<DebugState>((set, get) => ({
       pausedNodeId:info.nodeId,
       pausedLabel:info.label || info.nodeId,
       pausedVariables:info.variables || {},
+      pausedVariableMeta:info.variableMeta || {},
       pausedReason:info.reason || 'breakpoint',
     }
   }),
-  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedReason: null }),
+  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedVariables:{}, pausedVariableMeta:{}, pausedReason: null }),
 }))

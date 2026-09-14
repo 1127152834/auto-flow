@@ -43,6 +43,11 @@ describe.each(['memory','http'])('pause-bound debug commands over %s',mode=>{
   expect((await request('/workflows/pause-test/debug/step',{commandId:'late',...pause})).status).toBe(409)
   expect(service.mockSnapshot()).toEqual(snapshot)
  })
+ it('rejects a command from an older run even when workflow and pause fields collide',async()=>{
+  const snapshot=service.mockSnapshot()
+  expect((await request('/workflows/pause-test/debug/step',{commandId:'old-run',...pause,runId:'previous-run'})).status).toBe(409)
+  expect(service.mockSnapshot()).toEqual(snapshot)
+ })
  it('rejects the wrong revision and a conflicting command ID without another transition',async()=>{
   expect((await request('/workflows/pause-test/debug/step',{commandId:'revision',...pause,controlRevision:pause.controlRevision+1})).status).toBe(409)
   const snapshot=service.mockSnapshot()
