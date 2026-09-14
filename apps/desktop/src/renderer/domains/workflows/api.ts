@@ -31,10 +31,6 @@ export function getBackendUrl(): string {
   return getBackendBaseUrl()
 }
 
-// 远程访问令牌：本机访问后端会免验（忽略此头），仅当从其它设备访问 WebRPA 时才需要在「安全设置」里填入
-export function getAuthToken(): string { return '' }
-export function setAuthToken(_token: string): void { /* AutoFlow owns authentication. */ }
-
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -52,13 +48,11 @@ export async function apiRequest<T = any>(
     // 连接在挂载 Studio 前已配置；同步选定地址并发起传输，避免切换连接后错发写请求。
     const url = `${getApiBase()}${endpoint}`
     const isFormData = options.body instanceof FormData
-    const _authToken = getAuthToken()
-    const _authHeader: Record<string, string> = _authToken ? { 'X-WebRPA-Token': _authToken } : {}
     const response = await studioFetch(url, {
       ...options,
       headers: isFormData
-        ? { ..._authHeader, ...(options.headers as Record<string, string>) }
-        : { 'Content-Type': 'application/json', ..._authHeader, ...(options.headers as Record<string, string>) },
+        ? { ...(options.headers as Record<string, string>) }
+        : { 'Content-Type': 'application/json', ...(options.headers as Record<string, string>) },
     })
     if (!response.ok) {
       // 尝试解析后端返回的详细错误信息（FastAPI 422 的 detail 字段）
@@ -387,19 +381,6 @@ export const recorderApi = {
     ? apiRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`, { signal })
     : invalidRecorderRequest(),
   status: () => apiRequest('/recorder/status'),
-}
-
-// ==================== 访问鉴权 API ====================
-export const securityApi = {
-  status: () => apiRequest<{ enabled: boolean; isLocal: boolean; token: string | null }>('/security/status'),
-  toggle: (enabled: boolean) =>
-    apiRequest<{ success: boolean; enabled?: boolean; error?: string }>(
-      '/security/toggle', { method: 'POST', body: JSON.stringify({ enabled }) }
-    ),
-  regenerate: () =>
-    apiRequest<{ success: boolean; token?: string; error?: string }>(
-      '/security/regenerate', { method: 'POST' }
-    ),
 }
 
 // ==================== 自定义模块 API ====================

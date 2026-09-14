@@ -655,7 +655,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return response(requiredFieldMetadata)
     }
     if (path === '/system/info') return response({ platform:'mock', version:'AutoFlow Studio Mock', mock:true })
-    if (path === '/security/status') return response({enabled:false,isLocal:true,token:null})
+    if (path.startsWith('/security/')) return failure('独立令牌接口已停用；访问鉴权由 AutoFlow 宿主统一管理', 410)
     if (path === '/image-assets' || path === '/data-assets') return response({assets:[],folders:[]})
     if (path === '/plugins/installed' || path === '/plugins/market') return response({success:true,plugins:[],mock:true})
     if (path === '/feature-packs') return response({success:true,packs:[],mock:true})

@@ -40711,5 +40711,119 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-mcp-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.security-host.ui",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "打开安全标签"
+    ],
+    "expectedUI": "显示宿主归属，无旧开关/重置/令牌输入",
+    "expectedIO": "显示宿主归属，无旧开关/重置/令牌输入",
+    "stateAssertion": "显示宿主归属，无旧开关/重置/令牌输入",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.no-legacy-read",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "打开安全标签并观察请求"
+    ],
+    "expectedUI": "没有 /security 请求",
+    "expectedIO": "没有 /security 请求",
+    "stateAssertion": "没有 /security 请求",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.status",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "GET /security/status"
+    ],
+    "expectedUI": "410，success:false",
+    "expectedIO": "410，success:false",
+    "stateAssertion": "410，success:false",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.toggle",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "POST /security/toggle"
+    ],
+    "expectedUI": "410，success:false",
+    "expectedIO": "410，success:false",
+    "stateAssertion": "410，success:false",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.regenerate",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "POST /security/regenerate"
+    ],
+    "expectedUI": "410，success:false",
+    "expectedIO": "410，success:false",
+    "stateAssertion": "410，success:false",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.headers",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "service": "独立 Mock / 受控 transport"
+    },
+    "steps": [
+      "调用 apiRequest，携带虚构 Authorization"
+    ],
+    "expectedUI": "保留该头，不新增 X-WebRPA-Token",
+    "expectedIO": "保留该头，不新增 X-WebRPA-Token",
+    "stateAssertion": "保留该头，不新增 X-WebRPA-Token",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/targeted.log"
+  },
+  {
+    "id": "SETTINGS.security-host.browser",
+    "capability": "security:host-ownership",
+    "preconditions": {
+      "origin": "localhost:5175"
+    },
+    "steps": [
+      "更多操作→全局配置→安全",
+      "核对只读说明",
+      "关闭配置"
+    ],
+    "expectedUI": "只读宿主归属，无令牌控件",
+    "expectedIO": "未执行鉴权变更",
+    "stateAssertion": "不改变真实鉴权",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/browser-validation.md"
   }
 ]

@@ -13,7 +13,7 @@ import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
 import { useGlobalConfigStore, type BrowserType, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
 import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
-import { systemApi, securityApi, getAuthToken, setAuthToken, retentionApi, browserApi, localWorkflowApi, type RetentionConfig, type RetentionUsage } from '../api'
+import { systemApi, retentionApi, browserApi, localWorkflowApi, type RetentionConfig, type RetentionUsage } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
@@ -103,86 +103,13 @@ function ModelProfilesManager({
 }
 
 
-// 访问鉴权设置面板（本机查看/重置 Token、开关鉴权；远程访问填入 Token）
+// Studio consumes the host's authenticated transport; it does not own another token store.
 function SecuritySettings() {
-  const [enabled, setEnabled] = useState(true)
-  const [isLocal, setIsLocal] = useState(true)
-  const [token, setToken] = useState<string | null>(null)
-  const [manualToken, setManualToken] = useState(getAuthToken())
-  const [loading, setLoading] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const refresh = async () => {
-    const res = await securityApi.status()
-    if (res.data) {
-      setEnabled(res.data.enabled)
-      setIsLocal(res.data.isLocal)
-      setToken(res.data.token)
-    }
-  }
-  useEffect(() => { refresh() }, [])
-
-  const toggle = async (v: boolean) => {
-    setLoading(true)
-    try { await securityApi.toggle(v); await refresh() } finally { setLoading(false) }
-  }
-  const regen = async () => {
-    setLoading(true)
-    try { const r = await securityApi.regenerate(); if (r.data?.token) setToken(r.data.token); await refresh() } finally { setLoading(false) }
-  }
-  const copy = async () => {
-    if (!token) return
-    try { await navigator.clipboard.writeText(token); setCopied(true); setTimeout(() => setCopied(false), 1500) } catch { /* ignore */ }
-  }
-  const saveManual = () => { setAuthToken(manualToken.trim()); setCopied(true); setTimeout(() => setCopied(false), 1500) }
-
-  return (
-    <>
-      <p className="text-xs text-gray-500 mb-4">
-        后端默认监听局域网。开启鉴权后：<strong>本机访问免验</strong>，其它设备访问需携带访问令牌（Token），保护文件共享 / 远程控制 / 命令执行等高危能力。
-      </p>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div>
-            <Label className="text-gray-700 font-medium">启用访问鉴权</Label>
-            <p className="text-xs text-gray-500 mt-1">关闭后局域网内任意设备可无凭据访问全部接口（不推荐）</p>
-          </div>
-          <Switch checked={enabled} disabled={loading || !isLocal} onCheckedChange={(c) => toggle(c)} />
-        </div>
-
-        {isLocal ? (
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
-            <Label className="text-gray-700 font-medium">访问令牌（仅本机可见）</Label>
-            <div className="flex items-center gap-2">
-              <Input readOnly value={token || ''} className="bg-white text-black border-gray-300 font-mono text-xs" />
-              <Button type="button" variant="outline" size="sm" onClick={copy} className="border-gray-300 text-gray-700 whitespace-nowrap">
-                {copied ? <Check className="w-4 h-4" /> : '复制'}
-              </Button>
-              <Button type="button" variant="outline" size="sm" onClick={regen} disabled={loading} className="border-gray-300 text-gray-700 whitespace-nowrap">
-                <RotateCcw className="w-3.5 h-3.5 mr-1" />重置
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500">从其它设备访问 WebRPA 时，在该设备的「安全」里粘贴此令牌即可。</p>
-          </div>
-        ) : (
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-2">
-            <Label className="text-gray-700 font-medium">访问令牌（远程访问需填写）</Label>
-            <div className="flex items-center gap-2">
-              <Input value={manualToken} onChange={(e) => setManualToken(e.target.value)} placeholder="粘贴在主机「安全」里看到的 Token" className="bg-white text-black border-gray-300 font-mono text-xs" />
-              <Button type="button" variant="outline" size="sm" onClick={saveManual} className="border-gray-300 text-gray-700 whitespace-nowrap">
-                {copied ? <Check className="w-4 h-4" /> : '保存'}
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500">令牌保存在本浏览器，后续请求会自动携带。</p>
-          </div>
-        )}
-      </div>
-    </>
-  )
+  return <div className="space-y-3 text-sm text-gray-600">
+    <p>访问鉴权由 AutoFlow 宿主统一管理。</p>
+    <p>工作台复用应用的服务连接，不单独设置访问令牌、监听地址或免鉴权规则。</p>
+  </div>
 }
-
-
-
 
 // 留存清理设置面板：录像/采集数据的自动滚动清理策略 + 手动清理
 function RetentionSettings() {
