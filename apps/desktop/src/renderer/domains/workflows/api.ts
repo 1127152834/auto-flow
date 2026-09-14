@@ -4,7 +4,7 @@ import type {DebugControlRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { studioFetch } from './api/transport'
-import { getBackendBaseUrl, preloadConfig } from './api/config'
+import { getBackendBaseUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -47,9 +47,7 @@ export async function apiRequest<T = any>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    // 确保配置已加载
-    await preloadConfig()
-    
+    // 连接在挂载 Studio 前已配置；同步选定地址并发起传输，避免切换连接后错发写请求。
     const url = `${getApiBase()}${endpoint}`
     const isFormData = options.body instanceof FormData
     const _authToken = getAuthToken()

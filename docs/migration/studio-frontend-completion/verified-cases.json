@@ -35564,5 +35564,77 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/browser-validation.md"
+  },
+  {
+    "id": "CONTRACT.request.connection-binding.start",
+    "capability": "transport:request-origin",
+    "preconditions": {
+      "service": "original.fixture",
+      "operation": "start"
+    },
+    "steps": [
+      "发起操作后立即切换到replacement.fixture",
+      "等待原请求并在新连接发起后续请求"
+    ],
+    "expectedUI": "本例为传输集成，不验证UI响应消费",
+    "expectedIO": "原操作只发旧服务，后续请求发新服务",
+    "stateAssertion": "请求不会因异步配置检查被转发至新服务",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-request-binding/targeted.log"
+  },
+  {
+    "id": "CONTRACT.request.connection-binding.stop",
+    "capability": "transport:request-origin",
+    "preconditions": {
+      "service": "original.fixture",
+      "operation": "stop"
+    },
+    "steps": [
+      "发起操作后立即切换到replacement.fixture",
+      "等待原请求并在新连接发起后续请求"
+    ],
+    "expectedUI": "本例为传输集成，不验证UI响应消费",
+    "expectedIO": "原操作只发旧服务，后续请求发新服务",
+    "stateAssertion": "请求不会因异步配置检查被转发至新服务",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-request-binding/targeted.log"
+  },
+  {
+    "id": "CONTRACT.request.connection-binding.save",
+    "capability": "transport:request-origin",
+    "preconditions": {
+      "service": "original.fixture",
+      "operation": "save"
+    },
+    "steps": [
+      "发起操作后立即切换到replacement.fixture",
+      "等待原请求并在新连接发起后续请求"
+    ],
+    "expectedUI": "本例为传输集成，不验证UI响应消费",
+    "expectedIO": "原操作只发旧服务，后续请求发新服务",
+    "stateAssertion": "请求不会因异步配置检查被转发至新服务",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-request-binding/targeted.log"
+  },
+  {
+    "id": "CONTRACT.request.connection-binding.read",
+    "capability": "transport:request-origin",
+    "preconditions": {
+      "service": "original.fixture",
+      "operation": "read"
+    },
+    "steps": [
+      "发起操作后立即切换到replacement.fixture",
+      "等待原请求并在新连接发起后续请求"
+    ],
+    "expectedUI": "本例为传输集成，不验证UI响应消费",
+    "expectedIO": "原操作只发旧服务，后续请求发新服务",
+    "stateAssertion": "请求不会因异步配置检查被转发至新服务",
+    "level": "integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-request-binding/targeted.log"
   }
 ]
