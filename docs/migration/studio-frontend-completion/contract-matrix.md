@@ -43,6 +43,10 @@
 | service:browserApi.open | POST '/browser/open' | body: JSON.stringify({ url, browserConfig }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:300 | 待逐项核对；局部已验证项见上表 |
 | service:browserApi.startPicker | POST '/element-picker/start' | body: JSON.stringify({}) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:310 | 待逐项核对；局部已验证项见上表 |
 | service:browserApi.stopPicker | POST '/element-picker/stop' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:311 | 待逐项核对；局部已验证项见上表 |
+| service:browserScriptTestsApi.cancel |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:20 | 待逐项核对；局部已验证项见上表 |
+| service:browserScriptTestsApi.get |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:19 | 待逐项核对；局部已验证项见上表 |
+| service:browserScriptTestsApi.getContext | GET &#96;${endpoint}/context&#96; | 未显式声明 | BrowserScriptContext | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:10 | 待逐项核对；局部已验证项见上表 |
+| service:browserScriptTestsApi.start |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:15 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.delete | DELETE &#96;/credentials/${encodeURIComponent(name)}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:440 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.list | GET '/credentials' | 未显式声明 | { success: boolean; credentials: CredentialItem[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:428 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.names | GET '/credentials/names' | 未显式声明 | { success: boolean; names: string[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:429 | 待逐项核对；局部已验证项见上表 |
@@ -304,4 +308,4 @@
 
 对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。
 
-当前扫描：147 个服务方法、81 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
+当前扫描：151 个服务方法、81 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。

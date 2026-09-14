@@ -28268,5 +28268,1445 @@
     "level": "browser E2E / Mock service",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-admission/browser-ui.md"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "无返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无返回值",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "null返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：null返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "null返回值",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "大于64KiB对象"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：大于64KiB对象"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "大于64KiB对象",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "同ID同内容查询且不同内容409"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：同ID同内容查询且不同内容409"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "同ID同内容查询且不同内容409",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "取消幂等及互斥释放"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消幂等及互斥释放"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消幂等及互斥释放",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "导航过期与旧修订拒绝"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：导航过期与旧修订拒绝"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "导航过期与旧修订拒绝",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.07",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "失败不变成功"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：失败不变成功"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "失败不变成功",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-memory.08",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "非法参数、容量、方法与无浏览器"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：非法参数、容量、方法与无浏览器"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "非法参数、容量、方法与无浏览器",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "无返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无返回值",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "null返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：null返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "null返回值",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "大于64KiB对象"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：大于64KiB对象"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "大于64KiB对象",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "同ID同内容查询且不同内容409"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：同ID同内容查询且不同内容409"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "同ID同内容查询且不同内容409",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "取消幂等及互斥释放"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消幂等及互斥释放"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消幂等及互斥释放",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "导航过期与旧修订拒绝"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：导航过期与旧修订拒绝"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "导航过期与旧修订拒绝",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.07",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "失败不变成功"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：失败不变成功"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "失败不变成功",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.protocol-http.08",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts",
+      "case": "非法参数、容量、方法与无浏览器"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：非法参数、容量、方法与无浏览器"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "非法参数、容量、方法与无浏览器",
+    "level": "http protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-protocol.test.ts"
+  },
+  {
+    "id": "F2.browser-script.editor.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "无返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无返回值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "null返回值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：null返回值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "null返回值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "大值精确显示"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：大值精确显示"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "大值精确显示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "无上下文不提交"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无上下文不提交"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无上下文不提交",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "关闭后迟到上下文不提交"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：关闭后迟到上下文不提交"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "关闭后迟到上下文不提交",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "改代码取消旧请求"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：改代码取消旧请求"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "改代码取消旧请求",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.07",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "响应丢失查询原ID"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：响应丢失查询原ID"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "响应丢失查询原ID",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.08",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "取消失败保留占用重试"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消失败保留占用重试"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消失败保留占用重试",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.09",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "恢复上次请求不提交当前代码"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：恢复上次请求不提交当前代码"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "恢复上次请求不提交当前代码",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.10",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "连接变化不提交旧代码"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：连接变化不提交旧代码"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "连接变化不提交旧代码",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.editor.11",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx",
+      "case": "完成竞争不声称已取消"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：完成竞争不声称已取消"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "完成竞争不声称已取消",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-editor.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "确认Mock结果"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：确认Mock结果"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "确认Mock结果",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "丢失POST后查询"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：丢失POST后查询"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "丢失POST后查询",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "无浏览器可编辑"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无浏览器可编辑"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无浏览器可编辑",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "导航过期不重放"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：导航过期不重放"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "导航过期不重放",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "取消失败占用至确认"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消失败占用至确认"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消失败占用至确认",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-memory.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "改代码清理旧请求"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：改代码清理旧请求"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "改代码清理旧请求",
+    "level": "memory integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "确认Mock结果"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：确认Mock结果"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "确认Mock结果",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "丢失POST后查询"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：丢失POST后查询"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "丢失POST后查询",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "无浏览器可编辑"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无浏览器可编辑"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无浏览器可编辑",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "导航过期不重放"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：导航过期不重放"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "导航过期不重放",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "取消失败占用至确认"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消失败占用至确认"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消失败占用至确认",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.delivery-http.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx",
+      "case": "改代码清理旧请求"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：改代码清理旧请求"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "改代码清理旧请求",
+    "level": "http integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-delivery.test.tsx"
+  },
+  {
+    "id": "F2.browser-script.boundary.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "错误请求ID"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：错误请求ID"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "错误请求ID",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "空页面"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：空页面"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "空页面",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "负修订"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：负修订"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "负修订",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "未知状态"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：未知状态"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "未知状态",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "缺错误"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：缺错误"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "缺错误",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "运行中有结果"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：运行中有结果"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "运行中有结果",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.07",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "缺执行标识"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：缺执行标识"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "缺执行标识",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.08",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "未知执行标识"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：未知执行标识"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "未知执行标识",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.09",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "结果旗标冲突"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：结果旗标冲突"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "结果旗标冲突",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.10",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "成功带错误"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：成功带错误"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "成功带错误",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.11",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "上下文空页面"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：上下文空页面"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "上下文空页面",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.12",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "小数修订"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：小数修订"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "小数修订",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.13",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "缺URL"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：缺URL"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "缺URL",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.14",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "缺活跃ID"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：缺活跃ID"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "缺活跃ID",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.15",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "空活跃ID"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：空活跃ID"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "空活跃ID",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.16",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "null与无值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：null与无值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "null与无值",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.17",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "非有限变量"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：非有限变量"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "非有限变量",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.18",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "undefined变量"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：undefined变量"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "undefined变量",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.19",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "函数变量"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：函数变量"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "函数变量",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.boundary.20",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts",
+      "case": "UTF8超限不POST"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：UTF8超限不POST"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "UTF8超限不POST",
+    "level": "API boundary",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/browser-script-api.test.ts"
+  },
+  {
+    "id": "F2.browser-script.dto.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "往返字段"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：往返字段"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "往返字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "空ID"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：空ID"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "空ID",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "空代码"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：空代码"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "空代码",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "非有限变量"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：非有限变量"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "非有限变量",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "数组变量"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：数组变量"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "数组变量",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.06",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "负修订"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：负修订"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "负修订",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.07",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "小数修订"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：小数修订"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "小数修订",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.08",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "空页面"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：空页面"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "空页面",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.09",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "UTF8超限"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：UTF8超限"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "UTF8超限",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.10",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "失败缺错误"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：失败缺错误"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "失败缺错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.11",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "过期缺错误"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：过期缺错误"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "过期缺错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.12",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "运行中结果"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：运行中结果"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "运行中结果",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.13",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "结果旗标冲突"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：结果旗标冲突"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "结果旗标冲突",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.14",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "未知执行标识"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：未知执行标识"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "未知执行标识",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.15",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "成功带错误"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：成功带错误"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "成功带错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.dto.16",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "apps/backend/tests/contract/test_studio_browser_script.py",
+      "case": "错误与无值状态"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：错误与无值状态"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "错误与无值状态",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/python.log",
+    "testPath": "apps/backend/tests/contract/test_studio_browser_script.py"
+  },
+  {
+    "id": "F2.browser-script.browser.01",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+      "case": "缺浏览器报错"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：缺浏览器报错"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "缺浏览器报错",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+    "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
+  },
+  {
+    "id": "F2.browser-script.browser.02",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+      "case": "无限循环原文不在Studio求值"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：无限循环原文不在Studio求值"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "无限循环原文不在Studio求值",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+    "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
+  },
+  {
+    "id": "F2.browser-script.browser.03",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+      "case": "取消确认"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：取消确认"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "取消确认",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+    "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
+  },
+  {
+    "id": "F2.browser-script.browser.04",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+      "case": "服务失败展示"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：服务失败展示"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "服务失败展示",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+    "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
+  },
+  {
+    "id": "F2.browser-script.browser.05",
+    "capability": "inject_javascript:service-test",
+    "preconditions": {
+      "fixture": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+      "case": "保存刷新重开代码"
+    },
+    "steps": [
+      "运行所列测试中对应参数化分支：保存刷新重开代码"
+    ],
+    "expectedUI": "按用例验证中文结果、错误、忙碌或取消；纯协议测试不挂载界面",
+    "expectedIO": "浏览器脚本服务请求及状态；Mock不执行代码，具体字段见测试断言",
+    "stateAssertion": "保存刷新重开代码",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
+    "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
   }
 ]

@@ -296,3 +296,56 @@ class StudioVariableTrackingResult(ApiModel):
 
 class StudioVariableTrackingCleared(ApiModel):
     message: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioBrowserScriptTarget(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    browser_session_id: str = Field(min_length=1, pattern=r"\S")
+    page_id: str = Field(min_length=1, pattern=r"\S")
+    revision: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioBrowserScriptContext(StudioBrowserScriptTarget):
+    url: str
+    active_request_id: str | None
+
+
+class StudioBrowserScriptRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    context: StudioBrowserScriptTarget
+    code: str = Field(min_length=1, pattern=r"\S")
+    variables: dict[str, JsonValue]
+
+    @model_validator(mode="after")
+    def check_size(self) -> Self:
+        if len(self.model_dump_json(by_alias=True).encode("utf-8")) > 1024 * 1024:
+            raise ValueError("脚本测试请求超过1MiB，未执行")
+        return self
+
+
+class StudioBrowserScriptState(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    context: StudioBrowserScriptTarget
+    status: Literal["running", "completed", "failed", "cancelled", "expired"]
+    has_result: bool
+    result: JsonValue
+    error: str | None
+    execution_kind: Literal["browser", "mock"]
+
+    @model_validator(mode="after")
+    def check_state(self) -> Self:
+        if self.status in {"failed", "expired"}:
+            if not self.error or not self.error.strip():
+                raise ValueError("失败或过期必须包含错误原因")
+        elif self.error is not None:
+            raise ValueError("当前状态不能包含错误")
+        if self.status != "completed" and self.has_result:
+            raise ValueError("只有完成状态可以包含返回值")
+        if not self.has_result and self.result is not None:
+            raise ValueError("没有返回值时result必须为null")
+        return self
