@@ -42388,5 +42388,177 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.357-toolbar",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "357px窗口",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "检查边界并点击录制菜单"
+    ],
+    "expectedUI": "全部工具可见，菜单打开/关闭",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "全部工具可见，菜单打开/关闭",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.768-toolbar",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "768px窗口",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "检查控件边界"
+    ],
+    "expectedUI": "无横向越界",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "无横向越界",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.1440-toolbar",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "1440px窗口",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "检查布局"
+    ],
+    "expectedUI": "仍为48px单行",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "仍为48px单行",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.narrow-last-rows",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "500节点模块条、357px",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "按0499/0500行依次点击"
+    ],
+    "expectedUI": "准确选中相应行，不打开出错处理",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "准确选中相应行，不打开出错处理",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.capacity-import",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "独立500节点499连线整包",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "界面文件选择器导入",
+      "切模块条"
+    ],
+    "expectedUI": "两个视图均500步骤",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "两个视图均500步骤",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.layout.capacity-reopen",
+    "capability": "capacity:500-and-layout",
+    "preconditions": {
+      "state": "末尾参数已界面修改保存",
+      "origin": "localhost:5175 Mock"
+    },
+    "steps": [
+      "刷新",
+      "搜索打开",
+      "选择0500"
+    ],
+    "expectedUI": "500步骤且末尾值恢复",
+    "expectedIO": "通过界面使用现有导入/保存/读取接口；布局操作不发业务命令",
+    "stateAssertion": "500步骤且末尾值恢复",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/browser-validation.md"
+  },
+  {
+    "id": "CAPACITY.500.import-all",
+    "capability": "capacity:500-rule",
+    "preconditions": {
+      "fixture": "fixtures/capacity-500.bundle.json"
+    },
+    "steps": [
+      "导入固定500节点夹具"
+    ],
+    "expectedUI": "规则测试无UI",
+    "expectedIO": "无服务请求",
+    "stateAssertion": "500节点及499连线完整",
+    "level": "component-rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/tests.log"
+  },
+  {
+    "id": "CAPACITY.500.serialize",
+    "capability": "capacity:500-rule",
+    "preconditions": {
+      "fixture": "fixtures/capacity-500.bundle.json"
+    },
+    "steps": [
+      "序列化并重开"
+    ],
+    "expectedUI": "规则测试无UI",
+    "expectedIO": "无服务请求",
+    "stateAssertion": "全部节点数据/位置/连线相等",
+    "level": "component-rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/tests.log"
+  },
+  {
+    "id": "CAPACITY.500.undo",
+    "capability": "capacity:500-rule",
+    "preconditions": {
+      "fixture": "fixtures/capacity-500.bundle.json"
+    },
+    "steps": [
+      "修改末尾",
+      "撤销",
+      "重做"
+    ],
+    "expectedUI": "规则测试无UI",
+    "expectedIO": "无服务请求",
+    "stateAssertion": "末尾值恢复且前499节点不变",
+    "level": "component-rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/tests.log"
+  },
+  {
+    "id": "CAPACITY.500.block-chain",
+    "capability": "capacity:500-rule",
+    "preconditions": {
+      "fixture": "fixtures/capacity-500.bundle.json"
+    },
+    "steps": [
+      "图转换结构树再生成图",
+      "沿连线遍历"
+    ],
+    "expectedUI": "规则测试无UI",
+    "expectedIO": "无服务请求",
+    "stateAssertion": "节点参数和全部500节点真实后继顺序保持",
+    "level": "component-rule",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f6-layout-capacity/tests.log"
   }
 ]

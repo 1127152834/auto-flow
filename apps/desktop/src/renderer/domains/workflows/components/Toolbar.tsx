@@ -1340,7 +1340,7 @@ export function Toolbar() {
 
   return (
     <header
-      className="relative h-12 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex items-center px-3 gap-3 flex-shrink-0 shadow-soft
+      className="relative min-h-12 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-wrap items-center px-3 py-1.5 gap-2 @[48rem]:gap-3 flex-shrink-0 shadow-soft
         before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px]
         before:bg-gradient-to-r before:from-[hsl(var(--brand-500))] before:via-[hsl(var(--brand-400))] before:to-[hsl(var(--info-500))]
         before:opacity-90"
@@ -1412,7 +1412,7 @@ export function Toolbar() {
         </> : !isRunning ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="success" noMotion>
+              <Button size="sm" variant="success" noMotion aria-label="运行 (F5)">
                 <Play className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">运行</span>
                 <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
@@ -1593,7 +1593,7 @@ export function Toolbar() {
         {/* 工作流仓库 - 紫色（语义：内容/收藏） */}
         
 
-        <Button variant="outline" size="sm" title="计划任务" onClick={() => setShowScheduledTasks(true)}>
+        <Button variant="outline" size="sm" title="计划任务" aria-label="计划任务" onClick={() => setShowScheduledTasks(true)}>
           <CalendarClock className="w-4 h-4" /><span className="hidden @[64rem]:inline">计划任务</span>
         </Button>
         {/* 自动化浏览器 - 绿色 */}
@@ -1602,6 +1602,7 @@ export function Toolbar() {
           size="sm" 
           onClick={() => setShowAutoBrowser(true)}
           title="自动化浏览器"
+          aria-label="自动化浏览器"
         >
           <Globe className="w-4 h-4 sm:mr-1" />
           <span className="hidden @[64rem]:inline">自动化浏览器</span>
@@ -1610,7 +1611,7 @@ export function Toolbar() {
         {/* 录制 / 回放 - 归纳为一个下拉，避免顶栏拥挤 */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" title="录制生成节点">
+            <Button variant="outline" size="sm" title="录制生成节点" aria-label="录制生成节点">
               <Video className="w-4 h-4 sm:mr-1" />
               <span className="hidden @[64rem]:inline">录制</span>
               <ChevronDown className="w-3 h-3 ml-1" />

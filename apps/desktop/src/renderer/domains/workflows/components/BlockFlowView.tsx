@@ -532,7 +532,7 @@ export function BlockFlowView() {
         onClick={(e) => handleRowClick(e, node.id)}
         onContextMenu={(e) => handleRowContextMenu(e, node.id)}
         className={
-          'group/row relative flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-[10px] border cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,background-color,transform] duration-150 ' +
+          'group/row relative scroll-mb-20 flex flex-wrap @[32rem]/blocks:flex-nowrap items-center gap-2.5 pl-3 pr-2 py-2 rounded-[10px] border cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,background-color,transform] duration-150 ' +
           (disabled ? 'opacity-55 grayscale-[0.4] ' : '') +
           (runStatuses[node.id] === 'running'
             ? 'bg-[hsl(var(--card))] border-[hsl(var(--brand-500))] ring-2 ring-[hsl(var(--brand-500)/0.5)] shadow-brand-glow animate-pulse'
@@ -567,7 +567,7 @@ export function BlockFlowView() {
             </span>
           )}
         </span>
-        <div className="flex-1 min-w-0 flex items-baseline gap-2">
+        <div className="flex-1 min-w-20 flex items-baseline gap-2">
           {(kind === 'if' || kind === 'loop' || kind === 'parallel') && (
             <span className={'flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10.5px] font-bold ' +
               (kind === 'loop' ? 'bg-[hsl(var(--teal-50))] text-[hsl(var(--teal-700))]'
@@ -590,7 +590,7 @@ export function BlockFlowView() {
           )}
           {isCollapsed && childCount ? <span className="text-[10.5px] text-[hsl(var(--slate-400))] flex-shrink-0">· 已折叠 {childCount} 步</span> : null}
         </div>
-        <div className="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity flex-shrink-0">
+        <div className="flex basis-full @[32rem]/blocks:basis-auto justify-end items-center gap-0.5 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -780,7 +780,7 @@ export function BlockFlowView() {
     <div
       ref={scrollContainerRef}
       onScroll={(e) => { savedScrollRef.current = (e.currentTarget as HTMLDivElement).scrollTop }}
-      className={'h-full w-full overflow-y-auto bg-[hsl(var(--background))] py-5 px-4 ' + (dropActive ? 'ring-2 ring-inset ring-[hsl(var(--brand-500))]' : '')}
+      className={'@container/blocks h-full w-full overflow-y-auto bg-[hsl(var(--background))] pt-5 pb-20 scroll-pb-20 px-4 ' + (dropActive ? 'ring-2 ring-inset ring-[hsl(var(--brand-500))]' : '')}
       onDragOver={(e) => { if (e.dataTransfer.types.includes('application/reactflow') || e.dataTransfer.types.includes('application/blockmove')) { e.preventDefault(); setDropActive(true) } }}
       onDragLeave={() => setDropActive(false)}
       onDrop={handleCanvasDrop}
@@ -870,7 +870,7 @@ export function BlockFlowView() {
             <div className="fixed z-[9999] w-[300px] rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-3 animate-scale-in" style={{ left, top }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[12.5px] font-semibold text-[hsl(var(--slate-700))]">出错处理</span>
-                <button onClick={() => setErrPopover(null)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><X className="w-3.5 h-3.5" /></button>
+                <button aria-label="关闭出错处理" onClick={() => setErrPopover(null)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><X className="w-3.5 h-3.5" /></button>
               </div>
               <div className="grid grid-cols-2 gap-1.5 mb-2">
                 {(([['stop', '失败即停'], ['continue', '跳过继续'], ['retry-self', '原地重试'], ['retry-from', '回流上层重试']]) as [ErrorPolicy['mode'], string][]).map(([m, lbl]) => (
