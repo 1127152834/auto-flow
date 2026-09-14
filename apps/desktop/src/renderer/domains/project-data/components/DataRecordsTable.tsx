@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { DotsThree, Info, Trash } from '@phosphor-icons/react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
 import type { components } from '../../../shared/api/generated'
@@ -15,6 +16,8 @@ export type DataRecordsTableProps = {
   page?: Schema['DataRecordPage']
   fields: Schema['DataFieldView'][]
   statuses: Schema['DataStatusView'][]
+  draftRows?: ReactNode
+  queryLocked?: boolean
   toolbar?: boolean
   visibleFieldIds?: string[]
   loading?: boolean
@@ -45,7 +48,7 @@ function valueLabel(cell: Schema['DataCellView'] | undefined): string {
   return String(value)
 }
 
-export function DataRecordsTable({ toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
+export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = true, page, fields, statuses, visibleFieldIds, loading = false, error, hasFilters = false, readonly = false, disabled = false, onRetry, onOpen, onEdit, onDelete, onPageChange, onCreate, onStatusChange, selection, onBulkStatus }: DataRecordsTableProps) {
   const visible = visibleFieldIds ? new Set(visibleFieldIds) : null
   const columns = fields.filter((field) => !visible || visible.has(field.ref.fieldId))
   const statusMap = new Map(statuses.map((status) => [status.statusId, status]))
@@ -96,7 +99,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
           <Skeleton className="h-12" />
           <Skeleton className="h-24" />
         </div>
-      ) : page && page.items.length === 0 ? (
+      ) : page && page.items.length === 0 && !draftRows ? (
         <div className="rounded-card border border-dashed border-line bg-surface p-10 text-center">
           <p className="font-medium">{hasFilters ? '没有匹配的记录' : '还没有记录'}</p>
           <p className="text-sm text-muted">{hasFilters ? '调整筛选条件后重试。' : '新增记录，或从来源设置导入数据。'}</p>
@@ -133,7 +136,7 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                 {columns.map((field) => (
                   <TableHead key={field.ref.fieldId}>
                     <span className="block truncate" title={field.name}>
-                      {field.name}
+                      {field.name}{draftRows && field.required ? <span aria-label="必填" className="ml-1 text-danger">*</span> : null}
                     </span>
                   </TableHead>
                 ))}
@@ -193,11 +196,12 @@ export function DataRecordsTable({ toolbar = true, page, fields, statuses, visib
                   </TableRow>
                 )
               })}
+              {draftRows}
             </TableBody>
           </Table>
         </div>
       ) : null}
-      {page ? <Pagination showPage offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={loading} onOffsetChange={(offset) => onPageChange(Math.floor(offset / page.pageSize) + 1)} /> : null}
+      {page ? <Pagination showPage offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={loading || queryLocked} onOffsetChange={(offset) => onPageChange(Math.floor(offset / page.pageSize) + 1)} /> : null}
       <p className="m-0 flex items-start gap-2 text-base text-muted"><Info size={20} className="shrink-0" aria-hidden="true"/>业务状态由本项目维护，修改记录内容不会自动改变业务状态。</p>
     </section>
   )

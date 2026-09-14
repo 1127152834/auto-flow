@@ -409,3 +409,17 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `renderer/domains/project-data/schema-api.ts` 复用原命令恢复；`schema-draft.ts`/`use-schema-draft.ts` 只维护本地字段候选；`use-data-table-editing.ts` 负责同一持久操作身份、作用域隔离和恢复。
 - `components/FieldEditorFields.tsx` 共享旧弹窗与新字段抽屉的RHF字段；`SchemaFieldDrawer` 仅应用本地草稿，`SchemaEditor` 外层统一保存，`SchemaImpactDrawer` 显示真实预检结果。`DataStatusTable`、`TableSettingsForm`、`DataTableSourcePanel` 分别展示真实引用、内联资料编辑和来源事实。页面仅装配现有能力。
 - `scripts/qa-project-alignment-r3.mjs` 运行专用临时工作区真实Electron/服务及持久结果恢复；`measure-schema-commit.py` 测量自建临时库1000行/4MiB边界与一万行预检。`acceptance/gallery-r3/` 保留失败与成功运行、逐图审查、手测和机器报告，未完成报告不得替代阶段通过。
+
+## 行尾连续录入（2026-09-14）
+
+独立实现分支 `codex/record-grid-entry`：`domains/project-data/record-grid-{draft,clipboard,storage}.ts` 分别负责草稿纯逻辑、TSV、持久信封；`use-record-grid-entry.ts` 负责一次批量命令及恢复；三个 `RecordGridCellEditor` / `RecordDraftRows` / `RecordDraftSaveBar` 组件组合进现有表体。后台 records 领域沿原分层增加 create_many，无新迁移或通用任务队列。受控测试入口为 `scripts/qa-record-grid-entry.mjs`，清理校验为 `qa-record-grid-files.mjs`。
+
+
+## 主项目整合：行内新增与 R2/R3（2026-09-14，confirmed 代码范围）
+
+来源：`361d4fd`、`dcb1831` 与主线 `cda081d` 的整合。保留最新 WebRPA Studio 前端及其独立窗口，不恢复已退役的 Studio 后端执行器。正常新增记录使用同表草稿行和批量保存；已有记录继续详情/编辑页面，字段继续 R3 聚合草稿与原子保存。本节替代前述“行内新增尚未合入”“Studio/PM迁移尚未汇合”的当前状态；历史报告保持原样，旧 G4 未验收项目不自动转为通过。
+
+- `bootstrap/project_http_routes.py` 同时供真实应用与无副作用 OpenAPI 导出注册项目路由。
+- `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
+- `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
+- 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。

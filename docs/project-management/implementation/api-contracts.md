@@ -647,3 +647,13 @@ type DataStatusUsageDirectory = {
 `configurationReferences.availability='notImplemented'` 明确表示配置引用未接通，不能解读为零配置引用；自动化及同步也维持 notImplemented。界面引用读取失败显示不可读取并允许重试，不以失败补零。投影数字不是删除授权，真实删除仍走既有影响预检及最终事务守卫。
 
 性能实测入口为 `scripts/measure-schema-commit.py`，只建立并清理自己的临时数据库，使用真实应用服务；输出分别记录预览、成功 BEGIN IMMEDIATE→COMMIT、数据库大小、规范字节及并发读取响应。本轮证据保存于 [R3 性能报告](../design-alignment/acceptance/gallery-r3/performance/schema-commit.json)，其数字仅代表该次机器与有限样本，不是无限数据量承诺。
+
+## 行内记录新增扩展（2026-09-14，实施分支）
+
+`POST /api/v1/projects/{projectId}/tables/{tableId}/records/batch`，Operation kind `createRecords`，resource 为 table。沿用认证、项目准入、QuiesceGate 与 `Idempotency-Key`；不取代单条创建接口。
+
+请求 `DataRecordBatchCreate`：`datasetGeneration`、`expectedTableRevision`、`rows`（1–100）；行包含 UUID `clientRowId` 与 `values:[{fieldId,value}]`。应用层规范字段顺序后 UTF-8 JSON 最大 1 MiB；重复行/字段身份拒绝。省略字段、null、空文本、0、false 不合并。
+
+成功响应 `{operation,records:[{clientRowId,record}]}`，同一快照位于 `operation.result.records`，首次 201、同键重放 200。结果为提交时快照。记录、每行 DataChange 与 Operation 同事务提交，任意一行失败整批不写。验证错误提供 `error.details.rowErrors:[{clientRowId,fieldId,code,message}]`；身份重复 409，结构冲突 409，类型/必填错误 422，超字节 413。错误归属继续受项目和表作用域约束。
+
+结果未知先查询既有 `/operations/by-idempotency-key/{key}`。可信 OPERATION_NOT_FOUND 后才允许显式使用原 key/payload 重发；查询失败继续待核验。前端核验完整 clientRowId 映射、项目、表、代次后才清草稿。旧数据代次的已知操作允许查询，结果不能解释成对新代次新增。

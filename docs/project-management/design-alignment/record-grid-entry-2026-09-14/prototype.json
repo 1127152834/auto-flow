@@ -1,0 +1,10 @@
+{
+  "date": "2026-09-14",
+  "status": "selected-visual-direction; implementation-not-started",
+  "selection": "第一种：行尾连续录入",
+  "source": "/Users/zhangtiancheng/.codex/generated_images/01a09bcd-f007-71e3-a1ad-ea928322564c/exec-c379c211-7fb4-40ea-a99a-dfe121e8c802.png",
+  "sha256": "6c3405328691e2cb6ef74928d72ec068bc89c9b4d0eb5ccc0765984321739b0e",
+  "width": 1487,
+  "height": 1058,
+  "note": "用户选择视觉方向；详细行为与批量接口为本次计划提案。只调整新增记录，不更改主线程其他页面。"
+}

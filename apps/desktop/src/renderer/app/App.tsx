@@ -23,7 +23,7 @@ export function App() {
   const location = parseAppLocation(changedWorkspace && hash.startsWith('#/projects') ? '#/projects' : hash)
   const route = location.section
   const navigate = useCallback((target: AppRoute) => { void navigateHash(`#/${target}`) }, [navigateHash])
-  const navigateProject = useCallback((target: ProjectRoute) => { void navigateHash(projectHash(target)) }, [navigateHash])
+  const navigateProject = useCallback((target: ProjectRoute, options?: { replace?: boolean }) => { if (options?.replace) replace(projectHash(target)); else void navigateHash(projectHash(target)) }, [navigateHash, replace])
   const modelApi = useMemo(() => session ? createModelApi(session.client) : null, [session])
 
   useEffect(() => {

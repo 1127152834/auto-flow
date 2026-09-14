@@ -48,6 +48,17 @@ export function createRecordsApi(client: StreamingApiClient, context: CatalogSco
     previewDelete: (recordKey: RecordKey, signal?: AbortSignal) => client.request<Schema['DeletionImpactReport']>(`/api/v1/projects/${encode(scope.projectId)}/mutation-impact`, {
       method: 'POST', signal, body: { action: 'deleteRecord', target: { type: 'record', recordRef: { ...scope, recordKey: { ...recordKey } } } },
     }),
+    createBatch: (body: Omit<Schema['DataRecordBatchCreate'], 'datasetGeneration'>, key: string, resume = false, policy?: DataCommandPolicy) => {
+      const expectedIds = new Set(body.rows.map(row => row.clientRowId))
+      return command(`${base}/batch`, 'POST', { ...body, datasetGeneration: scope.datasetGeneration }, key, 'createRecords', resume, operation => {
+        const { resource, result: value } = operation
+        if (resource.type !== 'table' || resource.projectId !== scope.projectId || resource.tableId !== scope.tableId
+          || !value || !('records' in value) || value.records.length !== expectedIds.size || expectedIds.size !== body.rows.length
+          || new Set(value.records.map(row => row.clientRowId)).size !== expectedIds.size
+          || value.records.some(row => !expectedIds.has(row.clientRowId) || !sameScope(row.record.ref))) throw new Error('批量保存结果与原草稿不一致')
+        return value
+      }, { ...policy, acceptedResponse: true, retryIfNotAccepted: false })
+    },
     create: (body: Omit<Schema['DataRecordCreate'], 'datasetGeneration'>, key: string, resume = false, policy?: DataCommandPolicy) => command(base, 'POST', { ...body, datasetGeneration: scope.datasetGeneration }, key, 'createRecord', resume, result(), policy),
     update: (recordKey: RecordKey, body: Omit<Schema['DataRecordPatch'], 'datasetGeneration' | 'recordKeyType'>, key: string, resume = false, policy?: DataCommandPolicy) => command(path(recordKey), 'PATCH', { ...body, datasetGeneration: scope.datasetGeneration, recordKeyType: recordKey.type }, key, 'updateRecord', resume, result({ ...recordKey }), policy),
     setStatus: (recordKey: RecordKey, body: Omit<Schema['DataRecordStatusWrite'], 'datasetGeneration' | 'recordKeyType'>, key: string, resume = false, policy?: DataCommandPolicy) => command(`${path(recordKey)}/status`, 'PUT', { ...body, datasetGeneration: scope.datasetGeneration, recordKeyType: recordKey.type }, key, 'setRecordStatus', resume, result({ ...recordKey }), policy),

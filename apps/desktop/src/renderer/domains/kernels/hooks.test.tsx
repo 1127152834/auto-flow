@@ -77,10 +77,10 @@ it('drops late events from an old sidecar instance', async () => {
     streams.get('http://127.0.0.1:2/api/v1/kernels/events')?.enqueue(frame('downloading'))
   })
 
-  await waitFor(() => expect(clients[1].getQueryData(kernelKeys.operations('new-instance')))
+  await waitFor(() => expect(clients[0].getQueryData(kernelKeys.operations('new-instance')))
     .toEqual([operation('downloading')]))
   expect(clients[0].getQueryData(kernelKeys.operations('old-instance'))).toBeUndefined()
-  expect(clients[0]).not.toBe(clients[1])
+  expect(clients).toHaveLength(1)
   streams.forEach((controller) => controller.close())
   view.unmount()
 })

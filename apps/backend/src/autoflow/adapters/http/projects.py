@@ -139,6 +139,7 @@ def projects_router(service: ProjectService) -> APIRouter:
             "saveTableSchema",
             "mutateStatus",
             "createRecord",
+            "createRecords",
             "updateRecord",
             "setRecordStatus",
             "deleteRecord",

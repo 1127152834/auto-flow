@@ -1,0 +1,15 @@
+{
+  "started": "2026-09-13T18:11:18.221Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-GltuzC",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-xpOCRY",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "08a793e7cd55c5e23c6d08531eacadd9f04d45c2b5075556fe1a44bc8a2d2d97",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "status": "failed",
+  "error": "Error: renderer evaluation failed: Uncaught",
+  "finished": "2026-09-13T18:11:18.933Z"
+}

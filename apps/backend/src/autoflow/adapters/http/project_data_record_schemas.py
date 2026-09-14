@@ -80,3 +80,23 @@ class DataRecordStatusWrite(ApiModel):
     status_id: str | None
     expected_status_revision: Revision
     expected_from_status_id: str | None = None
+
+
+class DataRecordBatchRow(ApiModel):
+    client_row_id: str
+    values: list[DataCellWrite]
+
+
+class DataRecordBatchCreate(ApiModel):
+    dataset_generation: str
+    expected_table_revision: Revision
+    rows: list[DataRecordBatchRow] = Field(min_length=1, max_length=100)
+
+
+class DataRecordBatchItem(ApiModel):
+    client_row_id: str
+    record: DataRecordView
+
+
+class DataRecordBatchResult(ApiModel):
+    records: list[DataRecordBatchItem]

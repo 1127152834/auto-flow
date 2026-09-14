@@ -1,0 +1,6 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T18:25:26.843Z",
+  "checks": [],
+  "error": "timed out waiting for clickable 状态: null"
+}

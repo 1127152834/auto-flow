@@ -1,0 +1,76 @@
+{
+  "started": "2026-09-13T18:24:02.223Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-qtma4R",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-record-grid-entry/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-ETcgHK",
+  "source": "a6a0e8e4a45311f55ddaf5661458366334a2bdde",
+  "patchSha256": "401a074912d0e5aec023631c650ac516a75462636a24001c0287926c1e5cd1bd",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "details": "Real clipboard paste preserves leading-zero text and adds exactly two rows",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "details": "Invalid required cell is focused and no records are written",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "details": "Cancelled tab leave preserves grid draft",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E05",
+      "status": "passed",
+      "details": "Over-wide paste leaves the original draft unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E09",
+      "status": "passed",
+      "details": "Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E12-service-reconnect",
+      "status": "passed",
+      "details": "Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E15",
+      "status": "passed",
+      "details": "Actual Electron 200% zoom preserves window width and draft; screenshot captured",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E16-edit",
+      "status": "passed",
+      "details": "Saved record edit still uses existing detail/edit flow and persists through UI",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E10",
+      "status": "passed",
+      "details": "Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "status": "failed",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n200 !== 201\n",
+  "finished": "2026-09-13T18:24:17.898Z"
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
@@ -46,6 +47,52 @@ class DataRecordService:
             None,
         )
         return self.records.create(project_id, table_id, generation, values, op)
+
+    def create_many(
+        self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
+    ) -> WriteResult:
+        _ids(project_id, table_id)
+        idem = _canonical_uuid(key, "Idempotency-Key")
+        _exact(payload, {"datasetGeneration", "expectedTableRevision", "rows"})
+        generation = _canonical_uuid(payload["datasetGeneration"], "datasetGeneration")
+        expected = _revision(payload["expectedTableRevision"], "expectedTableRevision")
+        raw_rows = payload["rows"]
+        if not isinstance(raw_rows, list) or not 1 <= len(raw_rows) <= 100:
+            raise _validation("rows", "Must contain 1 to 100 rows")
+        rows: list[tuple[str, dict[str, object]]] = []
+        seen: set[str] = set()
+        for raw in raw_rows:
+            _exact(raw, {"clientRowId", "values"})
+            row_id = _canonical_uuid(raw["clientRowId"], "clientRowId")
+            if row_id in seen:
+                raise _validation("rows", "Duplicate clientRowId")
+            seen.add(row_id)
+            rows.append((row_id, _values(raw["values"])))
+        request = {
+            "datasetGeneration": generation,
+            "expectedTableRevision": expected,
+            "rows": [
+                {"clientRowId": rid, "values": _value_list(values)}
+                for rid, values in rows
+            ],
+        }
+        if (
+            len(
+                json.dumps(
+                    request, ensure_ascii=False, separators=(",", ":"), allow_nan=False
+                ).encode("utf-8")
+            )
+            > 1024 * 1024
+        ):
+            raise ProjectError(
+                "RECORD_BATCH_TOO_LARGE", "Record batch exceeds 1 MiB", 413
+            )
+        op = _record_operation(
+            idem, "createRecords", project_id, table_id, request, None
+        )
+        return self.records.create_many(
+            project_id, table_id, generation, expected, rows, op
+        )
 
     def get(
         self,

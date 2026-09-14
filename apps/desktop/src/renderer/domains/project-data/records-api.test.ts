@@ -161,3 +161,16 @@ it.each([NaN, Infinity, -Infinity])('never serializes non-finite %s into a null 
     expect(fetcher).not.toHaveBeenCalled()
   } finally { vi.unstubAllGlobals() }
 })
+
+it('batch creation validates complete client-row mapping and does not blindly resend a lost response', async () => {
+  const body = { expectedTableRevision: 2, rows: [{ clientRowId: 'row1', values: [] }] }
+  const batchOperation = { ...operation, kind: 'createRecords', resource: { type: 'table', projectId: 'p', tableId: 't' }, result: { records: [{ clientRowId: 'row1', record }] } }
+  const request = vi.fn().mockResolvedValueOnce({ operation: batchOperation })
+  await expect(api(request).createBatch(body, 'key')).resolves.toEqual(batchOperation.result)
+  expect(request.mock.calls[0][0]).toContain('/records/batch')
+  const missing = vi.fn().mockRejectedValueOnce(new TypeError('lost')).mockRejectedValueOnce(new ApiClientError('not found', 404, 'OPERATION_NOT_FOUND'))
+  await expect(api(missing).createBatch(body, 'key')).rejects.toThrow('原操作尚未接受')
+  expect(missing).toHaveBeenCalledTimes(2)
+  const corrupt = vi.fn().mockResolvedValue({ operation: { ...batchOperation, result: { records: [] } } })
+  await expect(api(corrupt).createBatch(body, 'key')).rejects.toThrow()
+})

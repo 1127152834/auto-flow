@@ -37,23 +37,13 @@ it('loads the real table, generation catalog and server record page',async()=>{
   expect(screen.queryByRole('button',{name:/新增|编辑|删除/})).not.toBeInTheDocument()
 })
 
-it('creates an empty system record through the real command adapter',async()=>{
-  const {client,request}=api()
-  request.mockImplementation(async(path:string,init?:{method?:string;body?:unknown})=>{
-    if(path.endsWith('/records')&&init?.method==='POST')return record
-    if(path.endsWith('/tables/t'))return table
-    if(path.endsWith('/fields'))return {items:[],tableRevision:3}
-    if(path.endsWith('/statuses'))return {items:[],tableRevision:3}
-    if(path.includes('/records?'))return {items:[],total:0,page:1,pageSize:50,sort:'[]'}
-    throw new Error(path)
-  })
-  renderPage(<DataTableDetailPage {...props(client)}/>)
-  await userEvent.click(await screen.findByRole('button',{name:'新增记录'}))
-  await userEvent.click(screen.getByRole('button',{name:'创建记录'}))
-  await waitFor(()=>expect(request.mock.calls.some(([path,init])=>String(path).endsWith('/records')&&init?.method==='POST')).toBe(true))
-  const write=request.mock.calls.find(([path,init])=>String(path).endsWith('/records')&&init?.method==='POST')!
-  expect(write[1]?.body).toEqual({datasetGeneration:'g',values:[]})
-  expect(request.mock.calls.some(([path,init])=>String(path).endsWith('/status')&&init?.method==='PUT')).toBe(false)
+it('does not submit an empty placeholder when the table has no writable fields',async()=>{
+  const {client,request}=api(),original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>path.endsWith('/fields')?{items:[],tableRevision:3}:original(path,init))
+  renderPage(<DataTableDetailPage {...props(client)}/>);await screen.findByRole('heading',{name:'客户表'})
+  expect(await screen.findByRole('button',{name:'新增行'})).toBeDisabled()
+  expect(screen.queryByRole('form',{name:'新建记录表单'})).not.toBeInTheDocument()
+  expect(request.mock.calls.some(([,init])=>init?.method==='POST')).toBe(false)
 })
 
 it('applies filter JSON only after explicit apply and paginates on the server',async()=>{
@@ -80,9 +70,9 @@ it('protects record drafts while query drafts remain local',async()=>{
   await userEvent.click(screen.getByRole('button',{name:'筛选'}));await userEvent.click(screen.getByRole('button',{name:'高级条件'}));await userEvent.click(screen.getByRole('button',{name:'添加字段条件'}))
   const guard=register.mock.calls.map(call=>call[0]).find(value=>typeof value==='function');expect(await guard()).toBe(true)
   await userEvent.keyboard('{Escape}')
-  await userEvent.click(screen.getByRole('button',{name:'新增记录'}));await userEvent.click(screen.getByLabelText('姓名值状态'));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('姓名'),'保留草稿')
-  const result=guard();await userEvent.click(await screen.findByRole('button',{name:'继续编辑'}));expect(await result).toBe(false)
-  expect(screen.getByLabelText('姓名')).toHaveValue('保留草稿')
+  await userEvent.click(screen.getByRole('button',{name:'新增行'}));await userEvent.dblClick(screen.getByRole('gridcell',{name:'第 1 行 · 姓名'}));await userEvent.type(screen.getByRole('textbox',{name:'第 1 行 · 姓名'}),'保留草稿')
+  const result=guard();await userEvent.click(await screen.findByRole('button',{name:'继续录入'}));expect(await result).toBe(false)
+  expect(screen.getByRole('textbox',{name:'第 1 行 · 姓名'})).toHaveValue('保留草稿')
 })
 
 it('closes stale query drafts on a changed generation without applying them',async()=>{
@@ -126,10 +116,10 @@ it('does not reopen the same typed key against a replacement generation',async()
 
 it('keeps one pending leave approval and rejects a concurrent guard call',async()=>{
   const {client}=api(),register=vi.fn();renderPage(<DataTableDetailPage {...props(client,{registerLeaveGuard:register})}/>)
-  await screen.findByText('Alice');await userEvent.click(screen.getByRole('button',{name:'新增记录'}));await userEvent.click(screen.getByLabelText('姓名值状态'));await userEvent.click(screen.getByRole('option',{name:'填写值'}));await userEvent.type(screen.getByLabelText('姓名'),'草稿')
+  await screen.findByText('Alice');await userEvent.click(screen.getByRole('button',{name:'新增行'}));await userEvent.dblClick(screen.getByRole('gridcell',{name:'第 1 行 · 姓名'}));await userEvent.type(screen.getByRole('textbox',{name:'第 1 行 · 姓名'}),'草稿')
   const guard=register.mock.calls.map(call=>call[0]).find(value=>typeof value==='function')
   const first=guard(),second=guard();expect(await second).toBe(false)
-  await userEvent.click(await screen.findByRole('button',{name:'继续编辑'}));expect(await first).toBe(false)
+  await userEvent.click(await screen.findByRole('button',{name:'继续录入'}));expect(await first).toBe(false)
 })
 
 it('retries the failed catalog dependency from the records error action',async()=>{
@@ -239,7 +229,7 @@ it('falls back from malformed saved filters and restores the scoped scroll posit
 
 it('shows malformed command recovery as a write blocker without discarding it',async()=>{
   localStorage.setItem('autoflow:data-edit:w:p:t','{"pending":{"kind":"recordEdit"}}')
-  const {client}=api();renderPage(<DataTableDetailPage {...props(client)}/>);expect(await screen.findByText(/保存恢复记录不完整/)).toBeVisible();expect(screen.queryByRole('button',{name:'新增记录'})).not.toBeInTheDocument();expect(localStorage.getItem('autoflow:data-edit:w:p:t')).not.toBeNull()
+  const {client}=api();renderPage(<DataTableDetailPage {...props(client)}/>);expect(await screen.findByText(/保存恢复记录不完整/)).toBeVisible();expect(screen.queryByRole('button',{name:'新增行'})).not.toBeInTheDocument();expect(localStorage.getItem('autoflow:data-edit:w:p:t')).not.toBeNull()
 })
 
 it('keeps query drafts local and applies quick search only on submit',async()=>{
@@ -259,7 +249,7 @@ it('keeps query drafts local and applies quick search only on submit',async()=>{
   await userEvent.click(screen.getByRole('button',{name:/应用/}))
   expect(request).toHaveBeenCalledTimes(count)
   expect(screen.queryByRole('columnheader',{name:'姓名'})).not.toBeInTheDocument()
-  expect(screen.getAllByRole('button',{name:'新增记录'})).toHaveLength(1)
+  expect(screen.getAllByRole('button',{name:'新增行'})).toHaveLength(1)
   await userEvent.click(screen.getByRole('button',{name:'更多操作'}));expect(screen.getAllByRole('menuitem',{name:'导出 Excel'})).toHaveLength(1)
   expect(screen.getByRole('menuitem',{name:'批量设置状态'})).toHaveAttribute('aria-disabled','true')
 })
@@ -328,16 +318,19 @@ it('rebuilds inline status baseline from confirmed save results so cancel cannot
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 })
 
-it('restores an accepted-unknown create after a full coordinator remount without opening a second editor',async()=>{
-  const {client,request}=api();const original=request.getMockImplementation()!
-  request.mockImplementation(async(path,init)=>{if(init?.method==='POST'||path.includes('/operations/'))throw new TypeError('offline');return original(path,init)})
-  const options=props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})
-  const first=renderPage(<DataTableDetailPage {...options}/>);await userEvent.type(await screen.findByLabelText('姓名'),'持久草稿')
-  await userEvent.click(screen.getByRole('button',{name:'保存到本地'}));await screen.findByRole('button',{name:'核对保存结果'});first.unmount()
+it('restores a legacy accepted-unknown create without replacing its pending command with a grid draft',async()=>{
+  const {client,request}=api(), original=request.getMockImplementation()!
+  request.mockImplementation(async(path,init)=>path.includes('/operations/')?Promise.reject(new TypeError('offline')):original(path,init))
+  const scope={workspaceKey:'w',projectId:'p',tableId:'t',datasetGeneration:'g'}, session='legacy-session', key='legacy-key'
+  localStorage.setItem('autoflow:data-edit:w:p:t',JSON.stringify({
+    pending:{kind:'recordCreate',scope,session,key,body:{values:[{fieldId:'f',value:'持久草稿'}]}},
+    editor:{kind:'recordCreate',scope,session,table,fields:{items:[field],tableRevision:3},statuses:{items:[status],tableRevision:3}},
+  }))
+  const navigate=vi.fn(), options=props(client,{record:{mode:'create'},onRecordNavigate:navigate})
   renderPage(<DataTableDetailPage {...options}/>)
   expect(await screen.findByRole('button',{name:'核对保存结果'})).toBeVisible()
-  expect(screen.getByRole('heading',{level:2,name:'新增记录'})).toBeVisible()
   expect(screen.getByLabelText('姓名')).toHaveValue('持久草稿')
+  expect(navigate).not.toHaveBeenCalled();expect(request.mock.calls.some(([path])=>path.endsWith('/records/batch'))).toBe(false)
 })
 
 it('shows corrupt recovery evidence as a write block instead of throwing from route activation',async()=>{
@@ -406,12 +399,12 @@ it('adopts the latest record revision explicitly and clears comparison after suc
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
-it('keeps the original gallery table heading, tabs and record form inside one content card',async()=>{
-  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'create'},onRecordNavigate:vi.fn()})}/>);
-  const heading=await screen.findByRole('heading',{name:'新增记录',level:2});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
+it('keeps the existing edit page and its gallery table heading and tabs inside one content card',async()=>{
+  const {client}=api();renderPage(<DataTableDetailPage {...props(client,{record:{mode:'edit',datasetGeneration:'g',recordKey:record.ref.recordKey},onRecordNavigate:vi.fn()})}/>);
+  const heading=await screen.findByRole('heading',{name:'编辑记录 · 001',level:2});const frame=heading.closest('[data-table-page-frame]');expect(frame).not.toBeNull()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'数据记录'})).toBeVisible()
   expect(within(frame as HTMLElement).getByRole('tab',{name:'字段与校验'})).toBeVisible()
-  expect(await within(frame as HTMLElement).findByRole('form',{name:'新建记录表单'})).toBeVisible()
+  expect(await within(frame as HTMLElement).findByRole('form',{name:'编辑记录表单'})).toBeVisible()
   expect(within(frame as HTMLElement).queryByRole('complementary')).not.toBeInTheDocument()
 })
 

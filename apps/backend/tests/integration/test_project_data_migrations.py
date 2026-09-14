@@ -275,9 +275,9 @@ def test_downgrade_then_upgrade_preserves_pm1_projects(tmp_path):
     command.downgrade(config, "pm01_projects")
     with sqlite3.connect(path) as c:
         assert c.execute("SELECT id FROM projects").fetchall() == [("p",)]
-        assert c.execute("SELECT version_num FROM alembic_version").fetchone() == (
-            "pm01_projects",
-        )
+        assert set(c.execute("SELECT version_num FROM alembic_version").fetchall()) == {
+            ("pm01_projects",), ("0008_workflow_debug",),
+        }
     database_session.migrate_database(path)
     with sqlite3.connect(path) as c:
         assert c.execute("SELECT id FROM projects").fetchall() == [("p",)]

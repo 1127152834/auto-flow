@@ -100,6 +100,132 @@ class SqlAlchemyProjectDataRecords:
                     "RECORD_ALREADY_EXISTS", "Record already exists", 409
                 ) from error
 
+    def create_many(
+        self,
+        project_id: str,
+        table_id: str,
+        generation: str,
+        expected: int,
+        rows: list[tuple[str, dict[str, object]]],
+        operation: ProjectOperation,
+    ) -> tuple[dict[str, Any], ProjectOperation, bool]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = SqlAlchemyProjectDataCatalog._existing(session, operation)
+            if existing is not None:
+                session.rollback()
+                return _operation_result(existing), _operation(existing), True
+            table = self._table(session, project_id, table_id, generation, True)
+            if table.table_revision != expected:
+                raise _conflict(expected, table.table_revision, "Table")
+            fields = self._fields(session, table)
+            errors: list[dict[str, Any]] = []
+            prepared: list[DataRecordRow] = []
+            seen: set[RecordKey] = set()
+            now = datetime.now(UTC)
+            for row_id, values in rows:
+                canonical: dict[str, object] = {}
+                before = len(errors)
+                # Validate each cell separately so every invalid field is addressable.
+                for field_id, value in values.items():
+                    try:
+                        canonical.update(
+                            self._validate(fields, {field_id: value}, False)
+                        )
+                    except ProjectError as error:
+                        errors.append(_row_error(row_id, field_id, error))
+                for field in fields:
+                    if field.required and field.id not in values:
+                        errors.append(
+                            _row_error(
+                                row_id,
+                                field.id,
+                                ProjectError(
+                                    "REQUIRED_FIELD_MISSING",
+                                    "Required field is missing",
+                                    422,
+                                ),
+                            )
+                        )
+                if len(errors) != before:
+                    continue
+                identity_id = table.identity.get("fieldId")
+                try:
+                    key = (
+                        system_record_key()
+                        if table.identity.get("mode") == "system"
+                        else record_key(
+                            canonical.get(identity_id)
+                            if isinstance(identity_id, str)
+                            else None
+                        )
+                    )
+                except ProjectError as error:
+                    errors.append(_row_error(row_id, identity_id, error))
+                    continue
+                if (
+                    key in seen
+                    or self._record(session, project_id, table_id, generation, key)
+                    is not None
+                ):
+                    errors.append(
+                        _row_error(
+                            row_id,
+                            identity_id,
+                            ProjectError(
+                                "RECORD_ALREADY_EXISTS", "Record already exists", 409
+                            ),
+                        )
+                    )
+                    continue
+                seen.add(key)
+                prepared.append(
+                    DataRecordRow(
+                        project_id=project_id,
+                        table_id=table_id,
+                        dataset_generation=generation,
+                        key_type=key.type,
+                        key_value=key.value,
+                        values_json=canonical,
+                        record_slots=[],
+                        status_id=None,
+                        current_environment_id=None,
+                        content_revision=1,
+                        status_revision=1,
+                        link_revision=1,
+                        deleted=False,
+                        created_at=now,
+                        updated_at=now,
+                    )
+                )
+            if errors:
+                duplicate = all(
+                    error["code"] == "RECORD_ALREADY_EXISTS" for error in errors
+                )
+                raise ProjectError(
+                    "RECORD_ALREADY_EXISTS" if duplicate else "INVALID_RECORD_BATCH",
+                    "Record batch was not saved",
+                    409 if duplicate else 422,
+                    {"rowErrors": errors},
+                )
+            result: dict[str, Any] = {
+                "records": [
+                    {"clientRowId": rid, "record": self._snapshot(row, fields)}
+                    for (rid, _), row in zip(rows, prepared, strict=True)
+                ]
+            }
+            done = _completed(operation, result)
+            session.add_all(prepared)
+            session.add(_operation_row(done))
+            session.flush()
+            for index, item in enumerate(result["records"], 1):
+                evidence = _change(done, None, item["record"])
+                evidence.sequence = index
+                evidence.resource = _resource(item["record"]["ref"])
+                session.add(evidence)
+            session.commit()
+            return result, done, False
+
     def get(
         self, project_id: str, table_id: str, generation: str, key: RecordKey
     ) -> dict[str, Any] | None:
@@ -393,3 +519,14 @@ def _instant(value: datetime) -> str:
         if value.tzinfo is None
         else value.isoformat()
     )
+
+
+def _row_error(
+    row_id: str, field_id: str | None, error: ProjectError
+) -> dict[str, Any]:
+    return {
+        "clientRowId": row_id,
+        "fieldId": field_id,
+        "code": error.code,
+        "message": str(error),
+    }

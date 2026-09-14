@@ -1,0 +1,38 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ history output guard resolves symlinks before any nested directory is created (14.947125ms)
+✔ containment handles Windows separators and sibling prefixes (0.325083ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (11.618208ms)
+✔ R2 wrapper reuses the exported R1 harness (3.931542ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (1.279541ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (13.586375ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (5.106292ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.114042ms)
+✔ browser management smoke creates the platform kernel layout (0.158667ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.167125ms)
+✔ profile test browser smoke validates a public kernel directory (7.287ms)
+✔ profile test browser smoke finds a session below the manager root (1.699167ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (53.054292ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (46.9605ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (46.854625ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (49.030875ms)
+✔ packaged smoke cannot silently select external health mode (1.75575ms)
+✔ cleanup rejects after the final deadline if the child never exits (11.328334ms)
+✔ cleanup observes close without requiring exit (0.312042ms)
+✔ cleanup rejects a child process error (0.191875ms)
+✔ required path exists: apps/desktop/package.json (0.529416ms)
+✔ required path exists: apps/backend/pyproject.toml (0.081125ms)
+✔ root scripts expose the foundation checks (0.186333ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (3.012625ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.781125ms)
+✔ a green machine report cannot substitute for real application evidence (0.272584ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 279.27525

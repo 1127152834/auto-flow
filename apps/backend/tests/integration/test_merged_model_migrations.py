@@ -11,7 +11,7 @@ from autoflow.infrastructure.database import session as database_session
 
 @pytest.mark.parametrize(
     "revision",
-    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management"],
+    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
 )
 def test_merge_upgrade_preserves_each_branch_database(
     tmp_path: Path, revision: str | None
@@ -67,7 +67,10 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
     from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
 
     paths = AppPaths.from_data_dir(tmp_path)
-    database_session.migrate_database(paths.database)
+    config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+    config.set_main_option("sqlalchemy.url", f"sqlite:///{paths.database}")
+    paths.database.parent.mkdir(parents=True, exist_ok=True)
+    command.upgrade(config, "0008_workflow_debug")
     statements = {
         "workflow_documents": (
             "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",

@@ -1,0 +1,25 @@
+selected the current page in the real table UI and durably set every record status
+cleared the same frozen selection status and verified status facts through GET
+exported the applied filter with one selected data column and verified the XLSX independently with openpyxl
+a repeated save target was rejected instead of overwriting the first export
+replaced through explicit existing-field mapping and impact review; generation advanced, statuses reset, the old generation/key returned 410, and the source workbook stayed byte-identical
+a fresh Electron and sidecar instance returned the durable replacement and export-era table facts
+imported an actual 10000-row workbook through the directory UI in 5311 ms; rendered 50 rows per page and changed the first row on next-page navigation in 164 ms
+{
+  "evidence": "./docs/migration/pm2-detail-qa/run-fOTmBO",
+  "result": "passed",
+  "checkedAt": "2026-09-13T18:28:22.261Z",
+  "scope": "PM2 detail flows; system open/save panel results injected, renderer UI, IPC proof, HTTP, SQLite and workbook I/O real",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export",
+    "replaced through explicit existing-field mapping and impact review; generation advanced, statuses reset, the old generation/key returned 410, and the source workbook stayed byte-identical",
+    "a fresh Electron and sidecar instance returned the durable replacement and export-era table facts",
+    "imported an actual 10000-row workbook through the directory UI in 5311 ms; rendered 50 rows per page and changed the first row on next-page navigation in 164 ms"
+  ],
+  "excluded": [
+    "manual native file-panel interaction"
+  ]
+}

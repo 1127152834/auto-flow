@@ -1,0 +1,119 @@
+{
+  "date": "2026-09-14",
+  "sourceRun": "runs/run-YA1gy6",
+  "manualUserResults": "notRun",
+  "cases": [
+    {
+      "id": "E01",
+      "status": "passed",
+      "actual": "同表新增、无表单，UI 创建核心项目/表/字段。",
+      "screenshot": "runs/run-YA1gy6/V01-two-drafts.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E02",
+      "status": "partial",
+      "actual": "Tab/Enter/Escape 已实测；日期独立浮层与全部 Shift+Tab 边界仅组件/手测覆盖。",
+      "screenshot": "runs/run-YA1gy6/V01-two-drafts.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E03",
+      "status": "passed",
+      "actual": "一次保存两条，真实总数与 null 业务状态核对。",
+      "screenshot": "runs/run-YA1gy6/V03-saved.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "actual": "真实剪贴板、矩形撤销、前导零、日期、0、false、引号换行、公式外观文本。",
+      "screenshot": "runs/run-YA1gy6/V04-rich-paste.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E05",
+      "status": "passed",
+      "actual": "越列、101 行、超 1 MiB 全部拒绝，原草稿不变。",
+      "screenshot": "runs/run-YA1gy6/V05-paste-rejected.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "actual": "必填缺失零新增；错误与焦点定位；后续修正保存。",
+      "screenshot": "runs/run-YA1gy6/V06-cell-error.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E07",
+      "status": "passed",
+      "actual": "真实导入身份表；批内与已有身份重复整批拒绝，修正成功。并发另有后端测试。",
+      "screenshot": "runs/run-YA1gy6/V06-duplicate-identity.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E08",
+      "status": "passed",
+      "actual": "真实 HTTP 竞争字段写入；旧版本拒绝，保留输入，显式确认后成功。",
+      "screenshot": "runs/run-YA1gy6/V07-schema-conflict.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E09",
+      "status": "passed",
+      "actual": "响应阶段故障、完整应用重启、原键找回，仅新增一次。重启返回使用直接路由。",
+      "screenshot": "runs/run-YA1gy6/V10-recovered.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E10",
+      "status": "passed",
+      "actual": "请求阶段阻断、先查不存在、显式原键重发。",
+      "screenshot": "runs/run-YA1gy6/V08-not-accepted.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "actual": "页签/全局菜单/浏览历史取消；确认离开后返回恢复。返回使用直接路由。",
+      "screenshot": "runs/run-YA1gy6/V09-global-return.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E12",
+      "status": "passed",
+      "actual": "两个实际工作区及 UI 创建的不同草稿；工作区选择/确认使用受控 IPC，非设置页点击。",
+      "screenshot": "runs/run-YA1gy6/V10-workspace-a.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E13",
+      "status": "notRunE2E",
+      "actual": "旧单条 pending 与重新导入后的旧代次恢复有页面/Hook 自动测试；未完成合并真实 E2E。",
+      "screenshot": null,
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E14",
+      "status": "passed",
+      "actual": "不匹配搜索的新增仍落库，查询保留；真实过滤导出由 openpyxl 独立核对。",
+      "screenshot": "runs/run-YA1gy6/V14-filtered-export.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E15",
+      "status": "partial",
+      "actual": "原生 Electron 200% 与底部按钮可见、窗口无横溢出已实测；原生中文输入法未执行，composition 仅组件测试。",
+      "screenshot": "runs/run-YA1gy6/V11-zoom-200.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    },
+    {
+      "id": "E16",
+      "status": "passedWithScope",
+      "actual": "已有记录 UI 编辑通过；PM2 批状态、导出、替换、重启及万行分页回归通过。文件选择结果为测试注入。",
+      "screenshot": "runs/run-YA1gy6/V13-existing-edit.png",
+      "specification": "../../../../superpowers/specs/2026-09-14-record-grid-entry.md"
+    }
+  ]
+}

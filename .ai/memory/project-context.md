@@ -82,3 +82,17 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 来源：本实施分支e467035/b2d1543/800fb01、`docs/project-management/design-alignment/acceptance/gallery-r3/`。R3已实现原008/009/100/010/012/014结构、完整字段草稿及原子保存、真实状态引用、来源和设置。853后端/1126前端、33脚本/3结构与工程检查通过；真实120条部分结果修复了仓储已提交但HTTP拒绝details导致500、结果选择数清零的实际问题。最终同版本截图和回归见machine-report，不将历史B0或小测试冒称完整视觉验收。
 
 原生Excel完整链实际操作于build3，文件实现后续未改；最终build6使用独立真实IPC/HTTP/SQLite文件回归并明确E4选择注入。Windows、其他架构、打包版本和用户手测未执行。记录`gallery-delivery.md`作为统一交付入口，R3后停止，PM3未开始。旧“R3仍未实施”的当前描述由本节取代；旧报告自身不改写。
+
+## 行内新增记录侧分支（2026-09-14，confirmed）
+
+来源：侧对话用户选择“行尾连续录入”并授权实施；分支 codex/record-grid-entry，基线 a6a0e8e。正常新增改为同表草稿行及一次有界原子保存，旧编辑和旧 pending 恢复保留。这只变更新增交互，不替代父任务其他页面设计。实现与候选证据位于该独立分支，未合并主线；G4 组合恢复 E2E、原生输入法及独立视觉评分仍待完成。
+
+
+## 主项目整合：行内新增与 R2/R3（2026-09-14，confirmed 代码范围）
+
+来源：`361d4fd`、`dcb1831` 与主线 `cda081d` 的整合。保留最新 WebRPA Studio 前端及其独立窗口，不恢复已退役的 Studio 后端执行器。正常新增记录使用同表草稿行和批量保存；已有记录继续详情/编辑页面，字段继续 R3 聚合草稿与原子保存。本节替代前述“行内新增尚未合入”“Studio/PM迁移尚未汇合”的当前状态；历史报告保持原样，旧 G4 未验收项目不自动转为通过。
+
+- `bootstrap/project_http_routes.py` 同时供真实应用与无副作用 OpenAPI 导出注册项目路由。
+- `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
+- `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
+- 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。
