@@ -1,0 +1,58 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx -t WebDAV connection change
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:7234) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx (34 tests | 1 failed | 33 skipped) 255ms
+   × WebDAV connection change during confirmation never submits the original config to a new service 254ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx > WebDAV connection change during confirmation never submits the original config to a new service
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "http://new-webdav.fixture/api/local-workflows/webdav-config",
+      Object {
+        "body": "{"enabled":false,"url":"","username":"","password":"","remoteDir":"leave-webdav-1"}",
+        "headers": Object {
+          "Content-Type": "application/json",
+        },
+        "method": "POST",
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx:200:25
+    198|     fireEvent.click(within(dialog).getByRole('button', { name: '保存后继续'…
+    199|     await waitFor(() => expect(screen.queryByRole('dialog', { name: '保…
+    200|     expect(fetcher).not.toHaveBeenCalled()
+       |                         ^
+    201|     expect(close).not.toHaveBeenCalled()
+    202|     await screen.findByText('连接已更换，请重新读取配置')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 33 skipped (34)
+   Start at  14:19:58
+   Duration  1.55s (transform 513ms, setup 134ms, import 670ms, tests 255ms, environment 383ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/settings-leave-protection.test.tsx -t 'WebDAV connection change'

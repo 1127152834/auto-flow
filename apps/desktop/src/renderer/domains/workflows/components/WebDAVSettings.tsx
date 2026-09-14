@@ -1,4 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/WebDAVSettings.tsx; see SOURCE.md for license and adaptation boundaries.
+import { useSettingsDraftProtection, type RegisterSettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { getStudioTransportRevision } from '../api/transport'
 import { apiRequest } from '../api'
 import { useEffect, useState, useRef } from 'react'
@@ -18,7 +19,7 @@ const EMPTY: WebDAVConfig = { enabled: false, url: '', username: '', password: '
 /**
  * WebDAV 设置：让工作流的保存/读取走 WebDAV（NAS、Nextcloud、坚果云等），实现多端共享。
  */
-export function WebDAVSettings() {
+export function WebDAVSettings({ registerLeaveGuard }: { registerLeaveGuard?: RegisterSettingsLeaveGuard }) {
   const [cfg, setCfg] = useState<WebDAVConfig>(EMPTY)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -29,6 +30,8 @@ export function WebDAVSettings() {
   const [attempt, setAttempt] = useState(0)
   const request = useRef(0)
   const busy = useRef(false)
+  const initial = useRef(JSON.stringify(EMPTY))
+  const loadedRevision = useRef<number | null>(null)
 
   useEffect(() => {
     const invalidate = () => {
@@ -53,6 +56,8 @@ export function WebDAVSettings() {
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('WebDAV 配置格式错误')
         const next = {...EMPTY,...raw}
         if (typeof next.enabled !== 'boolean' || ['url','username','password','remoteDir'].some(key => typeof next[key as keyof WebDAVConfig] !== 'string')) throw new Error('WebDAV 配置格式错误')
+        loadedRevision.current = revision
+        initial.current = JSON.stringify(next)
         setCfg(next)
       } catch (error) { if (current()) setLoadError(error instanceof Error ? error.message : '读取配置失败') }
       finally { if (current()) setLoading(false) }
@@ -62,10 +67,10 @@ export function WebDAVSettings() {
 
   const update = (patch: Partial<WebDAVConfig>) => { setCfg(current => ({...current,...patch})); setMsg(null) }
   const submit = async (action: 'save' | 'test') => {
-    if (busy.current || loading || loadError) return
+    if (busy.current || loading || loadError || loadedRevision.current !== getStudioTransportRevision()) return false
     if (cfg.enabled || action === 'test') {
       try { const url = new URL(cfg.url); if (!['http:','https:'].includes(url.protocol)) throw new Error() }
-      catch { setMsg({type:'err',text:'请输入有效的 HTTP 或 HTTPS WebDAV 地址'}); return }
+      catch { setMsg({type:'err',text:'请输入有效的 HTTP 或 HTTPS WebDAV 地址'}); return false }
     }
     busy.current = true
     const sequence = ++request.current
@@ -76,15 +81,19 @@ export function WebDAVSettings() {
       const result = await apiRequest<{success: boolean; mock?: boolean}>(action === 'save' ? '/local-workflows/webdav-config' : '/local-workflows/webdav-test', {
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg),
       })
-      if (!current()) return
+      if (!current()) return false
       if (!result.success || result.data?.success !== true) throw new Error(result.error || (action === 'save' ? '保存失败' : '连接失败'))
       const text = result.data.mock
         ? (action === 'save' ? '已保存模拟配置，未连接远程存储' : '模拟测试返回，未验证远程连接')
         : action === 'test' ? '连接成功！' : cfg.enabled ? '配置已保存' : '已保存（WebDAV 未启用，仍用本地目录）'
+      if (action === 'save') initial.current = JSON.stringify(cfg)
       setMsg({type:'ok',text})
-    } catch (error) { if (current()) setMsg({type:'err',text:error instanceof Error ? error.message : '操作失败'}) }
+      return true
+    } catch (error) { if (current()) setMsg({type:'err',text:error instanceof Error ? error.message : '操作失败'}); return false }
     finally { if (current()) { busy.current = false; setSaving(false); setTesting(false) } }
   }
+
+  const leave = useSettingsDraftProtection(registerLeaveGuard, '保存 WebDAV 配置？', JSON.stringify(cfg) !== initial.current, saving || testing, () => submit('save'))
 
   return (
     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
@@ -93,7 +102,7 @@ export function WebDAVSettings() {
           <label className="text-sm font-medium text-gray-700">WebDAV 远程存储（NAS / 网盘）</label>
           <p className="text-xs text-gray-500 mt-1">开启后，工作流的保存与读取都走 WebDAV 远程目录，可在多台设备间共享。</p>
         </div>
-        <Switch disabled={loading || saving || testing || !!loadError} className="flex-none ml-3" checked={cfg.enabled} onCheckedChange={(c) => update({ enabled: c })} />
+        <Switch disabled={loading || saving || testing || leave.pending || !!loadError} className="flex-none ml-3" checked={cfg.enabled} onCheckedChange={(c) => update({ enabled: c })} />
       </div>
 
       {loading ? (
@@ -102,22 +111,22 @@ export function WebDAVSettings() {
         <div role="alert"><p className="text-xs text-red-600">{loadError}</p><button type="button" onClick={() => setAttempt(value => value + 1)}>重试读取配置</button></div>
       ) : (
         <div className="space-y-2">
-          <input disabled={saving || testing} value={cfg.url} onChange={(e) => update({ url: e.target.value })} placeholder="WebDAV 地址，如 https://dav.example.com/webrpa/"
+          <input disabled={saving || testing || leave.pending} value={cfg.url} onChange={(e) => update({ url: e.target.value })} placeholder="WebDAV 地址，如 https://dav.example.com/webrpa/"
             className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white text-black" />
           <div className="grid grid-cols-2 gap-2">
-            <input disabled={saving || testing} value={cfg.username} onChange={(e) => update({ username: e.target.value })} placeholder="用户名"
+            <input disabled={saving || testing || leave.pending} value={cfg.username} onChange={(e) => update({ username: e.target.value })} placeholder="用户名"
               className="px-3 py-2 text-sm rounded-md border border-gray-300 bg-white text-black" />
-            <input disabled={saving || testing} type="password" value={cfg.password} onChange={(e) => update({ password: e.target.value })} placeholder="密码"
+            <input disabled={saving || testing || leave.pending} type="password" value={cfg.password} onChange={(e) => update({ password: e.target.value })} placeholder="密码"
               className="px-3 py-2 text-sm rounded-md border border-gray-300 bg-white text-black" />
           </div>
-          <input disabled={saving || testing} value={cfg.remoteDir} onChange={(e) => update({ remoteDir: e.target.value })} placeholder="子目录（可选），如 workflows"
+          <input disabled={saving || testing || leave.pending} value={cfg.remoteDir} onChange={(e) => update({ remoteDir: e.target.value })} placeholder="子目录（可选），如 workflows"
             className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white text-black" />
           <div className="flex items-center gap-2">
-            <button onClick={() => submit('test')} disabled={saving || testing || !cfg.url}
+            <button onClick={() => submit('test')} disabled={saving || testing || leave.pending || !cfg.url}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 disabled:opacity-50">
               {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}测试连接
             </button>
-            <button onClick={() => submit('save')} disabled={saving || testing}
+            <button onClick={() => submit('save')} disabled={saving || testing || leave.pending}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50">
               {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <SaveIcon className="w-3.5 h-3.5" />}保存配置
             </button>
@@ -125,6 +134,7 @@ export function WebDAVSettings() {
           </div>
         </div>
       )}
+      {leave.dialog}
     </div>
   )
 }

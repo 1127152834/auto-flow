@@ -390,7 +390,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 905,
+          "line": 917,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "aiAssistantApi.testConnection(payload)"
         }
@@ -474,7 +474,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 376,
+          "line": 386,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "browserApi.chromiumStatus()"
         }
@@ -796,7 +796,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx",
-          "line": 103,
+          "line": 110,
           "source": null,
           "call": "credentialApi.delete(name)"
         }
@@ -824,7 +824,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx",
-          "line": 33,
+          "line": 35,
           "source": null,
           "call": "credentialApi.list()"
         }
@@ -894,7 +894,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx",
-          "line": 86,
+          "line": 92,
           "source": null,
           "call": "credentialApi.upsert(editing.name.trim(), Object.fromEntries(entries), editing.description)"
         }
@@ -2211,19 +2211,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 337,
+          "line": 347,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(folder)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 344,
+          "line": 354,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(latestFolderRef.current)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 472,
+          "line": 482,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "localWorkflowApi.setActiveFolder(cfg.workflow?.localFolder || '')"
         }
@@ -2748,7 +2748,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 212,
+          "line": 213,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.cleanup()"
         }
@@ -2776,7 +2776,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 194,
+          "line": 195,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.getConfig()"
         }
@@ -2804,7 +2804,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 204,
+          "line": 205,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "retentionApi.setConfig(cfg)"
         }
@@ -3289,7 +3289,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 129,
+          "line": 130,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.regenerate()"
         }
@@ -3317,7 +3317,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 114,
+          "line": 115,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.status()"
         }
@@ -3345,7 +3345,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 125,
+          "line": 126,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "securityApi.toggle(v)"
         }
@@ -3566,7 +3566,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1644,
+          "line": 1656,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFile('选择浏览器可执行文件', undefined, [\n                            ['可执行文件', '*.exe']\n                          ])"
         },
@@ -3618,25 +3618,25 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1316,
+          "line": 1328,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择工作流保存文件夹')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1696,
+          "line": 1708,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择浏览器数据缓存目录')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 1784,
+          "line": 1796,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择浏览器扩展目录（含 manifest.json）')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 2064,
+          "line": 2076,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.selectFolder('选择默认监控路径')"
         },
@@ -3682,19 +3682,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 356,
+          "line": 366,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(b as unknown as Record<string, unknown>)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 363,
+          "line": 373,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(latestBrowserRef.current as unknown as Record<string, unknown>)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-          "line": 471,
+          "line": 481,
           "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
           "call": "systemApi.setBrowserConfig(cfg.browser as unknown as Record<string, unknown>)"
         }
@@ -5829,7 +5829,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx",
-          "line": 59,
+          "line": 61,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -5841,7 +5841,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-          "line": 39,
+          "line": 42,
           "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
           "via": "window.addEventListener"
         },
@@ -6877,7 +6877,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx",
-      "line": 319,
+      "line": 329,
       "source": "frontend/src/components/workflow/GlobalConfigDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/default-folder`)"
     },
@@ -7017,7 +7017,7 @@
       "body": null,
       "responseType": "{config: unknown}",
       "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-      "line": 49,
+      "line": 52,
       "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
       "call": "apiRequest<{config: unknown}>('/local-workflows/webdav-config')"
     },
@@ -7027,7 +7027,7 @@
       "body": "body:JSON.stringify(cfg)",
       "responseType": "{success: boolean; mock?: boolean}",
       "file": "apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx",
-      "line": 76,
+      "line": 81,
       "source": "frontend/src/components/workflow/WebDAVSettings.tsx",
       "call": "apiRequest<{success: boolean; mock?: boolean}>(action === 'save' ? '/local-workflows/webdav-config' : '/local-workflows/webdav-test', {\n        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg),\n      })"
     },

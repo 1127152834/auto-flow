@@ -39172,5 +39172,688 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.leave.credential.系统.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.系统.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.系统.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.完成保存.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.完成保存.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.完成保存.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.关闭全局配置.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.关闭全局配置.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.关闭全局配置.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.背景.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.背景.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.背景.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "credential",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.系统.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.系统.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.系统.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 系统",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.完成保存.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.完成保存.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.完成保存.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 完成保存",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.关闭全局配置.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.关闭全局配置.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.关闭全局配置.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 关闭全局配置",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.背景.取消",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 取消"
+    ],
+    "expectedUI": "保持原表单和输入，不提交，不调用关闭",
+    "expectedIO": "保持原表单和输入，不提交，不调用关闭",
+    "stateAssertion": "保持原表单和输入，不提交，不调用关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.背景.保存后继续",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 保存后继续"
+    ],
+    "expectedUI": "恰好一次服务写入，确认后执行原离开目的",
+    "expectedIO": "恰好一次服务写入，确认后执行原离开目的",
+    "stateAssertion": "恰好一次服务写入，确认后执行原离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.背景.放弃修改",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "webdav",
+      "state": "已读取配置，已编辑测试值"
+    },
+    "steps": [
+      "修改输入",
+      "点击 背景",
+      "选择 放弃修改"
+    ],
+    "expectedUI": "不写服务，执行离开目的",
+    "expectedIO": "不写服务，执行离开目的",
+    "stateAssertion": "不写服务，执行离开目的",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.failed-save",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "服务返回不可写"
+    },
+    "steps": [
+      "保存后继续"
+    ],
+    "expectedUI": "显示失败，保留输入，不离开",
+    "expectedIO": "显示失败，保留输入，不离开",
+    "stateAssertion": "显示失败，保留输入，不离开",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.credential.same-tab",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "已编辑"
+    },
+    "steps": [
+      "点击凭据库当前标签"
+    ],
+    "expectedUI": "不提示离开，不丢输入",
+    "expectedIO": "不提示离开，不丢输入",
+    "stateAssertion": "不提示离开，不丢输入",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.failed-save",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "WebDAV",
+      "state": "服务返回磁盘不可写"
+    },
+    "steps": [
+      "保存后继续"
+    ],
+    "expectedUI": "显示失败，保留子目录，不离开",
+    "expectedIO": "显示失败，保留子目录，不离开",
+    "stateAssertion": "显示失败，保留子目录，不离开",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.saved",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "WebDAV",
+      "state": "已修改子目录"
+    },
+    "steps": [
+      "保存配置成功，再关闭"
+    ],
+    "expectedUI": "不重复提示，关闭一次",
+    "expectedIO": "不重复提示，关闭一次",
+    "stateAssertion": "不重复提示，关闭一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.repeat",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "已编辑"
+    },
+    "steps": [
+      "先完成保存再点系统；确认保存"
+    ],
+    "expectedUI": "只保留首次目的，一次写入/关闭",
+    "expectedIO": "只保留首次目的，一次写入/关闭",
+    "stateAssertion": "只保留首次目的，一次写入/关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.escape",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "离开选择框打开"
+    },
+    "steps": [
+      "按 Escape"
+    ],
+    "expectedUI": "取消离开，恢复表单编辑",
+    "expectedIO": "取消离开，恢复表单编辑",
+    "stateAssertion": "取消离开，恢复表单编辑",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.unmount",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "离开选择框打开"
+    },
+    "steps": [
+      "卸载组件"
+    ],
+    "expectedUI": "取消等待，不再调用目的操作",
+    "expectedIO": "取消等待，不再调用目的操作",
+    "stateAssertion": "取消等待，不再调用目的操作",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.pending-write",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "保存请求等待响应"
+    },
+    "steps": [
+      "请求关闭，再确认写入，重新关闭"
+    ],
+    "expectedUI": "写入期间不关闭，确认后再次操作才关闭",
+    "expectedIO": "写入期间不关闭，确认后再次操作才关闭",
+    "stateAssertion": "写入期间不关闭，确认后再次操作才关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.connection-change",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "凭据",
+      "state": "离开选择框打开"
+    },
+    "steps": [
+      "更换服务连接后选择保存"
+    ],
+    "expectedUI": "不向新服务发请求，不离开，保留输入",
+    "expectedIO": "不向新服务发请求，不离开，保留输入",
+    "stateAssertion": "不向新服务发请求，不离开，保留输入",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.leave.browser.cancel-discard",
+    "capability": "settings:leave",
+    "preconditions": {
+      "origin": "localhost:5175，Mock",
+      "data": "独立测试元数据，无真实密码"
+    },
+    "steps": [
+      "编辑虚构凭据说明",
+      "切系统→取消",
+      "切存储→放弃"
+    ],
+    "expectedUI": "取消保留输入，放弃后切标签且原已保存说明不变",
+    "expectedIO": "取消保留输入，放弃后切标签且原已保存说明不变",
+    "stateAssertion": "取消保留输入，放弃后切标签且原已保存说明不变",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.leave.browser.webdav-save",
+    "capability": "settings:leave",
+    "preconditions": {
+      "origin": "localhost:5175，Mock",
+      "data": "独立测试元数据，无真实密码"
+    },
+    "steps": [
+      "修改空白 Mock 子目录",
+      "切凭据→保存后继续",
+      "重新进入存储"
+    ],
+    "expectedUI": "保存后切换，重新读取回显测试目录",
+    "expectedIO": "保存后切换，重新读取回显测试目录",
+    "stateAssertion": "保存后切换，重新读取回显测试目录",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.leave.browser.clean-close",
+    "capability": "settings:leave",
+    "preconditions": {
+      "origin": "localhost:5175，Mock",
+      "data": "独立测试元数据，无真实密码"
+    },
+    "steps": [
+      "子目录恢复空白并保存",
+      "右上角关闭"
+    ],
+    "expectedUI": "已保存不再提示，配置关闭，Mock 禁用空白状态恢复",
+    "expectedIO": "已保存不再提示，配置关闭，Mock 禁用空白状态恢复",
+    "stateAssertion": "已保存不再提示，配置关闭，Mock 禁用空白状态恢复",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.leave.webdav.connection-change",
+    "capability": "settings:leave",
+    "preconditions": {
+      "panel": "WebDAV",
+      "state": "旧连接配置已编辑，离开确认打开"
+    },
+    "steps": [
+      "更换连接",
+      "选择保存后继续"
+    ],
+    "expectedUI": "停留原面板并提示连接更换",
+    "expectedIO": "新服务收到 0 个旧配置请求",
+    "stateAssertion": "不关闭，不投递旧配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
   }
 ]

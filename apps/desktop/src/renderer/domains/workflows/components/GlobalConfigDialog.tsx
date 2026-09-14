@@ -1,6 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/GlobalConfigDialog.tsx; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from '../api/transport'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
 import { Label } from './controls/label'
@@ -18,6 +18,7 @@ import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
 import { SHORTCUT_ACTIONS, eventToCombo } from '../lib/customShortcuts'
+import type { SettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { CredentialSettings } from './CredentialSettings'
 import { WebDAVSettings } from './WebDAVSettings'
 
@@ -301,6 +302,15 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [exportIncludeSensitive, setExportIncludeSensitive] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('system')
+  const settingsGuard = useRef<SettingsLeaveGuard | null>(null)
+  const leavingSettings = useRef(false)
+  const registerLeaveGuard = useCallback((guard: SettingsLeaveGuard | null) => { settingsGuard.current = guard }, [])
+  const leaveSettings = async (action: () => void) => {
+    if (leavingSettings.current) return
+    leavingSettings.current = true
+    try { if (!settingsGuard.current || await settingsGuard.current()) action() }
+    finally { leavingSettings.current = false }
+  }
   const [defaultFolder, setDefaultFolder] = useState<string>('')
   const [isSelectingFolder, setIsSelectingFolder] = useState(false)
   const [isSelectingBrowser, setIsSelectingBrowser] = useState(false)
@@ -510,7 +520,8 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
     <div
       className="fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4 animate-fade-in"
       style={{ zIndex: 2147483646 }}
-      onClick={onClose}
+      data-testid="global-config-backdrop"
+      onClick={() => void leaveSettings(onClose)}
     >
       <div
         className="modern-dialog w-full max-w-4xl flex flex-col animate-scale-in-bounce"
@@ -527,7 +538,8 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
             <div className="modern-dialog-subtitle">在这里调整 WebRPA 的工作行为与默认参数</div>
           </div>
           <button
-            onClick={onClose}
+            aria-label="关闭全局配置"
+            onClick={() => void leaveSettings(onClose)}
             className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
           >
             <X className="w-4 h-4" />
@@ -544,7 +556,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => { if (tab.id !== activeTab) void leaveSettings(() => setActiveTab(tab.id)) }}
                   className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[12.5px] font-medium transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border ${
                     isActive
                       ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
@@ -1389,7 +1401,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                 </div>
 
                 {/* WebDAV 远程存储 */}
-                <WebDAVSettings />
+                <WebDAVSettings registerLeaveGuard={registerLeaveGuard} />
               </div>
             </>
           )}
@@ -2094,7 +2106,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
           )}
 
           {activeTab === 'credentials' && (
-            <CredentialSettings />
+            <CredentialSettings registerLeaveGuard={registerLeaveGuard} />
           )}
 
           {activeTab === 'retention' && (
@@ -2146,7 +2158,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
           <Button
             variant="success"
             size="sm"
-            onClick={onClose}
+            onClick={() => void leaveSettings(onClose)}
           >
             <Check className="w-3.5 h-3.5" />
             完成保存

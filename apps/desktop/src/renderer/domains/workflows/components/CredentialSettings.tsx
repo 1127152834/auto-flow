@@ -1,4 +1,5 @@
 // Extracted from the migrated WebRPA GlobalConfigDialog; see SOURCE.md for attribution.
+import { useSettingsDraftProtection, type RegisterSettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getStudioTransportRevision } from '../api/transport'
 import { credentialApi, type CredentialItem } from '../api'
@@ -9,7 +10,7 @@ import { Label } from './controls/label'
 import { Plus, Trash2, RotateCcw } from 'lucide-react'
 
 // 凭据库设置面板：管理本地加密凭据（口令/API Key/数据库密码等），节点里用 {{cred:名称.字段}} 引用
-export function CredentialSettings() {
+export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?: RegisterSettingsLeaveGuard }) {
   const [list, setList] = useState<CredentialItem[]>([])
   const [loading, setLoading] = useState(true)
   const [loaded, setLoaded] = useState(false)
@@ -20,6 +21,7 @@ export function CredentialSettings() {
   const mounted = useRef(true)
   const reads = useRef(0)
   const editingRevision = useRef(0)
+  const initialEdit = useRef('')
   const [editing, setEditing] = useState<{ name: string; description: string; fields: { key: string; value: string }[] } | null>(null)
   const { confirm, alert, ConfirmDialog } = useConfirm()
 
@@ -62,32 +64,37 @@ export function CredentialSettings() {
 
   const startNew = () => {
     editingRevision.current = getStudioTransportRevision()
-    setEditing({ name: '', description: '', fields: [{ key: 'value', value: '' }] })
+    const initial = { name: '', description: '', fields: [{ key: 'value', value: '' }] }
+    initialEdit.current = JSON.stringify(initial)
+    setEditing(initial)
   }
   const startEdit = (c: CredentialItem) => {
     editingRevision.current = getStudioTransportRevision()
-    setEditing({ name: c.name, description: c.description,
-      fields: c.fields.length ? c.fields.map(f => ({ key: f.key, value: '' })) : [{ key: 'value', value: '' }] })
+    const initial = { name: c.name, description: c.description,
+      fields: c.fields.length ? c.fields.map(f => ({ key: f.key, value: '' })) : [{ key: 'value', value: '' }] }
+    initialEdit.current = JSON.stringify(initial)
+    setEditing(initial)
   }
 
   const save = async () => {
-    if (!editing || busyRef.current || !loaded) return
+    if (!editing || busyRef.current || !loaded) return false
     const revision = getStudioTransportRevision()
-    if (editingRevision.current !== revision) return
-    if (!editing.name.trim()) { await alert('请填写凭据名', { title: '提示' }); return }
+    if (editingRevision.current !== revision) return false
+    if (!editing.name.trim()) { await alert('请填写凭据名', { title: '提示' }); return false }
     const entries = editing.fields.map(f => [f.key.trim(), f.value] as const)
-    if (!entries.length) { await alert('至少需要一个字段', { title: '提示' }); return }
-    if (entries.some(([key]) => !key)) { await alert('字段名不能为空', { title: '提示' }); return }
-    if (new Set(entries.map(([key]) => key)).size !== entries.length) { await alert('字段名重复，请修改后保存', { title: '提示' }); return }
+    if (!entries.length) { await alert('至少需要一个字段', { title: '提示' }); return false }
+    if (entries.some(([key]) => !key)) { await alert('字段名不能为空', { title: '提示' }); return false }
+    if (new Set(entries.map(([key]) => key)).size !== entries.length) { await alert('字段名重复，请修改后保存', { title: '提示' }); return false }
     busyRef.current = true
     setBusy(true)
     const current = () => mounted.current && revision === getStudioTransportRevision()
     try {
       const res = await credentialApi.upsert(editing.name.trim(), Object.fromEntries(entries), editing.description)
-      if (!current()) return
-      if (!res.success || res.data?.success !== true) { await alert(`保存失败：${res.error || '服务未返回有效确认'}`, { title: '失败' }); return }
+      if (!current()) return false
+      if (!res.success || res.data?.success !== true) { await alert(`保存失败：${res.error || '服务未返回有效确认'}`, { title: '失败' }); return false }
       setEditing(null)
       await refresh()
+      return current()
     } finally { if (current()) { busyRef.current = false; setBusy(false) } }
   }
 
@@ -107,6 +114,8 @@ export function CredentialSettings() {
     } finally { if (current()) { busyRef.current = false; setBusy(false) } }
   }
 
+  const leave = useSettingsDraftProtection(registerLeaveGuard, '保存凭据编辑？', !!editing && JSON.stringify(editing) !== initialEdit.current, busy, save)
+
   return (
     <>
       {loading && <p role="status">正在读取凭据…</p>}
@@ -119,7 +128,7 @@ export function CredentialSettings() {
         <code className="bg-gray-100 px-1 rounded mx-1">{'{{cred:名称.字段}}'}</code> 引用，正式运行时由服务解析。
       </p>
       {editing ? (
-        <fieldset disabled={busy} className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <fieldset disabled={busy || leave.pending} className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-gray-700 text-xs">凭据名</Label>
@@ -174,6 +183,7 @@ export function CredentialSettings() {
         </div>
       )}
       <ConfirmDialog />
+      {leave.dialog}
     </>
   )
 }
