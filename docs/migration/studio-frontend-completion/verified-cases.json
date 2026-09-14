@@ -30762,5 +30762,1283 @@
     "level": "browser UI + Mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/mcp-save-protection.md"
+  },
+  {
+    "id": "F5.mcp-text.delimiters",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "含空行、空值、值中等号/冒号、大小写环境键"
+    },
+    "steps": [
+      "解析 env 和 headers"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "空行忽略；值和独立键保持，空值合法",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-0",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "env: A=1 / bad"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 2 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-1",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "env: =missing"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 1 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-2",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "env: A=1 / A=2"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 2 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-3",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "headers: X-A:1 / x-a:2"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 2 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-4",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "headers: Bad Name: value"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 1 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-5",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "headers: bad"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 1 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.invalid-6",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "env: A=<NUL>"
+    },
+    "steps": [
+      "解析逐行映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝并指出第 1 行，不静默丢行",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.literal-keys",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "__proto__ 与 constructor 环境键"
+    },
+    "steps": [
+      "解析映射"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "作为 own 字段保留，原型仍为 Object.prototype",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-0",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "command=node"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "stdio",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-1",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "URL=/sse"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "sse",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-2",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "URL=/mcp"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "http",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-3",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "streamable_http"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "http",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-4",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "streamable-http"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "http",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-5",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "HTTP"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "http",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-6",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "Streamable_HTTP"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "http",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-7",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "explicit=sse,command=node"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "sse",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-text.transport-8",
+    "capability": "MCP text",
+    "preconditions": {
+      "data": "empty"
+    },
+    "steps": [
+      "推断表单传输"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "stdio",
+    "level": "rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-config-text.test.ts"
+  },
+  {
+    "id": "F5.mcp-form.invalid-stdio",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "stdio 及 BAD LINE 映射"
+    },
+    "steps": [
+      "输入合法名称/地址或命令",
+      "点击保存"
+    ],
+    "expectedUI": "行号错误且原文保留",
+    "expectedIO": "无 PUT",
+    "stateAssertion": "行号错误且原文保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.invalid-http",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "http 及 BAD LINE 映射"
+    },
+    "steps": [
+      "输入合法名称/地址或命令",
+      "点击保存"
+    ],
+    "expectedUI": "行号错误且原文保留",
+    "expectedIO": "无 PUT",
+    "stateAssertion": "行号错误且原文保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.invalid-sse",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "sse 及 BAD LINE 映射"
+    },
+    "steps": [
+      "输入合法名称/地址或命令",
+      "点击保存"
+    ],
+    "expectedUI": "行号错误且原文保留",
+    "expectedIO": "无 PUT",
+    "stateAssertion": "行号错误且原文保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.hidden",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "stdio 环境映射错误"
+    },
+    "steps": [
+      "切换 http",
+      "输入有效地址",
+      "保存"
+    ],
+    "expectedUI": "隐藏错误不阻止当前模式保存",
+    "expectedIO": "一次 PUT",
+    "stateAssertion": "隐藏错误不阻止当前模式保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.alias-streamable_http",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "streamable_http 旧配置及 URL"
+    },
+    "steps": [
+      "打开编辑"
+    ],
+    "expectedUI": "显示 http 地址字段，未自动写回",
+    "expectedIO": "GET，无 PUT",
+    "stateAssertion": "显示 http 地址字段，未自动写回",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.alias-streamable-http",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "streamable-http 旧配置及 URL"
+    },
+    "steps": [
+      "打开编辑"
+    ],
+    "expectedUI": "显示 http 地址字段，未自动写回",
+    "expectedIO": "GET，无 PUT",
+    "stateAssertion": "显示 http 地址字段，未自动写回",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.url-0",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "not-a-url"
+    },
+    "steps": [
+      "添加远程服务器",
+      "保存"
+    ],
+    "expectedUI": "URL 错误，原文保留",
+    "expectedIO": "无 PUT",
+    "stateAssertion": "URL 错误，原文保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.url-1",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "file:///tmp/mcp"
+    },
+    "steps": [
+      "添加远程服务器",
+      "保存"
+    ],
+    "expectedUI": "URL 错误，原文保留",
+    "expectedIO": "无 PUT",
+    "stateAssertion": "URL 错误，原文保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.prototype-name",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "名称 __proto__"
+    },
+    "steps": [
+      "添加 node 服务器",
+      "保存"
+    ],
+    "expectedUI": "名称作为 own 字段出现在实际 JSON 请求及列表",
+    "expectedIO": "一次 PUT，检查 JSON 自有字段",
+    "stateAssertion": "名称作为 own 字段出现在实际 JSON 请求及列表",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.extensions",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "根及服务器扩展字段，args/env=null"
+    },
+    "steps": [
+      "编辑 command 并保存"
+    ],
+    "expectedUI": "根和服务器扩展字段保持",
+    "expectedIO": "PUT 保留扩展字段",
+    "stateAssertion": "根和服务器扩展字段保持",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-form.partial-reload",
+    "capability": "MCP form",
+    "preconditions": {
+      "data": "HTTP200 重连返回 failed 项"
+    },
+    "steps": [
+      "点击重连",
+      "刷新状态"
+    ],
+    "expectedUI": "显示服务器名称及失败原因，列表保留",
+    "expectedIO": "POST reload 后 GET config/status",
+    "stateAssertion": "显示服务器名称及失败原因，列表保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-0",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "None，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-1",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "''，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-2",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "'http'，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-3",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "'HTTP'，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-4",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "'streamable_http'，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.nullable-5",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "'Streamable-HTTP'，可空可选字段"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受兼容字段和扩展项",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.invalid-status-0",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "null"
+    },
+    "steps": [
+      "校验状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝损坏状态",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.invalid-status-1",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "{}"
+    },
+    "steps": [
+      "校验状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝损坏状态",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.invalid-status-2",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "字符串工具数"
+    },
+    "steps": [
+      "校验状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝损坏状态",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.invalid-status-3",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "servers=[{}]"
+    },
+    "steps": [
+      "校验状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "拒绝损坏状态",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.partial-ack",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "部分失败与 {success:true}"
+    },
+    "steps": [
+      "分别校验重连响应"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "无请求",
+    "stateAssertion": "接受完整部分失败；拒绝缺失列表的泛化成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.roundtrip-memory",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "独立配置 active/off，含扩展项"
+    },
+    "steps": [
+      "保存",
+      "读取",
+      "重连",
+      "读取状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "GET/PUT/POST 约定路径",
+    "stateAssertion": "配置完整恢复；active 明确 Mock 失败，off 禁用；零连接零工具",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.roundtrip-http",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "独立配置 active/off，含扩展项"
+    },
+    "steps": [
+      "保存",
+      "读取",
+      "重连",
+      "读取状态"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "GET/PUT/POST 约定路径",
+    "stateAssertion": "配置完整恢复；active 明确 Mock 失败，off 禁用；零连接零工具",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.method-config",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "POST config"
+    },
+    "steps": [
+      "调用非约定方法"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "拒绝非法方法",
+    "stateAssertion": "405，不修改配置",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.method-status",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "PUT status"
+    },
+    "steps": [
+      "调用非约定方法"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "拒绝非法方法",
+    "stateAssertion": "405，不修改配置",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.method-reload",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "GET reload"
+    },
+    "steps": [
+      "调用非约定方法"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "拒绝非法方法",
+    "stateAssertion": "405，不修改配置",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-contract.invalid-write",
+    "capability": "MCP contract",
+    "preconditions": {
+      "data": "mcpServers.bad=null"
+    },
+    "steps": [
+      "提交 PUT"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "PUT 被拒绝",
+    "stateAssertion": "422，不触发存储写入",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-service-contract.test.ts"
+  },
+  {
+    "id": "F5.mcp-dto.config-0",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "None，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-1",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "''，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-2",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'stdio'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-3",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'sse'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-4",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'http'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-5",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'HTTP'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-6",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'Streamable_HTTP'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.config-7",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "'streamable-http'，包含 autoApprove 及扩展字段"
+    },
+    "steps": [
+      "校验",
+      "按别名 exclude_unset 往返"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only，无业务路由",
+    "stateAssertion": "字段名、缺省语义和扩展项保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-0",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "transport=ftp"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-1",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "args=1"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-2",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "args=[1]"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-3",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "headers.A=1"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-4",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "disabled=\"false\""
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-server-5",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "autoApprove=\"read\""
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝类型错误",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-root-0",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "{}"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝损坏结构",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-root-1",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "mcpServers=[]"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝损坏结构",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-root-2",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "空名称"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝损坏结构",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-root-3",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "server=null"
+    },
+    "steps": [
+      "校验配置"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝损坏结构",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.status-wire",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "完整状态与蛇形字段"
+    },
+    "steps": [
+      "校验并按别名导出"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "tool_count/last_error/connected_at/auto_approve/total_tools_injected 保持",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-count-0",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "-1"
+    },
+    "steps": [
+      "校验状态计数"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝非非负整数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-count-1",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "true"
+    },
+    "steps": [
+      "校验状态计数"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝非非负整数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-count-2",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "\"1\""
+    },
+    "steps": [
+      "校验状态计数"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝非非负整数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-count-3",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "1.5"
+    },
+    "steps": [
+      "校验状态计数"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "拒绝非非负整数",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-ack-0",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "{}"
+    },
+    "steps": [
+      "校验保存确认"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "只有两个显式 true 才有效",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-ack-1",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "缺 saved"
+    },
+    "steps": [
+      "校验保存确认"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "只有两个显式 true 才有效",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-ack-2",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "success=false"
+    },
+    "steps": [
+      "校验保存确认"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "只有两个显式 true 才有效",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-ack-3",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "success=1"
+    },
+    "steps": [
+      "校验保存确认"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "只有两个显式 true 才有效",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.invalid-ack-4",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "saved=\"true\""
+    },
+    "steps": [
+      "校验保存确认"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "只有两个显式 true 才有效",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-dto.partial-reload",
+    "capability": "MCP dto",
+    "preconditions": {
+      "data": "connected=[]/failed fixture/disabled off/total=2"
+    },
+    "steps": [
+      "校验并导出"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "schema-only",
+    "stateAssertion": "部分失败按原协议保留，不虚构总成功",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_mcp.py"
+  },
+  {
+    "id": "F5.mcp-ui.invalid-cancel",
+    "capability": "MCP ui",
+    "preconditions": {
+      "data": "独立 IAB 禁用 Mock 配置"
+    },
+    "steps": [
+      "编辑 env 第二行 BAD LINE",
+      "保存",
+      "取消",
+      "重开"
+    ],
+    "expectedUI": "显示第二行错误，原文保留；取消后原配置未污染",
+    "expectedIO": "真实界面消费 Mock 协议，无 MCP 进程",
+    "stateAssertion": "显示第二行错误，原文保留；取消后原配置未污染",
+    "level": "browser UI + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/mcp-text-validation.md"
+  },
+  {
+    "id": "F5.mcp-ui.reload",
+    "capability": "MCP ui",
+    "preconditions": {
+      "data": "独立 IAB mcp-ui-check Mock 配置"
+    },
+    "steps": [
+      "启用",
+      "重新连接",
+      "核对失败及总数",
+      "恢复禁用"
+    ],
+    "expectedUI": "明确 Mock 未连接，0连接0工具；最终禁用",
+    "expectedIO": "真实界面消费 Mock 协议，无 MCP 进程",
+    "stateAssertion": "明确 Mock 未连接，0连接0工具；最终禁用",
+    "level": "browser UI + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/mcp-service-contract.md"
+  },
+  {
+    "id": "F5.mcp-inventory.wrapped-api",
+    "capability": "MCP inventory",
+    "preconditions": {
+      "data": "四个 mcpApi 包装方法"
+    },
+    "steps": [
+      "生成台账",
+      "查方法/端点/消费者"
+    ],
+    "expectedUI": "不适用：本例为规则/合同检查，不操作界面",
+    "expectedIO": "静态扫描，不是实际服务执行",
+    "stateAssertion": "GET/PUT/POST 与 MCPConfigPanel 关联无遗漏",
+    "level": "script",
+    "status": "通过",
+    "evidencePath": "scripts/studio-service-inventory.test.mjs"
   }
 ]

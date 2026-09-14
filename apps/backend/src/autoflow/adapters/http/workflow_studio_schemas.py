@@ -2,7 +2,7 @@
 
 from typing import Any, Literal, Self
 
-from pydantic import ConfigDict, Field, JsonValue, model_validator
+from pydantic import ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from .schemas import ApiModel
 
@@ -386,3 +386,99 @@ class StudioModuleRequiredFields(ApiModel):
         if any(not field.strip() or not label.strip() for labels in self.field_labels.values() for field, label in labels.items()):
             raise ValueError("字段标签无效")
         return self
+
+
+class StudioMcpServerConfig(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True, allow_inf_nan=False)
+
+    transport: str | None = None
+    command: str | None = None
+    args: list[str] | None = None
+    env: dict[str, str] | None = None
+    cwd: str | None = None
+    url: str | None = None
+    headers: dict[str, str] | None = None
+    disabled: bool | None = None
+    auto_approve: list[str] | None = None
+
+    @field_validator("transport")
+    @classmethod
+    def valid_transport(cls, value: str | None) -> str | None:
+        if value and value.lower() not in {"stdio", "sse", "http", "streamable_http", "streamable-http"}:
+            raise ValueError("MCP 传输方式无效")
+        return value
+
+
+class StudioMcpConfig(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    mcp_servers: dict[str, StudioMcpServerConfig]
+
+    @model_validator(mode="after")
+    def valid_names(self) -> Self:
+        if any(not name.strip() for name in self.mcp_servers):
+            raise ValueError("MCP 服务器名称不能为空")
+        return self
+
+
+class StudioMcpSaveRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    config: StudioMcpConfig
+
+
+class StudioMcpSaved(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    success: Literal[True]
+    saved: Literal[True]
+
+    @field_validator("success", "saved", mode="before")
+    @classmethod
+    def true_boolean(cls, value: Any) -> bool:
+        if value is not True:
+            raise ValueError("保存必须明确确认成功")
+        return True
+
+
+class StudioMcpTool(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    name: str
+    description: str
+
+
+class StudioMcpServerStatus(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    name: str
+    transport: str
+    disabled: bool
+    connected: bool
+    tool_count: int = Field(alias="tool_count", ge=0, le=9007199254740991)
+    tools: list[StudioMcpTool]
+    last_error: str | None = Field(alias="last_error")
+    connected_at: str | None = Field(alias="connected_at")
+    auto_approve: list[str] = Field(alias="auto_approve")
+
+
+class StudioMcpStatus(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    servers: list[StudioMcpServerStatus]
+    total_tools_injected: int = Field(alias="total_tools_injected", ge=0, le=9007199254740991)
+
+
+class StudioMcpConnected(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    name: str
+    tool_count: int = Field(alias="tool_count", ge=0, le=9007199254740991)
+    transport: str
+
+
+class StudioMcpFailed(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    name: str
+    error: str
+
+
+class StudioMcpReloaded(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    connected: list[StudioMcpConnected]
+    failed: list[StudioMcpFailed]
+    disabled: list[str]
+    total_servers: int = Field(alias="total_servers", ge=0, le=9007199254740991)

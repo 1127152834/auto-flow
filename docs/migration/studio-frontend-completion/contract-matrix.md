@@ -11,6 +11,7 @@
 | HTTP/SSE | 共用受控传输；空行确认事件，序号补读，EOF 半包不提交；见 authenticated-transport.md、sse-framing-validation.md | epoch/服务重启后的状态重建 |
 | Debug | 只接受 POST resume/step/breakpoints；404 未知动作，405 方法错误，409 状态冲突，422 断点非法；见 debug-command-validation.md | pauseId、控制修订、真正执行和清理 |
 | 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |
+| MCP 配置 | 生成 DTO、保存确认、重连部分失败及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md | 真实 MCP 服务、跨连接在途隔离和跨客户端 revision |
 | 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |
 
 ## 静态服务方法
@@ -99,6 +100,10 @@
 | service:localWorkflowApi.save | POST '/local-workflows/save-to-folder' | body: JSON.stringify(data) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:201 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.setActiveFolder | POST '/local-workflows/active-folder' | body: JSON.stringify({ folder }) | { success: boolean; folder: string } | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:212 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.setSelfHeal | POST '/local-workflows/self-heal' | body: JSON.stringify({ filename, enabled, folder }) | { success: boolean; enabled: boolean; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:222 | 待逐项核对；局部已验证项见上表 |
+| service:mcpApi.config | GET '/ai-assistant/mcp/config' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api/mcp.ts:10 | 待逐项核对；局部已验证项见上表 |
+| service:mcpApi.reload | POST '/ai-assistant/mcp/reload' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api/mcp.ts:13 | 待逐项核对；局部已验证项见上表 |
+| service:mcpApi.save | PUT '/ai-assistant/mcp/config' | body:JSON.stringify({config}) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api/mcp.ts:12 | 待逐项核对；局部已验证项见上表 |
+| service:mcpApi.status | GET '/ai-assistant/mcp/status' | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api/mcp.ts:11 | 待逐项核对；局部已验证项见上表 |
 | service:pluginApi.addReview | POST &#96;/plugins/${encodeURIComponent(pluginId)}/reviews&#96; | body: JSON.stringify({ rating, comment: comment &#124;&#124; '', user: user &#124;&#124; '匿名用户' }) | { success: boolean; review?: PluginReview; summary?: { count: number; average: number }; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:536 | 待逐项核对；局部已验证项见上表 |
 | service:pluginApi.exportPackage | GET &#96;/plugins/${encodeURIComponent(pluginId)}/export&#96; | 未显式声明 | { success: boolean; package?: unknown; error?: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:524 | 待逐项核对；局部已验证项见上表 |
 | service:pluginApi.getMarketUrl | GET '/plugins/market-url' | 未显式声明 | { success: boolean; url: string } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:509 | 待逐项核对；局部已验证项见上表 |
@@ -275,10 +280,6 @@
 | apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:98 | GET &#96;${API_BASE}/api/local-workflows/load/${encodeURIComponent(workflow.filename)}?folder=${encodeURIComponent(currentFolder)}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:134 | POST &#96;${API_BASE}/api/local-workflows/delete?filename=${encodeURIComponent(workflow.filename)}&amp;folder=${encodeURIComponent(currentFolder)}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:161 | POST &#96;${API_BASE}/api/local-workflows/open-folder&#96; | body: JSON.stringify({ folder }) | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx:104 | GET '/ai-assistant/mcp/config' | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx:105 | GET '/ai-assistant/mcp/status' | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx:134 | PUT '/ai-assistant/mcp/config' | body: JSON.stringify({config:next}) | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx:159 | POST '/ai-assistant/mcp/reload' | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:176 | GET &#96;${API_BASE}/api/local-workflows/default-folder&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:444 | POST &#96;${getBackendBaseUrl()}/api/local-workflows/check-exists&#96; | body: JSON.stringify({ filename, content: { _folder: currentFolder } }) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:474 | POST &#96;${API_BASE}/api/local-workflows/save-to-folder&#96; | body: JSON.stringify({           filename,           content: { ...workflowData, _folder: currentFolder }         }) | 需核对鉴权、取消、错误及资源读取 |
@@ -313,4 +314,4 @@
 
 对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。
 
-当前扫描：151 个服务方法、82 个事件、46 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
+当前扫描：155 个服务方法、82 个事件、42 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。

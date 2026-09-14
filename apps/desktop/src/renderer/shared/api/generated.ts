@@ -4547,6 +4547,162 @@ export type components = {
              */
             claimId: string | null;
         };
+        /** StudioMcpConfig */
+        StudioMcpConfig: {
+            /** Mcpservers */
+            mcpServers: {
+                [key: string]: components["schemas"]["StudioMcpServerConfig"];
+            };
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpConnected */
+        StudioMcpConnected: {
+            /** Name */
+            name: string;
+            /** Tool Count */
+            tool_count: number;
+            /** Transport */
+            transport: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpFailed */
+        StudioMcpFailed: {
+            /** Name */
+            name: string;
+            /** Error */
+            error: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpReloaded */
+        StudioMcpReloaded: {
+            /** Connected */
+            connected: components["schemas"]["StudioMcpConnected"][];
+            /** Failed */
+            failed: components["schemas"]["StudioMcpFailed"][];
+            /** Disabled */
+            disabled: string[];
+            /** Total Servers */
+            total_servers: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpSaveRequest */
+        StudioMcpSaveRequest: {
+            config: components["schemas"]["StudioMcpConfig"];
+        };
+        /** StudioMcpSaved */
+        StudioMcpSaved: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Saved
+             * @constant
+             */
+            saved: true;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpServerConfig */
+        StudioMcpServerConfig: {
+            /**
+             * Transport
+             * @default null
+             */
+            transport: string | null;
+            /**
+             * Command
+             * @default null
+             */
+            command: string | null;
+            /**
+             * Args
+             * @default null
+             */
+            args: string[] | null;
+            /**
+             * Env
+             * @default null
+             */
+            env: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Cwd
+             * @default null
+             */
+            cwd: string | null;
+            /**
+             * Url
+             * @default null
+             */
+            url: string | null;
+            /**
+             * Headers
+             * @default null
+             */
+            headers: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Disabled
+             * @default null
+             */
+            disabled: boolean | null;
+            /**
+             * Autoapprove
+             * @default null
+             */
+            autoApprove: string[] | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpServerStatus */
+        StudioMcpServerStatus: {
+            /** Name */
+            name: string;
+            /** Transport */
+            transport: string;
+            /** Disabled */
+            disabled: boolean;
+            /** Connected */
+            connected: boolean;
+            /** Tool Count */
+            tool_count: number;
+            /** Tools */
+            tools: components["schemas"]["StudioMcpTool"][];
+            /** Last Error */
+            last_error: string | null;
+            /** Connected At */
+            connected_at: string | null;
+            /** Auto Approve */
+            auto_approve: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpStatus */
+        StudioMcpStatus: {
+            /** Servers */
+            servers: components["schemas"]["StudioMcpServerStatus"][];
+            /** Total Tools Injected */
+            total_tools_injected: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioMcpTool */
+        StudioMcpTool: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioModuleRequiredFields */
         StudioModuleRequiredFields: {
             /** Schemarevision */

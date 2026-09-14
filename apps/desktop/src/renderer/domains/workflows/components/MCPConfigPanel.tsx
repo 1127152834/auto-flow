@@ -1,5 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/MCPConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { apiRequest } from '../api'
+import { mcpApi } from '../api/mcp'
+import type {McpConfig, McpServerConfig as MCPServerConfig, McpStatus as MCPStatus} from '../lib/mcpContract'
+import { mcpFormTransport, parseMcpMapping } from '../lib/mcpConfigText'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, RefreshCw, CheckCircle2, XCircle, Server, AlertCircle, Loader2, ChevronRight, ChevronDown, ExternalLink, Sparkles, Search, Star } from 'lucide-react'
 import { Button } from './controls/button'
@@ -18,58 +20,6 @@ import { MCP_TEMPLATES, TEMPLATE_CATEGORIES, type MCPTemplate } from './mcpTempl
  * - 查看每个 server 暴露的工具列表
  */
 
-interface MCPServerConfig {
-  transport?: 'stdio' | 'sse' | 'http'
-  command?: string
-  args?: string[]
-  env?: Record<string, string>
-  cwd?: string
-  url?: string
-  headers?: Record<string, string>
-  disabled?: boolean
-  autoApprove?: string[]
-}
-
-interface MCPServerStatus {
-  name: string
-  transport: string
-  disabled: boolean
-  connected: boolean
-  tool_count: number
-  tools: { name: string; description: string }[]
-  last_error: string | null
-  connected_at: string | null
-  auto_approve: string[]
-}
-
-interface MCPStatus {
-  servers: MCPServerStatus[]
-  total_tools_injected: number
-}
-
-const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value)
-const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(item => typeof item === 'string')
-const stringMap = (value: unknown) => object(value) && Object.values(value).every(item => typeof item === 'string')
-function validConfig(value: unknown): value is {mcpServers:Record<string,MCPServerConfig>} {
-  return object(value) && object(value.mcpServers) && Object.entries(value.mcpServers).every(([name, server]) =>
-    !!name.trim() && object(server) &&
-    (server.transport === undefined || ['stdio','sse','http'].includes(String(server.transport))) &&
-    ['command','cwd','url'].every(key => server[key] === undefined || typeof server[key] === 'string') &&
-    ['args','autoApprove'].every(key => server[key] === undefined || strings(server[key])) &&
-    ['env','headers'].every(key => server[key] === undefined || stringMap(server[key])) &&
-    (server.disabled === undefined || typeof server.disabled === 'boolean'))
-}
-function validStatus(value: unknown): value is MCPStatus {
-  return object(value) && Number.isSafeInteger(value.total_tools_injected) && Number(value.total_tools_injected) >= 0 &&
-    Array.isArray(value.servers) && value.servers.every(server => object(server) &&
-      typeof server.name === 'string' && typeof server.transport === 'string' &&
-      typeof server.disabled === 'boolean' && typeof server.connected === 'boolean' &&
-      Number.isSafeInteger(server.tool_count) && Number(server.tool_count) >= 0 &&
-      (server.last_error === null || typeof server.last_error === 'string') &&
-      (server.connected_at === null || typeof server.connected_at === 'string') && strings(server.auto_approve) &&
-      Array.isArray(server.tools) && server.tools.every(tool => object(tool) && typeof tool.name === 'string' && typeof tool.description === 'string'))
-}
-
 const DEFAULT_NEW_SERVER: MCPServerConfig = {
   transport: 'stdio',
   command: '',
@@ -80,7 +30,7 @@ const DEFAULT_NEW_SERVER: MCPServerConfig = {
 }
 
 export function MCPConfigPanel() {
-  const [config, setConfig] = useState<{ mcpServers: Record<string, MCPServerConfig> }>({ mcpServers: {} })
+  const [config, setConfig] = useState<McpConfig>({ mcpServers: {} })
   const [status, setStatus] = useState<MCPStatus | null>(null)
   const [loading, setLoading] = useState(false)
   const [reloading, setReloading] = useState(false)
@@ -100,21 +50,16 @@ export function MCPConfigPanel() {
     setLoading(true)
     setError(null)
     try {
-      const [cfgRes, stRes] = await Promise.all([
-        apiRequest<{mcpServers: Record<string, MCPServerConfig>}>('/ai-assistant/mcp/config'),
-        apiRequest<MCPStatus>('/ai-assistant/mcp/status'),
-      ])
-      if (!cfgRes.success) throw new Error(cfgRes.error)
-      if (!stRes.success) throw new Error(stRes.error)
-      const cfg = cfgRes.data, st = stRes.data
-      if (!validConfig(cfg) || !validStatus(st)) {
-        throw new Error('MCP 配置或状态响应格式错误')
-      }
-      setConfig(cfg)
-      setStatus(st)
+      const [cfgRes, stRes] = await Promise.all([mcpApi.config(),mcpApi.status()])
+      if (!cfgRes.success || !cfgRes.data) throw new Error(cfgRes.error)
+      if (!stRes.success || !stRes.data) throw new Error(stRes.error)
+      setConfig(cfgRes.data)
+      setStatus(stRes.data)
       setLoaded(true)
+      return true
     } catch (e: any) {
       setError(e?.message || '加载失败')
+      return false
     } finally {
       setLoading(false)
     }
@@ -125,17 +70,14 @@ export function MCPConfigPanel() {
   }, [refresh])
 
   // 保存配置
-  const saveConfig = async (next: { mcpServers: Record<string, MCPServerConfig> }) => {
+  const saveConfig = async (next: McpConfig) => {
     if (busy.current || !loaded) return false
     busy.current = true
     setSaving(true)
     setSavedFlash(false)
     try {
-      const result = await apiRequest('/ai-assistant/mcp/config', {
-        method: 'PUT', body: JSON.stringify({config:next}),
-      })
+      const result = await mcpApi.save(next)
       if (!result.success) throw new Error(result.error)
-      if (result.data?.success !== true || result.data?.saved !== true) throw new Error('服务未确认配置已保存')
       setConfig(next)
       setSavedFlash(true)
       setTimeout(() => setSavedFlash(false), 1500)
@@ -156,9 +98,11 @@ export function MCPConfigPanel() {
     setReloading(true)
     setError(null)
     try {
-      const result = await apiRequest('/ai-assistant/mcp/reload', {method:'POST'})
+      const result = await mcpApi.reload()
       if (!result.success) throw new Error(result.error)
-      await refresh()
+      if (await refresh() && result.data?.failed.length) {
+        setError(`部分 MCP 服务器连接失败：${result.data.failed.map(server => `${server.name}：${server.error}`).join('；')}`)
+      }
     } catch (e: any) {
       setError(`重连失败：${e?.message || e}`)
     } finally {
@@ -173,9 +117,8 @@ export function MCPConfigPanel() {
       setError(name ? '服务器名称已存在' : '服务器名称不能为空')
       return
     }
-    const next = { ...config, mcpServers: {...config.mcpServers} }
+    const next = { ...config, mcpServers: {...config.mcpServers, [name]:server} }
     if (oldName && oldName !== name) delete next.mcpServers[oldName]
-    next.mcpServers[name] = server
     if (await saveConfig(next)) setEditingName(null)
   }
 
@@ -437,7 +380,7 @@ interface ServerEditModalProps {
 
 function ServerEditModal({ name: initialName, server: initialServer, template, existingNames, isNew, saving, error, onClose, onSave }: ServerEditModalProps) {
   const [name, setName] = useState(initialName)
-  const [transport, setTransport] = useState<'stdio' | 'sse' | 'http'>(initialServer.transport || 'stdio')
+  const [transport, setTransport] = useState<'stdio' | 'sse' | 'http'>(mcpFormTransport(initialServer))
   const [command, setCommand] = useState(initialServer.command || '')
   const [args, setArgs] = useState((initialServer.args || []).join('\n'))
   const [envText, setEnvText] = useState(
@@ -452,30 +395,34 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
     (initialServer.autoApprove || []).join('\n')
   )
 
+  const [formError, setFormError] = useState<string | null>(null)
   const nameConflict = isNew && existingNames.includes(name.trim())
 
   const handleSave = () => {
     if (saving || !name.trim()) return
     if (nameConflict) return
 
-    const envLines = envText.split('\n').map(l => l.trim()).filter(Boolean)
-    const env: Record<string, string> = {}
-    for (const line of envLines) {
-      const idx = line.indexOf('=')
-      if (idx > 0) env[line.slice(0, idx).trim()] = line.slice(idx + 1).trim()
-    }
-
-    const headersLines = headersText.split('\n').map(l => l.trim()).filter(Boolean)
-    const headers: Record<string, string> = {}
-    for (const line of headersLines) {
-      const idx = line.indexOf(':')
-      if (idx > 0) headers[line.slice(0, idx).trim()] = line.slice(idx + 1).trim()
+    let env: Record<string,string> = {}, headers: Record<string,string> = {}
+    try {
+      if (transport === 'stdio') env = parseMcpMapping(envText,'env')
+      else {
+        try { if (!['http:','https:'].includes(new URL(url.trim()).protocol)) throw new Error() }
+        catch { throw new Error('服务器 URL 必须是有效的 HTTP 或 HTTPS 地址') }
+        headers = parseMcpMapping(headersText,'headers')
+      }
+      setFormError(null)
+    } catch (failure) {
+      setFormError(failure instanceof Error ? failure.message : '配置文本格式错误')
+      return
     }
 
     const autoApprove = autoApproveText.split('\n').map(l => l.trim()).filter(Boolean)
     const argsList = args.split('\n').map(l => l.trim()).filter(Boolean)
 
+    const extensions = Object.fromEntries(Object.entries(initialServer).filter(([key]) =>
+      !['transport','command','args','env','cwd','url','headers','disabled','autoApprove'].includes(key)))
     const server: MCPServerConfig = {
+      ...extensions,
       transport,
       ...(transport === 'stdio' ? {
         command: command.trim(),
@@ -512,7 +459,7 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
 
         {/* Body（中间区域滚动） */}
         <fieldset disabled={saving} className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
-          {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+          {(formError || error) && <p role="alert" className="text-sm text-red-700">{formError || error}</p>}
           {/* 模板来源提示 */}
           {template && (
             <div className="p-2.5 rounded-md bg-violet-50 border border-violet-200/60 text-xs text-violet-800">
@@ -592,6 +539,7 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
               <div>
                 <Label className="text-gray-700 text-xs">环境变量（KEY=VALUE，每行一个）</Label>
                 <textarea
+                  aria-label="环境变量"
                   value={envText}
                   onChange={(e) => setEnvText(e.target.value)}
                   placeholder={'API_KEY=xxx\nDEBUG=1'}
@@ -623,6 +571,7 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
               <div>
                 <Label className="text-gray-700 text-xs">请求头（Key: Value，每行一个）</Label>
                 <textarea
+                  aria-label="请求头"
                   value={headersText}
                   onChange={(e) => setHeadersText(e.target.value)}
                   placeholder={'Authorization: Bearer xxx\nX-API-Key: yyy'}

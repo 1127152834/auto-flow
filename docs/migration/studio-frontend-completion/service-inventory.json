@@ -2289,6 +2289,118 @@
       "status": "待核对"
     },
     {
+      "id": "service:mcpApi.config",
+      "operation": "mcpApi.config",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+      "line": 10,
+      "source": null,
+      "requests": [
+        {
+          "endpoint": "'/ai-assistant/mcp/config'",
+          "method": "GET",
+          "body": null,
+          "responseType": null,
+          "call": "apiRequest('/ai-assistant/mcp/config')",
+          "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+          "line": 10,
+          "source": null
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+          "line": 53,
+          "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+          "call": "mcpApi.config()"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
+      "id": "service:mcpApi.reload",
+      "operation": "mcpApi.reload",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+      "line": 13,
+      "source": null,
+      "requests": [
+        {
+          "endpoint": "'/ai-assistant/mcp/reload'",
+          "method": "POST",
+          "body": null,
+          "responseType": null,
+          "call": "apiRequest('/ai-assistant/mcp/reload',{method:'POST'})",
+          "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+          "line": 13,
+          "source": null
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+          "line": 101,
+          "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+          "call": "mcpApi.reload()"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
+      "id": "service:mcpApi.save",
+      "operation": "mcpApi.save",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+      "line": 12,
+      "source": null,
+      "requests": [
+        {
+          "endpoint": "'/ai-assistant/mcp/config'",
+          "method": "PUT",
+          "body": "body:JSON.stringify({config})",
+          "responseType": null,
+          "call": "apiRequest('/ai-assistant/mcp/config',{method:'PUT',body:JSON.stringify({config})})",
+          "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+          "line": 12,
+          "source": null
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+          "line": 79,
+          "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+          "call": "mcpApi.save(next)"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
+      "id": "service:mcpApi.status",
+      "operation": "mcpApi.status",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+      "line": 11,
+      "source": null,
+      "requests": [
+        {
+          "endpoint": "'/ai-assistant/mcp/status'",
+          "method": "GET",
+          "body": null,
+          "responseType": null,
+          "call": "apiRequest('/ai-assistant/mcp/status')",
+          "file": "apps/desktop/src/renderer/domains/workflows/api/mcp.ts",
+          "line": 11,
+          "source": null
+        }
+      ],
+      "consumers": [
+        {
+          "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
+          "line": 53,
+          "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
+          "call": "mcpApi.status()"
+        }
+      ],
+      "status": "待核对"
+    },
+    {
       "id": "service:pluginApi.addReview",
       "operation": "pluginApi.addReview",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
@@ -6830,46 +6942,6 @@
       "line": 161,
       "source": "frontend/src/components/workflow/LocalWorkflowDialog.tsx",
       "call": "studioFetch(`${API_BASE}/api/local-workflows/open-folder`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ folder })\n      })"
-    },
-    {
-      "endpoint": "'/ai-assistant/mcp/config'",
-      "method": "GET",
-      "body": null,
-      "responseType": "{mcpServers: Record<string, MCPServerConfig>}",
-      "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-      "line": 104,
-      "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
-      "call": "apiRequest<{mcpServers: Record<string, MCPServerConfig>}>('/ai-assistant/mcp/config')"
-    },
-    {
-      "endpoint": "'/ai-assistant/mcp/status'",
-      "method": "GET",
-      "body": null,
-      "responseType": "MCPStatus",
-      "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-      "line": 105,
-      "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
-      "call": "apiRequest<MCPStatus>('/ai-assistant/mcp/status')"
-    },
-    {
-      "endpoint": "'/ai-assistant/mcp/config'",
-      "method": "PUT",
-      "body": "body: JSON.stringify({config:next})",
-      "responseType": null,
-      "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-      "line": 134,
-      "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
-      "call": "apiRequest('/ai-assistant/mcp/config', {\n        method: 'PUT', body: JSON.stringify({config:next}),\n      })"
-    },
-    {
-      "endpoint": "'/ai-assistant/mcp/reload'",
-      "method": "POST",
-      "body": null,
-      "responseType": null,
-      "file": "apps/desktop/src/renderer/domains/workflows/components/MCPConfigPanel.tsx",
-      "line": 159,
-      "source": "frontend/src/components/workflow/MCPConfigPanel.tsx",
-      "call": "apiRequest('/ai-assistant/mcp/reload', {method:'POST'})"
     },
     {
       "endpoint": "`${API_BASE}/api/local-workflows/default-folder`",

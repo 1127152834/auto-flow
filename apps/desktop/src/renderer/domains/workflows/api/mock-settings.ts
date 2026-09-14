@@ -1,3 +1,5 @@
+import {isMcpConfig, type McpConfig} from '../lib/mcpContract'
+import {mcpFormTransport} from '../lib/mcpConfigText'
 /** Local fixtures for retained settings forms; connection probes never contact remote services. */
 const prefix = 'autoflow:studio:mock:settings:'
 type Value = Record<string, unknown>
@@ -35,9 +37,27 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
   }
   if(path==='/local-workflows/webdav-test')return json({success:false,error:'Mock: remote connection is not executed'})
   if(path==='/ai-assistant/mcp/config') {
-    if(method==='PUT'){save('mcp',body.config as Value);return json({success:true,saved:true})}
+    if(method==='PUT'){
+      if(!isMcpConfig(body.config))return json({success:false,error:'MCP 配置格式错误'},422)
+      save('mcp',body.config);return json({success:true,saved:true})
+    }
+    if(method!=='GET')return json({success:false,error:'不支持的配置操作'},405)
     return json(read('mcp',{mcpServers:{}}))
   }
-  if(path==='/ai-assistant/mcp/status' || path==='/ai-assistant/mcp/reload')return json({success:true,servers:[],tools:[],total_tools_injected:0,mock:true})
+  if(path==='/ai-assistant/mcp/status') {
+    if(method!=='GET')return json({success:false,error:'状态只支持读取'},405)
+    return json(read('mcp-status',{servers:[],total_tools_injected:0,mock:true}))
+  }
+  if(path==='/ai-assistant/mcp/reload') {
+    if(method!=='POST')return json({success:false,error:'重连只支持 POST'},405)
+    const config=read('mcp',{mcpServers:{}}) as McpConfig
+    if(!isMcpConfig(config))return json({success:false,error:'MCP 配置格式错误'},422)
+    const servers=Object.entries(config.mcpServers).map(([name,server])=>({
+      name,transport:mcpFormTransport(server),disabled:server.disabled===true,connected:false,
+      tool_count:0,tools:[],last_error:server.disabled?null:'Mock 未执行外部 MCP 连接',connected_at:null,auto_approve:server.autoApprove||[],
+    }))
+    save('mcp-status',{servers,total_tools_injected:0,mock:true})
+    return json({connected:[],failed:servers.filter(server=>!server.disabled).map(server=>({name:server.name,error:server.last_error})),disabled:servers.filter(server=>server.disabled).map(server=>server.name),total_servers:servers.length,mock:true})
+  }
   return undefined
 }

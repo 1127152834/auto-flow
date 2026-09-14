@@ -46,3 +46,13 @@ test('plain Event emissions are recorded alongside CustomEvent emissions',()=>{
   assert.ok(changed.emissions.some(row=>row.file.endsWith('/api/transport.ts') && row.via==='Event'))
   assert.ok(changed.subscriptions.some(row=>row.file.endsWith('/lib/requiredFields.ts')))
 })
+
+test('MCP requests nested in validation helpers keep explicit endpoints and consumers',()=>{
+  for(const [name,method] of [['config','GET'],['status','GET'],['save','PUT'],['reload','POST']]){
+    const item=operation(`mcpApi.${name}`)
+    assert.equal(item.requests[0].method,method)
+    assert.ok(item.requests[0].endpoint.includes('/ai-assistant/mcp/'))
+    assert.ok(item.consumers.some(row=>row.file.endsWith('/components/MCPConfigPanel.tsx')))
+  }
+  assert.match(matrix,/mcp-service-contract.md/)
+})

@@ -90,6 +90,7 @@ const lines = [
   '| HTTP/SSE | 共用受控传输；空行确认事件，序号补读，EOF 半包不提交；见 authenticated-transport.md、sse-framing-validation.md | epoch/服务重启后的状态重建 |',
   '| Debug | 只接受 POST resume/step/breakpoints；404 未知动作，405 方法错误，409 状态冲突，422 断点非法；见 debug-command-validation.md | pauseId、控制修订、真正执行和清理 |',
   '| 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |',
+  '| MCP 配置 | 生成 DTO、保存确认、重连部分失败及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md | 真实 MCP 服务、跨连接在途隔离和跨客户端 revision |',
   '| 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |', '',
   '## 静态服务方法', '',
   '| 操作 ID | 方法与端点表达式 | 请求体表达式 | 声明的响应类型 | 静态消费者数 | 定义位置 | 验收状态 |',
