@@ -36140,5 +36140,221 @@
     "level": "contract",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.bad-assets",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "bad-assets",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.bad-folders",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "bad-folders",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.business-error",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "business-error",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.network-error",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "network-error",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.late-refresh",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "late-refresh",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.pending-upload",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "pending-upload",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.unmount",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "unmount",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.service-replacement",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "service-replacement",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.default-path",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "default-path",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.empty-state",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "empty-state",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.concurrent-folders",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "concurrent-folders",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-panel-loading/targeted.log"
+  },
+  {
+    "id": "TOOL.image-panel.loading.browser-offline-retry",
+    "capability": "image-assets:panel-read",
+    "preconditions": {
+      "case": "browser-offline-retry",
+      "cache": "既有图像"
+    },
+    "steps": [
+      "按命名场景读取图像及目录",
+      "检查错误、重试或迟到响应"
+    ],
+    "expectedUI": "失败可重试、保留缓存，不误显示为空；成功展示资源",
+    "expectedIO": "统一校验图像与目录响应，旧响应不覆盖新缓存",
+    "stateAssertion": "保留上传或刷新期间的新图像；卸载和连接变化拒绝旧回复",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/image-panel-loading.md"
   }
 ]

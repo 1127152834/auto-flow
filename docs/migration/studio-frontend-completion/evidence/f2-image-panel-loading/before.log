@@ -1,0 +1,598 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-panel-loading.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:84344) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > keeps the last cache and offers retry after bad-folders
+An error occurred in the <ImageAssetsPanel> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stdout | src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > does not let an older refresh replace a newer refresh
+[ImageAssetsPanel] 收到刷新事件，重新加载资源列表
+
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx (7 tests | 7 failed) 5157ms
+   × keeps the last cache and offers retry after bad-assets 1031ms
+   × keeps the last cache and offers retry after bad-folders 1006ms
+   × keeps the last cache and offers retry after business-error 1005ms
+   × keeps the last cache and offers retry after network-error 1006ms
+   × does not let an older refresh replace a newer refresh 1090ms
+   × does not overwrite a local upload that completed during a pending read 14ms
+   × does not write a response after the panel unmounts 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > keeps the last cache and offers retry after bad-assets
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > keeps the last cache and offers retry after network-error
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative group cursor-pointer transition-all duration-200 bg-white rounded-lg border p-2 hover:shadow-md hover:scale-102 hover:-translate-y-0.5 border-purple-200 hover:border-purple-300"[39m
+              [33mdraggable[39m=[32m"true"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center gap-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"bg-[hsl(var(--card))] w-10 h-10 rounded flex items-center justify-center overflow-hidden"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"重新加载图片：kept.png"[39m
+                    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+                    [33mtitle[39m=[32m"服务返回的内容不是图片"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [0m图片加载失败，重试[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-medium text-gray-700 text-center truncate w-full px-1"[39m
+                  [33mtitle[39m=[32m"kept.png"[39m
+                [36m>[39m
+                  [0mkept.png[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative group cursor-pointer transition-all duration-200 bg-white rounded-lg border p-2 hover:shadow-md hover:scale-102 hover:-translate-y-0.5 border-purple-200 hover:border-purple-300"[39m
+              [33mdraggable[39m=[32m"true"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center gap-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"bg-[hsl(var(--card))] w-10 h-10 rounded flex items-center justify-center overflow-hidden"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"重新加载图片：kept.png"[39m
+                    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+                    [33mtitle[39m=[32m"服务返回的内容不是图片"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [0m图片加载失败，重试[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-medium text-gray-700 text-center truncate w-full px-1"[39m
+                  [33mtitle[39m=[32m"kept.png"[39m
+                [36m>[39m
+                  [0mkept.png[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:24:16
+     22|   if (mode === 'network-error') api.list.mockRejectedValueOnce(new Err…
+     23|   render(<ImageAssetsPanel />)
+     24|   await screen.findByRole('alert')
+       |                ^
+     25|   expect(useWorkflowStore.getState().imageAssets).toEqual([asset])
+     26|   fireEvent.click(screen.getByRole('button', { name: '重试加载图像资源' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > keeps the last cache and offers retry after bad-folders
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:24:16
+     22|   if (mode === 'network-error') api.list.mockRejectedValueOnce(new Err…
+     23|   render(<ImageAssetsPanel />)
+     24|   await screen.findByRole('alert')
+       |                ^
+     25|   expect(useWorkflowStore.getState().imageAssets).toEqual([asset])
+     26|   fireEvent.click(screen.getByRole('button', { name: '重试加载图像资源' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > keeps the last cache and offers retry after business-error
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200 h-full flex items-center justify-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"empty-state !py-0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-icon"[39m
+              [33mstyle[39m=[32m"background: linear-gradient(135deg, hsl(var(--warning-50)), hsl(var(--warning-100))); color: hsl(var(--warning-500)); border-color: hsl(var(--warning-500) / 0.2);"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-image w-7 h-7"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.6"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"18"[39m
+                  [33mrx[39m=[32m"2"[39m
+                  [33mry[39m=[32m"2"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"9"[39m
+                  [33mcy[39m=[32m"9"[39m
+                  [33mr[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-title"[39m
+            [36m>[39m
+              [0m暂无图像文件[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-desc"[39m
+            [36m>[39m
+              [0m点击上方按钮上传，或将图片直接拖拽到此处[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200 h-full flex items-center justify-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"empty-state !py-0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-icon"[39m
+              [33mstyle[39m=[32m"background: linear-gradient(135deg, hsl(var(--warning-50)), hsl(var(--warning-100))); color: hsl(var(--warning-500)); border-color: hsl(var(--warning-500) / 0.2);"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-image w-7 h-7"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.6"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"18"[39m
+                  [33mrx[39m=[32m"2"[39m
+                  [33mry[39m=[32m"2"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"9"[39m
+                  [33mcy[39m=[32m"9"[39m
+                  [33mr[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-title"[39m
+            [36m>[39m
+              [0m暂无图像文件[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"empty-state-desc"[39m
+            [36m>[39m
+              [0m点击上方按钮上传，或将图片直接拖拽到此处[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:24:16
+     22|   if (mode === 'network-error') api.list.mockRejectedValueOnce(new Err…
+     23|   render(<ImageAssetsPanel />)
+     24|   await screen.findByRole('alert')
+       |                ^
+     25|   expect(useWorkflowStore.getState().imageAssets).toEqual([asset])
+     26|   fireEvent.click(screen.getByRole('button', { name: '重试加载图像资源' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > does not let an older refresh replace a newer refresh
+TestingLibraryElementError: Unable to find an element with the alt text: current.png
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative group cursor-pointer transition-all duration-200 bg-white rounded-lg border p-2 hover:shadow-md hover:scale-102 hover:-translate-y-0.5 border-purple-200 hover:border-purple-300"[39m
+              [33mdraggable[39m=[32m"true"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center gap-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"bg-[hsl(var(--card))] w-10 h-10 rounded flex items-center justify-center overflow-hidden"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"重新加载图片：current.png"[39m
+                    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+                    [33mtitle[39m=[32m"服务返回的内容不是图片"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [0m图片加载失败，重试[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-medium text-gray-700 text-center truncate w-full px-1"[39m
+                  [33mtitle[39m=[32m"current.png"[39m
+                [36m>[39m
+                  [0mcurrent.png[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-[hsl(var(--card))] h-full flex flex-col relative"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative overflow-auto scroll-smooth flex-1"[39m
+        [33mstyle[39m=[32m"scroll-behavior: smooth;"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-3 min-h-full transition-all duration-200"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative group cursor-pointer transition-all duration-200 bg-white rounded-lg border p-2 hover:shadow-md hover:scale-102 hover:-translate-y-0.5 border-purple-200 hover:border-purple-300"[39m
+              [33mdraggable[39m=[32m"true"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col items-center gap-1"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"bg-[hsl(var(--card))] w-10 h-10 rounded flex items-center justify-center overflow-hidden"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"重新加载图片：current.png"[39m
+                    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+                    [33mtitle[39m=[32m"服务返回的内容不是图片"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [0m图片加载失败，重试[0m
+                  [36m</button>[39m
+                [36m</div>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"text-xs font-medium text-gray-700 text-center truncate w-full px-1"[39m
+                  [33mtitle[39m=[32m"current.png"[39m
+                [36m>[39m
+                  [0mcurrent.png[0m
+                [36m</p>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<input[39m
+        [33maccept[39m=[32m"image/*"[39m
+        [33mclass[39m=[32m"hidden"[39m
+        [33mmultiple[39m=[32m""[39m
+        [33mtype[39m=[32m"file"[39m
+      [36m/>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:38:16
+     36|   api.list.mockResolvedValue({ success: true, data: [current] })
+     37|   act(() => window.dispatchEvent(new Event('refresh:image-assets')))
+     38|   await screen.findByAltText('current.png')
+       |                ^
+     39|   await act(async () => resolve({ success: true, data: [asset] }))
+     40|   expect(useWorkflowStore.getState().imageAssets).toEqual([current])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > does not overwrite a local upload that completed during a pending read
+AssertionError: expected [ { id: 'kept', …(7) } ] to deeply equal [ { id: 'kept', …(7) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -7,16 +7,6 @@
+      "originalName": "kept.png",
+      "path": null,
+      "size": 1,
+      "uploadedAt": "",
+    },
+-   {
+-     "extension": "png",
+-     "folder": "",
+-     "id": "uploaded",
+-     "name": "uploaded.png",
+-     "originalName": "uploaded.png",
+-     "path": null,
+-     "size": 1,
+-     "uploadedAt": "",
+-   },
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:49:51
+     47|   act(() => useWorkflowStore.getState().addImageAsset(uploaded))
+     48|   await act(async () => resolve({ success: true, data: [asset] }))
+     49|   expect(useWorkflowStore.getState().imageAssets).toEqual([asset, uplo…
+       |                                                   ^
+     50| })
+     51| it('does not write a response after the panel unmounts', async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-loading.test.tsx > does not write a response after the panel unmounts
+AssertionError: expected [] to deeply equal [ { id: 'kept', …(7) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "extension": "png",
+-     "folder": "",
+-     "id": "kept",
+-     "name": "kept.png",
+-     "originalName": "kept.png",
+-     "path": null,
+-     "size": 1,
+-     "uploadedAt": "",
+-   },
+- ]
++ []
+
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:57:51
+     55|   view.unmount()
+     56|   await act(async () => resolve({ success: true, data: [] }))
+     57|   expect(useWorkflowStore.getState().imageAssets).toEqual([asset])
+       |                                                   ^
+     58| })
+     59|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: f.includes is not a function
+ ❯ src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:148:19
+    146|       if (!currentPath) {
+    147|         // 根目录：只显示一级文件夹
+    148|         return !f.includes('/')
+       |                   ^
+    149|       } else {
+    150|         // 子目录：显示直接子文件夹
+ ❯ src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:145:32
+ ❯ ImageAssetsPanel src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:162:33
+ ❯ Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+
+This error originated in "src/renderer/domains/workflows/tests/image-panel-loading.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "keeps the last cache and offers retry after bad-folders". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: 离线
+ ❯ src/renderer/domains/workflows/tests/image-panel-loading.test.tsx:22:64
+     20|   if (mode === 'bad-folders') api.listFolders.mockResolvedValueOnce({ …
+     21|   if (mode === 'business-error') api.list.mockResolvedValueOnce({ succ…
+     22|   if (mode === 'network-error') api.list.mockRejectedValueOnce(new Err…
+       |                                                                ^
+     23|   render(<ImageAssetsPanel />)
+     24|   await screen.findByRole('alert')
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "src/renderer/domains/workflows/tests/image-panel-loading.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "keeps the last cache and offers retry after network-error". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+     Errors  2 errors
+   Start at  13:16:35
+   Duration  6.45s (transform 270ms, setup 138ms, import 448ms, tests 5.16s, environment 589ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-panel-loading.test.tsx

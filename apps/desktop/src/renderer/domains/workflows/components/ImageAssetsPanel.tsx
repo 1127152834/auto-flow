@@ -1,6 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/ImageAssetsPanel.tsx; see SOURCE.md for license and adaptation boundaries.
 import { ImageAssetPreview } from './controls/image-asset-preview'
-import { studioFetch } from '../api/transport'
+import { studioFetch, getStudioTransportRevision } from '../api/transport'
+import { readImageAssetList } from '../lib/imageAssetContract'
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useWorkflowStore } from '../editor-store'
@@ -51,38 +52,51 @@ export function ImageAssetsPanel() {
     }
   }, [])
 
-  // 加载文件夹列表
-  const loadFolders = useCallback(async () => {
-    const result = await imageAssetApi.listFolders()
-    if (result.data) {
-      setFolders(result.data)
-    }
-  }, [])
-
-  // 加载图像资源列表
-  const loadImageAssets = useCallback(async () => {
-    const result = await imageAssetApi.list()
-    if (result.data) {
-      setImageAssets(result.data)
+  const [loadError, setLoadError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const loadSequence = useRef(0)
+  const mounted = useRef(true)
+  const reloadAssets = useCallback(async () => {
+    if (!mounted.current) return false
+    const sequence = ++loadSequence.current
+    const revision = getStudioTransportRevision()
+    const previousAssets = useWorkflowStore.getState().imageAssets
+    const current = () => mounted.current && sequence === loadSequence.current && revision === getStudioTransportRevision()
+    setLoading(true)
+    setLoadError('')
+    try {
+      const [assetsResult, foldersResult] = await Promise.all([imageAssetApi.list(), imageAssetApi.listFolders()])
+      if (!current()) return false
+      const assets = readImageAssetList(assetsResult.data)
+      if (!assetsResult.success || !foldersResult.success || !assets ||
+          !Array.isArray(foldersResult.data) || !foldersResult.data.every(folder => typeof folder === 'string')) {
+        throw new Error(assetsResult.error || foldersResult.error || '图像资源或文件夹响应格式错误')
+      }
+      // 初始读取不得覆盖期间完成的上传、删除或其他消费者刷新。
+      setFolders(foldersResult.data)
+      if (useWorkflowStore.getState().imageAssets === previousAssets) setImageAssets(assets)
+      return true
+    } catch (error) {
+      if (current()) setLoadError(`加载图像资源失败：${error instanceof Error ? error.message : String(error)}`)
+      return false
+    } finally {
+      if (current()) setLoading(false)
     }
   }, [setImageAssets])
 
   useEffect(() => {
-    loadFolders()
-    loadImageAssets()
-  }, [loadFolders, loadImageAssets])
-
-  // 监听刷新事件
-  useEffect(() => {
-    const handleRefresh = () => {
-      console.log('[ImageAssetsPanel] 收到刷新事件，重新加载资源列表')
-      loadImageAssets()
-      loadFolders()
+    mounted.current = true
+    const refresh = () => { void reloadAssets() }
+    refresh()
+    window.addEventListener('refresh:image-assets', refresh)
+    window.addEventListener('studio:transport-changed', refresh)
+    return () => {
+      mounted.current = false
+      loadSequence.current++
+      window.removeEventListener('refresh:image-assets', refresh)
+      window.removeEventListener('studio:transport-changed', refresh)
     }
-    
-    window.addEventListener('refresh:image-assets', handleRefresh)
-    return () => window.removeEventListener('refresh:image-assets', handleRefresh)
-  }, [loadImageAssets, loadFolders])
+  }, [reloadAssets])
 
   // 监听全局截图快捷键事件
   useEffect(() => {
@@ -183,7 +197,7 @@ export function ImageAssetsPanel() {
     if (result.error) {
       await alert(result.error)
     } else {
-      await loadFolders()
+      await reloadAssets()
       setIsCreatingFolder(false)
       setNewFolderName('')
     }
@@ -200,11 +214,7 @@ export function ImageAssetsPanel() {
     if (result.error) {
       await alert(result.error)
     } else {
-      await loadFolders()
-      const imageResult = await imageAssetApi.list()
-      if (imageResult.data) {
-        setImageAssets(imageResult.data)
-      }
+      await reloadAssets()
     }
     setEditingFolder(null)
   }
@@ -221,10 +231,7 @@ export function ImageAssetsPanel() {
       await alert(result.error)
     } else if (result.data?.asset) {
       // 更新本地状态
-      const imageResult = await imageAssetApi.list()
-      if (imageResult.data) {
-        setImageAssets(imageResult.data)
-      }
+      await reloadAssets()
     }
     setEditingAsset(null)
   }
@@ -242,11 +249,7 @@ export function ImageAssetsPanel() {
     if (result.error) {
       await alert(result.error)
     } else {
-      await loadFolders()
-      const imageResult = await imageAssetApi.list()
-      if (imageResult.data) {
-        setImageAssets(imageResult.data)
-      }
+      await reloadAssets()
     }
   }
 
@@ -396,10 +399,7 @@ export function ImageAssetsPanel() {
       if (result.error) {
         await alert(result.error)
       } else {
-        const imageResult = await imageAssetApi.list()
-        if (imageResult.data) {
-          setImageAssets(imageResult.data)
-        }
+        await reloadAssets()
       }
     }
   }
@@ -468,10 +468,7 @@ export function ImageAssetsPanel() {
             if (result.error) {
               await alert(result.error)
             } else {
-              const imageResult = await imageAssetApi.list()
-              if (imageResult.data) {
-                setImageAssets(imageResult.data)
-              }
+              await reloadAssets()
             }
           }
         }}
@@ -559,6 +556,8 @@ export function ImageAssetsPanel() {
 
   return (
     <div className="bg-[hsl(var(--card))] h-full flex flex-col relative">
+      {loading && <div role="status" className="px-3 py-2 text-sm">正在加载图像资源…</div>}
+      {loadError && <div role="alert" className="px-3 py-2 text-sm text-red-700">{loadError} <button onClick={() => void reloadAssets()}>重试加载图像资源</button></div>}
       {/* 面包屑导航 */}
       {currentPath && (
         <div
@@ -610,7 +609,7 @@ export function ImageAssetsPanel() {
           onDrop={handleDrop}
           onContextMenu={(e) => handleContextMenu(e)}
         >
-          {imageAssets.length === 0 && folders.length === 0 ? (
+          {(loading || loadError) && subfolders.length === 0 && files.length === 0 ? null : imageAssets.length === 0 && folders.length === 0 ? (
             <div className="empty-state !py-0">
               <div className="empty-state-icon" style={{ background: 'linear-gradient(135deg, hsl(var(--warning-50)), hsl(var(--warning-100)))', color: 'hsl(var(--warning-500))', borderColor: 'hsl(var(--warning-500) / 0.2)' }}>
                 <ImageIcon className="w-7 h-7" strokeWidth={1.6} />
