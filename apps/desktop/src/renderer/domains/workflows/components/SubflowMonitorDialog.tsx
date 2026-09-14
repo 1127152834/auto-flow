@@ -159,7 +159,7 @@ export function SubflowMonitorDialog() {
         style: {
           width: n.width || 180,
           fontSize: 12,
-          borderRadius: 10,
+          borderRadius: 'var(--radius-card)',
           padding: 8,
           borderWidth: state === 'idle' ? 1 : 2,
           borderStyle: 'solid',

@@ -67,11 +67,11 @@ export function usePasswordPrompt() {
           onClick={() => close(null)}
         >
           <div
-            className="w-full max-w-[420px] rounded-[14px] bg-[hsl(var(--card))] shadow-pop-2xl border border-[hsl(var(--border))] overflow-hidden animate-scale-in"
+            className="w-full max-w-[420px] rounded-modal bg-[hsl(var(--card))] shadow-pop-2xl border border-[hsl(var(--border))] overflow-hidden animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-[10px] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-600))] border border-[hsl(var(--brand-500)/0.25)]">
+              <span className="flex items-center justify-center w-10 h-10 rounded-card bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-600))] border border-[hsl(var(--brand-500)/0.25)]">
                 <Lock className="w-5 h-5" strokeWidth={2.2} />
               </span>
               <div className="min-w-0">
@@ -91,7 +91,7 @@ export function usePasswordPrompt() {
                     if (e.key === 'Escape') close(null)
                   }}
                   placeholder={state.opts.placeholder || '请输入密码'}
-                  className="w-full h-10 pl-3 pr-10 text-[14px] rounded-[8px] border-[1.5px] border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] focus:outline-none focus:bg-[hsl(var(--card))] focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all"
+                  className="w-full h-10 pl-3 pr-10 text-[14px] rounded-control border-[1.5px] border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] focus:outline-none focus:bg-[hsl(var(--card))] focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all"
                 />
                 <button
                   type="button"

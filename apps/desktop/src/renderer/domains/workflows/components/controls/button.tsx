@@ -38,7 +38,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', noMotion: _noMotion, loading, children, disabled, ...props }, ref) => {
     const base =
       'group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap ' +
-      'rounded-[7px] text-[13px] font-medium select-none ' +
+      'rounded-control text-[13px] font-medium select-none ' +
       'transition-[background-color,border-color,color,box-shadow,transform,filter] ' +
       'duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] ' +
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] ' +
@@ -118,12 +118,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const sizes: Record<NonNullable<ButtonProps['size']>, string> = {
-      xs: 'h-6 px-2 text-[11px] gap-1 rounded-[5px]',
-      sm: 'h-7 px-2.5 text-[12px] rounded-[6px]',
+      xs: 'h-6 px-2 text-[11px] gap-1 rounded-control',
+      sm: 'h-7 px-2.5 text-[12px] rounded-control',
       default: 'h-8 px-3.5',
-      lg: 'h-10 px-5 text-[14px] rounded-[8px]',
+      lg: 'h-10 px-5 text-[14px] rounded-control',
       icon: 'h-8 w-8 p-0',
-      'icon-sm': 'h-7 w-7 p-0 rounded-[6px]',
+      'icon-sm': 'h-7 w-7 p-0 rounded-control',
     }
 
     // ghost + icon 增强：默认就有微弱底，悬浮明显

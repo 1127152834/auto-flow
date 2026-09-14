@@ -311,7 +311,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+            className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
           >
             <X className="w-4 h-4" />
           </button>
@@ -355,7 +355,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
           {browserOpen && (
             <>
               {/* Alt+X 快捷键卡 */}
-              <div className="relative p-4 rounded-[12px] border-[1.5px] border-[hsl(var(--violet-500)/0.3)] bg-gradient-to-br from-[hsl(var(--violet-50))] to-[hsl(var(--card))] overflow-hidden">
+              <div className="relative p-4 rounded-card border-[1.5px] border-[hsl(var(--violet-500)/0.3)] bg-gradient-to-br from-[hsl(var(--violet-50))] to-[hsl(var(--card))] overflow-hidden">
                 <div className="flex items-start gap-3">
                   <div className="icon-block icon-block-violet !w-9 !h-9">
                     <MousePointer className="w-4.5 h-4.5" strokeWidth={2.2} />
@@ -463,7 +463,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
                 {lastSelector && (
                   <div>
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">最近复制</label>
-                    <div className="flex items-center gap-2 mt-1.5 p-2.5 bg-[hsl(var(--brand-50))] rounded-[8px] border border-[hsl(var(--brand-500)/0.3)]">
+                    <div className="flex items-center gap-2 mt-1.5 p-2.5 bg-[hsl(var(--brand-50))] rounded-control border border-[hsl(var(--brand-500)/0.3)]">
                       <code className="flex-1 text-[12px] text-[hsl(var(--brand-700))] truncate font-mono" title={lastSelector}>
                         {lastSelector}
                       </code>

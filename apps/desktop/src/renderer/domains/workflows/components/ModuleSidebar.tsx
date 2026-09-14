@@ -1647,7 +1647,7 @@ function ModuleItemRaw({
     <div className="relative">
       <div
         style={customStyle}
-        className={`flex items-center gap-1 rounded-[7px]
+        className={`flex items-center gap-1 rounded-control
           bg-[hsl(var(--card))]
           border border-transparent
           hover:bg-[hsl(var(--brand-50))]
@@ -1676,7 +1676,7 @@ function ModuleItemRaw({
             </div>
           )}
           <div
-            className="w-7 h-7 rounded-[6px] flex items-center justify-center shrink-0"
+            className="w-7 h-7 rounded-control flex items-center justify-center shrink-0"
             style={customColor
               ? { backgroundColor: `${customColor}20`, color: customColor, border: `1px solid ${customColor}40` }
               : { backgroundColor: 'hsl(var(--slate-100))', color: 'hsl(var(--slate-600))' }
@@ -1701,7 +1701,7 @@ function ModuleItemRaw({
             <button
               ref={colorButtonRef}
               onClick={handleColorClick}
-              className="p-1 rounded-[5px] transition-colors duration-100 hover:bg-[hsl(var(--slate-100))] opacity-0 group-hover:opacity-100 cursor-pointer"
+              className="p-1 rounded-control transition-colors duration-100 hover:bg-[hsl(var(--slate-100))] opacity-0 group-hover:opacity-100 cursor-pointer"
               title="设置标签颜色"
             >
               <div
@@ -1716,7 +1716,7 @@ function ModuleItemRaw({
           {onToggleFavorite && (
             <button
               onClick={handleFavoriteClick}
-              className={`p-1 rounded-[5px] transition-colors duration-100 cursor-pointer ${
+              className={`p-1 rounded-control transition-colors duration-100 cursor-pointer ${
                 isFavorite
                   ? 'text-[hsl(var(--amber-500))] opacity-100'
                   : 'text-[hsl(var(--slate-300))] opacity-0 group-hover:opacity-100 hover:text-[hsl(var(--amber-500))] hover:bg-[hsl(var(--amber-50))]'
@@ -1732,7 +1732,7 @@ function ModuleItemRaw({
       {/* 颜色选择器弹窗 */}
       {showColorPicker && createPortal(
         <div
-          className="color-picker-container fixed z-[9999] bg-[hsl(var(--card))] rounded-[10px] shadow-pop-xl border border-[hsl(var(--border))] p-3 animate-scale-in"
+          className="color-picker-container fixed z-[9999] bg-[hsl(var(--card))] rounded-card shadow-pop-xl border border-[hsl(var(--border))] p-3 animate-scale-in"
           style={{ left: `${pickerPosition.x}px`, top: `${pickerPosition.y}px` }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -1742,7 +1742,7 @@ function ModuleItemRaw({
               <button
                 key={color.name}
                 onClick={() => handleColorSelect(color.value)}
-                className="flex flex-col items-center gap-1 p-2 rounded-[8px] hover:bg-[hsl(var(--brand-50))] hover:scale-105 active:scale-95 transition-all duration-150"
+                className="flex flex-col items-center gap-1 p-2 rounded-control hover:bg-[hsl(var(--brand-50))] hover:scale-105 active:scale-95 transition-all duration-150"
                 title={color.name}
               >
                 <div
@@ -1953,7 +1953,7 @@ function ModuleSidebarRaw() {
           onClick={() => setIsCollapsed(false)}
           title="展开模块列表"
         >
-          <span className="flex items-center justify-center w-8 h-8 rounded-[8px] bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] text-white shadow-brand-glow">
+          <span className="flex items-center justify-center w-8 h-8 rounded-control bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] text-white shadow-brand-glow">
             <ChevronRight className="w-4 h-4" />
           </span>
           {moduleCategories.slice(0, 8).map((category) => (
@@ -1975,7 +1975,7 @@ function ModuleSidebarRaw() {
 
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="icon-block icon-block-brand !w-8 !h-8 !rounded-[8px]">
+                <div className="icon-block icon-block-brand !w-8 !h-8 !rounded-control">
                   <Puzzle className="w-4 h-4" strokeWidth={2.4} />
                 </div>
                 <div className="min-w-0">
@@ -1990,7 +1990,7 @@ function ModuleSidebarRaw() {
               </div>
               <button
                 onClick={() => setIsCollapsed(true)}
-                className="p-1.5 rounded-[6px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-700))] hover:bg-[hsl(var(--brand-50))] transition-all hover:shadow-xs active:scale-90"
+                className="p-1.5 rounded-control text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-700))] hover:bg-[hsl(var(--brand-50))] transition-all hover:shadow-xs active:scale-90"
                 title="收起"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -1998,10 +1998,10 @@ function ModuleSidebarRaw() {
             </div>
 
             {/* 标签页切换 - 现代分段控件 */}
-            <div className="flex gap-1 p-1 bg-[hsl(var(--slate-100))] rounded-[8px] border border-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)]">
+            <div className="flex gap-1 p-1 bg-[hsl(var(--slate-100))] rounded-control border border-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)]">
               <button
                 onClick={() => setActiveTab('builtin')}
-                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-[6px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
                   activeTab === 'builtin'
                     ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                     : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--brand-700))] hover:!bg-[hsl(var(--card))]'
@@ -2012,7 +2012,7 @@ function ModuleSidebarRaw() {
               </button>
               <button
                 onClick={() => setActiveTab('custom')}
-                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-[6px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
+                className={`flex-1 px-2.5 py-1.5 text-[12px] font-semibold rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out flex items-center justify-center gap-1.5 border ${
                   activeTab === 'custom'
                     ? '!bg-[hsl(var(--violet-600))] !text-white !border-[hsl(var(--violet-700))] shadow-pop'
                     : '!bg-transparent !text-[hsl(var(--muted-foreground))] !border-transparent hover:!text-[hsl(var(--violet-700))] hover:!bg-[hsl(var(--card))]'
@@ -2032,7 +2032,7 @@ function ModuleSidebarRaw() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="搜索模块/拼音/英文..."
-                      className="pl-8 pr-7 h-8 !text-[12px] !rounded-[8px]"
+                      className="pl-8 pr-7 h-8 !text-[12px] !rounded-control"
                     />
                     {searchQuery && (
                       <button
@@ -2046,7 +2046,7 @@ function ModuleSidebarRaw() {
                   {/* 收藏筛选按钮 - 琥珀色 */}
                   <button
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                    className={`flex items-center justify-center h-8 w-8 rounded-[8px] transition-all duration-200 active:scale-90 ${
+                    className={`flex items-center justify-center h-8 w-8 rounded-control transition-all duration-200 active:scale-90 ${
                       showFavoritesOnly
                         ? 'bg-[hsl(var(--amber-500))] text-white border border-[hsl(var(--amber-600))] shadow-warning-glow'
                         : 'bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-500))] border border-[hsl(var(--slate-200))] hover:bg-[hsl(var(--amber-50))] hover:text-[hsl(var(--amber-600))] hover:border-[hsl(var(--amber-500)/0.4)]'
@@ -2087,7 +2087,7 @@ function ModuleSidebarRaw() {
                       className="mb-2"
                     >
                       <button
-                        className="w-full flex items-center gap-2 px-2.5 py-2 rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out group bg-[hsl(var(--card))] hover:bg-[hsl(var(--brand-50))] hover:border-[hsl(var(--brand-500)/0.3)] border border-transparent hover:shadow-xs"
+                        className="w-full flex items-center gap-2 px-2.5 py-2 rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out group bg-[hsl(var(--card))] hover:bg-[hsl(var(--brand-50))] hover:border-[hsl(var(--brand-500)/0.3)] border border-transparent hover:shadow-xs"
                         onClick={() => toggleCategory(category.name)}
                       >
                         <div className={`transition-transform duration-200 ease-out ${expanded ? 'rotate-0' : '-rotate-90'}`}>
@@ -2097,7 +2097,7 @@ function ModuleSidebarRaw() {
                         <span className="text-[12px] font-semibold flex-1 text-left text-[hsl(var(--slate-800))] transition-colors group-hover:text-[hsl(var(--brand-800))]">
                           {category.name}
                         </span>
-                        <span className="text-[10.5px] font-mono text-[hsl(var(--slate-500))] bg-[hsl(var(--slate-100))] px-1.5 py-0.5 rounded-full transition-colors group-hover:bg-[hsl(var(--brand-100))] group-hover:text-[hsl(var(--brand-700))]">
+                        <span className="text-[10.5px] font-mono text-[hsl(var(--slate-500))] bg-[hsl(var(--slate-100))] px-1.5 py-0.5 rounded-control transition-colors group-hover:bg-[hsl(var(--brand-100))] group-hover:text-[hsl(var(--brand-700))]">
                           {category.modules.length}
                         </span>
                       </button>

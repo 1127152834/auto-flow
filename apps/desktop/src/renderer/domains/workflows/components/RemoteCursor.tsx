@@ -97,7 +97,7 @@ export function RemoteCursor({ flowToScreenPosition }: RemoteCursorProps) {
       </svg>
       
       {/* 标签 */}
-      <div className="absolute left-5 top-4 bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full whitespace-nowrap shadow-md">
+      <div className="absolute left-5 top-4 bg-purple-500 text-white text-xs px-2 py-0.5 rounded-control whitespace-nowrap shadow-md">
         对方
       </div>
 

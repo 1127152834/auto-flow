@@ -100,7 +100,7 @@ export function LogList({ logs, searchQuery, onLogClick }: LogListProps) {
                 height: ROW_HEIGHT,
               }}
               className={cn(
-                'text-[12px] font-mono pl-3 pr-3 leading-[26px] truncate rounded-[6px] flex items-center gap-2 transition-colors duration-100 group',
+                'text-[12px] font-mono pl-3 pr-3 leading-[26px] truncate rounded-control flex items-center gap-2 transition-colors duration-100 group',
                 log.nodeId
                   ? 'cursor-pointer hover:bg-[hsl(var(--brand-50))] hover:shadow-xs'
                   : 'hover:bg-[hsl(var(--slate-100)/0.6)]'

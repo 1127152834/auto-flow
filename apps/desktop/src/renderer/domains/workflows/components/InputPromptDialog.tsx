@@ -378,7 +378,7 @@ export function InputPromptDialog() {
             onClick={handleCancel}
             disabled={!!delivery}
             aria-label="取消输入"
-            className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+            className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
           >
             <X className="w-4 h-4" />
           </button>
@@ -388,7 +388,7 @@ export function InputPromptDialog() {
             <Label className="text-[hsl(var(--slate-800))] text-[13px]">{promptData.message || '请输入值:'}</Label>
             {isSelect ? (
               <>
-                <div className="space-y-1.5 p-2 bg-[hsl(var(--slate-50))] rounded-[10px] border border-[hsl(var(--border))] max-h-80 overflow-y-auto">
+                <div className="space-y-1.5 p-2 bg-[hsl(var(--slate-50))] rounded-card border border-[hsl(var(--border))] max-h-80 overflow-y-auto">
                   {promptData.selectOptions && promptData.selectOptions.length > 0 ? (
                     promptData.selectOptions.map((option, index) => {
                       const isSelected = selectedItems.includes(option)
@@ -397,7 +397,7 @@ export function InputPromptDialog() {
                           key={index}
                           onClick={() => toggleSelectItem(option)}
                           className={`
-                            flex items-center gap-3 p-2.5 rounded-[8px] border-[1.5px] cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)]
+                            flex items-center gap-3 p-2.5 rounded-control border-[1.5px] cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)]
                             ${isSelected
                               ? 'border-[hsl(var(--brand-500))] bg-[hsl(var(--brand-50))] shadow-soft'
                               : 'border-[hsl(var(--border))] bg-[hsl(var(--card))] hover:border-[hsl(var(--brand-500)/0.4)] hover:bg-[hsl(var(--brand-50)/0.6)] hover:translate-x-1'
@@ -405,7 +405,7 @@ export function InputPromptDialog() {
                           `}
                         >
                           <div className={`
-                            flex-shrink-0 w-5 h-5 rounded-[5px] border-[1.5px] flex items-center justify-center transition-all duration-200
+                            flex-shrink-0 w-5 h-5 rounded-control border-[1.5px] flex items-center justify-center transition-all duration-200
                             ${isSelected
                               ? 'border-[hsl(var(--brand-500))] bg-[hsl(var(--brand-500))] shadow-brand-glow'
                               : 'border-[hsl(var(--slate-300))] bg-[hsl(var(--card))]'
@@ -458,7 +458,7 @@ export function InputPromptDialog() {
               </>
             ) : isSlider ? (
               <>
-                <div className="space-y-3 p-4 bg-gradient-to-br from-[hsl(var(--brand-50)/0.6)] to-[hsl(var(--card))] rounded-[10px] border border-[hsl(var(--border))]">
+                <div className="space-y-3 p-4 bg-gradient-to-br from-[hsl(var(--brand-50)/0.6)] to-[hsl(var(--card))] rounded-card border border-[hsl(var(--border))]">
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] text-[hsl(var(--muted-foreground))] font-mono">
                       {promptData.minValue ?? 0}
@@ -501,7 +501,7 @@ export function InputPromptDialog() {
               <>
                 <label
                   htmlFor="checkbox-input"
-                  className={`flex items-center gap-3 p-3.5 rounded-[10px] border-[1.5px] cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center gap-3 p-3.5 rounded-card border-[1.5px] cursor-pointer transition-all duration-200 ${
                     checkboxValue
                       ? 'border-[hsl(var(--success-500))] bg-[hsl(var(--success-50))] shadow-success-glow'
                       : 'border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] hover:border-[hsl(var(--brand-500)/0.4)] hover:bg-[hsl(var(--brand-50)/0.4)]'
@@ -572,7 +572,7 @@ export function InputPromptDialog() {
                   value={inputValue}
                   onChange={(e) => { setInputValue(e.target.value); setError('') }}
                   placeholder={isListMode ? "每行输入一个值..." : "请输入内容..."}
-                  className={`w-full h-40 px-3 py-2.5 text-[13px] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] border-[1.5px] rounded-[8px] resize-none focus:outline-none focus:bg-[hsl(var(--card))] focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all duration-150 leading-relaxed ${error ? 'border-[hsl(var(--danger-500))]' : 'border-[hsl(var(--border))]'}`}
+                  className={`w-full h-40 px-3 py-2.5 text-[13px] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] border-[1.5px] rounded-control resize-none focus:outline-none focus:bg-[hsl(var(--card))] focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)] transition-all duration-150 leading-relaxed ${error ? 'border-[hsl(var(--danger-500))]' : 'border-[hsl(var(--border))]'}`}
                   autoFocus
                 />
                 {isListMode && (

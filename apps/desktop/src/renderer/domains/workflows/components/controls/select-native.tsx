@@ -141,7 +141,7 @@ const SelectNative = React.forwardRef<HTMLButtonElement, SelectProps>(
           title={title}
           className={cn(
             // 形态
-            'group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px]',
+            'group relative flex h-8 w-full items-center justify-between gap-2 rounded-control',
             'border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))]',
             'px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))]',
             'shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)]',
@@ -174,7 +174,7 @@ const SelectNative = React.forwardRef<HTMLButtonElement, SelectProps>(
             style={{ zIndex: 2147483647 }}
             className={cn(
               'min-w-[var(--radix-select-trigger-width)] max-h-[min(360px,var(--radix-select-content-available-height))]',
-              'overflow-hidden rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--card))]',
+              'overflow-hidden rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))]',
               'shadow-pop-xl ring-1 ring-[hsl(var(--brand-500)/0.06)]',
               'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
               'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
@@ -199,7 +199,7 @@ const SelectNative = React.forwardRef<HTMLButtonElement, SelectProps>(
                       value={opt.value === '' ? EMPTY_SENTINEL : opt.value}
                       disabled={opt.disabled}
                       className={cn(
-                        'relative flex select-none items-center gap-2 rounded-[6px] py-1.5 pl-7 pr-2.5',
+                        'relative flex select-none items-center gap-2 rounded-control py-1.5 pl-7 pr-2.5',
                         'text-[13px] leading-tight text-[hsl(var(--slate-700))]',
                         'cursor-pointer outline-none transition-colors duration-100',
                         'hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))]',

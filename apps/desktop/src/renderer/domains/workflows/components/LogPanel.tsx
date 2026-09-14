@@ -516,7 +516,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             {/* 执行日志 - 蓝 */}
             <button
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
                 activeTab === 'logs'
                   ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                   : '!bg-transparent !text-[hsl(var(--slate-600))] !border-transparent hover:!bg-[hsl(var(--brand-50))] hover:!text-[hsl(var(--brand-700))]'
@@ -527,7 +527,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               <span className="hidden sm:inline">执行日志</span>
               <span className="sm:hidden">日志</span>
               <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
+                'text-[10px] px-1.5 py-0.5 rounded-control font-mono',
                 activeTab === 'logs' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
               )}>
                 {logs.length}
@@ -536,7 +536,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             {/* 数据表格 - 青蓝 */}
             <button
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
                 activeTab === 'data'
                   ? '!bg-[hsl(var(--info-600))] !text-white !border-[hsl(var(--info-700))] shadow-pop'
                   : '!bg-transparent !text-[hsl(var(--slate-600))] !border-transparent hover:!bg-[hsl(var(--info-50))] hover:!text-[hsl(var(--info-700))]'
@@ -547,7 +547,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               <span className="hidden sm:inline">数据表格</span>
               <span className="sm:hidden">数据</span>
               <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
+                'text-[10px] px-1.5 py-0.5 rounded-control font-mono',
                 activeTab === 'data' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
               )}>
                 {collectedData.length}
@@ -556,7 +556,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             {/* 全局变量 - 紫 */}
             <button
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
                 activeTab === 'variables'
                   ? '!bg-[hsl(var(--violet-600))] !text-white !border-[hsl(var(--violet-700))] shadow-pop'
                   : '!bg-transparent !text-[hsl(var(--slate-600))] !border-transparent hover:!bg-[hsl(var(--violet-50))] hover:!text-[hsl(var(--violet-700))]'
@@ -567,7 +567,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               <span className="hidden sm:inline">全局变量</span>
               <span className="sm:hidden">变量</span>
               <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
+                'text-[10px] px-1.5 py-0.5 rounded-control font-mono',
                 activeTab === 'variables' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
               )}>
                 {variables.length}
@@ -576,7 +576,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             {/* 图像 - 橙 */}
             <button
               className={cn(
-                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-[8px] transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[12px] rounded-control transition-[background-color,color,border-color,box-shadow] duration-150 ease-out whitespace-nowrap font-semibold border',
                 activeTab === 'images'
                   ? '!bg-[hsl(var(--warning-500))] !text-white !border-[hsl(var(--warning-600))] shadow-warning-glow'
                   : '!bg-transparent !text-[hsl(var(--slate-600))] !border-transparent hover:!bg-[hsl(var(--warning-50))] hover:!text-[hsl(var(--warning-700))]'
@@ -587,7 +587,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               <span className="hidden md:inline">图像资源</span>
               <span className="md:hidden">图像</span>
               <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
+                'text-[10px] px-1.5 py-0.5 rounded-control font-mono',
                 activeTab === 'images' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
               )}>
                 {useWorkflowStore.getState().imageAssets.length}
@@ -762,7 +762,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     value={logSearchQuery}
                     onChange={(e) => setLogSearchQuery(e.target.value)}
                     placeholder="搜索日志..."
-                    className="!pl-7 !pr-7 !h-7 !text-[12px] !rounded-[8px]"
+                    className="!pl-7 !pr-7 !h-7 !text-[12px] !rounded-control"
                   />
                   {logSearchQuery && (
                     <button
@@ -777,7 +777,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                   <button
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                     className={cn(
-                      'h-7 px-2.5 text-[12px] rounded-[7px] transition-all duration-150 flex items-center gap-1.5 font-medium border',
+                      'h-7 px-2.5 text-[12px] rounded-control transition-all duration-150 flex items-center gap-1.5 font-medium border',
                       showFilterDropdown
                         ? 'bg-[hsl(var(--brand-100))] text-[hsl(var(--brand-700))] border-[hsl(var(--brand-500)/0.4)] shadow-xs'
                         : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-700))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] hover:border-[hsl(var(--brand-500)/0.3)]'
@@ -796,9 +796,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                         className="fixed inset-0 z-40"
                         onClick={() => setShowFilterDropdown(false)}
                       />
-                      <div className="absolute top-full left-0 mt-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-[10px] shadow-pop-xl p-1.5 z-50 min-w-[180px] animate-scale-in">
+                      <div className="absolute top-full left-0 mt-2 bg-[hsl(var(--card))] border border-[hsl(var(--border))] rounded-card shadow-pop-xl p-1.5 z-50 min-w-[180px] animate-scale-in">
                         <div className="space-y-0.5">
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.size === 5}
                               onCheckedChange={toggleAllFilters}
@@ -806,7 +806,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             <span className="font-semibold">全选/取消</span>
                           </label>
                           <div className="h-px bg-[hsl(var(--border))] my-1" />
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--slate-100))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--slate-100))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.has('debug')}
                               onCheckedChange={() => toggleLogLevelFilter('debug')}
@@ -814,7 +814,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             <span className="w-2 h-2 rounded-full bg-[hsl(var(--slate-400))]" />
                             <span className="text-[hsl(var(--slate-700))]">调试</span>
                           </label>
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--info-50))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--info-50))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.has('info')}
                               onCheckedChange={() => toggleLogLevelFilter('info')}
@@ -822,7 +822,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             <span className="w-2 h-2 rounded-full bg-[hsl(var(--info-500))]" />
                             <span className="text-[hsl(var(--info-700))] font-medium">信息</span>
                           </label>
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--success-50))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--success-50))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.has('success')}
                               onCheckedChange={() => toggleLogLevelFilter('success')}
@@ -830,7 +830,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             <span className="w-2 h-2 rounded-full bg-[hsl(var(--success-500))]" />
                             <span className="text-[hsl(var(--success-700))] font-medium">成功</span>
                           </label>
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--warning-50))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--warning-50))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.has('warning')}
                               onCheckedChange={() => toggleLogLevelFilter('warning')}
@@ -838,7 +838,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                             <span className="w-2 h-2 rounded-full bg-[hsl(var(--warning-500))]" />
                             <span className="text-[hsl(var(--warning-700))] font-medium">警告</span>
                           </label>
-                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--danger-50))] rounded-[6px] cursor-pointer text-[12px] transition-colors">
+                          <label className="flex items-center gap-2 px-2.5 py-1.5 hover:bg-[hsl(var(--danger-50))] rounded-control cursor-pointer text-[12px] transition-colors">
                             <Checkbox
                               checked={logLevelFilters.has('error')}
                               onCheckedChange={() => toggleLogLevelFilter('error')}

@@ -17,7 +17,7 @@
 }
 
 .af-studio-table { min-width: max-content; }
-.af-studio-table-scroll { border-radius: 6px; }
+.af-studio-table-scroll { border-radius: var(--radius-card); }
 
 /* Override the older assistant prose-table rules at their own specificity. */
 .ai-md .ai-md-body .af-studio-table-scroll { margin: 0.7em 0; }

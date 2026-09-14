@@ -1,3 +1,5 @@
+@import "./radii.css";
+
 /* Tokens are a runtime API too (inline styles and future shared controls). */
 @theme static {
   --color-canvas: #f1eee7;
@@ -26,9 +28,6 @@
   --color-warning-soft: #faf0dc;
   --color-disabled-surface: #ebe7df;
   --color-disabled-ink: #7b746a;
-  --radius-control: 8px;
-  --radius-card: 12px;
-  --radius-modal: 16px;
   --shadow-popup: 0 6px 20px rgb(52 50 46 / 12%);
   --shadow-modal: 0 20px 64px rgb(52 50 46 / 18%);
 }
