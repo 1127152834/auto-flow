@@ -1,7 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/InjectJsEditorDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import {useBrowserScriptTest} from '../hooks/useBrowserScriptTest'
 import {CodeCopyButton} from './CodeCopyButton'
 import { registerEditorCompletions } from '../lib/editorCompletions'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import Editor, { type Monaco, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
@@ -61,18 +62,18 @@ document.body.style.background = "lightblue";
 
 export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJsEditorDialogProps) {
   const [currentCode, setCurrentCode] = useState(code || DEFAULT_CODE)
-  const [testResult, setTestResult] = useState<{ success: boolean; result?: string; error?: string } | null>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   
   const variables = useWorkflowStore((state) => state.variables)
   const nodes = useWorkflowStore((state) => state.nodes)
+  const testVariables = useMemo(() => Object.fromEntries(variables.filter(variable => variable.value !== undefined).map(variable => [variable.name,variable.value])),[variables])
+  const scriptTest = useBrowserScriptTest(isOpen,currentCode,testVariables)
 
   // 同步外部 code 变化
   useEffect(() => {
     if (isOpen) {
       setCurrentCode(code || DEFAULT_CODE)
-      setTestResult(null)
     }
   }, [isOpen, code])
 
@@ -232,66 +233,17 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
     editor.focus()
   }
 
-  // 测试运行代码（模拟浏览器环境）
-  const handleTest = () => {
-    try {
-      // 准备测试变量
-      const testVars: Record<string, unknown> = {}
-      variables.forEach(v => {
-        testVars[v.name] = v.value
-      })
-
-      // 模拟浏览器环境（简化版）
-      const mockDocument = {
-        title: '测试页面',
-        body: {
-          style: {},
-        },
-        createElement: (tag: string) => ({ tag, style: {}, textContent: '' }),
-        querySelector: () => null,
-        querySelectorAll: () => [],
-      }
-
-      const mockWindow = {
-        location: {
-          href: 'http://localhost:3000/test',
-        },
-      }
-
-      // 执行代码
-      const wrappedCode = `
-        const vars = ${JSON.stringify(testVars)};
-        const document = ${JSON.stringify(mockDocument)};
-        const window = ${JSON.stringify(mockWindow)};
-        
-        ${currentCode}
-      `
-
-      const fn = new Function(wrappedCode)
-      const result = fn()
-      
-      setTestResult({
-        success: true,
-        result: result !== undefined ? JSON.stringify(result, null, 2) : '执行成功（无返回值）',
-      })
-    } catch (error) {
-      setTestResult({
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
-  }
-
   // 重置代码
   const handleReset = () => {
     setCurrentCode(DEFAULT_CODE)
-    setTestResult(null)
   }
+
+  const handleClose = () => { scriptTest.cancel(); onClose() }
 
   // 保存并关闭
   const handleSave = () => {
     onSave(currentCode)
-    onClose()
+    handleClose()
   }
 
   if (!isOpen) return null
@@ -319,7 +271,7 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
               {variables.length} 个变量可用
             </span>
           </div>
-          <Button variant="tonal-danger" size="icon" onClick={onClose} title="关闭">
+          <Button variant="tonal-danger" size="icon" onClick={handleClose} title="关闭">
 
             <X className="w-4 h-4" />
 
@@ -335,10 +287,11 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
             variableReferenceFormat="vars.变量名"
             moduleType="inject_javascript"
           />
-          <Button size="sm" variant="tonal-success" onClick={handleTest}>
+          <Button size="sm" variant="tonal-success" onClick={() => void scriptTest.start()} disabled={scriptTest.busy}>
             <Play className="w-4 h-4 mr-1" />
             测试运行
           </Button>
+          {scriptTest.busy && <Button size="sm" variant="tonal-danger" onClick={scriptTest.cancel}>取消测试</Button>}
           <Button size="sm" variant="tonal-success" onClick={handleReset}>
             <RotateCcw className="w-4 h-4 mr-1" />
             重置
@@ -413,19 +366,14 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
             {/* 测试结果 */}
             <div className="flex-1 p-3 overflow-auto">
               <h4 className="text-sm font-medium mb-2">测试结果</h4>
-              {testResult ? (
-                <div
-                  className={`p-2 rounded text-xs font-mono whitespace-pre-wrap ${
-                    testResult.success
-                      ? 'bg-green-50 border border-green-200 text-green-800'
-                      : 'bg-red-50 border border-red-200 text-red-800'
-                  }`}
-                >
-                  {testResult.success ? testResult.result : `错误: ${testResult.error}`}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-500">点击"测试运行"查看结果（注意：测试环境是模拟的，实际执行会在真实浏览器页面中）</p>
-              )}
+              <p className="text-xs text-gray-500 mb-2">在所选自动化浏览器页面中测试，代码可能修改页面。请先打开浏览器并准备目标页面。</p>
+              {scriptTest.pageUrl && <p className="text-xs break-all">测试页面：{scriptTest.pageUrl}</p>}
+              {scriptTest.phase && <p role="status" className="text-xs text-amber-700">{scriptTest.phase}</p>}
+              {scriptTest.error && <p role="alert" className="text-xs text-red-700 whitespace-pre-wrap">{scriptTest.error}</p>}
+              {scriptTest.result?.executionKind === 'mock' && <p className="text-xs text-amber-700">模拟服务结果，未执行代码或查询网页</p>}
+              {scriptTest.result?.status === 'completed' && <pre className="p-2 rounded text-xs whitespace-pre-wrap break-all bg-green-50 border border-green-200 text-green-800">{scriptTest.result.hasResult ? JSON.stringify(scriptTest.result.result,null,2) : '执行结束（无返回值）'}</pre>}
+              {scriptTest.result?.status === 'cancelled' && <p className="text-xs">服务已取消测试</p>}
+
             </div>
 
             {/* 快捷键提示 */}
@@ -439,7 +387,7 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
 
         {/* 底部 */}
         <div className="flex items-center justify-end gap-2 px-4 py-3 border-t bg-gray-50 rounded-b-lg">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={handleClose}>
             取消
           </Button>
           <Button variant="success" onClick={handleSave}>

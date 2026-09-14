@@ -2337,6 +2337,61 @@ export type components = {
             height: number;
         };
         JsonValue: unknown;
+        /** StudioBrowserScriptContext */
+        StudioBrowserScriptContext: {
+            /** Browsersessionid */
+            browserSessionId: string;
+            /** Pageid */
+            pageId: string;
+            /** Revision */
+            revision: number;
+            /** Url */
+            url: string;
+            /** Activerequestid */
+            activeRequestId: string | null;
+        };
+        /** StudioBrowserScriptRequest */
+        StudioBrowserScriptRequest: {
+            /** Requestid */
+            requestId: string;
+            context: components["schemas"]["StudioBrowserScriptTarget"];
+            /** Code */
+            code: string;
+            /** Variables */
+            variables: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        /** StudioBrowserScriptState */
+        StudioBrowserScriptState: {
+            /** Requestid */
+            requestId: string;
+            context: components["schemas"]["StudioBrowserScriptTarget"];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "completed" | "failed" | "cancelled" | "expired";
+            /** Hasresult */
+            hasResult: boolean;
+            result: components["schemas"]["JsonValue"];
+            /** Error */
+            error: string | null;
+            /**
+             * Executionkind
+             * @enum {string}
+             */
+            executionKind: "browser" | "mock";
+        };
+        /** StudioBrowserScriptTarget */
+        StudioBrowserScriptTarget: {
+            /** Browsersessionid */
+            browserSessionId: string;
+            /** Pageid */
+            pageId: string;
+            /** Revision */
+            revision: number;
+        };
         /** StudioBrowserStatus */
         StudioBrowserStatus: {
             /** Isopen */

@@ -3,7 +3,7 @@ type ScriptResult = components['schemas']['StudioJsScriptResult']
 export type JsScriptOutcome = Pick<ScriptResult, 'success'> & Partial<Pick<ScriptResult, 'result' | 'variables' | 'error'>>
 
 /** JSON roundtrip without silently dropping unsupported values or converting non-finite numbers. */
-function jsonCopy<T>(value: T): T {
+export function jsonCopy<T>(value: T): T {
   const ancestors = new Set<object>()
   const check = (item: unknown): void => {
     if (item === null || typeof item === 'string' || typeof item === 'boolean') return

@@ -1,3 +1,4 @@
+import {mockBrowserScriptTests,mockScriptTestBusy,invalidateMockScriptTests,configureMockScriptTest} from './mock-browser-script-tests'
 import { isSpeechRequest } from '../lib/runSpeech'
 import type { components } from '../../../shared/api/generated'
 import { mockScheduledRequest, finishScheduledFixture } from './mock-scheduled-tasks'
@@ -58,7 +59,8 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
-export function configureMock(options: { offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+export function configureMock(options: { scriptTest?: {result?:unknown;error?:string;hold?:boolean}; offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
+  if (options.scriptTest !== undefined) configureMockScriptTest(options.scriptTest)
   if (options.selectorTest !== undefined) selectorTest = options.selectorTest
   if (options.executionOrder !== undefined) nextExecutionOrder = options.executionOrder === null ? null : [...options.executionOrder]
   if (options.offline !== undefined) offline = options.offline
@@ -318,7 +320,7 @@ function validBreakpoints(value: unknown, nodeIds: string[]): value is string[] 
   return Array.isArray(value) && value.every(id => typeof id === 'string' && nodeIds.includes(id))
 }
 function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): Response {
-        if (run || recording || picking) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
+        if (run || recording || picking || mockScriptTestBusy()) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
         if (!doc) return failure('工作流不存在', 404)
         // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
         const sourceNodes = structuredClone(doc.nodes) as ObjectValue[]
@@ -501,17 +503,19 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (!action && method === 'GET') return db.workflows[id] ? response(db.workflows[id]) : failure('工作流不存在',404)
       if (!action && method === 'DELETE') { const workflows = { ...db.workflows }; delete workflows[id]; persist({ ...db, workflows }); return response({success:true}) }
     }
+    const scriptTest = mockBrowserScriptTests(path,method,body,browser && !run && !recording && !picking,url)
+    if(scriptTest)return scriptTest
     if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, url, mock: true })
     if (path === '/browser/chromium-status') return response({ installed: true, ready: true, mock: true })
-    if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) { browser = true; url = String(body.url || url); return response({ success: true, isOpen: true, url, mock: true }) }
-    if (path === '/browser/close') { browser = false; picking = false; recording = false; return response({success:true}) }
+    if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) { invalidateMockScriptTests(!browser); browser = true; url = String(body.url || url); return response({ success: true, isOpen: true, url, mock: true }) }
+    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; picking = false; recording = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     if (path === '/recorder/start') {
       const sessionId = typeof body.sessionId === 'string' && body.sessionId ? body.sessionId : crypto.randomUUID()
       if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
       if (sessionId === recordingSessionId) return response({ success: true, sessionId, recording, nextSeq: recorded.length })
-      if (!browser || run || picking || recording) return failure('请先打开空闲的 Mock 浏览器', 409)
+      if (!browser || run || picking || recording || mockScriptTestBusy()) return failure('请先打开空闲的 Mock 浏览器', 409)
       if (recordingSessionId) retiredRecordings.add(recordingSessionId)
       recordingSessionId = sessionId; recording = true; recorded = []
       return response({ success: true, sessionId, recording: true, nextSeq: 0 })
@@ -526,7 +530,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
     }
     if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
-    if (path === '/element-picker/start') { if (run || recording) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; similarPicked = null; return response({success:true}) }
+    if (path === '/element-picker/start') { if (run || recording || mockScriptTestBusy()) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; similarPicked = null; return response({success:true}) }
     if (path === '/element-picker/stop') { if (method !== 'POST') return failure('停止拾取仅支持 POST', 405); if (failNextPickerStop) { failNextPickerStop = false; return failure('Mock 拾取清理失败，请重试', 503) } picking = false; picked = null; similarPicked = null; return response({success:true}) }
     if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })
     if (['/element-picker/result','/element-picker/selected'].includes(path)) return response({ success:true, active:picking, selected:picked !== null, data:picked, element:picked, ...picked })

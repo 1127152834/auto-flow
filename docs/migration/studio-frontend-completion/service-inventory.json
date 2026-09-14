@@ -725,6 +725,57 @@
       "status": "待核对"
     },
     {
+      "id": "service:browserScriptTestsApi.cancel",
+      "operation": "browserScriptTestsApi.cancel",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts",
+      "line": 20,
+      "source": null,
+      "requests": [],
+      "consumers": [],
+      "status": "待核对"
+    },
+    {
+      "id": "service:browserScriptTestsApi.get",
+      "operation": "browserScriptTestsApi.get",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts",
+      "line": 19,
+      "source": null,
+      "requests": [],
+      "consumers": [],
+      "status": "待核对"
+    },
+    {
+      "id": "service:browserScriptTestsApi.getContext",
+      "operation": "browserScriptTestsApi.getContext",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts",
+      "line": 10,
+      "source": null,
+      "requests": [
+        {
+          "endpoint": "`${endpoint}/context`",
+          "method": "GET",
+          "body": null,
+          "responseType": "BrowserScriptContext",
+          "call": "apiRequest<BrowserScriptContext>(`${endpoint}/context`,{signal})",
+          "file": "apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts",
+          "line": 11,
+          "source": null
+        }
+      ],
+      "consumers": [],
+      "status": "待核对"
+    },
+    {
+      "id": "service:browserScriptTestsApi.start",
+      "operation": "browserScriptTestsApi.start",
+      "file": "apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts",
+      "line": 15,
+      "source": null,
+      "requests": [],
+      "consumers": [],
+      "status": "待核对"
+    },
+    {
       "id": "service:credentialApi.delete",
       "operation": "credentialApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
