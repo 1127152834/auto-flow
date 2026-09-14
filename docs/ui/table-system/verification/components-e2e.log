@@ -1,0 +1,95 @@
+11:20:06 AM [vite] (client) Pre-transform error: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/src/renderer/development/table-system/main.tsx: Unexpected token (35:391)
+
+  33 |     {view === '基础' ? <section className="space-y-2"><TableToolbar label="资料查询"><strong className="mr-auto">数据记录</strong><SearchInput aria-label="搜索示例" value={query} onChange={event => setQuery(event.target.value)} onClear={() => setQuery('')} /><Button disabled>导出</Button></TableToolbar>
+  34 |       <TableScroll label="基础精细网格"><Table aria-label="基础精细网格"><TableHeader><TableRow><TableHead>选择</TableHead><TableHead>标题</TableHead><TableHead>文章链接</TableHead><TableHead>发布日期</TableHead><TableHead>业务状态</TableHead></TableRow></TableHeader><TableBody>
+> 35 |         {['温室光照管理笔记','番茄育苗观察','灌溉设备清单','土壤湿度记录'].filter(name => name.includes(query)).map((name,i) => <TableRow key={name} aria-selected={selected.has(name)}><TableCell><Checkbox aria-label={'选择' + name} checked={selected.has(name)} onCheckedChange={value => setSelected(current => { const next = new Set(current); if (value === true) next.add(name); else next.delete(name); return next }) /></TableCell><TableCell>{name}</TableCell><TableCell>https://example.com/notes/{i + 1}</TableCell><TableCell>2026-09-14</TableCell><TableCell><TableStatus tone={i === 1 ? 'success' : 'neutral'}>{i === 1 ? '已整理' : '未设置'}</TableStatus></TableCell></TableRow>)}
+     |                                                                                                                                                                                                                                                                                                                                                                                                        ^
+  36 |       </TableBody></Table></TableScroll></section> : view === '代理' ? <ProxyTable page={{items:proxyItems,offset:0,limit:50,matched_count:proxyItems.length}} filters={filters} onFiltersChange={setFilters} onOpen={p => setNotice('组件事件：打开' + p.name)} onProbe={() => setNotice('仅展示，不执行网络检测')} /> :
+  37 |       <ModelDirectory models={models} search={query} status={status} busy={false} testingKey={null} onSearch={setQuery} onStatus={setStatus} onAdd={() => setNotice('组件事件：添加模型')} onEdit={m => setNotice('组件事件：编辑' + m.displayName)} onDelete={() => setNotice('组件事件：删除确认')} onToggle={() => setNotice('组件事件：切换启用')} onTest={() => setNotice('仅展示，不执行网络请求')} />}
+  38 |     {notice ? <p role="status">{notice}</p> : null}
+  Plugin: vite:react-babel
+  File: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/src/renderer/development/table-system/main.tsx:35:391
+  33 |      {view === '基础' ? <section className="space-y-2"><TableToolbar label="资料查询"><strong className="mr-auto">数据记录</stro...
+  34 |        <TableScroll label="基础精细网格"><Table aria-label="基础精细网格"><TableHeader><TableRow><TableHead>选择</TableHead><TableHe...
+  35 |  ...ue) next.add(name); else next.delete(name); return next }) /></TableCell><TableCell>{name}</TableCell><TableCell>h...
+     |                                                                 ^
+  36 |        </TableBody></Table></TableScroll></section> : view === '代理' ? <ProxyTable page={{items:proxyItems,offset:0,lim...
+  37 |        <ModelDirectory models={models} search={query} status={status} busy={false} testingKey={null} onSearch={setQuer...
+11:20:06 AM [vite] Internal server error: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/src/renderer/development/table-system/main.tsx: Unexpected token (35:391)
+
+  33 |     {view === '基础' ? <section className="space-y-2"><TableToolbar label="资料查询"><strong className="mr-auto">数据记录</strong><SearchInput aria-label="搜索示例" value={query} onChange={event => setQuery(event.target.value)} onClear={() => setQuery('')} /><Button disabled>导出</Button></TableToolbar>
+  34 |       <TableScroll label="基础精细网格"><Table aria-label="基础精细网格"><TableHeader><TableRow><TableHead>选择</TableHead><TableHead>标题</TableHead><TableHead>文章链接</TableHead><TableHead>发布日期</TableHead><TableHead>业务状态</TableHead></TableRow></TableHeader><TableBody>
+> 35 |         {['温室光照管理笔记','番茄育苗观察','灌溉设备清单','土壤湿度记录'].filter(name => name.includes(query)).map((name,i) => <TableRow key={name} aria-selected={selected.has(name)}><TableCell><Checkbox aria-label={'选择' + name} checked={selected.has(name)} onCheckedChange={value => setSelected(current => { const next = new Set(current); if (value === true) next.add(name); else next.delete(name); return next }) /></TableCell><TableCell>{name}</TableCell><TableCell>https://example.com/notes/{i + 1}</TableCell><TableCell>2026-09-14</TableCell><TableCell><TableStatus tone={i === 1 ? 'success' : 'neutral'}>{i === 1 ? '已整理' : '未设置'}</TableStatus></TableCell></TableRow>)}
+     |                                                                                                                                                                                                                                                                                                                                                                                                        ^
+  36 |       </TableBody></Table></TableScroll></section> : view === '代理' ? <ProxyTable page={{items:proxyItems,offset:0,limit:50,matched_count:proxyItems.length}} filters={filters} onFiltersChange={setFilters} onOpen={p => setNotice('组件事件：打开' + p.name)} onProbe={() => setNotice('仅展示，不执行网络检测')} /> :
+  37 |       <ModelDirectory models={models} search={query} status={status} busy={false} testingKey={null} onSearch={setQuery} onStatus={setStatus} onAdd={() => setNotice('组件事件：添加模型')} onEdit={m => setNotice('组件事件：编辑' + m.displayName)} onDelete={() => setNotice('组件事件：删除确认')} onToggle={() => setNotice('组件事件：切换启用')} onTest={() => setNotice('仅展示，不执行网络请求')} />}
+  38 |     {notice ? <p role="status">{notice}</p> : null}
+  Plugin: vite:react-babel
+  File: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/apps/desktop/src/renderer/development/table-system/main.tsx:35:391
+  33 |      {view === '基础' ? <section className="space-y-2"><TableToolbar label="资料查询"><strong className="mr-auto">数据记录</stro...
+  34 |        <TableScroll label="基础精细网格"><Table aria-label="基础精细网格"><TableHeader><TableRow><TableHead>选择</TableHead><TableHe...
+  35 |  ...ue) next.add(name); else next.delete(name); return next }) /></TableCell><TableCell>{name}</TableCell><TableCell>h...
+     |                                                                 ^
+  36 |        </TableBody></Table></TableScroll></section> : view === '代理' ? <ProxyTable page={{items:proxyItems,offset:0,lim...
+  37 |        <ModelDirectory models={models} search={query} status={status} busy={false} testingKey={null} onSearch={setQuer...
+      at constructor (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:369:19)
+      at TypeScriptParserMixin.raise (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:6620:19)
+      at TypeScriptParserMixin.unexpected (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:6640:16)
+      at TypeScriptParserMixin.parseExprAtom (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11468:22)
+      at TypeScriptParserMixin.parseExprAtom (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4780:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11102:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11087:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11067:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9858:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10920:61)
+      at TypeScriptParserMixin.parseExprOpBaseRightExpr (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11007:34)
+      at TypeScriptParserMixin.parseExprOpRightExpr (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11002:21)
+      at TypeScriptParserMixin.parseExprOp (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10968:27)
+      at TypeScriptParserMixin.parseExprOp (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9327:18)
+      at TypeScriptParserMixin.parseExprOps (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10929:17)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10902:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10852:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9807:20)
+      at TypeScriptParserMixin.parseFunctionBody (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:12122:24)
+      at TypeScriptParserMixin.parseArrowExpression (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:12104:10)
+      at TypeScriptParserMixin.parseExprAtom (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11464:25)
+      at TypeScriptParserMixin.parseExprAtom (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4780:20)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11102:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11087:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11067:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9858:18)
+      at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10920:61)
+      at TypeScriptParserMixin.parseExprOps (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10925:23)
+      at TypeScriptParserMixin.parseMaybeConditional (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10902:23)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10852:21)
+      at TypeScriptParserMixin.parseMaybeAssign (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9807:20)
+      at TypeScriptParserMixin.parseExpressionBase (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10805:23)
+      at /Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10801:39
+      at TypeScriptParserMixin.allowInAnd (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:12455:12)
+      at TypeScriptParserMixin.parseExpression (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10801:17)
+      at TypeScriptParserMixin.jsxParseExpressionContainer (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4648:31)
+      at TypeScriptParserMixin.jsxParseAttributeValue (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4620:21)
+      at TypeScriptParserMixin.jsxParseAttribute (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4669:38)
+      at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4683:28)
+      at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:10064:18)
+      at TypeScriptParserMixin.jsxParseOpeningElementAt (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4678:17)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4702:33)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4714:32)
+      at TypeScriptParserMixin.jsxParseElementAt (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4714:32)
+      at TypeScriptParserMixin.jsxParseElement (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4765:17)
+      at TypeScriptParserMixin.parseExprAtom (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:4775:19)
+      at TypeScriptParserMixin.parseExprSubscripts (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11102:23)
+      at TypeScriptParserMixin.parseUpdate (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11087:21)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:11067:23)
+      at TypeScriptParserMixin.parseMaybeUnary (/Users/zhangtiancheng/Documents/projects/autoflow-table-system/node_modules/@babel/parser/lib/index.js:9858:18)
+Table evidence: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/ui/table-system/runs/components-wVmpGZ
+file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:54
+      const timer = setTimeout(() => { socket.removeEventListener('message', receive); reject(new Error(`CDP ${method} timeout`)) }, timeoutMs)
+                                                                                              ^
+
+Error: CDP Runtime.evaluate timeout
+    at Timeout._onTimeout (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:54:95)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Node.js v26.7.0

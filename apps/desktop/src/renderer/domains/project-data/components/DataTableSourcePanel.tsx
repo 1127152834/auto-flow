@@ -1,6 +1,7 @@
 import { ArrowClockwise, Database, Folder, WarningCircle } from '@phosphor-icons/react'
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
+import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
 type TableView = components['schemas']['DataTableView']
 type TableSource = Pick<TableView, 'sourceKind' | 'source'> & Partial<Pick<TableView, 'recordCount'>>
@@ -28,17 +29,17 @@ export function DataTableSourcePanel({ table, readonly = false, disabled = false
       {excel && onReimport ? <Button className="h-12 px-7 text-base" disabled={locked} onClick={reimport}><Folder size={22} aria-hidden="true" />更换文件</Button> : null}
     </header>
     {!source ? <p className="text-sm text-muted">这个数据表没有已保存的文件信息。</p> : null}
-    {hasFacts ? <div className="max-w-[58rem] overflow-hidden rounded-control border border-line">
-      <table aria-label="来源事实" className="w-full border-collapse text-left text-base">
-        <tbody className="[&>tr:not(:last-child)]:border-b [&>tr]:border-line [&_th]:w-1/3 sm:[&_th]:w-[12.5rem] [&_th]:bg-surface-subtle [&_th]:px-5 [&_th]:py-2 [&_th]:font-normal [&_th]:text-muted [&_td]:break-words [&_td]:px-5 [&_td]:py-2">
-          {excel || filename ? <tr><th scope="row">来源文件</th><td className="break-all">{filename || '未记录'}</td></tr> : null}
-          {excel || source?.sheetName ? <tr><th scope="row">工作表</th><td className="break-all">{source?.sheetName || '未记录'}</td></tr> : null}
-          {excel || importedAt ? <tr><th scope="row">最近导入</th><td>{validImportDate ? <time dateTime={source!.importedAt!}>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(importedAt)}</time> : importedAt ? '导入时间无法读取' : '未记录'}</td></tr> : null}
-          {table.recordCount !== undefined ? <tr><th scope="row">本地记录</th><td>{table.recordCount.toLocaleString()} 条</td></tr> : null}
-          {excel || local ? <tr><th scope="row">写入方式</th><td>{excel ? '只维护本地数据' : '项目内维护'}</td></tr> : null}
-        </tbody>
-      </table>
-    </div> : null}
+    {hasFacts ? <TableScroll label="来源事实" className="max-w-[58rem] rounded-control border border-line">
+      <Table data-variant="facts" aria-label="来源事实">
+        <TableBody className="[&_th]:w-1/3 sm:[&_th]:w-[12.5rem] [&_td]:break-words">
+          {excel || filename ? <TableRow><TableHead scope="row" className="font-normal">来源文件</TableHead><TableCell className="break-all">{filename || '未记录'}</TableCell></TableRow> : null}
+          {excel || source?.sheetName ? <TableRow><TableHead scope="row" className="font-normal">工作表</TableHead><TableCell className="break-all">{source?.sheetName || '未记录'}</TableCell></TableRow> : null}
+          {excel || importedAt ? <TableRow><TableHead scope="row" className="font-normal">最近导入</TableHead><TableCell>{validImportDate ? <time dateTime={source!.importedAt!}>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(importedAt)}</time> : importedAt ? '导入时间无法读取' : '未记录'}</TableCell></TableRow> : null}
+          {table.recordCount !== undefined ? <TableRow><TableHead scope="row" className="font-normal">本地记录</TableHead><TableCell>{table.recordCount.toLocaleString()} 条</TableCell></TableRow> : null}
+          {excel || local ? <TableRow><TableHead scope="row" className="font-normal">写入方式</TableHead><TableCell>{excel ? '只维护本地数据' : '项目内维护'}</TableCell></TableRow> : null}
+        </TableBody>
+      </Table>
+    </TableScroll> : null}
     {local ? <p className="text-base text-muted">记录和字段直接在项目中维护。</p> : null}
     {excel ? <>
       <div className="flex items-center gap-5 rounded-control border border-success/20 bg-success/5 p-5 text-success">

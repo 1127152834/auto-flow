@@ -4,6 +4,8 @@ import type { GroupDraft, GroupPage, GroupView, ProxyView } from '../api'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Select } from '../../../shared/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
+import { TableToolbar } from '../../../shared/components/ui/table-toolbar'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,21 +32,21 @@ export function LocalProxyGroupTable({ page, proxies, retryAfterSeconds = 0, onC
     <section className="overflow-hidden rounded-card border border-line bg-surface shadow-sm" aria-labelledby="local-groups-title">
       <header className="flex flex-col gap-4 border-b border-line p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3"><span className="grid h-9 w-9 place-items-center rounded-control bg-clay-soft text-clay"><Stack /></span><div><div className="flex flex-wrap items-center gap-2"><h2 className="font-semibold text-ink" id="local-groups-title">本地代理组</h2><StatusPill>AutoFlow 本地编排</StatusPill></div><p className="mt-1 text-sm text-muted">按成员顺序进行 Round Robin，供浏览器配置选择。</p></div></div>
-        <Button className="shrink-0 whitespace-nowrap" variant="primary" onClick={onCreate}><Plus />新建代理组</Button>
+        <Button size="sm" className="shrink-0 whitespace-nowrap text-sm" variant="primary" onClick={onCreate}><Plus />新建代理组</Button>
       </header>
       {!page.items.length ? (
         <div className="grid min-h-40 place-items-center p-8 text-center"><div><p className="font-medium text-ink">还没有本地代理组</p><p className="mt-1 text-sm text-muted">可以先创建空组草稿，加入成员后才可用于浏览器启动。</p></div></div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px] text-left text-sm">
-            <thead className="bg-surface-subtle text-xs text-muted"><tr>{['组名称', '成员', '健康概况', '关联配置', '描述', '操作'].map((label) => <th className="px-4 py-3 font-medium" key={label}>{label}</th>)}</tr></thead>
-            <tbody>{page.items.map((group) => {
+        <TableScroll label="本地代理组列表">
+          <Table className="min-w-[680px]">
+            <TableHeader><TableRow>{['组名称', '成员', '健康概况', '关联配置', '描述', '操作'].map((label) => <TableHead key={label}>{label}</TableHead>)}</TableRow></TableHeader>
+            <TableBody>{page.items.map((group) => {
               const members = group.member_ids.map((id) => proxyById.get(id)).filter((proxy): proxy is ProxyView => Boolean(proxy))
               const healthy = members.filter((proxy) => proxy.health.state === 'healthy').length
-              return <tr className="border-t border-line" key={group.id}><td className="px-4 py-3 font-medium text-ink">{group.name}</td><td className="px-4 py-3 text-muted">{group.member_ids.length} 个代理</td><td className="px-4 py-3 text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</td><td className="px-4 py-3 text-muted">{group.reference_count}</td><td className="max-w-xs truncate px-4 py-3 text-muted">{group.description || '—'}</td><td className="px-4 py-3"><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0}>删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，请先解除这些浏览器配置的引用。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></td></tr>
-            })}</tbody>
-          </table>
-        </div>
+              return <TableRow key={group.id}><TableCell className="font-medium text-ink">{group.name}</TableCell><TableCell className="text-muted">{group.member_ids.length} 个代理</TableCell><TableCell className="text-muted">{members.length ? `${healthy}/${members.length} 健康` : group.member_ids.length ? '成员状态未载入' : '空组'}</TableCell><TableCell className="text-muted">{group.reference_count}</TableCell><TableCell className="max-w-xs truncate text-muted">{group.description || '—'}</TableCell><TableCell><div className="flex gap-1"><Button className="h-8 px-3" variant="ghost" onClick={() => onEdit(group)}>编辑</Button><AlertDialog><AlertDialogTrigger asChild><Button className="h-8 px-3" variant="ghost" disabled={retryAfterSeconds > 0}>删除</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogTitle>删除“{group.name}”？</AlertDialogTitle><AlertDialogDescription>{group.reference_count ? `该组有 ${group.reference_count} 个浏览器配置引用，请先解除这些浏览器配置的引用。` : '此操作会删除 AutoFlow 本地分组，不会删除任何 ProxyPanel 代理。'}</AlertDialogDescription><div className="flex justify-end gap-2"><AlertDialogCancel asChild><Button>取消</Button></AlertDialogCancel><AlertDialogAction asChild><Button variant="primary" onClick={() => void onDelete(group)}>确认删除</Button></AlertDialogAction></div></AlertDialogContent></AlertDialog></div></TableCell></TableRow>
+            })}</TableBody>
+          </Table>
+        </TableScroll>
       )}
     </section>
   )
@@ -119,7 +121,7 @@ export function LocalProxyGroupEditor({ open, group, proxies, busy, retryAfterSe
           </div>
           <section className="grid gap-3">
             <div><h3 className="text-sm font-semibold text-ink">选择成员</h3><p className="mt-1 text-xs text-muted">远端缺失的代理不会出现在可选列表中。</p></div>
-            <div className="grid gap-2 sm:grid-cols-2"><Input aria-label="搜索组成员" value={query} placeholder="搜索名称、城市或运营商" onChange={(event) => setQuery(event.target.value)} /><Select clearable={false} aria-label="筛选成员健康" value={health} onValueChange={(value) => setHealth(value ?? '')} options={[{ value: '', label: '全部健康状态' }, { value: 'healthy', label: '健康' }, { value: 'unhealthy', label: '异常' }, { value: 'untested', label: '未检测' }]} /></div>
+            <TableToolbar label="代理组成员查询" className="grid gap-2 sm:grid-cols-2"><Input aria-label="搜索组成员" value={query} placeholder="搜索名称、城市或运营商" onChange={(event) => setQuery(event.target.value)} /><Select clearable={false} aria-label="筛选成员健康" value={health} onValueChange={(value) => setHealth(value ?? '')} options={[{ value: '', label: '全部健康状态' }, { value: 'healthy', label: '健康' }, { value: 'unhealthy', label: '异常' }, { value: 'untested', label: '未检测' }]} /></TableToolbar>
             <div className="max-h-48 overflow-y-auto rounded-control border border-line">
               {candidates.map((proxy) => <label className="flex cursor-pointer items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 hover:bg-surface-hover" key={proxy.id}><input type="checkbox" checked={memberIds.includes(proxy.id)} onChange={(event) => toggle(proxy.id, event.target.checked)} /><span className="min-w-0 flex-1 truncate text-sm text-ink">{proxy.name_override || proxy.name}</span><HealthPill health={proxy.health} /></label>)}
               {!candidates.length ? <p className="p-4 text-center text-sm text-muted">没有匹配代理</p> : null}

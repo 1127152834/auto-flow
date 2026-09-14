@@ -423,3 +423,10 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
 - `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
 - 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。
+
+
+## 全局精细网格（2026-09-14，confirmed）
+
+`renderer/shared/components/ui/table{,-toolbar,-status}.tsx` 与 `renderer/styles/tables.css` 为全局表格视觉唯一落点。Table保留原生语义；TableScroll只管滚动边界；领域继续维护查询和草稿。Studio虚拟网格/Markdown通过`domains/workflows/styles/table-system.css`映射主题，不创建另一数据层。
+
+`renderer/development/table-system/` 是仅开发环境的真实组件合成资料验收入口，不加入生产导航。`scripts/qa-table-system.mjs`提供Electron截图、尺寸及键盘滚动核验；`scripts/verify-table-system.mjs`扫描14个实际表面，静态检查不代替业务通过。规格、使用点、截图对照和手测见`docs/ui/table-system/`。实施分支`codex/global-table-system`基于`bdca5ee`，保留主线同表新增与Studio；未修改后端或迁移。

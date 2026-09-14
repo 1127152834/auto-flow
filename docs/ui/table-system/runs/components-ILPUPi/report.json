@@ -1,0 +1,728 @@
+{
+  "kind": "real-components-with-synthetic-props",
+  "status": "failed",
+  "sourceHead": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "screenshots": [
+    {
+      "name": "basic-100",
+      "geometry": {
+        "width": 1484,
+        "height": 1003,
+        "dpr": 2,
+        "documentWidth": 1484,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              32.5,
+              32.5,
+              32.5,
+              32
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "搜索示例",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "导出",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 1
+    },
+    {
+      "name": "basic-200",
+      "geometry": {
+        "width": 742,
+        "height": 501,
+        "dpr": 4,
+        "documentWidth": 742,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              32.75,
+              32.75,
+              32.75,
+              32.25
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "搜索示例",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "导出",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 2
+    },
+    {
+      "name": "proxy-100",
+      "geometry": {
+        "width": 1484,
+        "height": 1003,
+        "dpr": 2,
+        "documentWidth": 1484,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left min-w-[1080px]",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              40,
+              40,
+              40
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "健康状态",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "运营商",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "城市",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 1
+    },
+    {
+      "name": "proxy-200",
+      "geometry": {
+        "width": 742,
+        "height": 501,
+        "dpr": 4,
+        "documentWidth": 730,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left min-w-[1080px]",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              40,
+              40,
+              40
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "健康状态",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "运营商",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "城市",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 2
+    },
+    {
+      "name": "models-100",
+      "geometry": {
+        "width": 1484,
+        "height": 1003,
+        "dpr": 2,
+        "documentWidth": 1484,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left min-w-[640px]",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              55,
+              55,
+              54.5
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "搜索模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型状态",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 1
+    },
+    {
+      "name": "models-200",
+      "geometry": {
+        "width": 742,
+        "height": 501,
+        "dpr": 4,
+        "documentWidth": 742,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left min-w-[640px]",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              55,
+              55,
+              54.5
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "搜索模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型状态",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 2
+    },
+    {
+      "name": "models-filtered",
+      "geometry": {
+        "width": 1484,
+        "height": 1003,
+        "dpr": 2,
+        "documentWidth": 1484,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table w-full border-collapse text-left min-w-[640px]",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              54.5
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "搜索模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型状态",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 1
+    },
+    {
+      "name": "studio-100",
+      "geometry": {
+        "width": 1484,
+        "height": 1003,
+        "dpr": 2,
+        "documentWidth": 1484,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "tables": [
+          {
+            "classes": "af-table af-studio-table w-full border-collapse",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              32,
+              32,
+              32
+            ]
+          },
+          {
+            "classes": "af-table af-studio-table",
+            "font": "14px",
+            "header": [
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "1px"
+              },
+              {
+                "font": "14px",
+                "height": 32,
+                "line": "0px"
+              }
+            ],
+            "rows": [
+              32,
+              32,
+              32
+            ]
+          }
+        ],
+        "tools": [
+          {
+            "name": "基础",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "代理",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "模型",
+            "height": 32,
+            "font": "14px"
+          },
+          {
+            "name": "Studio",
+            "height": 32,
+            "font": "14px"
+          }
+        ]
+      },
+      "zoom": 1
+    }
+  ],
+  "checks": [
+    "three real component scenes at 100/200%: 14px header/body, 32px tools, internal overflow",
+    "Radix model filtering, unchanged application width, Escape focus restore"
+  ],
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-table-qa-OyogkD",
+  "sourceSha256": "c1117c02a18f4187d2690b2640b81afd7047b943ccaccd3f4db08d8902419136",
+  "error": "Error: timed out waiting for horizontal header sync: false"
+}

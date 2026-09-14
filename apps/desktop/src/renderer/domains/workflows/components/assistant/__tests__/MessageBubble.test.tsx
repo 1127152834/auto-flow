@@ -68,6 +68,22 @@ describe('MessageBubble 渲染', () => {
     expect(container.innerHTML.toLowerCase()).not.toContain('<script')
   })
 
+  it('保留带属性表格并安全加入共享表格滚动结构', () => {
+    const message: ChatMessage = {
+      id: 'table', role: 'assistant',
+      content: '<table class="source-table" data-kind="legal"><thead><tr><th>名称</th></tr></thead><tbody><tr><td><img src="x" onerror="alert(1)">值<script>alert(2)</script></td></tr></tbody></table>',
+    }
+    render(<MessageBubble message={message} />)
+    const table = container.querySelector('table')!
+    expect(table.classList.contains('source-table')).toBe(true)
+    expect(table.classList.contains('af-table')).toBe(true)
+    expect(table.getAttribute('data-kind')).toBe('legal')
+    expect(table.closest('[role="region"]')?.getAttribute('aria-label')).toBe('助手回复表格')
+    expect(table.querySelector('th')?.getAttribute('scope')).toBe('col')
+    expect(container.innerHTML.toLowerCase()).not.toContain('onerror')
+    expect(container.innerHTML.toLowerCase()).not.toContain('<script')
+  })
+
   it('渲染工具调用卡片（含中文标签）', () => {
     const message: ChatMessage = {
       id: 'a', role: 'assistant', content: '',

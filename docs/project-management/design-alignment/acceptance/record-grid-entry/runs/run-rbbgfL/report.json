@@ -1,0 +1,254 @@
+{
+  "started": "2026-09-14T03:13:30.948Z",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-grid-qa-ZPmRm8",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/project-management/design-alignment/acceptance/record-grid-entry/runs/run-rbbgfL",
+  "source": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "patchSha256": "48fbe4e72a61124006ef02731fa918abc99fda64c0b623f5c36c35a8c7af5b40",
+  "platform": "darwin",
+  "arch": "arm64",
+  "cases": [
+    {
+      "id": "E01-E03",
+      "status": "passed",
+      "details": "UI created project/table/fields and two inline rows; one visible batch save produced exactly two records",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E04",
+      "status": "passed",
+      "details": "Real clipboard paste preserves leading-zero text and adds exactly two rows",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E06",
+      "status": "passed",
+      "details": "Invalid required cell is focused and no records are written",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E11",
+      "status": "passed",
+      "details": "Cancelled tab leave preserves grid draft",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E05",
+      "status": "passed",
+      "details": "Over-wide, over-100-row and over-1-MiB clipboard pastes leave original draft unchanged",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E09",
+      "status": "passed",
+      "details": "Injected response loss after database commit; full Electron restart and original-key query recovered exactly one addition; restart route restored directly",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E12-service-reconnect",
+      "status": "passed",
+      "details": "Existing controlled restartSidecar IPC restarts test service; same-workspace grid draft survives",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E15",
+      "status": "passed",
+      "details": "Actual Electron 200% zoom preserves window width and draft; screenshot captured",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E16-edit",
+      "status": "passed",
+      "details": "Saved record edit still uses existing detail/edit flow and persists through UI",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E10",
+      "status": "passed",
+      "details": "Request-stage fault injection writes nothing; explicit original-key lookup and resend create one record",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    },
+    {
+      "id": "E08",
+      "status": "passed",
+      "details": "Real competing HTTP field creation rejects stale structure, preserves cells, then explicit confirmation permits one save",
+      "evidenceType": "Electron UI + real FastAPI + isolated SQLite"
+    }
+  ],
+  "windows": "notRun",
+  "packaging": "notRun",
+  "sourceContentSha256": "f9cbeebfd92201d5211cc49611116afa7f27315dbcf850120f3b97c3f3c871fa",
+  "buildContentSha256": "371f023013cfc6aba1fd62879593a0aa5a119c8db27626059b16762979022b66",
+  "screenshots": [
+    {
+      "name": "V01-two-drafts",
+      "viewport": {
+        "width": 1487,
+        "height": 1058,
+        "dpr": 1,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "CDP 1487x1058 baseline",
+      "zoom": 1
+    },
+    {
+      "name": "V03-saved",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V04-paste",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V06-cell-error",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 74,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V09-retained-draft",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V05-paste-rejected",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 121,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V08-uncertain",
+      "viewport": {
+        "width": 1487,
+        "height": 1000,
+        "dpr": 2,
+        "scrollY": 102,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V10-recovered",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V11-zoom-200",
+      "viewport": {
+        "width": 743,
+        "height": 501,
+        "dpr": 4,
+        "scrollY": 735.25,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 2
+    },
+    {
+      "name": "V12-normal",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 139,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V13-existing-edit",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V08-not-accepted",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 111,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "V07-schema-conflict",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 151,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    },
+    {
+      "name": "failure",
+      "viewport": {
+        "width": 1487,
+        "height": 1003,
+        "dpr": 2,
+        "scrollY": 0,
+        "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif"
+      },
+      "source": "native Electron viewport",
+      "zoom": 1
+    }
+  ],
+  "status": "failed",
+  "error": "Error: renderer evaluation failed: Uncaught",
+  "finished": "2026-09-14T03:14:09.418Z"
+}

@@ -19,6 +19,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { marked } from 'marked'
 import { renderSafeMarkdown } from '../../lib/safeMarkdown'
 import type { ChatMessage, ToolCall } from '../../hooks/stores/aiAssistantStore'
+import '../../styles/table-system.css'
 
 // marked 配置 - 启用 GFM (GitHub 风格 Markdown：表格/任务列表/删除线/换行)
 marked.setOptions({
@@ -257,7 +258,22 @@ const STATUS_LABELS: Record<string, string> = {
 
 // 把 marked 输出的 HTML 包成可交互的 React 内容
 function MarkdownContent({ content }: { content: string }) {
-  const html = useMemo(() => renderSafeMarkdown(content), [content])
+  const html = useMemo(() => {
+    const template = document.createElement('template')
+    template.innerHTML = renderSafeMarkdown(content)
+    template.content.querySelectorAll('table').forEach((table) => {
+      table.classList.add('af-table', 'af-studio-table')
+      table.querySelectorAll('thead th').forEach((head) => head.setAttribute('scope', 'col'))
+      const scroll = document.createElement('div')
+      scroll.className = 'af-table-scroll af-studio-table-scroll max-w-full overflow-auto'
+      scroll.setAttribute('role', 'region')
+      scroll.setAttribute('aria-label', '助手回复表格')
+      scroll.tabIndex = 0
+      table.replaceWith(scroll)
+      scroll.append(table)
+    })
+    return template.innerHTML
+  }, [content])
 
   return (
     <div className="ai-md">

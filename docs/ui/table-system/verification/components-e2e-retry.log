@@ -1,0 +1,11 @@
+Table evidence: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/ui/table-system/runs/components-frcZxV
+file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:54
+      const timer = setTimeout(() => { socket.removeEventListener('message', receive); reject(new Error(`CDP ${method} timeout`)) }, timeoutMs)
+                                                                                              ^
+
+Error: CDP Page.navigate timeout
+    at Timeout._onTimeout (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:54:95)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+
+Node.js v26.7.0

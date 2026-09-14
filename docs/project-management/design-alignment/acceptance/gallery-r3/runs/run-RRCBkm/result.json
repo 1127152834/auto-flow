@@ -1,0 +1,707 @@
+{
+  "result": "passed",
+  "mode": "automatic",
+  "visualReview": "pending",
+  "checkedAt": "2026-09-14T03:42:58.337Z",
+  "provenance": {
+    "gitHead": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/models/components/ModelDirectory.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/ExcelInspectionPanel.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordDraftRows.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordGridCellEditor.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/SchemaImpactDrawer.tsx",
+      "apps/desktop/src/renderer/domains/proxies/components/LocalProxyGroups.tsx",
+      "apps/desktop/src/renderer/domains/proxies/components/ProxyFleet.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/DataTable.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/DebugBar.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/assistant/__tests__/MessageBubble.test.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/documentation/MarkdownRenderer.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/pagination.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/search-input.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/table.tsx",
+      "apps/desktop/src/renderer/styles/index.css",
+      "scripts/qa-record-grid-entry.mjs"
+    ],
+    "scriptSha256": "b4644a4b3bcad75ff18c97adbe8d629b18125742d00dae783dc89309c7c92284",
+    "desktopBuildSha256": "f91e53559c5493e507ad24d366853ecc424522528e9daeabe6ebdb4f8663d619",
+    "referenceHashes": {
+      "05-data/008-fields-378eb2.png": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "05-data/009-field-editor-c3de19.png": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "05-data/100-field-impact-eb086d.png": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "05-data/010-states-d59f55.png": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185",
+      "05-data/012-source-excel-cf611c.png": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e",
+      "05-data/014-table-settings-070d7f.png": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00"
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 1024
+    },
+    "zooms": [
+      1,
+      2
+    ]
+  },
+  "checks": [
+    {
+      "id": "drawerCancel",
+      "evidence": "E1：修改字段抽屉后取消并确认放弃，外层字段草稿未变化"
+    },
+    {
+      "id": "uiEntry",
+      "evidence": "E1：项目、空白表和五字段均由真实 UI 建立"
+    },
+    {
+      "id": "multiFieldSave",
+      "evidence": "E1+E2：一次外层确认生成五字段，数据库 tableRevision 仅增加一次"
+    },
+    {
+      "id": "outerReset",
+      "evidence": "E1+E2：外层重置经真实确认恢复冻结基线，数据库仍为五字段"
+    },
+    {
+      "id": "ruleAtomicity",
+      "evidence": "E2：真实已有记录令 required 规则预检阻断，同时另一字段名称未被部分写入"
+    },
+    {
+      "id": "recordCasAtomicity",
+      "evidence": "E2：预检后真实记录 CAS 改变令提交 409，字段名称无部分写入"
+    },
+    {
+      "id": "uiRuleAtomicity",
+      "evidence": "E1+E2：UI 改名并收紧必填，真实预检阻断，数据库两字段均未改变"
+    },
+    {
+      "id": "uiRecordCasAtomicity",
+      "evidence": "E1+E2：UI 候选预检后 API 竞争记录，UI 确认 409，草稿保留且字段无部分更新"
+    },
+    {
+      "id": "serviceReconnect",
+      "evidence": "E1+E3：真实 FastAPI 重启后未保存字段草稿仍在 UI"
+    },
+    {
+      "id": "unknownOriginalKey",
+      "evidence": "E3+E4：响应丢失和首次查询失败后完整应用重启，原 key 恢复且仅落一个字段"
+    },
+    {
+      "id": "settingsSequentialSave",
+      "evidence": "E1+E2+E3：设置连续保存两次，真实GET与服务重连后UI均保持第二次已保存值"
+    },
+    {
+      "id": "visualStates",
+      "evidence": "E1：字段、已保存字段编辑抽屉、三状态及新增弹窗、设置脏态均真实 UI；Excel 来源除 E4 文件选择结果外的 UI/IPC/HTTP/工作簿/SQLite 均真实；各页含 200%，视觉结论保持 pending"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "r3-fields-empty",
+      "file": "r3-fields-empty.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-drawer",
+      "file": "r3-field-drawer.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-drawer-200",
+      "file": "r3-field-drawer-200.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-schema-preview-busy",
+      "file": "r3-schema-preview-busy.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "delayed-real-response",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-schema-impact",
+      "file": "r3-schema-impact.png",
+      "reference": "05-data/100-field-impact-eb086d.png",
+      "referenceSha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-schema-save-busy",
+      "file": "r3-schema-save-busy.png",
+      "reference": "05-data/100-field-impact-eb086d.png",
+      "referenceSha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "source": "delayed-real-response",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-schema-rule-blocked",
+      "file": "r3-schema-rule-blocked.png",
+      "reference": "05-data/100-field-impact-eb086d.png",
+      "referenceSha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-schema-cas-conflict",
+      "file": "r3-schema-cas-conflict.png",
+      "reference": "05-data/100-field-impact-eb086d.png",
+      "referenceSha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-service-reconnect-dirty",
+      "file": "r3-service-reconnect-dirty.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "recovery",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-unknown-save-pending",
+      "file": "r3-unknown-save-pending.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "recovery-with-E4",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1000
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-unknown-save-recovered",
+      "file": "r3-unknown-save-recovered.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "recovery-with-E4",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-fields",
+      "file": "r3-fields.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-fields-200",
+      "file": "r3-fields-200.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-editor",
+      "file": "r3-field-editor.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-editor-200",
+      "file": "r3-field-editor-200.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/fields",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-statuses",
+      "file": "r3-statuses.png",
+      "reference": "05-data/010-states-d59f55.png",
+      "referenceSha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/statuses",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-statuses-200",
+      "file": "r3-statuses-200.png",
+      "reference": "05-data/010-states-d59f55.png",
+      "referenceSha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/statuses",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-settings",
+      "file": "r3-settings.png",
+      "reference": "05-data/014-table-settings-070d7f.png",
+      "referenceSha256": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/settings",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-settings-200",
+      "file": "r3-settings-200.png",
+      "reference": "05-data/014-table-settings-070d7f.png",
+      "referenceSha256": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00",
+      "source": "ui",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/47db36a0-d8b1-41e5-a639-7b35de691082/settings",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-source",
+      "file": "r3-source.png",
+      "reference": "05-data/012-source-excel-cf611c.png",
+      "referenceSha256": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e",
+      "source": "ui-with-E4-file-selection",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/a81c9fb6-c553-45ae-8400-7a71859bf69c/source",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-source-200",
+      "file": "r3-source-200.png",
+      "reference": "05-data/012-source-excel-cf611c.png",
+      "referenceSha256": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e",
+      "source": "ui-with-E4-file-selection",
+      "route": "#/projects/3758b1fa-44d4-4766-92e5-3bd3f6f4edd1/data/a81c9fb6-c553-45ae-8400-7a71859bf69c/source",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    }
+  ],
+  "injections": [
+    {
+      "id": "schema-busy-responses",
+      "level": "E4",
+      "behavior": "仅延迟真实 preview/commit 响应，分别截图后放行"
+    },
+    {
+      "id": "unknown-original-key",
+      "level": "E4",
+      "behavior": "真实 schema POST 成功后丢弃响应，并使首次原 key 查询失败"
+    },
+    {
+      "id": "excel-open-dialog-selection",
+      "level": "E4",
+      "behavior": "合成系统文件选择结果；后续 UI、IPC、FastAPI、工作簿读取和 SQLite 导入真实执行；不代表原生 picker 人工通过"
+    }
+  ],
+  "facts": {
+    "zoom200Geometry": {
+      "innerWidth": 720,
+      "innerHeight": 512,
+      "scrollWidth": 708,
+      "scrollHeight": 1250
+    },
+    "zoom100Geometry": {
+      "innerWidth": 1440,
+      "innerHeight": 1024,
+      "scrollWidth": 1428,
+      "scrollHeight": 1084
+    },
+    "initialFields": [
+      {
+        "key": "title",
+        "type": "string"
+      },
+      {
+        "key": "url",
+        "type": "string"
+      },
+      {
+        "key": "published",
+        "type": "date"
+      },
+      {
+        "key": "priority",
+        "type": "number"
+      },
+      {
+        "key": "checked",
+        "type": "boolean"
+      }
+    ],
+    "unknownOriginalKey": "2390e5d9-bb42-4d6f-9470-05de05316b46"
+  },
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r3-qa-W5HmRZ"
+}

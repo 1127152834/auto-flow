@@ -1,0 +1,132 @@
+[
+  {
+    "url": "http://127.0.0.1:58407/api/v1/projects/ae09221d-cd1d-4204-a2ef-ef2277134b02/tables/0fba7a6b-56fc-4357-a1e8-4024b0130aa4/records/MDJjMWY0MDktYzAwYy00MmRiLTlkZjAtZDgyNmFiZTQzYjBi?datasetGeneration=08fdc6dd-243d-41c1-b43c-81a8317c0745&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "ae09221d-cd1d-4204-a2ef-ef2277134b02",
+        "tableId": "0fba7a6b-56fc-4357-a1e8-4024b0130aa4",
+        "datasetGeneration": "08fdc6dd-243d-41c1-b43c-81a8317c0745",
+        "recordKey": {
+          "type": "uuid",
+          "value": "02c1f409-c00c-42db-9df0-d826abe43b0b"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "84b00cc6-03bb-40b6-a2d1-4aec54ee037e",
+          "value": "002",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "ac67fc69-0492-42e1-81f0-03ee5c8f3778",
+          "value": "https://example.com/b",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "1efdcff2-fb89-4968-8f79-89425d8e02ae",
+          "value": "阳台",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 1,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:24:23.710863Z",
+      "updatedAt": "2026-09-14T03:24:23.710863Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:58407/api/v1/projects/ae09221d-cd1d-4204-a2ef-ef2277134b02/tables/0fba7a6b-56fc-4357-a1e8-4024b0130aa4/records/MDJjMWY0MDktYzAwYy00MmRiLTlkZjAtZDgyNmFiZTQzYjBi",
+    "method": "PATCH",
+    "result": {
+      "ref": {
+        "projectId": "ae09221d-cd1d-4204-a2ef-ef2277134b02",
+        "tableId": "0fba7a6b-56fc-4357-a1e8-4024b0130aa4",
+        "datasetGeneration": "08fdc6dd-243d-41c1-b43c-81a8317c0745",
+        "recordKey": {
+          "type": "uuid",
+          "value": "02c1f409-c00c-42db-9df0-d826abe43b0b"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "84b00cc6-03bb-40b6-a2d1-4aec54ee037e",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "ac67fc69-0492-42e1-81f0-03ee5c8f3778",
+          "value": "https://example.com/b",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "1efdcff2-fb89-4968-8f79-89425d8e02ae",
+          "value": "阳台",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:24:23.710863Z",
+      "updatedAt": "2026-09-14T03:24:33.477816Z"
+    }
+  },
+  {
+    "url": "http://127.0.0.1:58407/api/v1/projects/ae09221d-cd1d-4204-a2ef-ef2277134b02/tables/0fba7a6b-56fc-4357-a1e8-4024b0130aa4/records/MDJjMWY0MDktYzAwYy00MmRiLTlkZjAtZDgyNmFiZTQzYjBi?datasetGeneration=08fdc6dd-243d-41c1-b43c-81a8317c0745&recordKeyType=uuid",
+    "result": {
+      "ref": {
+        "projectId": "ae09221d-cd1d-4204-a2ef-ef2277134b02",
+        "tableId": "0fba7a6b-56fc-4357-a1e8-4024b0130aa4",
+        "datasetGeneration": "08fdc6dd-243d-41c1-b43c-81a8317c0745",
+        "recordKey": {
+          "type": "uuid",
+          "value": "02c1f409-c00c-42db-9df0-d826abe43b0b"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "84b00cc6-03bb-40b6-a2d1-4aec54ee037e",
+          "value": "已有记录仍可编辑",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "ac67fc69-0492-42e1-81f0-03ee5c8f3778",
+          "value": "https://example.com/b",
+          "source": "local",
+          "readable": true
+        },
+        {
+          "fieldId": "1efdcff2-fb89-4968-8f79-89425d8e02ae",
+          "value": "阳台",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "recordSlots": [],
+      "statusId": null,
+      "currentEnvironmentId": null,
+      "contentRevision": 2,
+      "statusRevision": 1,
+      "linkRevision": 1,
+      "deleted": false,
+      "createdAt": "2026-09-14T03:24:23.710863Z",
+      "updatedAt": "2026-09-14T03:24:33.477816Z"
+    }
+  }
+]

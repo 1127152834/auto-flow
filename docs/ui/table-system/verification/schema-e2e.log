@@ -1,0 +1,8 @@
+字段草稿：取消字段 (string)
+drawerCancel: E1：修改字段抽屉后取消并确认放弃，外层字段草稿未变化
+字段草稿：标题 (string)
+Error: timed out waiting for drawer closes: false
+    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:82:9)
+    at async addField (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:85:1444)
+    at async setupUi (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:93:5)
+    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:152:25)

@@ -1,0 +1,183 @@
+{
+  "result": "failed",
+  "mode": "automatic",
+  "visualReview": "pending",
+  "checkedAt": "2026-09-14T03:26:05.415Z",
+  "provenance": {
+    "gitHead": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/models/components/ModelDirectory.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataRecordsTable.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataStatusTable.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/ExcelInspectionPanel.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordDraftRows.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordGridCellEditor.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/SchemaEditor.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/SchemaImpactDrawer.tsx",
+      "apps/desktop/src/renderer/domains/proxies/components/LocalProxyGroups.tsx",
+      "apps/desktop/src/renderer/domains/proxies/components/ProxyFleet.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/DataTable.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/DebugBar.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/assistant/MessageBubble.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/assistant/__tests__/MessageBubble.test.tsx",
+      "apps/desktop/src/renderer/domains/workflows/components/documentation/MarkdownRenderer.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/pagination.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/search-input.tsx",
+      "apps/desktop/src/renderer/shared/components/ui/table.tsx",
+      "apps/desktop/src/renderer/styles/index.css",
+      "scripts/qa-record-grid-entry.mjs"
+    ],
+    "scriptSha256": "b4644a4b3bcad75ff18c97adbe8d629b18125742d00dae783dc89309c7c92284",
+    "desktopBuildSha256": "27b482a1046777d6111e92effef5a4a3103644c4b4aa4748a6f9162f58654ae7",
+    "referenceHashes": {
+      "05-data/008-fields-378eb2.png": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "05-data/009-field-editor-c3de19.png": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "05-data/100-field-impact-eb086d.png": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+      "05-data/010-states-d59f55.png": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185",
+      "05-data/012-source-excel-cf611c.png": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e",
+      "05-data/014-table-settings-070d7f.png": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00"
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 1024
+    },
+    "zooms": [
+      1,
+      2
+    ]
+  },
+  "checks": [
+    {
+      "id": "drawerCancel",
+      "evidence": "E1：修改字段抽屉后取消并确认放弃，外层字段草稿未变化"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "r3-fields-empty",
+      "file": "r3-fields-empty.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "ui",
+      "route": "#/projects/9f15ec35-6e08-44d7-8fc6-3627257547af/data/46fa5c83-198c-4e28-9dcd-77fe6a717751/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-drawer",
+      "file": "r3-field-drawer.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/9f15ec35-6e08-44d7-8fc6-3627257547af/data/46fa5c83-198c-4e28-9dcd-77fe6a717751/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "r3-field-drawer-200",
+      "file": "r3-field-drawer-200.png",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "referenceSha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+      "source": "ui",
+      "route": "#/projects/9f15ec35-6e08-44d7-8fc6-3627257547af/data/46fa5c83-198c-4e28-9dcd-77fe6a717751/fields",
+      "viewport": {
+        "width": 720,
+        "height": 512
+      },
+      "dpr": 2,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 2,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    },
+    {
+      "id": "failure-state",
+      "file": "failure-state.png",
+      "reference": "05-data/008-fields-378eb2.png",
+      "referenceSha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+      "source": "failure",
+      "route": "#/projects/9f15ec35-6e08-44d7-8fc6-3627257547af/data/46fa5c83-198c-4e28-9dcd-77fe6a717751/fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": {
+        "status": "loaded",
+        "bodyFontFamily": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+        "bodyFontSize": "16px"
+      },
+      "zoom": 1,
+      "windowContentBounds": {
+        "x": 180,
+        "y": 71,
+        "width": 1440,
+        "height": 1003
+      },
+      "visualReview": "pending"
+    }
+  ],
+  "injections": [],
+  "facts": {
+    "zoom200Geometry": {
+      "innerWidth": 720,
+      "innerHeight": 512,
+      "scrollWidth": 720,
+      "scrollHeight": 1002
+    },
+    "zoom100Geometry": {
+      "innerWidth": 1440,
+      "innerHeight": 1024,
+      "scrollWidth": 1440,
+      "scrollHeight": 1024
+    }
+  },
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r3-qa-Gbr3q7",
+  "error": "Error: timed out waiting for drawer closes: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:82:9)\n    at async addField (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:85:1444)\n    at async setupUi (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:93:5)\n    at async main (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-project-alignment-r3.mjs:152:25)"
+}
