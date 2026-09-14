@@ -1,0 +1,656 @@
+[
+  {
+    "id": "F4.PICKER.memory.reuse",
+    "capability": "拾取会话",
+    "preconditions": "空闲会话",
+    "steps": [
+      "相同参数两次启动，中间选择 #first"
+    ],
+    "expectedUI": "界面保留首次选择",
+    "expectedIO": "两次相同 sessionId；返回同一结果；不同配置和不同会话返回 409",
+    "stateAssertion": "结果未清空；只存在原会话",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.foreign",
+    "capability": "拾取会话",
+    "preconditions": "已启动且选中 #private-result",
+    "steps": [
+      "无标识或异会话读取单选/结果/相似；异会话停止与定位测试"
+    ],
+    "expectedUI": "原选择保持",
+    "expectedIO": "未绑定的读取及异会话命令 409",
+    "stateAssertion": "当前会话和选择未改变",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.cleanup",
+    "capability": "拾取会话",
+    "preconditions": "已启动会话",
+    "steps": [
+      "清理失败后重试；再启动新会话；发送旧会话命令"
+    ],
+    "expectedUI": "失败保留停止入口",
+    "expectedIO": "首次 stop 503；重试 200；旧启动/读取/停止 409",
+    "stateAssertion": "清理前保持占用；新会话独立",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.adopt",
+    "capability": "拾取会话",
+    "preconditions": "服务已有 existing 会话，客户端未记录",
+    "steps": [
+      "查询状态、选择相似元素、停止"
+    ],
+    "expectedUI": "面板恢复原会话",
+    "expectedIO": "GET status 返回 existing；后续请求携带同 ID",
+    "stateAssertion": "关闭 existing，不创建替代",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.close-recovered",
+    "capability": "拾取会话",
+    "preconditions": "服务已有 existing，客户端未记录",
+    "steps": [
+      "直接调用停止"
+    ],
+    "expectedUI": "确认关闭后退出拾取",
+    "expectedIO": "先 GET status，再 POST stop(existing)",
+    "stateAssertion": "服务会话已关闭",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-1",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {}
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-2",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": ""
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-3",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": " "
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-4",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": 3
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-5",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "url": false
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-6",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "browserConfig": []
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.memory.invalid-7",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "extra": 1
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.reuse",
+    "capability": "拾取会话",
+    "preconditions": "空闲会话",
+    "steps": [
+      "相同参数两次启动，中间选择 #first"
+    ],
+    "expectedUI": "界面保留首次选择",
+    "expectedIO": "两次相同 sessionId；返回同一结果；不同配置和不同会话返回 409",
+    "stateAssertion": "结果未清空；只存在原会话",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.foreign",
+    "capability": "拾取会话",
+    "preconditions": "已启动且选中 #private-result",
+    "steps": [
+      "无标识或异会话读取单选/结果/相似；异会话停止与定位测试"
+    ],
+    "expectedUI": "原选择保持",
+    "expectedIO": "未绑定的读取及异会话命令 409",
+    "stateAssertion": "当前会话和选择未改变",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.cleanup",
+    "capability": "拾取会话",
+    "preconditions": "已启动会话",
+    "steps": [
+      "清理失败后重试；再启动新会话；发送旧会话命令"
+    ],
+    "expectedUI": "失败保留停止入口",
+    "expectedIO": "首次 stop 503；重试 200；旧启动/读取/停止 409",
+    "stateAssertion": "清理前保持占用；新会话独立",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.adopt",
+    "capability": "拾取会话",
+    "preconditions": "服务已有 existing 会话，客户端未记录",
+    "steps": [
+      "查询状态、选择相似元素、停止"
+    ],
+    "expectedUI": "面板恢复原会话",
+    "expectedIO": "GET status 返回 existing；后续请求携带同 ID",
+    "stateAssertion": "关闭 existing，不创建替代",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.close-recovered",
+    "capability": "拾取会话",
+    "preconditions": "服务已有 existing，客户端未记录",
+    "steps": [
+      "直接调用停止"
+    ],
+    "expectedUI": "确认关闭后退出拾取",
+    "expectedIO": "先 GET status，再 POST stop(existing)",
+    "stateAssertion": "服务会话已关闭",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-1",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {}
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-2",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": ""
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-3",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": " "
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-4",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": 3
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-5",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "url": false
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-6",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "browserConfig": []
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.invalid-7",
+    "capability": "启动校验",
+    "preconditions": {
+      "body": {
+        "sessionId": "picker",
+        "extra": 1
+      }
+    },
+    "steps": [
+      "提交启动请求"
+    ],
+    "expectedUI": "不进入拾取",
+    "expectedIO": "HTTP 422",
+    "stateAssertion": "无活跃拾取",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.lost-start",
+    "capability": "响应丢失恢复",
+    "preconditions": {
+      "action": "start"
+    },
+    "steps": [
+      "提交命令",
+      "服务执行后丢弃 HTTP 响应",
+      "查询状态"
+    ],
+    "expectedUI": "恢复服务确认状态",
+    "expectedIO": "start 仅 POST 一次；GET 原 sessionId 状态",
+    "stateAssertion": "不重复动作",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.http.lost-stop",
+    "capability": "响应丢失恢复",
+    "preconditions": {
+      "action": "stop"
+    },
+    "steps": [
+      "提交命令",
+      "服务执行后丢弃 HTTP 响应",
+      "查询状态"
+    ],
+    "expectedUI": "恢复服务确认状态",
+    "expectedIO": "stop 仅 POST 一次；GET 原 sessionId 状态",
+    "stateAssertion": "不重复动作",
+    "level": "实际本地 HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.late-selected",
+    "capability": "迟到结果",
+    "preconditions": "旧会话 selected 请求未返回",
+    "steps": [
+      "停止旧会话",
+      "启动新会话",
+      "释放旧响应"
+    ],
+    "expectedUI": "不显示旧结果",
+    "expectedIO": "响应返回 success:false",
+    "stateAssertion": "当前会话选择保持新值",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.unknown-start",
+    "capability": "未知启动",
+    "preconditions": "启动已被服务接受，响应及查询均断网",
+    "steps": [
+      "重试同次启动"
+    ],
+    "expectedUI": "保留停止责任",
+    "expectedIO": "重试 sessionId 相同",
+    "stateAssertion": "不创建第二会话",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.connection-start",
+    "capability": "连接隔离",
+    "preconditions": {
+      "action": "start"
+    },
+    "steps": [
+      "请求等待时切换连接",
+      "释放旧响应"
+    ],
+    "expectedUI": "旧响应不应用",
+    "expectedIO": "未向新连接发送旧请求",
+    "stateAssertion": "新会话状态独立",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.connection-status",
+    "capability": "连接隔离",
+    "preconditions": {
+      "action": "status"
+    },
+    "steps": [
+      "请求等待时切换连接",
+      "释放旧响应"
+    ],
+    "expectedUI": "旧响应不应用",
+    "expectedIO": "未向新连接发送旧请求",
+    "stateAssertion": "新会话状态独立",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.connection-selected",
+    "capability": "连接隔离",
+    "preconditions": {
+      "action": "selected"
+    },
+    "steps": [
+      "请求等待时切换连接",
+      "释放旧响应"
+    ],
+    "expectedUI": "旧响应不应用",
+    "expectedIO": "未向新连接发送旧请求",
+    "stateAssertion": "新会话状态独立",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.connection-test-selector",
+    "capability": "连接隔离",
+    "preconditions": {
+      "action": "test-selector"
+    },
+    "steps": [
+      "请求等待时切换连接",
+      "释放旧响应"
+    ],
+    "expectedUI": "旧响应不应用",
+    "expectedIO": "未向新连接发送旧请求",
+    "stateAssertion": "新会话状态独立",
+    "level": "协议竞态",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.result-invalid-1",
+    "capability": "结果校验",
+    "preconditions": {
+      "patch": {
+        "selected": "true"
+      }
+    },
+    "steps": [
+      "读取单选结果"
+    ],
+    "expectedUI": "显示结果格式错误",
+    "expectedIO": "合法会话信封，非法元素字段",
+    "stateAssertion": "不会填入节点",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.result-invalid-2",
+    "capability": "结果校验",
+    "preconditions": {
+      "patch": {
+        "selected": true
+      }
+    },
+    "steps": [
+      "读取单选结果"
+    ],
+    "expectedUI": "显示结果格式错误",
+    "expectedIO": "合法会话信封，非法元素字段",
+    "stateAssertion": "不会填入节点",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.result-invalid-3",
+    "capability": "结果校验",
+    "preconditions": {
+      "patch": {
+        "selected": true,
+        "element": {
+          "selector": ""
+        }
+      }
+    },
+    "steps": [
+      "读取单选结果"
+    ],
+    "expectedUI": "显示结果格式错误",
+    "expectedIO": "合法会话信封，非法元素字段",
+    "stateAssertion": "不会填入节点",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.result-invalid-4",
+    "capability": "结果校验",
+    "preconditions": {
+      "patch": {
+        "selected": true,
+        "element": {
+          "selector": 42
+        }
+      }
+    },
+    "steps": [
+      "读取单选结果"
+    ],
+    "expectedUI": "显示结果格式错误",
+    "expectedIO": "合法会话信封，非法元素字段",
+    "stateAssertion": "不会填入节点",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.PICKER.UI.unknown-start",
+    "capability": "启动未知保护",
+    "preconditions": "启动与恢复查询未知",
+    "steps": [
+      "点击开始拾取",
+      "点击停止选择"
+    ],
+    "expectedUI": "停止入口保留，确认后恢复拾取入口",
+    "expectedIO": "停止恰好一次",
+    "stateAssertion": "未确认时保留清理责任",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/picker-stop-confirmation.test.tsx"
+  },
+  {
+    "id": "F4.PICKER.UI.external-close",
+    "capability": "外部会话结束",
+    "preconditions": "浏览器面板处于拾取",
+    "steps": [
+      "轮询返回 active:false"
+    ],
+    "expectedUI": "恢复启动选择器按钮",
+    "expectedIO": "不再请求相似元素",
+    "stateAssertion": "停止轮询",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx"
+  },
+  {
+    "id": "F4.PICKER.UI.roundtrip",
+    "capability": "拾取保存闭环",
+    "preconditions": "本地开发入口，空流程，Mock 服务",
+    "steps": [
+      "拖入点击元素",
+      "启动拾取",
+      "点击 Mock 提交按钮",
+      "测试定位",
+      "保存命名流程",
+      "刷新并打开保存文件"
+    ],
+    "expectedUI": "节点显示 #submit；定位命中1；重开仍显示 #submit",
+    "expectedIO": "真实前端经 Mock 传输；未执行真实网页动作",
+    "stateAssertion": "保存文件恢复一个节点和选择器",
+    "level": "浏览器 UI + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-picker-session/browser-ui.md"
+  }
+]

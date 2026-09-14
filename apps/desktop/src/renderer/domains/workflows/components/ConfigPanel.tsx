@@ -15,6 +15,7 @@ import { Trash2, Crosshair, Loader2, Ban, ChevronLeft, ChevronRight, Settings, S
 import { moduleIcons } from './ModuleSidebar'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { elementPickerApi, systemApi } from '../api'
+import { getStudioTransportRevision } from '../api/transport'
 
 // 导入拆分的配置组件
 import {
@@ -236,6 +237,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const selectorTestSequence = useRef(0)
   const pickerSequence = useRef(0)
   const pickerActive = useRef(false)
+  const pickerConnection = useRef<number | null>(null)
   const pickerContext = useRef<(() => boolean) | null>(null)
   useEffect(() => {
     selectorTestSequence.current += 1
@@ -297,7 +299,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       pickerSequence.current += 1
       pickerContext.current = null
       if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
-      if (pickerActive.current) { pickerActive.current = false; void elementPickerApi.stop().catch(() => {}) }
+      if (pickerActive.current) {
+        pickerActive.current = false
+        if (pickerConnection.current === getStudioTransportRevision()) void elementPickerApi.stop().catch(() => {})
+      }
     }
   }, [selectedNodeId, documentId])
 
@@ -340,6 +345,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const pickerStopPending = useRef(false)
   const confirmPickerStop = useCallback(async (request: number) => {
     if (pickerStopPending.current) return false
+    if (pickerConnection.current !== getStudioTransportRevision()) {
+      addLog({level:'error',message:'拾取所属连接已变更，请在当前浏览器面板确认会话状态'})
+      return false
+    }
     pickerStopPending.current = true
     if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
     setShowSimilarDialog(false)
@@ -386,11 +395,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     const originNode = state.nodes.find(node => node.id === selectedNodeId)
     if (!originNode) return
     const originDocument = state.id
+    const connection = getStudioTransportRevision()
+    pickerConnection.current = connection
     const target = JSON.stringify([originNode.data[fieldName], originNode.data.selectorHints ?? null])
     const isCurrent = () => {
       const current = useWorkflowStore.getState()
       const node = current.nodes.find(node => node.id === originNode.id)
-      return request === pickerSequence.current && current.id === originDocument && !!node &&
+      return connection === getStudioTransportRevision() && request === pickerSequence.current && current.id === originDocument && !!node &&
         JSON.stringify([node.data[fieldName], node.data.selectorHints ?? null]) === target
     }
     pickerContext.current = isCurrent
@@ -411,6 +422,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       const result = await elementPickerApi.start(resolvedUrl || undefined, browserConfig)
       if (!isCurrent()) return
       if (result.error || !result.success) {
+        if (result.outcomeUnknown) {
+          addLog({level:'error',message:`拾取启动状态尚未确认：${result.error}；请重试停止以确认清理`})
+          return
+        }
         pickerActive.current = false
         addLog({ level: 'error', message: `启动失败: ${result.error}` })
         setIsPicking(false)

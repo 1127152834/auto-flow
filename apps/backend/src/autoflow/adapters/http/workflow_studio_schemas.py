@@ -300,6 +300,7 @@ class StudioSelectorTestRequest(ApiModel):
     selector: str = Field(min_length=1, pattern=r"\S")
     hints: dict[str, Any] | None = None
     highlight: bool = True
+    session_id: str | None = Field(default=None, min_length=1, pattern=r"\S")
 
 
 class StudioSelectorElement(ApiModel):
@@ -747,6 +748,26 @@ class StudioDebugVariablesReceipt(StudioDebugVariablesRequest):
         if not self.success and (not self.error or not self.error.strip()):
             raise ValueError("失败变量命令必须包含原因")
         return self
+
+
+class StudioPickerSessionRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    session_id: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioPickerSessionStartRequest(StudioPickerSessionRequest):
+    url: str | None = None
+    browser_config: dict[str, JsonValue] | None = None
+
+
+class StudioPickerSessionState(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    success: Literal[True]
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    active: bool
+    selected: bool = False
 
 
 class StudioFolderSelectRequest(ApiModel):

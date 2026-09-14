@@ -7,7 +7,7 @@ import { checkedExecutionLogPage, checkedWorkflowRunPage } from './lib/execution
 import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
-import { studioFetch } from './api/transport'
+import { getStudioTransportRevision, studioFetch } from './api/transport'
 import { getBackendBaseUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
@@ -39,6 +39,7 @@ export interface ApiResponse<T = any> {
   error?: string
   httpStatus?: number
   errorDetails?: ApiWireError
+  outcomeUnknown?: boolean
 }
 
 export type WorkflowRunSummary = components['schemas']['StudioWorkflowRunSummary']
@@ -343,30 +344,94 @@ export const browserApi = {
   getUrl: () => apiRequest('/browser/url'),
   getSelector: (description: string) =>
     apiRequest('/browser/get-selector', { method: 'POST', body: JSON.stringify({ description }) }),
-  startPicker: () => apiRequest('/element-picker/start', { method: 'POST', body: JSON.stringify({}) }),
-  stopPicker: () => apiRequest('/element-picker/stop', { method: 'POST' }),
+  startPicker: () => elementPickerApi.start(),
+  stopPicker: () => elementPickerApi.stop(),
 }
 
 // ==================== 元素选择器 API ====================
+type PickerSessionState=components['schemas']['StudioPickerSessionState']
+let pickerSessionId:string|null=null
+let pickerConnectionRevision=-1
+function currentPickerSession(){
+  const revision=getStudioTransportRevision()
+  if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerConnectionRevision=revision}
+  return pickerSessionId
+}
+function checkedPickerSession(result:ApiResponse<any>,expected:string):ApiResponse<PickerSessionState>{
+  if(!result.success)return result
+  const data=result.data
+  if(!data || data.success!==true || data.sessionId!==expected || typeof data.active!=='boolean')return {success:false,error:'元素拾取会话响应身份或结构错误'}
+  return result as ApiResponse<PickerSessionState>
+}
+const pickerQuery=(sessionId:string)=>`?sessionId=${encodeURIComponent(sessionId)}`
+async function readPickerResult(path:string):Promise<ApiResponse<any>>{
+  if(!currentPickerSession()){
+    const status=await elementPickerApi.getStatus()
+    if(!status.success)return status
+  }
+  const sessionId=currentPickerSession()
+  const revision=getStudioTransportRevision()
+  const result=await apiRequest(`${path}${sessionId?pickerQuery(sessionId):''}`)
+  if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'拾取结果已过期，未应用定位信息'}
+  const checked=checkedPickerSession(result,sessionId||'none')
+  if(!checked.success)return checked
+  const data=result.data
+  if(path!=='/element-picker/similar'&&(typeof data.selected!=='boolean'||(data.selected&&(!data.active||!data.element||typeof data.element.selector!=='string'||!data.element.selector.trim()))))return {success:false,error:'拾取结果格式错误，未应用定位信息'}
+  return result
+}
 export const elementPickerApi = {
   /**
    * 启动元素选择器
    * @param url 可选，要打开的目标页面 URL
    * @param browserConfig 可选，浏览器配置
    */
-  start: (url?: string, browserConfig?: any) =>
-    apiRequest('/element-picker/start', {
+  start: async (url?: string, browserConfig?: any) => {
+    const previous=currentPickerSession()
+    const sessionId=previous||crypto.randomUUID()
+    const revision=getStudioTransportRevision()
+    pickerSessionId=sessionId
+    let result=checkedPickerSession(await apiRequest('/element-picker/start', {
       method: 'POST',
-      body: JSON.stringify({ url: url || null, browserConfig: browserConfig || null }),
-    }),
-  stop: () => apiRequest('/element-picker/stop', { method: 'POST' }),
-  getResult: () => apiRequest('/element-picker/result'),
-  getSelected: () => apiRequest('/element-picker/selected'),
+      body: JSON.stringify({sessionId,url:url||null,browserConfig:browserConfig||null}),
+    }),sessionId)
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
+    if(!result.success&&(!result.httpStatus||result.httpStatus>=500)){
+      const recovered=checkedPickerSession(await apiRequest(`/element-picker/status${pickerQuery(sessionId)}`),sessionId)
+      if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
+      if(recovered.success&&recovered.data?.active)result=recovered
+      else if(!recovered.success)return {...result,outcomeUnknown:true}
+    }
+    if(!result.success&&result.httpStatus&&result.httpStatus<500&&!previous)pickerSessionId=null
+    if(result.success&&!result.data?.active)return {success:false,error:'拾取会话未启动'}
+    return result
+  },
+  stop: async () => {
+    let sessionId=currentPickerSession()
+    if(!sessionId){
+      const status=await elementPickerApi.getStatus()
+      if(!status.success)return status
+      sessionId=currentPickerSession()
+    }
+    if(!sessionId)return {success:true,data:{success:true,sessionId:'none',active:false} as PickerSessionState}
+    const revision=getStudioTransportRevision()
+    let result=checkedPickerSession(await apiRequest('/element-picker/stop',{method:'POST',body:JSON.stringify({sessionId})}),sessionId)
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，关闭结果未应用'}
+    if(!result.success&&(!result.httpStatus||result.httpStatus>=500)){
+      const recovered=checkedPickerSession(await apiRequest(`/element-picker/status${pickerQuery(sessionId)}`),sessionId)
+      if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，关闭结果未应用'}
+      if(recovered.success&&!recovered.data?.active)result=recovered
+    }
+    if(result.success&&!result.data?.active)pickerSessionId=null
+    if(result.success&&result.data?.active)return {success:false,error:'拾取会话仍在清理，请重试'}
+    return result
+  },
+  getResult: () => readPickerResult('/element-picker/result'),
+  getSelected: () => readPickerResult('/element-picker/selected'),
   getSimilar: async () => {
     type Wire = components['schemas']['StudioSimilarPickerResult']
     type Similar = components['schemas']['StudioSimilarElements']
     type Result = Omit<Partial<Wire>, 'similar'> & {similar?: (Pick<Similar, 'pattern' | 'count' | 'minIndex' | 'maxIndex'> & Partial<Similar>) | null}
-    const result = await apiRequest<Result>('/element-picker/similar')
+    const result:ApiResponse<Result> = await readPickerResult('/element-picker/similar')
     if (!result.success) return result
     const data = result.data
     const similar = data?.similar
@@ -379,14 +444,29 @@ export const elementPickerApi = {
     }
     return result
   },
-  getStatus: () => apiRequest('/element-picker/status'),
+  getStatus: async () => {
+    const requested=currentPickerSession()
+    const revision=getStudioTransportRevision()
+    const result=await apiRequest<Partial<PickerSessionState>>(`/element-picker/status${requested?pickerQuery(requested):''}`)
+    if(revision!==getStudioTransportRevision()||requested!==currentPickerSession())return {success:false,error:'拾取状态响应已过期'}
+    if(!result.success)return result
+    if(result.data?.success!==true||typeof result.data.active!=='boolean'||typeof result.data.sessionId!=='string'||!result.data.sessionId.trim()||(requested&&result.data.sessionId!==requested))return {success:false,error:'元素拾取状态身份或结构错误'}
+    if(result.data?.active){
+      if(typeof result.data.sessionId!=='string'||!result.data.sessionId.trim()||(requested&&result.data.sessionId!==requested))return {success:false,error:'元素拾取状态属于其他会话'}
+      pickerSessionId=result.data.sessionId;pickerConnectionRevision=getStudioTransportRevision()
+    }else if(requested)pickerSessionId=null
+    return result
+  },
   /** 在当前浏览器页面上测试选择器是否命中并高亮匹配项 */
   testSelector: async (selector: string, hints?: Record<string, unknown>, highlight = true) => {
     type Wire = components['schemas']['StudioSelectorTestResult']
     type Result = Pick<Wire, 'success' | 'matched' | 'count'> & Partial<Omit<Wire, 'success' | 'matched' | 'count'>>
+    const sessionId=currentPickerSession()
+    const revision=getStudioTransportRevision()
     const result = await apiRequest<Result>('/element-picker/test-selector', {
-      method: 'POST', body: JSON.stringify({ selector, hints: hints || null, highlight }),
+      method: 'POST', body: JSON.stringify({ selector, hints: hints || null, highlight, sessionId }),
     })
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'定位测试响应已过期，请重新测试'}
     if (!result.success) return result
     const data = result.data
     const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)

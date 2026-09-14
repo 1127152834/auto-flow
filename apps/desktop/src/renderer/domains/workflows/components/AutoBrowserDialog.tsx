@@ -79,6 +79,10 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
         const singleResult = await elementPickerApi.getSelected()
         if (cancelled) return
         if (singleResult.error) throw new Error(singleResult.error)
+        if (singleResult.data?.active === false) {
+          setPickerActive(false)
+          return
+        }
         if (singleResult.data?.selected && singleResult.data.element) {
           const selector = singleResult.data.element.selector
           if (selector && selector !== lastHandledRef.current) {
@@ -255,6 +259,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
     try {
       const result = await browserApi.startPicker()
       if (result.error) {
+        if (result.outcomeUnknown) setPickerActive(true)
         onLog('error', `启动选择器失败: ${result.error}`)
       } else {
         statusRequest.current += 1

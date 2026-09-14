@@ -15,6 +15,16 @@ beforeEach(() => {
   vi.spyOn(elementPickerApi, 'getSimilar').mockResolvedValue({ success: true, data: { selected: false } })
 })
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
+it('leaves picking mode after a confirmed external session closure',async()=>{
+ vi.useFakeTimers()
+ vi.mocked(elementPickerApi.getSelected).mockResolvedValue({success:true,data:{active:false,selected:false}})
+ render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
+ await act(async()=>{})
+ await act(async()=>vi.advanceTimersByTimeAsync(500))
+ expect(screen.queryByRole('button',{name:'停止选择'})).toBeNull()
+ expect(screen.getByRole('button',{name:'启动选择器'})).toBeTruthy()
+ expect(elementPickerApi.getSimilar).not.toHaveBeenCalled()
+})
 it.each(['close', 'stop'])('keeps confirmed browser state when %s returns a cleanup error', async action => {
   const method = action === 'close' ? 'close' : 'stopPicker'
   vi.spyOn(browserApi, method).mockResolvedValue({ success: false, error: '清理失败，请重试' })

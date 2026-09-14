@@ -13,7 +13,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   store.getState().clearWorkflow(); store.getState().addNode('click_element', { x: 0, y: 0 }); nodeId = store.getState().nodes[0].id
   store.getState().updateNodeData(nodeId, { selector: '#before' }); store.getState().markAsSaved()
-  vi.spyOn(elementPickerApi, 'start').mockResolvedValue({ success: true, data: { success: true } })
+  vi.spyOn(elementPickerApi, 'start').mockResolvedValue({ success: true, data: { success: true, sessionId:'picker', active:true, selected:false } })
   vi.spyOn(elementPickerApi, 'stop').mockResolvedValue({ success: true, data: { success: true } })
   vi.spyOn(elementPickerApi, 'getSimilar').mockResolvedValue({ success: true, data: { selected: false } })
   vi.spyOn(systemApi, 'setClipboard').mockResolvedValue({ success: true })
@@ -32,7 +32,7 @@ it.each(['node', 'document', 'unmount'])('does not start polling after a late st
   if (change === 'node') { act(() => store.getState().addNode('click_element', { x: 10, y: 0 })); view.rerender(<ConfigPanel selectedNodeId={store.getState().nodes[1].id} />) }
   if (change === 'document') { const nodes=store.getState().nodes; act(() => {store.getState().clearWorkflow();store.setState({nodes})}) }
   if (change === 'unmount') view.unmount()
-  await act(async () => release({ success: true, data: {success: true} }))
+  await act(async () => release({ success: true, data: {success: true, sessionId:'picker', active:true, selected:false} }))
   await act(async () => vi.advanceTimersByTimeAsync(1000))
   expect(poll).not.toHaveBeenCalled()
   expect(store.getState().nodes.find(node => node.id===nodeId)?.data.selector).toBe('#before')

@@ -70,6 +70,9 @@ let recorded: ObjectValue[] = []
 let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
 let picking = false
+let pickerSessionId: string | null = null
+let pickerRequestFingerprint: string | null = null
+const retiredPickerSessions = new Set<string>()
 let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
@@ -142,7 +145,7 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
     streams.clear()
   }
 }
-export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
+export function mockSnapshot() { return { offline, browser, recording, picking, pickerSessionId, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
 export function seedMockRunHistory(options: { runId: string; workflowId: string; documentId: string; workflowName?: string; logs: Array<Omit<StoredExecutionLog, 'sequence'>> }) {
   const startedAt = new Date().toISOString()
   const logs = options.logs.map((log, index) => ({ ...structuredClone(log), sequence: index + 1 }))
@@ -169,6 +172,23 @@ export function selectMockSimilarElements() {
   if (!picking) throw new Error('请先开启元素拾取')
   picked = null
   similarPicked = { pattern: '.item:nth-child({index})', count: 4, indices: [1, 2, 3, 4], minIndex: 1, maxIndex: 4, selector1: '.item:nth-child(1)', selector2: '.item:nth-child(2)' }
+}
+function closePickerSession() {
+  const closedSessionId = pickerSessionId
+  if (closedSessionId) retiredPickerSessions.add(closedSessionId)
+  picking = false
+  pickerSessionId = null
+  pickerRequestFingerprint = null
+  picked = null
+  similarPicked = null
+  return closedSessionId
+}
+function pickerSessionFrom(target: URL, body: ObjectValue, method: string) {
+  const value = method === 'GET' ? target.searchParams.get('sessionId') : body.sessionId
+  return typeof value === 'string' && value.trim() ? value : null
+}
+function pickerState(sessionId: string, active: boolean) {
+  return { success: true, sessionId, active, selected: active ? picked !== null || similarPicked !== null : false }
 }
 const finishedWorkflows = new Set<string>()
 function finish(status: string) {
@@ -691,10 +711,10 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     const scriptTest = mockBrowserScriptTests(path,method,body,browser && !run && !recording && !picking,url)
     if(scriptTest)return scriptTest
-    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, url, mock: true })
+    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, url, mock: true })
     if (path === '/browser/chromium-status') return response({ installed: true, ready: true, mock: true })
     if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) { invalidateMockScriptTests(!browser); browser = true; url = String(body.url || url); return response({ success: true, isOpen: true, url, mock: true }) }
-    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; picking = false; recording = false; return response({success:true}) }
+    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; closePickerSession(); recording = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     if (path === '/recorder/start') {
@@ -716,16 +736,73 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
     }
     if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
-    if (path === '/element-picker/start') { if (run || recording || mockScriptTestBusy()) return failure('Mock 浏览器被占用',409); browser = true; picking = true; picked = null; similarPicked = null; return response({success:true}) }
-    if (path === '/element-picker/stop') { if (method !== 'POST') return failure('停止拾取仅支持 POST', 405); if (failNextPickerStop) { failNextPickerStop = false; return failure('Mock 拾取清理失败，请重试', 503) } picking = false; picked = null; similarPicked = null; return response({success:true}) }
-    if (path === '/element-picker/status') return response({ active:picking, isPicking:picking })
-    if (['/element-picker/result','/element-picker/selected'].includes(path)) return response({ success:true, active:picking, selected:picked !== null, data:picked, element:picked, ...picked })
-    if (path === '/element-picker/similar') return method === 'GET' ? response({ selected: picking && similarPicked !== null, active: picking, ...(picking && similarPicked ? { similar: similarPicked } : {}) }) : failure('相似元素查询仅支持 GET', 405)
+    if (path === '/element-picker/start') {
+      if (method !== 'POST') return failure('启动拾取仅支持 POST', 405)
+      const sessionId = pickerSessionFrom(target, body, method)
+      if (!sessionId) return failure('缺少拾取会话标识', 422)
+      if ((body.url != null && typeof body.url !== 'string') ||
+          (body.browserConfig != null && (typeof body.browserConfig !== 'object' || Array.isArray(body.browserConfig))) ||
+          Object.keys(body).some(key => !['sessionId','url','browserConfig'].includes(key))) return failure('拾取启动参数格式错误',422)
+      const fingerprint = JSON.stringify({ url: body.url ?? null, browserConfig: body.browserConfig ?? null })
+      if (sessionId === pickerSessionId) return pickerRequestFingerprint === fingerprint
+        ? response({ ...pickerState(sessionId, true), isPicking: true })
+        : failure('拾取会话 ID 已用于不同的启动参数', 409)
+      if (retiredPickerSessions.has(sessionId)) return failure('拾取会话已结束', 409)
+      if (pickerSessionId || run || recording || mockScriptTestBusy()) return failure('Mock 浏览器被占用',409)
+      browser = true; picking = true; pickerSessionId = sessionId; pickerRequestFingerprint = fingerprint; picked = null; similarPicked = null
+      return response({ ...pickerState(sessionId, true), isPicking: true })
+    }
+    if (path === '/element-picker/stop') {
+      if (method !== 'POST') return failure('停止拾取仅支持 POST', 405)
+      const sessionId = pickerSessionFrom(target, body, method)
+      if (!sessionId) return failure('缺少拾取会话标识', 422)
+      if (Object.keys(body).some(key => key !== 'sessionId')) return failure('拾取停止参数格式错误',422)
+      if (sessionId !== pickerSessionId) {
+        if (!pickerSessionId && retiredPickerSessions.has(sessionId)) return response(pickerState(sessionId, false))
+        return failure('停止请求不属于当前拾取会话', 409)
+      }
+      if (failNextPickerStop) { failNextPickerStop = false; return failure('Mock 拾取清理失败，请重试', 503) }
+      closePickerSession()
+      return response(pickerState(sessionId, false))
+    }
+    if (path === '/element-picker/status') {
+      if (method !== 'GET') return failure('拾取状态仅支持 GET', 405)
+      const requested = pickerSessionFrom(target, body, method)
+      if (requested && requested !== pickerSessionId) {
+        if (retiredPickerSessions.has(requested)) return response(pickerState(requested, false))
+        return failure('拾取会话不存在或已失效', 409)
+      }
+      const sessionId = pickerSessionId || requested || 'none'
+      return response({ ...pickerState(sessionId, picking), isPicking:picking })
+    }
+    if (['/element-picker/result','/element-picker/selected'].includes(path)) {
+      if (method !== 'GET') return failure('拾取结果仅支持 GET', 405)
+      const requested = pickerSessionFrom(target, body, method)
+      if (pickerSessionId && requested !== pickerSessionId) return failure('拾取结果不属于当前会话', 409)
+      if (requested && !pickerSessionId) {
+        if (retiredPickerSessions.has(requested)) return response(pickerState(requested, false))
+        return failure('拾取会话不存在或已失效', 409)
+      }
+      const sessionId = pickerSessionId || 'none'
+      return response({ ...pickerState(sessionId, picking), selected:picked !== null, data:picked, element:picked, ...picked })
+    }
+    if (path === '/element-picker/similar') {
+      if (method !== 'GET') return failure('相似元素查询仅支持 GET', 405)
+      const requested = pickerSessionFrom(target, body, method)
+      if (pickerSessionId && requested !== pickerSessionId) return failure('相似元素结果不属于当前会话', 409)
+      if (requested && !pickerSessionId) {
+        if (retiredPickerSessions.has(requested)) return response(pickerState(requested, false))
+        return failure('拾取会话不存在或已失效', 409)
+      }
+      const sessionId = pickerSessionId || 'none'
+      return response({ ...pickerState(sessionId, picking), selected:similarPicked !== null, ...(picking && similarPicked ? { similar: similarPicked } : {}) })
+    }
     if (path === '/element-picker/test-selector') {
       if (method !== 'POST') return failure('定位测试仅支持 POST', 405)
       if (typeof body.selector !== 'string' || !body.selector.trim() ||
           (body.highlight !== undefined && typeof body.highlight !== 'boolean') ||
           (body.hints != null && (typeof body.hints !== 'object' || Array.isArray(body.hints)))) return failure('定位测试参数格式错误', 422)
+      if (body.sessionId != null && body.sessionId !== pickerSessionId) return failure('定位测试不属于当前拾取会话', 409)
       if (!browser) return failure('浏览器未打开，请先启动浏览器或元素拾取后再测试', 200)
       if (selectorTest === 'error') return failure('Mock 定位失败（显式服务失败场景，未查询网页）', 200)
       const count = selectorTest === 'none' ? 0 : selectorTest === 'multiple' ? 4 : 1

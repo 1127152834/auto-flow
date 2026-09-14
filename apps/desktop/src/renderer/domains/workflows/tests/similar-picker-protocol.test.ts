@@ -28,6 +28,8 @@ it.each([
  {selected:true,active:true,similar:{pattern:'div{index}',count:4,minIndex:1,maxIndex:4,indices:[1,5]}},
  {selected:false,active:'yes'},
 ])('rejects malformed similar results without applying %j',async result=>{
- const restore=configureStudioConnection('http://similar-invalid.test',async()=>Response.json(result))
- try{expect(await elementPickerApi.getSimilar()).toMatchObject({success:false,error:'相似元素响应格式错误，未应用定位结果'})}finally{restore()}
+ const restore=configureStudioConnection('http://similar-invalid.test',async input=>Response.json(String(input).includes('/status')
+  ?{success:true,sessionId:'picker',active:true,selected:false}
+  :{success:true,sessionId:'picker',...result}))
+ try{expect(await elementPickerApi.getSimilar()).toMatchObject({success:false,error:typeof result.active==='boolean'?'相似元素响应格式错误，未应用定位结果':'元素拾取会话响应身份或结构错误'})}finally{restore()}
 })

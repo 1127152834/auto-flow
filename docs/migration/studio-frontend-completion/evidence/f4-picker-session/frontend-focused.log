@@ -1,0 +1,27 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/picker-session-protocol.test.ts src/renderer/domains/workflows/tests/picker-stop-confirmation.test.tsx src/renderer/domains/workflows/tests/picker-result-context.test.tsx src/renderer/domains/workflows/tests/picker-stop-protocol.test.ts src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts src/renderer/domains/workflows/tests/selector-test-protocol.test.ts src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:83776) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83775) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83774) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83777) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:84182) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:84183) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:84186) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  7 passed (7)
+      Tests  104 passed (104)
+   Start at  01:46:13
+   Duration  4.02s (transform 2.87s, setup 667ms, import 4.15s, tests 2.56s, environment 3.95s)
+

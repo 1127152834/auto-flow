@@ -5022,6 +5022,47 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioPickerSessionRequest */
+        StudioPickerSessionRequest: {
+            /** Sessionid */
+            sessionId: string;
+        };
+        /** StudioPickerSessionStartRequest */
+        StudioPickerSessionStartRequest: {
+            /** Sessionid */
+            sessionId: string;
+            /**
+             * Url
+             * @default null
+             */
+            url: string | null;
+            /**
+             * Browserconfig
+             * @default null
+             */
+            browserConfig: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+        };
+        /** StudioPickerSessionState */
+        StudioPickerSessionState: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Sessionid */
+            sessionId: string;
+            /** Active */
+            active: boolean;
+            /**
+             * Selected
+             * @default false
+             */
+            selected: boolean;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioRecorderBatch */
         StudioRecorderBatch: {
             /** Success */
@@ -5270,6 +5311,11 @@ export type components = {
              * @default true
              */
             highlight: boolean;
+            /**
+             * Sessionid
+             * @default null
+             */
+            sessionId: string | null;
         };
         /** StudioSelectorTestResult */
         StudioSelectorTestResult: {

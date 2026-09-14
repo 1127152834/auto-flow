@@ -15,6 +15,15 @@ beforeEach(()=>{
 })
 afterEach(()=>{cleanup();vi.useRealTimers();vi.restoreAllMocks()})
 async function start(){render(<ConfigPanel selectedNodeId={id}/>);fireEvent.click(screen.getByTitle('可视化选择元素'));await act(async()=>fireEvent.click(screen.getByText('启动选择器')))}
+it('keeps a cleanup action when startup and its recovery query cannot be confirmed',async()=>{
+ vi.mocked(elementPickerApi.start).mockResolvedValueOnce({success:false,error:'连接中断',outcomeUnknown:true})
+ await start()
+ expect(screen.getByTitle('停止选择')).toBeTruthy()
+ expect(store.getState().logs.some(log=>log.message.includes('启动状态尚未确认'))).toBe(true)
+ await act(async()=>fireEvent.click(screen.getByTitle('停止选择')))
+ expect(elementPickerApi.stop).toHaveBeenCalledTimes(1)
+ expect(screen.getByTitle('可视化选择元素')).toBeTruthy()
+})
 it.each(['business','network'])('keeps retry available after a %s stop failure',async mode=>{
  if(mode==='business')vi.mocked(elementPickerApi.stop).mockResolvedValueOnce({success:false,error:'清理失败'})
  else vi.mocked(elementPickerApi.stop).mockRejectedValueOnce(new Error('清理失败'))
