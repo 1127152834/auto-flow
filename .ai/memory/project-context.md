@@ -108,4 +108,14 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 
 ### 2026-09-15 PM3 管理配置优先（confirmed）
 
-用户明确 Studio 是 demo，不做联合测试。管理自动化配置持久化、五项 HTTP 与操作恢复已装配；只读工作流目录来自 WorkflowService，不能当作 Studio 集成。运行准入 resource/capability 适配未完成，因此不把保存配置展示为运行可用。详见 PM3 原执行卡及 management-backend-verification.json。主项目仍只读。
+用户明确 Studio 是 demo，不做联合测试。管理自动化配置持久化、五项 HTTP 与操作恢复已装配；只读工作流目录来自 WorkflowService，不能当作 Studio 集成。当时 resource/capability 适配未完成；resource 在后续 d28dca7 接入，此旧 resource 结论 superseded，capability 仍未接入，因此不把保存配置展示为运行可用。详见 PM3 原执行卡及 management-backend-verification.json。主项目仍只读。
+
+### 2026-09-15 PM3 管理配置接入（confirmed）
+
+来源：PM3 独立工作区代码、管理 HTTP contract 与 `docs/project-management/implementation/pm3/management-runs/run-eSwQYK/result.json`。
+
+- 用户明确取消 Studio demo 联合测试。管理目录/四页签通过真实工作流 ID 关联；QA 工作流经真实服务准备，不伪造 Studio 保存或运行结果。
+- 管理界面在 `renderer/domains/project-automations`；查询按工作区/实例/项目隔离，命令恢复身份按工作区/项目/表单持久保存。参数说明保持可省略，模型选择有省略/null/指定三态。
+- 内层筛选/排序草稿必须参与外层 dirty/valid 与 resetKey，不能以应用前的旧查询提交整体配置。业务字段查询仅用已绑定字段；状态与系统排序不依赖绑定。
+- 项目内创建成功替换 URL 使用 `preserveGuard:true`，防止未卸载页面失去离开保护；真实工作区替换保持默认清除旧 guard。
+- 管理配置保存、工作流结构校验、运行准入为不同事实。此次管理 QA 不代表批次/运行管理已交付；PM4 未开始。

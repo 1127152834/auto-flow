@@ -26,14 +26,14 @@
 | 当前阻断/交付包 | 唯一负责人及文件所有权 | 完成证据与现状 | 依赖/下一步 |
 |---|---|---|---|
 | Task 4 acquire 失败后 shutdown 不可抹除未知 owner | 主协调：dispatcher、bootstrap、共享进程文件 | 规格、工程通过；shutdown 失败保留与成功恢复均定向闭合 | 完成；管理端运行接口后续复用 |
-| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | 创建/列表/详情/聚合更新与 Operation 恢复已装配真实服务；资源准入适配仍待接入 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
-| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 受控组件已完成并复核；管理页正在真实联调 | 冻结参数/政策合同，复用统一表格和小圆角 |
-| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 目录、四页签、恢复已接入；真实 Electron 验收进行中 | 真实配置接口及组件先行，不使用 demo 结果 |
+| Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | b0f1d93 / d28dca7：配置HTTP与冻结 Operation 结果、只读工作流目录、真实资源引用查询已提交；运行 capability 尚未接入 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
+| Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 四页签组件已接通真实保存并完成有界复审；新增参数说明、模型三态与内层查询草稿保护 | 冻结参数/政策合同，复用统一表格和小圆角 |
+| Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 管理配置 E2E 通过，证据 management-runs/run-eSwQYK；资源页视觉问题已定向闭合，完整 PM3.1 未运行项仍保留 | 真实配置接口及组件先行，不使用 demo 结果 |
 | Task 11–16 批次/运行记录/停止恢复 | 主协调：契约、事务、调度竞争和集成 | 尚未实现 | 复用 CoreRun；Task 4 基础检查不等于完整业务通过 |
 
 保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
 
-下一演示：管理端创建自动化、关联持久工作流、修改参数/资源/运行政策并统一保存，刷新读回、冲突保留输入。预计 2–4 小时（后端和独立组件已并行；资源解析和页面恢复尚待装配，有不确定性）。此前“Studio 保存运行”演示目标 superseded。
+该演示已通过管理配置真实 QA，详见 management/manual-test.md、management/verification.json。原 2–4 小时估计现为历史记录；新增内层查询离开保护、创建后导航保护和资源页视觉修复已闭合。下一交付为管理端参数批次启动与运行事实查询；不包含 Studio demo。
 
 审查只复核已发现问题及受影响范围；日常定向检查，阶段集成全量。检查点记录可操作能力、真实证据、具体阻断和下次演示估时。未执行平台及用户手测继续记未执行。
 
@@ -327,10 +327,10 @@ git commit -m "test(pm3): verify the real workflow execution core"
 - Create: `apps/backend/tests/integration/test_project_automation_repository.py`
 - Create: `apps/backend/tests/integration/test_project_automation_migration.py`
 
-- [ ] **Step 1: 写 RED 测试。** 覆盖 Unicode 名称、稳定 parameter/input ID、一个 workflowId 只能绑定一个 Automation、CAS、同内容不推进修订和归档只读。删除及影响查询留到 PM8。
-- [ ] **Step 2: 实现模型和规则。** 严格区分省略/null/空字符串、字符串/数字/布尔参数。保存允许未来 inputPlan；validation projection 把非空 inputPlan 标记为 PM4 blocker。
-- [ ] **Step 3: 实现仓储和迁移。** `project_automations` 保存聚合 JSON 和可索引摘要；workflow 外键使用 RESTRICT。创建、更新和 ProjectOperation 在同一短事务提交。
-- [ ] **Step 4: 验证唯一 head。**
+- [x] **Step 1: 写 RED 测试。** 覆盖 Unicode 名称、稳定 parameter/input ID、一个 workflowId 只能绑定一个 Automation、CAS、同内容不推进修订和归档只读。删除及影响查询留到 PM8。
+- [x] **Step 2: 实现模型和规则。** 严格区分省略/null/空字符串、字符串/数字/布尔参数。保存允许未来 inputPlan；validation projection 把非空 inputPlan 标记为 PM4 blocker。
+- [x] **Step 3: 实现仓储和迁移。** `project_automations` 保存聚合 JSON 和可索引摘要；workflow 外键使用 RESTRICT。创建、更新和 ProjectOperation 在同一短事务提交。
+- [x] **Step 4: 验证唯一 head。**
 
 ```bash
 uv run --directory apps/backend pytest tests/unit/test_project_automation_rules.py tests/integration/test_project_automation_repository.py tests/integration/test_project_automation_migration.py -q
@@ -339,7 +339,7 @@ uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/
 
 预期：唯一 head 为 `pm03_project_automations`。
 
-- [ ] **Step 5: 提交。**
+- [x] **Step 5: 提交。**
 
 ```bash
 git add apps/backend/src/autoflow/domain/project_automations apps/backend/src/autoflow/application/project_automations apps/backend/src/autoflow/infrastructure/database/project_automation_models.py apps/backend/src/autoflow/infrastructure/database/project_automations.py apps/backend/src/autoflow/infrastructure/database/migrations/env.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm03_project_automations.py apps/backend/tests/unit/test_project_automation_rules.py apps/backend/tests/integration/test_project_automation_repository.py apps/backend/tests/integration/test_project_automation_migration.py
@@ -359,10 +359,10 @@ git commit -m "feat(projects): persist project automation configurations"
 - Modify: `apps/backend/tests/contract/test_schema_export.py`
 - Modify: `apps/desktop/src/renderer/shared/api/generated.ts`
 
-- [ ] **Step 1: 写 HTTP RED 测试。** 覆盖目录搜索/排序/分页、详情、创建、聚合更新、validation、错误 envelope、项目归属和幂等恢复；验证 PM3 OpenAPI 没有提前发布删除接口。
-- [ ] **Step 2: 实现真实 handler。** 路由只包含已实现的目录、详情、创建、更新和 validation；所有父路径重新校验项目。更新使用 `expectedManagementRevision`，持久命令使用 `Idempotency-Key`。
-- [ ] **Step 3: 更新 capability。** `automations` 暂保持 `notImplemented`，直到 PM3.1 前端和 PM3.2 真实启动均完成；后端额外返回内部装配状态供最终门槛切换。
-- [ ] **Step 4: 生成类型并验证。**
+- [x] **Step 1: 写 HTTP RED 测试。** 覆盖目录搜索/排序/分页、详情、创建、聚合更新、validation、错误 envelope、项目归属和幂等恢复；验证 PM3 OpenAPI 没有提前发布删除接口。
+- [x] **Step 2: 实现真实 handler。** 路由只包含已实现的目录、详情、创建、更新和 validation；所有父路径重新校验项目。更新使用 `expectedManagementRevision`，持久命令使用 `Idempotency-Key`。
+- [ ] **Step 3: 更新 capability。** `automations` 保持 `notImplemented`，直到真实启动接入；已实现的 validation 返回真实资源问题及尚未接入的 capability。未增加没有当前消费者的内部装配 DTO；最终能力门槛仍留 Task16。
+- [x] **Step 4: 生成类型并验证。**
 
 ```bash
 uv run --directory apps/backend pytest tests/contract/test_project_automations.py tests/contract/test_schema_export.py -q
@@ -370,7 +370,7 @@ npm run openapi:generate
 npm run openapi:check
 ```
 
-- [ ] **Step 5: 提交。**
+- [x] **Step 5: 提交。**
 
 ```bash
 git add apps/backend/src/autoflow/adapters/http/project_automation_schemas.py apps/backend/src/autoflow/adapters/http/project_automations.py apps/backend/src/autoflow/bootstrap apps/backend/src/autoflow/application/projects/service.py apps/backend/tests/contract/test_project_automations.py apps/backend/tests/contract/test_schema_export.py apps/desktop/src/renderer/shared/api/generated.ts
@@ -393,13 +393,13 @@ git commit -m "feat(projects): expose project automation contracts"
 - Create: `apps/desktop/src/renderer/domains/project-automations/components/AutomationValidation.tsx`
 - Create: `apps/desktop/src/renderer/domains/project-automations/components/ParameterEditor.tsx`
 - Create: `apps/desktop/src/renderer/domains/project-automations/components/InputPlanEditor.tsx`
-- Create: `apps/desktop/src/renderer/domains/project-automations/components/ResourcePolicyEditor.tsx`
+- Create: `apps/desktop/src/renderer/domains/project-automations/components/EnvironmentPolicyEditor.tsx`
 - Create: `apps/desktop/src/renderer/domains/project-automations/components/RunPolicyEditor.tsx`
 
-- [ ] **Step 1: 写组件 RED 测试。** 覆盖 gallery 的自动化目录状态、更多菜单、四页签单一草稿、错误页签计数、未保存保护、CAS 冲突、资源缺失和 PM4 输入 blocker；更多菜单不得出现尚未交付的删除动作。
-- [ ] **Step 2: 实现 API 恢复逻辑。** 创建/保存结果不明时先按原 Idempotency-Key 查询 Operation；旧工作区或实例响应不能关闭当前编辑器。
-- [ ] **Step 3: 实现组件。** 复用 shared controls、细网格和小圆角；组件只接收数据与回调，不自行读取全局 runtime。四页签共享 React Hook Form，参数 ID 和输入 ID 不随重命名变化。
-- [ ] **Step 4: 验证。**
+- [x] **Step 1: 写组件 RED 测试。** 覆盖 gallery 的自动化目录状态、更多菜单、四页签单一草稿、错误页签计数、未保存保护、CAS 冲突、资源缺失和 PM4 输入 blocker；更多菜单不得出现尚未交付的删除动作。
+- [x] **Step 2: 实现 API 恢复逻辑。** 创建/保存结果不明时先按原 Idempotency-Key 查询 Operation；旧工作区或实例响应不能关闭当前编辑器。
+- [x] **Step 3: 实现组件。** 复用 shared controls、细网格和小圆角；组件只接收数据与回调，不自行读取全局 runtime。四页签共享 React Hook Form，参数 ID 和输入 ID 不随重命名变化。
+- [x] **Step 4: 验证。**
 
 ```bash
 npm --workspace @autoflow/desktop test -- src/renderer/domains/project-automations
@@ -407,14 +407,14 @@ npm run typecheck
 npm run lint
 ```
 
-- [ ] **Step 5: 提交。**
+- [x] **Step 5: 提交。**
 
 ```bash
 git add apps/desktop/src/renderer/domains/project-automations
 git commit -m "feat(projects): build automation management components"
 ```
 
-### Task 10：组装自动化页面与 Studio 项目上下文
+### Task 10：组装自动化管理页面（Studio 联调按用户指示暂停）
 
 **Files:**
 
@@ -433,25 +433,25 @@ git commit -m "feat(projects): build automation management components"
 - Modify: `apps/desktop/src/main/ipc/automation-studio.ts`
 - Modify: `apps/desktop/src/main/ipc/automation-studio.test.ts`
 
-- [ ] **Step 1: 写页面和 IPC RED 测试。** 覆盖 `#/projects/{projectId}/automations` 和详情路由、返回恢复、创建后进入详情、编辑后页头更新、归档只读、工作区切换清理，以及 `OpenStudioRequest` 作用域验证。
-- [ ] **Step 2: 扩展 Studio bridge。** Manager 传 `workflowId/projectContext`；主进程验证主 frame、当前工作区和已存在 workflowId，并在 Studio URL/query 中只传不敏感身份。Studio 恢复项目返回入口。
-- [ ] **Step 3: 组装真实页面。** 严格对照自动化 gallery 和 PM3-B0；顶部导航替代原型侧栏，主体结构不自行重排。页面通过 TanStack Query 使用真实后端。
-- [ ] **Step 4: 验证。**
+- [x] **Step 1: 写管理页面 RED 测试（原 IPC 部分按用户修订暂停）。** 覆盖 `#/projects/{projectId}/automations` 和详情路由、返回恢复、创建后进入详情、编辑后页头更新、归档只读、工作区切换清理，管理命令恢复与迟到响应隔离；`OpenStudioRequest` 不在本次验收范围。
+- [ ] **Step 2: 扩展 Studio bridge（2026-09-15 用户明确暂停，不作为本轮门槛）。** Manager 传 `workflowId/projectContext`；主进程验证主 frame、当前工作区和已存在 workflowId，并在 Studio URL/query 中只传不敏感身份。Studio 恢复项目返回入口。
+- [x] **Step 3: 组装真实页面。** 严格对照自动化 gallery 和 PM3-B0；顶部导航替代原型侧栏，主体结构不自行重排。页面通过 TanStack Query 使用真实后端。
+- [x] **Step 4: 验证。**
 
 ```bash
-npm --workspace @autoflow/desktop test -- src/renderer/domains/project-automations src/renderer/app/App.projects.test.tsx src/main/ipc/automation-studio.test.ts src/preload/index.test.ts
+npm --workspace @autoflow/desktop test -- src/renderer/domains/project-automations src/renderer/app/App.projects.test.tsx
 npm run typecheck
 npm run lint
 ```
 
-- [ ] **Step 5: 提交。**
+- [x] **Step 5: 提交。**
 
 ```bash
 git add apps/desktop/src/renderer/domains/project-automations apps/desktop/src/renderer/domains/projects apps/desktop/src/renderer/app/App.projects.test.tsx apps/desktop/src/shared/automation-studio.ts apps/desktop/src/preload apps/desktop/src/main/ipc/automation-studio.ts apps/desktop/src/main/ipc/automation-studio.test.ts
 git commit -m "feat(projects): add automation pages and Studio context"
 ```
 
-**PM3.1 Exit:** 自动化目录、四页签配置和 Studio 关联真实可用；全部适用页面状态对照原型；自动化 capability 仍不宣称可运行。
+**PM3.1 Exit（2026-09-15 用户范围修订，以下为完整退出标准，不以此次配置检查点替代全部）:** 自动化目录、四页签配置和真实工作流身份关联可用；Studio demo 联调不作为验收门槛；全部适用页面状态对照原型；自动化 capability 仍不宣称可运行。
 
 ---
 
@@ -772,3 +772,28 @@ PM3 只有同时满足以下条件才完成：
 - 后台当前执行结果见 `docs/project-management/implementation/pm3/management-backend-verification.json`。前端组件/页面测试和 Electron 验收另记，不用后台检查替代。
 - 图稿与冻结 DTO 的两处待对齐：参数说明列尚无持久字段；自动化级模型提供方覆盖尚无字段。临时环境结束后关闭属于当前固定行为，不添加虚构 retentionPolicy。尚未宣称这些原型项完成。
 - 管理页验收脚本首次启动失败是 QA 设置资料遗漏 required previousPath，已修正工具；未修改生产设置校验。失败截图保留，不计功能通过。
+
+### 2026-09-15 管理配置前端检查点（进行中）
+
+当前后台提交 `b0f1d93`，后续管理组件与页面在本工作区推进。保留前文后台检查报告作为历史记录；其中“resource 尚未装配、说明与模型字段缺失”已 superseded：本轮资源检查已接入，参数说明/模型覆盖已补齐，capability 仍未接入，不能宣称完整运行闭环。
+
+| 合并后的问题 | 负责人/文件边界 | 完成证据 | 依赖/状态 |
+|---|---|---|---|
+| 配置持久化与工作流目录 | 后台智能体；root 装配/生成类型 | `b0f1d93`、真实 HTTP/SQLite 读回及原操作查询 | 已提交；新增资源查询复核通过 |
+| 代理覆盖与模型来源 | 后台智能体 resource_query；root schema | 两个相反代理场景、模型三态；错误文案复核闭合 | 已修复，不代表 License 准入 |
+| 四页签统一草稿、查询内层草稿、输入排序与错误定位 | 组件智能体 InputPlanEditor；root 编辑器/页面接线 | 原失效反例已补；真实 UI 建表→映射→排序→统一保存正在重跑 | 当前交付阻断，必须真实链通过 |
+| 真实管理异常恢复 | root QA 脚本 | `run-PMEdRt`：创建/冲突/重启；`run-APZXES`：响应丢失原键恢复、200% 不撑宽 | 历史运行证据，新增输入功能需新版复验 |
+| 图稿对齐与手测 | root 集成；独立审查 | `management/manual-test.md`；截图逐次保留 | 逐图复核中，不能将候选图当用户确认 |
+
+Task 5/6/10/17–19 原条目中 Studio transport/画布保存/运行/IPC 测试均按顶部用户范围修订暂停；这些旧文本保留作为后续集成历史，不计本轮欠缺或完成。Task 11–16 批次、运行管理不因本次配置测试通过而自动完成。
+
+实现落点复用 `EnvironmentPolicyEditor`、`AutomationResourceSummary`、页面内校验提示和 `use-automation-command`，不为原文件清单中的替代名字再建立空组件或重复 hooks。
+
+## 2026-09-15 管理配置可操作检查点
+
+- 后端提交 b0f1d93 / d28dca7；管理组件/页面、真实QA及文档单独提交。新主线工作只读，不夹带 Studio 修改。
+- 真实 Electron + FastAPI + SQLite：界面创建项目/表/字段/自动化，统一保存输入映射与参数、资源、运行设置；真实 CAS 冲突保留草稿；提交后丢失响应按原键查回；创建后未保存离开保护；应用/服务重启后 GET 核对持久事实。证据 `docs/project-management/implementation/pm3/management-runs/run-eSwQYK/result.json`。
+- 工作流资料经真实 WorkflowService 创建，既有工作流可关联。空工作区没有新增“管理端新建工作流”功能，也没有伪装 Studio 用户路径。
+- 五个正常页面已逐图人工审查（89/86/90/88/90）；资源页82分失败修复后定向复核90分。详见 `management/visual-review.md`。候选截图不是用户已确认回归基线。
+- 此检查点仍未覆盖：全部加载/保存中/错误视觉状态、真实双工作区切换、同工作区断服务时脏草稿的完整E2E、目录大规模分页端到端、200%全页滚动。组件/HTTP用例已覆盖的部分不能冒充这些真实验收；后续管理集成继续补齐。
+- Task11–16 尚未交付，参数批次/运行记录/停止恢复不能标记完成，PM3整阶段未退出。用户手测、Windows、其他架构、打包未执行。

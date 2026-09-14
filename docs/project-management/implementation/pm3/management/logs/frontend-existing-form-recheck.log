@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop
+
+(node:38367) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  04:11:36
+   Duration  6.27s (transform 190ms, setup 145ms, import 1.26s, tests 4.36s, environment 398ms)

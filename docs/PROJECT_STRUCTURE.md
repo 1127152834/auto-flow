@@ -447,3 +447,11 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 - Task 4 真实后端与 CloakBrowser 链已核验；项目自动化配置与组件进行中，HTTP/批次/运行页面尚未交付。按本轮用户指令管理端优先，Studio demo 联合验收取消。
 
 - PM3 管理配置：`domain/project_automations` 负责配置规则和身份，`application/project_automations` 协调管理命令，`infrastructure/database/project_automations.py` 在短事务中保存配置及冻结 Operation。`adapters/http/workflow_catalog.py` 仅把既有 WorkflowService 事实提供给管理资源选择；不承担 Studio demo 联调。新增迁移 `pm03_project_automations` 顺接 `0011_workflow_runtime_contracts`。
+
+### PM3 管理配置接入补充（2026-09-15）
+
+`apps/desktop/src/renderer/domains/project-automations/` 包含真实 API、资源目录查询、命令恢复 Hook、纯领域编辑器和目录/详情页面。四页签在同一编辑器内共享草稿；`InputPlanEditor` 显式传递内层查询草稿状态，`AutomationResourceSummary` 只显示配置引用与来源，不承担运行准入。
+
+`apps/backend/src/autoflow/application/project_automations/resource_query.py` 适配现有项目、浏览器配置、安装事实、代理目录与模型目录。它不启动浏览器、不代替 License 校验、不创建另一套执行器。
+
+`apps/desktop/src/renderer/shared/components/ui/radio-group.tsx` 使用语义化原生 radio 的键盘行为及 AutoFlow 自有视觉。`scripts/qa-automation-management-pm3.mjs` 只管理专用隔离 QA 工作区，支持 `--manual` 保持应用打开；不连接 Studio demo。

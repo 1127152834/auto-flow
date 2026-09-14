@@ -1,0 +1,42 @@
+{
+  "status": "failed",
+  "head": "b0f1d936714bc9660295206f6b4709b42bc6013a",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-cgprZU",
+  "checks": [
+    {
+      "id": "PM3-M00",
+      "result": "工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果",
+      "type": "real-electron-http-sqlite"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "01-empty",
+      "file": "01-empty.png",
+      "reference": "gallery/latest/02-automation/006-empty",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "failure",
+      "file": "failure.png",
+      "reference": "unassigned",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    }
+  ],
+  "error": "Error: timed out waiting for control 新建自动化: null",
+  "visualReview": "pending"
+}

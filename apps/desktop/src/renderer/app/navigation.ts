@@ -13,6 +13,9 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/')
   if (parts[0] !== 'projects') return { section: globalRoutes.includes(parts[0] as AppRoute) ? parts[0] as AppRoute : 'dashboard' }
   if (parts.length === 1) return { section: 'projects', project: { tab: 'overview' } }
+  if (parts.length === 4 && projectIdPattern.test(parts[1]) && parts[2] === 'automations' && (parts[3] === 'new' || projectIdPattern.test(parts[3]))) {
+    return { section: 'projects', project: { projectId: parts[1], tab: 'automations', ...(parts[3] === 'new' ? { automationCreate: true } : { automationId: parts[3] }) } }
+  }
   if (parts.length === 6 && projectIdPattern.test(parts[1]) && parts[2] === 'data' && projectIdPattern.test(parts[3]) && parts[4] === 'records' && parts[5] === 'new') {
     return { section: 'projects', project: { projectId: parts[1], tab: 'data', tableId: parts[3], dataTab: 'records', record: { mode: 'create' } } }
   }
@@ -34,6 +37,10 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 export function projectHash(route: ProjectRoute) {
   if (!route.projectId) return '#/projects'
   const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
+  if (route.automationCreate || route.automationId) {
+    if (route.tab !== 'automations' || (route.automationCreate && route.automationId) || (route.automationId && !projectIdPattern.test(route.automationId))) throw new Error('自动化地址无效')
+    return `${base}/${route.automationCreate ? 'new' : route.automationId}`
+  }
   if (route.record) {
     if (route.tab !== 'data' || !route.tableId || (route.dataTab ?? 'records') !== 'records') throw new Error('记录路由只能位于数据表记录页')
     const records = `${base}/${encodeURIComponent(route.tableId)}/records`
@@ -76,9 +83,9 @@ export function useGuardedHashNavigation() {
     } finally { busy.current = false }
   }, [allowed, commit])
 
-  const replace = useCallback((next: string) => {
+  const replace = useCallback((next: string, options: { preserveGuard?: boolean } = {}) => {
     epoch.current++
-    guard.current = null
+    if (!options.preserveGuard) guard.current = null
     const entry = { ...current.current, hash: next }
     writeHistory('replaceState', entry); commit(entry)
   }, [commit])

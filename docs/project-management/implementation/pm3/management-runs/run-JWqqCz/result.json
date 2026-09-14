@@ -1,0 +1,115 @@
+{
+  "status": "failed",
+  "head": "b0f1d936714bc9660295206f6b4709b42bc6013a",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-STVQaT",
+  "checks": [
+    {
+      "id": "PM3-M00",
+      "result": "工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M06",
+      "result": "UI 创建真实数据表与字段，作为自动化输入选择的资料；不执行数据任务",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M07",
+      "result": "输入筛选草稿先应用再整体保存；真实字段绑定与排序被 HTTP 接受并持久保存",
+      "type": "real-electron-http-sqlite"
+    },
+    {
+      "id": "PM3-M01",
+      "result": "UI 创建项目与自动化，跨页签参数/运行配置一次保存，后端保留未提供默认值与秒数",
+      "type": "real-electron-http-sqlite"
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "01-empty",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "01-empty.png",
+      "reference": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13/latest/02-automation/006-automation-empty-695f71.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "02-inputs",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "02-inputs.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-inputs.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "03-run-settings",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "03-run-settings.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-run-policy.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "04-overview",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "04-overview.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-overview.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    },
+    {
+      "id": "05-resources",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "05-resources.png",
+      "reference": "docs/prototype/project-management-pm3/automation-detail-resources.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1428,
+      "visualReview": "pending"
+    },
+    {
+      "id": "failure",
+      "buildHash": "29ca7ca301f5036ca3fdde182e9a31feadb1f4df04330462785ec19470e94b44",
+      "file": "failure.png",
+      "reference": "unassigned",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "documentWidth": 1440,
+      "visualReview": "pending"
+    }
+  ],
+  "error": "Error: timed out waiting for dirty leave guard: false",
+  "visualReview": "pending"
+}

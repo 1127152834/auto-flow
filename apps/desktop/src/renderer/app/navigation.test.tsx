@@ -109,3 +109,28 @@ it.each([
 ])('rejects malformed record address %s', hash => {
   expect(parseAppLocation(hash).error).toBeTruthy()
 })
+it('round-trips automation directory, creation and canonical detail identities', () => {
+  const projectId = '11111111-1111-4111-8111-111111111111'
+  const automationId = '22222222-2222-4222-8222-222222222222'
+  for (const route of [
+    { projectId, tab: 'automations' as const },
+    { projectId, tab: 'automations' as const, automationCreate: true },
+    { projectId, tab: 'automations' as const, automationId },
+  ]) expect(parseAppLocation(projectHash(route))).toEqual({ section: 'projects', project: route })
+  expect(parseAppLocation(`#/projects/${projectId}/automations/not-an-id`).error).toBeTruthy()
+})
+
+it('preserves the mounted project guard after replacing a newly created resource URL', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  const guard = vi.fn(async () => false)
+  result.current.registerLeaveGuard(guard)
+  act(() => result.current.replace('#/projects/p/automations/a', { preserveGuard: true }))
+  await act(() => result.current.navigate('#/projects/p/automations'))
+  expect(guard).toHaveBeenCalledOnce()
+  expect(window.location.hash).toBe('#/projects/p/automations/a')
+  // Forced workspace replacement must still discard the previous workspace guard.
+  act(() => result.current.replace('#/projects'))
+  await act(() => result.current.navigate('#/settings'))
+  expect(guard).toHaveBeenCalledOnce()
+  expect(window.location.hash).toBe('#/settings')
+})

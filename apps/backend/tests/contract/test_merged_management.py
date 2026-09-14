@@ -29,7 +29,15 @@ def test_merged_domains_keep_routes_validation_and_host_isolation(tmp_path):
         assert client.post("/internal/kernels/resolve", json={}, headers={"x-autoflow-host-token": "host", "origin": "null"}).status_code == 401
         paths = client.get("/openapi.json").json()["paths"]
         assert not any(path.startswith("/internal/") for path in paths)
-        assert not any(path.startswith("/api/v1/workflows") for path in paths)
-        for path in ("", "/node-catalog", "/runs", "/inspection-sessions"):
-            assert client.get(f"/api/v1/workflows{path}").status_code == 404
-            assert client.post(f"/api/v1/workflows{path}", json={}).status_code == 404
+        # PM3 manager consumes the real read-only document catalog. No Studio
+        # execution, inspection or document mutation handler is exposed here.
+        workflow_paths = {path: value for path, value in paths.items() if path.startswith("/api/v1/workflows")}
+        assert set(workflow_paths) == {"/api/v1/workflows", "/api/v1/workflows/{workflowId}"}
+        assert all(set(operations) == {"get"} for operations in workflow_paths.values())
+        assert client.get("/api/v1/workflows").json() == {"items": []}
+        assert client.get("/api/v1/workflows", headers={"x-autoflow-token": "invalid"}).status_code == 401
+        assert client.post("/api/v1/workflows", json={}).status_code == 405
+        for path in ("/node-catalog", "/runs", "/inspection-sessions"):
+            # These names hit the UUID path validator, not a hidden endpoint.
+            assert client.get(f"/api/v1/workflows{path}").status_code == 422
+            assert client.post(f"/api/v1/workflows{path}", json={}).status_code == 405

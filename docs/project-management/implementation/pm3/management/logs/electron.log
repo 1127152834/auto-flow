@@ -1,0 +1,11 @@
+PM3-M00: 工作流资料通过真实文档服务预置；未操作 Studio，未制造运行结果
+PM3-M06: UI 创建真实数据表与字段，作为自动化输入选择的资料；不执行数据任务
+PM3-M07: 输入筛选草稿先应用再整体保存；真实字段绑定与排序被 HTTP 接受并持久保存
+PM3-M01: UI 创建项目与自动化，跨页签参数/运行配置一次保存，后端保留未提供默认值与秒数
+PM3-M05: 真实导航离开保护：Escape 取消离开，URL 与未保存输入保持一致
+PM3-M02: 真实竞争编辑产生 CAS 冲突，管理页保留用户输入
+PM3-M04: 测试注入：真实 PUT 提交后丢失响应与首次查询；UI 原键核验恢复，不重复写入
+PM3-M08: 目录输入期间不查询；Enter与搜索按钮应用真实查询，无匹配与清除正确恢复
+PM3-M03: 真实 Electron/服务重启后管理配置事实仍持久存在（重启后的事实核对使用 GET）
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/management-runs/run-eSwQYK
+Isolated workspace retained: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-management-j9CVdE

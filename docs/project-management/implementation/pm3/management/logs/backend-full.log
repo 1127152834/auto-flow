@@ -1,0 +1,190 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/backend
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1296 items
+
+tests/contract/test_kernel_events.py .....                               [  0%]
+tests/contract/test_kernels.py ........                                  [  1%]
+tests/contract/test_merged_management.py F                               [  1%]
+tests/contract/test_models_api.py ...                                    [  1%]
+tests/contract/test_pm2_excel_exports.py .                               [  1%]
+tests/contract/test_pm2_excel_imports.py ..........                      [  2%]
+tests/contract/test_pm2_excel_inspection.py .                            [  2%]
+tests/contract/test_pm2_excel_inspection_recovery.py ..                  [  2%]
+tests/contract/test_pm2_hidden_tables.py .                               [  2%]
+tests/contract/test_pm2_status_batch_integration.py ..                   [  2%]
+tests/contract/test_profile_environment.py .........                     [  3%]
+tests/contract/test_profiles.py ..........                               [  4%]
+tests/contract/test_project_automation_application.py .                  [  4%]
+tests/contract/test_project_automations.py .......                       [  4%]
+tests/contract/test_project_data.py ....                                 [  5%]
+tests/contract/test_project_data_catalog.py ....                         [  5%]
+tests/contract/test_project_data_deletions.py .....                      [  5%]
+tests/contract/test_project_data_field_changes.py ..                     [  5%]
+tests/contract/test_project_data_queries.py ..                           [  6%]
+tests/contract/test_project_data_record_batches.py ..                    [  6%]
+tests/contract/test_project_data_records.py .....                        [  6%]
+tests/contract/test_project_data_schema.py ........                      [  7%]
+tests/contract/test_project_data_status_usage.py ...                     [  7%]
+tests/contract/test_projects.py .....                                    [  7%]
+tests/contract/test_proxy_api.py ..                                      [  7%]
+tests/contract/test_proxy_remote_controls.py .............               [  8%]
+tests/contract/test_proxy_runtime.py ........                            [  9%]
+tests/contract/test_schema_export.py ...                                 [  9%]
+tests/contract/test_settings_dashboard.py .......                        [ 10%]
+tests/contract/test_studio_browser_script.py ................            [ 11%]
+tests/contract/test_studio_browser_status.py ........                    [ 12%]
+tests/contract/test_studio_command_envelopes.py ...................      [ 13%]
+tests/contract/test_studio_debug_control.py .............                [ 14%]
+tests/contract/test_studio_image_schemas.py .....................        [ 16%]
+tests/contract/test_studio_input_schemas.py ............................ [ 18%]
+..                                                                       [ 18%]
+tests/contract/test_studio_js_script.py ........                         [ 19%]
+tests/contract/test_studio_mcp.py .............................          [ 21%]
+tests/contract/test_studio_path_selection.py ....................        [ 22%]
+tests/contract/test_studio_required_fields.py ..............             [ 24%]
+tests/contract/test_studio_selector_schemas.py ..................        [ 25%]
+tests/contract/test_studio_similar_schemas.py ............               [ 26%]
+tests/contract/test_studio_speech.py ...........                         [ 27%]
+tests/contract/test_studio_variable_tracking.py .......                  [ 27%]
+tests/contract/test_workflow_catalog.py ...                              [ 28%]
+tests/integration/test_browser_database.py ..                            [ 28%]
+tests/integration/test_database_foreign_keys.py .                        [ 28%]
+tests/integration/test_kernel_settings.py .                              [ 28%]
+tests/integration/test_kernel_worker.py ...............................  [ 30%]
+tests/integration/test_kernel_worker_entrypoint.py ....                  [ 31%]
+tests/integration/test_merged_model_migrations.py ........               [ 31%]
+tests/integration/test_model_repository.py ...                           [ 31%]
+tests/integration/test_pm2_durable_migrations.py ...                     [ 32%]
+tests/integration/test_profile_data.py ............                      [ 33%]
+tests/integration/test_profile_kernel_lookup.py .                        [ 33%]
+tests/integration/test_profile_recovery.py ...                           [ 33%]
+tests/integration/test_project_automation_migration.py ....              [ 33%]
+tests/integration/test_project_automation_repository.py ....             [ 33%]
+tests/integration/test_project_data_catalog.py .............             [ 34%]
+tests/integration/test_project_data_deletions.py ............            [ 35%]
+tests/integration/test_project_data_field_changes.py ..............      [ 36%]
+tests/integration/test_project_data_impacts.py ..................        [ 38%]
+tests/integration/test_project_data_migrations.py .............          [ 39%]
+tests/integration/test_project_data_queries.py ......                    [ 39%]
+tests/integration/test_project_data_record_batches.py ...........        [ 40%]
+tests/integration/test_project_data_records.py ................          [ 41%]
+tests/integration/test_project_data_repository.py ...................... [ 43%]
+.........                                                                [ 44%]
+tests/integration/test_project_data_schema_commit.py ................... [ 45%]
+......                                                                   [ 46%]
+tests/integration/test_project_data_schema_migration.py .....            [ 46%]
+tests/integration/test_project_data_schema_preview.py ...........        [ 47%]
+tests/integration/test_project_data_status_batches.py .............      [ 48%]
+tests/integration/test_project_data_status_migration.py ....             [ 48%]
+tests/integration/test_project_excel_exports.py ...                      [ 48%]
+tests/integration/test_project_excel_services.py ..                      [ 49%]
+tests/integration/test_project_migration.py ..                           [ 49%]
+tests/integration/test_project_repository.py ...........                 [ 50%]
+tests/integration/test_proxy_concurrency_review.py ..........            [ 50%]
+tests/integration/test_proxy_management.py .....                         [ 51%]
+tests/integration/test_proxypanel_live_contract.py ...                   [ 51%]
+tests/integration/test_sidecar_shutdown.py .....                         [ 51%]
+tests/integration/test_workflow_dispatch.py .....................        [ 53%]
+tests/integration/test_workflow_document_migration.py ..                 [ 53%]
+tests/integration/test_workflow_real_cloakbrowser.py ssss                [ 54%]
+tests/integration/test_workflow_recovery.py ........                     [ 54%]
+tests/integration/test_workflow_repository.py ................           [ 55%]
+tests/integration/test_workflow_runtime_migration.py ..........          [ 56%]
+tests/integration/test_workflow_runtime_repository.py .............      [ 57%]
+tests/integration/test_workflow_worker_process.py ...............        [ 58%]
+tests/unit/test_browser_processes.py ........                            [ 59%]
+tests/unit/test_browser_proxy_relay.py ....                              [ 59%]
+tests/unit/test_config.py .                                              [ 59%]
+tests/unit/test_cors.py ..                                               [ 59%]
+tests/unit/test_credential_store.py .....                                [ 60%]
+tests/unit/test_health.py .                                              [ 60%]
+tests/unit/test_http_errors.py .....                                     [ 60%]
+tests/unit/test_kernel_operations.py .............                       [ 61%]
+tests/unit/test_kernel_provider.py ................................      [ 64%]
+tests/unit/test_kernel_service.py ...........                            [ 65%]
+tests/unit/test_main.py .....                                            [ 65%]
+tests/unit/test_model_domain.py .                                        [ 65%]
+tests/unit/test_model_provider.py ..............................         [ 67%]
+tests/unit/test_model_schemas.py ...................                     [ 69%]
+tests/unit/test_model_service.py ...........                             [ 70%]
+tests/unit/test_parent.py .                                              [ 70%]
+tests/unit/test_paths.py ...                                             [ 70%]
+tests/unit/test_profile_test_browser.py ..........                       [ 71%]
+tests/unit/test_profile_validation.py .............................      [ 73%]
+tests/unit/test_profiles.py .....                                        [ 73%]
+tests/unit/test_project_automation_resources.py .......                  [ 74%]
+tests/unit/test_project_automation_rules.py .......                      [ 75%]
+tests/unit/test_project_data_query.py ................                   [ 76%]
+tests/unit/test_project_data_rules.py .................................. [ 78%]
+.............................                                            [ 81%]
+tests/unit/test_project_data_schema.py ................................. [ 83%]
+.......                                                                  [ 84%]
+tests/unit/test_project_excel_adapter.py ..............................  [ 86%]
+tests/unit/test_project_excel_publication.py ....                        [ 86%]
+tests/unit/test_project_service.py .....                                 [ 87%]
+tests/unit/test_proxy_credentials_atomicity.py .                         [ 87%]
+tests/unit/test_proxy_domain.py .                                        [ 87%]
+tests/unit/test_proxy_probe.py ...................                       [ 88%]
+tests/unit/test_proxypanel_mapping.py .........                          [ 89%]
+tests/unit/test_proxypanel_remote.py ...........                         [ 90%]
+tests/unit/test_proxypanel_transport.py ........                         [ 90%]
+tests/unit/test_ready.py .                                               [ 91%]
+tests/unit/test_token.py ..                                              [ 91%]
+tests/unit/test_workflow_browser_resources.py .......                    [ 91%]
+tests/unit/test_workflow_drafts.py ...................................   [ 94%]
+tests/unit/test_workflow_run_validation.py ............................. [ 96%]
+..................                                                       [ 98%]
+tests/unit/test_workflow_runtime.py ...........                          [ 98%]
+tests/unit/test_workflow_worker.py ..............                        [100%]
+
+=================================== FAILURES ===================================
+________ test_merged_domains_keep_routes_validation_and_host_isolation _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-976/test_merged_domains_keep_route0')
+
+    def test_merged_domains_keep_routes_validation_and_host_isolation(tmp_path):
+        app = create_app(
+            Settings(data_dir=str(tmp_path), instance_id="merged", instance_token="renderer", host_token="host"),
+            credential_store=FakeCredentialStore(), model_gateway=FakeModelGateway(),
+        )
+        with TestClient(app, headers={"x-autoflow-token": "renderer"}) as client:
+            for path in ("/profiles", "/proxy-panel/connections", "/proxy-groups", "/model-providers", "/kernels/installed"):
+                assert client.get(f"/api/v1{path}").status_code == 200, path
+            model_error = client.post("/api/v1/model-providers/connection-preview", json={
+                "name": "OpenAI", "presetId": "openai", "providerKind": "openai", "baseUrl": "https://example.invalid/v1", "apiKey": "",
+            })
+            assert model_error.status_code == 422
+            assert model_error.json()["error"]["code"] == "MODEL_PROVIDER_API_KEY_REQUIRED"
+            proxy_error = client.post("/api/v1/proxy-panel/connections", json={"api_key": "synthetic-key", "name": ""})
+            assert proxy_error.status_code == 422
+            assert "field_errors" in proxy_error.json()["error"]
+            assert "synthetic-key" not in proxy_error.text
+            unauthorized = client.get("/api/v1/model-providers", headers={"x-autoflow-token": "invalid"})
+            assert unauthorized.status_code == 401
+            assert unauthorized.json()["error"]["code"] == "SIDECAR_UNAUTHORIZED"
+            assert client.post("/internal/kernels/resolve", json={}).status_code == 401
+            assert client.post("/internal/kernels/resolve", json={}, headers={"x-autoflow-host-token": "host", "origin": "null"}).status_code == 401
+            paths = client.get("/openapi.json").json()["paths"]
+            assert not any(path.startswith("/internal/") for path in paths)
+>           assert not any(path.startswith("/api/v1/workflows") for path in paths)
+E           assert not True
+E            +  where True = any(<generator object test_merged_domains_keep_routes_validation_and_host_isolation.<locals>.<genexpr> at 0x10e9e8d60>)
+
+tests/contract/test_merged_management.py:32: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/fastapi/testclient.py:1
+  /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/backend/.venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/contract/test_merged_management.py::test_merged_domains_keep_routes_validation_and_host_isolation
+====== 1 failed, 1291 passed, 4 skipped, 2 warnings in 154.99s (0:02:34) =======

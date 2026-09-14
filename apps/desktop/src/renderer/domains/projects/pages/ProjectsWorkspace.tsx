@@ -14,6 +14,9 @@ import { ProjectOverviewPage } from './ProjectOverviewPage'
 import { DataTableDirectoryPage } from '../../project-data/pages/DataTableDirectoryPage'
 import { createProjectDataApi } from '../../project-data/api'
 import { DataTableDetailPage } from '../../project-data/pages/DataTableDetailPage'
+import { AutomationDirectoryPage } from '../../project-automations/pages/AutomationDirectoryPage'
+import { AutomationDetailPage } from '../../project-automations/pages/AutomationDetailPage'
+import { createAutomationApi } from '../../project-automations/api'
 
 export type ProjectsWorkspaceProps = {
   route: ProjectRoute
@@ -73,6 +76,12 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     queryKey: [workspaceKey, instanceId, 'project-data', route.projectId, 'table', route.tableId, 'view'],
     queryFn: ({ signal }) => tableApi.get(route.tableId!, signal),
     enabled: Boolean(route.projectId && route.tableId && route.tab === 'data'),
+  })
+  const automationApi = useMemo(() => createAutomationApi(client, route.projectId ?? ''), [client, route.projectId])
+  const automationContext = useQuery({
+    queryKey: [workspaceKey, instanceId, 'automations', route.projectId, 'detail', route.automationId],
+    queryFn: ({ signal }) => automationApi.get(route.automationId!, signal),
+    enabled: Boolean(route.projectId && route.automationId && route.tab === 'automations') && !disabled,
   })
   const [conditions, setConditionsState] = useState(() => readConditions(workspaceKey))
   const [mode, setModeState] = useState<DirectoryMode>(() => readMode(workspaceKey))
@@ -200,8 +209,11 @@ export function ProjectsWorkspace({ route, workspaceKey, instanceId, client, dis
     {route.projectId && route.tab === 'overview' && overview.isPending ? <p role="status" className="mx-auto max-w-7xl px-6 text-sm text-muted">正在加载概览…</p> : null}
     {route.projectId && route.tab === 'overview' && overview.isError ? <div role="alert" className="mx-auto flex max-w-7xl items-center gap-3 px-6 pt-4 text-sm text-danger"><span>{overview.error.message}</span><Button size="sm" disabled={overview.isFetching} onClick={() => void overview.refetch()}>重试概览</Button></div> : null}
     {openError ? <div className="fixed bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-control border border-danger/30 bg-surface px-4 py-3 shadow-lg" role="alert"><span>{openError.message}</span><Button size="sm" onClick={() => void openProject(openError.project)}>重试</Button></div> : null}
-    {route.projectId && project ? <ProjectOverviewPage tableBackLabel={route.record ? "返回记录列表" : "返回数据表"} onTableBack={() => onNavigate({ projectId: project.projectId, tab: "data", ...(route.record ? { tableId: route.tableId, dataTab: "records" } : {}) })} tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
-      {route.tab === 'data' ? route.tableId
+    {route.projectId && project ? <ProjectOverviewPage detailContext={route.automationId || route.automationCreate ? { name: route.automationCreate ? '新建自动化' : automationContext.data?.name ?? '自动化配置', label: '返回自动化目录', onBack: () => onNavigate({ projectId: project.projectId, tab: 'automations' }) } : undefined} tableBackLabel={route.record ? "返回记录列表" : "返回数据表"} onTableBack={() => onNavigate({ projectId: project.projectId, tab: "data", ...(route.record ? { tableId: route.tableId, dataTab: "records" } : {}) })} tableName={tableContext.data?.name} tableDetail={Boolean(route.tableId)} project={project} tab={route.tab} disabled={disabled} onBack={() => onNavigate({ tab: 'overview' })} onEdit={() => { if (!disabled && project.lifecycleState === 'active') setEditor({ project, draftSession: `edit:${project.projectId}:${Date.now()}` }) }} onTabChange={tab => onNavigate({ projectId: project.projectId, tab })}>
+      {route.tab === 'automations' ? route.automationId || route.automationCreate
+        ? <AutomationDetailPage projectDefaults={project.defaultResources} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} automationId={route.automationId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onCreated={automationId => onNavigate({ projectId: project.projectId, tab: 'automations', automationId }, { replace: true })} />
+        : <AutomationDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readOnly={project.lifecycleState !== 'active'} onOpen={automationId => onNavigate({ projectId: project.projectId, tab: 'automations', automationId })} onCreate={() => onNavigate({ projectId: project.projectId, tab: 'automations', automationCreate: true })} />
+        : route.tab === 'data' ? route.tableId
         ? <DataTableDetailPage key={`${workspaceKey}:${project.projectId}:${route.tableId}`} workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} tableId={route.tableId} tab={route.dataTab ?? 'records'} record={route.record} onRecordNavigate={(record, options) => onNavigate({ ...route, dataTab: 'records', record }, options)} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onBack={() => onNavigate({ projectId: project.projectId, tab: 'data' })} onTabChange={dataTab => onNavigate({ ...route, dataTab, record: undefined })} />
         : <DataTableDirectoryPage workspaceKey={workspaceKey} instanceId={instanceId} projectId={project.projectId} client={client} disabled={disabled} readonly={project.lifecycleState !== 'active'} registerLeaveGuard={registerDataGuard} onOpen={tableId => onNavigate({ projectId: project.projectId, tab: 'data', tableId, dataTab: 'records' })} />
         : undefined}
