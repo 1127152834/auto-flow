@@ -30420,5 +30420,37 @@
     "level": "browser UI + Mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/required-field-service-validation.md"
+  },
+  {
+    "id": "F3.log-identity.store",
+    "capability": "服务日志身份与保留行去重",
+    "preconditions": {
+      "service": "稳定全局唯一日志ID；独立本地夹具"
+    },
+    "steps": [
+      "4项：同ID首条保留、不同ID同内容保留、无ID独立、容量及清空"
+    ],
+    "expectedUI": "保留行不重复；相同内容的不同执行仍可见（本例不做实际UI操作）",
+    "expectedIO": "execution:log / execution:log_batch及SSE补读",
+    "stateAssertion": "ID、时间、details保持；重复不覆盖首条；clearLogs允许补回",
+    "level": "store",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-identity.test.ts"
+  },
+  {
+    "id": "F3.log-identity.network",
+    "capability": "服务日志身份与保留行去重",
+    "preconditions": {
+      "service": "稳定全局唯一日志ID；独立本地夹具"
+    },
+    "steps": [
+      "内存与真实HTTP/SSE：单条/批量交叉重送、重连、时间/details及文档缓冲保护"
+    ],
+    "expectedUI": "保留行不重复；相同内容的不同执行仍可见（本例不做实际UI操作）",
+    "expectedIO": "execution:log / execution:log_batch及SSE补读",
+    "stateAssertion": "ID、时间、details保持；重复不覆盖首条；clearLogs允许补回",
+    "level": "store + HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
   }
 ]

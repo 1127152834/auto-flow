@@ -36,3 +36,20 @@ it.each(['memory','http'] as const)('does not flush an old connection buffer int
   expect(useWorkflowStore.getState().logs).toEqual([])
  }finally{socketService.off('buffer-switch',marker);socketService.disconnect();configureMock({disconnect:true});await server?.close();restore()}
 })
+
+
+it.each(['memory','http'] as const)('deduplicates single/batch and reconnect replay while retaining distinct IDs over %s',async mode=>{
+ vi.resetModules();const {mockRequest,configureMock,emitMockEvent}=await import('../api/mock-server')
+ const server=mode==='http'?await startHttpStudioFixture(mockRequest):null;const restore=configureStudioConnection(server?.origin??'http://autoflow-studio.mock',server?fetch:mockRequest)
+ const row={id:'identity-a',timestamp:'2020-01-02T03:04:05Z',level:'warning',nodeId:'same-node',message:'重复轮次内容',details:{value:42}}
+ try{
+  useWorkflowStore.getState().clearWorkflow();socketService.connect();await vi.waitFor(()=>expect(socketService.isConnected()).toBe(true))
+  emitMockEvent('execution:log',{workflowId:'identity-run',log:row})
+  emitMockEvent('execution:log_batch',{workflowId:'identity-run',logs:[row,{...row,id:'identity-b'}]})
+  await vi.waitFor(()=>expect(useWorkflowStore.getState().logs.map(log=>log.id)).toEqual(['identity-a','identity-b']))
+  expect(useWorkflowStore.getState().logs[0].details).toEqual({value:42})
+  socketService.disconnect();socketService.connect();await vi.waitFor(()=>expect(socketService.isConnected()).toBe(true))
+  await new Promise(resolve=>setTimeout(resolve,160))
+  expect(useWorkflowStore.getState().logs.map(log=>log.id)).toEqual(['identity-a','identity-b'])
+ }finally{socketService.disconnect();configureMock({disconnect:true});await server?.close();restore()}
+})

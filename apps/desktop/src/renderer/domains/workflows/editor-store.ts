@@ -303,7 +303,7 @@ interface WorkflowState {
   // timestamp 可选：事后补拉的历史日志要保留后端记录的原始时间，
   // 否则整批会被打上"补拉时刻"的时间戳，时间线被压平（长等待看不出来）。
   // 不传则按当前时间生成，实时日志沿用此行为。
-  addLogBatch: (logs: Array<Omit<LogEntry, 'id' | 'timestamp'> & { timestamp?: string }>) => void
+  addLogBatch: (logs: Array<Omit<LogEntry, 'id' | 'timestamp'> & { id?: string; timestamp?: string }>) => void
   addLogs: (logs: Array<Omit<LogEntry, 'id' | 'timestamp'>>) => void
   // 按时间戳重排底栏日志。供事后补拉历史日志后归位使用：
   // 补拉的条目带后端原始时间，直接追加会挂在列表尾部造成时间线错乱。
@@ -2808,13 +2808,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   // 批量添加日志 - 高性能版本
   addLogBatch: (logs) => {
     const maxLogs = get().maxLogCount
-    const newLogs: LogEntry[] = logs.map(log => ({
-      ...log,
-      id: nanoid(),
-      // 调用方显式给了时间戳（事后补拉的历史日志）就用它，否则按当前时间生成
-      timestamp: log.timestamp || new Date().toISOString(),
-    }))
     const currentLogs = get().logs
+    const seen = new Set(currentLogs.map(log => log.id))
+    const newLogs: LogEntry[] = []
+    for (const log of logs) {
+      const id = log.id || nanoid()
+      if (seen.has(id)) continue
+      seen.add(id)
+      newLogs.push({...log, id, timestamp: log.timestamp || new Date().toISOString()})
+    }
+    if (!newLogs.length) return
     const combinedLogs = [...currentLogs, ...newLogs]
     const updatedLogs = combinedLogs.length > maxLogs
       ? combinedLogs.slice(combinedLogs.length - maxLogs)
