@@ -352,7 +352,7 @@ export const browserApi = {
 type PickerSessionState=components['schemas']['StudioPickerSessionState']
 let pickerSessionId:string|null=null
 let pickerConnectionRevision=-1
-function currentPickerSession(){
+export function currentPickerSession(){
   const revision=getStudioTransportRevision()
   if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerConnectionRevision=revision}
   return pickerSessionId

@@ -1,8 +1,9 @@
+import { registerDocumentLeaveResource } from '../lib/documentLeave'
 import {readImageAssetList} from '../lib/imageAssetContract'
 import {getStudioTransportRevision} from '../api/transport'
 import { installGlobalTooltip } from '../lib/globalTooltip'
 import { useEffect, useRef } from 'react'
-import { imageAssetApi, systemApi } from '../api'
+import { currentPickerSession, elementPickerApi, imageAssetApi, systemApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { socketService } from '../events'
 import { useGlobalConfigStore } from './stores/globalConfigStore'
@@ -10,6 +11,16 @@ import { eventToCombo, SHORTCUT_ACTION_MAP } from '../lib/customShortcuts'
 
 export function useStudioIntegration() {
   useEffect(installGlobalTooltip, [])
+  useEffect(() => registerDocumentLeaveResource(() => {
+    const sessionId = currentPickerSession()
+    if (!sessionId) return null
+    const revision = getStudioTransportRevision()
+    return { id: `picker:${revision}:${sessionId}`, label: '元素拾取', release: async () => {
+      if (revision !== getStudioTransportRevision() || sessionId !== currentPickerSession()) return false
+      const response = await elementPickerApi.stop()
+      return response.success && response.data?.active === false
+    } }
+  }), [])
   const hotkeyError = useRef<string | null>(null)
   const shortcuts=useGlobalConfigStore(s=>s.config.shortcuts)
   const theme=useGlobalConfigStore(s=>s.config.display?.theme || 'default')

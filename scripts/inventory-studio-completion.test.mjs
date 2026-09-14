@@ -26,5 +26,9 @@ test('follows lazy imports into actual code tools and their editor dependency', 
 test('does not silently discard dynamically selected icon components or mark node cases executed', () => {
   const unresolved = new Set(rows.flatMap(row => row.toolDependencies.unresolved))
   assert.ok(unresolved.has(prefix + 'controls/custom-dialogs.tsx#Icon'))
-  assert.ok(rows.every(row => row.status === '待核对'))
+  assert.ok(rows.every(row => row.status === '缺验收'))
+  assert.ok(rows.every(row => row.verifiedCases.some(item => item.id === `NODE.${row.type}.panel-registration`) && row.verifiedCases.some(item => item.id === `NODE.${row.type}.roundtrip`)))
+  assert.ok(rows.every(row => row.remaining.length > 0))
+  assert.ok(rows.find(row => row.type === 'open_page').verifiedCases.some(item => item.id.startsWith('NODE.branch.open_page.')))
+  assert.ok(rows.every(row => row.verifiedCases.every(item => item.status === '已实现且已验收' && item.evidencePath)))
 })

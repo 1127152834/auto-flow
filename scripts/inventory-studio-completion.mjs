@@ -152,8 +152,16 @@ const scenarios=[
  ['history','修改配置、复制节点、撤销并重做','每次操作恢复预期内容','复制标识更新，历史不丢配置'],
  ['tools','逐个打开本节点配套工具，覆盖成功/空/失败/取消和迟到结果','正确结果可应用，取消/过期不写回','工具上下文和请求身份匹配'],
 ]
-const capabilities=retained.map(n=>({...n,id:`node:${n.type}`,status:'待核对',evidence:evidence.get(n.type),toolDependencies:dependencies(n.type),reviewRequired:'AST 是候选证据；需核对动态分发、共享组件及所有具体字段分支，不能自动标通过'}))
-const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'待细化',preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
+const verified=JSON.parse(fs.readFileSync(path.join(out,'verified-cases.json'),'utf8'))
+const capabilities=retained.map(n=>{
+  const cases=verified.filter(row=>row.status==='通过' && (row.capability===`node:${n.type}` || row.preconditions?.nodeType===n.type))
+  return {...n,id:`node:${n.type}`,status:'缺验收',deliveryBlock:'F2.2',differenceClass:'原版功能迁入',
+    verifiedCases:cases.map(row=>({id:row.id,status:'已实现且已验收',level:row.level,evidencePath:row.evidencePath})),
+    remaining:[{id:`NODE.${n.type}.field-map-and-unique-branches`,status:'缺验收',reason:'注册与默认创建往返已有证据；仅核销 verifiedCases 中已实际验证的字段，剩余独有字段/分支与工具接入尚未逐项核销，不能推定无缺实现'}],
+    evidence:evidence.get(n.type),toolDependencies:dependencies(n.type),
+    reviewRequired:'仅使用既有证据核销；AST 仅提供源码位置，不能自动证明字段行为。共享规则集中验证，各节点验证接入及独有分支。'}
+})
+const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
 fs.mkdirSync(out,{recursive:true})
 for(const [name,value] of [['capabilities.json',capabilities],['test-cases.json',tests],['component-tools.json',[...definitions.values()].flat()]])fs.writeFileSync(path.join(out,name),JSON.stringify(value,null,2)+'\n')
 console.log(JSON.stringify({nodes:capabilities.length,caseTemplates:tests.length,withoutDirectBranchEvidence:capabilities.filter(n=>!n.evidence.length).map(n=>n.type)}))

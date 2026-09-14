@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { nanoid } from 'nanoid'
 import { Circle, Square, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
 import { recorderApi, browserApi } from '../api'
+import { registerDocumentLeaveResource } from '../lib/documentLeave'
 import {getStudioTransportRevision} from '../api/transport'
 import { useWorkflowStore, moduleTypeLabels } from '../editor-store'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
@@ -62,6 +63,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const mountedRef=useRef(true)
   const commandBusyRef=useRef(false)
   const sessionRef = useRef<string | null>(null)
+  const activeSessionRef = useRef<string | null>(null)
   const pendingStartRef = useRef<string | null>(null)
   const sequenceRef = useRef(0)
   const pollBusyRef = useRef(false)
@@ -192,6 +194,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         setError(`浏览器状态查询失败：${String(error)}`)
         return
       }
+      activeSessionRef.current = sessionId
       const res: any = await recorderApi.start(sessionId)
       if(!mountedRef.current||owner.connection!==getStudioTransportRevision())return
       if (res?.error || res?.success === false || res?.data?.success === false) {
@@ -203,7 +206,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           setError('录制启动尚未确认，请停止录制以确认尾部和释放占用')
           return
         }
-        if(res.httpStatus&&res.httpStatus<500)pendingStartRef.current=null
+        if(res.httpStatus&&res.httpStatus<500){ pendingStartRef.current=null; activeSessionRef.current=null }
         const errMsg = res?.data?.error || res?.error || '未知错误'
         setBusy(false)
         // 后端兜底：没有活跃浏览器等错误，用醒目弹窗提示
@@ -257,6 +260,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       acceptBatch(sessionId, response, true)
       stopPolling()
       setRecording(false)
+      activeSessionRef.current=null
       pendingStartRef.current=null
       addLog({ level: 'info', message: '录制已停止' })
       return true
@@ -266,6 +270,16 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       return false
     } finally { commandBusyRef.current=false;setBusy(false) }
   }, [addLog, acceptBatch, stopPolling])
+
+  useEffect(() => registerDocumentLeaveResource(() => {
+    const sessionId = activeSessionRef.current || (commandBusyRef.current ? pendingStartRef.current : null)
+    if (!sessionId) return null
+    const revision = originRef.current?.connection
+    return { id: `recorder:${revision}:${sessionId}`, label: '网页录制', release: async () => {
+      if (revision !== getStudioTransportRevision() || sessionId !== activeSessionRef.current) return false
+      return stopRecording()
+    } }
+  }), [stopRecording])
 
   // 事件 → 节点
   const generateNodes = useCallback(async () => {
@@ -454,7 +468,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     if (busy) return
     if(originRef.current&&originRef.current.connection!==getStudioTransportRevision()){
       if((recording||eventsRef.current.length)&&!await confirm('原工作区连接已切换。关闭将丢弃尚未生成的本地录制步骤，是否关闭？',{title:'关闭旧录制',confirmText:'丢弃并关闭'}))return
-      stopPolling();setRecording(false);sessionRef.current=null;pendingStartRef.current=null;originRef.current=null;setEvents([]);setError('');onClose();return
+      stopPolling();setRecording(false);activeSessionRef.current=null;sessionRef.current=null;pendingStartRef.current=null;originRef.current=null;setEvents([]);setError('');onClose();return
     }
     if (recording && !await stopRecording()) return
     onClose()
