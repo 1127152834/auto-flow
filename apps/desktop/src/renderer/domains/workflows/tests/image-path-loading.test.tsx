@@ -79,3 +79,9 @@ it.each([null,''])('accepts an empty successful file selection as cancellation: 
  service.file.mockResolvedValue({success:true,data:{success:true,path}});const change=vi.fn();render(<ImagePathInput value="keep" onChange={change}/>);
  fireEvent.click(screen.getByRole('button',{name:'从电脑选择图片'}));await act(async()=>{});expect(change).not.toHaveBeenCalled();expect(screen.queryByRole('alert')).toBeNull()
 })
+
+it('accepts metadata with an omitted default path and applies its original filename',async()=>{
+ const metadata={...asset};delete (metadata as Partial<typeof asset>).path
+ service.list.mockResolvedValue({success:true,data:[metadata]});const change=vi.fn();render(<ImagePathInput value="" onChange={change}/>);open()
+ fireEvent.click(await screen.findByRole('button',{name:'测试图像'}));expect(change).toHaveBeenCalledExactlyOnceWith('测试图像')
+})

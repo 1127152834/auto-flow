@@ -34593,5 +34593,706 @@
     "level": "browser UI",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-webdav/browser-ui.md"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.complete",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "complete"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.zero-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "zero-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.empty-list",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-list"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.default-path",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "default-path"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.extra-fields",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "extra-fields"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.maximum-safe-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "maximum-safe-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.fractional-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "fractional-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.negative-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "negative-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.unsafe-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "unsafe-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.boolean-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "boolean-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.string-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "string-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.empty-id",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-id"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.empty-name",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-name"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.empty-original-name",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-original-name"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.invalid-folder",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-folder"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.invalid-date-type",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-date-type"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.invalid-path",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-path"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.partial-invalid-list",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "partial-invalid-list"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.frontend.wrong-envelope",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "wrong-envelope"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过运行时列表读取器"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "frontend contract",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-asset-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.complete",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "complete"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.zero-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "zero-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.empty-list",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-list"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.default-path",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "default-path"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.extra-fields",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "extra-fields"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.maximum-safe-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "maximum-safe-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "与fixture期望一致，包括默认path和扩展字段",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.fractional-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "fractional-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.negative-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "negative-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.unsafe-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "unsafe-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.boolean-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "boolean-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.string-size",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "string-size"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.empty-id",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-id"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.empty-name",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-name"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.empty-original-name",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "empty-original-name"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.invalid-folder",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-folder"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.invalid-date-type",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-date-type"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.invalid-path",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "invalid-path"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.partial-invalid-list",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "partial-invalid-list"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "CONTRACT.image-assets.shared.backend.wrong-envelope",
+    "capability": "contract:image-asset-list",
+    "preconditions": {
+      "fixture": "apps/backend/tests/fixtures/studio-image-assets.json",
+      "case": "wrong-envelope"
+    },
+    "steps": [
+      "读取同一JSON输入",
+      "通过Pydantic DTO"
+    ],
+    "expectedUI": "合同层，不挂载UI",
+    "expectedIO": "不发请求；校验序列化输入",
+    "stateAssertion": "整批拒绝非法数据",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_image_asset_fixtures.py"
+  },
+  {
+    "id": "TOOL.image-path.default-path",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "metadata": "省略path，其余合法"
+    },
+    "steps": [
+      "打开资源选择器",
+      "选择测试图片"
+    ],
+    "expectedUI": "显示测试图片，可选取",
+    "expectedIO": "列表通过默认值规范化",
+    "stateAssertion": "沿用原始文件名回填逻辑，不报加载失败",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
   }
 ]

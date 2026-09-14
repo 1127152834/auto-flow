@@ -4,7 +4,7 @@ import { FolderOpen, ChevronRight, Folder, Image } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import { systemApi, imageAssetApi } from '../../api'
-import { isImageAssetList } from '../../lib/imageAssetContract'
+import { readImageAssetList } from '../../lib/imageAssetContract'
 import { getStudioTransportRevision } from '../../api/transport'
 import { ImageAssetPreview } from './image-asset-preview'
 import type { ImageAsset } from '../../types/index'
@@ -62,11 +62,12 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
         const [assetsResult, foldersResult] = await Promise.all([imageAssetApi.list(), imageAssetApi.listFolders()])
         if (!current()) return
         if (!assetsResult.success || !foldersResult.success) throw new Error(assetsResult.error || foldersResult.error || '资源服务未确认加载')
-        if (!isImageAssetList(assetsResult.data) ||
+        const loadedAssets = readImageAssetList(assetsResult.data)
+        if (!loadedAssets ||
           !Array.isArray(foldersResult.data) || !foldersResult.data.every(folder => typeof folder === 'string')) {
           throw new Error('图像资源列表格式错误')
         }
-        setAssets(assetsResult.data)
+        setAssets(loadedAssets)
         setFolders(foldersResult.data)
       } catch (error) {
         if (current()) setLoadError(error instanceof Error ? error.message : '图像资源加载失败')

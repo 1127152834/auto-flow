@@ -1,4 +1,4 @@
-import {isImageAssetList} from '../lib/imageAssetContract'
+import {readImageAssetList} from '../lib/imageAssetContract'
 import {getStudioTransportRevision} from '../api/transport'
 import { installGlobalTooltip } from '../lib/globalTooltip'
 import { useEffect, useRef } from 'react'
@@ -30,8 +30,9 @@ export function useStudioIntegration() {
         const result=await imageAssetApi.list()
         if(!current())return
         if(!result.success)throw new Error(result.error || '资源服务未确认加载')
-        if(!isImageAssetList(result.data))throw new Error('图像资源列表格式错误')
-        useWorkflowStore.getState().setImageAssets(result.data)
+        const assets=readImageAssetList(result.data)
+        if(!assets)throw new Error('图像资源列表格式错误')
+        useWorkflowStore.getState().setImageAssets(assets)
         if(lastError){useWorkflowStore.getState().addLog({level:'info',message:'图像资源加载已恢复'});lastError=null}
       }catch(error){
         if(!current())return

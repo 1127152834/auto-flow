@@ -1,0 +1,354 @@
+[
+  {
+    "id": "complete",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ]
+  },
+  {
+    "id": "zero-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 0,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 0,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ]
+  },
+  {
+    "id": "empty-list",
+    "value": [],
+    "expected": []
+  },
+  {
+    "id": "default-path",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png"
+      }
+    ],
+    "expected": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ]
+  },
+  {
+    "id": "extra-fields",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null,
+        "note": "保留扩展字段"
+      }
+    ],
+    "expected": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null,
+        "note": "保留扩展字段"
+      }
+    ]
+  },
+  {
+    "id": "maximum-safe-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 9007199254740991,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 9007199254740991,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ]
+  },
+  {
+    "id": "fractional-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 1.5,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "negative-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": -1,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "unsafe-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 9007199254740992,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "boolean-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": true,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "string-size",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": "12",
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "empty-id",
+    "value": [
+      {
+        "id": "",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "empty-name",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "empty-original-name",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "invalid-folder",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": null,
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "invalid-date-type",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": 12,
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "invalid-path",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": 12
+      }
+    ],
+    "expected": null
+  },
+  {
+    "id": "partial-invalid-list",
+    "value": [
+      {
+        "id": "fixture",
+        "name": "fixture.png",
+        "originalName": "测试图像.png",
+        "size": 12,
+        "uploadedAt": "2026-09-14",
+        "folder": "",
+        "extension": ".png",
+        "path": null
+      },
+      {}
+    ],
+    "expected": null
+  },
+  {
+    "id": "wrong-envelope",
+    "value": {
+      "assets": [
+        {
+          "id": "fixture",
+          "name": "fixture.png",
+          "originalName": "测试图像.png",
+          "size": 12,
+          "uploadedAt": "2026-09-14",
+          "folder": "",
+          "extension": ".png",
+          "path": null
+        }
+      ]
+    },
+    "expected": null
+  }
+]

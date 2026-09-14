@@ -1,0 +1,212 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-asset-contract.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:63057) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts (18 tests | 6 failed) 8ms
+   × matches the shared backend image contract: 'default-path' 3ms
+   × matches the shared backend image contract: 'fractional-size' 0ms
+   × matches the shared backend image contract: 'unsafe-size' 0ms
+   × matches the shared backend image contract: 'empty-id' 0ms
+   × matches the shared backend image contract: 'empty-name' 0ms
+   × matches the shared backend image contract: 'empty-original-name' 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'default-path'
+AssertionError: expected null to deeply equal [ { id: 'fixture', …(7) } ]
+
+- Expected:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "fixture",
+    "name": "fixture.png",
+    "originalName": "测试图像.png",
+    "path": null,
+    "size": 12,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
++ Received:
+null
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'fractional-size'
+AssertionError: expected [ { id: 'fixture', …(7) } ] to deeply equal null
+
+- Expected:
+null
+
++ Received:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "fixture",
+    "name": "fixture.png",
+    "originalName": "测试图像.png",
+    "path": null,
+    "size": 1.5,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'unsafe-size'
+AssertionError: expected [ { id: 'fixture', …(7) } ] to deeply equal null
+
+- Expected:
+null
+
++ Received:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "fixture",
+    "name": "fixture.png",
+    "originalName": "测试图像.png",
+    "path": null,
+    "size": 9007199254740992,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'empty-id'
+AssertionError: expected [ { id: '', …(7) } ] to deeply equal null
+
+- Expected:
+null
+
++ Received:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "",
+    "name": "fixture.png",
+    "originalName": "测试图像.png",
+    "path": null,
+    "size": 12,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'empty-name'
+AssertionError: expected [ { id: 'fixture', name: '', …(6) } ] to deeply equal null
+
+- Expected:
+null
+
++ Received:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "fixture",
+    "name": "",
+    "originalName": "测试图像.png",
+    "path": null,
+    "size": 12,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-asset-contract.test.ts > matches the shared backend image contract: 'empty-original-name'
+AssertionError: expected [ { id: 'fixture', …(7) } ] to deeply equal null
+
+- Expected:
+null
+
++ Received:
+[
+  {
+    "extension": ".png",
+    "folder": "",
+    "id": "fixture",
+    "name": "fixture.png",
+    "originalName": "",
+    "path": null,
+    "size": 12,
+    "uploadedAt": "2026-09-14",
+  },
+]
+
+ ❯ src/renderer/domains/workflows/tests/image-asset-contract.test.ts:5:67
+      3| import {isImageAssetList} from '../lib/imageAssetContract'
+      4| it.each(cases)('matches the shared backend image contract: $id',testCa…
+      5|  expect(isImageAssetList(testCase.value) ? testCase.value : null).toEq…
+       |                                                                   ^
+      6| })
+      7|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 12 passed (18)
+   Start at  12:49:00
+   Duration  912ms (transform 124ms, setup 139ms, import 13ms, tests 8ms, environment 624ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-asset-contract.test.ts
