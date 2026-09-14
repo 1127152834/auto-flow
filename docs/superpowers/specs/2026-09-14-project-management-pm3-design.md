@@ -102,7 +102,7 @@ queued | running → stopping → cancelled
 | 对象 | 关键字段 | 规则 |
 |---|---|---|
 | `Automation` | `automationId, projectId, workflowId, name, description, managementRevision, inputPlan, parameterSchema, environmentPolicy, runPolicy` | 工作流内容不复制；一个 `workflowId` 最多绑定一个项目自动化。 |
-| `Batch` | `batchId, projectId, automationId, automationRevision, workflowRevision, status, statusRevision, requestedTaskCount` | 固定一次启动的配置；不随自动化后续编辑变化。 |
+| `Batch` | `batchId, projectId, automationId, automationRevision, workflowRevision, status, statusRevision, requestedCount` | 固定一次启动的配置；不随自动化后续编辑变化。 |
 | `Task` | `taskId, batchId, runRequestId, runId, inputSnapshotId, status, statusRevision` | CoreRun 状态的项目投影，不自行判定成功。 |
 | `TaskInputSnapshot` | `inputSnapshotId, taskId, parameters, inputs, capturedAt` | PM3 的 `inputs=[]`；参数值不可变；PM4 扩展真实项目数据输入。 |
 | `Operation` | `operationId, kind, status, resource, result, error` | 复用项目持久操作体系；`startBatch/stopBatch/forceStopBatch` 均可按原身份查询。 |
@@ -113,7 +113,7 @@ queued | running → stopping → cancelled
 
 ### 5.1 列表和生命周期
 
-项目自动化目录支持搜索、排序、分页、打开、编辑和删除；活动项目可创建、编辑和删除，归档项目只读。列表每项显示名称、说明、工作流校验状态、输入概况、默认资源和最近修改。更多菜单提供编辑、打开 Studio 和删除。PM3 只允许删除从未产生 Batch、没有活动引用且影响查询完整返回空集合的自动化；否则按照原型展示真实冲突并保留对象。PM8 再交付跨环境、同步和项目生命周期的完整影响处置，不能用前端确认框绕过服务端守卫。
+项目自动化目录支持搜索、排序、分页、打开和编辑；活动项目可创建和编辑，归档项目只读。列表每项显示名称、说明、工作流校验状态、输入概况、默认资源和最近修改。更多菜单在 PM3 只提供编辑和打开 Studio。删除及其影响查询按照已冻结公共契约留到 PM8；PM3 不提供无后端守卫的假删除入口。
 
 ### 5.2 四个配置页签
 
@@ -144,14 +144,13 @@ queued | running → stopping → cancelled
 ```ts
 type StartBatch = {
   expectedAutomationRevision: number
-  expectedWorkflowRevision: number
-  parameters: Record<string, Scalar>
-  taskCount?: number
-  resourceOverrides?: ResourceOverrides
+  parameters: Record<string, JsonScalar>
+  maxTasks?: number
+  environmentOverride?: EnvironmentPolicy
 }
 ```
 
-省略 `taskCount` 使用自动化默认值。PM3 仅接受 1–100。参数根据服务端 parameter schema 严格校验，不把字符串 `"1"` 自动转成数字，不把空字符串当 null。
+省略 `maxTasks` 使用自动化 `runPolicy.maxTasks`。PM3 要求最终值为 1–100。工作流修订由服务端在启动事务中读取并冻结，不信任页面缓存的 revision。参数根据服务端 parameter schema 严格校验，不把字符串 `"1"` 自动转成数字，不把空字符串当 null。
 
 ### 6.2 原子接受
 
@@ -226,7 +225,7 @@ type OpenStudioRequest = {
 
 现有最新原型的直接对应关系：
 
-- 自动化目录和状态：`latest/02-automation/001–011`；
+- 自动化目录和状态：`latest/02-automation/001–003`、`006–011`；删除确认与冲突画板 `004–005` 留给 PM8；
 - 运行批次、任务、详情、日志、输入输出、错误证据和停止：`latest/03-runs/001–017` 中适用于 PM3 的画板；
 - `018–021` 人工处理状态属于 PM5，本阶段不做假入口；
 - 项目页头、加载、错误及能力状态继续复用当前 R1–R3 页面模式。
