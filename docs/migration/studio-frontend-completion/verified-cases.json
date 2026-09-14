@@ -47120,5 +47120,224 @@
     "deliveryStatus": "已实现且已验收",
     "differenceClass": "AutoFlow 必要适配",
     "evidencePath": "docs/migration/studio-frontend-completion/session-leave-cases.json"
+  },
+  {
+    "id": "F3-RESULT-001",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "135条重复节点不同执行ID，首值70k中文"
+    },
+    "steps": [
+      "读取首100条",
+      "追加一条",
+      "按原截止读下一页",
+      "导出"
+    ],
+    "expectedUI": "下一页35条，导出135条，包含完整大值；另一个运行0条",
+    "expectedIO": "同节点多次结果、固定分页及大值完整导出",
+    "stateAssertion": "下一页35条，导出135条，包含完整大值；另一个运行0条",
+    "level": "memory/http",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-results-protocol.test.ts"
+  },
+  {
+    "id": "F3-RESULT-002",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "run-a大值读取延迟"
+    },
+    "steps": [
+      "打开大值",
+      "切run-b",
+      "返回旧响应",
+      "模拟导出失败"
+    ],
+    "expectedUI": "旧详情不出现；当前错误可见，不兜底别的运行",
+    "expectedIO": "结果迟到保护与只读详情",
+    "stateAssertion": "旧详情不出现；当前错误可见，不兜底别的运行",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-results-panel.test.tsx"
+  },
+  {
+    "id": "F3-RESULT-003",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "两行z/a"
+    },
+    "steps": [
+      "排序",
+      "点a",
+      "切编辑模式",
+      "修改"
+    ],
+    "expectedUI": "查看和编辑都定位原索引1；只读不打开编辑输入",
+    "expectedIO": "原表格编辑与只读接入",
+    "stateAssertion": "查看和编辑都定位原索引1；只读不打开编辑输入",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-results-panel.test.tsx"
+  },
+  {
+    "id": "F3-RESULT-004",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "旧筛选日志和Store残留"
+    },
+    "steps": [
+      "切run",
+      "服务延迟/失败"
+    ],
+    "expectedUI": "旧日志当帧隐藏，错误明确，不使用Store兜底",
+    "expectedIO": "新运行立即隐藏旧日志",
+    "stateAssertion": "旧日志当帧隐藏，错误明确，不使用Store兜底",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-history-panel.test.tsx"
+  },
+  {
+    "id": "F3-RESULT-005",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "1000条服务运行摘要"
+    },
+    "steps": [
+      "加载第二页",
+      "选择99",
+      "刷新首屏"
+    ],
+    "expectedUI": "保留明确选中的旧运行，不限首50条",
+    "expectedIO": "运行历史分页",
+    "stateAssertion": "保留明确选中的旧运行，不限首50条",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-history-panel.test.tsx"
+  },
+  {
+    "id": "F3-DIAGNOSTIC-001",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "1000条变化，70k中文值"
+    },
+    "steps": [
+      "搜索大值末尾",
+      "按变量/类型筛选",
+      "截止翻页",
+      "导出"
+    ],
+    "expectedUI": "查询覆盖全部记录，导出完整值；其他运行隔离",
+    "expectedIO": "运行变量分页筛选与完整导出",
+    "stateAssertion": "查询覆盖全部记录，导出完整值；其他运行隔离",
+    "level": "memory/http",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-variable-tracking-protocol.test.ts"
+  },
+  {
+    "id": "F3-DIAGNOSTIC-002",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "持久1001条及当前高水位"
+    },
+    "steps": [
+      "重载Mock模块读取",
+      "清空",
+      "加1002",
+      "按1001读"
+    ],
+    "expectedUI": "已确认记录恢复；旧值404；清空后不复用序号",
+    "expectedIO": "清空后序号与持久恢复",
+    "stateAssertion": "已确认记录恢复；旧值404；清空后不复用序号",
+    "level": "memory/http",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-variable-tracking-protocol.test.ts"
+  },
+  {
+    "id": "F3-DIAGNOSTIC-003",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "两轮运行、迟到完整值、清空"
+    },
+    "steps": [
+      "选历史",
+      "翻页",
+      "大值失败重试",
+      "换run",
+      "清空"
+    ],
+    "expectedUI": "显式选择/固定截止/完整值；旧请求不能覆盖新运行",
+    "expectedIO": "变量面板历史大值及竞态",
+    "stateAssertion": "显式选择/固定截止/完整值；旧请求不能覆盖新运行",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/variable-tracking-run-panel.test.tsx"
+  },
+  {
+    "id": "F3-RESULT-006",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "独立临时工作区、构建HTML"
+    },
+    "steps": [
+      "主窗口",
+      "添加/保存",
+      "F5",
+      "详情",
+      "原生导出",
+      "重启"
+    ],
+    "expectedUI": "结果和执行标识一致，磁盘文件完整，历史恢复",
+    "expectedIO": "正式窗口结果导出与重启",
+    "stateAssertion": "结果和执行标识一致，磁盘文件完整，历史恢复",
+    "level": "electron-ui",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-run-results/native-ui.md"
+  },
+  {
+    "id": "F3-DIAGNOSTIC-004",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "声明中文初值，第二轮run"
+    },
+    "steps": [
+      "变量追踪",
+      "原生导出",
+      "退出重启",
+      "显式选择历史"
+    ],
+    "expectedUI": "运行绑定、中文值和文件一致，重启可读",
+    "expectedIO": "正式窗口历史诊断恢复",
+    "stateAssertion": "运行绑定、中文值和文件一致，重启可读",
+    "level": "electron-ui",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-run-results/native-ui.md"
+  },
+  {
+    "id": "F3-DIAGNOSTIC-005",
+    "capability": "F3.3",
+    "preconditions": {
+      "fixture": "localStorage写入抛出存储已满；暂停Mock运行或首次启动"
+    },
+    "steps": [
+      "提交两个变量修改，存储返回500",
+      "核对原变量及控制修订不变",
+      "初值保存失败后核对无活跃运行及无半条运行，恢复存储后原ID可启动"
+    ],
+    "expectedUI": "错误不被当作成功，不发生部分变量应用",
+    "expectedIO": "500；初次失败运行查询404；重试启动200",
+    "stateAssertion": "变量、诊断、活跃名额保持一致",
+    "level": "protocol",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-diagnostics-storage.test.ts"
   }
 ]

@@ -41,6 +41,9 @@ interface Database {
   modules: Record<string, ObjectValue>
   runs: Record<string, StoredRun>
   runLogs: Record<string, StoredExecutionLog[]>
+  runTracking?: Record<string, components['schemas']['StudioRunVariableTrackingRecord'][]>
+  runTrackingSequence?: Record<string,number>
+  runResults?: Record<string, components['schemas']['StudioRunResultRow'][]>
   folder: string
   recordingReviews?: Record<string, ObjectValue>
 }
@@ -178,6 +181,11 @@ export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
   recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
 }
+/** Explicit result fixture; does not derive or execute automation actions. */
+export function seedMockRunResults(runId:string, rows:components['schemas']['StudioRunResultRow'][]) {
+  if(!db.runs[runId])throw new Error('结果夹具必须关联已登记运行')
+  persist({...db,runResults:{...db.runResults,[runId]:structuredClone(rows)}})
+}
 export function selectMockElement(selector: string) {
   if (!picking) throw new Error('请先开启元素拾取')
   similarPicked = null
@@ -233,13 +241,25 @@ function stopRun(id: unknown, runId?:unknown): Response {
   if (finishedWorkflows.has(id)) return response({ success: true })
   return failure(run ? '停止请求不属于当前运行' : '目标工作流没有活跃运行', 409)
 }
+/** Explicit diagnostic fixture state; no expression or automation execution. */
+export function seedMockRunTracking(runId:string, rows:components['schemas']['StudioRunVariableTrackingRecord'][]) {
+  if(!db.runs[runId])throw new Error('运行不存在')
+  persist({...db,runTracking:{...db.runTracking,[runId]:structuredClone(rows)},runTrackingSequence:{...db.runTrackingSequence,[runId]:Math.max(db.runTrackingSequence?.[runId]||0,rows.at(-1)?.sequence||0)}})
+}
+function appendRunTracking(current:NonNullable<typeof run>,records:ObjectValue[]) {
+  let sequence=db.runTrackingSequence?.[current.runId]||0
+  const additions=records.map(record=>({...record,sequence:++sequence,executionId:`${current.runId}:${current.index+1}`,largeValues:{}})) as components['schemas']['StudioRunVariableTrackingRecord'][]
+  seedMockRunTracking(current.runId,[...(db.runTracking?.[current.runId]||[]),...additions])
+}
 function writeRunVariable(name: string, value: Json, nodeId: string, nodeName: string) {
   if (!run) return
   const existed = Object.hasOwn(run.variables, name)
   const old = run.variables[name]
   if (existed && JSON.stringify(old) === JSON.stringify(value)) return
+  const record={timestamp:new Date().toISOString(),variable_name:name,old_value:existed ? structuredClone(old) : null,new_value:structuredClone(value),node_id:nodeId,node_name:nodeName,operation:existed?'update':'create',value_type:value===null?'null':Array.isArray(value)?'array':typeof value}
+  appendRunTracking(run,[record])
   Object.defineProperty(run.variables, name, { value: structuredClone(value), enumerable: true, configurable: true, writable: true })
-  tracking.get(run.id)?.push({timestamp:new Date().toISOString(),variable_name:name,old_value:existed ? structuredClone(old) : null,new_value:structuredClone(value),node_id:nodeId,node_name:nodeName,operation:existed?'update':'create',value_type:value===null?'null':Array.isArray(value)?'array':typeof value})
+  tracking.get(run.id)?.push(record)
 }
 function currentVariableMeta(current:NonNullable<typeof run>):ObjectValue {
   const records=tracking.get(current.id)||[]
@@ -435,6 +455,8 @@ function tick(skipBreakpoint = false) {
     if (String(node.type) === 'get_element_info' || String(node.type) === 'extract_table_data') {
       const row = { mock:true, nodeId, value:'Mock result', index:current.index+1 }
       runRows.get(current.id)?.push(row)
+      const results=db.runResults?.[current.runId]||[]
+      persist({...db,runResults:{...db.runResults,[current.runId]:[...results,{sequence:results.length+1,nodeId,executionId:`${current.runId}:${current.index+1}`,values:row,largeValues:{}}]}})
       emitMockEvent('execution:data_row', {workflowId:current.id,runId:current.runId,row})
     }
     current.index++
@@ -494,12 +516,15 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         finishedWorkflows.delete(id)
         runRows.set(id, [])
         const startedAt = new Date().toISOString()
+        const variables=Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value]))
+        const initialRecords=Object.entries(variables).map(([name,value],index)=>({timestamp:startedAt,variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create' as const,value_type:typeof value,sequence:index+1,executionId:`${runId}:initial`,largeValues:{}}))
         persist({ ...db,
           runs: { ...db.runs, [runId]: { runId, workflowId: id, documentId, workflowName: String(doc.name || '未命名工作流'), status: 'starting', startedAt, finishedAt: null, logCount: 0, requestFingerprint } },
           runLogs: { ...db.runLogs, [runId]: [] },
+          runTracking:{...db.runTracking,[runId]:initialRecords},runTrackingSequence:{...db.runTrackingSequence,[runId]:initialRecords.length},
         })
-        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
-        tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
+        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables }
+        tracking.set(id,initialRecords)
         run.timer = setTimeout(() => {
           if (run?.id !== id || run.runId !== runId) return
           const record = db.runs[runId]
@@ -633,6 +658,74 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const items = rows.slice(cursor, cursor + limit).map(({ requestFingerprint: _fingerprint, ...item }) => item)
       return response({ items, total: rows.length, nextCursor: cursor + items.length < rows.length ? cursor + items.length : null })
     }
+    const trackingRoute=path.match(/^\/workflow-runs\/([^/]+)\/variable-tracking(?:\/(export|values))?$/)
+    if(trackingRoute){
+      const [,runId,operation]=trackingRoute
+      if(!db.runs[runId])return failure('运行不存在',404)
+      const rows=db.runTracking?.[runId]||[],maximum=db.runTrackingSequence?.[runId]||0
+      if(method==='DELETE'&&!operation){
+        persist({...db,runTracking:{...db.runTracking,[runId]:[]}})
+        return response({runId,message:'本次运行变量追踪记录已清空'})
+      }
+      if(method!=='GET')return failure('变量追踪请求方法无效',405)
+      if(operation==='values'){
+        const sequence=Number(target.searchParams.get('sequence')),side=target.searchParams.get('side')
+        const row=rows.find(item=>item.sequence===sequence)
+        if(!row||(side!=='old_value'&&side!=='new_value'))return failure('变量记录不存在',404)
+        return response({runId,sequence,key:side,value:row[side]})
+      }
+      const through=Number(target.searchParams.get('throughSequence')??maximum)
+      if(!Number.isSafeInteger(through)||through<0||through>maximum)return failure('变量诊断截止位置无效',422)
+      const query=(target.searchParams.get('query')||'').toLowerCase()
+      const variable=target.searchParams.get('variable'),operationFilter=target.searchParams.get('operation'),valueType=target.searchParams.get('valueType')
+      const snapshot=rows.filter(row=>row.sequence<=through&&(!variable||row.variable_name===variable)&&(!operationFilter||row.operation===operationFilter)&&(!valueType||row.value_type===valueType)&&(!query||JSON.stringify(row).toLowerCase().includes(query)))
+      if(operation==='export'){
+        const iterator=snapshot[Symbol.iterator]()
+        return new Response(new ReadableStream<Uint8Array>({pull(controller){const item=iterator.next();if(item.done){controller.close();return}controller.enqueue(encoder.encode(JSON.stringify({runId,...item.value})+'\n'))}}),{headers:{'Content-Type':'application/x-ndjson; charset=utf-8'}})
+      }
+      const cursor=Number(target.searchParams.get('cursor')||0),limit=Number(target.searchParams.get('limit')||100)
+      if(!Number.isSafeInteger(cursor)||cursor<0||!Number.isSafeInteger(limit)||limit<1||limit>500)return failure('变量诊断分页参数无效',422)
+      const tracking=snapshot.slice(cursor,cursor+limit).map(row=>{
+        const record={...row,largeValues:{} as Record<string,string>}
+        for(const side of ['old_value','new_value'] as const){const text=JSON.stringify(row[side]);if(encoder.encode(text).length>4096){record[side]=null;record.largeValues[side]=text.slice(0,180)}}
+        return record
+      })
+      return response({runId,tracking,total:snapshot.length,throughSequence:through,nextCursor:cursor+tracking.length<snapshot.length?cursor+tracking.length:null})
+    }
+    const resultRoute=path.match(/^\/workflow-runs\/([^/]+)\/results(?:\/(export|\d+)(?:\/value)?)?$/)
+    if(resultRoute){
+      if(method!=='GET')return failure('运行结果只接受 GET',405)
+      const [,runId,operation]=resultRoute
+      const field=target.searchParams.get('key')
+      const record=db.runs[runId]
+      if(!record)return failure('运行不存在',404)
+      const rows=db.runResults?.[runId]||[]
+      if(operation&&operation!=='export'){
+        const row=rows.find(item=>item.sequence===Number(operation))
+        if(!row||field===null||!Object.hasOwn(row.values,field))return failure('结果值不存在',404)
+        return response({runId,sequence:row.sequence,key:field,value:row.values[field]})
+      }
+      const maximum=rows.at(-1)?.sequence||0
+      const through=Number(target.searchParams.get('throughSequence')??maximum)
+      if(!Number.isSafeInteger(through)||through<0||through>maximum)return failure('结果截止位置无效',422)
+      const snapshot=rows.filter(row=>row.sequence<=through)
+      if(operation==='export'){
+        const iterator=snapshot[Symbol.iterator]()
+        const body=new ReadableStream<Uint8Array>({pull(controller){const item=iterator.next();if(item.done){controller.close();return}controller.enqueue(encoder.encode(JSON.stringify({runId,...item.value})+'\n'))}})
+        return new Response(body,{headers:{'Content-Type':'application/x-ndjson; charset=utf-8','Content-Disposition':`attachment; filename="results-${runId}.jsonl"`}})
+      }
+      const cursor=Number(target.searchParams.get('cursor')||0),limit=Number(target.searchParams.get('limit')||100)
+      if(!Number.isSafeInteger(cursor)||cursor<0||!Number.isSafeInteger(limit)||limit<1||limit>500)return failure('结果分页参数无效',422)
+      const items=snapshot.slice(cursor,cursor+limit).map(row=>{
+        const values={...row.values},largeValues:Record<string,string>={}
+        for(const [key,value] of Object.entries(values)){
+          const text=JSON.stringify(value)
+          if(encoder.encode(text).length>4096){delete values[key];largeValues[key]=text.slice(0,180)}
+        }
+        return {...row,values,largeValues}
+      })
+      return response({runId,workflowId:record.workflowId,items,total:snapshot.length,throughSequence:through,nextCursor:cursor+items.length<snapshot.length?cursor+items.length:null})
+    }
     const runDetail=path.match(/^\/workflow-runs\/([^/]+)$/)
     if(runDetail&&method==='GET'){
       const record=db.runs[decodeURIComponent(runDetail[1])]
@@ -710,14 +803,15 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
             if(!run || run.id!==id || run.runId!==body.runId || !run.paused || run.pauseId!==body.pauseId || run.controlRevision!==body.controlRevision){
               return response({...receipt,success:false,error:'暂停上下文已过期或运行未暂停'},409)
             }
-            const now=new Date().toISOString(),records=tracking.get(id)||[]
+            const now=new Date().toISOString(),records=tracking.get(id)||[], additions:ObjectValue[]=[]
             for(const change of body.changes){
               const exists=Object.hasOwn(run.variables,change.name),oldValue=exists?run.variables[change.name]:null
               const nextValue=structuredClone(change.value) as Json
-              run.variables[change.name]=nextValue
-              records.push({timestamp:now,variable_name:change.name,old_value:oldValue,new_value:nextValue,node_id:String(run.nodes[run.index]?.id||''),node_name:'[Mock] 人工调试修改',operation:exists?'update':'create',value_type:nextValue===null?'null':Array.isArray(nextValue)?'array':typeof nextValue})
+              additions.push({timestamp:now,variable_name:change.name,old_value:oldValue,new_value:nextValue,node_id:String(run.nodes[run.index]?.id||''),node_name:'[Mock] 人工调试修改',operation:exists?'update':'create',value_type:nextValue===null?'null':Array.isArray(nextValue)?'array':typeof nextValue})
             }
-            tracking.set(id,records)
+            appendRunTracking(run,additions)
+            for(const change of body.changes)run.variables[change.name]=structuredClone(change.value) as Json
+            tracking.set(id,[...records,...additions])
             run.controlRevision++
             const node=run.nodes[run.index]||{},nodeId=String(node.id||'')
             emitMockEvent('execution:paused',{workflowId:id,runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision,node_id:nodeId,label:(node.data as ObjectValue|undefined)?.label??node.type,variables:structuredClone(run.variables),variableMeta:currentVariableMeta(run),reason:run.step?'step':'breakpoint'})

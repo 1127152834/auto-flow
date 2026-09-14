@@ -5355,6 +5355,102 @@ export type components = {
             mock: boolean | null;
             usage: components["schemas"]["StudioRetentionUsage"];
         };
+        /** StudioRunResultPage */
+        StudioRunResultPage: {
+            /** Runid */
+            runId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Items */
+            items: components["schemas"]["StudioRunResultRow"][];
+            /** Total */
+            total: number;
+            /** Throughsequence */
+            throughSequence: number;
+            /**
+             * Nextcursor
+             * @default null
+             */
+            nextCursor: number | null;
+        };
+        /** StudioRunResultRow */
+        StudioRunResultRow: {
+            /** Sequence */
+            sequence: number;
+            /** Nodeid */
+            nodeId: string;
+            /** Executionid */
+            executionId: string;
+            /** Values */
+            values: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Largevalues */
+            largeValues?: {
+                [key: string]: string;
+            };
+        };
+        /** StudioRunResultValue */
+        StudioRunResultValue: {
+            /** Runid */
+            runId: string;
+            /** Sequence */
+            sequence: number;
+            /** Key */
+            key: string;
+            value: components["schemas"]["JsonValue"];
+        };
+        /** StudioRunVariableTrackingCleared */
+        StudioRunVariableTrackingCleared: {
+            /** Message */
+            message: string;
+            /** Runid */
+            runId: string;
+        };
+        /** StudioRunVariableTrackingPage */
+        StudioRunVariableTrackingPage: {
+            /** Runid */
+            runId: string;
+            /** Tracking */
+            tracking: components["schemas"]["StudioRunVariableTrackingRecord"][];
+            /** Total */
+            total: number;
+            /** Throughsequence */
+            throughSequence: number;
+            /**
+             * Nextcursor
+             * @default null
+             */
+            nextCursor: number | null;
+        };
+        /** StudioRunVariableTrackingRecord */
+        StudioRunVariableTrackingRecord: {
+            /** Timestamp */
+            timestamp: string;
+            /** Variable Name */
+            variable_name: string;
+            old_value: components["schemas"]["JsonValue"];
+            new_value: components["schemas"]["JsonValue"];
+            /** Node Id */
+            node_id: string;
+            /** Node Name */
+            node_name: string;
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "create" | "update";
+            /** Value Type */
+            value_type: string;
+            /** Sequence */
+            sequence: number;
+            /** Executionid */
+            executionId: string;
+            /** Largevalues */
+            largeValues?: {
+                [key: string]: string;
+            };
+        };
         /** StudioSelectorAttempt */
         StudioSelectorAttempt: {
             /** Selector */

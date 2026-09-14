@@ -212,6 +212,29 @@ export const workflowApi = {
   },
   getRunLogs: (runId: string, query: ExecutionLogQuery = {}) =>
     checkedExecutionLogPage(apiRequest<unknown>(`/workflow-runs/${encodeURIComponent(runId)}/logs${executionLogSearch(query)}`), runId),
+  getRunResults: async (runId:string,cursor=0,limit=100,throughSequence?:number) => {
+    const params=new URLSearchParams({cursor:String(cursor),limit:String(limit)})
+    if(throughSequence!==undefined)params.set('throughSequence',String(throughSequence))
+    type Page=components['schemas']['StudioRunResultPage']
+    const result=await apiRequest<Page>(`/workflow-runs/${encodeURIComponent(runId)}/results?${params}`)
+    if(!result.success)return result
+    const page=result.data
+    if(!page||page.runId!==runId||!Array.isArray(page.items)||!Number.isSafeInteger(page.total)||page.total<0||!Number.isSafeInteger(page.throughSequence)||page.throughSequence<0||page.items.length>limit||page.items.length>page.total||page.items.some((row,index)=>!row||!Number.isSafeInteger(row.sequence)||row.sequence<1||row.sequence>page.throughSequence||(index>0&&row.sequence<=page.items[index-1].sequence)||typeof row.nodeId!=='string'||typeof row.executionId!=='string'||!row.values||Array.isArray(row.values)||typeof row.values!=='object'||!row.largeValues||Array.isArray(row.largeValues)||typeof row.largeValues!=='object'||Object.values(row.largeValues).some(value=>typeof value!=='string'))||(throughSequence!==undefined&&page.throughSequence!==throughSequence)||(page.nextCursor!==null&&(!Number.isSafeInteger(page.nextCursor)||page.nextCursor<=cursor)))return {success:false,error:'运行结果页身份或分页结构无效'} as ApiResponse<Page>
+    return result
+  },
+  getRunResultValue:async(runId:string,sequence:number,key:string)=>{
+    type Value=components['schemas']['StudioRunResultValue']
+    const result=await apiRequest<Value>(`/workflow-runs/${encodeURIComponent(runId)}/results/${sequence}/value?${new URLSearchParams({key})}`)
+    if(result.success&&(!result.data||result.data.runId!==runId||result.data.sequence!==sequence||result.data.key!==key||!Object.hasOwn(result.data,'value')))return {success:false,error:'结果值不属于请求的运行或字段'} as ApiResponse<Value>
+    return result
+  },
+  exportRunResults:async(runId:string,throughSequence:number)=>{
+    try{
+      const result=await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/results/export?throughSequence=${throughSequence}`)
+      if(!result.ok)return {success:false,error:`结果导出失败：HTTP ${result.status}`} as ApiResponse<Blob>
+      return {success:true,data:await result.blob()} as ApiResponse<Blob>
+    }catch(error){return {success:false,error:String(error)} as ApiResponse<Blob>}
+  },
   exportRunLogs: async (runId: string, query: Omit<ExecutionLogQuery, 'cursor' | 'limit'> = {}) => {
     try {
       const response = await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`)
@@ -871,7 +894,45 @@ export const speechApi = {
 
 
 export type VariableTrackingRecord = components['schemas']['StudioVariableTrackingRecord']
+export type RunVariableTrackingRecord = components['schemas']['StudioRunVariableTrackingRecord']
+export interface RunTrackingQuery { cursor?:number; limit?:number; throughSequence?:number; query?:string; variable?:string; operation?:string; valueType?:string }
+const trackingQuery = (query:RunTrackingQuery) => new URLSearchParams(Object.entries(query).filter(([,value])=>value!==undefined).map(([key,value])=>[key,String(value)])).toString()
 export const variableTrackingApi = {
+  listRun: async (runId:string, query:RunTrackingQuery={}, signal?:AbortSignal) => {
+    const result=await apiRequest<components['schemas']['StudioRunVariableTrackingPage']>(`/workflow-runs/${encodeURIComponent(runId)}/variable-tracking?${trackingQuery(query)}`,{signal})
+    if(!result.success)return result
+    const data=result.data,cursor=query.cursor??0
+    if(!data||data.runId!==runId||!Array.isArray(data.tracking)||!Number.isSafeInteger(data.total)||data.total<data.tracking.length
+      ||!Number.isSafeInteger(data.throughSequence)||data.throughSequence<0
+      ||(query.throughSequence!==undefined&&data.throughSequence!==query.throughSequence)
+      ||(data.nextCursor!==null&&data.nextCursor!==cursor+data.tracking.length)
+      ||!data.tracking.every((record,index)=>record&&Number.isSafeInteger(record.sequence)&&record.sequence>0&&record.sequence<=data.throughSequence
+        &&(index===0||record.sequence>data.tracking[index-1].sequence)&&typeof record.executionId==='string'
+        &&['timestamp','variable_name','node_id','node_name','value_type'].every(key=>typeof record[key as keyof RunVariableTrackingRecord]==='string')
+        &&['create','update'].includes(record.operation)&&Object.hasOwn(record,'old_value')&&Object.hasOwn(record,'new_value')
+        &&record.largeValues&&Object.entries(record.largeValues).every(([key,value])=>['old_value','new_value'].includes(key)&&typeof value==='string')))
+      return {success:false,error:'运行变量追踪响应无效，未采用其他运行的数据'}
+    return result
+  },
+  getRunValue: async (runId:string,sequence:number,side:'old_value'|'new_value',signal?:AbortSignal) => {
+    const result=await apiRequest<components['schemas']['StudioRunResultValue']>(`/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/values?sequence=${sequence}&side=${side}`,{signal})
+    if(!result.success)return result
+    if(!result.data||result.data.runId!==runId||result.data.sequence!==sequence||result.data.key!==side||!Object.hasOwn(result.data,'value'))return {success:false,error:'变量完整值响应不属于当前记录'}
+    return result
+  },
+  clearRun: async(runId:string,signal?:AbortSignal)=>{
+    const result=await apiRequest<components['schemas']['StudioRunVariableTrackingCleared']>(`/workflow-runs/${encodeURIComponent(runId)}/variable-tracking`,{method:'DELETE',signal})
+    if(!result.success)return result
+    if(!result.data||result.data.runId!==runId||!result.data.message)return {success:false,error:'服务未确认清空本次运行记录'}
+    return result
+  },
+  exportRun: async(runId:string,throughSequence:number,filters:RunTrackingQuery={},signal?:AbortSignal)=>{
+    try{
+      const result=await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/export?${trackingQuery({...filters,throughSequence})}`,{signal})
+      if(!result.ok)return {success:false,error:'变量诊断导出失败'}
+      return {success:true,data:await result.blob()}
+    }catch(error){return {success:false,error:error instanceof Error?error.message:'变量诊断导出失败'}}
+  },
   list: async (workflowId: string, signal?: AbortSignal) => {
     const result = await apiRequest<components['schemas']['StudioVariableTrackingResult']>(
       `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {signal})

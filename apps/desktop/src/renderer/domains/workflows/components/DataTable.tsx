@@ -16,9 +16,11 @@ const HEADER_HEIGHT = 30
 interface DataTableProps {
   data: DataRow[]
   columns: string[]
-  onEdit: (rowIndex: number, col: string, value: unknown) => void
-  onDeleteRow: (rowIndex: number) => void
-  onDeleteColumn: (col: string) => void
+  onEdit?: (rowIndex: number, col: string, value: unknown) => void
+  onDeleteRow?: (rowIndex: number) => void
+  onDeleteColumn?: (col: string) => void
+  readOnly?: boolean
+  onInspect?: (rowIndex: number, col: string) => void
   /** 预览顺序：tail=最新（跟随底部新数据），head=最早（停在顶部） */
   displayMode?: 'tail' | 'head'
   /** 预览条数（变化时触发重新定位，便于用户看到改动立即生效） */
@@ -43,6 +45,8 @@ export const DataTable = memo(function DataTable({
   onEdit,
   onDeleteRow,
   onDeleteColumn,
+  readOnly = false,
+  onInspect,
   displayMode = 'tail',
   displayLimit = 0,
 }: DataTableProps) {
@@ -127,7 +131,7 @@ export const DataTable = memo(function DataTable({
 
   const saveEdit = () => {
     if (!editingCell) return
-    onEdit(editingCell.row, editingCell.col, editValue)
+    onEdit?.(editingCell.row, editingCell.col, editValue)
     setEditingCell(null)
     setEditValue('')
   }
@@ -196,14 +200,14 @@ export const DataTable = memo(function DataTable({
                 ? <ArrowUp className="w-3 h-3 flex-shrink-0 text-[hsl(var(--brand-600))]" />
                 : <ArrowDown className="w-3 h-3 flex-shrink-0 text-[hsl(var(--brand-600))]" />)}
             </button>
-            <Button
+            {!readOnly && <Button
               variant="ghost"
               size="icon"
               className="w-5 h-5 opacity-50 hover:opacity-100 flex-shrink-0"
-              onClick={() => onDeleteColumn(col)}
+              onClick={() => onDeleteColumn?.(col)}
             >
               <X className="w-3 h-3" />
-            </Button>
+            </Button>}
           </div>
         ))}
         <div
@@ -248,7 +252,7 @@ export const DataTable = memo(function DataTable({
                       key={col}
                       className="flex items-center px-2 border-r border-[hsl(var(--border))] cursor-pointer hover:bg-[hsl(var(--muted))] group flex-shrink-0"
                       style={{ width: columnWidth }}
-                      onClick={() => !isEditing && startEdit(rowIndex, col, value)}
+                      onClick={() => readOnly ? onInspect?.(rowIndex,col) : !isEditing && startEdit(rowIndex, col, value)}
                     >
                       {isEditing ? (
                         <Input
@@ -268,7 +272,7 @@ export const DataTable = memo(function DataTable({
                           <span className="truncate flex-1" title={formatCellValue(value)}>
                             {formatCellValue(value)}
                           </span>
-                          <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-50 flex-shrink-0" />
+                          {!readOnly && <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-50 flex-shrink-0" />}
                         </>
                       )}
                     </div>
@@ -278,14 +282,14 @@ export const DataTable = memo(function DataTable({
                   className="flex items-center justify-center flex-shrink-0"
                   style={{ width: actionColumnWidth }}
                 >
-                  <Button
+                  {!readOnly && <Button
                     variant="ghost"
                     size="icon"
                     className="w-5 h-5"
-                    onClick={() => onDeleteRow(rowIndex)}
+                    onClick={() => onDeleteRow?.(rowIndex)}
                   >
                     <Trash2 className="w-3 h-3 text-[hsl(var(--danger-500))]" />
-                  </Button>
+                  </Button>}
                 </div>
               </div>
             )

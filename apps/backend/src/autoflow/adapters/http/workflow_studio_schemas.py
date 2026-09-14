@@ -209,6 +209,44 @@ class StudioWorkflowRunPage(ApiModel):
     next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
 
 
+class StudioRunResultRow(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    sequence: int = Field(ge=1, le=9007199254740991)
+    node_id: str
+    execution_id: str
+    values: dict[str, JsonValue]
+    large_values: dict[str, str] = Field(default_factory=dict)
+
+
+class StudioRunResultPage(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    run_id: str = Field(min_length=1)
+    workflow_id: str = Field(min_length=1)
+    items: list[StudioRunResultRow]
+    total: int = Field(ge=0, le=9007199254740991)
+    through_sequence: int = Field(ge=0, le=9007199254740991)
+    next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
+
+    @model_validator(mode="after")
+    def validate_page(self) -> Self:
+        if len(self.items) > self.total or any(row.sequence > self.through_sequence for row in self.items):
+            raise ValueError("结果页超出固定截止位置")
+        if any(right.sequence <= left.sequence for left, right in pairwise(self.items)):
+            raise ValueError("结果序号必须严格递增")
+        return self
+
+
+class StudioRunResultValue(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    run_id: str = Field(min_length=1)
+    sequence: int = Field(ge=1, le=9007199254740991)
+    key: str
+    value: JsonValue
+
+
 class StudioImageAsset(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
 
@@ -529,6 +567,33 @@ class StudioVariableTrackingResult(ApiModel):
 
 class StudioVariableTrackingCleared(ApiModel):
     message: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioRunVariableTrackingRecord(StudioVariableTrackingRecord):
+    sequence: int = Field(ge=1, le=9007199254740991)
+    execution_id: str = Field(alias="executionId")
+    large_values: dict[str, str] = Field(default_factory=dict, alias="largeValues")
+
+
+class StudioRunVariableTrackingPage(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    run_id: str = Field(min_length=1)
+    tracking: list[StudioRunVariableTrackingRecord]
+    total: int = Field(ge=0, le=9007199254740991)
+    through_sequence: int = Field(ge=0, le=9007199254740991)
+    next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
+
+    @model_validator(mode="after")
+    def validate_page(self) -> Self:
+        if len(self.tracking) > self.total or any(row.sequence > self.through_sequence for row in self.tracking):
+            raise ValueError("变量追踪页超出固定截止位置")
+        if any(right.sequence <= left.sequence for left, right in pairwise(self.tracking)):
+            raise ValueError("变量变化序号必须严格递增")
+        return self
+
+
+class StudioRunVariableTrackingCleared(StudioVariableTrackingCleared):
+    run_id: str = Field(min_length=1)
 
 
 class StudioBrowserScriptTarget(ApiModel):

@@ -1,5 +1,5 @@
 // Source: WebRPA@5ccb900e, components/workflow/VariableTrackingPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { variableTrackingApi, type VariableTrackingRecord } from '../api'
+import { variableTrackingApi, workflowApi, type WorkflowRunSummary, type VariableTrackingRecord } from '../api'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { SelectNative } from './controls/select-native'
@@ -7,6 +7,7 @@ import { X, Search, Filter, RefreshCw, Download, Trash2, Clock, Tag, TrendingUp,
 
 interface VariableTrackingPanelProps {
   workflowId: string
+  runId?: string
   isOpen: boolean
   onClose: () => void
 }
@@ -20,14 +21,49 @@ interface VariableStats {
 }
 
 export const VariableTrackingPanel: React.FC<VariableTrackingPanelProps> = props =>
-  props.isOpen ? <VariableTrackingContent key={props.workflowId} {...props} /> : null
+  props.isOpen ? <VariableTrackingHost key={`${props.workflowId}:${props.runId || ""}`} {...props} /> : null
 
-const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
+const VariableTrackingHost: React.FC<VariableTrackingPanelProps> = props => {
+  const [selectedRunId, setSelectedRunId] = useState(props.runId || '')
+  const [runs, setRuns] = useState<WorkflowRunSummary[]>([])
+  const [nextCursor, setNextCursor] = useState<number | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const request = useRef(0)
+  const pending = useRef(false)
+  useEffect(() => () => { request.current++ }, [])
+  const loadRuns = async (cursor = 0) => {
+    if (pending.current) return
+    pending.current = true; setLoading(true)
+    const current = ++request.current
+    const result = await workflowApi.listRuns(undefined,cursor,50)
+    if (request.current !== current) return
+    pending.current = false; setLoading(false)
+    if (!result.success || !result.data) { setError(result.error || '读取运行历史失败'); return }
+    setRuns(previous => cursor === 0 ? result.data!.items : [...previous,...result.data!.items])
+    setNextCursor(result.data.nextCursor); setError('')
+  }
+  const selector = <div className="flex items-center gap-2 px-6 py-2 border-b text-sm">
+    <SelectNative aria-label="追踪运行" value={selectedRunId} onChange={event => setSelectedRunId(event.target.value)}>
+      <option value="">当前流程（兼容记录）</option>
+      {selectedRunId && !runs.some(run => run.runId === selectedRunId) && <option value={selectedRunId}>运行 {selectedRunId}</option>}
+      {runs.map(run => <option key={run.runId} value={run.runId}>{run.workflowName || run.workflowId} · {run.startedAt} · {run.runId}</option>)}
+    </SelectNative>
+    <button disabled={loading} onClick={() => void loadRuns()}>读取运行历史</button>
+    {nextCursor !== null && <button disabled={loading} onClick={() => void loadRuns(nextCursor)}>更早运行</button>}
+    {error && <span role="alert">{error}</span>}
+  </div>
+  return <VariableTrackingContent key={selectedRunId} {...props} runId={selectedRunId || undefined} runSelector={selector}/>
+}
+
+const VariableTrackingContent: React.FC<VariableTrackingPanelProps & {runSelector: React.ReactNode}> = ({
   workflowId,
+  runId,
+  runSelector,
   isOpen,
   onClose
 }) => {
-  const [trackingRecords, setTrackingRecords] = useState<VariableTrackingRecord[]>([])
+  const [trackingRecords, setTrackingRecords] = useState<(VariableTrackingRecord & {sequence?: number; largeValues?: Record<string, string>})[]>([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedVariable, setSelectedVariable] = useState<string | null>(null)
@@ -42,57 +78,147 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
   const [clearing, setClearing] = useState(false)
   const request = useRef<{controller:AbortController; kind:'read'|'clear'} | null>(null)
 
+  const [page, setPage] = useState({cursor: 0, throughSequence: undefined as number | undefined})
+  const [total, setTotal] = useState(0)
+  const [nextCursor, setNextCursor] = useState<number | null>(null)
+  const cutoff = useRef<number | undefined>(undefined)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
+  const exportRequest = useRef<AbortController | null>(null)
+  const valueRequests = useRef(new Map<string, AbortController>())
+  const [values, setValues] = useState<Record<string, unknown>>({})
+  const [valueErrors, setValueErrors] = useState<Record<string, string>>({})
+  const [loadingValues, setLoadingValues] = useState<Set<string>>(new Set())
+  const filters = useMemo(() => runId ? {
+    query: searchTerm || undefined, variable: selectedVariable || undefined,
+    operation: selectedOperation === 'all' ? undefined : selectedOperation,
+    valueType: selectedType === 'all' ? undefined : selectedType,
+  } : {}, [runId, searchTerm, selectedVariable, selectedOperation, selectedType])
+  // Legacy filters are local; only run filters initiate service reads.
+  const filterKey = runId ? JSON.stringify(filters) : ''
+  const confirmedFilter = useRef(filterKey)
+
   const fetchTrackingData = useCallback(async () => {
-    if (!workflowId || request.current) return
+    if ((!workflowId && !runId) || request.current) return
     const current = {controller:new AbortController(),kind:'read' as const}
     request.current = current
     setLoading(true)
-    const result = await variableTrackingApi.list(workflowId,current.controller.signal)
-    if (request.current !== current || current.controller.signal.aborted) return
-    request.current = null
-    setLoading(false)
-    if (result.success && result.data) { setTrackingRecords(result.data.tracking); setReadError('') }
-    else setReadError(result.error || '获取变量追踪记录失败')
-  }, [workflowId])
+    if (runId) {
+      const changed = confirmedFilter.current !== filterKey
+      const result = await variableTrackingApi.listRun(runId, {
+        ...JSON.parse(filterKey), limit: 100,
+        cursor: changed ? 0 : page.cursor,
+        throughSequence: changed ? undefined : page.throughSequence,
+      }, current.controller.signal)
+      if (request.current !== current || current.controller.signal.aborted) return
+      request.current = null
+      setLoading(false)
+      if (result.success && result.data?.runId === runId) {
+        setTrackingRecords(result.data.tracking); setTotal(result.data.total)
+        setNextCursor(result.data.nextCursor); cutoff.current = result.data.throughSequence
+        setReadError('')
+        if (changed) {
+          confirmedFilter.current = filterKey
+          if (page.cursor !== 0 || page.throughSequence !== undefined) setPage({cursor: 0, throughSequence: undefined})
+        }
+      } else setReadError(result.error || '获取运行变量追踪记录失败')
+    } else {
+      const result = await variableTrackingApi.list(workflowId,current.controller.signal)
+      if (request.current !== current || current.controller.signal.aborted) return
+      request.current = null
+      setLoading(false)
+      if (result.success && result.data) { setTrackingRecords(result.data.tracking); setReadError('') }
+      else setReadError(result.error || '获取变量追踪记录失败')
+    }
+  }, [workflowId, runId, filterKey, page])
 
   useEffect(() => {
     void fetchTrackingData()
-    return () => { request.current?.controller.abort(); request.current = null }
+    return () => {
+      request.current?.controller.abort(); request.current = null
+      valueRequests.current.forEach(controller => controller.abort()); valueRequests.current.clear()
+      setValues({}); setValueErrors({}); setLoadingValues(new Set()); setExpandedRecords(new Set())
+    }
   }, [fetchTrackingData])
 
+  useEffect(() => () => {
+    exportRequest.current?.abort()
+    valueRequests.current.forEach(controller => controller.abort())
+    valueRequests.current.clear()
+  }, [])
+
   useEffect(() => {
-    if (!autoRefresh) return
+    // Browsing history keeps its cutoff stable until an explicit refresh.
+    if (!autoRefresh || (runId && page.throughSequence !== undefined)) return
     const interval = setInterval(() => { void fetchTrackingData() },1000)
     return () => clearInterval(interval)
-  }, [autoRefresh,fetchTrackingData])
+  }, [autoRefresh,fetchTrackingData,runId,page.throughSequence])
 
-  const handleRefresh = () => { void fetchTrackingData() }
+  const handleRefresh = () => {
+    if (runId && page.throughSequence !== undefined) setPage({cursor: 0, throughSequence: undefined})
+    else void fetchTrackingData()
+  }
 
   const handleClear = async () => {
-    if (!workflowId || request.current?.kind === 'clear') return
+    if ((!workflowId && !runId) || request.current?.kind === 'clear') return
     request.current?.controller.abort()
     const current = {controller:new AbortController(),kind:'clear' as const}
     request.current = current
     setLoading(false)
     setClearing(true)
-    const result = await variableTrackingApi.clear(workflowId,current.controller.signal)
+    const result = runId
+      ? await variableTrackingApi.clearRun(runId,current.controller.signal)
+      : await variableTrackingApi.clear(workflowId,current.controller.signal)
     if (request.current !== current || current.controller.signal.aborted) return
     request.current = null
     setClearing(false)
-    if (result.success) { setTrackingRecords([]); setExpandedRecords(new Set()); setClearError(''); setReadError('') }
-    else setClearError(result.error || '清空变量追踪记录失败，已保留显示内容')
+    if (result.success) {
+      setTrackingRecords([]); setExpandedRecords(new Set()); setClearError(''); setReadError('')
+      setTotal(0); setNextCursor(null); cutoff.current = undefined; setValues({})
+      valueRequests.current.forEach(controller => controller.abort()); valueRequests.current.clear()
+      setLoadingValues(new Set()); setValueErrors({})
+      if (runId) setPage({cursor: 0, throughSequence: undefined})
+    } else setClearError(result.error || '清空变量追踪记录失败，已保留显示内容')
   }
 
-  // 导出为JSON
-  const handleExport = () => {
-    const dataStr = JSON.stringify(trackingRecords, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+  const handleExport = async () => {
+    if (exportRequest.current) return
+    let dataBlob: Blob
+    if (runId) {
+      if (cutoff.current === undefined || confirmedFilter.current !== filterKey) return
+      const controller = new AbortController()
+      exportRequest.current = controller; setExporting(true)
+      const result = await variableTrackingApi.exportRun(runId, cutoff.current, filters, controller.signal)
+      if (controller.signal.aborted) return
+      exportRequest.current = null; setExporting(false)
+      if (!result.success || !result.data) { setExportError(result.error || '导出变量追踪失败'); return }
+      dataBlob = result.data
+    } else dataBlob = new Blob([JSON.stringify(trackingRecords, null, 2)], {type:'application/json'})
+    setExportError('')
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `variable-tracking-${new Date().getTime()}.json`
+    link.download = runId ? `variable-tracking-${runId}.jsonl` : `variable-tracking-${new Date().getTime()}.json`
     link.click()
     URL.revokeObjectURL(url)
+  }
+
+  const loadValue = async (sequence: number, side: 'old_value' | 'new_value') => {
+    if (!runId) return
+    const key = `${sequence}:${side}`
+    if (valueRequests.current.has(key)) return
+    const controller = new AbortController()
+    valueRequests.current.set(key, controller)
+    setLoadingValues(previous => new Set(previous).add(key))
+    const result = await variableTrackingApi.getRunValue(runId,sequence,side,controller.signal)
+    if (controller.signal.aborted || valueRequests.current.get(key) !== controller) return
+    valueRequests.current.delete(key)
+    setLoadingValues(previous => {const next=new Set(previous);next.delete(key);return next})
+    if (result.success && result.data?.runId === runId && result.data.sequence === sequence && result.data.key === side) {
+      setValues(previous => ({...previous,[key]:result.data!.value}))
+      setExpandedRecords(previous => new Set(previous).add(trackingRecords.findIndex(record => record.sequence === sequence)))
+      setValueErrors(previous => ({...previous,[key]:''}))
+    } else setValueErrors(previous => ({...previous,[key]:result.error || '完整值读取失败'}))
   }
 
   // 获取所有唯一的变量名
@@ -109,6 +235,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
 
   // 过滤记录
   const filteredRecords = useMemo(() => {
+    if (runId) return trackingRecords
     return trackingRecords.filter(record => {
       // 搜索过滤
       if (searchTerm) {
@@ -138,7 +265,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
 
       return true
     })
-  }, [trackingRecords, searchTerm, selectedVariable, selectedOperation, selectedType])
+  }, [trackingRecords, searchTerm, selectedVariable, selectedOperation, selectedType, runId])
 
   // 获取变量的统计信息
   const variableStats = useMemo(() => {
@@ -213,7 +340,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
             <div>
               <h2 className="text-xl font-bold text-gray-800">变量追踪</h2>
               <p className="text-sm text-gray-500">
-                共 {trackingRecords.length} 条记录，显示 {filteredRecords.length} 条
+                {runId ? `共 ${total} 条记录，本页 ${trackingRecords.length} 条` : `共 ${trackingRecords.length} 条记录，显示 ${filteredRecords.length} 条`}
               </p>
             </div>
           </div>
@@ -245,10 +372,10 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
             {/* 导出 */}
             <button
               onClick={handleExport}
-              disabled={trackingRecords.length === 0}
+              disabled={trackingRecords.length === 0 || exporting || (Boolean(runId) && (loading || confirmedFilter.current !== filterKey))}
               className="px-3 py-2 rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-200 
                 transition-all duration-200 disabled:opacity-50"
-              title="导出JSON"
+              title={runId ? "导出JSONL" : "导出JSON"}
             >
               <Download className="w-4 h-4" />
             </button>
@@ -256,7 +383,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
             {/* 清空 */}
             <button
               onClick={handleClear}
-              disabled={trackingRecords.length === 0 || clearing}
+              disabled={(runId ? total === 0 : trackingRecords.length === 0) || clearing}
               className="px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 
                 transition-all duration-200 disabled:opacity-50"
               title="清空记录"
@@ -275,10 +402,11 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
           </div>
         </div>
 
-        {(readError || clearError) && <div role="alert" className="px-6 py-3 text-red-700 bg-red-50">{clearError || readError}</div>}
+        {runSelector}
+        {(readError || clearError || exportError) && <div role="alert" className="px-6 py-3 text-red-700 bg-red-50">{clearError || exportError || readError}</div>}
         {clearing && <div role="status" className="px-6 py-2">正在等待服务确认清空记录…</div>}
         {/* 工具栏 */}
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <fieldset disabled={clearing} className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
             {/* 搜索框 */}
             <div className="flex-1 relative">
@@ -354,8 +482,13 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
               </div>
             </div>
           )}
-        </div>
+        </fieldset>
 
+        {runId && <div className="flex items-center gap-3 px-6 py-2 border-b">
+          <span>本页统计；运行 {runId}</span>
+          <button disabled={loading || clearing || page.cursor === 0} onClick={() => setPage({cursor:0,throughSequence:cutoff.current})}>第一页</button>
+          <button disabled={loading || clearing || nextCursor === null} onClick={() => setPage({cursor:nextCursor!,throughSequence:cutoff.current})}>下一页</button>
+        </div>}
         {/* 主内容区 */}
         <div className="flex-1 overflow-hidden flex">
           
@@ -364,7 +497,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
             <div className="p-4">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                 <Tag className="w-4 h-4" />
-                变量列表 ({uniqueVariables.length})
+                {runId ? "本页变量" : "变量列表"} ({uniqueVariables.length})
               </h3>
               <div className="space-y-1">
                 {uniqueVariables.map(variable => {
@@ -374,6 +507,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
                   return (
                     <button
                       key={variable}
+                      disabled={clearing}
                       onClick={() => setSelectedVariable(isSelected ? null : variable)}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200
                         ${isSelected 
@@ -382,7 +516,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
                     >
                       <div className="font-medium text-sm truncate">{variable}</div>
                       <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                        <span>{stats.count} 次变化</span>
+                        <span>{runId ? "本页 " : ""}{stats.count} 次变化</span>
                         <span className="text-xs px-1.5 py-0.5 rounded bg-gray-200">
                           {stats.value_type}
                         </span>
@@ -399,15 +533,26 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
             {filteredRecords.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <TrendingUp className="w-16 h-16 mb-4 opacity-50" />
-                <p className="text-lg font-medium">{trackingRecords.length ? '没有匹配的追踪记录' : '暂无追踪记录'}</p>
-                <p className="text-sm mt-2">{trackingRecords.length ? '请调整搜索内容或筛选条件' : '运行工作流后将显示变量变化'}</p>
+                <p className="text-lg font-medium">{trackingRecords.length || (runId && (searchTerm || selectedVariable || selectedOperation !== 'all' || selectedType !== 'all')) ? '没有匹配的追踪记录' : '暂无追踪记录'}</p>
+                <p className="text-sm mt-2">{trackingRecords.length || (runId && (searchTerm || selectedVariable || selectedOperation !== 'all' || selectedType !== 'all')) ? '请调整搜索内容或筛选条件' : '运行工作流后将显示变量变化'}</p>
               </div>
             ) : (
               <div className="p-6 space-y-3">
                 {filteredRecords.map((record, index) => {
                   const isExpanded = expandedRecords.has(index)
-                  const oldValueStr = formatValue(record.old_value)
-                  const newValueStr = formatValue(record.new_value)
+                  const displayValue = (side: 'old_value' | 'new_value') => {
+                    const key = `${record.sequence}:${side}`
+                    return Object.hasOwn(values,key) ? formatValue(values[key]) : record.largeValues?.[side] ?? formatValue(record[side])
+                  }
+                  const oldValueStr = displayValue('old_value')
+                  const newValueStr = displayValue('new_value')
+                  const valueButton = (side: 'old_value' | 'new_value') => {
+                    if (!runId || record.sequence === undefined || !Object.hasOwn(record.largeValues || {},side)) return null
+                    const key = `${record.sequence}:${side}`
+                    return <>{!Object.hasOwn(values,key) && <button type="button" disabled={loadingValues.has(key)} className="text-sm underline" onClick={() => void loadValue(record.sequence!,side)}>
+                      {loadingValues.has(key) ? '读取中…' : `读取完整${side === 'old_value' ? '旧' : '新'}值`}
+                    </button>}{valueErrors[key] && <div role="alert">{valueErrors[key]}</div>}</>
+                  }
                   const isLongValue = newValueStr.length > 100 || oldValueStr.length > 100
 
                   return (
@@ -472,6 +617,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
                               }`}>
                                 {oldValueStr}
                               </pre>
+                              {valueButton("old_value")}
                             </div>
                           )}
 
@@ -482,6 +628,7 @@ const VariableTrackingContent: React.FC<VariableTrackingPanelProps> = ({
                             }`}>
                               {newValueStr}
                             </pre>
+                            {valueButton("new_value")}
                           </div>
                         </div>
                       </div>

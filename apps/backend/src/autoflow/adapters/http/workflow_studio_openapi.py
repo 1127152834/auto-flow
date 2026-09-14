@@ -54,6 +54,9 @@ STUDIO_SCHEMAS = (
     schemas.StudioExecutionLogPage,
     schemas.StudioWorkflowRunSummary,
     schemas.StudioWorkflowRunPage,
+    schemas.StudioRunResultRow,
+    schemas.StudioRunResultPage,
+    schemas.StudioRunResultValue,
     schemas.StudioImageAsset,
     schemas.StudioImageUploadResult,
     schemas.StudioImageMutationResult,
@@ -83,6 +86,9 @@ STUDIO_SCHEMAS = (
     schemas.StudioJsScriptResult,
     schemas.StudioVariableTrackingResult,
     schemas.StudioVariableTrackingCleared,
+    schemas.StudioRunVariableTrackingRecord,
+    schemas.StudioRunVariableTrackingPage,
+    schemas.StudioRunVariableTrackingCleared,
 )
 
 

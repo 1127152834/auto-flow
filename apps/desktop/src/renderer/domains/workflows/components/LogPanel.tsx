@@ -35,6 +35,7 @@ import type { LogEntry, LogLevel, VariableType } from '../types/index'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
+import { RunResultsPanel } from './RunResultsPanel'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 import { DialogPortal } from './controls/dialog-portal'
@@ -67,7 +68,6 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     setVerboseLog,
     maxLogCount,
     setMaxLogCount,
-    currentExecutionWorkflowId,
     currentExecutionRunId,
     nodes,
   } = useWorkflowStore()
@@ -79,6 +79,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
   const [isAddingColumn, setIsAddingColumn] = useState(false)
+  const [localDataPreview,setLocalDataPreview]=useState(false)
   
   // 日志搜索和筛选 - 改为多选模式
   const [logSearchQuery, setLogSearchQuery] = useState('')
@@ -86,11 +87,14 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [logNodeFilter, setLogNodeFilter] = useState('')
   const [historyLogs, setHistoryLogs] = useState<LogEntry[] | null>(null)
+  const [historyRunId, setHistoryRunId] = useState('')
   const [historyTotal, setHistoryTotal] = useState(0)
   const [historyNextCursor, setHistoryNextCursor] = useState<number | null>(null)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyError, setHistoryError] = useState('')
   const [recentRuns, setRecentRuns] = useState<WorkflowRunSummary[]>([])
+  const [nextRunCursor,setNextRunCursor]=useState<number|null>(null)
+  const [runsLoading,setRunsLoading]=useState(false)
   const [selectedRunId, setSelectedRunId] = useState('')
   const [runHistoryError, setRunHistoryError] = useState('')
   const historyRequest = useRef(0)
@@ -162,6 +166,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     const request = ++historyRequest.current
     const transportRevision = getStudioTransportRevision()
     if (logLevelFilters.size === 0) {
+      setHistoryRunId(effectiveRunId)
       setHistoryLogs([]); setHistoryTotal(0); setHistoryNextCursor(null); setHistoryError('')
       return
     }
@@ -176,6 +181,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     if (request !== historyRequest.current || transportRevision !== getStudioTransportRevision() || effectiveRunId !== selectedRunRef.current) return
     setHistoryLoading(false)
     if (!result.success || !result.data || result.data.runId !== effectiveRunId || !Array.isArray(result.data.items)) {
+      setHistoryRunId(effectiveRunId)
       setHistoryError(result.error || '运行日志响应无效')
       if (cursor === 0) setHistoryLogs(null)
       return
@@ -190,21 +196,26 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
       ...(item.details ? { details: item.details } : {}),
     }))
     setHistoryLogs(previous => cursor === 0 ? next : [...next, ...(previous || [])])
+    setHistoryRunId(effectiveRunId)
     setHistoryTotal(result.data.total)
     setHistoryNextCursor(result.data.nextCursor ?? null)
     setHistoryError('')
   }, [effectiveRunId, logLevelFilters, logNodeFilter, logSearchQuery, maxLogCount])
 
-  const loadRecentRuns = useCallback(async () => {
+  const loadRecentRuns = useCallback(async (cursor=0) => {
     const request = ++runHistoryRequest.current
     const transportRevision = getStudioTransportRevision()
-    const result = await workflowApi.listRuns(undefined, 0, 50)
+    setRunsLoading(true)
+    const result = await workflowApi.listRuns(undefined, cursor, 50)
     if (request !== runHistoryRequest.current || transportRevision !== getStudioTransportRevision()) return
+    setRunsLoading(false)
     if (!result.success || !result.data) {
       setRunHistoryError(result.error || '运行历史响应无效')
       return
     }
-    setRecentRuns(result.data.items)
+    const items=result.data.items
+    setRecentRuns(previous=>Array.from(new Map((cursor?[...previous,...items]:[...items,...previous.filter(item=>item.runId===selectedRunRef.current&&!items.some(next=>next.runId===item.runId))]).map(item=>[item.runId,item])).values()))
+    setNextRunCursor(result.data.nextCursor??null)
     setRunHistoryError('')
     setSelectedRunId(previous => previous || currentExecutionRunId || result.data!.items[0]?.runId || '')
   }, [currentExecutionRunId])
@@ -238,8 +249,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     return () => clearTimeout(timer)
   }, [effectiveRunId, logs.length, loadHistoryLogs])
 
-  const visibleLogs = historyLogs ?? filteredLogs
-  const visibleTotal = historyLogs === null ? logs.length : historyTotal
+  const matchingHistory = historyRunId === effectiveRunId
+  const visibleLogs = effectiveRunId ? (matchingHistory ? historyLogs ?? [] : []) : filteredLogs
+  const visibleTotal = effectiveRunId ? (matchingHistory && historyLogs !== null ? historyTotal : 0) : logs.length
 
   // 自动滚动到最新日志
   useEffect(() => {
@@ -358,7 +370,8 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     const headers = cols.join(',')
     const csvRows = rows.map(row =>
       cols.map(col => {
-        const value = String(row[col] ?? '')
+        const cell=row[col]
+        const value = cell!==null&&typeof cell==='object'?JSON.stringify(cell):String(cell??'')
         if (value.includes(',') || value.includes('"') || value.includes('\n')) {
           return `"${value.replace(/"/g, '""')}"`
         }
@@ -378,71 +391,29 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     URL.revokeObjectURL(url)
   }, [workflowName])
 
-  // 智能下载：永远优先后端完整数据；本地预览数据仅最后兜底
+  // Local editable preview and immutable run exports have explicit, separate ownership.
   const [downloading, setDownloading] = useState(false)
   const handleDownloadData = useCallback(async () => {
+    if(downloading)return
     setDownloading(true)
+    const connection=getStudioTransportRevision(),runId=effectiveRunId
     try {
-      const tryDownload = async (rows: Record<string, unknown>[], serverColumns: string[] | undefined) => {
-        const finalCols: string[] = serverColumns ? [...serverColumns] : []
-        const seen = new Set<string>(finalCols)
-        rows.forEach(r => {
-          Object.keys(r).forEach(k => {
-            if (!seen.has(k)) {
-              seen.add(k)
-              finalCols.push(k)
-            }
-          })
-        })
-        downloadCsv(rows as DataRow[], finalCols)
-      }
-
-      let backendError = ''
-
-      // 第 1 层：用当前执行 ID 取
-      if (currentExecutionWorkflowId) {
-        try {
-          const result = await workflowApi.getFullData(currentExecutionWorkflowId)
-          if (result.success && result.data && result.data.total > 0) {
-            await tryDownload(result.data.rows, result.data.columns)
-            return
-          }
-          backendError = result.error || (result.data?.total === 0 ? 'empty' : 'unknown')
-        } catch (e) {
-          backendError = e instanceof Error ? e.message : String(e)
-        }
-      }
-
-      // 第 2 层：兜底 latest（防止 currentExecutionWorkflowId 与后端不一致 / 已 LRU 清理）
-      try {
-        const latest = await workflowApi.getLatestFullData()
-        if (latest.success && latest.data && latest.data.total > 0) {
-          await tryDownload(latest.data.rows, latest.data.columns)
-          return
-        }
-      } catch {
-        // 忽略，继续兜底本地
-      }
-
-      // 第 3 层：本地预览数据（仅兜底；本地 5000 条上限基本不会触达）
-      if (collectedData.length === 0) {
-        await alert(
-          backendError && backendError !== 'empty'
-            ? `从后端获取完整数据失败：${backendError}\n并且本地没有任何收集数据可下载`
-            : '暂无数据可下载（请先运行一次工作流）',
-        )
+      if(runId&&!localDataPreview){
+        const page=await workflowApi.getRunResults(runId,0,1)
+        if(!page.success||!page.data)throw new Error(page.error||'本次运行结果读取失败')
+        const result=await workflowApi.exportRunResults(runId,page.data.throughSequence)
+        if(connection!==getStudioTransportRevision()||runId!==selectedRunRef.current)return
+        if(!result.success||!result.data)throw new Error(result.error||'本次运行结果导出失败')
+        const url=URL.createObjectURL(result.data),link=document.createElement('a')
+        link.href=url;link.download=`results-${runId}.jsonl`;link.click();URL.revokeObjectURL(url)
         return
       }
-      const ok = await confirm(
-        `已从本地预览缓存读取到 ${collectedData.length} 条数据，将全部导出。\n（如需更完整的历史数据，请在执行结束后立即下载）`,
-        { title: '导出本地数据', type: 'confirm', confirmText: '导出' },
-      )
-      if (!ok) return
-      downloadCsv(collectedData, columns)
-    } finally {
-      setDownloading(false)
-    }
-  }, [currentExecutionWorkflowId, collectedData, columns, downloadCsv, alert, confirm])
+      if(!collectedData.length){await alert('本地预览没有数据可下载');return}
+      if(!await confirm(`导出本地可编辑预览的 ${collectedData.length} 条数据；不包含未加载的历史运行结果。`,{title:'导出本地数据',type:'confirm',confirmText:'导出'}))return
+      downloadCsv(collectedData,columns,'-本地预览')
+    } catch(error) { await alert(`数据导出失败：${String(error)}。未使用其他运行的数据。`) }
+    finally { setDownloading(false) }
+  }, [downloading,effectiveRunId,localDataPreview,collectedData,columns,downloadCsv,alert,confirm])
 
   // 监听 AI 小助手发起的 UI 事件
   useEffect(() => {
@@ -668,12 +639,12 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               <FileSpreadsheet className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">数据表格</span>
               <span className="sm:hidden">数据</span>
-              <span className={cn(
+              {(!effectiveRunId || localDataPreview) && <span className={cn(
                 'text-[10px] px-1.5 py-0.5 rounded-full font-mono',
                 activeTab === 'data' ? '!bg-white/25 !text-white' : 'bg-[hsl(var(--slate-100))]'
               )}>
                 {collectedData.length}
-              </span>
+              </span>}
             </button>
             {/* 全局变量 - 紫 */}
             <button
@@ -762,7 +733,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               </Button>
             </>
           )}
-          {activeTab === 'data' && (
+          {activeTab === 'data' && (!effectiveRunId||localDataPreview) && (
             <>
               <Button variant="default" size="sm" className="h-7 text-xs" onClick={handleAddRow}>
                 <Plus className="w-3.5 h-3.5 mr-1" />行
@@ -786,7 +757,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 className="h-7 text-xs"
                 onClick={handleDownloadData}
                 disabled={downloading}
-                title="下载本次收集到的全部数据（不受预览条数限制）"
+                title="下载当前本地可编辑预览，不包含未加载的历史运行结果"
               >
                 <FileDown className="w-3.5 h-3.5 mr-1" />
                 {downloading ? '下载中...' : '下载数据'}
@@ -909,6 +880,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     </option>
                   ))}
                 </Select>
+                {nextRunCursor!==null&&<button disabled={runsLoading} className="text-xs" onClick={()=>void loadRecentRuns(nextRunCursor)}>{runsLoading?'读取运行中…':'更早运行'}</button>}
                 <div className="relative flex items-center gap-1">
                   <button
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
@@ -1012,7 +984,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     <option key={node.id} value={node.id}>{String(node.data.label || node.id)}</option>
                   ))}
                 </Select>
-                {historyNextCursor !== null && (
+                {matchingHistory && historyNextCursor !== null && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -1038,9 +1010,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 </div>
               </div>
               
-              {historyError && (
+              {matchingHistory && historyError && (
                 <div role="alert" className="px-3 py-1.5 text-[11px] text-[hsl(var(--danger-700))] bg-[hsl(var(--danger-50))] border-b border-[hsl(var(--danger-500)/0.2)]">
-                  完整日志读取失败：{historyError}。当前会话日志仍保留，可重试筛选或恢复服务连接。
+                  完整日志读取失败：{historyError}。可重试筛选或恢复服务连接，不显示其他运行的日志。
                 </div>
               )}
               {visibleLogs.length === 0 ? (
@@ -1077,7 +1049,11 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
 
           {activeTab === 'data' && (
             <div className="h-full flex flex-col">
-              {collectedData.length === 0 && columns.length === 0 ? (
+              {effectiveRunId&&<div className="flex gap-3 px-3 py-2 text-xs">
+                <button aria-pressed={!localDataPreview} onClick={()=>setLocalDataPreview(false)}>本次运行结果</button>
+                <button aria-pressed={localDataPreview} onClick={()=>setLocalDataPreview(true)}>本地编辑预览</button>
+              </div>}
+              {effectiveRunId&&!localDataPreview?<RunResultsPanel key={effectiveRunId} runId={effectiveRunId}/>:collectedData.length === 0 && columns.length === 0 ? (
                 <div className="flex-1 empty-state animate-fade-in">
                   <div className="empty-state-icon" style={{ background: 'linear-gradient(135deg, hsl(var(--info-50)), hsl(var(--info-100)))', color: 'hsl(var(--info-500))', borderColor: 'hsl(var(--info-500) / 0.15)' }}>
                     <FileSpreadsheet className="w-7 h-7" strokeWidth={1.6} />

@@ -80,6 +80,7 @@ export function Toolbar() {
   const savingDocument = useRef(false)
   const defaultFolderRevision = useRef<number | null>(null)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  const diagnosticRunId = useWorkflowStore(state => state.currentExecutionRunId)
   const documentId = useWorkflowStore(state => state.id)
   const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(null)
   const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
@@ -1771,6 +1772,7 @@ export function Toolbar() {
       {/* 变量追踪面板 */}
       <VariableTrackingPanel
         workflowId={workflowId || ''}
+        runId={diagnosticRunId || undefined}
         isOpen={showVariableTracking}
         onClose={() => setShowVariableTracking(false)}
       />

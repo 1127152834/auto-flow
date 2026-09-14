@@ -39,6 +39,23 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
+it('hides the previous run immediately while the new run response is pending or rejected',async()=>{
+ render(<LogPanel/>);await screen.findByText('100/650')
+ fireEvent.change(screen.getByPlaceholderText('搜索日志...'),{target:{value:'故障-00601'}})
+ await screen.findByText('1/1')
+ expect(screen.getByText('故障-00601')).toBeTruthy()
+ let finish!:(result:Awaited<ReturnType<typeof workflowApi.getRunLogs>>)=>void
+ vi.spyOn(workflowApi,'getRunLogs').mockImplementation(()=>new Promise(resolve=>{finish=resolve}))
+ act(()=>useWorkflowStore.setState({currentExecutionRunId:'run-new',logs:[{id:'stale',timestamp:new Date().toISOString(),level:'error',message:'旧Store日志也不能冒充新运行'}]}))
+ expect(screen.queryByText('故障-00601')).toBeNull()
+ expect(screen.queryByText('旧Store日志也不能冒充新运行')).toBeNull()
+ expect(screen.queryByRole('button',{name:'更早日志'})).toBeNull()
+ await waitFor(()=>expect(finish).toBeDefined())
+ await act(async()=>finish({success:false,error:'当前运行读取失败'}))
+ expect(screen.queryByText('故障-00601')).toBeNull()
+ expect(screen.queryByText('旧Store日志也不能冒充新运行')).toBeNull()
+ expect(screen.getByText(/完整日志读取失败：当前运行读取失败/)).toBeTruthy()
+})
 
 it('queries the complete run on the service and prepends older pages', async () => {
   render(<LogPanel />)
@@ -91,4 +108,17 @@ it('refreshes the persisted run summary after a lifecycle event',async()=>{
   window.dispatchEvent(new CustomEvent('studio:run-history-changed',{detail:{runId:'run-history',status:'completed'}}))
   await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('completed'))
   expect(list).toHaveBeenCalledTimes(2)
+})
+
+it('loads older run pages and retains the explicitly selected older run after refresh',async()=>{
+ const rows=Array.from({length:1000},(_,index)=>({runId:`paged-${index}`,workflowId:'flow',documentId:'doc',workflowName:`分页运行${index}`,status:'completed' as const,startedAt:new Date().toISOString(),finishedAt:null,logCount:0}))
+ const list=vi.spyOn(workflowApi,'listRuns').mockImplementation(async(_doc,cursor=0,limit=50)=>({success:true,data:{items:rows.slice(cursor,cursor+limit),total:1000,nextCursor:cursor+limit<1000?cursor+limit:null}}))
+ vi.spyOn(workflowApi,'getRunLogs').mockImplementation(async runId=>({success:true,data:{runId,workflowId:'flow',items:[],total:0,nextCursor:null}}))
+ render(<LogPanel/>);fireEvent.click(await screen.findByText('更早运行'))
+ await waitFor(()=>expect(list).toHaveBeenLastCalledWith(undefined,50,50))
+ fireEvent.click(screen.getByRole('combobox',{name:'运行日志记录'}))
+ fireEvent.click(await screen.findByRole('option',{name:/分页运行99 /}))
+ act(()=>window.dispatchEvent(new Event('studio:run-history-changed')))
+ await waitFor(()=>expect(list).toHaveBeenLastCalledWith(undefined,0,50))
+ expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('分页运行99')
 })
