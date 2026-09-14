@@ -58,7 +58,8 @@ describe('source-compatible mock HTTP boundary',()=>{
     const iterator=parseServerSentEvents(res.body!)[Symbol.asyncIterator]()
     const completions=[]
     for(let i=0;i<server.mockSnapshot().sequence;i++){const event=(await iterator.next()).value;if(event?.event==='execution:node_complete')completions.push(JSON.parse(event.data))}
-    expect(completions).toEqual([{workflowId:doc.id,nodeId:'fail',success:false}])
+    expect(completions).toHaveLength(1)
+    expect(completions[0]).toMatchObject({workflowId:doc.id,runId:expect.any(String),nodeId:'fail',success:false})
     expect(server.mockSnapshot().run).toBeNull()
   })
   it('rejects malformed and unknown requests and never reaches a real URL',async()=>{

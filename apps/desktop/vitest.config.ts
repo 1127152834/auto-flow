@@ -6,5 +6,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/renderer/domains/workflows/tests/setup-connection.ts'],
+    maxWorkers: 4,
   },
 })

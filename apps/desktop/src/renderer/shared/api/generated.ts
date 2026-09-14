@@ -4501,6 +4501,55 @@ export type components = {
             /** Controlrevision */
             controlRevision: number;
         };
+        /** StudioExecutionLogEntry */
+        StudioExecutionLogEntry: {
+            /** Sequence */
+            sequence: number;
+            /** Id */
+            id: string;
+            /** Timestamp */
+            timestamp: string;
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "debug" | "info" | "success" | "warning" | "error";
+            /** Message */
+            message: string;
+            /**
+             * Nodeid
+             * @default null
+             */
+            nodeId: string | null;
+            /**
+             * Duration
+             * @default null
+             */
+            duration: number | null;
+            /**
+             * Details
+             * @default null
+             */
+            details: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+        };
+        /** StudioExecutionLogPage */
+        StudioExecutionLogPage: {
+            /** Runid */
+            runId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Items */
+            items: components["schemas"]["StudioExecutionLogEntry"][];
+            /** Total */
+            total: number;
+            /**
+             * Nextcursor
+             * @default null
+             */
+            nextCursor: number | null;
+        };
         /** StudioFileSelectRequest */
         StudioFileSelectRequest: {
             /**
@@ -5328,6 +5377,43 @@ export type components = {
             count: number;
         } & {
             [key: string]: unknown;
+        };
+        /** StudioWorkflowRunPage */
+        StudioWorkflowRunPage: {
+            /** Items */
+            items: components["schemas"]["StudioWorkflowRunSummary"][];
+            /** Total */
+            total: number;
+            /**
+             * Nextcursor
+             * @default null
+             */
+            nextCursor: number | null;
+        };
+        /** StudioWorkflowRunSummary */
+        StudioWorkflowRunSummary: {
+            /** Runid */
+            runId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Documentid */
+            documentId: string;
+            /** Workflowname */
+            workflowName: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "starting" | "running" | "paused" | "completed" | "failed" | "stopped" | "interrupted";
+            /** Startedat */
+            startedAt: string;
+            /**
+             * Finishedat
+             * @default null
+             */
+            finishedAt: string | null;
+            /** Logcount */
+            logCount: number;
         };
     };
     responses: never;

@@ -14,14 +14,37 @@ type Json = null | boolean | number | string | Json[] | { [key: string]: Json }
 type ObjectValue = { [key: string]: Json }
 interface EventRecord { sequence: number; event: string; data: unknown }
 interface SavedFile { folder?: string; filename: string; name: string; modifiedTime: string; size: number; content: ObjectValue }
+interface StoredRun {
+  runId: string
+  workflowId: string
+  documentId: string
+  workflowName: string
+  status: 'starting' | 'running' | 'paused' | 'completed' | 'failed' | 'stopped' | 'interrupted'
+  startedAt: string
+  finishedAt: string | null
+  logCount: number
+  requestFingerprint: string
+}
+interface StoredExecutionLog {
+  sequence: number
+  id: string
+  timestamp: string
+  level: 'debug' | 'info' | 'success' | 'warning' | 'error'
+  message: string
+  nodeId?: string
+  duration?: number
+  details?: ObjectValue
+}
 interface Database {
   workflows: Record<string, ObjectValue>
   files: Record<string, SavedFile>
   modules: Record<string, ObjectValue>
+  runs: Record<string, StoredRun>
+  runLogs: Record<string, StoredExecutionLog[]>
   folder: string
 }
 const key = 'autoflow:studio:mock:database:v1'
-const empty = (): Database => ({ workflows: {}, files: {}, modules: {}, folder: 'mock://AutoFlow/workflows' })
+const empty = (): Database => ({ workflows: {}, files: {}, modules: {}, runs: {}, runLogs: {}, folder: 'mock://AutoFlow/workflows' })
 function readDatabase(): Database {
   try { return { ...empty(), ...JSON.parse(localStorage.getItem(key) || '{}') } } catch { return empty() }
 }
@@ -51,7 +74,7 @@ let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
-let run: { pauseId:string|null; controlRevision:number; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { pauseId:string|null; controlRevision:number; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 type CommandRecord = { fingerprint:string; response:ObjectValue; status:number }
 const commandResults = new Map<string, CommandRecord>()
@@ -85,6 +108,26 @@ export function emitMockEvent(event: string, data: unknown) {
   for (const stream of streams) stream.enqueue(encode(e))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
+function emitRunLog(current: NonNullable<typeof run>, log: Omit<StoredExecutionLog, 'sequence'> & { isUserLog?: boolean; isSystemLog?: boolean }) {
+  const previous = db.runLogs[current.runId] || []
+  const entry: StoredExecutionLog = {
+    sequence: previous.length + 1,
+    id: log.id,
+    timestamp: log.timestamp,
+    level: log.level,
+    message: log.message,
+    ...(log.nodeId ? { nodeId: log.nodeId } : {}),
+    ...(log.duration !== undefined ? { duration: log.duration } : {}),
+    ...(log.details ? { details: log.details } : {}),
+  }
+  const runRecord = db.runs[current.runId]
+  persist({
+    ...db,
+    runLogs: { ...db.runLogs, [current.runId]: [...previous, entry] },
+    runs: runRecord ? { ...db.runs, [current.runId]: { ...runRecord, logCount: entry.sequence } } : db.runs,
+  })
+  emitMockEvent('execution:log', { workflowId: current.id, runId: current.runId, log })
+}
 export function configureMock(options: { failNextRequiredFields?: boolean; scriptTest?: {result?:unknown;error?:string;hold?:boolean}; offline?: boolean; failNextSave?: boolean; failNextRun?: boolean; failNextPickerStop?: boolean; disconnect?: boolean; executionOrder?: string[] | null; selectorTest?: typeof selectorTest }) {
   if (options.failNextRequiredFields !== undefined) failNextRequiredFields = options.failNextRequiredFields
   if (options.scriptTest !== undefined) configureMockScriptTest(options.scriptTest)
@@ -100,6 +143,19 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
   }
 }
 export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
+export function seedMockRunHistory(options: { runId: string; workflowId: string; documentId: string; workflowName?: string; logs: Array<Omit<StoredExecutionLog, 'sequence'>> }) {
+  const startedAt = new Date().toISOString()
+  const logs = options.logs.map((log, index) => ({ ...structuredClone(log), sequence: index + 1 }))
+  persist({
+    ...db,
+    runs: { ...db.runs, [options.runId]: {
+      runId: options.runId, workflowId: options.workflowId, documentId: options.documentId,
+      workflowName: options.workflowName || 'Mock 运行', status: 'completed', startedAt,
+      finishedAt: startedAt, logCount: logs.length, requestFingerprint: `seed:${options.runId}`,
+    } },
+    runLogs: { ...db.runLogs, [options.runId]: logs },
+  })
+}
 export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
   recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
@@ -121,7 +177,10 @@ function finish(status: string) {
   if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
   if (run.js) { const request = jsRequests.get(run.js.requestId); if (request && ['pending', 'claimed'].includes(request.status)) request.status = 'expired' }
   if (run.tts) { const request = speechRequests.get(run.tts.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
-  emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
+  const terminalStatus = status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : 'stopped'
+  const record = db.runs[run.runId]
+  if (record) persist({ ...db, runs: { ...db.runs, [run.runId]: { ...record, status: terminalStatus, finishedAt: new Date().toISOString() } } })
+  emitMockEvent('execution:completed', { workflowId: run.id, runId: run.runId, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
   finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
   finishedWorkflows.add(run.id)
@@ -166,8 +225,8 @@ function submitInput(data: Json | undefined): Response {
   const request = inputRequests.get(pending.requestId)
   if (request) request.status = value === null ? 'cancelled' : 'answered'
   run.input = undefined
-  emitMockEvent('execution:log', {workflowId: run.id, log: {id: crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:value === null ? '[Mock] 用户取消输入，变量保持不变' : '[Mock] 已接收输入结果',isSystemLog:true}})
-  emitMockEvent('execution:node_complete', {workflowId:run.id,nodeId:pending.nodeId,success:true})
+  emitRunLog(run, {id: crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:value === null ? '[Mock] 用户取消输入，变量保持不变' : '[Mock] 已接收输入结果',isSystemLog:true})
+  emitMockEvent('execution:node_complete', {workflowId:run.id,runId:run.runId,nodeId:pending.nodeId,success:true})
   run.index++
   tick()
   return response({success:true,requestId:pending.requestId,mock:true})
@@ -189,15 +248,15 @@ function submitJs(event: string, data: Json | undefined): Response {
     || (!data.success && (typeof data.error !== 'string' || !data.error.trim()))) return failure('脚本结果格式无效', 422)
   clearTimeout(run.timer)
   state.status = data.success ? 'completed' : 'failed'
-  emitMockEvent('execution:node_complete', {workflowId:run.id,nodeId:pending.nodeId,success:data.success})
+  emitMockEvent('execution:node_complete', {workflowId:run.id,runId:run.runId,nodeId:pending.nodeId,success:data.success})
   if (!data.success) {
-    emitMockEvent('execution:log', {workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'error',message:`[Mock] 前端脚本失败: ${data.error}`,isSystemLog:true}})
+    emitRunLog(run, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'error',message:`[Mock] 前端脚本失败: ${data.error}`,isSystemLog:true})
     finish('failed'); return response({success:true,requestId:data.requestId})
   }
   const variables = data.variables as ObjectValue
   for (const name of Object.keys(run.variables)) if (Object.hasOwn(variables,name)) writeRunVariable(name, variables[name], pending.nodeId, '[Mock] 前端脚本变量')
   if (pending.resultVariable) writeRunVariable(pending.resultVariable, data.result ?? null, pending.nodeId, '[Mock] 前端脚本返回值')
-  emitMockEvent('execution:log', {workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:'[Mock] 已确认前端脚本结果；未执行网页动作',isSystemLog:true}})
+  emitRunLog(run, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:'info',message:'[Mock] 已确认前端脚本结果；未执行网页动作',isSystemLog:true})
   run.js = undefined; run.index++; tick()
   return response({success:true,requestId:data.requestId})
 }
@@ -217,8 +276,8 @@ function submitSpeech(event: string, data: Json | undefined): Response {
   if (typeof data.success !== 'boolean' || (!data.success && (typeof data.error !== 'string' || !data.error.trim()))) return failure('语音结果格式无效',422)
   clearTimeout(run.timer)
   state.status = data.success ? 'completed' : 'failed'
-  emitMockEvent('execution:node_complete',{workflowId:run.id,nodeId:pending.nodeId,success:data.success})
-  emitMockEvent('execution:log',{workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:data.success?'info':'error',message:data.success?'[Mock] 已确认前端语音结果；未执行网页动作':`[Mock] 语音失败: ${data.error}`,isSystemLog:true}})
+  emitMockEvent('execution:node_complete',{workflowId:run.id,runId:run.runId,nodeId:pending.nodeId,success:data.success})
+  emitRunLog(run, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:data.success?'info':'error',message:data.success?'[Mock] 已确认前端语音结果；未执行网页动作':`[Mock] 语音失败: ${data.error}`,isSystemLog:true})
   if (data.success) { run.tts = undefined; run.index++; tick() }
   else finish('failed')
   return response({success:true,requestId:data.requestId})
@@ -252,11 +311,11 @@ function tick(skipBreakpoint = false) {
     current.paused = true
     current.pauseId = crypto.randomUUID()
     current.controlRevision++
-    emitMockEvent('execution:paused', { workflowId: current.id, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, reason: current.step ? 'step' : 'breakpoint' })
+    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, reason: current.step ? 'step' : 'breakpoint' })
     return
   }
   current.paused = false
-  emitMockEvent('execution:node_start', { workflowId: current.id, nodeId })
+  emitMockEvent('execution:node_start', { workflowId: current.id, runId:current.runId, nodeId })
   current.timer = setTimeout(() => {
     if (run !== current) return
     if (String(node.type) === 'js_script') {
@@ -268,8 +327,8 @@ function tick(skipBreakpoint = false) {
       emitMockEvent('execution:js_script',{requestId,workflowId:current.id,nodeId,code,variables:structuredClone(current.variables)})
       current.timer = setTimeout(() => {
         if (run !== current || current.js?.requestId !== requestId) return
-        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待前端脚本结果超过30秒',isSystemLog:true}})
-        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
+        emitRunLog(current, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待前端脚本结果超过30秒',isSystemLog:true})
+        emitMockEvent('execution:node_complete',{workflowId:current.id,runId:current.runId,nodeId,success:false})
         finish('failed')
       }, 30000)
       return
@@ -278,8 +337,8 @@ function tick(skipBreakpoint = false) {
       const requestId = crypto.randomUUID()
       const payload = {requestId,workflowId:current.id,nodeId,text:data?.text??'',lang:data?.lang??'zh-CN',rate:data?.rate??1,pitch:data?.pitch??1,volume:data?.volume??1}
       if (!isSpeechRequest(payload)) {
-        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
-        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 语音参数无效，未发起朗读',isSystemLog:true}})
+        emitMockEvent('execution:node_complete',{workflowId:current.id,runId:current.runId,nodeId,success:false})
+        emitRunLog(current, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 语音参数无效，未发起朗读',isSystemLog:true})
         finish('failed'); return
       }
       current.tts = {requestId,nodeId}
@@ -287,8 +346,8 @@ function tick(skipBreakpoint = false) {
       emitMockEvent('execution:tts_request',payload)
       current.timer = setTimeout(() => {
         if (run !== current || current.tts?.requestId !== requestId) return
-        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
-        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待语音结果超过60秒',isSystemLog:true}})
+        emitMockEvent('execution:node_complete',{workflowId:current.id,runId:current.runId,nodeId,success:false})
+        emitRunLog(current, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待语音结果超过60秒',isSystemLog:true})
         finish('failed')
       },60000)
       return
@@ -296,7 +355,7 @@ function tick(skipBreakpoint = false) {
     if (String(node.type) === 'input_prompt') {
       const variableName = typeof data?.variableName === 'string' ? data.variableName.trim() : ''
       if (!variableName) {
-        emitMockEvent('execution:node_complete', {workflowId:current.id,nodeId,success:false})
+        emitMockEvent('execution:node_complete', {workflowId:current.id,runId:current.runId,nodeId,success:false})
         finish('failed'); return
       }
       const mode = typeof data?.inputMode === 'string' ? data.inputMode : 'single'
@@ -313,18 +372,18 @@ function tick(skipBreakpoint = false) {
       })
       return
     }
-    emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', nodeId, message: `[Mock] 第 ${current.index + 1} 次调度：已模拟 ${data?.label ?? node.type} 的事件；未执行网页动作`, duration: 300, isSystemLog: true } })
+    emitRunLog(current, { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', nodeId, message: `[Mock] 第 ${current.index + 1} 次调度：已模拟 ${data?.label ?? node.type} 的事件；未执行网页动作`, duration: 300, isSystemLog: true })
     if (failNextRun) {
       failNextRun = false
-      emitMockEvent('execution:log', { workflowId: current.id, log: { id: crypto.randomUUID(), timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] Simulated node failure',isSystemLog:true } })
-      emitMockEvent('execution:node_complete', {workflowId:current.id,nodeId,success:false})
+      emitRunLog(current, { id: crypto.randomUUID(), timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] Simulated node failure',isSystemLog:true })
+      emitMockEvent('execution:node_complete', {workflowId:current.id,runId:current.runId,nodeId,success:false})
       finish('failed');return
     }
-    emitMockEvent('execution:node_complete', {workflowId:current.id,nodeId,success:true})
+    emitMockEvent('execution:node_complete', {workflowId:current.id,runId:current.runId,nodeId,success:true})
     if (String(node.type) === 'get_element_info' || String(node.type) === 'extract_table_data') {
       const row = { mock:true, nodeId, value:'Mock result', index:current.index+1 }
       runRows.get(current.id)?.push(row)
-      emitMockEvent('execution:data_row', {workflowId:current.id,row})
+      emitMockEvent('execution:data_row', {workflowId:current.id,runId:current.runId,row})
     }
     current.index++
     tick()
@@ -349,8 +408,18 @@ function validBreakpoints(value: unknown, nodeIds: string[]): value is string[] 
   return Array.isArray(value) && value.every(id => typeof id === 'string' && nodeIds.includes(id))
 }
 function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): Response {
-        if (run || recording || picking || mockScriptTestBusy()) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
         if (!doc) return failure('工作流不存在', 404)
+        if (body.runId !== undefined && (typeof body.runId !== 'string' || !body.runId.trim())) return failure('运行 ID 无效', 422)
+        const requestedRunId = typeof body.runId === 'string' ? body.runId.trim() : ''
+        const runId = requestedRunId || crypto.randomUUID()
+        const documentId = typeof body.documentId === 'string' && body.documentId.trim() ? body.documentId.trim() : id
+        const requestFingerprint = JSON.stringify({ workflowId: id, documentId, body })
+        const previous = db.runs[runId]
+        if (previous) {
+          if (previous.requestFingerprint !== requestFingerprint) return failure('运行 ID 冲突', 409)
+          return response({ success: true, workflowId: id, runId, status: previous.status, mock: true })
+        }
+        if (run || recording || picking || mockScriptTestBusy()) return failure('Mock 浏览器正被运行、录制或拾取占用', 409)
         // Protocol fixture deliberately visits source order; it is not a replacement execution engine.
         const sourceNodes = structuredClone(doc.nodes) as ObjectValue[]
         let nodes = sourceNodes
@@ -372,10 +441,21 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         nextExecutionOrder = null
         finishedWorkflows.delete(id)
         runRows.set(id, [])
-        run = { id, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
+        const startedAt = new Date().toISOString()
+        persist({ ...db,
+          runs: { ...db.runs, [runId]: { runId, workflowId: id, documentId, workflowName: String(doc.name || '未命名工作流'), status: 'starting', startedAt, finishedAt: null, logCount: 0, requestFingerprint } },
+          runLogs: { ...db.runLogs, [runId]: [] },
+        })
+        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
         tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
-        run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
-        return response({ success: true, workflowId: id, mock: true })
+        run.timer = setTimeout(() => {
+          if (run?.id !== id || run.runId !== runId) return
+          const record = db.runs[runId]
+          if (record) persist({ ...db, runs: { ...db.runs, [runId]: { ...record, status: 'running' } } })
+          emitMockEvent('execution:started', { workflowId: id, runId })
+          tick()
+        }, 30)
+        return response({ success: true, workflowId: id, runId, status: 'starting', mock: true })
 }
 export async function mockRequest(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   const signal = init.signal ?? (input instanceof Request ? input.signal : undefined)
@@ -489,6 +569,47 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const files = { ...db.files }; const filename = target.searchParams.get('filename') || ''; delete files[fileKey(filename)]; if (folder === (db.folder || empty().folder)) delete files[filename]
       persist({ ...db, files }); return response({ success: true })
     }
+    if (path === '/workflow-runs') {
+      if (method !== 'GET') return failure('运行历史只接受 GET 请求', 405)
+      const cursor = Number(target.searchParams.get('cursor') || 0)
+      const limit = Number(target.searchParams.get('limit') || 20)
+      if (!Number.isSafeInteger(cursor) || cursor < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 500) return failure('运行历史分页参数无效', 422)
+      const documentId = target.searchParams.get('documentId')?.trim()
+      const rows = Object.values(db.runs)
+        .filter(item => !documentId || item.documentId === documentId)
+        .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
+      const items = rows.slice(cursor, cursor + limit).map(({ requestFingerprint: _fingerprint, ...item }) => item)
+      return response({ items, total: rows.length, nextCursor: cursor + items.length < rows.length ? cursor + items.length : null })
+    }
+    const executionLogs = path.match(/^\/workflow-runs\/([^/]+)\/logs(\/export)?$/)
+    if (executionLogs) {
+      if (method !== 'GET') return failure('运行日志只接受 GET 请求', 405)
+      const runId = decodeURIComponent(executionLogs[1])
+      const record = db.runs[runId]
+      if (!record) return failure('运行记录不存在', 404)
+      const allowedLevels = new Set(['debug', 'info', 'success', 'warning', 'error'])
+      const rawLevels = target.searchParams.get('levels')
+      const levels = rawLevels ? rawLevels.split(',').filter(Boolean) : []
+      if (levels.some(level => !allowedLevels.has(level))) return failure('日志级别筛选无效', 422)
+      const query = (target.searchParams.get('query') || '').trim().toLocaleLowerCase('zh-CN')
+      const nodeId = (target.searchParams.get('nodeId') || '').trim()
+      const filtered = (db.runLogs[runId] || []).filter(log =>
+        (!levels.length || levels.includes(log.level))
+        && (!query || log.message.toLocaleLowerCase('zh-CN').includes(query))
+        && (!nodeId || log.nodeId === nodeId)
+      )
+      if (executionLogs[2]) {
+        const body = filtered.map(log => JSON.stringify({ runId, workflowId: record.workflowId, ...log })).join('\n') + (filtered.length ? '\n' : '')
+        return new Response(body, { headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Content-Disposition': `attachment; filename="workflow-logs-${runId}.jsonl"` } })
+      }
+      const cursor = Number(target.searchParams.get('cursor') || 0)
+      const limit = Number(target.searchParams.get('limit') || 100)
+      if (!Number.isSafeInteger(cursor) || cursor < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 500) return failure('日志分页参数无效', 422)
+      const end = Math.max(0, filtered.length - cursor)
+      const start = Math.max(0, end - limit)
+      const items = filtered.slice(start, end)
+      return response({ runId, workflowId: record.workflowId, items, total: filtered.length, nextCursor: start > 0 ? cursor + items.length : null })
+    }
     if (path === '/workflows/global-variables') return response({ variables: run?.variables ?? lastVariables, count: Object.keys(run?.variables ?? lastVariables).length })
     if (path.endsWith('/data/full') || path === '/workflows/data-latest/full') { const id=path==='/workflows/data-latest/full' ? Array.from(runRows.keys()).at(-1) : path.split('/')[2];const rows=runRows.get(id || '') || [];return response({workflow_id:id, rows, columns:Object.keys(rows[0] || {}),total:rows.length}) }
     if (path === '/workflows') {
@@ -531,7 +652,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
           }
           run.step=controlAction==='step'
           run.controlRevision++
-          emitMockEvent('execution:resumed',{workflowId:id,pauseId:body.pauseId,controlRevision:run.controlRevision})
+          emitMockEvent('execution:resumed',{workflowId:id,runId:run.runId,pauseId:body.pauseId,controlRevision:run.controlRevision})
           tick(true)
           return response({...receipt,success:true,error:null})
         })

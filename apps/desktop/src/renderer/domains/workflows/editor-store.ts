@@ -240,6 +240,8 @@ interface WorkflowState {
   
   // 当前正在执行/最近一次执行的工作流 ID（用于"下载完整数据"调用后端接口）
   currentExecutionWorkflowId: string | null
+  // 每次启动独立生成，日志历史和导出不能用可重复的工作流 ID 代替运行身份。
+  currentExecutionRunId: string | null
   
   // Excel文件资源（上传的Excel文件）
   dataAssets: DataAsset[]
@@ -325,6 +327,7 @@ interface WorkflowState {
   
   // 设置当前执行 ID
   setCurrentExecutionWorkflowId: (id: string | null) => void
+  setCurrentExecutionRunId: (id: string | null) => void
   
   // Excel文件资源操作
   setDataAssets: (assets: DataAsset[]) => void
@@ -1395,6 +1398,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   maxLogCount: INITIAL_LOG_PREFS.maxLogCount,
   collectedData: [],
   currentExecutionWorkflowId: null,
+  currentExecutionRunId: null,
   dataAssets: [],
   imageAssets: [],
   bottomPanelTab: 'logs',
@@ -3012,6 +3016,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({ currentExecutionWorkflowId: id })
   },
 
+  setCurrentExecutionRunId: (id) => {
+    set({ currentExecutionRunId: id })
+  },
+
   // Excel文件资源操作
   setDataAssets: (assets) => {
     set({ dataAssets: assets })
@@ -3149,6 +3157,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       logs: [],
       collectedData: [],
       currentExecutionWorkflowId: null,
+      currentExecutionRunId: null,
       variables: [],
       hasUnsavedChanges: false,  // 清空后标记为已保存
       history: [{ nodes: [], edges: [], variables: [], name: '未命名工作流' }],
@@ -3178,6 +3187,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       logs: [],
       collectedData: [],
       currentExecutionWorkflowId: null,
+      currentExecutionRunId: null,
       hasUnsavedChanges: false,  // 加载后标记为已保存
       history: [snapshot],
       historyIndex: 0,

@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { localWorkflowApi } from '../api'
 import { MockBrowserSurface } from '../components/MockBrowserSurface'
 import { useAIAssistantStore } from '../hooks/stores/aiAssistantStore'
-import { configureMock, addMockRecordingEvent, selectMockElement, selectMockSimilarElements } from '../api/mock-server'
+import { configureMock, addMockRecordingEvent, selectMockElement, selectMockSimilarElements, seedMockRunHistory } from '../api/mock-server'
+import { useWorkflowStore } from '../editor-store'
 
 /** Explicit fixture controls, composed only by the current frontend preview entry. */
 export function StudioMockTools() {
@@ -38,6 +39,20 @@ export function StudioMockTools() {
         configureMock({ executionOrder: executionOrder.split(/[,，]/).map(id => id.trim()) })
       })}>应用下次轨迹</button>
       <button onClick={() => action(() => configureMock({ executionOrder: null }))}>恢复顺序场景</button>
+      <button onClick={() => action(() => {
+        const state = useWorkflowStore.getState()
+        const nodeA = state.nodes[0]?.id || 'browser-node-a'
+        const nodeB = state.nodes[1]?.id || nodeA
+        seedMockRunHistory({
+          runId: 'browser-capacity-run', workflowId: 'browser-capacity-workflow', documentId: state.id, workflowName: '一万条日志验收',
+          logs: Array.from({ length: 10_000 }, (_, index) => ({
+            id: `browser-log-${index + 1}`, timestamp: new Date(Date.UTC(2026, 8, 14, 0, 0, index)).toISOString(),
+            level: index % 100 === 0 ? 'error' : 'info', nodeId: index % 2 ? nodeB : nodeA,
+            message: `${index % 100 === 0 ? '容量故障' : '容量调度'}-${String(index + 1).padStart(5, '0')}`,
+          })),
+        })
+        useWorkflowStore.setState({ currentExecutionWorkflowId: 'browser-capacity-workflow', currentExecutionRunId: 'browser-capacity-run', bottomPanelTab: 'logs' })
+      })}>日志容量：1万条</button>
       <span role="status">{message}</span>
     </div>}
     {mockPage && <MockBrowserSurface onClose={() => setMockPage(false)} />}

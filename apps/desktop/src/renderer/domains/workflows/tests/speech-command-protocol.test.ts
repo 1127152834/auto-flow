@@ -61,6 +61,8 @@ describe.each(['memory','http'] as const)('speech protocol over %s',mode=>{
  it('rejects explicit invalid volume instead of replacing it with a default',async()=>{
   await start(2);await vi.waitFor(()=>expect(mock.mockSnapshot().run).toBeNull())
   const events=await journal();expect(events.some(item=>item.event==='execution:tts_request')).toBe(false)
-  expect(events.filter(item=>item.event==='execution:node_complete').map(item=>item.data)).toEqual([{workflowId:'speech-protocol',nodeId:'voice',success:false}])
+  const completions=events.filter(item=>item.event==='execution:node_complete').map(item=>item.data)
+  expect(completions).toHaveLength(1)
+  expect(completions[0]).toMatchObject({workflowId:'speech-protocol',runId:expect.any(String),nodeId:'voice',success:false})
  })
 })

@@ -7,7 +7,8 @@ import { Input } from './controls/input'
 import { SelectNative as Select } from './controls/select-native'
 import { Checkbox } from './controls/checkbox'
 import { useConfirm } from './controls/confirm-dialog'
-import { workflowApi } from '../api'
+import { workflowApi, type WorkflowRunSummary } from '../api'
+import { getStudioTransportRevision } from '../api/transport'
 import { onAssistantUiEvent, emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { 
   Trash2, 
@@ -30,7 +31,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import type { LogLevel, VariableType } from '../types/index'
+import type { LogEntry, LogLevel, VariableType } from '../types/index'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
@@ -67,6 +68,8 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     maxLogCount,
     setMaxLogCount,
     currentExecutionWorkflowId,
+    currentExecutionRunId,
+    nodes,
   } = useWorkflowStore()
   const activeTab = storedTab === 'assets' ? 'logs' : storedTab
 
@@ -81,6 +84,19 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const [logSearchQuery, setLogSearchQuery] = useState('')
   const [logLevelFilters, setLogLevelFilters] = useState<Set<LogLevel>>(new Set(['debug', 'info', 'success', 'warning', 'error']))
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+  const [logNodeFilter, setLogNodeFilter] = useState('')
+  const [historyLogs, setHistoryLogs] = useState<LogEntry[] | null>(null)
+  const [historyTotal, setHistoryTotal] = useState(0)
+  const [historyNextCursor, setHistoryNextCursor] = useState<number | null>(null)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+  const [recentRuns, setRecentRuns] = useState<WorkflowRunSummary[]>([])
+  const [selectedRunId, setSelectedRunId] = useState('')
+  const [runHistoryError, setRunHistoryError] = useState('')
+  const historyRequest = useRef(0)
+  const runHistoryRequest = useRef(0)
+  const selectedRunRef = useRef('')
+  const effectiveRunId = selectedRunId || currentExecutionRunId || ''
   
   // 变量相关状态
   const [isAddingVar, setIsAddingVar] = useState(false)
@@ -129,6 +145,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
       if (!logLevelFilters.has(log.level)) {
         return false
       }
+      if (logNodeFilter && log.nodeId !== logNodeFilter) return false
       // 搜索筛选
       if (logSearchQuery.trim()) {
         const query = logSearchQuery.toLowerCase()
@@ -138,17 +155,97 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     })
     // 只显示最近的日志，避免渲染过多DOM
     return filtered.slice(-maxLogCount)
-  }, [logs, logLevelFilters, logSearchQuery, maxLogCount])
+  }, [logs, logLevelFilters, logSearchQuery, logNodeFilter, maxLogCount])
+
+  const loadHistoryLogs = useCallback(async (cursor = 0) => {
+    if (!effectiveRunId) return
+    const request = ++historyRequest.current
+    const transportRevision = getStudioTransportRevision()
+    if (logLevelFilters.size === 0) {
+      setHistoryLogs([]); setHistoryTotal(0); setHistoryNextCursor(null); setHistoryError('')
+      return
+    }
+    setHistoryLoading(true)
+    const result = await workflowApi.getRunLogs(effectiveRunId, {
+      cursor,
+      limit: maxLogCount,
+      query: logSearchQuery,
+      levels: Array.from(logLevelFilters).sort(),
+      nodeId: logNodeFilter || undefined,
+    })
+    if (request !== historyRequest.current || transportRevision !== getStudioTransportRevision() || effectiveRunId !== selectedRunRef.current) return
+    setHistoryLoading(false)
+    if (!result.success || !result.data || result.data.runId !== effectiveRunId || !Array.isArray(result.data.items)) {
+      setHistoryError(result.error || '运行日志响应无效')
+      if (cursor === 0) setHistoryLogs(null)
+      return
+    }
+    const next = result.data.items.map(item => ({
+      id: item.id,
+      timestamp: item.timestamp,
+      level: item.level,
+      message: item.message,
+      ...(item.nodeId ? { nodeId: item.nodeId } : {}),
+      ...(item.duration !== null && item.duration !== undefined ? { duration: item.duration } : {}),
+      ...(item.details ? { details: item.details } : {}),
+    }))
+    setHistoryLogs(previous => cursor === 0 ? next : [...next, ...(previous || [])])
+    setHistoryTotal(result.data.total)
+    setHistoryNextCursor(result.data.nextCursor ?? null)
+    setHistoryError('')
+  }, [effectiveRunId, logLevelFilters, logNodeFilter, logSearchQuery, maxLogCount])
+
+  const loadRecentRuns = useCallback(async () => {
+    const request = ++runHistoryRequest.current
+    const transportRevision = getStudioTransportRevision()
+    const result = await workflowApi.listRuns(undefined, 0, 50)
+    if (request !== runHistoryRequest.current || transportRevision !== getStudioTransportRevision()) return
+    if (!result.success || !result.data) {
+      setRunHistoryError(result.error || '运行历史响应无效')
+      return
+    }
+    setRecentRuns(result.data.items)
+    setRunHistoryError('')
+    setSelectedRunId(previous => previous || currentExecutionRunId || result.data!.items[0]?.runId || '')
+  }, [currentExecutionRunId])
+
+  useEffect(() => {
+    void loadRecentRuns()
+    const reload = () => void loadRecentRuns()
+    window.addEventListener('studio:connection-restored', reload)
+    return () => window.removeEventListener('studio:connection-restored', reload)
+  }, [loadRecentRuns])
+
+  useEffect(() => {
+    if (currentExecutionRunId) setSelectedRunId(currentExecutionRunId)
+  }, [currentExecutionRunId])
+
+  useEffect(() => {
+    selectedRunRef.current = effectiveRunId
+  }, [effectiveRunId])
+
+  useEffect(() => {
+    historyRequest.current++
+    if (!effectiveRunId) {
+      setHistoryLogs(null); setHistoryTotal(0); setHistoryNextCursor(null); setHistoryError(''); setHistoryLoading(false)
+      return
+    }
+    const timer = setTimeout(() => void loadHistoryLogs(0), 250)
+    return () => clearTimeout(timer)
+  }, [effectiveRunId, logs.length, loadHistoryLogs])
+
+  const visibleLogs = historyLogs ?? filteredLogs
+  const visibleTotal = historyLogs === null ? logs.length : historyTotal
 
   // 自动滚动到最新日志
   useEffect(() => {
     // 每次 filteredLogs 变化都滚动到底部
-    if (logEndRef.current && activeTab === 'logs' && filteredLogs.length > 0) {
+    if (logEndRef.current && activeTab === 'logs' && visibleLogs.length > 0) {
       requestAnimationFrame(() => {
         logEndRef.current?.scrollIntoView({ behavior: 'auto' })
       })
     }
-  }, [filteredLogs, activeTab])
+  }, [visibleLogs, activeTab])
 
   // 数据预览顺序：tail=跟随最新（自动滚到底部），head=停在最早
   // 不再限制展示条数——全量交给虚拟滚动表格（DataTable 仅渲染可视行，上万条也不卡）
@@ -174,7 +271,29 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     emitAssistantUiEvent('ask_ai', { prompt, autoSend: true })
   }
 
-  const handleExportLogs = () => {
+  const handleExportLogs = async () => {
+    if (effectiveRunId) {
+      setHistoryLoading(true)
+      const result = logLevelFilters.size === 0
+        ? { success: true, data: new Blob([], { type: 'application/x-ndjson' }) }
+        : await workflowApi.exportRunLogs(effectiveRunId, {
+          query: logSearchQuery,
+          levels: Array.from(logLevelFilters).sort(),
+          nodeId: logNodeFilter || undefined,
+        })
+      setHistoryLoading(false)
+      if (!result.success || !result.data) {
+        await alert(result.error || '服务未返回完整日志文件', { title: '日志导出失败' })
+        return
+      }
+      const url = URL.createObjectURL(result.data)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `workflow-logs-${effectiveRunId}.jsonl`
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+      return
+    }
     const logText = filteredLogs
       .map((log) => `[${log.timestamp}] [${log.level.toUpperCase()}] ${log.message}`)
       .join('\n')
@@ -772,6 +891,20 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     </button>
                   )}
                 </div>
+                <Select
+                  aria-label="运行日志记录"
+                  value={effectiveRunId}
+                  onChange={(event) => setSelectedRunId(event.target.value)}
+                  className="!h-7 !text-[11px] !w-52"
+                  title={runHistoryError || '选择当前工作区的历史运行'}
+                >
+                  {!effectiveRunId && <option value="">暂无运行记录</option>}
+                  {recentRuns.map(item => (
+                    <option key={item.runId} value={item.runId}>
+                      {item.workflowName} · {new Date(item.startedAt).toLocaleString('zh-CN', { hour12: false })} · {item.status}
+                    </option>
+                  ))}
+                </Select>
                 <div className="relative flex items-center gap-1">
                   <button
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
@@ -864,8 +997,30 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     <option value="500">500条</option>
                   </Select>
                 </div>
+                <Select
+                  aria-label="按节点筛选日志"
+                  value={logNodeFilter}
+                  onChange={(event) => setLogNodeFilter(event.target.value)}
+                  className="!h-7 !text-[11px] !w-28"
+                >
+                  <option value="">全部节点</option>
+                  {nodes.map(node => (
+                    <option key={node.id} value={node.id}>{String(node.data.label || node.id)}</option>
+                  ))}
+                </Select>
+                {historyNextCursor !== null && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    disabled={historyLoading}
+                    onClick={() => void loadHistoryLogs(historyNextCursor)}
+                  >
+                    {historyLoading ? '读取中...' : '更早日志'}
+                  </Button>
+                )}
                 <span className="text-[12px] text-[hsl(var(--brand-700))] font-bold font-mono">
-                  {filteredLogs.length}/{logs.length}
+                  {visibleLogs.length}/{visibleTotal}
                 </span>
                 
                 {/* 日志延迟提示 */}
@@ -879,9 +1034,14 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 </div>
               </div>
               
-              {filteredLogs.length === 0 ? (
+              {historyError && (
+                <div role="alert" className="px-3 py-1.5 text-[11px] text-[hsl(var(--danger-700))] bg-[hsl(var(--danger-50))] border-b border-[hsl(var(--danger-500)/0.2)]">
+                  完整日志读取失败：{historyError}。当前会话日志仍保留，可重试筛选或恢复服务连接。
+                </div>
+              )}
+              {visibleLogs.length === 0 ? (
                 <div className="flex-1 empty-state animate-fade-in">
-                  {logs.length === 0 ? (
+                  {visibleTotal === 0 ? (
                     <>
                       <div className="empty-state-icon">
                         <FileText className="w-7 h-7" strokeWidth={1.6} />
@@ -903,7 +1063,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 </div>
               ) : (
                 <LogList
-                  logs={filteredLogs}
+                  logs={visibleLogs}
                   searchQuery={logSearchQuery}
                   onLogClick={handleLogClick}
                 />

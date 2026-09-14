@@ -85,11 +85,12 @@ export function Toolbar() {
     setServerWorkflow(id ? {documentId, id} : null)
   }, [documentId])
   const startPending = useRef(false)
-  const awaitingStart = useRef<string | null>(null)
+  const awaitingStart = useRef<{ workflowId: string; runId: string } | null>(null)
   const [startPhase, setStartPhase] = useState<'preparing' | 'awaiting' | null>(null)
   useEffect(() => {
-    const confirmed = (data: {workflowId?: string} | null) => {
-      if (!data?.workflowId || data.workflowId !== awaitingStart.current) return
+    const confirmed = (data: {workflowId?: string; runId?: string} | null) => {
+      const awaiting = awaitingStart.current
+      if (!awaiting || data?.workflowId !== awaiting.workflowId || (data.runId && data.runId !== awaiting.runId)) return
       awaitingStart.current = null
       setStartPhase(null)
     }
@@ -341,14 +342,17 @@ export function Toolbar() {
         addLog({ level: 'error', message: '执行失败: 工作流 ID 缺失' })
         return
       }
-      socketService.bindExecutionDocument(currentWorkflowId, sourceDocumentId)
+      const runId = crypto.randomUUID()
+      socketService.bindExecutionDocument(currentWorkflowId, sourceDocumentId, runId)
       // Own admission until an event confirms this request. HTTP acceptance alone is not running.
-      awaitingStart.current = currentWorkflowId
+      awaitingStart.current = { workflowId: currentWorkflowId, runId }
       setStartPhase('awaiting')
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
         browserConfig,
         ...debugOptions,
+        runId,
+        documentId: sourceDocumentId,
         startNodeId: startNodeId || undefined,
       })
       
@@ -396,7 +400,7 @@ export function Toolbar() {
   }, [executeWorkflow])
 
   const handleStop = useCallback(async () => {
-    const stopWorkflowId = awaitingStart.current || useWorkflowStore.getState().currentExecutionWorkflowId || workflowId
+    const stopWorkflowId = awaitingStart.current?.workflowId || useWorkflowStore.getState().currentExecutionWorkflowId || workflowId
     if (stopWorkflowId) {
       try {
         socketService.stopExecution(stopWorkflowId)

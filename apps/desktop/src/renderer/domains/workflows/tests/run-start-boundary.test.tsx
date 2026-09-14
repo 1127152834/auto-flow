@@ -72,7 +72,9 @@ it('binds a server workflow to the original editor document before starting', as
   act(() => store.getState().clearWorkflow())
   await act(async () => response.resolve({success: true, data: {id: 'server-identity'}}))
   await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
-  expect(bind).toHaveBeenCalledWith('server-identity', original)
+  expect(bind).toHaveBeenCalledWith('server-identity', original, expect.any(String))
+  const boundRunId = bind.mock.calls[0][2]
+  expect(workflowApi.execute).toHaveBeenCalledWith('server-identity', expect.objectContaining({ runId: boundRunId, documentId: original }))
   expect(bind.mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(workflowApi.execute).mock.invocationCallOrder[0])
 })
 

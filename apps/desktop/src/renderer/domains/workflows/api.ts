@@ -3,6 +3,7 @@ import {checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl} from './api/debugControl'
+import { checkedExecutionLogPage, checkedWorkflowRunPage } from './lib/executionLogContract'
 import type {DebugControlRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
@@ -38,6 +39,28 @@ export interface ApiResponse<T = any> {
   error?: string
   httpStatus?: number
   errorDetails?: ApiWireError
+}
+
+export type WorkflowRunSummary = components['schemas']['StudioWorkflowRunSummary']
+export type WorkflowRunPage = components['schemas']['StudioWorkflowRunPage']
+export type ExecutionLogPage = components['schemas']['StudioExecutionLogPage']
+export interface ExecutionLogQuery {
+  cursor?: number
+  limit?: number
+  query?: string
+  levels?: string[]
+  nodeId?: string
+}
+
+function executionLogSearch(query: ExecutionLogQuery = {}): string {
+  const params = new URLSearchParams()
+  if (query.cursor !== undefined) params.set('cursor', String(query.cursor))
+  if (query.limit !== undefined) params.set('limit', String(query.limit))
+  if (query.query?.trim()) params.set('query', query.query.trim())
+  if (query.levels?.length) params.set('levels', query.levels.join(','))
+  if (query.nodeId?.trim()) params.set('nodeId', query.nodeId.trim())
+  const encoded = params.toString()
+  return encoded ? `?${encoded}` : ''
 }
 
 // 调用 API 请求
@@ -178,6 +201,22 @@ export const workflowApi = {
     apiRequest<{ variables: Record<string, unknown>; count: number }>(
       '/workflows/global-variables'
     ),
+  listRuns: (documentId?: string, cursor = 0, limit = 20) => {
+    const params = new URLSearchParams({ cursor: String(cursor), limit: String(limit) })
+    if (documentId?.trim()) params.set('documentId', documentId.trim())
+    return checkedWorkflowRunPage(apiRequest<unknown>(`/workflow-runs?${params.toString()}`))
+  },
+  getRunLogs: (runId: string, query: ExecutionLogQuery = {}) =>
+    checkedExecutionLogPage(apiRequest<unknown>(`/workflow-runs/${encodeURIComponent(runId)}/logs${executionLogSearch(query)}`), runId),
+  exportRunLogs: async (runId: string, query: Omit<ExecutionLogQuery, 'cursor' | 'limit'> = {}) => {
+    try {
+      const response = await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`)
+      if (!response.ok) return { success: false, httpStatus: response.status, error: `HTTP ${response.status}: ${response.statusText}` } as ApiResponse<Blob>
+      return { success: true, data: await response.blob() } as ApiResponse<Blob>
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : '日志导出失败' } as ApiResponse<Blob>
+    }
+  },
 }
 
 // ==================== 本地工作流 API ====================

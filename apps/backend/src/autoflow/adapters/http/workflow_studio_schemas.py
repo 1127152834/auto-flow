@@ -157,6 +157,58 @@ class StudioCommandLookup(StudioCommandReceipt):
     http_status: int = Field(ge=200, le=599)
 
 
+class StudioExecutionLogEntry(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True, allow_inf_nan=False)
+
+    sequence: int = Field(ge=1, le=9007199254740991)
+    id: str = Field(min_length=1, pattern=r"\S")
+    timestamp: str = Field(min_length=1, pattern=r"\S")
+    level: Literal["debug", "info", "success", "warning", "error"]
+    message: str
+    node_id: str | None = None
+    duration: float | None = Field(default=None, ge=0)
+    details: dict[str, JsonValue] | None = None
+
+
+class StudioExecutionLogPage(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    run_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    items: list[StudioExecutionLogEntry]
+    total: int = Field(ge=0, le=9007199254740991)
+    next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
+
+    @model_validator(mode="after")
+    def validate_page(self) -> Self:
+        if any(current.sequence <= previous.sequence for previous, current in pairwise(self.items)):
+            raise ValueError("日志页必须按序号严格递增")
+        if len(self.items) > self.total:
+            raise ValueError("日志页条数不能超过总数")
+        return self
+
+
+class StudioWorkflowRunSummary(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    run_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    document_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_name: str
+    status: Literal["starting", "running", "paused", "completed", "failed", "stopped", "interrupted"]
+    started_at: str = Field(min_length=1, pattern=r"\S")
+    finished_at: str | None = None
+    log_count: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioWorkflowRunPage(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    items: list[StudioWorkflowRunSummary]
+    total: int = Field(ge=0, le=9007199254740991)
+    next_cursor: int | None = Field(default=None, ge=1, le=9007199254740991)
+
+
 class StudioImageAsset(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
 
