@@ -43,3 +43,19 @@ it.each([
   const restore = configureStudioConnection('http://images.fixture', async () => Response.json(body))
   try { expect((await operations.find(operation => operation.name === name)!.call()).success).toBe(false) } finally { restore() }
 })
+for (const operation of operations) {
+  it(`${operation.name} rejects a late confirmation from a replaced connection`, async () => {
+    let resolve!: (value: Response) => void
+    const restore = configureStudioConnection('http://images.fixture', () => new Promise(done => { resolve = done }))
+    let restoreNext = () => {}
+    try {
+      const pending = operation.call()
+      restoreNext = configureStudioConnection('http://next.fixture', async () => Response.json({}))
+      resolve(Response.json(operation.valid))
+      const result = await pending
+      expect(result.success).toBe(false)
+      expect(result.data).toBeUndefined()
+      expect(result.error).toContain('连接')
+    } finally { restoreNext(); restore() }
+  })
+}

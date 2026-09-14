@@ -35,6 +35,8 @@ export function ImageAssetsPanel() {
   const [editFolderName, setEditFolderName] = useState('')
   const [editingAsset, setEditingAsset] = useState<string | null>(null)
   const [editAssetName, setEditAssetName] = useState('')
+  const [renameBusy, setRenameBusy] = useState(false)
+  const renamePending = useRef(false)
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; folder: string; isFile?: boolean; assetId?: string; isBlank?: boolean } | null>(null)
   const [previewAsset, setPreviewAsset] = useState<ImageAsset | null>(null)
@@ -205,37 +207,53 @@ export function ImageAssetsPanel() {
 
   // 重命名文件夹
   const handleRenameFolder = async (folderPath: string) => {
+    if (renamePending.current) return
     if (!editFolderName.trim() || editFolderName === folderPath.split('/').pop()) {
       setEditingFolder(null)
       return
     }
     
-    const result = await imageAssetApi.renameFolder(folderPath, editFolderName.trim())
-    if (result.error) {
-      await alert(result.error)
-      return
-    } else {
-      await reloadAssets()
+    renamePending.current = true
+    setRenameBusy(true)
+    try {
+      const result = await imageAssetApi.renameFolder(folderPath, editFolderName.trim())
+      if (result.error) {
+        await alert(result.error)
+        return
+      } else {
+        await reloadAssets()
+      }
+      setEditingFolder(null)
+    } finally {
+      renamePending.current = false
+      setRenameBusy(false)
     }
-    setEditingFolder(null)
   }
 
   // 重命名文件
   const handleRenameAsset = async (assetId: string) => {
+    if (renamePending.current) return
     if (!editAssetName.trim()) {
       setEditingAsset(null)
       return
     }
     
-    const result = await imageAssetApi.rename(assetId, editAssetName.trim())
-    if (result.error) {
-      await alert(result.error)
-      return
-    } else if (result.data?.asset) {
-      // 更新本地状态
-      await reloadAssets()
+    renamePending.current = true
+    setRenameBusy(true)
+    try {
+      const result = await imageAssetApi.rename(assetId, editAssetName.trim())
+      if (result.error) {
+        await alert(result.error)
+        return
+      } else if (result.data?.asset) {
+        // 更新本地状态
+        await reloadAssets()
+      }
+      setEditingAsset(null)
+    } finally {
+      renamePending.current = false
+      setRenameBusy(false)
     }
-    setEditingAsset(null)
   }
 
   // 删除文件夹
@@ -489,7 +507,8 @@ export function ImageAssetsPanel() {
           
           {isEditing ? (
             <Input
-              value={editFolderName}
+              disabled={renameBusy}
+                value={editFolderName}
               onChange={(e) => setEditFolderName(e.target.value)}
               className="h-6 text-xs text-center bg-white border-purple-300"
               autoFocus
@@ -537,7 +556,8 @@ export function ImageAssetsPanel() {
           
           {isEditing ? (
             <Input
-              value={editAssetName}
+              disabled={renameBusy}
+                value={editAssetName}
               onChange={(e) => setEditAssetName(e.target.value)}
               className="h-6 text-xs text-center bg-white border-purple-300"
               autoFocus

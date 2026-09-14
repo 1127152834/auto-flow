@@ -1,0 +1,58 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-write-contract.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:86263) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/image-write-contract.test.ts (50 tests | 7 failed) 18ms
+   × upload rejects a late confirmation from a replaced connection 4ms
+   × delete rejects a late confirmation from a replaced connection 1ms
+   × rename rejects a late confirmation from a replaced connection 0ms
+   × create-folder rejects a late confirmation from a replaced connection 0ms
+   × rename-folder rejects a late confirmation from a replaced connection 0ms
+   × delete-folder rejects a late confirmation from a replaced connection 0ms
+   × move rejects a late confirmation from a replaced connection 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > upload rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > delete rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > rename rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > create-folder rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > rename-folder rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > delete-folder rejects a late confirmation from a replaced connection
+ FAIL  src/renderer/domains/workflows/tests/image-write-contract.test.ts > move rejects a late confirmation from a replaced connection
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/image-write-contract.test.ts:56:30
+     54|       resolve(Response.json(operation.valid))
+     55|       const result = await pending
+     56|       expect(result.success).toBe(false)
+       |                              ^
+     57|       expect(result.data).toBeUndefined()
+     58|       expect(result.error).toContain('连接')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 43 passed (50)
+   Start at  13:30:37
+   Duration  676ms (transform 139ms, setup 133ms, import 35ms, tests 18ms, environment 382ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-write-contract.test.ts

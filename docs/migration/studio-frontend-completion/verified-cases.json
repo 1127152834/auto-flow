@@ -37166,5 +37166,167 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.upload",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "upload",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.delete",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "delete",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.rename",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "rename",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.create-folder",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "create-folder",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.rename-folder",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "rename-folder",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.delete-folder",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "delete-folder",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.move",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "move",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.asset-enter-blur",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "asset-enter-blur",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "TOOL.image-write-races.folder-enter-blur",
+    "capability": "image-assets:write-races",
+    "preconditions": {
+      "operation": "folder-enter-blur",
+      "request": "在途"
+    },
+    "steps": [
+      "模拟服务切换后返回旧回执，或Enter与blur同时提交重命名",
+      "检查回执/请求次数及失败后可编辑状态"
+    ],
+    "expectedUI": "连接变化结果不应用；重命名等待期间禁用，失败后保留名称",
+    "expectedIO": "旧连接回执不能驱动当前缓存；重命名只发送一次",
+    "stateAssertion": "无重复提交、无跨连接成功确认",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
   }
 ]

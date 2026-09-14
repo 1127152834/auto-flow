@@ -1,0 +1,46 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-panel-write-errors.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:86414) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/image-panel-write-errors.test.tsx (3 tests | 1 failed) 192ms
+   × submits a rename once when Enter and blur overlap and preserves retry after failure 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/image-panel-write-errors.test.tsx > submits a rename once when Enter and blur overlap and preserves retry after failure
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/renderer/domains/workflows/tests/image-panel-write-errors.test.tsx:55:20
+     53|     fireEvent.keyDown(input, { key: 'Enter' })
+     54|     fireEvent.blur(input)
+     55|     expect(writes).toBe(1)
+       |                    ^
+     56|     expect(input.disabled).toBe(true)
+     57|     await act(async () => resolve(Response.json({ success: false, erro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  13:31:09
+   Duration  1.25s (transform 299ms, setup 163ms, import 388ms, tests 192ms, environment 404ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/image-panel-write-errors.test.tsx

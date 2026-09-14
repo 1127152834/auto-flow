@@ -1,3 +1,4 @@
+import { getStudioTransportRevision } from '../api/transport'
 import type {ImageAsset} from '../types'
 
 /** Validate list responses before they become shared cache or selectable resources. */
@@ -23,7 +24,9 @@ export async function checkedImageWrite<T>(
   field?: 'asset' | 'path' | 'newPath' | 'deletedCount' | 'newFolder',
   requireSuccess = true,
 ): Promise<import('../api').ApiResponse<T>> {
+  const revision = getStudioTransportRevision()
   const result = await request
+  if (revision !== getStudioTransportRevision()) return { success: false, error: '服务连接已变更，本次资源操作结果未应用；请在原工作区核对' }
   if (!result.success) return result
   const value = result.data
   const invalid = () => ({ success: false, error: '图像资源操作未返回有效确认，请刷新资源后核对' })

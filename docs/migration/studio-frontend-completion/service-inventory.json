@@ -1548,7 +1548,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 196,
+          "line": 198,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.createFolder(newFolderName.trim(), currentPath || undefined)"
         }
@@ -1582,13 +1582,13 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 320,
+          "line": 338,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.delete(asset.id)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 339,
+          "line": 357,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.delete(id)"
         }
@@ -1616,7 +1616,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 250,
+          "line": 268,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.deleteFolder(folderPath)"
         }
@@ -1671,7 +1671,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 68,
+          "line": 70,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.list()"
         },
@@ -1711,7 +1711,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 68,
+          "line": 70,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.listFolders()"
         },
@@ -1745,13 +1745,13 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 402,
+          "line": 420,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.moveAsset(assetId, currentPath || undefined)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 471,
+          "line": 489,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.moveAsset(assetId, folderPath)"
         }
@@ -1785,7 +1785,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 230,
+          "line": 244,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.rename(assetId, editAssetName.trim())"
         }
@@ -1813,7 +1813,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 213,
+          "line": 219,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.renameFolder(folderPath, editFolderName.trim())"
         }
@@ -1841,19 +1841,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 277,
+          "line": 295,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.upload(file, currentPath || undefined)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 383,
+          "line": 401,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.upload(file, currentPath || undefined)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 806,
+          "line": 826,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "call": "imageAssetApi.upload(file, targetFolder || undefined)"
         }
@@ -5046,7 +5046,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 152,
+          "line": 154,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "via": "window.addEventListener"
         },
@@ -5431,7 +5431,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 91,
+          "line": 93,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "via": "window.addEventListener"
         }
@@ -5829,7 +5829,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-          "line": 92,
+          "line": 94,
           "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
           "via": "window.addEventListener"
         },
@@ -6881,7 +6881,7 @@
       "body": "body: JSON.stringify({ folder: currentPath || undefined })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx",
-      "line": 106,
+      "line": 108,
       "source": "frontend/src/components/workflow/ImageAssetsPanel.tsx",
       "call": "studioFetch(`${getBackendBaseUrl()}/api/system/screenshot`, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ folder: currentPath || undefined })\n        })"
     },
