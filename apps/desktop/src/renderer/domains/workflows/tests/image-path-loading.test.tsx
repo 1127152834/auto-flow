@@ -66,11 +66,16 @@ it('preserves cancellation and displays file selection failure without changing 
  service.file.mockResolvedValue({success:false,error:'宿主不可用'});fireEvent.click(screen.getByRole('button',{name:'从电脑选择图片'}));expect((await screen.findByRole('alert')).textContent).toBe('宿主不可用');expect(change).not.toHaveBeenCalled()
 })
 
-it.each([{}, {success:true,path:''}, {success:false,error:'选择失败'}])('rejects an invalid or failed file result %#',async data=>{
+it.each([{}, {success:true,path:42}, {success:false,error:'选择失败'}])('rejects an invalid or failed file result %#',async data=>{
  service.file.mockResolvedValue({success:true,data});const change=vi.fn();render(<ImagePathInput value="keep" onChange={change}/>);
  fireEvent.click(screen.getByRole('button',{name:'从电脑选择图片'}));await screen.findByRole('alert');expect(change).not.toHaveBeenCalled()
 })
 it('applies a confirmed computer selection exactly once',async()=>{
  service.file.mockResolvedValue({success:true,data:{success:true,path:'/fixture/image.png'}});const change=vi.fn();render(<ImagePathInput value="keep" onChange={change}/>);
  fireEvent.click(screen.getByRole('button',{name:'从电脑选择图片'}));await waitFor(()=>expect(change).toHaveBeenCalledExactlyOnceWith('/fixture/image.png'))
+})
+
+it.each([null,''])('accepts an empty successful file selection as cancellation: %s',async path=>{
+ service.file.mockResolvedValue({success:true,data:{success:true,path}});const change=vi.fn();render(<ImagePathInput value="keep" onChange={change}/>);
+ fireEvent.click(screen.getByRole('button',{name:'从电脑选择图片'}));await act(async()=>{});expect(change).not.toHaveBeenCalled();expect(screen.queryByRole('alert')).toBeNull()
 })

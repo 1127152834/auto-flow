@@ -1,8 +1,9 @@
 // Source: WebRPA@5ccb900e, components/ui/path-input.tsx; see SOURCE.md for license and adaptation boundaries.
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from './button'
 import { VariableInput } from './variable-input'
 import { Folder, File, Loader2 } from 'lucide-react'
+import { getStudioTransportRevision } from '../../api/transport'
 import { systemApi } from '../../api'
 import { cn } from '../../lib/utils'
 
@@ -27,51 +28,52 @@ export function PathInput({
   fileTypes,
 }: PathInputProps) {
   const [isSelecting, setIsSelecting] = useState(false)
+  const [error, setError] = useState('')
+  const request = useRef(0)
+  const pending = useRef(false)
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    const invalidate = () => { request.current++; setError('') }
+    window.addEventListener('studio:transport-changed', invalidate)
+    return () => { mounted.current = false; request.current++; window.removeEventListener('studio:transport-changed', invalidate) }
+  }, [])
+  useEffect(() => { request.current++; setError('') }, [value, type])
 
-  const handleSelect = async (mode: 'folder' | 'file' = type === 'both' ? 'folder' : (type as 'folder' | 'file')) => {
+  const handleSelect = async (mode: 'folder' | 'file' = type === 'both' ? 'folder' : type) => {
+    if (pending.current) return
+    pending.current = true
+    const sequence = ++request.current
+    const revision = getStudioTransportRevision()
+    const current = () => mounted.current && sequence === request.current && revision === getStudioTransportRevision()
     setIsSelecting(true)
+    setError('')
     try {
-      // 兼容两种返回结构：apiRequest 包过的 {success, data: {success, path}}
-      // 和直接的 {success, path}
-      const extractPath = (resp: any): string | null => {
-        if (!resp) return null
-        const inner = resp.data && typeof resp.data === 'object' ? resp.data : resp
-        if (inner?.success && typeof inner.path === 'string' && inner.path) {
-          return inner.path
-        }
-        // 极端情况：path 在 resp 顶层
-        if (typeof resp.path === 'string' && resp.path) return resp.path
-        return null
-      }
-
-      if (mode === 'folder') {
-        const result = await systemApi.selectFolder(title || '选择文件夹')
-        const p = extractPath(result)
-        console.log('[PathInput][folder] 后端返回:', result, '解析到 path:', p)
-        if (p) {
-          onChange(p)
-        } else {
-          console.warn('[PathInput] 文件夹选择未拿到 path:', result)
-        }
-      } else {
-        const result = await systemApi.selectFile(title || '选择文件', undefined, fileTypes)
-        const p = extractPath(result)
-        console.log('[PathInput][file] 后端返回:', result, '解析到 path:', p)
-        if (p) {
-          onChange(p)
-        } else {
-          console.warn('[PathInput] 文件选择未拿到 path:', result)
-        }
-      }
-    } catch (error) {
-      console.error('选择路径失败:', error)
+      const result = mode === 'folder'
+        ? await systemApi.selectFolder(title || '选择文件夹')
+        : await systemApi.selectFile(title || '选择文件', undefined, fileTypes)
+      if (!current()) return
+      if (!result?.success) throw new Error(result?.error || '选择路径失败')
+      // Preserve the migrated wrapped and legacy flat success contracts.
+      const inner = result.data && typeof result.data === 'object' ? result.data : result
+      if (typeof inner.success !== 'boolean') throw new Error('路径选择响应格式错误')
+      if (typeof inner.error === 'string' && inner.error) throw new Error(inner.error)
+      if (inner.success === false && inner.path !== null) throw new Error('选择路径失败')
+      const path: unknown = inner.path
+      if (path === null || path === '') return
+      if (typeof path !== 'string') throw new Error('服务返回了无效路径')
+      onChange(path)
+    } catch (reason) {
+      if (current()) setError(reason instanceof Error ? reason.message : '选择路径失败')
     } finally {
-      setIsSelecting(false)
+      pending.current = false
+      if (mounted.current) setIsSelecting(false)
     }
   }
 
   return (
-    <div className={cn('flex gap-1', className)}>
+    <div className={cn('flex flex-col gap-1', className)}>
+      <div className="flex gap-1">
       <div className="flex-1">
         <VariableInput
           value={value}
@@ -124,6 +126,8 @@ export function PathInput({
           )}
         </Button>
       )}
+      </div>
+      {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
     </div>
   )
 }

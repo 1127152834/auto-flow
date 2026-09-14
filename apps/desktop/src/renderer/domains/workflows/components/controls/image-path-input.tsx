@@ -126,7 +126,8 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
       if (!result.success) throw new Error(result.error || '选择图片失败')
       if (typeof result.data?.success !== 'boolean') throw new Error('图片选择响应格式错误')
       if (result.data.success) {
-        if (typeof result.data.path !== 'string' || !result.data.path) throw new Error('图片选择响应缺少路径')
+        if (result.data.path === null || result.data.path === '') return
+        if (typeof result.data.path !== 'string') throw new Error('图片选择响应缺少有效路径')
         onChange(result.data.path)
       } else if (typeof result.data.error === 'string' && result.data.error) throw new Error(result.data.error)
     } catch (error) {

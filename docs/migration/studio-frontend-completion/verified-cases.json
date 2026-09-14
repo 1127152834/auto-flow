@@ -32998,8 +32998,13 @@
     "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
     "stateAssertion": "显示错误，不改值",
     "level": "component",
-    "status": "通过",
-    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+    "status": "已替代",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx",
+    "supersededBy": [
+      "TOOL.path-delivery.image-cancel-empty",
+      "TOOL.path-delivery.image-invalid-type"
+    ],
+    "supersessionReason": "空字符串按既有路径选择合同表示取消；原测试证据保留，仅替代当前验收语义。"
   },
   {
     "id": "TOOL.image-path.file-error",
@@ -33208,5 +33213,214 @@
     "level": "hook integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.file-failure",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "file",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "失败响应即使带path也不回填并显示错误"
+    ],
+    "expectedUI": "失败响应即使带path也不回填并显示错误",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "失败响应即使带path也不回填并显示错误",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.file-outcomes",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "file",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "分别验证null/空字符串/原版取消、非法类型和成功回填"
+    ],
+    "expectedUI": "分别验证null/空字符串/原版取消、非法类型和成功回填",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "分别验证null/空字符串/原版取消、非法类型和成功回填",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.folder-failure",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "folder",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "失败响应即使带path也不回填并显示错误"
+    ],
+    "expectedUI": "失败响应即使带path也不回填并显示错误",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "失败响应即使带path也不回填并显示错误",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.folder-outcomes",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "folder",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "分别验证null/空字符串/原版取消、非法类型和成功回填"
+    ],
+    "expectedUI": "分别验证null/空字符串/原版取消、非法类型和成功回填",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "分别验证null/空字符串/原版取消、非法类型和成功回填",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.edit",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "both",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "待选择期间edit使旧结果失效，both按钮不允许并发选择"
+    ],
+    "expectedUI": "待选择期间edit使旧结果失效，both按钮不允许并发选择",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "待选择期间edit使旧结果失效，both按钮不允许并发选择",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.unmount",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "both",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "待选择期间unmount使旧结果失效，both按钮不允许并发选择"
+    ],
+    "expectedUI": "待选择期间unmount使旧结果失效，both按钮不允许并发选择",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "待选择期间unmount使旧结果失效，both按钮不允许并发选择",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.connection",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "both",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "待选择期间connection使旧结果失效，both按钮不允许并发选择"
+    ],
+    "expectedUI": "待选择期间connection使旧结果失效，both按钮不允许并发选择",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "待选择期间connection使旧结果失效，both按钮不允许并发选择",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.flat-error",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "file",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "平铺成功返回可回填；随后异常提示且不重复改值"
+    ],
+    "expectedUI": "平铺成功返回可回填；随后异常提示且不重复改值",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "平铺成功返回可回填；随后异常提示且不重复改值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-tool-delivery.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.image-cancel-null",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "image",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "成功返回null，不显示错误也不改字段"
+    ],
+    "expectedUI": "成功返回null，不显示错误也不改字段",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "成功返回null，不显示错误也不改字段",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.image-cancel-empty",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "image",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "成功返回空字符串，不显示错误也不改字段"
+    ],
+    "expectedUI": "成功返回空字符串，不显示错误也不改字段",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "成功返回空字符串，不显示错误也不改字段",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.path-delivery.image-invalid-type",
+    "capability": "tool:path-selection",
+    "preconditions": {
+      "mode": "image",
+      "value": "保留原路径",
+      "transport": "组件服务夹具"
+    },
+    "steps": [
+      "启动选择",
+      "成功响应的path为42时明确失败，不改字段"
+    ],
+    "expectedUI": "成功响应的path为42时明确失败，不改字段",
+    "expectedIO": "system/select-file 或 select-folder，保持原过滤参数；不调用真实宿主",
+    "stateAssertion": "成功响应的path为42时明确失败，不改字段",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
   }
 ]
