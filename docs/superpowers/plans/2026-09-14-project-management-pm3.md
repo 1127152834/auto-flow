@@ -29,7 +29,8 @@
 | Task 7–8 配置持久化与 HTTP | pm3_automation_configuration：领域/仓储/服务/handler 及定向测试 | b0f1d93 / d28dca7：配置HTTP与冻结 Operation 结果、只读工作流目录、真实资源引用查询已提交；运行 capability 尚未接入 | 主协调统一迁移、装配、生成类型；不依赖 Studio |
 | Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 四页签组件已接通真实保存并完成有界复审；新增参数说明、模型三态与内层查询草稿保护 | 冻结参数/政策合同，复用统一表格和小圆角 |
 | Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 管理配置 E2E 通过，证据 management-runs/run-eSwQYK；资源页视觉问题已定向闭合，完整 PM3.1 未运行项仍保留 | 真实配置接口及组件先行，不使用 demo 结果 |
-| Task 11–16 批次/运行记录/停止恢复 | 主协调：契约、事务、调度竞争和集成 | 尚未实现 | 复用 CoreRun；Task 4 基础检查不等于完整业务通过 |
+| Task 11 参数批次原子创建 | 主协调：核心UoW/协调/迁移；配置智能体：规则及测试 | 已实现，最终COMMIT故障污染连接经反例修复，规格/工程复核通过；证据 batches/task11-review.md | 尚无用户启动入口，不等于可运行批次 |
+| Task 12–16 管理端调度/运行记录/停止恢复 | 主协调：调度竞争和集成；配置智能体：真实查询HTTP；组件智能体：启动弹窗 | 资源冻结适配及纯组件进行中；正式API/页面尚未接入 | 复用 CoreRun，不联合 Studio demo |
 
 保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
 
@@ -474,11 +475,11 @@ git commit -m "feat(projects): add automation pages and Studio context"
 - Create: `apps/backend/tests/integration/test_project_run_start.py`
 - Create: `apps/backend/tests/integration/test_project_run_migration.py`
 
-- [ ] **Step 1: 写原子性 RED 测试。** 覆盖参数严格类型、最终 `maxTasks` 1–100、并发固定 1、同键重发、异载荷冲突、Task/Snapshot/queued CoreRun/Operation 同时存在、任一步故障全部回滚。
-- [ ] **Step 2: 实现项目运行对象。** PM3 `inputs=[]`；每个 Task 参数独立冻结。Batch 状态使用 PM0 状态集合，Task 只投影 CoreRun。
-- [ ] **Step 3: 实现共享 UoW。** `ProjectRunCoordinator` 打开一次 Session，调用 Automation repository 和 `CoreRunPort.prepare_run(..., uow)`；port 不 commit。提交后 dispatcher 才运行。
-- [ ] **Step 4: 实现迁移和仓储。** 新表保存 Batch、Task、TaskInputSnapshot；外键连接 Automation 和 CoreRun，删除策略为 RESTRICT。迁移升级不改变 PM1/PM2 事实。
-- [ ] **Step 5: 验证。**
+- [x] **Step 1: 写原子性 RED 测试。** 覆盖参数严格类型、最终 `maxTasks` 1–100、并发固定 1、同键重发、异载荷冲突、Task/Snapshot/queued CoreRun/Operation 同时存在、任一步故障全部回滚。
+- [x] **Step 2: 实现项目运行对象。** PM3 `inputs=[]`；每个 Task 参数独立冻结。Batch 状态使用 PM0 状态集合，Task 只投影 CoreRun。
+- [x] **Step 3: 实现共享 UoW。** `ProjectRunCoordinator` 打开一次 Session，调用 Automation repository 和 `CoreRunPort.prepare_run(..., uow)`；port 不 commit。提交后 dispatcher 才运行。
+- [x] **Step 4: 实现迁移和仓储。** 新表保存 Batch、Task、TaskInputSnapshot；外键连接 Automation 和 CoreRun，删除策略为 RESTRICT。迁移升级不改变 PM1/PM2 事实。
+- [x] **Step 5: 验证。**
 
 ```bash
 uv run --directory apps/backend pytest tests/unit/test_project_run_rules.py tests/integration/test_project_run_start.py tests/integration/test_project_run_migration.py -q
@@ -487,12 +488,14 @@ uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/
 
 预期：唯一 head 为 `pm04_project_runs`。
 
-- [ ] **Step 6: 提交。**
+- [x] **Step 6: 提交。**
 
 ```bash
 git add apps/backend/src/autoflow/domain/project_runs apps/backend/src/autoflow/application/project_runs apps/backend/src/autoflow/infrastructure/database/project_run_models.py apps/backend/src/autoflow/infrastructure/database/project_runs.py apps/backend/src/autoflow/infrastructure/database/migrations/env.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm04_project_runs.py apps/backend/tests/unit/test_project_run_rules.py apps/backend/tests/integration/test_project_run_start.py apps/backend/tests/integration/test_project_run_migration.py
 git commit -m "feat(projects): create parameter batches atomically"
 ```
+
+实际文件取舍：没有新增无当前消费者的 ports.py / projections.py；直接复用已有核心应用服务，Task 投影在领域对象/查询仓储完成。新增 `test_workflow_content_uow.py` 覆盖同会话和回滚，运行核心 prepare_content 新增可选 UoW。Task 11 没有调度、HTTP 或管理端端到端证据，后续交付不可引用为已可运行。
 
 ### Task 12：实现批次 HTTP、调度和 Operation 恢复
 

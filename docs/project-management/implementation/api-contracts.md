@@ -377,6 +377,8 @@ type SheetsBindingWrite = {connectionId:string;spreadsheetId:string;sheetId:numb
 | `GET /api/v1/projects/{projectId}/statistics` | PM7-B | `from,to,timezone,automationId?,tableId?,interval=day|week|month` | `ProjectStatistics` | 按 Task 完成时间；非法时区/范围 422。 |
 | `GET /api/v1/projects/{projectId}/statistics/{resultSetId}/tasks` | PM7-B | `result,intervalStart?,page,pageSize` | `Page<Task>` | 只读同一统计结果集合；过期 410 `STATISTICS_RESULT_EXPIRED`。 |
 
+PM3 实施说明（2026-09-15）：`parameters` 键为稳定 parameterId，未知键拒绝；省略可选值才应用默认值，显式 null、false、0 与空字符串保持原意。输入为空、环境 newFromProfile、最终任务数 1–100 且并发 1；启动接受与执行成功分别查询。Batch 公共管理修订是冻结自动化修订，批次状态修订独立；启动 Operation 的 `{batch}` 结果不可被实时进度覆盖。Task 的 `inputSnapshotId` 引用单独持久快照，状态只投影 CoreRun。此说明不表示下列全部未来路由已实现。
+
 ```ts
 type BatchStartRequest = {expectedAutomationRevision:number;parameters:Record<string,JsonScalar>;maxTasks?:number;concurrency?:number;environmentOverride?:EnvironmentPolicy}
 type BatchDetail = {batch:Batch;statusCounts:Record<TaskStatus,number>;taskCount:number;stopOperation:Operation|null}

@@ -74,6 +74,16 @@
 - **错误 / 事务边界**：`workflow_dependency_missing`, `workflow_dependency_cycle`, `capability_missing`, `workflow_not_runnable`。core 在自身短事务发布确定内容；不创建 Batch/Task/Run。
 - **查询与恢复**：按操作身份或 `preparedContentId` 查询；未知时不重新解析成可能不同的内容。
 
+### PM3 参数批次实施限定（2026-09-15，confirmed）
+
+来源：已批准 PM3 规格与 Task 11 实现。本段限定 PM3 的参数型消费者；后续多表领取仍遵循 C04，不削减数据保护。
+
+- 参数请求按稳定 `parameterId` 索引；冻结的自动化 schema 保存名称、类型、默认值，任务不随重命名改变。每个 Task 独立保存参数和 `inputs=[]`。
+- 有界参数批次在**一次调用者 Session 的短事务**发布 PreparedContent、Batch、全部 Task、TaskInputSnapshot、queued CoreRun 和启动 Operation。C02 的既有独立调用仍自有事务；新增调用者 UoW 路径不自提交。同服务不绕 HTTP 拼事务。
+- 启动 Operation `succeeded` 表示批次创建命令已提交；初始 Batch 为 `accepted`，Task 为 `queued`，不表示工作流执行成功。提交后才派发。
+- 内部 Batch 保存 `frozenRequest/counts`；HTTP `managementRevision` 是启动时冻结的 Automation 修订投影，`statusRevision` 是批次自身状态修订。内容里另存 workflowRevision，不混为一个版本。查询的 Task 状态与终态时间来自唯一 CoreRun。
+- 原键恢复返回原始接受快照；实时进度走 Batch/Task 查询。最终物理 COMMIT 失败时失效连接，防止未提交事务回池污染查询；若实际已提交而确认丢失，则原键仍可找回事实。
+
 ### XE-C03 · startBatch / queryStart
 
 - **调用方 → 提供方**：项目 UI/调度入口 → 项目运行协调。

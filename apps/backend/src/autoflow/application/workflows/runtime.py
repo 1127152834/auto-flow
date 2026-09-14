@@ -22,6 +22,7 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
     _is_sqlite_contention,
 )
+from autoflow.infrastructure.database.workflows import _record as workflow_record
 
 
 class CoreRunPort(Protocol):
@@ -84,6 +85,7 @@ class WorkflowRuntimeService:
         source_revision: int,
         available_capabilities: list[str],
         created_at: datetime | None = None,
+        uow: Session | None = None,
     ) -> PreparedContent:
         request_digest = _digest(
             {
@@ -93,85 +95,102 @@ class WorkflowRuntimeService:
                 "availableCapabilities": sorted(set(available_capabilities)),
             }
         )
-        with self._session_factory() as session:
-            _begin_immediate_if_sqlite(session)
-            runtime = SqlAlchemyWorkflowRuntimeRepository(session)
-            existing = runtime.get_prepared_content(
-                prepare_operation_id=prepare_operation_id
-            )
-            if existing is not None:
-                if existing.request_digest != request_digest:
-                    raise WorkflowRuntimeError(
-                        "OPERATION_PAYLOAD_MISMATCH",
-                        "幂等键已用于另一准备请求",
-                    )
-                return existing
-            if self._workflow_repository is None:
-                raise WorkflowRuntimeError(
-                    "WORKFLOW_RUNTIME_UNAVAILABLE", "工作流文档读取器尚未装配", 503
-                )
-            record = self._workflow_repository.get(workflow_id)
-            if record is None:
-                raise WorkflowRuntimeError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
-            if record.revision != source_revision:
-                raise WorkflowRuntimeError(
-                    "WORKFLOW_REVISION_CONFLICT",
-                    "工作流已被修改",
-                    details={
-                        "expectedRevision": source_revision,
-                        "currentRevision": record.revision,
-                    },
-                )
-            current = session.get(WorkflowDocumentRow, workflow_id)
-            if current is None:
-                raise WorkflowRuntimeError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
-            if current.revision != source_revision:
-                raise WorkflowRuntimeError(
-                    "WORKFLOW_REVISION_CONFLICT",
-                    "工作流已被修改",
-                    details={
-                        "expectedRevision": source_revision,
-                        "currentRevision": current.revision,
-                    },
-                )
-            prepared = compile_workflow(record.document)
-            requirements = ["browser.cloakbrowser"]
-            missing = sorted(set(requirements) - set(available_capabilities))
-            if missing:
-                raise WorkflowRuntimeError(
-                    "CAPABILITY_MISSING",
-                    "当前服务缺少运行工作流所需的能力",
-                    422,
-                    details={"capabilities": missing},
-                )
-            execution_plan = _execution_plan(prepared.document, prepared.node_ids)
-            adapter_version = "webrpa-chain/v1"
-            checksum = _digest(
-                {
-                    "document": prepared.document,
-                    "executionPlan": execution_plan,
-                    "adapterVersion": adapter_version,
-                }
-            )
-            content = runtime.prepare_content(
-                prepared_content_id=str(uuid4()),
+
+        def prepare(session: Session) -> PreparedContent:
+            return self._prepare_content_in_uow(
+                session,
                 prepare_operation_id=prepare_operation_id,
-                request_digest=request_digest,
                 workflow_id=workflow_id,
                 source_revision=source_revision,
-                checksum=checksum,
-                document=prepared.document,
-                execution_plan=execution_plan,
-                adapter_version=adapter_version,
-                capability_requirements=requirements,
-                provenance={
-                    "kind": "workflowRevision",
-                    "revision": source_revision,
-                },
-                created_at=created_at or datetime.now(UTC),
+                available_capabilities=available_capabilities,
+                request_digest=request_digest,
+                created_at=created_at,
             )
+
+        if uow is not None:
+            return prepare(uow)
+        with self._session_factory() as session:
+            _begin_immediate_if_sqlite(session)
+            content = prepare(session)
             session.commit()
             return content
+
+    def _prepare_content_in_uow(
+        self,
+        session: Session,
+        *,
+        prepare_operation_id: str,
+        workflow_id: str,
+        source_revision: int,
+        available_capabilities: list[str],
+        request_digest: str,
+        created_at: datetime | None,
+    ) -> PreparedContent:
+        runtime = SqlAlchemyWorkflowRuntimeRepository(session)
+        existing = runtime.get_prepared_content(
+            prepare_operation_id=prepare_operation_id
+        )
+        if existing is not None:
+            if existing.request_digest != request_digest:
+                raise WorkflowRuntimeError(
+                    "OPERATION_PAYLOAD_MISMATCH",
+                    "幂等键已用于另一准备请求",
+                )
+            return existing
+        if self._workflow_repository is None:
+            raise WorkflowRuntimeError(
+                "WORKFLOW_RUNTIME_UNAVAILABLE", "工作流文档读取器尚未装配", 503
+            )
+        current = session.get(WorkflowDocumentRow, workflow_id)
+        if current is None:
+            raise WorkflowRuntimeError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
+        if current.revision != source_revision:
+            raise WorkflowRuntimeError(
+                "WORKFLOW_REVISION_CONFLICT",
+                "工作流已被修改",
+                details={
+                    "expectedRevision": source_revision,
+                    "currentRevision": current.revision,
+                },
+            )
+        record = workflow_record(current)
+        prepared = compile_workflow(record.document)
+        requirements = ["browser.cloakbrowser"]
+        missing = sorted(set(requirements) - set(available_capabilities))
+        if missing:
+            raise WorkflowRuntimeError(
+                "CAPABILITY_MISSING",
+                "当前服务缺少运行工作流所需的能力",
+                422,
+                details={"capabilities": missing},
+            )
+        execution_plan = _execution_plan(prepared.document, prepared.node_ids)
+        adapter_version = "webrpa-chain/v1"
+        checksum = _digest(
+            {
+                "document": prepared.document,
+                "executionPlan": execution_plan,
+                "adapterVersion": adapter_version,
+            }
+        )
+        content = runtime.prepare_content(
+            prepared_content_id=str(uuid4()),
+            prepare_operation_id=prepare_operation_id,
+            request_digest=request_digest,
+            workflow_id=workflow_id,
+            source_revision=source_revision,
+            checksum=checksum,
+            document=prepared.document,
+            execution_plan=execution_plan,
+            adapter_version=adapter_version,
+            capability_requirements=requirements,
+            provenance={
+                "kind": "workflowRevision",
+                "revision": source_revision,
+            },
+            created_at=created_at or datetime.now(UTC),
+        )
+        return content
 
     def query_prepared_content(
         self,

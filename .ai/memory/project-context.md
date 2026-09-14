@@ -119,3 +119,7 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 内层筛选/排序草稿必须参与外层 dirty/valid 与 resetKey，不能以应用前的旧查询提交整体配置。业务字段查询仅用已绑定字段；状态与系统排序不依赖绑定。
 - 项目内创建成功替换 URL 使用 `preserveGuard:true`，防止未卸载页面失去离开保护；真实工作区替换保持默认清除旧 guard。
 - 管理配置保存、工作流结构校验、运行准入为不同事实。此次管理 QA 不代表批次/运行管理已交付；PM4 未开始。
+
+## PM3 参数批次原子启动（2026-09-15，confirmed）
+
+来源：`implementation/pm3/batches/task11-review.md`、实际代码及有界独立审查。Batch、独立Task输入快照、queued CoreRun、PreparedContent及启动Operation在同一调用者Session提交；Task只投影CoreRun。物理COMMIT失败会失效连接，响应丢失仍按原键找回接受结果。此为Task11后端基础包，尚无管理端启动入口；Task12–16继续。Studio demo联调不在本次范围；不进入PM4。

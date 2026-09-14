@@ -455,3 +455,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `apps/backend/src/autoflow/application/project_automations/resource_query.py` 适配现有项目、浏览器配置、安装事实、代理目录与模型目录。它不启动浏览器、不代替 License 校验、不创建另一套执行器。
 
 `apps/desktop/src/renderer/shared/components/ui/radio-group.tsx` 使用语义化原生 radio 的键盘行为及 AutoFlow 自有视觉。`scripts/qa-automation-management-pm3.mjs` 只管理专用隔离 QA 工作区，支持 `--manual` 保持应用打开；不连接 Studio demo。
+
+### PM3 参数批次持久化（2026-09-15）
+
+`domain/project_runs` 定义有界参数启动、冻结快照及 CoreRun 状态投影；`application/project_runs/coordinator.py` 在一个调用者数据库事务中建立批次/任务/快照/queued Run/操作结果。`infrastructure/database/project_run_models.py` 与 `project_runs.py` 保存和读取三表，`pm04_project_runs` 接 `pm03_project_automations`；名称 pm04 是迁移编号，不是进入 PM4 业务阶段。原子创建之后的调度、HTTP、管理页面仍独立交付，不能把持久化当作运行界面完成。
