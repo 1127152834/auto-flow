@@ -47519,5 +47519,457 @@
     "status": "通过",
     "deliveryStatus": "已实现且已验收",
     "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "F5-NATIVE-PICKER-CLOSE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立PICKER会话",
+      "从正式宿主触发CLOSE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-PICKER-QUIT",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立PICKER会话",
+      "从正式宿主触发QUIT",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-PICKER-WORKSPACE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立PICKER会话",
+      "从正式宿主触发WORKSPACE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RUN-CLOSE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RUN会话",
+      "从正式宿主触发CLOSE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RUN-QUIT",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RUN会话",
+      "从正式宿主触发QUIT",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RUN-WORKSPACE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RUN会话",
+      "从正式宿主触发WORKSPACE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RECORD-CLOSE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RECORD会话",
+      "从正式宿主触发CLOSE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RECORD-QUIT",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RECORD会话",
+      "从正式宿主触发QUIT",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F5-NATIVE-RECORD-WORKSPACE",
+    "capability": "F5.1/F5.2",
+    "preconditions": "macOS arm64正式构建HTML，隔离A/B工作区；Mock会话，具体步骤见native-ui矩阵",
+    "steps": [
+      "通过真实UI建立RECORD会话",
+      "从正式宿主触发WORKSPACE",
+      "逐项核对取消/确认/失败及终态（各例实际分支见证据）"
+    ],
+    "expectedUI": "离开前明确确认；拒绝离开保留草稿/会话；确认清理后进入目标状态",
+    "expectedIO": "现有保存/停止/审查/关闭合同；native主子窗口握手",
+    "stateAssertion": "只记录实际UI经过分支；不代表真实浏览器进程清理",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "F4-RECORD-NATIVE-RESTORE-GENERATE",
+    "capability": "F4.2",
+    "preconditions": "已正常退出的录制原生离开验收文档，持久审查1条输入",
+    "steps": [
+      "重启、打开流程、读取审查",
+      "生成预览、批量加入、撤销重做",
+      "手动保存、结束审查后独立模拟运行"
+    ],
+    "expectedUI": "恢复1步输入AutoFlow；画布0→1→0→1；运行completed",
+    "expectedIO": "审查读取/写入、工作流保存、独立Mock运行",
+    "stateAssertion": "不复用已关闭录制浏览器；无真实网页执行声明",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-session-leave/native-ui.md"
+  },
+  {
+    "id": "NODE.inject_javascript.ai-code.entry",
+    "capability": "node:inject_javascript",
+    "preconditions": "真实ConfigPanel/编辑器Dialog/助手；Monaco渲染替身；本地模型响应夹具",
+    "steps": [
+      "打开对应代码编辑器并调用AI助手",
+      "填写需求并生成",
+      "编辑审查草稿并显式保存"
+    ],
+    "expectedUI": "生成内容先留在编辑器审查，保存后回到节点",
+    "expectedIO": "实际消费JSON模型响应，携带语言提示与配置",
+    "stateAssertion": "保存前节点不变，保存后对应代码字段更新",
+    "level": "component + HTTP fixture",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "NODE.js_script.ai-code.entry",
+    "capability": "node:js_script",
+    "preconditions": "真实ConfigPanel/编辑器Dialog/助手；Monaco渲染替身；本地模型响应夹具",
+    "steps": [
+      "打开对应代码编辑器并调用AI助手",
+      "填写需求并生成",
+      "编辑审查草稿并显式保存"
+    ],
+    "expectedUI": "生成内容先留在编辑器审查，保存后回到节点",
+    "expectedIO": "实际消费JSON模型响应，携带语言提示与配置",
+    "stateAssertion": "保存前节点不变，保存后对应代码字段更新",
+    "level": "component + HTTP fixture",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "NODE.python_script.ai-code.entry",
+    "capability": "node:python_script",
+    "preconditions": "真实ConfigPanel/编辑器Dialog/助手；Monaco渲染替身；本地模型响应夹具",
+    "steps": [
+      "打开对应代码编辑器并调用AI助手",
+      "填写需求并生成",
+      "编辑审查草稿并显式保存"
+    ],
+    "expectedUI": "生成内容先留在编辑器审查，保存后回到节点",
+    "expectedIO": "实际消费JSON模型响应，携带语言提示与配置",
+    "stateAssertion": "保存前节点不变，保存后对应代码字段更新",
+    "level": "component + HTTP fixture",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-code.cancel",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "生成前取消无请求；生成后取消不写节点"
+    ],
+    "expectedUI": "生成前取消无请求；生成后取消不写节点",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "生成前取消无请求；生成后取消不写节点",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-code.rejection",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "503保留草稿，显式重试消费Ollama JSON"
+    ],
+    "expectedUI": "503保留草稿，显式重试消费Ollama JSON",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "503保留草稿，显式重试消费Ollama JSON",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-code.missing-model",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "配置缺失时发送前拒绝"
+    ],
+    "expectedUI": "配置缺失时发送前拒绝",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "配置缺失时发送前拒绝",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-code.zero-temperature",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "请求保留显式温度0"
+    ],
+    "expectedUI": "请求保留显式温度0",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "请求保留显式温度0",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-code.ndjson",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "单次读取拼接NDJSON，done后内容不使用"
+    ],
+    "expectedUI": "单次读取拼接NDJSON，done后内容不使用",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "单次读取拼接NDJSON，done后内容不使用",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-code-assistant-validation.md"
+  },
+  {
+    "id": "TOOL.ai-model-picker.empty",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "空模型列表不改手工配置"
+    ],
+    "expectedUI": "空模型列表不改手工配置",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "空模型列表不改手工配置",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "TOOL.ai-model-picker.fallback",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "有效回退模型有序过滤，关闭后清空回退"
+    ],
+    "expectedUI": "有效回退模型有序过滤，关闭后清空回退",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "有效回退模型有序过滤，关闭后清空回退",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "TOOL.ai-model-picker.removed-profile",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "移除已选模型不抹除节点字段"
+    ],
+    "expectedUI": "移除已选模型不抹除节点字段",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "移除已选模型不抹除节点字段",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "TOOL.ai-model-picker.optional",
+    "capability": "F2.2",
+    "preconditions": "共享工具经真实节点入口挂载；各例数据见专项",
+    "steps": [
+      "可选数值缺省不覆盖节点"
+    ],
+    "expectedUI": "可选数值缺省不覆盖节点",
+    "expectedIO": "共享组件状态或受控模型响应；不访问真实模型",
+    "stateAssertion": "可选数值缺省不覆盖节点",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "NODE.open_page.url-tool-entry",
+    "capability": "node:open_page",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
+  },
+  {
+    "id": "NODE.wait_element.waitTimeout-entry",
+    "capability": "node:wait_element",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
+  },
+  {
+    "id": "NODE.screenshot.path-entry",
+    "capability": "node:screenshot",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
+  },
+  {
+    "id": "NODE.screenshot.path-context",
+    "capability": "node:screenshot",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
+  },
+  {
+    "id": "NODE.click_element.followNewTab-copy",
+    "capability": "node:click_element",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
+  },
+  {
+    "id": "NODE.input_text.clearBefore-copy",
+    "capability": "node:input_text",
+    "preconditions": "真实ConfigPanel与独立节点；具体数据见证据表",
+    "steps": [
+      "通过真实字段或工具入口编辑",
+      "验证历史及保存恢复；异步入口验证取消/错误/上下文失效"
+    ],
+    "expectedUI": "显示实际字段、建议或明确错误；不静默改写草稿",
+    "expectedIO": "路径走system/select-file；文档通过Mock保存读取；无真实网页动作",
+    "stateAssertion": "节点字段准确，撤销/复制/保存恢复保持数据，迟到结果不覆盖其它上下文",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-web-remaining-fields/validation.md"
   }
 ]

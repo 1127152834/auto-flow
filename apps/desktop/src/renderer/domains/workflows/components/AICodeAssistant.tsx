@@ -370,8 +370,8 @@ ${currentCode}
       const requestBody = {
         model: globalConfig.ai.model,
         messages: messages,
-        temperature: globalConfig.ai.temperature || 0.7,
-        max_tokens: globalConfig.ai.maxTokens || 2000,
+        temperature: globalConfig.ai.temperature ?? 0.7,
+        max_tokens: globalConfig.ai.maxTokens ?? 2000,
         stream: false
       }
 
@@ -394,35 +394,25 @@ ${currentCode}
         throw new Error(`API请求失败 (${response.status}): ${errorText}`)
       }
 
-      const result = await response.json()
-      
+      const responseText = await response.text()
       let generatedCode = ''
-      
-      // 尝试解析OpenAI格式
-      if (result.choices && result.choices.length > 0) {
-        generatedCode = result.choices[0].message?.content || ''
-      } 
-      // 尝试解析Ollama格式
-      else if (result.message) {
-        generatedCode = result.message.content || ''
-      }
-      // 尝试解析NDJSON格式（Ollama流式响应）
-      else {
-        const responseText = await response.text()
-        const lines = responseText.trim().split('\n')
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              const chunk = JSON.parse(line)
-              if (chunk.message?.content) {
-                generatedCode += chunk.message.content
-              }
-              if (chunk.done) break
-            } catch {
-              continue
-            }
+      const contentType = response.headers.get('content-type')?.toLowerCase() || ''
+      if (contentType.includes('ndjson')) {
+        // Ollama emits one JSON object per line; consume the response body only once.
+        for (const line of responseText.split('\n')) {
+          if (!line.trim()) continue
+          try {
+            const chunk = JSON.parse(line)
+            if (typeof chunk.message?.content === 'string') generatedCode += chunk.message.content
+            if (chunk.done) break
+          } catch {
+            continue
           }
         }
+      } else {
+        const result = JSON.parse(responseText)
+        if (result.choices?.length > 0) generatedCode = result.choices[0].message?.content || ''
+        else if (result.message) generatedCode = result.message.content || ''
       }
 
       if (!generatedCode) {

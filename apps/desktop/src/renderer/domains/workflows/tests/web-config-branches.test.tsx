@@ -62,6 +62,7 @@ it.each([
   expect(store.getState().nodes[0].data[field]).toBe(value)
   act(() => store.getState().undo())
   expect(store.getState().nodes[0].data[field]).toBe(!value)
-  act(() => store.getState().redo())
+  act(() => { store.getState().redo(); store.getState().copyNodes([id]); store.getState().pasteNodes() })
+  expect(store.getState().nodes[1].data[field]).toBe(value)
   roundtrip(id, field, value)
 })
