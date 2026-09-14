@@ -34,5 +34,9 @@
     "packaging": "notRun",
     "userManual": "notRun"
   },
-  "handoff": "verified branch; final main HEAD and preservation checked during fast-forward"
+  "handoff": {
+    "status": "completed",
+    "evidence": "docs/project-management/design-alignment/acceptance/main-integration/handoff.json",
+    "integratedCommit": "eefc551d34148812b9378fc7142c5bc0147034e2"
+  }
 }

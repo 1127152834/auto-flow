@@ -1,0 +1,21 @@
+{
+  "at": "2026-09-14T10:08:02.428417+08:00",
+  "mainDirectory": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "branch": "codex/architecture-baseline",
+  "integratedCommit": "eefc551d34148812b9378fc7142c5bc0147034e2",
+  "observedMainHead": "31486bbd651d604989a601192ccf4bf0d405e66f",
+  "sourceCommitIsAncestor": true,
+  "r2r3DeliveryIsAncestor": true,
+  "handoffMode": "fast-forward",
+  "preservedTrackedDirtyFiles": 42,
+  "overlappingPreservedFiles": [
+    ".ai/memory/project-context.md"
+  ],
+  "otherFilesChangedDuringHandoff": [],
+  "mainDependencyInstall": "passed",
+  "mainOpenapi": "passed",
+  "mainTypecheck": "passed",
+  "mainBuild": "passed",
+  "mainBuildScope": "current main working tree, including other tasks uncommitted Studio changes; no other task changes committed by this handoff",
+  "sourceBranchesRetained": true
+}
