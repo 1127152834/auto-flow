@@ -1,3 +1,4 @@
+import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl} from './api/debugControl'
 import type {DebugControlRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
@@ -115,16 +116,14 @@ export const systemApi = {
       method: 'POST',
       body: JSON.stringify(cfg),
     }),
-  selectFolder: (title?: string, initialDir?: string) =>
-    apiRequest('/system/select-folder', { 
-      method: 'POST', 
-      body: JSON.stringify({ title, initialDir }) 
-    }),
-  selectFile: (title?: string, initialDir?: string, fileTypes?: Array<[string, string]>) =>
-    apiRequest('/system/select-file', { 
-      method: 'POST', 
-      body: JSON.stringify({ title, initialDir, fileTypes }) 
-    }),
+  selectFolder: async (title?: string, initialDir?: string) =>
+    checkedPathSelection(await apiRequest<unknown>('/system/select-folder', {
+      method: 'POST', body: JSON.stringify({title,initialDir} satisfies Partial<components['schemas']['StudioFolderSelectRequest']>),
+    })),
+  selectFile: async (title?: string, initialDir?: string, fileTypes?: Array<[string, string]>) =>
+    checkedPathSelection(await apiRequest<unknown>('/system/select-file', {
+      method: 'POST', body: JSON.stringify({title,initialDir,fileTypes} satisfies Partial<components['schemas']['StudioFileSelectRequest']>),
+    })),
   openUrl: (url: string) =>
     apiRequest('/system/open-url', { method: 'POST', body: JSON.stringify({ url }) }),
   setCustomHotkeys: (shortcuts: Record<string, string>) =>

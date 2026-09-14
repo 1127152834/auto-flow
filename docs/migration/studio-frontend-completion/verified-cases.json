@@ -33422,5 +33422,933 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.file",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "kind": "file",
+      "request": {
+        "title": "选择",
+        "initialDir": "/临时"
+      }
+    },
+    "steps": [
+      "POST后检查响应",
+      "GET错误方法"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "POST200，保留原Mock path及file/folder别名；GET405",
+    "stateAssertion": "POST200，保留原Mock path及file/folder别名；GET405",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.folder",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "kind": "folder",
+      "request": {
+        "title": "选择",
+        "initialDir": "/临时"
+      }
+    },
+    "steps": [
+      "POST后检查响应",
+      "GET错误方法"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "POST200，保留原Mock path及file/folder别名；GET405",
+    "stateAssertion": "POST200，保留原Mock path及file/folder别名；GET405",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.title-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "title": 3
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.dir-array",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "initialDir": []
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.filter-short",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "fileTypes": [
+          [
+            "one"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.filter-long",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "fileTypes": [
+          [
+            "one",
+            "two",
+            "three"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.filter-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "fileTypes": [
+          [
+            3,
+            "*.png"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.extra",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "extra": true
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.memory.filters",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "memory",
+      "request": {
+        "title": null,
+        "initialDir": null,
+        "fileTypes": [
+          [
+            "图片",
+            "*.png;*.jpg"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "文件选择保留过滤组合",
+      "目录选择拒绝文件过滤字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "文件200、目录422",
+    "stateAssertion": "文件200、目录422",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.file",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "kind": "file",
+      "request": {
+        "title": "选择",
+        "initialDir": "/临时"
+      }
+    },
+    "steps": [
+      "POST后检查响应",
+      "GET错误方法"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "POST200，保留原Mock path及file/folder别名；GET405",
+    "stateAssertion": "POST200，保留原Mock path及file/folder别名；GET405",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.folder",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "kind": "folder",
+      "request": {
+        "title": "选择",
+        "initialDir": "/临时"
+      }
+    },
+    "steps": [
+      "POST后检查响应",
+      "GET错误方法"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "POST200，保留原Mock path及file/folder别名；GET405",
+    "stateAssertion": "POST200，保留原Mock path及file/folder别名；GET405",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.title-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "title": 3
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.dir-array",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "initialDir": []
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.filter-short",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "fileTypes": [
+          [
+            "one"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.filter-long",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "fileTypes": [
+          [
+            "one",
+            "two",
+            "three"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.filter-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "fileTypes": [
+          [
+            3,
+            "*.png"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.extra",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "extra": true
+      }
+    },
+    "steps": [
+      "POST select-file"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "422；不返回伪成功路径",
+    "stateAssertion": "422；不返回伪成功路径",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.http.filters",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "transport": "http",
+      "request": {
+        "title": null,
+        "initialDir": null,
+        "fileTypes": [
+          [
+            "图片",
+            "*.png;*.jpg"
+          ]
+        ]
+      }
+    },
+    "steps": [
+      "文件选择保留过滤组合",
+      "目录选择拒绝文件过滤字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "文件200、目录422",
+    "stateAssertion": "文件200、目录422",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.selected",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true,
+        "path": "/valid"
+      }
+    },
+    "steps": [
+      "校验并补齐可选响应字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "保留成功或明确取消，error默认null",
+    "stateAssertion": "保留成功或明确取消，error默认null",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.cancel-null",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true,
+        "path": null
+      }
+    },
+    "steps": [
+      "校验并补齐可选响应字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "保留成功或明确取消，error默认null",
+    "stateAssertion": "保留成功或明确取消，error默认null",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.cancel-empty",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true,
+        "path": ""
+      }
+    },
+    "steps": [
+      "校验并补齐可选响应字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "保留成功或明确取消，error默认null",
+    "stateAssertion": "保留成功或明确取消，error默认null",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.source-cancel",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": false,
+        "path": null,
+        "message": "用户取消选择"
+      }
+    },
+    "steps": [
+      "校验并补齐可选响应字段"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "保留成功或明确取消，error默认null",
+    "stateAssertion": "保留成功或明确取消，error默认null",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.missing-path",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.path-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true,
+        "path": 4
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.success-string",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": "true",
+        "path": "/path"
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.success-error",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": true,
+        "path": "/path",
+        "error": "失败"
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.failure-path",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": false,
+        "path": "/path",
+        "error": "失败"
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.unexplained-failure",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": {
+        "success": false,
+        "path": null
+      }
+    },
+    "steps": [
+      "校验响应"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "失败；无可回填确认",
+    "stateAssertion": "失败；无可回填确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.consumer.service-failure",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "response": "503或带error的业务失败"
+    },
+    "steps": [
+      "校验包装及业务失败"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "保留失败和错误；空路径不伪装取消",
+    "stateAssertion": "保留失败和错误；空路径不伪装取消",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/path-service-contract.test.ts"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.folder-optional",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "folder-optional"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.file-optional",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "file-optional"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.filters-roundtrip",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "filters-roundtrip"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.title-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "title-number"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.dir-array",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "dir-array"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.extra",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "extra"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.filter-short",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "filter-short"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.filter-long",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "filter-long"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.filter-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "filter-number"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.selected",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "selected"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.cancel-null",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "cancel-null"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.cancel-empty",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "cancel-empty"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.source-cancel",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "source-cancel"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.failure-error",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "failure-error"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.success-string",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "success-string"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.missing-path",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "missing-path"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.path-number",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "path-number"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.success-error",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "success-error"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.failure-path",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "failure-path"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
+  },
+  {
+    "id": "CONTRACT.path-selection.dto.unexplained-failure",
+    "capability": "contract:system-path-selection",
+    "preconditions": {
+      "case": "unexplained-failure"
+    },
+    "steps": [
+      "Pydantic模型验证"
+    ],
+    "expectedUI": "合同测试不挂载UI；组件链路另列",
+    "expectedIO": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "stateAssertion": "合法请求/结果往返；非法类型和矛盾结果ValidationError；具体输入见具名用例",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_path_selection.py"
   }
 ]

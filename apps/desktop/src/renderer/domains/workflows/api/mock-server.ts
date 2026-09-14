@@ -1,3 +1,4 @@
+import {isPathSelectionRequest} from '../lib/pathSelectionContract'
 import {isDebugControlRequest} from '../lib/debugControlContract'
 import requiredFieldMetadata from '../development/module-required-fields.json'
 import {mockBrowserScriptTests,mockScriptTestBusy,invalidateMockScriptTests,configureMockScriptTest} from './mock-browser-script-tests'
@@ -627,8 +628,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     if (path === '/feature-packs/preflight') return response({ok:true,missing:[],mock:true})
     if (path === '/system/set-clipboard') { await navigator.clipboard.writeText(String(body.text)); return response({success:true}) }
-    if (path === '/system/select-folder') return response({success:true,path:db.folder,folder:db.folder})
-    if (path === '/system/select-file') return response({success:true,path:'mock://AutoFlow/example.csv',file:'mock://AutoFlow/example.csv'})
+    if (path === '/system/select-folder' || path === '/system/select-file') {
+      if(method!=='POST')return failure('Method not allowed',405)
+      const kind=path.endsWith('select-file')?'file':'folder'
+      if(!isPathSelectionRequest(body,kind))return failure('路径选择参数格式错误',422)
+      return response(kind==='file'?{success:true,path:'mock://AutoFlow/example.csv',file:'mock://AutoFlow/example.csv'}:{success:true,path:db.folder,folder:db.folder})
+    }
     if (path === '/system/browser-config' || path === '/system/config') { const configKey=key+path; if(method==='POST')localStorage.setItem(configKey,JSON.stringify(body.config || body));return response({success:true,config:JSON.parse(localStorage.getItem(configKey)||'{}'),mock:true}) }
     if (path === '/system/custom-hotkeys') return response({success:true,mock:true})
     if (path === '/local-workflows/self-heal' || path.startsWith('/local-workflows/self-heal/')) {

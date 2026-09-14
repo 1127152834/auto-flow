@@ -55,11 +55,13 @@ export function PathInput({
       if (!current()) return
       if (!result?.success) throw new Error(result?.error || '选择路径失败')
       // Preserve the migrated wrapped and legacy flat success contracts.
-      const inner = result.data && typeof result.data === 'object' ? result.data : result
-      if (typeof inner.success !== 'boolean') throw new Error('路径选择响应格式错误')
-      if (typeof inner.error === 'string' && inner.error) throw new Error(inner.error)
-      if (inner.success === false && inner.path !== null) throw new Error('选择路径失败')
-      const path: unknown = inner.path
+      const inner: unknown = result.data ?? result
+      if (!inner || typeof inner !== 'object' || Array.isArray(inner)) throw new Error('路径选择响应格式错误')
+      const reply = inner as Record<string,unknown>
+      if (typeof reply.success !== 'boolean') throw new Error('路径选择响应格式错误')
+      if (typeof reply.error === 'string' && reply.error) throw new Error(reply.error)
+      if (reply.success === false && reply.path !== null) throw new Error('选择路径失败')
+      const path: unknown = reply.path
       if (path === null || path === '') return
       if (typeof path !== 'string') throw new Error('服务返回了无效路径')
       onChange(path)

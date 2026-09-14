@@ -1,6 +1,6 @@
 """Shared Studio command envelopes; command-specific payloads remain separate contracts."""
 
-from typing import Any, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import ConfigDict, Field, JsonValue, field_validator, model_validator
 
@@ -519,4 +519,35 @@ class StudioDebugControlLookup(StudioDebugControlReceipt):
     def consistent_http_status(self) -> Self:
         if self.success and self.http_status >= 400:
             raise ValueError("成功调试命令不能使用失败状态码")
+        return self
+
+
+class StudioFolderSelectRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    title: str | None = None
+    initial_dir: str | None = None
+
+
+class StudioFileSelectRequest(StudioFolderSelectRequest):
+    file_types: list[Annotated[list[str], Field(min_length=2, max_length=2)]] | None = None
+
+
+class StudioPathSelectionResult(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    success: bool
+    path: str | None
+    message: str | None = None
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> Self:
+        if self.success:
+            if self.error:
+                raise ValueError("successful selection cannot contain an error")
+        elif self.path is not None or not (
+            (self.error and self.error.strip()) or self.message == "用户取消选择"
+        ):
+            raise ValueError("failed selection requires an error or explicit cancellation and a null path")
         return self

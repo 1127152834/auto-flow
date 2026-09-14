@@ -4412,6 +4412,37 @@ export type components = {
             /** Controlrevision */
             controlRevision: number;
         };
+        /** StudioFileSelectRequest */
+        StudioFileSelectRequest: {
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+            /**
+             * Initialdir
+             * @default null
+             */
+            initialDir: string | null;
+            /**
+             * Filetypes
+             * @default null
+             */
+            fileTypes: string[][] | null;
+        };
+        /** StudioFolderSelectRequest */
+        StudioFolderSelectRequest: {
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+            /**
+             * Initialdir
+             * @default null
+             */
+            initialDir: string | null;
+        };
         /** StudioImageAsset */
         StudioImageAsset: {
             /** Id */
@@ -4785,6 +4816,25 @@ export type components = {
                     [key: string]: string;
                 };
             };
+        };
+        /** StudioPathSelectionResult */
+        StudioPathSelectionResult: {
+            /** Success */
+            success: boolean;
+            /** Path */
+            path: string | null;
+            /**
+             * Message
+             * @default null
+             */
+            message: string | null;
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
+        } & {
+            [key: string]: unknown;
         };
         /** StudioRequestClaim */
         StudioRequestClaim: {
