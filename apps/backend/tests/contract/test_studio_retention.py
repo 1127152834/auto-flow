@@ -86,3 +86,23 @@ def test_explicit_confirmation(value):
                 "data": {"removed": 0, "freedMB": 0},
             }
         )
+
+
+def test_partial_update_preserves_wire_names_and_nulls():
+    from autoflow.adapters.http.workflow_studio_schemas import StudioRetentionUpdate
+
+    value = StudioRetentionUpdate.model_validate(
+        {"recordings_max_days": 7, "cleanup_interval_hours": None}
+    )
+    assert value.model_dump(by_alias=True, exclude_unset=True) == {
+        "recordings_max_days": 7,
+        "cleanup_interval_hours": None,
+    }
+
+
+@pytest.mark.parametrize("patch", [{"enabled": "true"}, {"cleanup_interval_hours": 0}])
+def test_partial_update_rejects_invalid_explicit_values(patch):
+    from autoflow.adapters.http.workflow_studio_schemas import StudioRetentionUpdate
+
+    with pytest.raises(ValidationError):
+        StudioRetentionUpdate.model_validate(patch)

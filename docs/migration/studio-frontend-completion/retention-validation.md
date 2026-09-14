@@ -25,3 +25,5 @@ Mock 使用独立 settings 留存策略；模拟清理返回 recordings/data 的
 类型、ESLint、Ruff、mypy、OpenAPI、49 项脚本检查及 renderer/main/preload 构建通过。构建 39.17 秒。此前 277 文件/3271 项全量回归覆盖安全归属批次，不含本批；本批使用上述针对性回归。
 
 仍未完成：真实产物清理、清理命令幂等查询/跨客户端策略 revision、正式宿主退出/工作区切换端到端矩阵和未实测平台。F1/F5/F6 不因此标记整体完成。
+
+追加部分更新的 null/字段别名/非法显式值 3 项，留存 DTO 共 21 项；后端全部契约 433 项通过（52.98 秒）。见 evidence/f5-retention/backend-contracts-full.log。
