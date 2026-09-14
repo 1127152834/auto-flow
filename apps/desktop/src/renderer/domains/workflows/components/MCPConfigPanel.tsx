@@ -1,11 +1,10 @@
 // Source: WebRPA@5ccb900e, components/workflow/MCPConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from '../api/transport'
-import { useEffect, useState, useCallback } from 'react'
+import { apiRequest } from '../api'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, RefreshCw, CheckCircle2, XCircle, Server, AlertCircle, Loader2, ChevronRight, ChevronDown, ExternalLink, Sparkles, Search, Star } from 'lucide-react'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
 import { Label } from './controls/label'
-import { getBackendBaseUrl } from '../api/config'
 import { useConfirm } from './controls/confirm-dialog'
 import { MCP_TEMPLATES, TEMPLATE_CATEGORIES, type MCPTemplate } from './mcpTemplates'
 
@@ -48,6 +47,29 @@ interface MCPStatus {
   total_tools_injected: number
 }
 
+const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value)
+const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(item => typeof item === 'string')
+const stringMap = (value: unknown) => object(value) && Object.values(value).every(item => typeof item === 'string')
+function validConfig(value: unknown): value is {mcpServers:Record<string,MCPServerConfig>} {
+  return object(value) && object(value.mcpServers) && Object.entries(value.mcpServers).every(([name, server]) =>
+    !!name.trim() && object(server) &&
+    (server.transport === undefined || ['stdio','sse','http'].includes(String(server.transport))) &&
+    ['command','cwd','url'].every(key => server[key] === undefined || typeof server[key] === 'string') &&
+    ['args','autoApprove'].every(key => server[key] === undefined || strings(server[key])) &&
+    ['env','headers'].every(key => server[key] === undefined || stringMap(server[key])) &&
+    (server.disabled === undefined || typeof server.disabled === 'boolean'))
+}
+function validStatus(value: unknown): value is MCPStatus {
+  return object(value) && Number.isSafeInteger(value.total_tools_injected) && Number(value.total_tools_injected) >= 0 &&
+    Array.isArray(value.servers) && value.servers.every(server => object(server) &&
+      typeof server.name === 'string' && typeof server.transport === 'string' &&
+      typeof server.disabled === 'boolean' && typeof server.connected === 'boolean' &&
+      Number.isSafeInteger(server.tool_count) && Number(server.tool_count) >= 0 &&
+      (server.last_error === null || typeof server.last_error === 'string') &&
+      (server.connected_at === null || typeof server.connected_at === 'string') && strings(server.auto_approve) &&
+      Array.isArray(server.tools) && server.tools.every(tool => object(tool) && typeof tool.name === 'string' && typeof tool.description === 'string'))
+}
+
 const DEFAULT_NEW_SERVER: MCPServerConfig = {
   transport: 'stdio',
   command: '',
@@ -68,6 +90,9 @@ export function MCPConfigPanel() {
   const [expandedServers, setExpandedServers] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [savedFlash, setSavedFlash] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const busy = useRef(false)
   const { confirm, ConfirmDialog } = useConfirm()
 
   // 拉取当前配置 + 状态
@@ -75,15 +100,19 @@ export function MCPConfigPanel() {
     setLoading(true)
     setError(null)
     try {
-      const base = getBackendBaseUrl()
       const [cfgRes, stRes] = await Promise.all([
-        studioFetch(`${base}/api/ai-assistant/mcp/config`),
-        studioFetch(`${base}/api/ai-assistant/mcp/status`),
+        apiRequest<{mcpServers: Record<string, MCPServerConfig>}>('/ai-assistant/mcp/config'),
+        apiRequest<MCPStatus>('/ai-assistant/mcp/status'),
       ])
-      const cfg = await cfgRes.json()
-      const st = await stRes.json()
-      setConfig({ mcpServers: cfg?.mcpServers || {} })
+      if (!cfgRes.success) throw new Error(cfgRes.error)
+      if (!stRes.success) throw new Error(stRes.error)
+      const cfg = cfgRes.data, st = stRes.data
+      if (!validConfig(cfg) || !validStatus(st)) {
+        throw new Error('MCP 配置或状态响应格式错误')
+      }
+      setConfig(cfg)
       setStatus(st)
+      setLoaded(true)
     } catch (e: any) {
       setError(e?.message || '加载失败')
     } finally {
@@ -97,14 +126,17 @@ export function MCPConfigPanel() {
 
   // 保存配置
   const saveConfig = async (next: { mcpServers: Record<string, MCPServerConfig> }) => {
+    if (busy.current || !loaded) return false
+    busy.current = true
+    setSaving(true)
+    setSavedFlash(false)
     try {
-      const base = getBackendBaseUrl()
-      const res = await studioFetch(`${base}/api/ai-assistant/mcp/config`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ config: next }),
+      const result = await apiRequest('/ai-assistant/mcp/config', {
+        method: 'PUT', body: JSON.stringify({config:next}),
       })
-      if (!res.ok) throw new Error(await res.text())
+      if (!result.success) throw new Error(result.error)
+      if (result.data?.success !== true || result.data?.saved !== true) throw new Error('服务未确认配置已保存')
+      setConfig(next)
       setSavedFlash(true)
       setTimeout(() => setSavedFlash(false), 1500)
       setError(null)
@@ -112,59 +144,54 @@ export function MCPConfigPanel() {
     } catch (e: any) {
       setError(`保存失败：${e?.message || e}`)
       return false
+    } finally {
+      busy.current = false
+      setSaving(false)
     }
   }
 
-  // 重新连接所有 server
   const reload = async () => {
+    if (busy.current) return
+    busy.current = true
     setReloading(true)
     setError(null)
     try {
-      const base = getBackendBaseUrl()
-      const res = await studioFetch(`${base}/api/ai-assistant/mcp/reload`, { method: 'POST' })
-      if (!res.ok) throw new Error(await res.text())
+      const result = await apiRequest('/ai-assistant/mcp/reload', {method:'POST'})
+      if (!result.success) throw new Error(result.error)
       await refresh()
     } catch (e: any) {
       setError(`重连失败：${e?.message || e}`)
     } finally {
+      busy.current = false
       setReloading(false)
     }
   }
 
-  // 添加 / 编辑 server
   const upsertServer = async (name: string, server: MCPServerConfig, oldName?: string) => {
-    if (!name.trim()) {
-      setError('服务器名称不能为空')
+    name = name.trim()
+    if (!name || (name !== oldName && Object.hasOwn(config.mcpServers,name))) {
+      setError(name ? '服务器名称已存在' : '服务器名称不能为空')
       return
     }
-    const next = { ...config }
-    if (oldName && oldName !== name) {
-      delete next.mcpServers[oldName]
-    }
+    const next = { ...config, mcpServers: {...config.mcpServers} }
+    if (oldName && oldName !== name) delete next.mcpServers[oldName]
     next.mcpServers[name] = server
-    setConfig(next)
-    if (await saveConfig(next)) {
-      setEditingName(null)
-    }
+    if (await saveConfig(next)) setEditingName(null)
   }
 
   const deleteServer = async (name: string) => {
+    if (busy.current) return
     const ok = await confirm(`确认删除 MCP 服务器 "${name}"？`, { type: 'warning', title: '删除 MCP 服务器', confirmText: '删除', cancelText: '取消' })
     if (!ok) return
-    const next = { ...config }
+    const next = { ...config, mcpServers: {...config.mcpServers} }
     delete next.mcpServers[name]
-    setConfig(next)
-    await saveConfig(next)
-    await reload()
+    if (await saveConfig(next)) await reload()
   }
 
   const toggleDisabled = async (name: string) => {
-    const next = { ...config }
-    next.mcpServers[name] = {
-      ...next.mcpServers[name],
-      disabled: !next.mcpServers[name].disabled,
-    }
-    setConfig(next)
+    const next = { ...config, mcpServers: {...config.mcpServers,
+      [name]: {...config.mcpServers[name], disabled: !config.mcpServers[name].disabled},
+    } }
     await saveConfig(next)
   }
 
@@ -184,7 +211,7 @@ export function MCPConfigPanel() {
         <div className="flex items-start gap-2">
           <Server className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div>
-            <strong>MCP（Model Context Protocol）</strong> 让你接入第三方工具到 WebRPA 小助手。
+            <strong>MCP（Model Context Protocol）</strong> 让你接入第三方工具到 AutoFlow 小助手。
             支持 <code className="px-1 bg-violet-100 rounded">stdio</code>（本地命令）、
             <code className="px-1 bg-violet-100 rounded mx-0.5">sse</code> 和
             <code className="px-1 bg-violet-100 rounded ml-0.5">http</code>（远程服务）。
@@ -222,31 +249,31 @@ export function MCPConfigPanel() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setShowTemplates(true)} disabled={loading}>
+          <Button size="sm" variant="outline" onClick={() => setShowTemplates(true)} disabled={loading || saving || reloading || !loaded}>
             <Sparkles className="w-3.5 h-3.5" />
             <span className="ml-1">推荐模板</span>
           </Button>
-          <Button size="sm" variant="outline" onClick={reload} disabled={reloading || loading}>
+          <Button size="sm" variant="outline" onClick={reload} disabled={reloading || loading || saving || !loaded}>
             {reloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
             <span className="ml-1">重新连接</span>
           </Button>
-          <Button size="sm" onClick={() => { setEditingTemplate(null); setEditingName('__new__') }} disabled={loading}>
+          <Button size="sm" onClick={() => { setEditingTemplate(null); setEditingName('__new__') }} disabled={loading || saving || reloading || !loaded}>
             <Plus className="w-3.5 h-3.5" />
             <span className="ml-1">添加</span>
           </Button>
         </div>
       </div>
 
-      {error && (
+      {error && editingName === null && (
         <div className="p-2.5 rounded-md bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-1.5">
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-          <span>{error}</span>
+          <span role="alert">{error}</span><button disabled={loading || saving || reloading} onClick={refresh}>重新读取配置</button>
         </div>
       )}
 
       {/* 服务器列表 */}
       <div className="space-y-2">
-        {serverNames.length === 0 && !loading && (
+        {serverNames.length === 0 && !loading && loaded && (
           <div className="text-center py-8 text-sm text-gray-500">
             还没有配置 MCP 服务器，点上方"添加"开始
           </div>
@@ -293,18 +320,22 @@ export function MCPConfigPanel() {
                 </div>
                 <div className="flex items-center gap-1">
                   <button
+                    disabled={saving || reloading || loading}
                     onClick={() => toggleDisabled(name)}
                     className="text-xs px-2 py-1 rounded border border-gray-200 hover:bg-gray-100 text-gray-700"
                   >
                     {server.disabled ? '启用' : '禁用'}
                   </button>
                   <button
+                    disabled={saving || reloading || loading}
                     onClick={() => setEditingName(name)}
                     className="text-xs px-2 py-1 rounded border border-blue-200 text-blue-700 hover:bg-blue-50"
                   >
                     编辑
                   </button>
                   <button
+                    disabled={saving || reloading || loading}
+                    aria-label={`删除 MCP 服务器 ${name}`}
                     onClick={() => deleteServer(name)}
                     className="text-xs p-1 rounded border border-red-200 text-red-600 hover:bg-red-50"
                   >
@@ -347,7 +378,10 @@ export function MCPConfigPanel() {
           }
           template={editingName === '__new__' ? editingTemplate : null}
           existingNames={serverNames}
-          onClose={() => { setEditingName(null); setEditingTemplate(null) }}
+          isNew={editingName === '__new__'}
+          saving={saving}
+          error={error}
+          onClose={() => { if (!busy.current) { setEditingName(null); setEditingTemplate(null); setError(null) } }}
           onSave={(name, server) => upsertServer(name, server, editingName === '__new__' ? undefined : editingName)}
         />
       )}
@@ -390,6 +424,9 @@ function templateToServerConfig(tpl: MCPTemplate): MCPServerConfig {
 // =============================================================================
 
 interface ServerEditModalProps {
+  isNew: boolean
+  saving: boolean
+  error: string | null
   name: string
   server: MCPServerConfig
   template?: MCPTemplate | null
@@ -398,7 +435,7 @@ interface ServerEditModalProps {
   onSave: (name: string, server: MCPServerConfig) => void | Promise<void>
 }
 
-function ServerEditModal({ name: initialName, server: initialServer, template, existingNames, onClose, onSave }: ServerEditModalProps) {
+function ServerEditModal({ name: initialName, server: initialServer, template, existingNames, isNew, saving, error, onClose, onSave }: ServerEditModalProps) {
   const [name, setName] = useState(initialName)
   const [transport, setTransport] = useState<'stdio' | 'sse' | 'http'>(initialServer.transport || 'stdio')
   const [command, setCommand] = useState(initialServer.command || '')
@@ -415,11 +452,10 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
     (initialServer.autoApprove || []).join('\n')
   )
 
-  const isNew = initialName === ''
-  const nameConflict = isNew && existingNames.includes(name)
+  const nameConflict = isNew && existingNames.includes(name.trim())
 
   const handleSave = () => {
-    if (!name.trim()) return
+    if (saving || !name.trim()) return
     if (nameConflict) return
 
     const envLines = envText.split('\n').map(l => l.trim()).filter(Boolean)
@@ -475,7 +511,8 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
         </div>
 
         {/* Body（中间区域滚动） */}
-        <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
+        <fieldset disabled={saving} className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
+          {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
           {/* 模板来源提示 */}
           {template && (
             <div className="p-2.5 rounded-md bg-violet-50 border border-violet-200/60 text-xs text-violet-800">
@@ -609,12 +646,12 @@ function ServerEditModal({ name: initialName, server: initialServer, template, e
               这些工具调用时不会要求确认。其他工具默认需要确认。
             </p>
           </div>
-        </div>
+        </fieldset>
 
         {/* Footer（固定不滚动） */}
         <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2 flex-shrink-0 bg-white">
-          <Button variant="outline" onClick={onClose}>取消</Button>
-          <Button onClick={handleSave} disabled={!name.trim() || nameConflict || (transport === 'stdio' ? !command.trim() : !url.trim())}>
+          <Button variant="outline" onClick={onClose} disabled={saving}>取消</Button>
+          <Button onClick={handleSave} disabled={saving || !name.trim() || nameConflict || (transport === 'stdio' ? !command.trim() : !url.trim())}>
             保存
           </Button>
         </div>

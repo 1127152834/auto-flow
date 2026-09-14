@@ -30452,5 +30452,315 @@
     "level": "store + HTTP/SSE integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
+  },
+  {
+    "id": "F5.mcp-save.load-503",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "GET config 返回 HTTP 503 错误包"
+    },
+    "steps": [
+      "打开 MCP 面板"
+    ],
+    "expectedUI": "显示读取失败；不显示成功空配置",
+    "expectedIO": "GET config/status；不发送 PUT",
+    "stateAssertion": "显示读取失败；不显示成功空配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.toggle-503",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "已有启用 fixture，PUT 返回 HTTP 503 错误包"
+    },
+    "steps": [
+      "点击禁用"
+    ],
+    "expectedUI": "仍为启用配置；错误可见；无已保存提示",
+    "expectedIO": "一次 PUT；不提交本地变更",
+    "stateAssertion": "仍为启用配置；错误可见；无已保存提示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.load-200",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "GET config 返回 HTTP 200 错误包"
+    },
+    "steps": [
+      "打开 MCP 面板"
+    ],
+    "expectedUI": "显示读取失败；不显示成功空配置",
+    "expectedIO": "GET config/status；不发送 PUT",
+    "stateAssertion": "显示读取失败；不显示成功空配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.toggle-200",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "已有启用 fixture，PUT 返回 HTTP 200 错误包"
+    },
+    "steps": [
+      "点击禁用"
+    ],
+    "expectedUI": "仍为启用配置；错误可见；无已保存提示",
+    "expectedIO": "一次 PUT；不提交本地变更",
+    "stateAssertion": "仍为启用配置；错误可见；无已保存提示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.create-retry",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "初次 PUT 拒绝，下次确认成功"
+    },
+    "steps": [
+      "新增 draft/node，保存失败后重试"
+    ],
+    "expectedUI": "失败保留名称与输入；成功后列表增加且关闭表单",
+    "expectedIO": "两次显式 PUT；不会自动重试",
+    "stateAssertion": "失败保留名称与输入；成功后列表增加且关闭表单",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.pending",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "PUT 响应延迟"
+    },
+    "steps": [
+      "连点禁用，随后返回成功"
+    ],
+    "expectedUI": "只发送一次；确认前仍启用，确认后禁用",
+    "expectedIO": "一个在途 PUT",
+    "stateAssertion": "只发送一次；确认前仍启用，确认后禁用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.delete-failure",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "已有 fixture，保存删除结果被拒绝"
+    },
+    "steps": [
+      "点击命名删除按钮并确认"
+    ],
+    "expectedUI": "保留服务器与错误",
+    "expectedIO": "PUT 失败后不 POST reload",
+    "stateAssertion": "保留服务器与错误",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.template",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "已有 fixture，选择 HTTP 抓取模板"
+    },
+    "steps": [
+      "编辑模板名称为 fixture"
+    ],
+    "expectedUI": "名称可编辑；重名提示并禁用保存",
+    "expectedIO": "不发送 PUT",
+    "stateAssertion": "名称可编辑；重名提示并禁用保存",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.invalid-null",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "GET config 返回 null"
+    },
+    "steps": [
+      "打开面板"
+    ],
+    "expectedUI": "明确格式错误，不显示成功空配置",
+    "expectedIO": "读取后拒绝格式",
+    "stateAssertion": "明确格式错误，不显示成功空配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.invalid-array",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "GET config 返回数组"
+    },
+    "steps": [
+      "打开面板"
+    ],
+    "expectedUI": "明确格式错误，不显示成功空配置",
+    "expectedIO": "读取后拒绝格式",
+    "stateAssertion": "明确格式错误，不显示成功空配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.invalid-server",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "mcpServers.bad=null"
+    },
+    "steps": [
+      "打开面板"
+    ],
+    "expectedUI": "明确格式错误，不渲染损坏服务器",
+    "expectedIO": "读取后拒绝格式",
+    "stateAssertion": "明确格式错误，不渲染损坏服务器",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.invalid-args",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "mcpServers.bad.args=1"
+    },
+    "steps": [
+      "打开面板"
+    ],
+    "expectedUI": "明确格式错误，不渲染损坏配置",
+    "expectedIO": "读取后拒绝格式",
+    "stateAssertion": "明确格式错误，不渲染损坏配置",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.missing-ack",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "PUT 返回 HTTP200 空对象"
+    },
+    "steps": [
+      "点击禁用"
+    ],
+    "expectedUI": "未确认已保存提示；列表维持启用",
+    "expectedIO": "不接受缺失 success/saved 的确认",
+    "stateAssertion": "未确认已保存提示；列表维持启用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.pending-form",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "新增表单 PUT 保持在途"
+    },
+    "steps": [
+      "提交 pending/node，确认字段和取消锁定，再返回失败"
+    ],
+    "expectedUI": "等待中不能修改/取消；失败恢复编辑且保留输入",
+    "expectedIO": "一次 PUT",
+    "stateAssertion": "等待中不能修改/取消；失败恢复编辑且保留输入",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.memory-roundtrip",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "独立内存 Mock、空配置"
+    },
+    "steps": [
+      "新增 controlled/node",
+      "卸载并重新打开面板"
+    ],
+    "expectedUI": "恢复已保存服务器，显示未连接",
+    "expectedIO": "GET/PUT 使用冻结保存确认；不启动进程",
+    "stateAssertion": "恢复已保存服务器，显示未连接",
+    "level": "component + memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.http-roundtrip",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "独立本地 HTTP 服务、空配置"
+    },
+    "steps": [
+      "新增 controlled/node",
+      "卸载并重新打开面板"
+    ],
+    "expectedUI": "恢复已保存服务器，显示未连接",
+    "expectedIO": "真实 loopback GET/PUT；不启动进程",
+    "stateAssertion": "恢复已保存服务器，显示未连接",
+    "level": "component + HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.read-retry",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "初次读取失败，后续读取返回 fixture"
+    },
+    "steps": [
+      "点击重新读取配置"
+    ],
+    "expectedUI": "失败时添加禁用；成功恢复 fixture 并可编辑",
+    "expectedIO": "重试 GET，无错误期间 PUT",
+    "stateAssertion": "失败时添加禁用；成功恢复 fixture 并可编辑",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.reload-rejection",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "已有 fixture，reload 返回 HTTP200 success:false"
+    },
+    "steps": [
+      "点击重新连接"
+    ],
+    "expectedUI": "显示重连失败且列表保留",
+    "expectedIO": "一次 POST reload；拒绝后不把 refresh 当成功",
+    "stateAssertion": "显示重连失败且列表保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/mcp-save-protection.test.tsx"
+  },
+  {
+    "id": "F5.mcp-save.ui-roundtrip",
+    "capability": "MCP 配置保存与错误保护",
+    "preconditions": {
+      "data": "独立 IAB Mock，空 MCP 配置"
+    },
+    "steps": [
+      "从模板新增 mcp-ui-check/node/--version",
+      "清空自动批准",
+      "保存",
+      "禁用",
+      "换标签再返回"
+    ],
+    "expectedUI": "已保存、已禁用恢复；0连接/0工具",
+    "expectedIO": "通过页面消费 Mock GET/PUT；未调用实际 MCP",
+    "stateAssertion": "已保存、已禁用恢复；0连接/0工具",
+    "level": "browser UI + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/mcp-save-protection.md"
   }
 ]

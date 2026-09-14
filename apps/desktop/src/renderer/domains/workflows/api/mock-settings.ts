@@ -35,9 +35,9 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
   }
   if(path==='/local-workflows/webdav-test')return json({success:false,error:'Mock: remote connection is not executed'})
   if(path==='/ai-assistant/mcp/config') {
-    if(method==='PUT')save('mcp',body.config as Value)
+    if(method==='PUT'){save('mcp',body.config as Value);return json({success:true,saved:true})}
     return json(read('mcp',{mcpServers:{}}))
   }
-  if(path==='/ai-assistant/mcp/status' || path==='/ai-assistant/mcp/reload')return json({success:true,servers:[],tools:[],mock:true})
+  if(path==='/ai-assistant/mcp/status' || path==='/ai-assistant/mcp/reload')return json({success:true,servers:[],tools:[],total_tools_injected:0,mock:true})
   return undefined
 }
