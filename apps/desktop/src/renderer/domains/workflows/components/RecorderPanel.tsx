@@ -120,10 +120,28 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     const body = response.data
     if (body.sessionId !== sessionId) throw new Error('Recording session mismatch')
     const incoming = stopping ? body.data?.events : body.data
-    if (!Array.isArray(incoming) || !Number.isSafeInteger(body.nextSeq)) throw new Error('Invalid recording response')
-    const fresh = incoming.filter((event: RecEvent) => Number(event.sequence) > sequenceRef.current)
+    if (!Array.isArray(incoming) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq < 0) throw new Error('录制响应的确认游标无效，请重试')
+    // 服务保留原始确认序列；UI 合并输入等步骤后，仍按原序列补读。
+    // 先检查整个批次，避免只应用前半批却确认了尚未收到的尾部。
+    let previous: number | undefined
+    let confirmed = sequenceRef.current
+    const fresh: RecEvent[] = []
+    for (const event of incoming) {
+      if (!event || !Number.isSafeInteger(event.sequence) || event.sequence < 1 ||
+          !Object.hasOwn(EVENT_META, event.type) ||
+          (previous !== undefined && event.sequence !== previous + 1)) {
+        throw new Error('录制事件序列无效，请重试')
+      }
+      previous = event.sequence
+      if (event.sequence > confirmed) {
+        if (event.sequence !== confirmed + 1) throw new Error('录制事件存在缺口，请重试补读')
+        fresh.push(event)
+        confirmed = event.sequence
+      }
+    }
+    if (body.nextSeq !== (previous ?? sequenceRef.current)) throw new Error('录制确认游标与事件尾部不一致，请重试')
     appendEvents(fresh)
-    sequenceRef.current = Math.max(sequenceRef.current, body.nextSeq)
+    sequenceRef.current = confirmed
     setError('')
   }, [appendEvents])
 

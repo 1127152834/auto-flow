@@ -76,3 +76,66 @@ it('appends generated nodes as one undo operation without clearing logs or marki
   act(() => useWorkflowStore.getState().redo())
   expect(useWorkflowStore.getState().nodes).toHaveLength(original.length + 2)
 })
+
+it.each([
+  ['跳过事件', [{ sequence: 2, type: 'click' }], 2],
+  ['游标超过尾部', [{ sequence: 1, type: 'click' }], 2],
+  ['游标落后尾部', [{ sequence: 1, type: 'click' }], 0],
+  ['空批次推进', [], 1],
+  ['字符串序号', [{ sequence: '1', type: 'click' }], 1],
+  ['重复序号', [{ sequence: 1, type: 'click' }, { sequence: 1, type: 'click' }], 1],
+  ['空事件', [null], 1],
+  ['未知动作', [{ sequence: 1, type: 'unknown' }], 1],
+  ['负游标', [], -1],
+])('rejects %s atomically and retries from the last confirmed cursor', async (_name, events, nextSeq) => {
+  await start()
+  api.events.mockImplementationOnce(async () => ({ success: true, data: { success: true, sessionId, nextSeq, data: events } }))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  expect(screen.getByRole('alert').textContent).toContain('录制')
+  api.events.mockImplementationOnce(async () => batch([{ sequence: 1, type: 'click', selector: '#confirmed' }]))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  expect(api.events.mock.calls[1][1]).toBe(0)
+  expect(screen.getByText(/共 1 步/)).toBeDefined()
+  expect(screen.queryByRole('alert')).toBeNull()
+})
+
+it('deduplicates a replayed prefix while accepting its contiguous new tail', async () => {
+  await start()
+  const first = { sequence: 1, type: 'click', selector: '#one' }
+  api.events.mockImplementationOnce(async () => batch([first]))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  api.events.mockImplementationOnce(async () => batch([first, { sequence: 2, type: 'click', selector: '#two' }]))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  expect(screen.getByText(/共 2 步/)).toBeDefined()
+  api.stop.mockImplementationOnce(async () => ({ success: true, data: { success: true, sessionId, nextSeq: 2, data: { events: [] } } }))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '停止录制' })) })
+  expect(api.stop).toHaveBeenLastCalledWith(sessionId, 2)
+  expect(screen.getByRole('button', { name: '开始录制' })).toBeDefined()
+})
+
+it('keeps an invalid stop tail retryable without confirming unseen events', async () => {
+  await start()
+  api.stop.mockImplementationOnce(async () => ({ success: true, data: { success: true, sessionId, nextSeq: 2, data: { events: [{ sequence: 1, type: 'click' }] } } }))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '停止录制' })) })
+  expect(screen.getByRole('button', { name: '停止录制' })).toBeDefined()
+  expect(screen.getByRole('alert')).toBeDefined()
+  api.stop.mockImplementationOnce(async () => batch([{ sequence: 1, type: 'click', selector: '#tail' }], true))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '停止录制' })) })
+  expect(api.stop).toHaveBeenLastCalledWith(sessionId, 0)
+  expect(screen.getByText(/共 1 步/)).toBeDefined()
+})
+
+it('acknowledges raw input events rather than the number of merged review steps', async () => {
+  await start()
+  api.events.mockImplementationOnce(async () => batch([
+    { sequence: 1, type: 'input', selector: '#name', value: '中' },
+    { sequence: 2, type: 'input', selector: '#name', value: '中文' },
+  ]))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  expect(screen.getByText(/共 1 步/)).toBeDefined()
+  api.events.mockImplementationOnce(async () => ({ success: true, data: { success: true, sessionId, nextSeq: 3, data: [{ sequence: 3, type: 'click', selector: '#submit' }] } }))
+  await act(async () => { vi.advanceTimersByTime(700) })
+  expect(api.events.mock.calls[1][1]).toBe(2)
+  expect(screen.getByText(/共 2 步/)).toBeDefined()
+  expect(screen.queryByRole('alert')).toBeNull()
+})

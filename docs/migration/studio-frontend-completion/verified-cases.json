@@ -35294,5 +35294,221 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "RECORDER.batch.gap",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "跳过事件"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.cursor-ahead",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "游标超过尾部"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.cursor-behind",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "游标落后尾部"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.empty-advance",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "空批次推进"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.string-sequence",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "字符串序号"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.duplicate-sequence",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "重复序号"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.null-event",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "空事件"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.unknown-type",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "未知动作"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.negative-cursor",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "负游标"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.replay-prefix",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "重送前缀及新尾部"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.invalid-stop-tail",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "停止尾部缺口"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.batch.merged-input-cursor",
+    "capability": "recorder:confirmed-batches",
+    "preconditions": {
+      "session": "组件经开始录制按钮创建会话",
+      "response": "输入步骤合并与原始序号分离"
+    },
+    "steps": [
+      "通过轮询或停止按钮接收指定批次",
+      "失败后用原确认游标重试，或验证合法合并结果"
+    ],
+    "expectedUI": "异常明确提示并保留录制状态；合法批次显示正确步骤数",
+    "expectedIO": "只按已接收原始事件序号确认，不按合并步骤数确认",
+    "stateAssertion": "整个无效批次不应用，重送不重复；停止需尾部确认成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
   }
 ]
