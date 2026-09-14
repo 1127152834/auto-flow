@@ -5,6 +5,7 @@ from autoflow.infrastructure.database import (  # noqa: F401
     project_data_models,
     project_data_status_batch_models,
     project_excel_models,
+    workflow_runtime_models,
 )
 from autoflow.infrastructure.database.models import Base
 

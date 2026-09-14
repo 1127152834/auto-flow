@@ -434,3 +434,13 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 ### 全局小圆角（2026-09-14）
 
 `renderer/styles/radii.css`集中2/4/6px尺度，同时进入主应用和Studio构建；`docs/ui/radius-system/`记录用户参考、实际截图和核验。`scripts/qa-radius-system.mjs`通过隔离Electron测量真实项目表单及独立Studio令牌，保留圆形语义元素。
+
+
+## PM3 真实执行核心接入（2026-09-15，进行中）
+
+本节仅描述 `codex/project-management-pm3` 实施分支，不能代表主目录已经合入。
+
+- `domain/workflows/{models,validation,references,catalog,run_validation}.py` 与 `application/workflows/service.py`、`infrastructure/database/workflows.py`：当前 WebRPA 包装文档、验证、能力预检、保存及原命令结果找回，Task 2 提交 `ffa8df2`。未知节点可保存，最小四节点链通过预检才可准备执行。
+- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；真实 worker 仍待 Task 4 装配。
+- `0010_workflow_document_commands` 保存文档命令事实；`0011_workflow_runtime_contracts` 从 0010 顺序升级，保留历史运行证据并中断旧活动执行。有准备/运行证据时禁止有损降级，空库允许降级。历史 PM0–PM2 报告不改写。
+- 本阶段仍未装配真实网页执行、HTTP/SSE、项目自动化、批次或运行页面；按 PM3 Task 4–19 顺序继续。

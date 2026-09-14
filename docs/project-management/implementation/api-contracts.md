@@ -491,7 +491,7 @@ type RunSnapshot = {run:CoreRun;nodeAttempts:Preview<NodeAttempt>;outputs:Previe
 
 ```ts
 type ProjectEvent = {eventId:string;projectId:string;kind:'projectChanged'|'automationChanged'|'tableChanged'|'recordChanged'|'batchChanged'|'taskChanged'|'environmentChanged'|'syncChanged'|'operationChanged';resource:ResourceLocator;resourceRevision:number;occurredAt:string}
-type RunEvent = {eventId:string;runId:string;sequence:number;executionGeneration:number;kind:'runStatus'|'nodeAttempt'|'log'|'output'|'checkpoint';nodeVisitId?:string;attempt?:number;occurredAt:string;payload:JsonValue}
+type RunEvent = {eventId:string;runId:string;sequence:number;executionGeneration:number;kind:'runStatus'|'nodeAttempt'|'log'|'output'|'checkpoint';nodeId?:string;nodeVisitId?:string;attempt?:number;occurredAt:string;payload:JsonValue}
 ```
 
 项目事件只使查询缓存失效，不携带完整业务对象。Run 事件来自核心唯一事件源，至少含 `runId`、单 Run 单调 `sequence`、`eventId`、`executionGeneration`、节点访问/attempt 身份和提交时间。sequence 在核心持久提交时分配；消费者以 `(runId,sequence)` 去重，旧 generation 或 `sequence <= appliedSequence` 不覆盖当前事实。

@@ -83,7 +83,7 @@ Studio/core 不依赖项目领域。项目模块只通过 application port 组�
 | `WorkflowDocument` | `workflowId, source, format, content, revision` | `source={product:'WebRPA',commit}`、`format={kind:'webrpa-workflow',version:1}`；content 是当前 Studio 导出模型的受控投影。CAS 保存；同内容且当前修订保存不推进修订；保存命令以 `saveOperationId` 持久恢复。 |
 | `PreparedContent` | `preparedContentId, prepareOperationId, requestDigest, workflowId, sourceRevision, checksum, document, executionPlan, adapterVersion, capabilityRequirements` | `sourceRevision` 是数字 workflowRevision；启动时服务端校验并冻结文档、确定执行计划和适配器版本。创建后不可变；Run 不读取后来编辑的文档或按新代码重新编译。旧运行迁移的 `sourceRevision=null`，并保存明确 legacy provenance。 |
 | `CoreRun` | `runId, runRequestId, requestDigest, preparedContentId, parameters, inputSnapshotRef, status, statusRevision, executionGeneration, resourceRequest, capabilityBindings, lastSequence, createdAt, updatedAt, startedAt?, completedAt?, error?` | core 唯一拥有执行状态和终态；`runRequestId` 幂等唯一。 |
-| `RunEvent` | `eventId, runId, sequence, generation, kind, nodeId?, nodeVisitId?, attempt?, occurredAt, payload` | 单 Run 单调序号；事件可重复投递，消费者按 eventId/sequence 去重并补缺口；旧 generation 不能提交。 |
+| `RunEvent` | `eventId, runId, sequence, executionGeneration, kind, nodeId?, nodeVisitId?, attempt?, occurredAt, payload` | 单 Run 单调序号由核心持久层分配；事件可重复投递，消费者按 eventId/sequence 去重并补缺口；旧 executionGeneration 不能提交。 |
 | `RunArtifact` | `runId, artifactId, ordinal, purpose, nodeId, eventSequence, metadata` | 文件由后端受控目录管理，公开接口只返回受控下载入口。 |
 
 `CoreRun` 的 PM3 状态集合为：

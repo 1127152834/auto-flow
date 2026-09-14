@@ -1,0 +1,66 @@
+{
+  "stage": "PM3 Task 3",
+  "status": "passed",
+  "recordedAt": "2026-09-14T17:53:02.397338+00:00",
+  "branch": "codex/project-management-pm3",
+  "baseCommit": "ffa8df2",
+  "scope": "durable runtime contracts and migration only",
+  "checks": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "result": "passed",
+      "tests": 1193,
+      "warnings": 2,
+      "seconds": 131.32,
+      "log": "task3-pytest.log"
+    },
+    {
+      "command": "uv run --directory apps/backend pytest tests/unit/test_workflow_runtime.py tests/integration/test_workflow_runtime_repository.py tests/integration/test_workflow_runtime_migration.py -q",
+      "result": "passed",
+      "tests": 34,
+      "seconds": 2.85
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check .",
+      "result": "passed"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "result": "passed",
+      "sourceFiles": 215
+    },
+    {
+      "command": "uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/alembic.ini heads",
+      "result": "passed",
+      "head": "0011_workflow_runtime_contracts"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "reviews": {
+    "migrationSpec": "passed",
+    "migrationEngineering": "passed",
+    "runtimeSpec": "passed",
+    "runtimeEngineering": "passed",
+    "record": "task3-review.md"
+  },
+  "sourceSha256": {
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "c512c0d31fc1f3f853f92689571a8eefdfd311daa8d9dfd07fab51852b08928b",
+    "apps/backend/src/autoflow/domain/workflows/runtime.py": "7c85b6858fc94953943092061a9df63ce2ecb83875ba2491d445c64a58461d66",
+    "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0011_workflow_runtime_contracts.py": "8faf8bef7520ad59a26ca9631d58802dbbf923cabb0b9f420fdeda55edf430a3",
+    "apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py": "2c78f175674d5c328b87789ec34fe4fab705b1a5c61dd4a0698794f5ff84c7ee",
+    "apps/backend/src/autoflow/infrastructure/database/workflow_runtime_models.py": "89118797634fc6ce2f31a208b1be21ad14adbf0f6a25cfaedf71f4c1fbe0d80d"
+  },
+  "notExecuted": [
+    "CloakBrowser workflow execution",
+    "HTTP/SSE integration",
+    "Electron end-to-end",
+    "Windows",
+    "other architectures",
+    "packaged application",
+    "user manual acceptance"
+  ],
+  "nextTask": "Task 4: CloakBrowser worker and dispatcher"
+}

@@ -96,3 +96,8 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - `0009_merge_project_data` 汇合 `0008_workflow_debug` 与 `pm02_schema_drafts`，不重写历史迁移。
 - `app/ApiProvider` 每个工作区维持一个 QueryClient；服务重连按实例隔离查询键并刷新活动查询，避免既有 observer 与新缓存分离，保留本地草稿；工作区变化由 App 的 workspace key 隔离。
 - 合并核验见 `docs/project-management/design-alignment/acceptance/main-integration/`；源分支保留。
+
+
+## PM3 独立分支持久执行契约（2026-09-15，confirmed）
+
+来源：`docs/project-management/implementation/pm3/task3-verification.json`。用户已批准 PM3 计划并多次授权继续，历史“不进入 PM3”不再是当前授权边界。工作区固定 `autoflow-project-management-pm3`，主目录只读。Task 2 当前 WebRPA 文档已提交 ffa8df2；Task 3 PreparedContent/CoreRun/RunEvent 与 0011 迁移完成双审、1193 后端测试及工程检查。有历史证据时禁止有损降级；旧只读快照可查询但不能派发。当前进入 Task 4 真实 CloakBrowser worker；不能将持久契约验收冒称网页执行/前端或整个 PM3 通过。

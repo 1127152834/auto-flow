@@ -117,6 +117,8 @@ git commit -m "feat(workflows): restore document validation and persistence"
 
 ### Task 3：建立 PreparedContent 与 CoreRun v2 持久契约
 
+> **2026-09-15 执行记录（已核验）：** Task 2 已提交 `ffa8df2`，当前继续 Task 3。事件字段统一 `executionGeneration`，保留可选 `nodeId`。迁移优先保留旧 Run 的启动文档快照，完整原 payload 写入 provenance；缺失完成时间使用明确标注的迁移时间，不能用开始时间冒充。旧结构不能表达新的准备结果、操作身份和执行代次；存在 PreparedContent 时在任何 DDL 前拒绝 downgrade，空库可降级再升级。回退有业务证据的安装须使用升级前备份，不进行有损反向转换。迁移 39 项定向、运行服务 24 项定向、四项独立规格/工程审查通过；最终全量 1193 项后端测试、Ruff、mypy 通过。证据见 `docs/project-management/implementation/pm3/task3-verification.json`。只通过 Task 3，不代表 PM3.0 真实执行验收。
+
 **Files:**
 
 - Create: `apps/backend/src/autoflow/domain/workflows/runtime.py`
@@ -129,12 +131,12 @@ git commit -m "feat(workflows): restore document validation and persistence"
 - Create: `apps/backend/tests/integration/test_workflow_runtime_repository.py`
 - Create: `apps/backend/tests/integration/test_workflow_runtime_migration.py`
 
-- [ ] **Step 1: 写状态机和幂等 RED 测试。** 覆盖 `runRequestId` 唯一及其规范请求摘要、PreparedContent 的 `prepareOperationId/requestDigest/workflowId/sourceRevision/checksum/document/executionPlan/adapterVersion/capabilityRequirements` 不可变、queued 创建、合法转换、终态不可逆、旧 `executionGeneration` 拒绝，以及 RunEvent 的 `eventId/generation/kind/nodeVisitId/attempt/occurredAt/payload`、单调 sequence 和重复事件不重复提交。
-- [ ] **Step 2: 写迁移 RED 测试。** 从空库和包含 0005–0008 旧运行样例的数据库升级；验证旧活动状态统一终结为 `interrupted` 且不自动重放，旧文档的 `sourceRevision=null` 并带明确 legacy provenance；项目/浏览器/代理/模型/PM2 表不变，SQLite 外键检查通过。
-- [ ] **Step 3: 实现领域对象和 port。** CoreRun 保存 `requestDigest/parameters/inputSnapshotRef/status/statusRevision/executionGeneration/preparedContentId/lastSequence/createdAt/updatedAt/startedAt/completedAt/error`；PreparedContent 冻结 Task 2 生成的确定 `executionPlan` 和 `adapterVersion`，不得在进程重启或代码升级后重新编译。`prepare_run(..., uow)` 只向调用者工作单元登记 queued CoreRun，`dispatch_run/query_run/cancel_run/force_stop` 使用明确 CAS。数据库 writer 接受调用方 Session/UoW 且没有 `commit` 能力。
-- [ ] **Step 4: 实现迁移。** 新建 `workflow_prepared_contents`，以 SQLite 安全重建方式升级 `workflow_runs/workflow_run_events`；不得把旧 `active_slot` 当成所有权。旧 payload 按确定映射回填；无法证明的旧活动运行统一迁成 `interrupted`，不恢复为 queued/reconciling/running，也不自动重放。
-- [ ] **Step 5: 实现仓储和数据库工作单元适配。** 同一 SQLAlchemy Session 可以由项目协调器传入；独立 Studio 启动则由 core application service 创建短工作单元。
-- [ ] **Step 6: 验证。**
+- [x] **Step 1: 写状态机和幂等 RED 测试。** 覆盖 `runRequestId` 唯一及其规范请求摘要、PreparedContent 的 `prepareOperationId/requestDigest/workflowId/sourceRevision/checksum/document/executionPlan/adapterVersion/capabilityRequirements` 不可变、queued 创建、合法转换、终态不可逆、旧 `executionGeneration` 拒绝，以及 RunEvent 的 `eventId/executionGeneration/kind/nodeId/nodeVisitId/attempt/occurredAt/payload`、单调 sequence 和重复事件不重复提交。
+- [x] **Step 2: 写迁移 RED 测试。** 从空库和包含 0005–0008 旧运行样例的数据库升级；验证旧活动状态统一终结为 `interrupted` 且不自动重放，旧文档的 `sourceRevision=null` 并带明确 legacy provenance；项目/浏览器/代理/模型/PM2 表不变，SQLite 外键检查通过。
+- [x] **Step 3: 实现领域对象和 port。** CoreRun 保存 `requestDigest/parameters/inputSnapshotRef/status/statusRevision/executionGeneration/preparedContentId/lastSequence/createdAt/updatedAt/startedAt/completedAt/error`；PreparedContent 冻结 Task 2 生成的确定 `executionPlan` 和 `adapterVersion`，不得在进程重启或代码升级后重新编译。`prepare_run(..., uow)` 只向调用者工作单元登记 queued CoreRun，`dispatch_run/query_run/cancel_run/force_stop` 使用明确 CAS。数据库 writer 接受调用方 Session/UoW 且没有 `commit` 能力。
+- [x] **Step 4: 实现迁移。** 新建 `workflow_prepared_contents`，以 SQLite 安全重建方式升级 `workflow_runs/workflow_run_events`；不得把旧 `active_slot` 当成所有权。旧 payload 按确定映射回填；无法证明的旧活动运行统一迁成 `interrupted`，不恢复为 queued/reconciling/running，也不自动重放。
+- [x] **Step 5: 实现仓储和数据库工作单元适配。** 同一 SQLAlchemy Session 可以由项目协调器传入；独立 Studio 启动则由 core application service 创建短工作单元。
+- [x] **Step 6: 验证。**
 
 ```bash
 uv run --directory apps/backend pytest tests/unit/test_workflow_runtime.py tests/integration/test_workflow_runtime_repository.py tests/integration/test_workflow_runtime_migration.py -q
@@ -143,7 +145,7 @@ uv run --directory apps/backend alembic -c src/autoflow/infrastructure/database/
 
 预期：唯一 head 为 `0011_workflow_runtime_contracts`。
 
-- [ ] **Step 7: 提交。**
+- [x] **Step 7: 提交。**
 
 ```bash
 git add apps/backend/src/autoflow/domain/workflows/runtime.py apps/backend/src/autoflow/application/workflows/runtime.py apps/backend/src/autoflow/infrastructure/database/workflow_runtime.py apps/backend/src/autoflow/infrastructure/database/workflow_runtime_models.py apps/backend/src/autoflow/infrastructure/database/migrations apps/backend/tests/unit/test_workflow_runtime.py apps/backend/tests/integration/test_workflow_runtime_repository.py apps/backend/tests/integration/test_workflow_runtime_migration.py
@@ -152,15 +154,20 @@ git commit -m "feat(workflows): add immutable prepared content and core runs"
 
 ### Task 4：恢复 CloakBrowser worker 与真实执行
 
+> **2026-09-15 源码核对与接线细化：** 当前 Studio 的节点配置在 `node.data` 平铺，worker 只消费 Task 3 冻结的 `executionPlan.nodes[].data`；不恢复旧 IR 的 `execution.py`/framePath locator。采用已有 CloakBrowser launch options、proxy relay、进程所有权/父进程监护基础。`timeout=0` 表示无期限，但仍受停止控制；`current_tab` 复用当前页，不关闭它。读取属性保留 Task 2 已验证的任意非空属性名（含 UI 六项），不推测残留 `customAttribute` 的另一协议。`clearBefore=false` 按“不要清空”保留已有值并追加，修正 WebRPA 部分路径仍用 fill 覆盖的源缺陷；用回归锁定，不宣称原源码已正确。
+>
+> 参数在 CoreRun/输入快照中保持 JsonScalar 原类型；四节点 url/selector/text 当前均为字符串配置，变量插入遵循当前 UI 的 `{name}` 并转成文本，不自动解析表达式或递归替换结果，不给整个配置树增加隐式类型转换。执行协议采用单 stdin 消费者和持久事件 ACK：当前事件提交后才允许下一步动作；EOF、写库失败或撤权不得继续网页操作。全部动作与进程清理在短数据库事务之外。
+
 **Files:**
 
 - Restore and adapt: `apps/backend/src/autoflow/application/workflows/browser_resources.py`
-- Restore and adapt: `apps/backend/src/autoflow/application/workflows/execution.py`
 - Create: `apps/backend/src/autoflow/application/workflows/dispatcher.py`
+- Modify: `apps/backend/src/autoflow/__main__.py`（受控 `--workflow-worker` 入口）
+- Modify: `apps/backend/src/autoflow/bootstrap/app.py`（资源、dispatcher、shutdown 和 quiesce 装配）
+- Modify as needed: `apps/backend/src/autoflow/infrastructure/process/browser_processes.py`（复用同一进程所有权机制）
 - Restore and adapt: `apps/backend/src/autoflow/bootstrap/workflow_worker.py`
 - Restore and adapt: `apps/backend/src/autoflow/infrastructure/process/workflow_worker.py`
 - Restore and adapt: `apps/backend/src/autoflow/providers/browser/workflow_executor.py`
-- Restore and adapt: `apps/backend/src/autoflow/providers/browser/workflow_locator.py`
 - Restore and adapt: `apps/backend/src/autoflow/providers/browser/workflow_worker.py`
 - Restore and adapt: `apps/backend/tests/fixtures/workflow-page.html`
 - Restore and adapt: `apps/backend/tests/fixtures/workflow_runs.py`
@@ -170,8 +177,8 @@ git commit -m "feat(workflows): add immutable prepared content and core runs"
 
 - [ ] **Step 1: 写 worker 生命周期 RED 测试。** 覆盖页面导航、输入、点击、文本读取、事件顺序、节点失败回收、普通停止后无新网页动作、worker 失联、sidecar 退出不遗留进程。
 - [ ] **Step 2: 恢复进程协议和网页执行器。** 只恢复 PM3 fixture 使用的基础网页节点及其公共依赖；浏览器会话必须从 Profile、已安装 CloakBrowser 内核和代理服务解析，不能启动通用 Playwright 浏览器。
-- [ ] **Step 3: 实现 dispatcher。** queued Run 通过 CAS 取得当前执行代次，创建 worker 后进入 running；容量固定 1。进程输出先验证 runId 和 generation，再持久化事件。
-- [ ] **Step 4: 实现停止与清理。** 普通停止发取消并等待清理；强停撤销 generation、杀 worker、关闭 CloakBrowser，再写明确终态或 `reconciling`。清理失败不得显示成功。
+- [ ] **Step 3: 实现 dispatcher。** queued Run 通过 CAS 取得当前执行代次，创建 worker 后进入 running；容量固定 1。进程输出先验证 runId 和 executionGeneration，再持久化事件。
+- [ ] **Step 4: 实现停止与清理。** 普通停止发取消并等待清理；强停撤销 executionGeneration、杀 worker、关闭 CloakBrowser，再写明确终态或 `reconciling`。清理失败不得显示成功。
 - [ ] **Step 5: 验证。**
 
 ```bash
@@ -186,6 +193,8 @@ git commit -m "feat(workflows): execute core runs through CloakBrowser workers"
 ```
 
 ### Task 5：接入 core HTTP、SSE、OpenAPI 和 Studio transport
+
+> **集成核对项：** CoreRun 领域内部使用 `completed_at`，PM0 公共投影当前叫 `finishedAt`。HTTP 适配按公共合同显式映射，不通过序列化 dataclass 偶然改名；Task 3 的持久契约通过不等于 HTTP/OpenAPI 已交付。
 
 **Files:**
 

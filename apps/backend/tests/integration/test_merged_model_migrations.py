@@ -19,7 +19,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["0010_workflow_document_commands"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0011_workflow_runtime_contracts"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -40,7 +40,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0010_workflow_document_commands",)
+            ("0011_workflow_runtime_contracts",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
@@ -100,7 +100,14 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         connection.execute("PRAGMA foreign_keys=ON")
         for statement, values in statements.values():
             connection.execute(statement, values)
-        before = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
+        preserved = {
+            table: connection.execute(f"SELECT * FROM {table}").fetchall()
+            for table in (
+                "workflow_documents",
+                "workflow_run_artifacts",
+                "workflow_debug_commands",
+            )
+        }
 
     app = create_app(
         Settings(data_dir=str(tmp_path), instance_id="retired-studio"),
@@ -110,8 +117,23 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         pass
 
     with sqlite3.connect(paths.database) as connection:
-        after = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0010_workflow_document_commands",)
-    assert after == before
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0011_workflow_runtime_contracts",)
+        for table, rows in preserved.items():
+            assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
+        status, sequence, completed_at = connection.execute(
+            "SELECT status, last_sequence, completed_at FROM workflow_runs WHERE id='run'"
+        ).fetchone()
+        assert (status, sequence) == ("interrupted", 1)
+        assert completed_at is not None and completed_at != "2026-09-13"
+        source_revision, provenance = connection.execute(
+            "SELECT source_revision, provenance FROM workflow_prepared_contents "
+            "WHERE workflow_id='document'"
+        ).fetchone()
+        assert source_revision is None
+        assert '"legacy":true' in provenance
+        assert connection.execute(
+            "SELECT kind, node_id, occurred_at FROM workflow_run_events "
+            "WHERE run_id='run' AND sequence=1"
+        ).fetchone() == ("checkpoint", None, "2026-09-13")
     assert artifact.read_bytes() == b'{"saved":"evidence"}'
