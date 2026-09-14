@@ -44,6 +44,9 @@ interface Database {
   folder: string
   recordingReviews?: Record<string, ObjectValue>
 }
+const mockBrowserProfiles: components['schemas']['ProfileRead'][] = [{
+  id:'10000000-0000-4000-8000-000000000001',name:'受控浏览器配置（Mock）',description:'仅验证配置选择协议',startUrl:'about:blank',geoip:false,headless:false,humanize:false,humanPreset:'default',browserVersion:'mock',browserEdition:'public',releaseChannel:'stable',proxyMode:'none',fingerprintSeed:1,createdAt:'2026-09-15T00:00:00Z',updatedAt:'2026-09-15T00:00:00Z',
+}]
 const key = 'autoflow:studio:mock:database:v1'
 const empty = (): Database => ({ workflows: {}, files: {}, modules: {}, runs: {}, runLogs: {}, folder: 'mock://AutoFlow/workflows' })
 function readDatabase(): Database {
@@ -66,6 +69,17 @@ const clientSettings = { verboseLog: true, workflowId: 'current' }
 let failNextRequiredFields = false
 let browser = false
 let url = 'about:blank'
+let browserSessionId = ''
+let browserPageRevision = 0
+let targetPageId: string | null = null
+let browserPages: components['schemas']['StudioBrowserPage'][] = []
+const browserPageState = () => ({sessionId:browserSessionId,revision:browserPageRevision,targetPageId,pages:browserPages})
+/** Test-service event fixture, not an automation executor. */
+export function configureMockBrowserPages(pages:components['schemas']['StudioBrowserPage'][], target:string|null=targetPageId) {
+  browserPages=pages;targetPageId=pages.some(page=>page.pageId===target)?target:null;browserPageRevision++
+  closePickerSession();invalidateMockScriptTests(false)
+}
+
 let recording = false
 let recorded: ObjectValue[] = []
 let recordingSessionId: string | null = null
@@ -712,10 +726,38 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     const scriptTest = mockBrowserScriptTests(path,method,body,browser && !run && !recording && !picking,url)
     if(scriptTest)return scriptTest
+    if(path==='/v1/profiles'&&method==='GET')return response({items:mockBrowserProfiles,total:mockBrowserProfiles.length})
+    if(path==='/browser/pages'){
+      if(!browser)return response({error:'自动化浏览器未打开'},409)
+      if(method==='GET')return response(browserPageState())
+      if(method!=='POST')return response({error:'方法不允许'},405)
+      if(body.sessionId!==browserSessionId || body.expectedRevision!==browserPageRevision)return response({error:'浏览器页面已变化，请刷新后重试'},409)
+      const page=browserPages.find(page=>page.pageId===body.pageId)
+      if(!page)return response({error:'目标页面已关闭，请重新选择'},409)
+      if(!['select','focus','navigate'].includes(String(body.action)))return response({error:'页面操作无效'},400)
+      if(body.action==='navigate'){
+        if(typeof body.url!=='string' || !/^(https?:\/\/|about:blank$)/i.test(body.url))return response({error:'页面地址无效'},400)
+        if(targetPageId!==page.pageId)return response({error:'请先明确选择目标页面'},409)
+        page.url=body.url;url=body.url
+      }
+      if(body.action!=='focus'){
+        targetPageId=page.pageId;browserPageRevision++
+        closePickerSession();invalidateMockScriptTests(false)
+      }
+      return response(browserPageState())
+    }
     if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, url, mock: true })
     if (path === '/browser/chromium-status') return response({ installed: true, ready: true, mock: true })
-    if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) { invalidateMockScriptTests(!browser); browser = true; url = String(body.url || url); return response({ success: true, isOpen: true, url, mock: true }) }
-    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; closePickerSession(); recording = false; return response({success:true}) }
+    if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) {
+      if(body.profileId!==undefined && !mockBrowserProfiles.some(profile=>profile.id===body.profileId))return response({error:'浏览器配置已不存在，请刷新后重试'},404)
+      invalidateMockScriptTests(!browser)
+      if(!browser){browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:'about:blank'}]}
+      browser=true;url=String(body.url||url)
+      const target=browserPages.find(page=>page.pageId===targetPageId)
+      if(target){target.url=url;browserPageRevision++}
+      return response({success:true,isOpen:true,url,mock:true})
+    }
+    if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; browserPages=[];targetPageId=null;browserPageRevision++;closePickerSession(); recording = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     const recordingReview = path.match(/^\/recorder\/reviews\/([^/]+)$/)

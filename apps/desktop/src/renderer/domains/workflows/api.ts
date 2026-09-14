@@ -322,7 +322,21 @@ export const scheduledTaskApi = {
 }
 
 // ==================== 自动化浏览器 API ====================
+type BrowserPages = components['schemas']['StudioBrowserPages']
+async function browserPagesRequest(options?:RequestInit):Promise<ApiResponse<BrowserPages>> {
+  const revision=getStudioTransportRevision()
+  const result=await apiRequest<BrowserPages>('/browser/pages',options)
+  if(revision!==getStudioTransportRevision())return {success:false,error:'浏览器所属服务已变更，响应未应用'}
+  if(!result.success)return result
+  const data=result.data
+  if(!data || typeof data.sessionId!=='string' || !data.sessionId || !Number.isSafeInteger(data.revision) || data.revision<0 || !Array.isArray(data.pages) || data.pages.some(page=>!page || typeof page.pageId!=='string' || !page.pageId || typeof page.url!=='string' || typeof page.title!=='string') || new Set(data.pages.map(page=>page.pageId)).size!==data.pages.length || (data.targetPageId!==null&&!data.pages.some(page=>page.pageId===data.targetPageId)))return {success:false,error:'浏览器页面列表结构或目标身份无效'}
+  return result
+}
+
 export const browserApi = {
+  profiles: () => apiRequest<components['schemas']['ProfileList']>('/v1/profiles'),
+  pages: () => browserPagesRequest(),
+  page: (command:components['schemas']['StudioBrowserPageCommand']) => browserPagesRequest({method:'POST',body:JSON.stringify(command)}),
   getStatus: async () => {
     type Result = components['schemas']['StudioBrowserStatus']
     const result = await apiRequest<Result>('/browser/status')
@@ -334,8 +348,8 @@ export const browserApi = {
   },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
-  open: (url?: string, browserConfig?: any) =>
-    apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig }) }),
+  open: (url?: string, browserConfig?: any, profileId?: string) =>
+    apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig, profileId }) }),
   launch: (url?: string) =>
     apiRequest('/browser/launch', { method: 'POST', body: JSON.stringify({ url }) }),
   close: () => apiRequest('/browser/close', { method: 'POST' }),

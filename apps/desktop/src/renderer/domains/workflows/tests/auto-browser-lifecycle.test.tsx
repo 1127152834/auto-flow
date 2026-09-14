@@ -10,6 +10,7 @@ import {configureStudioConnection} from '../api/config'
 const log = vi.fn()
 beforeEach(() => {
   log.mockClear()
+  vi.spyOn(browserApi, 'pages').mockResolvedValue({success:true,data:{sessionId:'b',revision:0,targetPageId:'p',pages:[{pageId:'p',title:'页面',url:'about:blank'}]}})
   vi.spyOn(browserApi, 'getStatus').mockResolvedValue({ success: true, data: { isOpen: true, pickerActive: true } })
   vi.spyOn(elementPickerApi, 'getSelected').mockResolvedValue({ success: true, data: { selected: false } })
   vi.spyOn(elementPickerApi, 'getSimilar').mockResolvedValue({ success: true, data: { selected: false } })
@@ -113,7 +114,7 @@ it('ignores a similar-element response after the panel closes', async () => {
 })
 it.each(['start','stop','navigate'] as const)('serializes %s with other browser commands and restores controls after rejection',async action=>{
  vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:true,pickerActive:action==='stop'}})
- const method=action==='start'?'startPicker':action==='stop'?'stopPicker':'navigate'
+ const method=action==='start'?'startPicker':action==='stop'?'stopPicker':'page'
  let release!:(value:{success:boolean;error?:string})=>void
  const command=vi.spyOn(browserApi,method).mockImplementation(()=>new Promise<{success:boolean;error?:string}>(resolve=>{release=resolve}))
  const close=vi.spyOn(browserApi,'close').mockResolvedValue({success:true})
@@ -157,4 +158,15 @@ it('does not copy a pending pick result once a stop command has begun',async()=>
  expect(log).not.toHaveBeenCalledWith('success','已选择元素: #late')
  await act(async()=>stopped({success:true}))
  expect(screen.getByRole('button',{name:'启动选择器'})).toBeTruthy()
+})
+
+it('passes the selected AutoFlow profile without mixing source launch settings',async()=>{
+ vi.mocked(browserApi.getStatus).mockResolvedValue({success:true,data:{isOpen:false,pickerActive:false}})
+ vi.spyOn(browserApi,'profiles').mockResolvedValue({success:true,data:{items:[{id:'profile-1',name:'验收配置'}] as never,total:1}})
+ const open=vi.spyOn(browserApi,'open').mockResolvedValue({success:true})
+ render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
+ await screen.findByRole('option',{name:'验收配置'})
+ fireEvent.change(screen.getByLabelText('浏览器配置'),{target:{value:'profile-1'}})
+ fireEvent.click(screen.getByRole('button',{name:'打开浏览器'}))
+ await waitFor(()=>expect(open).toHaveBeenCalledWith(undefined,undefined,'profile-1'))
 })

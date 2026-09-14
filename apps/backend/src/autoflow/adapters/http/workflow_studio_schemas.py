@@ -369,6 +369,48 @@ class StudioSimilarPickerResult(ApiModel):
         return self
 
 
+class StudioBrowserPage(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    page_id: str = Field(min_length=1)
+    title: str
+    url: str
+
+
+class StudioBrowserPages(ApiModel):
+    model_config = ConfigDict(strict=True)
+
+    session_id: str = Field(min_length=1)
+    revision: int = Field(ge=0, le=9007199254740991)
+    target_page_id: str | None
+    pages: list[StudioBrowserPage]
+
+    @model_validator(mode="after")
+    def check_page_identity(self) -> Self:
+        ids = [page.page_id for page in self.pages]
+        if len(set(ids)) != len(ids):
+            raise ValueError("page IDs must be unique")
+        if self.target_page_id is not None and self.target_page_id not in ids:
+            raise ValueError("target page must exist")
+        return self
+
+
+class StudioBrowserPageCommand(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    session_id: str = Field(min_length=1)
+    expected_revision: int = Field(ge=0, le=9007199254740991)
+    page_id: str = Field(min_length=1)
+    action: Literal["select", "focus", "navigate"]
+    url: str | None = None
+
+    @model_validator(mode="after")
+    def check_navigation(self) -> Self:
+        if self.action == "navigate" and (self.url is None or not self.url.strip()):
+            raise ValueError("navigation requires a URL")
+        return self
+
+
 class StudioBrowserStatus(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
 

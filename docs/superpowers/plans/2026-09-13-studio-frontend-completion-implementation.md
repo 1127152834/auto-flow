@@ -40,7 +40,7 @@
 | 优先级与能力 ID | 缺实现（已确认） | 缺验收／尚待核销 | 已核销范围与依据 |
 |---|---|---|---|
 | 1 · F4.2 录制审查与生成 | 本块审查实现已补；跨块页面失效与互斥保护见 F4.1/F5，不提前关闭 | 页面变化/互斥完整闭环尚待 F4.1/F5；正式窗口验收归 F6.2 | 步骤编辑/变量化/预览/审查持久化和分页已补；源码转换差分、敏感字段及浏览器UI保存重开/模拟运行见 recorder-contract.md。开始/停止、尾部补读、幂等、来源隔离、整批加入/撤销/重做、保存重开已有证据：recorder-contract.md、recorder-origin-validation.md；不得重复列为缺实现 |
-| 2 · F4.1 浏览器与目标页 | 当前面板缺目标标签列表/选择/聚焦完整入口 | Profile 与目标页变化、框架/页面失效全部对应关系尚待核销 | 浏览器状态/命令、拾取会话、定位零一多匹配、相似元素应用已有 browser-status-validation.md、picker-session-validation.md、similar-picker-validation.md |
+| 2 · F4.1 浏览器与目标页 | 目标页列表/选择/聚焦/定向导航与Profile选择已补；无另增配置管理 | 已验证目标关闭/修订冲突/页面切换取消旧拾取；复杂框架/导航失效及正式宿主尚待核销 | 浏览器状态/命令、拾取会话、定位零一多匹配、相似元素应用已有 browser-status-validation.md、picker-session-validation.md、similar-picker-validation.md |
 | 3 · F5.1/F5.2 活跃会话与宿主协调 | 运行/录制/拾取统一互斥切换；正式关闭/退出/换区保存与清理握手 | 运行停止身份、服务重启、权限和清理回滚矩阵 | 文档草稿保护、连接隔离、拾取/录制新建打开前清理已验收；提交 d7acd65：292 文件/3492 测试及 browser-ui 证据保留，不能误计原生退出 |
 | 4 · F3.3 结果与诊断 | 结果/变量大值分页及历史按运行归属仍需补全；新运行启动时短暂显示旧日志（F4.2 UI发现，非录制阻塞） | 全部原版诊断工具及 1000 次执行、导出文件完整性 | 稳定 runId、10k 日志分页/筛选/JSONL、暂停身份及原子变量修改已验收：execution-log-history-validation.md、debug-run-variable-validation.md |
 | 5 · F2.2 节点与配套工具 | 尚不新增推定缺陷；核销发现的具体断链再登记 | 284 节点独有字段映射/分支及工具入口逐项核销；共享规则集中测 | 284 注册、284 Store 往返已回填 capabilities.json；既有 NODE.branch.* 按 nodeType 回填，不能把整节点标完成 |

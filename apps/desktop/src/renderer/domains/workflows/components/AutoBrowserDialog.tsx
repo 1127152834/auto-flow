@@ -2,7 +2,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Globe, MousePointer, Copy, Check, RefreshCw } from 'lucide-react'
 import { Button } from './controls/button'
-import { UrlInput } from './controls/url-input'
+import type { components } from '../../../shared/api/generated'
+import {getStudioTransportRevision} from '../api/transport'
+import { BrowserPagesPanel } from './BrowserPagesPanel'
 import { browserApi, elementPickerApi, systemApi, featurePackApi } from '../api'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { DialogPortal } from './controls/dialog-portal'
@@ -20,6 +22,9 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [pickerActive, setPickerActive] = useState(false)
   const [loading, setLoading] = useState(false)
   const [url, setUrl] = useState('')
+  const [profiles,setProfiles]=useState<components['schemas']['ProfileRead'][]>([])
+  const [profileId,setProfileId]=useState('')
+  const [profileError,setProfileError]=useState('')
   const [copied, setCopied] = useState(false)
   const [lastSelector, setLastSelector] = useState('')
   const statusRequest = useRef(0)
@@ -40,6 +45,18 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [missingPacks, setMissingPacks] = useState<MissingPackGroup[] | null>(null)
   const [showFeaturePacks, setShowFeaturePacks] = useState(false)
   const { config } = useGlobalConfigStore()
+
+  useEffect(()=>{
+    if(!isOpen)return
+    let active=true
+    const connection=getStudioTransportRevision()
+    void browserApi.profiles().then(result=>{
+      if(!active||connection!==getStudioTransportRevision())return
+      if(!result.success||!result.data||!Array.isArray(result.data.items)){setProfileError(result.error||'浏览器配置读取失败');return}
+      setProfiles(result.data.items);setProfileError('')
+    }).catch(error=>{if(active)setProfileError(String(error))})
+    return()=>{active=false}
+  },[isOpen])
 
   // Status failures preserve the last confirmed browser state; they do not prove closure.
   const checkStatus = async () => {
@@ -199,7 +216,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
         extensionDirs: config.browser.extensionDirs || undefined
       } : undefined
       
-      const result = await browserApi.open(url || undefined, browserConfig)
+      const result = await browserApi.open(url || undefined, profileId?undefined:browserConfig, profileId||undefined)
       if (result.error) {
         onLog('error', `打开浏览器失败: ${result.error}`)
         // 失败原因是「缺少功能模块包」时，直接把安装弹窗顶上来。
@@ -237,22 +254,6 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       endCommand()
     }
   }
-
-  const handleNavigate = async () => {
-    if (!url || !beginCommand()) return
-    try {
-      const result = await browserApi.navigate(url)
-      if (result.error) {
-        onLog('error', `导航失败: ${result.error}`)
-      } else {
-        onLog('info', `已导航到: ${url}`)
-      }
-    } catch (error) {
-      onLog('error', `导航异常: ${error}`)
-    } finally { endCommand() }
-  }
-
-
 
   const handleStartPicker = async () => {
     if (!beginCommand()) return
@@ -379,24 +380,15 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[12px] font-semibold text-[hsl(var(--slate-800))]">导航到网址</label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <UrlInput
-                      value={url}
-                      onChange={setUrl}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                  <Button variant="default" size="sm" onClick={handleNavigate} disabled={!url || loading}>
-                    跳转
-                  </Button>
-                </div>
-              </div>
+              <BrowserPagesPanel url={url} onUrlChange={setUrl} blocked={loading} onBegin={beginCommand} onEnd={endCommand} onError={message=>onLog('error',message)}/>
             </>
           )}
 
+          {!browserOpen&&<label className="block text-xs">浏览器配置<select aria-label="浏览器配置" disabled={loading} value={profileId} onChange={event=>setProfileId(event.target.value)}>
+            <option value="">沿用现有浏览器设置</option>
+            {profileId&&!profiles.some(profile=>profile.id===profileId)&&<option value={profileId}>所选配置已不可用，请重新选择</option>}
+            {profiles.map(profile=><option key={profile.id} value={profile.id}>{profile.name}</option>)}
+          </select>{profileError&&<p role="alert">{profileError}</p>}</label>}
           {/* 浏览器控制 */}
           <div className="flex gap-2">
             {!browserOpen ? (

@@ -19,6 +19,8 @@ STUDIO_SCHEMAS = (
     schemas.StudioCredentialSaved,
     schemas.StudioCredentialRenameRequest,
     schemas.StudioCredentialConfirmed,
+    schemas.StudioBrowserPages,
+    schemas.StudioBrowserPageCommand,
     schemas.StudioRecordingReviewWrite,
     schemas.StudioRecordingReview,
     schemas.StudioRecorderStartRequest,

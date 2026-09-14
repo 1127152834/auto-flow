@@ -46899,5 +46899,56 @@
     "status": "通过",
     "deliveryStatus": "已实现且已验收",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts"
+  },
+  {
+    "id": "BROWSER-PAGES-protocol",
+    "capability": "F4.1",
+    "preconditions": {
+      "pages": "两个受控Mock页面，既有浏览器会话"
+    },
+    "steps": [
+      "同一组内存/HTTP：Profile读取与拒绝失效配置、双页选择/聚焦/导航、旧修订拒绝、目标关闭不替换、旧拾取失效、会话重启隔离"
+    ],
+    "expectedUI": "明确目标及错误；没有隐式切页或错误状态覆盖",
+    "expectedIO": "sessionId + expectedRevision + pageId，既有Profile接口",
+    "stateAssertion": "页面修订和所选身份一致，旧拾取不可应用",
+    "level": "component/http",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-pages-protocol.test.ts"
+  },
+  {
+    "id": "BROWSER-PAGES-panel",
+    "capability": "F4.1",
+    "preconditions": {
+      "pages": "两个受控Mock页面，既有浏览器会话"
+    },
+    "steps": [
+      "双页选择、后续聚焦/导航绑定确认目标；目标关闭禁用；失败保留、迟到列表不覆盖命令"
+    ],
+    "expectedUI": "明确目标及错误；没有隐式切页或错误状态覆盖",
+    "expectedIO": "sessionId + expectedRevision + pageId，既有Profile接口",
+    "stateAssertion": "页面修订和所选身份一致，旧拾取不可应用",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-pages-panel.test.tsx"
+  },
+  {
+    "id": "BROWSER-PAGES-host-controls",
+    "capability": "F4.1",
+    "preconditions": {
+      "pages": "两个受控Mock页面，既有浏览器会话"
+    },
+    "steps": [
+      "页面命令共享原浏览器命令锁；选择Profile后不混入旧启动配置"
+    ],
+    "expectedUI": "明确目标及错误；没有隐式切页或错误状态覆盖",
+    "expectedIO": "sessionId + expectedRevision + pageId，既有Profile接口",
+    "stateAssertion": "页面修订和所选身份一致，旧拾取不可应用",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx"
   }
 ]

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { localWorkflowApi } from '../api'
 import { MockBrowserSurface } from '../components/MockBrowserSurface'
 import { useAIAssistantStore } from '../hooks/stores/aiAssistantStore'
-import { configureMock, addMockRecordingEvent, selectMockElement, selectMockSimilarElements, seedMockRunHistory } from '../api/mock-server'
+import { configureMock, configureMockBrowserPages, addMockRecordingEvent, selectMockElement, selectMockSimilarElements, seedMockRunHistory } from '../api/mock-server'
 import { useWorkflowStore } from '../editor-store'
 
 /** Explicit fixture controls, composed only by the current frontend preview entry. */
@@ -17,6 +17,8 @@ export function StudioMockTools() {
     {toolsOpen && <div className="studio-mock-tools">
       <button onClick={async()=>setMessage(JSON.stringify(await localWorkflowApi.getDefaultFolder()))}>检查默认目录</button>
       <button onClick={() => action(() => configureMock({disconnect:true}))}>断开 SSE 并补读</button>
+      <button onClick={() => action(() => configureMockBrowserPages([{pageId:'fixture-main',title:'受控主页面',url:'http://local.test/main'},{pageId:'fixture-popup',title:'受控弹出页',url:'http://local.test/popup'}],'fixture-main'))}>浏览器：两个页面</button>
+      <button onClick={() => action(() => configureMockBrowserPages([{pageId:'fixture-main',title:'受控主页面',url:'http://local.test/main'}],null))}>浏览器：目标页关闭</button>
       <button onClick={() => action(() => configureMock({offline:true}))}>服务离线</button>
       <button onClick={() => action(() => configureMock({offline:false}))}>恢复连接</button>
       <button onClick={() => action(() => configureMock({failNextSave:true}))}>下次保存失败</button><button onClick={() => action(() => configureMock({failNextRun:true}))}>下次节点失败</button>

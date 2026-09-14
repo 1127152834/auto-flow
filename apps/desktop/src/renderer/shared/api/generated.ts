@@ -4236,6 +4236,45 @@ export type components = {
             /** Height */
             height: number;
         };
+        /** StudioBrowserPage */
+        StudioBrowserPage: {
+            /** Pageid */
+            pageId: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+        };
+        /** StudioBrowserPageCommand */
+        StudioBrowserPageCommand: {
+            /** Sessionid */
+            sessionId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Pageid */
+            pageId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "select" | "focus" | "navigate";
+            /**
+             * Url
+             * @default null
+             */
+            url: string | null;
+        };
+        /** StudioBrowserPages */
+        StudioBrowserPages: {
+            /** Sessionid */
+            sessionId: string;
+            /** Revision */
+            revision: number;
+            /** Targetpageid */
+            targetPageId: string | null;
+            /** Pages */
+            pages: components["schemas"]["StudioBrowserPage"][];
+        };
         /** StudioBrowserScriptContext */
         StudioBrowserScriptContext: {
             /** Browsersessionid */
