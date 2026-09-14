@@ -39855,5 +39855,226 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-leave/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.cancel",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "已有凭据编辑",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭→取消"
+    ],
+    "expectedUI": "返回失败，输入保留，不关闭",
+    "expectedIO": "返回失败，输入保留，不关闭",
+    "stateAssertion": "返回失败，输入保留，不关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.discard",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "已有凭据编辑",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭→放弃"
+    ],
+    "expectedUI": "确认前未返回，确认后关闭一次并返回成功",
+    "expectedIO": "确认前未返回，确认后关闭一次并返回成功",
+    "stateAssertion": "确认前未返回，确认后关闭一次并返回成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.save",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "已有凭据编辑",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭→保存"
+    ],
+    "expectedUI": "写入确认后关闭一次并返回成功",
+    "expectedIO": "写入确认后关闭一次并返回成功",
+    "stateAssertion": "写入确认后关闭一次并返回成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.save-failed",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "写入返回错误",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭→保存→确认失败提示"
+    ],
+    "expectedUI": "返回失败，原编辑保留",
+    "expectedIO": "返回失败，原编辑保留",
+    "stateAssertion": "返回失败，原编辑保留",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.unmounted",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "无配置窗口",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭"
+    ],
+    "expectedUI": "返回不可用",
+    "expectedIO": "返回不可用",
+    "stateAssertion": "返回不可用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.already-closed",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "配置窗口已挂载但关闭",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "AI 请求关闭"
+    ],
+    "expectedUI": "返回成功，不再次调用 onClose",
+    "expectedIO": "返回成功，不再次调用 onClose",
+    "stateAssertion": "返回成功，不再次调用 onClose",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.unmount-pending",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "离开选择打开",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "卸载组件"
+    ],
+    "expectedUI": "返回失败，不误确认关闭",
+    "expectedIO": "返回失败，不误确认关闭",
+    "stateAssertion": "返回失败，不误确认关闭",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.duplicate",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "第一条关闭等待选择",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "再次 AI 请求关闭，然后取消第一条"
+    ],
+    "expectedUI": "第二条拒绝，第一条取消",
+    "expectedIO": "第二条拒绝，第一条取消",
+    "stateAssertion": "第二条拒绝，第一条取消",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.unmount-alert",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "保存失败提示打开",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "卸载组件"
+    ],
+    "expectedUI": "AI 请求解除等待并返回失败",
+    "expectedIO": "AI 请求解除等待并返回失败",
+    "stateAssertion": "AI 请求解除等待并返回失败",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.confirm-unmount",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "confirm 请求等待",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "卸载"
+    ],
+    "expectedUI": "Promise 返回 false",
+    "expectedIO": "Promise 返回 false",
+    "stateAssertion": "Promise 返回 false",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.alert-unmount",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "alert 请求等待",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "卸载"
+    ],
+    "expectedUI": "Promise 返回 false",
+    "expectedIO": "Promise 返回 false",
+    "stateAssertion": "Promise 返回 false",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.dialog-replace",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "已有 confirm",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "打开新的 alert，再卸载"
+    ],
+    "expectedUI": "旧 confirm 和新 alert 分别正确取消",
+    "expectedIO": "旧 confirm 和新 alert 分别正确取消",
+    "stateAssertion": "旧 confirm 和新 alert 分别正确取消",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
+  },
+  {
+    "id": "SETTINGS.assistant-close.late-dialog",
+    "capability": "settings:assistant-close",
+    "preconditions": {
+      "state": "组件已卸载",
+      "service": "受控 Mock"
+    },
+    "steps": [
+      "调用旧 confirm 函数"
+    ],
+    "expectedUI": "直接 false，无新弹窗",
+    "expectedIO": "直接 false，无新弹窗",
+    "stateAssertion": "直接 false，无新弹窗",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-settings-assistant/targeted.log"
   }
 ]

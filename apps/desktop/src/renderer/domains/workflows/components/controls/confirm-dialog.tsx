@@ -183,6 +183,16 @@ interface UseConfirmOptions {
 }
 
 export function useConfirm() {
+  const mounted = useRef(true)
+  const pendingResolve = useRef<((value: boolean) => void) | null>(null)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      pendingResolve.current?.(false)
+      pendingResolve.current = null
+    }
+  }, [])
   const [state, setState] = useState<{
     isOpen: boolean
     message: string
@@ -196,7 +206,10 @@ export function useConfirm() {
   })
 
   const confirm = useCallback((message: string, options: UseConfirmOptions = {}) => {
+    if (!mounted.current) return Promise.resolve(false)
+    pendingResolve.current?.(false)
     return new Promise<boolean>((resolve) => {
+      pendingResolve.current = resolve
       setState({
         isOpen: true,
         message,
@@ -207,7 +220,10 @@ export function useConfirm() {
   }, [])
 
   const alert = useCallback((message: string, options: Omit<UseConfirmOptions, 'type'> = {}) => {
+    if (!mounted.current) return Promise.resolve(false)
+    pendingResolve.current?.(false)
     return new Promise<boolean>((resolve) => {
+      pendingResolve.current = resolve
       setState({
         isOpen: true,
         message,
@@ -219,11 +235,13 @@ export function useConfirm() {
 
   const handleConfirm = useCallback(() => {
     state.resolve?.(true)
+    if (pendingResolve.current === state.resolve) pendingResolve.current = null
     setState((prev) => ({ ...prev, isOpen: false, resolve: null }))
   }, [state.resolve])
 
   const handleCancel = useCallback(() => {
     state.resolve?.(false)
+    if (pendingResolve.current === state.resolve) pendingResolve.current = null
     setState((prev) => ({ ...prev, isOpen: false, resolve: null }))
   }, [state.resolve])
 

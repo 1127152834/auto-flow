@@ -1,3 +1,4 @@
+import { requestSettingsClose } from '../lib/settingsLeave'
 import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
 import { CalendarClock } from 'lucide-react'
@@ -778,7 +779,7 @@ export function Toolbar() {
 
     // 弹窗 / 面板 - 打开
     offs.push(onAssistantUiEvent('open_global_config', () => setShowGlobalConfig(true)))
-    offs.push(onAssistantUiEvent('close_global_config', () => setShowGlobalConfig(false)))
+    offs.push(onAssistantUiEvent('close_global_config', () => { void requestSettingsClose() }))
     offs.push(onAssistantUiEvent('open_scheduled_tasks', () => setShowScheduledTasks(true)))
     offs.push(onAssistantUiEvent('close_scheduled_tasks', () => setShowScheduledTasks(false)))
     offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalWorkflow(true)))

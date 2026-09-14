@@ -1,3 +1,4 @@
+import { requestSettingsClose } from '../lib/settingsLeave'
 import { requestDocumentLeave } from '../lib/documentLeave'
 import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, services/aiAssistantSkills.ts; see SOURCE.md for license and adaptation boundaries.
@@ -1543,7 +1544,7 @@ export async function executeClientAction(
         return { success: true, message: '已打开全局配置' }
 
       case 'close_global_config':
-        if (!emitAssistantUiEvent('close_global_config', payload)) return { success: false, error: '当前界面未接通此操作' }
+        if (!(await requestSettingsClose())) return { success: false, error: '全局配置未关闭：编辑未提交、操作已取消或当前界面不可用' }
         return { success: true, message: '已关闭全局配置' }
 
       case 'open_local_workflow_dialog':

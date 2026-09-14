@@ -18,6 +18,7 @@ import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
 import { SHORTCUT_ACTIONS, eventToCombo } from '../lib/customShortcuts'
+import { registerSettingsCloseHandler } from '../lib/settingsLeave'
 import type { SettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { CredentialSettings } from './CredentialSettings'
 import { WebDAVSettings } from './WebDAVSettings'
@@ -305,12 +306,16 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
   const settingsGuard = useRef<SettingsLeaveGuard | null>(null)
   const leavingSettings = useRef(false)
   const registerLeaveGuard = useCallback((guard: SettingsLeaveGuard | null) => { settingsGuard.current = guard }, [])
-  const leaveSettings = async (action: () => void) => {
-    if (leavingSettings.current) return
+  const leaveSettings = useCallback(async (action: () => void) => {
+    if (leavingSettings.current) return false
     leavingSettings.current = true
-    try { if (!settingsGuard.current || await settingsGuard.current()) action() }
-    finally { leavingSettings.current = false }
-  }
+    try {
+      if (settingsGuard.current && !(await settingsGuard.current())) return false
+      action()
+      return true
+    } finally { leavingSettings.current = false }
+  }, [])
+  useEffect(() => registerSettingsCloseHandler(() => isOpen ? leaveSettings(onClose) : Promise.resolve(true)), [isOpen, onClose, leaveSettings])
   const [defaultFolder, setDefaultFolder] = useState<string>('')
   const [isSelectingFolder, setIsSelectingFolder] = useState(false)
   const [isSelectingBrowser, setIsSelectingBrowser] = useState(false)

@@ -1,0 +1,88 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:8006) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx (4 tests | 4 failed) 18ms
+   × confirm resolves false when its owner unmounts 14ms
+   × alert resolves false when its owner unmounts 1ms
+   × replacing an open decision cancels the first pending request 1ms
+   × a late caller after unmount receives cancellation without a new dialog 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx > confirm resolves false when its owner unmounts
+ FAIL  src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx > alert resolves false when its owner unmounts
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx:11:19
+      9|   unmount()
+     10|   await Promise.resolve()
+     11|   expect(settled).toBe(false)
+       |                   ^
+     12| })
+     13| it('replacing an open decision cancels the first pending request', asy…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx > replacing an open decision cancels the first pending request
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx:20:17
+     18|   act(() => { void result.current.alert('第二条').then(value => { second …
+     19|   await Promise.resolve()
+     20|   expect(first).toBe(false)
+       |                 ^
+     21|   expect(second).toBeUndefined()
+     22|   unmount()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx > a late caller after unmount receives cancellation without a new dialog
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx:33:19
+     31|   void confirm('过期请求').then(value => { settled = value })
+     32|   await Promise.resolve()
+     33|   expect(settled).toBe(false)
+       |                   ^
+     34| })
+     35|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  14:25:32
+   Duration  771ms (transform 136ms, setup 126ms, import 151ms, tests 18ms, environment 371ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/confirm-lifecycle.test.tsx
