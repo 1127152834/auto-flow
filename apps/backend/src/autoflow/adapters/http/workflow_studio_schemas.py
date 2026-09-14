@@ -62,6 +62,89 @@ class StudioCredentialRenameRequest(ApiModel):
     new_name: str = Field(alias="new_name", min_length=1, pattern=r"\S")
 
 
+class StudioRetentionConfig(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    enabled: bool
+    recordings_max_days: int = Field(
+        alias="recordings_max_days", ge=0, le=9007199254740991
+    )
+    recordings_max_total_mb: int = Field(
+        alias="recordings_max_total_mb", ge=0, le=9007199254740991
+    )
+    data_max_days: int = Field(alias="data_max_days", ge=0, le=9007199254740991)
+    data_max_total_mb: int = Field(alias="data_max_total_mb", ge=0, le=9007199254740991)
+    cleanup_interval_hours: int = Field(
+        alias="cleanup_interval_hours", ge=1, le=9007199254740991
+    )
+
+
+class StudioRetentionUpdate(ApiModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+    enabled: bool | None = None
+    recordings_max_days: int | None = Field(
+        default=None, alias="recordings_max_days", ge=0, le=9007199254740991
+    )
+    recordings_max_total_mb: int | None = Field(
+        default=None, alias="recordings_max_total_mb", ge=0, le=9007199254740991
+    )
+    data_max_days: int | None = Field(
+        default=None, alias="data_max_days", ge=0, le=9007199254740991
+    )
+    data_max_total_mb: int | None = Field(
+        default=None, alias="data_max_total_mb", ge=0, le=9007199254740991
+    )
+    cleanup_interval_hours: int | None = Field(
+        default=None, alias="cleanup_interval_hours", ge=1, le=9007199254740991
+    )
+
+
+class StudioRetentionUsageEntry(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+    count: int = Field(ge=0, le=9007199254740991)
+    size_mb: float = Field(alias="sizeMB", ge=0)
+
+
+class StudioRetentionUsage(ApiModel):
+    recordings: StudioRetentionUsageEntry
+    data: StudioRetentionUsageEntry
+
+
+class StudioRetentionConfirmed(ApiModel):
+    model_config = ConfigDict(strict=True)
+    success: Literal[True]
+    mock: bool | None = None
+
+    @field_validator("success", mode="before")
+    @classmethod
+    def explicit_success(cls, value: Any) -> bool:
+        if value is not True:
+            raise ValueError("留存操作必须明确确认成功")
+        return True
+
+
+class StudioRetentionSaved(StudioRetentionConfirmed):
+    config: StudioRetentionConfig
+
+
+class StudioRetentionLoaded(StudioRetentionSaved):
+    usage: StudioRetentionUsage
+
+
+class StudioRetentionUsageResponse(StudioRetentionConfirmed):
+    usage: StudioRetentionUsage
+
+
+class StudioRetentionCleanupEntry(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+    removed: int = Field(ge=0, le=9007199254740991)
+    freed_mb: float = Field(alias="freedMB", ge=0)
+
+
+class StudioRetentionCleanup(StudioRetentionConfirmed):
+    recordings: StudioRetentionCleanupEntry
+    data: StudioRetentionCleanupEntry
+
+
 class StudioCommandReceipt(ApiModel):
     # Preserve command-specific result fields while strictly checking the shared envelope.
     model_config = ConfigDict(extra="allow", strict=True)

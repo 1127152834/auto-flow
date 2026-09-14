@@ -1,0 +1,846 @@
+{
+  "numTotalTestSuites": 5,
+  "numPassedTestSuites": 5,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 74,
+  "numPassedTests": 74,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1789369121894,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects incomplete receipt null",
+          "status": "passed",
+          "title": "load rejects incomplete receipt null",
+          "duration": 3.0545829999999796,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects incomplete receipt {}",
+          "status": "passed",
+          "title": "load rejects incomplete receipt {}",
+          "duration": 0.2702080000000251,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects incomplete receipt {\"success\":true}",
+          "status": "passed",
+          "title": "load rejects incomplete receipt {\"success\":true}",
+          "duration": 0.2297079999999596,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects incomplete receipt {\"success\":\"true\"}",
+          "status": "passed",
+          "title": "load rejects incomplete receipt {\"success\":\"true\"}",
+          "duration": 0.20120799999995143,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "status": "passed",
+          "title": "load rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "duration": 0.219208999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load accepts explicit typed confirmation",
+          "status": "passed",
+          "title": "load accepts explicit typed confirmation",
+          "duration": 0.8883749999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "load rejects receipt from old connection",
+          "status": "passed",
+          "title": "load rejects receipt from old connection",
+          "duration": 0.24945800000000418,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects incomplete receipt null",
+          "status": "passed",
+          "title": "save rejects incomplete receipt null",
+          "duration": 0.18895799999995688,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects incomplete receipt {}",
+          "status": "passed",
+          "title": "save rejects incomplete receipt {}",
+          "duration": 0.20058300000005147,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects incomplete receipt {\"success\":true}",
+          "status": "passed",
+          "title": "save rejects incomplete receipt {\"success\":true}",
+          "duration": 0.34341700000004494,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects incomplete receipt {\"success\":\"true\"}",
+          "status": "passed",
+          "title": "save rejects incomplete receipt {\"success\":\"true\"}",
+          "duration": 0.1456670000000031,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "status": "passed",
+          "title": "save rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "duration": 0.1221250000000964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save accepts explicit typed confirmation",
+          "status": "passed",
+          "title": "save accepts explicit typed confirmation",
+          "duration": 0.1625419999999167,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "save rejects receipt from old connection",
+          "status": "passed",
+          "title": "save rejects receipt from old connection",
+          "duration": 0.15762500000005275,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects incomplete receipt null",
+          "status": "passed",
+          "title": "usage rejects incomplete receipt null",
+          "duration": 0.1194590000000062,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects incomplete receipt {}",
+          "status": "passed",
+          "title": "usage rejects incomplete receipt {}",
+          "duration": 0.09820799999999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects incomplete receipt {\"success\":true}",
+          "status": "passed",
+          "title": "usage rejects incomplete receipt {\"success\":true}",
+          "duration": 0.11954100000002654,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects incomplete receipt {\"success\":\"true\"}",
+          "status": "passed",
+          "title": "usage rejects incomplete receipt {\"success\":\"true\"}",
+          "duration": 0.12533300000006875,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "status": "passed",
+          "title": "usage rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "duration": 0.10083300000007966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage accepts explicit typed confirmation",
+          "status": "passed",
+          "title": "usage accepts explicit typed confirmation",
+          "duration": 0.12291599999991831,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "usage rejects receipt from old connection",
+          "status": "passed",
+          "title": "usage rejects receipt from old connection",
+          "duration": 0.09966599999995651,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects incomplete receipt null",
+          "status": "passed",
+          "title": "cleanup rejects incomplete receipt null",
+          "duration": 0.11075000000005275,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects incomplete receipt {}",
+          "status": "passed",
+          "title": "cleanup rejects incomplete receipt {}",
+          "duration": 0.1627090000000635,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects incomplete receipt {\"success\":true}",
+          "status": "passed",
+          "title": "cleanup rejects incomplete receipt {\"success\":true}",
+          "duration": 0.27304099999992104,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects incomplete receipt {\"success\":\"true\"}",
+          "status": "passed",
+          "title": "cleanup rejects incomplete receipt {\"success\":\"true\"}",
+          "duration": 0.11570899999992434,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "status": "passed",
+          "title": "cleanup rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+          "duration": 0.09249999999997272,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup accepts explicit typed confirmation",
+          "status": "passed",
+          "title": "cleanup accepts explicit typed confirmation",
+          "duration": 0.14516700000001492,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cleanup rejects receipt from old connection",
+          "status": "passed",
+          "title": "cleanup rejects receipt from old connection",
+          "duration": 0.09762499999999363,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid deletion count -1",
+          "status": "passed",
+          "title": "rejects invalid deletion count -1",
+          "duration": 0.12408300000004147,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid deletion count 0.5",
+          "status": "passed",
+          "title": "rejects invalid deletion count 0.5",
+          "duration": 0.0845000000000482,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid deletion count \"2\"",
+          "status": "passed",
+          "title": "rejects invalid deletion count \"2\"",
+          "duration": 0.07333299999993415,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid deletion count null",
+          "status": "passed",
+          "title": "rejects invalid deletion count null",
+          "duration": 0.06874999999990905,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1789369124821,
+      "endTime": 1789369124830.1453,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/tests/retention-confirmation.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory preserves AutoFlow defaults and confirms partial save on reopening",
+          "status": "passed",
+          "title": "preserves AutoFlow defaults and confirms partial save on reopening",
+          "duration": 9.817707999999925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+          "duration": 0.7521670000000995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+          "duration": 1.7334579999999278,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+          "duration": 0.5472499999999627,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+          "duration": 0.4159589999999298,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+          "duration": 0.3481249999999818,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+          "duration": 0.3047920000000204,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects invalid update {\"unexpected\":1} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"unexpected\":1} without changing persisted config",
+          "duration": 0.2880410000000211,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory returns explicit zero Mock cleanup totals",
+          "status": "passed",
+          "title": "returns explicit zero Mock cleanup totals",
+          "duration": 0.29462499999999636,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects /retention/cleanup GET",
+          "status": "passed",
+          "title": "rejects /retention/cleanup GET",
+          "duration": 0.20658300000002328,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects /retention/usage POST",
+          "status": "passed",
+          "title": "rejects /retention/usage POST",
+          "duration": 0.1474999999999227,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: memory"
+          ],
+          "fullName": "retention protocol: memory rejects /retention/config DELETE",
+          "status": "passed",
+          "title": "rejects /retention/config DELETE",
+          "duration": 0.2751670000000104,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http preserves AutoFlow defaults and confirms partial save on reopening",
+          "status": "passed",
+          "title": "preserves AutoFlow defaults and confirms partial save on reopening",
+          "duration": 36.38229200000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+          "duration": 9.920458000000053,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+          "duration": 4.416333000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+          "duration": 6.455083000000059,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+          "duration": 5.934582999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+          "duration": 4.454665999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+          "duration": 8.770167000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects invalid update {\"unexpected\":1} without changing persisted config",
+          "status": "passed",
+          "title": "rejects invalid update {\"unexpected\":1} without changing persisted config",
+          "duration": 5.618167000000085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http returns explicit zero Mock cleanup totals",
+          "status": "passed",
+          "title": "returns explicit zero Mock cleanup totals",
+          "duration": 2.4494170000000395,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects /retention/cleanup GET",
+          "status": "passed",
+          "title": "rejects /retention/cleanup GET",
+          "duration": 1.3498749999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects /retention/usage POST",
+          "status": "passed",
+          "title": "rejects /retention/usage POST",
+          "duration": 1.6007499999999482,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "retention protocol: http"
+          ],
+          "fullName": "retention protocol: http rejects /retention/config DELETE",
+          "status": "passed",
+          "title": "rejects /retention/config DELETE",
+          "duration": 1.0321249999999509,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not acknowledge a failed policy write",
+          "status": "passed",
+          "title": "does not acknowledge a failed policy write",
+          "duration": 0.3017500000000837,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1789369124096,
+      "endTime": 1789369124200.3018,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/tests/retention-protocol.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid numeric text  and keeps input",
+          "status": "passed",
+          "title": "rejects invalid numeric text  and keeps input",
+          "duration": 128.7370410000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid numeric text -1 and keeps input",
+          "status": "passed",
+          "title": "rejects invalid numeric text -1 and keeps input",
+          "duration": 21.074625000000196,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects invalid numeric text 0.5 and keeps input",
+          "status": "passed",
+          "title": "rejects invalid numeric text 0.5 and keeps input",
+          "duration": 18.140457999999853,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects zero cleanup interval",
+          "status": "passed",
+          "title": "rejects zero cleanup interval",
+          "duration": 22.284999999999854,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "offers retry on read failure",
+          "status": "passed",
+          "title": "offers retry on read failure",
+          "duration": 12.879708000000164,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not report failed cleanup as success",
+          "status": "passed",
+          "title": "does not report failed cleanup as success",
+          "duration": 22.2974999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "makes Mock cleanup limitations explicit",
+          "status": "passed",
+          "title": "makes Mock cleanup limitations explicit",
+          "duration": 16.606457999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "protects dirty form through 取消",
+          "status": "passed",
+          "title": "protects dirty form through 取消",
+          "duration": 18.339208999999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "protects dirty form through 放弃修改",
+          "status": "passed",
+          "title": "protects dirty form through 放弃修改",
+          "duration": 14.983457999999928,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "protects dirty form through 保存后继续",
+          "status": "passed",
+          "title": "protects dirty form through 保存后继续",
+          "duration": 14.892374999999902,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "failed leave-save retains inputs and blocks closing",
+          "status": "passed",
+          "title": "failed leave-save retains inputs and blocks closing",
+          "duration": 19.430665999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "serializes writes and disallows cleanup of dirty settings",
+          "status": "passed",
+          "title": "serializes writes and disallows cleanup of dirty settings",
+          "duration": 20.566790999999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "connection changes reject old-draft writes and late save receipts",
+          "status": "passed",
+          "title": "connection changes reject old-draft writes and late save receipts",
+          "duration": 16.385291999999936,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "successful save leaves clean without another prompt",
+          "status": "passed",
+          "title": "successful save leaves clean without another prompt",
+          "duration": 17.601750000000038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "preserves confirmed cleanup when usage refresh fails",
+          "status": "passed",
+          "title": "preserves confirmed cleanup when usage refresh fails",
+          "duration": 18.610374999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "reports thrown save errors without losing the draft",
+          "status": "passed",
+          "title": "reports thrown save errors without losing the draft",
+          "duration": 17.151124999999865,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not install a late initial read from another connection",
+          "status": "passed",
+          "title": "does not install a late initial read from another connection",
+          "duration": 4.156583999999839,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1789369123002,
+      "endTime": 1789369123406.1565,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/tests/retention-settings.test.tsx"
+    }
+  ]
+}

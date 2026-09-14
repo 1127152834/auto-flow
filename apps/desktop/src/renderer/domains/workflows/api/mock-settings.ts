@@ -1,3 +1,4 @@
+import { isRetentionConfig, retentionDefaults } from '../lib/retentionContract'
 import {isMcpConfig, type McpConfig} from '../lib/mcpContract'
 import {mcpFormTransport} from '../lib/mcpConfigText'
 /** Local fixtures for retained settings forms; connection probes never contact remote services. */
@@ -50,9 +51,19 @@ export function mockSettingsRequest(path: string, method: string, body: Value): 
     return fail('不支持的凭据操作',405)
   }
   if (path.startsWith('/retention/')) {
-    const usage={recordings:{count:0,sizeMB:0},data:{count:0,sizeMB:0}}
-    if(path==='/retention/config' && method==='POST')save('retention',{...read('retention'),...body})
-    return json({success:true,mock:true,usage,config:read('retention',{enabled:false,recordings_max_days:30,recordings_max_total_mb:0,data_max_days:30,data_max_total_mb:0,cleanup_interval_hours:24})})
+    const usage = {recordings:{count:0,sizeMB:0},data:{count:0,sizeMB:0}}
+    const config = read('retention', retentionDefaults)
+    if (path === '/retention/config' && method === 'GET') return json({success:true,mock:true,usage,config})
+    if (path === '/retention/usage' && method === 'GET') return json({success:true,mock:true,usage})
+    if (path === '/retention/config' && method === 'POST') {
+      // Keep the old partial-update wire behavior, but never hide explicitly invalid values.
+      const next = {...config,...Object.fromEntries(Object.entries(body).filter(([,value]) => value != null))}
+      if (!isRetentionConfig(next)) return json({success:false,error:'留存策略必须使用合法整数，清理间隔至少为 1 小时'},422)
+      try { save('retention',next) } catch { return json({success:false,error:'无法写入留存策略'},507) }
+      return json({success:true,mock:true,config:next})
+    }
+    if (path === '/retention/cleanup' && method === 'POST') return json({success:true,mock:true,recordings:{removed:0,freedMB:0},data:{removed:0,freedMB:0}})
+    return json({success:false,error:'不支持的留存操作'},405)
   }
   if(path==='/local-workflows/webdav-config') {
     if(method==='POST')save('webdav',{...body,password:''})

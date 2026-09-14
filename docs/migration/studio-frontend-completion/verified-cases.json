@@ -40825,5 +40825,1263 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-security-host/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.retention.335ca80c7551",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects incomplete receipt null"
+    },
+    "steps": [
+      "load rejects incomplete receipt null"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects incomplete receipt null",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.65883fdacdf9",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects incomplete receipt {}"
+    },
+    "steps": [
+      "load rejects incomplete receipt {}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects incomplete receipt {}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.65bffebd4ae3",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects incomplete receipt {\"success\":true}"
+    },
+    "steps": [
+      "load rejects incomplete receipt {\"success\":true}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects incomplete receipt {\"success\":true}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.a7e39a8d5364",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects incomplete receipt {\"success\":\"true\"}"
+    },
+    "steps": [
+      "load rejects incomplete receipt {\"success\":\"true\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects incomplete receipt {\"success\":\"true\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.6c3b9ba351fa",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    },
+    "steps": [
+      "load rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.8237ff807afe",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load accepts explicit typed confirmation"
+    },
+    "steps": [
+      "load accepts explicit typed confirmation"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load accepts explicit typed confirmation",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.fa1d03b989a4",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "load rejects receipt from old connection"
+    },
+    "steps": [
+      "load rejects receipt from old connection"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "load rejects receipt from old connection",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.98ac8cdd1655",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects incomplete receipt null"
+    },
+    "steps": [
+      "save rejects incomplete receipt null"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects incomplete receipt null",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.b7d93dd7a432",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects incomplete receipt {}"
+    },
+    "steps": [
+      "save rejects incomplete receipt {}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects incomplete receipt {}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.7f64b1ceebe2",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects incomplete receipt {\"success\":true}"
+    },
+    "steps": [
+      "save rejects incomplete receipt {\"success\":true}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects incomplete receipt {\"success\":true}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.d3d8b530d40e",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects incomplete receipt {\"success\":\"true\"}"
+    },
+    "steps": [
+      "save rejects incomplete receipt {\"success\":\"true\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects incomplete receipt {\"success\":\"true\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.3459dd8c4ac4",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    },
+    "steps": [
+      "save rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.a900f4f639be",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save accepts explicit typed confirmation"
+    },
+    "steps": [
+      "save accepts explicit typed confirmation"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save accepts explicit typed confirmation",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.ea5a393a71a4",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "save rejects receipt from old connection"
+    },
+    "steps": [
+      "save rejects receipt from old connection"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "save rejects receipt from old connection",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.9f17c2339f6f",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects incomplete receipt null"
+    },
+    "steps": [
+      "usage rejects incomplete receipt null"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects incomplete receipt null",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.fd6c42d0f537",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects incomplete receipt {}"
+    },
+    "steps": [
+      "usage rejects incomplete receipt {}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects incomplete receipt {}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.c487e821dc91",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects incomplete receipt {\"success\":true}"
+    },
+    "steps": [
+      "usage rejects incomplete receipt {\"success\":true}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects incomplete receipt {\"success\":true}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.3bf06191ed74",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects incomplete receipt {\"success\":\"true\"}"
+    },
+    "steps": [
+      "usage rejects incomplete receipt {\"success\":\"true\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects incomplete receipt {\"success\":\"true\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.923027453da8",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    },
+    "steps": [
+      "usage rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.d9a2c78b7694",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage accepts explicit typed confirmation"
+    },
+    "steps": [
+      "usage accepts explicit typed confirmation"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage accepts explicit typed confirmation",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.a172eb0235cd",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "usage rejects receipt from old connection"
+    },
+    "steps": [
+      "usage rejects receipt from old connection"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "usage rejects receipt from old connection",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.da72d430a2cb",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects incomplete receipt null"
+    },
+    "steps": [
+      "cleanup rejects incomplete receipt null"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects incomplete receipt null",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.1ca5eb95ff66",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects incomplete receipt {}"
+    },
+    "steps": [
+      "cleanup rejects incomplete receipt {}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects incomplete receipt {}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.55b535484b0c",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects incomplete receipt {\"success\":true}"
+    },
+    "steps": [
+      "cleanup rejects incomplete receipt {\"success\":true}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects incomplete receipt {\"success\":true}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.f4581c467e43",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects incomplete receipt {\"success\":\"true\"}"
+    },
+    "steps": [
+      "cleanup rejects incomplete receipt {\"success\":\"true\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects incomplete receipt {\"success\":\"true\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.1a87a3a57790",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    },
+    "steps": [
+      "cleanup rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects incomplete receipt {\"success\":true,\"error\":\"未完成\"}",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.11256fcdafb2",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup accepts explicit typed confirmation"
+    },
+    "steps": [
+      "cleanup accepts explicit typed confirmation"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup accepts explicit typed confirmation",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.4704eb382d50",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "cleanup rejects receipt from old connection"
+    },
+    "steps": [
+      "cleanup rejects receipt from old connection"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "cleanup rejects receipt from old connection",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.a5dc21f9e5cc",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid deletion count -1"
+    },
+    "steps": [
+      "rejects invalid deletion count -1"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid deletion count -1",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.c1c2becf824f",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid deletion count 0.5"
+    },
+    "steps": [
+      "rejects invalid deletion count 0.5"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid deletion count 0.5",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.fbb03646da26",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid deletion count \"2\""
+    },
+    "steps": [
+      "rejects invalid deletion count \"2\""
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid deletion count \"2\"",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.a93c668a70b7",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid deletion count null"
+    },
+    "steps": [
+      "rejects invalid deletion count null"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid deletion count null",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.15fd8944710e",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory preserves AutoFlow defaults and confirms partial save on reopening"
+    },
+    "steps": [
+      "retention protocol: memory preserves AutoFlow defaults and confirms partial save on reopening"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory preserves AutoFlow defaults and confirms partial save on reopening",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.dfb18efc7354",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"enabled\":\"true\"} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"enabled\":\"true\"} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.520a5de6c9e1",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"data_max_days\":-1} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"data_max_days\":-1} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.b96849b246ba",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"data_max_days\":1.5} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"data_max_days\":1.5} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.da2208a10cdd",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"data_max_days\":\"\"} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"data_max_days\":\"\"} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.dc29028696dc",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.42dddbe62b8c",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.6ac7e9a44cfc",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects invalid update {\"unexpected\":1} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: memory rejects invalid update {\"unexpected\":1} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects invalid update {\"unexpected\":1} without changing persisted config",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.e97f6bb8047c",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory returns explicit zero Mock cleanup totals"
+    },
+    "steps": [
+      "retention protocol: memory returns explicit zero Mock cleanup totals"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory returns explicit zero Mock cleanup totals",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.276867da3db9",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects /retention/cleanup GET"
+    },
+    "steps": [
+      "retention protocol: memory rejects /retention/cleanup GET"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects /retention/cleanup GET",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.52fe701ff699",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects /retention/usage POST"
+    },
+    "steps": [
+      "retention protocol: memory rejects /retention/usage POST"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects /retention/usage POST",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.309906bf5d0a",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: memory rejects /retention/config DELETE"
+    },
+    "steps": [
+      "retention protocol: memory rejects /retention/config DELETE"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: memory rejects /retention/config DELETE",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.2cae7f2318f3",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http preserves AutoFlow defaults and confirms partial save on reopening"
+    },
+    "steps": [
+      "retention protocol: http preserves AutoFlow defaults and confirms partial save on reopening"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http preserves AutoFlow defaults and confirms partial save on reopening",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.1cd19528ce40",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"enabled\":\"true\"} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"enabled\":\"true\"} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"enabled\":\"true\"} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.c8e4f3363817",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"data_max_days\":-1} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"data_max_days\":-1} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"data_max_days\":-1} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.136e67179a6a",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"data_max_days\":1.5} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"data_max_days\":1.5} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"data_max_days\":1.5} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.0523e8d5e7d0",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"data_max_days\":\"\"} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"data_max_days\":\"\"} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"data_max_days\":\"\"} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.9f2870dcf62c",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"cleanup_interval_hours\":0} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.1ef96b039a07",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"data_max_days\":9007199254740992} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.39c02af12d59",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects invalid update {\"unexpected\":1} without changing persisted config"
+    },
+    "steps": [
+      "retention protocol: http rejects invalid update {\"unexpected\":1} without changing persisted config"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects invalid update {\"unexpected\":1} without changing persisted config",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.86bd45c819a9",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http returns explicit zero Mock cleanup totals"
+    },
+    "steps": [
+      "retention protocol: http returns explicit zero Mock cleanup totals"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http returns explicit zero Mock cleanup totals",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.384c7674a68d",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects /retention/cleanup GET"
+    },
+    "steps": [
+      "retention protocol: http rejects /retention/cleanup GET"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects /retention/cleanup GET",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.d3711766db6b",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects /retention/usage POST"
+    },
+    "steps": [
+      "retention protocol: http rejects /retention/usage POST"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects /retention/usage POST",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.9ecc2766f2fa",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "retention protocol: http rejects /retention/config DELETE"
+    },
+    "steps": [
+      "retention protocol: http rejects /retention/config DELETE"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "retention protocol: http rejects /retention/config DELETE",
+    "level": "http-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.6c4fd7874f87",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "does not acknowledge a failed policy write"
+    },
+    "steps": [
+      "does not acknowledge a failed policy write"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "does not acknowledge a failed policy write",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.aa48154baf55",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid numeric text  and keeps input"
+    },
+    "steps": [
+      "rejects invalid numeric text  and keeps input"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid numeric text  and keeps input",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.aef83bef9ffd",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid numeric text -1 and keeps input"
+    },
+    "steps": [
+      "rejects invalid numeric text -1 and keeps input"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid numeric text -1 and keeps input",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.4a8a5c395bda",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects invalid numeric text 0.5 and keeps input"
+    },
+    "steps": [
+      "rejects invalid numeric text 0.5 and keeps input"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects invalid numeric text 0.5 and keeps input",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.900ebe7de005",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "rejects zero cleanup interval"
+    },
+    "steps": [
+      "rejects zero cleanup interval"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "rejects zero cleanup interval",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.88367a3a181e",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "offers retry on read failure"
+    },
+    "steps": [
+      "offers retry on read failure"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "offers retry on read failure",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.0183d15638dd",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "does not report failed cleanup as success"
+    },
+    "steps": [
+      "does not report failed cleanup as success"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "does not report failed cleanup as success",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.3e1763632675",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "makes Mock cleanup limitations explicit"
+    },
+    "steps": [
+      "makes Mock cleanup limitations explicit"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "makes Mock cleanup limitations explicit",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.c26c4aee8677",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "protects dirty form through 取消"
+    },
+    "steps": [
+      "protects dirty form through 取消"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "protects dirty form through 取消",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.4ec483bd8079",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "protects dirty form through 放弃修改"
+    },
+    "steps": [
+      "protects dirty form through 放弃修改"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "protects dirty form through 放弃修改",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.e90642d1a742",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "protects dirty form through 保存后继续"
+    },
+    "steps": [
+      "protects dirty form through 保存后继续"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "protects dirty form through 保存后继续",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.9971b5a2433c",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "failed leave-save retains inputs and blocks closing"
+    },
+    "steps": [
+      "failed leave-save retains inputs and blocks closing"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "failed leave-save retains inputs and blocks closing",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.c164af32b5ba",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "serializes writes and disallows cleanup of dirty settings"
+    },
+    "steps": [
+      "serializes writes and disallows cleanup of dirty settings"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "serializes writes and disallows cleanup of dirty settings",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.fd68048a3bcc",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "connection changes reject old-draft writes and late save receipts"
+    },
+    "steps": [
+      "connection changes reject old-draft writes and late save receipts"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "connection changes reject old-draft writes and late save receipts",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.eac879709415",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "successful save leaves clean without another prompt"
+    },
+    "steps": [
+      "successful save leaves clean without another prompt"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "successful save leaves clean without another prompt",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.ec445f3f5eee",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "preserves confirmed cleanup when usage refresh fails"
+    },
+    "steps": [
+      "preserves confirmed cleanup when usage refresh fails"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "preserves confirmed cleanup when usage refresh fails",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.8b99bb75b1a1",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "reports thrown save errors without losing the draft"
+    },
+    "steps": [
+      "reports thrown save errors without losing the draft"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "reports thrown save errors without losing the draft",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "SETTINGS.retention.f124675ddfa4",
+    "capability": "retention:protocol-and-settings",
+    "preconditions": {
+      "fixture": "独立 Mock 留存策略，默认 30/0/30/0/24，自动清理关闭",
+      "case": "does not install a late initial read from another connection"
+    },
+    "steps": [
+      "does not install a late initial read from another connection"
+    ],
+    "expectedUI": "错误不报成功；有效配置可恢复；离开遵守确认结果",
+    "expectedIO": "按用例校验状态码、调用次数和确认回执",
+    "stateAssertion": "does not install a late initial read from another connection",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
   }
 ]

@@ -5004,6 +5004,131 @@ export type components = {
             /** Claimid */
             claimId: string;
         };
+        /** StudioRetentionCleanup */
+        StudioRetentionCleanup: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+            recordings: components["schemas"]["StudioRetentionCleanupEntry"];
+            data: components["schemas"]["StudioRetentionCleanupEntry"];
+        };
+        /** StudioRetentionCleanupEntry */
+        StudioRetentionCleanupEntry: {
+            /** Removed */
+            removed: number;
+            /** Freedmb */
+            freedMB: number;
+        };
+        /** StudioRetentionConfig */
+        StudioRetentionConfig: {
+            /** Enabled */
+            enabled: boolean;
+            /** Recordings Max Days */
+            recordings_max_days: number;
+            /** Recordings Max Total Mb */
+            recordings_max_total_mb: number;
+            /** Data Max Days */
+            data_max_days: number;
+            /** Data Max Total Mb */
+            data_max_total_mb: number;
+            /** Cleanup Interval Hours */
+            cleanup_interval_hours: number;
+        };
+        /** StudioRetentionLoaded */
+        StudioRetentionLoaded: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+            config: components["schemas"]["StudioRetentionConfig"];
+            usage: components["schemas"]["StudioRetentionUsage"];
+        };
+        /** StudioRetentionSaved */
+        StudioRetentionSaved: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+            config: components["schemas"]["StudioRetentionConfig"];
+        };
+        /** StudioRetentionUpdate */
+        StudioRetentionUpdate: {
+            /**
+             * Enabled
+             * @default null
+             */
+            enabled: boolean | null;
+            /**
+             * Recordings Max Days
+             * @default null
+             */
+            recordings_max_days: number | null;
+            /**
+             * Recordings Max Total Mb
+             * @default null
+             */
+            recordings_max_total_mb: number | null;
+            /**
+             * Data Max Days
+             * @default null
+             */
+            data_max_days: number | null;
+            /**
+             * Data Max Total Mb
+             * @default null
+             */
+            data_max_total_mb: number | null;
+            /**
+             * Cleanup Interval Hours
+             * @default null
+             */
+            cleanup_interval_hours: number | null;
+        };
+        /** StudioRetentionUsage */
+        StudioRetentionUsage: {
+            recordings: components["schemas"]["StudioRetentionUsageEntry"];
+            data: components["schemas"]["StudioRetentionUsageEntry"];
+        };
+        /** StudioRetentionUsageEntry */
+        StudioRetentionUsageEntry: {
+            /** Count */
+            count: number;
+            /** Sizemb */
+            sizeMB: number;
+        };
+        /** StudioRetentionUsageResponse */
+        StudioRetentionUsageResponse: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+            usage: components["schemas"]["StudioRetentionUsage"];
+        };
         /** StudioSelectorAttempt */
         StudioSelectorAttempt: {
             /** Selector */

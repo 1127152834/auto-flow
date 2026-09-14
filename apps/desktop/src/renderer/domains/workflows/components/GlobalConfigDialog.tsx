@@ -13,7 +13,7 @@ import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
 import { useGlobalConfigStore, type BrowserType, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
 import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
-import { systemApi, retentionApi, browserApi, localWorkflowApi, type RetentionConfig, type RetentionUsage } from '../api'
+import { systemApi, browserApi, localWorkflowApi } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
@@ -21,6 +21,7 @@ import { SHORTCUT_ACTIONS, eventToCombo } from '../lib/customShortcuts'
 import { registerSettingsCloseHandler } from '../lib/settingsLeave'
 import type { SettingsLeaveGuard } from '../hooks/useSettingsDraftProtection'
 import { CredentialSettings } from './CredentialSettings'
+import { RetentionSettings } from './RetentionSettings'
 import { WebDAVSettings } from './WebDAVSettings'
 
 const SCENE_LABELS: { key: AssistantScene; label: string }[] = [
@@ -110,85 +111,6 @@ function SecuritySettings() {
     <p>工作台复用应用的服务连接，不单独设置访问令牌、监听地址或免鉴权规则。</p>
   </div>
 }
-
-// 留存清理设置面板：录像/采集数据的自动滚动清理策略 + 手动清理
-function RetentionSettings() {
-  const [cfg, setCfg] = useState<RetentionConfig | null>(null)
-  const [usage, setUsage] = useState<RetentionUsage | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [cleaning, setCleaning] = useState(false)
-  const { alert, ConfirmDialog } = useConfirm()
-
-  const refresh = async () => {
-    const res = await retentionApi.getConfig()
-    if (res.data?.config) setCfg(res.data.config)
-    if (res.data?.usage) setUsage(res.data.usage)
-  }
-  useEffect(() => { refresh() }, [])
-
-  const save = async () => {
-    if (!cfg) return
-    setSaving(true)
-    try {
-      const res = await retentionApi.setConfig(cfg)
-      if (res.data?.config) setCfg(res.data.config)
-      await alert('已保存清理策略', { title: '成功' })
-    } finally { setSaving(false) }
-  }
-  const cleanupNow = async () => {
-    setCleaning(true)
-    try {
-      await retentionApi.cleanup()
-      await refresh()
-      await alert('清理完成', { title: '成功' })
-    } finally { setCleaning(false) }
-  }
-
-  if (!cfg) return <div className="py-8 text-center text-gray-400"><Loader2 className="w-5 h-5 animate-spin inline" /></div>
-
-  const numField = (label: string, key: keyof RetentionConfig, hint: string) => (
-    <div>
-      <Label className="text-gray-700 text-xs">{label}</Label>
-      <Input type="number" min={0} value={cfg[key] as number} onChange={(e) => setCfg({ ...cfg, [key]: Number(e.target.value) })} className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
-      <p className="text-[11px] text-gray-400 mt-0.5">{hint}</p>
-    </div>
-  )
-
-  return (
-    <>
-      <p className="text-xs text-gray-500 mb-4">
-        长期使用后运行录像与采集数据会占用磁盘。开启后按「保留天数」和「总大小上限」滚动清理（0 表示该维度不限制）。
-      </p>
-      {usage && (
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm text-black">运行录像：{usage.recordings.count} 个 · {usage.recordings.sizeMB} MB</div>
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm text-black">采集数据：{usage.data.count} 个 · {usage.data.sizeMB} MB</div>
-        </div>
-      )}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <Label className="text-gray-700 font-medium">启用自动清理</Label>
-          <Switch checked={cfg.enabled} onCheckedChange={(c) => setCfg({ ...cfg, enabled: c })} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {numField('录像保留天数', 'recordings_max_days', '超过天数的录像会被删除')}
-          {numField('录像总大小上限(MB)', 'recordings_max_total_mb', '超出后从最旧开始删')}
-          {numField('数据保留天数', 'data_max_days', '超过天数的导出数据会被删除')}
-          {numField('数据总大小上限(MB)', 'data_max_total_mb', '超出后从最旧开始删')}
-          {numField('清理间隔(小时)', 'cleanup_interval_hours', '后台定时清理的间隔')}
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={cleanupNow} disabled={cleaning} className="border-gray-300 text-gray-700">
-            {cleaning ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Trash2 className="w-3.5 h-3.5 mr-1" />}立即清理一次
-          </Button>
-          <Button type="button" size="sm" onClick={save} disabled={saving}>{saving ? '保存中...' : '保存策略'}</Button>
-        </div>
-      </div>
-      <ConfirmDialog />
-    </>
-  )
-}
-
 
 interface GlobalConfigDialogProps {
   isOpen: boolean
@@ -2042,7 +1964,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
           )}
 
           {activeTab === 'retention' && (
-            <RetentionSettings />
+            <RetentionSettings registerLeaveGuard={registerLeaveGuard} />
           )}
           </div>
         </div>

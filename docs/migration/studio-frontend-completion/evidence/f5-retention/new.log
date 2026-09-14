@@ -1,0 +1,11 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/retention-protocol.test.ts src/renderer/domains/workflows/tests/retention-settings.test.tsx src/renderer/domains/workflows/tests/retention-confirmation.test.ts --reporter=json --outputFile=/tmp/studio-retention-cases.json
+
+(node:19635) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19648) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21181) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+JSON report written to /tmp/studio-retention-cases.json

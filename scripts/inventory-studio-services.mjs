@@ -91,7 +91,7 @@ const lines = [
   '| Debug | resume/step 绑定 pauseId/controlRevision/commandId，并发幂等、原 ID 查询恢复；404/405/409/422；见 debug-pause-command-contract.md | 断点修订、变量修改、独立 runId、真实执行及清理 |',
   '| 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |',
   '| 系统路径选择 | 生成请求/响应DTO、POST/405/422、成功/取消/失败校验；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框、运行中取消宿主请求、各平台实机 |',
-  '| MCP 配置 | 生成 DTO、保存确认、重连部分失败及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md | 真实 MCP 服务、跨连接在途隔离和跨客户端 revision |',
+  '| MCP 配置 | 生成 DTO、保存确认、跨连接在途隔离、离开保护及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md、mcp-leave-validation.md | 真实 MCP 服务、权限矩阵和跨客户端 revision |',
   '| WebDAV 设置 | HTTP/业务确认、失败重试、互斥和迟到保护，Mock不声称真实连接；见 webdav-settings-protection.md | 生成DTO、写入修订、真实远程文件与凭据服务 |',
   '| 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |', '',
   '## 静态服务方法', '',

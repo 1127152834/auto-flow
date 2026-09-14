@@ -1,3 +1,4 @@
+import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
@@ -429,28 +430,15 @@ export const credentialApi = {
 }
 
 // ==================== 留存清理 API ====================
-export interface RetentionConfig {
-  enabled: boolean
-  recordings_max_days: number
-  recordings_max_total_mb: number
-  data_max_days: number
-  data_max_total_mb: number
-  cleanup_interval_hours: number
-}
-export interface RetentionUsage {
-  recordings: { count: number; sizeMB: number }
-  data: { count: number; sizeMB: number }
-}
+export type { RetentionConfig, RetentionUsage } from './lib/retentionContract'
 export const retentionApi = {
-  getConfig: () =>
-    apiRequest<{ success: boolean; config: RetentionConfig; usage: RetentionUsage }>('/retention/config'),
-  setConfig: (config: Partial<RetentionConfig>) =>
-    apiRequest<{ success: boolean; config: RetentionConfig }>('/retention/config', {
-      method: 'POST',
-      body: JSON.stringify(config),
-    }),
-  cleanup: () => apiRequest('/retention/cleanup', { method: 'POST' }),
-  usage: () => apiRequest<{ success: boolean; usage: RetentionUsage }>('/retention/usage'),
+  getConfig: () => checkedRetention(apiRequest<components['schemas']['StudioRetentionLoaded']>('/retention/config'), 'load'),
+  setConfig: (config: import('./lib/retentionContract').RetentionConfig) =>
+    checkedRetention(apiRequest<components['schemas']['StudioRetentionSaved']>('/retention/config', {
+      method: 'POST', body: JSON.stringify(config),
+    }), 'save'),
+  cleanup: () => checkedRetention(apiRequest<components['schemas']['StudioRetentionCleanup']>('/retention/cleanup', { method: 'POST' }), 'cleanup'),
+  usage: () => checkedRetention(apiRequest<components['schemas']['StudioRetentionUsageResponse']>('/retention/usage'), 'usage'),
 }
 
 // ==================== 工作流整包 API ====================
