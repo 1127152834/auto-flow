@@ -1,11 +1,12 @@
 // Source: WebRPA@5ccb900e, components/workflow/PythonEditorDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import {CodeCopyButton} from './CodeCopyButton'
 import { registerEditorCompletions } from '../lib/editorCompletions'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Editor, { type Monaco, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
-import { X, RotateCcw, Copy, Check, Loader2 } from 'lucide-react'
+import { X, RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from './controls/button'
 import { AICodeAssistant } from './AICodeAssistant'
 
@@ -108,7 +109,6 @@ return output_data
 
 export function PythonEditorDialog({ isOpen, code, onClose, onSave }: PythonEditorDialogProps) {
   const [currentCode, setCurrentCode] = useState(code || DEFAULT_CODE)
-  const [copied, setCopied] = useState(false)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
 
@@ -217,13 +217,6 @@ export function PythonEditorDialog({ isOpen, code, onClose, onSave }: PythonEdit
     setCurrentCode(DEFAULT_CODE)
   }
 
-  // 复制代码
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(currentCode)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   // 保存并关闭
   const handleSave = () => {
     onSave(currentCode)
@@ -278,10 +271,7 @@ export function PythonEditorDialog({ isOpen, code, onClose, onSave }: PythonEdit
             <RotateCcw className="w-4 h-4 mr-1" />
             重置
           </Button>
-          <Button size="sm" variant="tonal-success" onClick={handleCopy}>
-            {copied ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-            {copied ? '已复制' : '复制'}
-          </Button>
+          <CodeCopyButton key={currentCode} text={currentCode} />
           <div className="flex-1" />
           <span className="text-xs text-gray-500">
             提示：使用 <kbd className="px-1 bg-gray-200 rounded">Ctrl+Space</kbd> 触发代码补全

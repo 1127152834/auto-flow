@@ -1,0 +1,1541 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 code-editor-clipboard.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:41884) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx (9 tests | 9 failed) 385ms
+   × JavaScript confirms copying only after acknowledgement and allows retry after rejection 136ms
+   × 页面注入 confirms copying only after acknowledgement and allows retry after rejection 44ms
+   × Python confirms copying only after acknowledgement and allows retry after rejection 57ms
+   × JavaScript does not retain a late clipboard response across closing and reopening 29ms
+   × 页面注入 does not retain a late clipboard response across closing and reopening 28ms
+   × Python does not retain a late clipboard response across closing and reopening 50ms
+   × JavaScript clears its copy acknowledgement timer on unmount 17ms
+   × 页面注入 clears its copy acknowledgement timer on unmount 11ms
+   × Python clears its copy acknowledgement timer on unmount 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > JavaScript confirms copying only after acknowledgement and allows retry after rejection
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "JavaScript 代码编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "可用变量":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "测试结果":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "测试运行":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mJavaScript 代码编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m0[0m
+            [0m 个变量可用[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m测试运行[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:18:16
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     18|  expect(screen.getByRole('alert').textContent).toContain('权限被拒绝');expe…
+       |                ^
+     19|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     20|  expect(screen.getByText('已复制')).toBeTruthy();expect(screen.queryByRol…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > 页面注入 confirms copying only after acknowledgement and allows retry after rejection
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "JavaScript 脚本注入编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "可用变量":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "测试结果":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "测试运行":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mJavaScript 脚本注入编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m0[0m
+            [0m 个变量可用[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m测试运行[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:18:16
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     18|  expect(screen.getByRole('alert').textContent).toContain('权限被拒绝');expe…
+       |                ^
+     19|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     20|  expect(screen.getByText('已复制')).toBeTruthy();expect(screen.queryByRol…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > Python confirms copying only after acknowledgement and allows retry after rejection
+TestingLibraryElementError: Unable to find an accessible element with the role "alert"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Python 代码编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "使用说明":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "常用模块":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "代码片段":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"space-y-1 text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mPython 代码编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m1[0m
+            [0m 行[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-copy w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mry[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"14"[39m
+              [33mx[39m=[32m"8"[39m
+              [33my[39m=[32m"8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m复制[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1"[39m
+        [36m/>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-xs text-gray-500"[39m
+        [36m>[39m
+          [0m提示：使用 [0m
+          [36m<kbd[39m
+            [33mclass[39m=[32m"px-1 bg-gray-200 rounded"[39m
+          [36m>[39m
+            [0mCtrl+Space[0m
+...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:18:16
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     18|  expect(screen.getByRole('alert').textContent).toContain('权限被拒绝');expe…
+       |                ^
+     19|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     20|  expect(screen.getByText('已复制')).toBeTruthy();expect(screen.queryByRol…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > JavaScript does not retain a late clipboard response across closing and reopening
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "正在复制"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "JavaScript 代码编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "可用变量":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "测试结果":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "测试运行":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mJavaScript 代码编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m0[0m
+            [0m 个变量可用[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m测试运行[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:25:83
+     23|  let finish!:()=>void;write.mockImplementationOnce(()=>new Promise<voi…
+     24|  const props={code:'用户代码',onClose:vi.fn(),onSave:vi.fn()};const view=r…
+     25|  fireEvent.click(screen.getByRole('button',{name:'复制',exact:true}));ex…
+       |                                                                                   ^
+     26|  view.rerender(<Dialog {...props} isOpen={false}/>);view.rerender(<Dia…
+     27|  await act(async()=>{finish()});expect(screen.queryByText('已复制')).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > 页面注入 does not retain a late clipboard response across closing and reopening
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "正在复制"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "JavaScript 脚本注入编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "可用变量":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "测试结果":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "测试运行":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mJavaScript 脚本注入编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m0[0m
+            [0m 个变量可用[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m测试运行[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:25:83
+     23|  let finish!:()=>void;write.mockImplementationOnce(()=>new Promise<voi…
+     24|  const props={code:'用户代码',onClose:vi.fn(),onSave:vi.fn()};const view=r…
+     25|  fireEvent.click(screen.getByRole('button',{name:'复制',exact:true}));ex…
+       |                                                                                   ^
+     26|  view.rerender(<Dialog {...props} isOpen={false}/>);view.rerender(<Dia…
+     27|  await act(async()=>{finish()});expect(screen.queryByText('已复制')).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > Python does not retain a late clipboard response across closing and reopening
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "正在复制"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Python 代码编辑器":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  Name "使用说明":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "常用模块":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  Name "代码片段":
+  [36m<h4[39m
+    [33mclass[39m=[32m"text-sm font-medium mb-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+  [36m/>[39m
+
+  Name "重置":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "复制":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.35)] shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-8 px-3.5"[39m
+  [36m/>[39m
+
+  Name "保存":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-8 px-3.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"space-y-1 text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-200 px-1 rounded"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 flex items-center justify-center bg-black/40 animate-fade-in"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[700px] max-w-[95vw] max-h-[90vh] overflow-hidden animate-scale-in"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between px-4 py-3 border-b bg-gray-50 rounded-t-lg"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"font-medium"[39m
+          [36m>[39m
+            [0mPython 代码编辑器[0m
+          [36m</h3>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded"[39m
+          [36m>[39m
+            [0m1[0m
+            [0m 行[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-8 w-8 p-0"[39m
+          [33mtitle[39m=[32m"关闭"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2 px-4 py-2 border-b bg-gray-50"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m重置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] hover:bg-[hsl(var(--success-100))] hover:border-[hsl(var(--success-500)/0.5)] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-copy w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"14"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mry[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"14"[39m
+              [33mx[39m=[32m"8"[39m
+              [33my[39m=[32m"8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m复制[0m
+        [36m</button>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1"[39m
+        [36m/>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-xs text-gray-500"[39m
+        [36m>[39m
+          [0m提示：使用 [0m
+          [36m<kbd[39m
+            [33mclass[39m=[32m"px-1 bg-gray-200 rounded"[39m
+          [36m>[39m
+            [0mCtrl+Space[0m
+...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:25:83
+     23|  let finish!:()=>void;write.mockImplementationOnce(()=>new Promise<voi…
+     24|  const props={code:'用户代码',onClose:vi.fn(),onSave:vi.fn()};const view=r…
+     25|  fireEvent.click(screen.getByRole('button',{name:'复制',exact:true}));ex…
+       |                                                                                   ^
+     26|  view.rerender(<Dialog {...props} isOpen={false}/>);view.rerender(<Dia…
+     27|  await act(async()=>{finish()});expect(screen.queryByText('已复制')).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > JavaScript clears its copy acknowledgement timer on unmount
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > 页面注入 clears its copy acknowledgement timer on unmount
+ FAIL  src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx > Python clears its copy acknowledgement timer on unmount
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:32:44
+     30|  vi.useFakeTimers();const view=render(<Dialog isOpen code="用户代码" onClo…
+     31|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+     32|  view.unmount();expect(vi.getTimerCount()).toBe(0)
+       |                                            ^
+     33| })
+     34|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 3 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: 权限被拒绝
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:15:30
+     13| afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers()})
+     14| it.each(dialogs)('%s confirms copying only after acknowledgement and a…
+     15|  write.mockRejectedValueOnce(new Error('权限被拒绝'))
+       |                              ^
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "JavaScript confirms copying only after acknowledgement and allows retry after rejection". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: 权限被拒绝
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:15:30
+     13| afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers()})
+     14| it.each(dialogs)('%s confirms copying only after acknowledgement and a…
+     15|  write.mockRejectedValueOnce(new Error('权限被拒绝'))
+       |                              ^
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "页面注入 confirms copying only after acknowledgement and allows retry after rejection". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: 权限被拒绝
+ ❯ src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx:15:30
+     13| afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers()})
+     14| it.each(dialogs)('%s confirms copying only after acknowledgement and a…
+     15|  write.mockRejectedValueOnce(new Error('权限被拒绝'))
+       |                              ^
+     16|  render(<Dialog isOpen code="用户代码" onClose={vi.fn()} onSave={vi.fn()}/…
+     17|  await act(async()=>{fireEvent.click(screen.getByRole('button',{name:'…
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "Python confirms copying only after acknowledgement and allows retry after rejection". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed (9)
+     Errors  3 errors
+   Start at  08:27:38
+   Duration  1.32s (transform 227ms, setup 103ms, import 358ms, tests 385ms, environment 368ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 code-editor-clipboard.test.tsx

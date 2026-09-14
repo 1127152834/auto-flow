@@ -1,11 +1,12 @@
 // Source: WebRPA@5ccb900e, components/workflow/JsEditorDialog.tsx; see SOURCE.md for license and adaptation boundaries.
+import {CodeCopyButton} from './CodeCopyButton'
 import { registerEditorCompletions } from '../lib/editorCompletions'
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Editor, { type Monaco, loader } from '@monaco-editor/react'
 import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
-import { X, Play, RotateCcw, Copy, Check, Loader2 } from 'lucide-react'
+import { X, Play, RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from './controls/button'
 import { useWorkflowStore } from '../editor-store'
 import { AICodeAssistant } from './AICodeAssistant'
@@ -56,7 +57,6 @@ function main(vars) {
 export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialogProps) {
   const [currentCode, setCurrentCode] = useState(code || DEFAULT_CODE)
   const [testResult, setTestResult] = useState<{ success: boolean; result?: string; error?: string } | null>(null)
-  const [copied, setCopied] = useState(false)
   const [testing, setTesting] = useState(false)
   const testController = useRef<AbortController | null>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -247,13 +247,6 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
     setTestResult(null)
   }
 
-  // 复制代码
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(currentCode)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   // 保存并关闭
   const handleSave = () => {
     onSave(currentCode)
@@ -309,10 +302,7 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
             <RotateCcw className="w-4 h-4 mr-1" />
             重置
           </Button>
-          <Button size="sm" variant="tonal-success" onClick={handleCopy}>
-            {copied ? <Check className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-            {copied ? '已复制' : '复制'}
-          </Button>
+          <CodeCopyButton key={currentCode} text={currentCode} />
           <div className="flex-1" />
           <span className="text-xs text-gray-500">
             提示：输入 <kbd className="px-1 bg-gray-200 rounded">vars.</kbd> 查看变量补全

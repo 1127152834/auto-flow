@@ -27695,5 +27695,290 @@
     "level": "browser E2E / native speech + Mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-speech-request/browser-ui.md"
+  },
+  {
+    "id": "F2.editor-clipboard.JavaScript.failure",
+    "capability": "JavaScript权限失败后显示错误并可重试",
+    "preconditions": {
+      "editor": "JavaScript",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "权限失败后显示错误并可重试",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.JavaScript.reopen",
+    "capability": "JavaScript关闭重开忽略原复制回执",
+    "preconditions": {
+      "editor": "JavaScript",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "关闭重开忽略原复制回执",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.JavaScript.timer",
+    "capability": "JavaScript卸载清理成功提示定时器",
+    "preconditions": {
+      "editor": "JavaScript",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "卸载清理成功提示定时器",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.JavaScript.unavailable",
+    "capability": "JavaScript能力缺失提示手动复制",
+    "preconditions": {
+      "editor": "JavaScript",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "能力缺失提示手动复制",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.JavaScript.changed",
+    "capability": "JavaScript代码变化忽略旧回执且复制新代码",
+    "preconditions": {
+      "editor": "JavaScript",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "代码变化忽略旧回执且复制新代码",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.页面注入.failure",
+    "capability": "页面注入权限失败后显示错误并可重试",
+    "preconditions": {
+      "editor": "页面注入",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "权限失败后显示错误并可重试",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.页面注入.reopen",
+    "capability": "页面注入关闭重开忽略原复制回执",
+    "preconditions": {
+      "editor": "页面注入",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "关闭重开忽略原复制回执",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.页面注入.timer",
+    "capability": "页面注入卸载清理成功提示定时器",
+    "preconditions": {
+      "editor": "页面注入",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "卸载清理成功提示定时器",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.页面注入.unavailable",
+    "capability": "页面注入能力缺失提示手动复制",
+    "preconditions": {
+      "editor": "页面注入",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "能力缺失提示手动复制",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.页面注入.changed",
+    "capability": "页面注入代码变化忽略旧回执且复制新代码",
+    "preconditions": {
+      "editor": "页面注入",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "代码变化忽略旧回执且复制新代码",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.Python.failure",
+    "capability": "Python权限失败后显示错误并可重试",
+    "preconditions": {
+      "editor": "Python",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "权限失败后显示错误并可重试",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.Python.reopen",
+    "capability": "Python关闭重开忽略原复制回执",
+    "preconditions": {
+      "editor": "Python",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "关闭重开忽略原复制回执",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.Python.timer",
+    "capability": "Python卸载清理成功提示定时器",
+    "preconditions": {
+      "editor": "Python",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "卸载清理成功提示定时器",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.Python.unavailable",
+    "capability": "Python能力缺失提示手动复制",
+    "preconditions": {
+      "editor": "Python",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "能力缺失提示手动复制",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F2.editor-clipboard.Python.changed",
+    "capability": "Python代码变化忽略旧回执且复制新代码",
+    "preconditions": {
+      "editor": "Python",
+      "code": "用户代码/原代码/新代码，具体见具名测试"
+    },
+    "steps": [
+      "打开真实编辑器组件",
+      "点击复制并注入对应原生API结果",
+      "按用例关闭重开/更改代码/重试/卸载"
+    ],
+    "expectedUI": "代码变化忽略旧回执且复制新代码",
+    "expectedIO": "clipboard.writeText传入当前完整代码；失败不产生未处理拒绝",
+    "stateAssertion": "只有当前挂载代码的成功回执生效，不修改草稿",
+    "level": "component / native API double",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
   }
 ]
