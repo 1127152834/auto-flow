@@ -1,0 +1,126 @@
+
+> test
+> npm --workspace @autoflow/desktop test --maxWorkers=2
+
+npm warn Unknown cli config "--maxWorkers". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx (17 tests | 5 failed) 6511ms
+   × accepts the schema limits as Unicode code points without native UTF-16 truncation 5006ms
+   × validates, trims, submits once, and leaves closing to the parent 119ms
+   × preserves a dirty draft across refreshed initial values and server errors 75ms
+   × does not invalidate session A when a suspended session B render never commits 84ms
+   × retains the draft on reconnect and offers recovery while inputs are frozen 38ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx > accepts the schema limits as Unicode code points without native UTF-16 truncation
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx:23:1
+     21| })
+     22|
+     23| it('accepts the schema limits as Unicode code points without native UT…
+       | ^
+     24|   const user=userEvent.setup(),submit=vi.fn().mockResolvedValue(undefi…
+     25|   render(<DataTableFormDialog open mode="create" sessionKey="unicode-l…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx > validates, trims, submits once, and leaves closing to the parent
+AssertionError: expected "vi.fn()" to be called with arguments: [ { name: '客户😀', description: '' } ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    {
+      "description": "",
+-     "name": "客户😀",
++     "name": "�😀 � �客�户��😀� � �😀�",
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx:41:18
+     39|   await user.dblClick(screen.getByRole('button', { name: '创建数据表' }))
+     40|   await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
+     41|   expect(submit).toHaveBeenCalledWith({ name: '客户😀', description: '' …
+       |                  ^
+     42|   expect(onOpenChange).not.toHaveBeenCalled()
+     43|   await user.keyboard('{Escape}')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx > preserves a dirty draft across refreshed initial values and server errors
+Error: expect(element).toHaveValue(我的草稿)
+
+Expected the element to have value:
+  我的草稿
+Received:
+  �😀😀我�的�草�稿��
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx:57:42
+     55|   await user.type(screen.getByLabelText('数据表名称'), '我的草稿')
+     56|   view.rerender(<DataTableFormDialog {...props} initialValues={{ name:…
+     57|   expect(screen.getByLabelText('数据表名称')).toHaveValue('我的草稿')
+       |                                          ^
+     58|   expect(screen.getByRole('alert')).toHaveTextContent('数据表已被修改')
+     59|   await user.click(screen.getByRole('button', { name: '保存修改' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx > does not invalidate session A when a suspended session B render never commits
+Error: expect(element).toHaveValue(A)
+
+Expected the element to have value:
+  A
+Received:
+  A��
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx:136:42
+    134|   fireEvent.click(screen.getByRole('button', { name: '切换会话', hidden: t…
+    135|   expect(renderedB).toBe(true)
+    136|   expect(screen.getByLabelText('数据表名称')).toHaveValue('A')
+       |                                          ^
+    137|   finishA()
+    138|   await waitFor(() => expect(screen.getByRole('button', { name: '保存修改'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx > retains the draft on reconnect and offers recovery while inputs are frozen
+Error: expect(element).toHaveValue(A草稿)
+
+Expected the element to have value:
+  A草稿
+Received:
+  A😀�草�稿😀
+ ❯ src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx:179:42
+    177|   await userEvent.type(screen.getByLabelText('数据表名称'), '草稿')
+    178|   view.rerender(<DataTableFormDialog {...props} submissionEpoch="i2" r…
+    179|   expect(screen.getByLabelText('数据表名称')).toHaveValue('A草稿')
+       |                                          ^
+    180|   expect(screen.getByLabelText('数据表名称')).toHaveAttribute('readonly')
+    181|   await userEvent.click(screen.getByRole('button', { name: '核对保存结果' }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 133 passed (134)
+      Tests  5 failed | 1117 passed (1122)
+   Start at  04:16:03
+   Duration  59.94s (transform 6.33s, setup 0ms, import 328.96s, tests 181.32s, environment 122.93s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error command failed
+npm error command sh -c vitest run

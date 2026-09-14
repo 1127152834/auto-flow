@@ -1,0 +1,58 @@
+{
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI applies create/rename drafts locally, previews and atomically commits each schema; the field identity remains stable",
+    "UI creates and edits a business status without changing any record status",
+    "UI creates and edits a record with real conflict reload, then explicitly changes its status",
+    "UI blocks referenced status deletion, restores the record status to release a temporary reference, then deletes that status through the real impact-confirmed operation",
+    "UI deletes the selected record after impact confirmation and retains the other record",
+    "lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion",
+    "five actual tabs display persisted field, status, source and record facts after UI writes",
+    "inline settings edits the actual description, stays mounted after confirmation and resets to a clean baseline"
+  ],
+  "settingsTrace": [
+    {
+      "event": "tablePatch",
+      "at": 1789330783352,
+      "path": "/api/v1/projects/acdcef72-c004-4f1f-9950-9d9a20062103/tables/157f5d30-60f9-4aa9-b081-6703de1eabbe",
+      "body": "{\"name\":\"我的本地修改\",\"description\":\"用于验证真实数据目录与查询\",\"expectedTableRevision\":1}",
+      "operationKey": "e9f604c1-242f-4e7b-8a5d-04b1cdd0cb83",
+      "status": 409,
+      "response": "{\"error\":{\"code\":\"REVISION_CONFLICT\",\"message\":\"Table was modified\",\"details\":{\"expectedRevision\":1,\"currentRevision\":2,\"current\":{\"projectId\":\"acdcef72-c004-4f1f-9950-9d9a20062103\",\"tableId\":\"157f5d30-60f9-4aa9-b081-6703de1eabbe\",\"name\":\"另一个编辑者\",\"description\":\"用于验证真实数据目录与查询\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"00c15f1b-e34d-43ae-80c2-dca7d77a8657\",\"tableRevision\":2,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-13T20:19:42.534374+00:00\",\"updatedAt\":\"2026-09-13T20:19:43.342167+00:00\"},\"domainCode\":\"revision_conflict\",\"retryable\":false},\"requestId\":\"11798240-f3c5-4110-9c2a-51edf934ac68\"}}",
+      "responseAt": 1789330783361
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789330784258,
+      "path": "/api/v1/projects/acdcef72-c004-4f1f-9950-9d9a20062103/tables/157f5d30-60f9-4aa9-b081-6703de1eabbe",
+      "body": "{\"name\":\"客户资料\",\"description\":\"用于验证真实数据目录与查询\",\"expectedTableRevision\":2}",
+      "operationKey": "28900e21-4ab2-407c-ae9b-1562d12397df",
+      "status": 200,
+      "response": "{\"projectId\":\"acdcef72-c004-4f1f-9950-9d9a20062103\",\"tableId\":\"157f5d30-60f9-4aa9-b081-6703de1eabbe\",\"name\":\"客户资料\",\"description\":\"用于验证真实数据目录与查询\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"00c15f1b-e34d-43ae-80c2-dca7d77a8657\",\"tableRevision\":3,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":0,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-13T20:19:42.534374Z\",\"updatedAt\":\"2026-09-13T20:19:44.260593Z\"}",
+      "responseAt": 1789330784268
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789330802599,
+      "path": "/api/v1/projects/acdcef72-c004-4f1f-9950-9d9a20062103/tables/157f5d30-60f9-4aa9-b081-6703de1eabbe",
+      "body": "{\"expectedTableRevision\":9,\"description\":\"从设置页修改资料\"}",
+      "operationKey": "8e501e69-59c9-4117-a0ac-a249787b20f3",
+      "status": 200,
+      "response": "{\"projectId\":\"acdcef72-c004-4f1f-9950-9d9a20062103\",\"tableId\":\"157f5d30-60f9-4aa9-b081-6703de1eabbe\",\"name\":\"客户资料\",\"description\":\"从设置页修改资料\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"00c15f1b-e34d-43ae-80c2-dca7d77a8657\",\"tableRevision\":10,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":2,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-13T20:19:42.534374Z\",\"updatedAt\":\"2026-09-13T20:20:02.603665Z\"}",
+      "responseAt": 1789330802613
+    },
+    {
+      "event": "tablePatch",
+      "at": 1789330805168,
+      "path": "/api/v1/projects/acdcef72-c004-4f1f-9950-9d9a20062103/tables/157f5d30-60f9-4aa9-b081-6703de1eabbe",
+      "body": "{\"expectedTableRevision\":10,\"description\":\"重连后保留草稿\"}",
+      "operationKey": "c8c813e6-cf0a-4e6a-ba68-0d04f9c0a947",
+      "status": 200,
+      "response": "{\"projectId\":\"acdcef72-c004-4f1f-9950-9d9a20062103\",\"tableId\":\"157f5d30-60f9-4aa9-b081-6703de1eabbe\",\"name\":\"客户资料\",\"description\":\"重连后保留草稿\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"00c15f1b-e34d-43ae-80c2-dca7d77a8657\",\"tableRevision\":11,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":2,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-13T20:19:42.534374Z\",\"updatedAt\":\"2026-09-13T20:20:05.173432Z\"}",
+      "responseAt": 1789330805183
+    }
+  ],
+  "error": "timed out waiting for inline settings remains mounted with the confirmed clean baseline: false; settings diagnostic: {\"expected\":\"重连后保留草稿\",\"actual\":{\"value\":\"从设置页修改资料\",\"form\":\"基本信息\\n\\n修改名称与用途说明，不会改动记录内容。\\n\\n数据表名称 *\\n用途说明\\n\\n最多 1000 个字符\\n\\n没有未保存的修改\\n\\n取消更改\\n保存设置\"},\"persisted\":{\"projectId\":\"acdcef72-c004-4f1f-9950-9d9a20062103\",\"tableId\":\"157f5d30-60f9-4aa9-b081-6703de1eabbe\",\"name\":\"客户资料\",\"description\":\"重连后保留草稿\",\"sourceKind\":\"local\",\"source\":{\"kind\":\"local\"},\"datasetGeneration\":\"00c15f1b-e34d-43ae-80c2-dca7d77a8657\",\"tableRevision\":11,\"identity\":{\"mode\":\"system\"},\"slotDefinitions\":[],\"recordCount\":2,\"syncSummary\":{\"status\":\"notApplicable\",\"pendingCount\":0,\"unknownCount\":0},\"createdAt\":\"2026-09-13T20:19:42.534374Z\",\"updatedAt\":\"2026-09-13T20:20:05.173432Z\"}}",
+  "checkedAt": "2026-09-13T20:20:20.588Z"
+}

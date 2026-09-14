@@ -1,0 +1,580 @@
+{
+  "result": "passed",
+  "scope": "R2 dedicated record pages and retained PM2 field/status/record commands, real UI and HTTP; service/workspace bridge invokes are E2, lost acknowledgements E4; Excel/batch/Sheets/execution not covered",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkedAt": "2026-09-13T19:08:44.418Z",
+  "provenance": {
+    "gitHead": "8ccf9690ad78e1d031754bf7bab6540e21a759d5",
+    "dirtyFiles": [
+      "apps/desktop/package.json",
+      "apps/desktop/src/renderer/domains/project-data/components/DataDeletionDialog.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/DataDeletionDialog.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordEditorForm.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordFieldsView.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordStatusDialog.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/RecordStatusDialog.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/RecordDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/record-draft.test.ts",
+      "apps/desktop/src/renderer/domains/project-data/record-draft.ts",
+      "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.test.tsx",
+      "apps/desktop/src/renderer/domains/projects/components/ProjectHeader.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.test.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx",
+      "apps/desktop/src/renderer/shared/components/Modal.test.tsx",
+      "apps/desktop/src/renderer/shared/components/Modal.tsx",
+      "docs/project-management/design-alignment/acceptance/gallery-r2/page-map.json",
+      "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "package-lock.json",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-project-data.mjs"
+    ],
+    "scriptSha256": "ae672629922655f1d12502dc272cebd50ec642d73ed42dbf19ee867d69bb89f5",
+    "buildSha256": "4f555ae5aa6804782c1935974d0c888a96c80b001ad0879c376ece21166088d9"
+  },
+  "screenshots": [
+    {
+      "name": "empty.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:14.405Z"
+    },
+    {
+      "name": "conflict.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:16.442Z"
+    },
+    {
+      "name": "gallery-create-structure.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:20.674Z"
+    },
+    {
+      "name": "record-create-200-percent.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:20.935Z"
+    },
+    {
+      "name": "record-create-200-footer.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 521
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:21.322Z"
+    },
+    {
+      "name": "record-create.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:21.833Z"
+    },
+    {
+      "name": "record-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/MzRkZDllZGEtYTg1NS00OTUxLWEwNDUtYWY4ZmEzYzEwODI0",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:22.232Z"
+    },
+    {
+      "name": "record-conflict.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/MzRkZDllZGEtYTg1NS00OTUxLWEwNDUtYWY4ZmEzYzEwODI0/edit",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:23.274Z"
+    },
+    {
+      "name": "record-conflict-comparison.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/MzRkZDllZGEtYTg1NS00OTUxLWEwNDUtYWY4ZmEzYzEwODI0/edit",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:23.656Z"
+    },
+    {
+      "name": "records.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/MzRkZDllZGEtYTg1NS00OTUxLWEwNDUtYWY4ZmEzYzEwODI0",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:24.923Z"
+    },
+    {
+      "name": "status-delete-blocked.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/statuses",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:25.567Z"
+    },
+    {
+      "name": "gallery-create-structure.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:27.130Z"
+    },
+    {
+      "name": "record-create-200-percent.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:27.458Z"
+    },
+    {
+      "name": "record-create-200-footer.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 521
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:27.848Z"
+    },
+    {
+      "name": "record-create.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/new",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:28.355Z"
+    },
+    {
+      "name": "record-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/MDI2NzRjYjktZjg3MS00MWNhLWJiNTgtNGYyNTFkNmMyNDlj",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:28.740Z"
+    },
+    {
+      "name": "durable-edit-recovery.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records/c5d7b5c4-a207-49a7-97e5-d12a4317adaa/uuid/YTBjYzFhMTUtOTdlZS00YTNlLThhOGQtNTcwYzRhZDEyMGVi",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:30.642Z"
+    },
+    {
+      "name": "leave.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:34.906Z"
+    },
+    {
+      "name": "zoom-200-dropdown.png",
+      "viewport": {
+        "width": 720,
+        "height": 512,
+        "dpr": 2
+      },
+      "scroll": {
+        "x": 0,
+        "y": 244
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 2,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:35.692Z"
+    },
+    {
+      "name": "restarted.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:39.621Z"
+    },
+    {
+      "name": "workspace-return.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1024,
+        "dpr": 1
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "hash": "#/projects/9b910f9e-40d9-4f29-96ae-96327a1636ca/data/75168f55-9352-45be-a300-e297c74e739b/records",
+      "headings": [
+        "数据页面验收"
+      ],
+      "zoom": 1,
+      "contentSize": [
+        1440,
+        992
+      ],
+      "viewportType": "CDP override",
+      "at": "2026-09-13T19:08:44.417Z"
+    }
+  ],
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI creates a field and confirms a real field mutation impact before editing",
+    "UI creates and edits a business status without changing any record status",
+    "UI creates and edits a record with real conflict reload, then explicitly changes its status",
+    "UI blocks an in-use status deletion and deletes an unreferenced status through its real operation",
+    "UI deletes the selected record after impact confirmation and retains the other record",
+    "lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion",
+    "five actual tabs display persisted field, status, source and record facts after UI writes",
+    "settings tab edits the actual table description through the shared form and command recovery",
+    "same-workspace real sidecar restart preserves draft, Escape protection and subsequent save",
+    "native 200 percent zoom with custom dropdown does not widen the application",
+    "full Electron restart retains table edits, business records and explicit status",
+    "two real workspace switches isolate data tables and restore original records"
+  ],
+  "zoom": {
+    "before": {
+      "inner": 720,
+      "width": 708,
+      "root": 708,
+      "trigger": 128
+    },
+    "after": {
+      "inner": 720,
+      "width": 720,
+      "root": 708,
+      "trigger": 128
+    }
+  },
+  "windows": "not-run"
+}

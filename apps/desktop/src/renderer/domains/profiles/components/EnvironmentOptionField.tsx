@@ -40,19 +40,16 @@ export function EnvironmentOptionField({ name, label, hint, options }: Props) {
   return <div className="grid content-start gap-2">
     <FormField label={label} htmlFor={id} error={error?.message} hint={hint}>
       {manual ? <Input {...field} {...accessibility} className="min-w-0 w-full" /> : <Select
+        clearable={false}
         {...field}
         {...accessibility}
         className="min-w-0 w-full"
-        onChange={(event) => {
-          if (event.target.value === '__custom__') switchMode(true)
-          else field.onChange(event)
+        onValueChange={(value) => {
+          if (value === '__custom__') switchMode(true)
+          else field.onChange(value ?? '')
         }}
-      >
-        <option value="">{name === 'userAgent' ? '跟随浏览器（推荐）' : '跟随浏览器（未指定）'}</option>
-        {unlisted ? <option value={field.value}>{name === 'userAgent' ? '当前 User Agent（自定义或其他版本）' : `${field.value}（当前值）`}</option> : null}
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-        <option value="__custom__">自定义…</option>
-      </Select>}
+        options={[{ value: '', label: name === 'userAgent' ? '跟随浏览器（推荐）' : '跟随浏览器（未指定）' }, ...(unlisted ? [{ value: field.value, label: name === 'userAgent' ? '当前 User Agent（自定义或其他版本）' : `${field.value}（当前值）` }] : []), ...options, { value: '__custom__', label: '自定义…' }]}
+      />}
     </FormField>
     {manual ? <Button type="button" variant="ghost" onClick={() => switchMode(false)} aria-label={`选择${label}预设`}>选择预设</Button> : null}
   </div>

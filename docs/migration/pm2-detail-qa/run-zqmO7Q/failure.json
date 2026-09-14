@@ -1,0 +1,11 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:45:36.366Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export"
+  ],
+  "error": "timed out waiting for 用 Excel 替换数据表 closes after success: false"
+}

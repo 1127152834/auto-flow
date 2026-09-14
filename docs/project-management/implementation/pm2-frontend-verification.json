@@ -1,0 +1,124 @@
+{
+  "date": "2026-09-13",
+  "verifiedAt": "2026-09-13T03:26:03.412940+00:00",
+  "status": "partialPassed",
+  "scope": "PM2 frontend domain components and directory Excel create flow; detail integration awaiting original owner commit",
+  "backendCommit": "32e424e",
+  "tests": [
+    {
+      "command": "npm test",
+      "status": "passed",
+      "testFiles": 112,
+      "passed": 803,
+      "durationSeconds": 42.92
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm run openapi:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build",
+      "status": "passed"
+    },
+    {
+      "command": "ESLint on this task changed desktop files, excluding protected owner files",
+      "status": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "status": "failed_in_protected_owner_file",
+      "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "line": 18,
+      "reason": "unused init argument; original file unchanged, not repaired or staged by this task"
+    },
+    {
+      "command": "npm run test:scripts",
+      "status": "passed",
+      "passed": 21
+    },
+    {
+      "command": "npm run test:structure",
+      "status": "passed",
+      "passed": 3
+    },
+    {
+      "command": "npm run test:pm2",
+      "status": "staticCoveragePassed",
+      "featureCount": 11,
+      "acceptanceCount": 34,
+      "completeBusinessAcceptance": false
+    },
+    {
+      "command": "uv run --directory apps/backend pytest tests/contract/test_pm2_excel_imports.py -q",
+      "status": "passed",
+      "passed": 10,
+      "scope": "adds real empty-header workbook import followed by normal record creation after earlier 759-test backend run"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "realApplication": {
+    "status": "partialPassed",
+    "platform": "macOS arm64",
+    "report": "docs/migration/pm2-excel-qa/run-BHSroO/result.json",
+    "nativeFilePicker": "result injected at Electron dialog adapter; not manual native panel acceptance",
+    "checks": [
+      "real directory multi-sheet inspect/map/import twice without clearing storage between flows",
+      "cold Electron/sidecar restart preserves both tables",
+      "200 percent directory and empty import modal horizontal containment",
+      "Escape close and focus restoration",
+      "Select open/close viewport width",
+      "overview/browser/proxy/model/settings navigation entries"
+    ],
+    "notCovered": [
+      "detail editing",
+      "batch status UI consumer",
+      "replace UI consumer",
+      "export UI consumer",
+      "two real workspace transitions",
+      "large-table renderer performance",
+      "Studio runtime"
+    ]
+  },
+  "reviews": {
+    "specification": "passed after repairs, for delivered components",
+    "engineering": "passed after repairs, for delivered components",
+    "reviewers": [
+      "file_bridge",
+      "status_batches",
+      "excel_services",
+      "root"
+    ],
+    "closedIssues": [
+      "unknown command identity survives re-entry; no new-key blind retry",
+      "terminal result consumption permits second independent operation",
+      "scope/session/instance and unmount late-response revocation",
+      "reconcile target/revision and real table resource validation",
+      "batch storage failure, cancel recovery, read-only admission and terminal action handling",
+      "atomic selection limit and canonical typed identity; frozen revision sent directly",
+      "export dirty-close confirmation, picker errors, unmount selection guard",
+      "archived read-only data can still export a new file"
+    ]
+  },
+  "historicalLimitations": [
+    "First full frontend attempt had a Studio 5s timeout and a batch mock timer error; targeted Studio and final full 803 tests passed after batch cleanup fixes.",
+    "Early Electron run-IwnO1p cleared localStorage between imports and cannot prove continuous recovery; corrected report retained. run-BHSroO uses no intervening storage reset."
+  ],
+  "originalOwnerFiles": {
+    "status": "waitingForCommit",
+    "unchangedSha256ComparedWith": "docs/project-management/implementation/pm2-revision-baseline.json",
+    "verifiedUnchangedFileCount": 6
+  },
+  "notExecuted": [
+    "PM2 complete application acceptance",
+    "Windows",
+    "packaged app"
+  ],
+  "remainingIntegration": "docs/project-management/implementation/pm2-page-integration-handoff.md"
+}

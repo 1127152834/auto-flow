@@ -1,0 +1,156 @@
+{
+  "status": "passed",
+  "stage": "Gallery R3",
+  "checkedAt": "2026-09-13T20:55:31.274065+00:00",
+  "sourceRevision": "800fb01",
+  "productionCommits": [
+    "e467035",
+    "b2d1543",
+    "800fb01"
+  ],
+  "acceptance": "工程、本机真实E2E及独立逐图审查，不等于用户签收",
+  "runs": [
+    "runs/run-TIUvZc/result.json",
+    "batch-partial/run-6xknNg/result.json"
+  ],
+  "desktopBuildSha256": "084c632df6e40675edd6041d2e6bae7de28a8c9c2fa1efd4af321459ce42e29e",
+  "backend": {
+    "tests": 853,
+    "status": "passed",
+    "log": "logs/pytest6.log"
+  },
+  "frontend": {
+    "files": 134,
+    "tests": 1126,
+    "status": "passed",
+    "command": "npm --workspace @autoflow/desktop test -- --maxWorkers=2",
+    "log": "logs/vitest6.log"
+  },
+  "scriptTests": 33,
+  "structureTests": 3,
+  "checks": [
+    "Ruff",
+    "mypy (201 source files)",
+    "typecheck",
+    "lint",
+    "build",
+    "openapi:check",
+    "test:scripts",
+    "test:structure",
+    "git diff --check"
+  ],
+  "visualScores": {
+    "fields": 89,
+    "fieldEditor": 90,
+    "impact": 88,
+    "statuses": 91,
+    "source": 91,
+    "settings": 90
+  },
+  "visualMethod": "每一原图与对应真实截屏独立定性>=85，强制布局满足；不是像素相似率。机器run不自动批准视觉，visual-review.json另记审查；用户验收未执行",
+  "screenshotMetadata": "R3主run和R2 final run逐图保存source/build/script/ref SHA及实际viewport/DPR/zoom/font；R3原生窗口contentBounds与CDP分开。100%1440x1024，200%720x512/DPR2。批状态补测独立metadata，旧native文件图未采字段不倒填。 最终files采用真实Retina窗口：100%viewport1440x992/DPR2，200%720x496/DPR4，PNG2880x1984；详见独立capture-metadata，不套用R3 CDP配置。",
+  "pm2Regression": {
+    "directory": {
+      "cases": 14,
+      "screenshots": 16,
+      "result": "../../../../migration/project-data-directory-qa/run-V7BfbN/result.json",
+      "build": "build6"
+    },
+    "recordPages": {
+      "cases": 24,
+      "screenshots": 54,
+      "result": "../gallery-r2/runs/run-j3l8pG/result.json",
+      "build": "build6"
+    },
+    "excelBatch": {
+      "cases": 7,
+      "screenshots": 7,
+      "result": "../../../../migration/pm2-detail-qa/run-GOjQfd/result.json",
+      "build": "build6",
+      "picker": "E4 injected; native proof separately build3",
+      "rows": 10000,
+      "importMs": 5947,
+      "nextPageMs": 183,
+      "screenshotMetadata": "../../../../migration/pm2-detail-qa/run-GOjQfd/capture-metadata.json"
+    }
+  },
+  "nativeFiles": "native-file-observation.json",
+  "performance": "performance/schema-commit.json",
+  "failuresPreserved": [
+    {
+      "evidence": "runs/run-4VNIHo/result.json",
+      "finding": "200%文档782px>720px，修min-width及网格后复验通过"
+    },
+    {
+      "evidence": "runs/run-NCVFNg/r3-statuses.png",
+      "finding": "旧状态多字段modal视觉78，改名称优先折叠高级选项后91"
+    },
+    {
+      "evidence": "../../../../migration/project-data-directory-qa/run-69Ackq/failure.json",
+      "finding": "设置PATCH和GET新事实但UI被旧cache重放覆盖；单调同代次修订吸收修复，真实复验通过"
+    },
+    {
+      "evidence": "batch-partial/run-dlaPba/failure.json",
+      "finding": "已提交的批状态冲突details被DTO拒绝导致500，专用DTO修复并实际120部分结果/重启通过"
+    },
+    {
+      "evidence": "logs/vitest-final.log",
+      "finding": "默认高并行5000ms超时及同文件连带失败；相同测试集合限制2 workers后1126全通过，未修改超时或删除断言"
+    }
+  ],
+  "unexecuted": [
+    "Windows",
+    "其他架构",
+    "打包版本",
+    "用户手动验收"
+  ],
+  "limits": [
+    "当前分支Studio维持自身基线，未合并主线后续Studio开发；主线迁移分叉须集成时显式解决",
+    "字段删除、整表删除、Sheets同步与自动化配置引用仍未开放，没有补假能力",
+    "SQLite DELETE模式精确4MiB提交观察最大读等待385.117ms；单次有限负载不能保证所有设备",
+    "原生文件链是build3，文件授权/导入导出代码后续未变；build6其他修改有独立回归，不能将旧图哈希重写",
+    "保留各阶段原始证据和失败；未覆盖候选截图作为用户确认基线"
+  ],
+  "futureStages": {
+    "PM3": "not-started-out-of-scope"
+  },
+  "readOnlyWorkspaces": {
+    "autoflow": {
+      "observedHead": "2f6436f",
+      "otherTaskChangesPresent": true
+    },
+    "browser-automation": {
+      "observedHead": "324748a",
+      "otherChangesPresent": true
+    },
+    "taskWrites": "仅独立implementation工作区；不把他人工作树变化误认本任务写入"
+  },
+  "evidenceReview": {
+    "reviewer": "gallery_g0_quality",
+    "method": "独立规格、工程与资料检查",
+    "sourceHashesChecked": 606,
+    "buildHashesChecked": 5,
+    "mismatches": 0,
+    "checkedEvidence": "page-map/cases/runReport路径、6原PNG哈希、报告与853/1126日志、原生build3边界"
+  },
+  "stateVisualReview": "runs/run-TIUvZc/state-review.json",
+  "supplementalStateScores": {
+    "r3-fields-empty": 88,
+    "r3-field-drawer": 90,
+    "r3-field-drawer-200": 87,
+    "r3-schema-preview-busy": 87,
+    "r3-schema-save-busy": 87,
+    "r3-schema-rule-blocked": 89,
+    "r3-schema-cas-conflict": 89,
+    "r3-service-reconnect-dirty": 89,
+    "r3-unknown-save-pending": 90,
+    "r3-unknown-save-recovered": 89,
+    "r3-fields-200": 86,
+    "r3-field-editor-200": 87,
+    "r3-statuses-200": 88,
+    "r3-settings-200": 86,
+    "r3-source-200": 86,
+    "batch-partial": 91,
+    "batch-restart": 90
+  }
+}

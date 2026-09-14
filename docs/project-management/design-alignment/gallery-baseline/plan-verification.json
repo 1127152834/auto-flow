@@ -1,0 +1,20 @@
+{
+  "date": "2026-09-13",
+  "status": "passed-document-static-check-only",
+  "sourceFilesVerified": 112,
+  "latestCount": 91,
+  "visuallyReadThisRevision": 17,
+  "sourceSha256Checks": "passed",
+  "newSpecPlanMarkdownLinksVerified": 2,
+  "jsonParse": "passed",
+  "diffCheck": "passed",
+  "applicationRun": "not-run-this-revision",
+  "visualAcceptance": "not-passed-not-scored",
+  "businessTests": "historical-evidence-only-no-new-run",
+  "productionChangesThisRevision": false,
+  "sourceHead": "df263dfe7ff387734c1c0a0378dd0d1971525d4b",
+  "historicalReports": "preserved; B0 cannot certify gallery fidelity",
+  "userManualTests": "not-executed",
+  "windows": "not-executed",
+  "packaging": "not-executed"
+}

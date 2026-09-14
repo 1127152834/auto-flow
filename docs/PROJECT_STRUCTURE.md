@@ -264,3 +264,148 @@ reference/
 - `workflows/api/mock-*.ts`：本地协议夹具；文档/资产/配置持久化，录制/运行/事件内存状态。不能导入 main/preload/backend。
 - `workflows/styles/`：源 CSS 与 AutoFlow token 映射；`SOURCE.md`、`source-manifest.json`、`LICENSE.WebRPA` 保存来源/边界/许可。
 - `workflows/tests/` 与源邻接 `__tests__/`：请求、事件、编辑和原算法审计测试。无新的后端表或业务路由。
+
+## 项目管理 PM0（2026-09-13，confirmed 实施范围）
+
+- `docs/project-management/design/`：906deda完整设计与历史验证，保持不变；确认状态由`.ai/decisions/`说明。
+- `docs/project-management/implementation/contracts.md`：领域对象、版本、18项执行端口、事务和恢复规范；不是当前Python接口实现。
+- `docs/project-management/implementation/api-contracts.md`：HTTP投影、命令查询、核心事件及桌面IPC，真实handler与生成类型按阶段交付。
+- `docs/project-management/implementation/fixtures.json`：合成领域样例和描述性工作流，非可执行Studio IR。
+- `docs/project-management/implementation/{coverage.json,execution-ledger.md}`：全部功能/规则和30包的责任、依赖、计划测试及实际验收状态。
+- `docs/project-management/implementation/verify-pm0.py`：只读文档、引用、编号与样例核验；不导入业务模块、不运行数据库或平台验收。
+- 后端目标领域为projects/project_data/project_automations/project_runs/environments；前端目标为projects/project-data/project-automations/project-runs/environments；具体F0–F9与组件文件见[总里程碑文件职责](superpowers/plans/2026-09-13-project-management-milestones.md)。均在首次真实功能包创建，不代表本次存在。
+- `apps/desktop/src/renderer/shared/components/ui/`仍是统一控件正式落点；UI独立分支1fb58e1由PM1集成，不新建packages/ui workspace。
+- 主目录b2e95b3已提交workflows文档CRUD和Studio窗口，PM0没有复制或修改。核心Run、事件补读、检查点按所需能力门槛接入，不从Profile测试浏览器扩展第二引擎。
+
+[PM0执行卡](superpowers/plans/2026-09-13-project-management-pm0.md)和[实际基线](project-management/implementation/current-baseline.md)是后续开工入口。
+
+## 项目管理 PM1 实施落点（2026-09-13）
+
+本段是 PM0 之后的已实现补充。早期“项目管理只有设计”的现状描述已 superseded；后续数据表、批次、环境和生命周期操作仍未实现。
+
+| 实际路径 | 当前职责 |
+|---|---|
+| `apps/backend/src/autoflow/domain/projects/` | 项目身份、状态、资源默认值、码点校验和仓储端口。 |
+| `apps/backend/src/autoflow/application/projects/service.py` | 项目目录、管理命令、打开和操作查询用例。 |
+| `apps/backend/src/autoflow/infrastructure/database/projects.py` | SQLite 短事务、唯一名称、CAS 与幂等结果快照；不建立执行器。 |
+| `apps/backend/src/autoflow/infrastructure/database/migrations/versions/pm01_projects.py` | 从 `0005_workflow_documents` 派生，新增 projects/project_operations；不修改历史迁移。 |
+| `apps/backend/src/autoflow/adapters/http/projects.py`、`project_schemas.py` | 10 项真实 HTTP 操作与 camelCase DTO；bootstrap/app.py 装配。 |
+| `apps/desktop/src/renderer/domains/projects/` | api.ts 命令核验、hooks.ts 查询隔离、form-schema.ts 表单值校验。 |
+| `apps/desktop/src/renderer/domains/projects/components/` | ProjectFormDialog、ProjectDirectory、ProjectHeader、ProjectTabs、ProjectCapabilityState。 |
+| `apps/desktop/src/renderer/domains/projects/pages/` | Directory/Overview 页面组合与 ProjectsWorkspace 草稿、命令、目录位置协调。 |
+| `apps/desktop/src/renderer/app/navigation.ts` | 唯一 hash 导航所有者，协调离开确认及前进/后退真实历史位置。 |
+| `apps/desktop/src/renderer/shared/components/ui/` | 选择性接入统一 Select、ScrollArea、Table、Pagination、SearchInput 等当前消费者所需控件。 |
+| `apps/desktop/src/renderer/styles/tokens.css`、`controls.css` | 暖灰/黏土棕令牌、控件状态和滚动条；index.css 引入，body 不固定 100% 宽度。 |
+| `scripts/smoke-project-management.mjs` | 用隔离临时工作区驱动实际 Electron 和 FastAPI，保留构建产物验收截图与事实。 |
+| `docs/migration/project-management-pm1-qa/` | 本机截图、运行记录；不是设计原型或其他平台通过证明。 |
+
+PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工作区会话复用现有实现。`packages/ui` 继续是骨架，不建立第二套 UI 包。详见 [PM1 执行卡](superpowers/plans/2026-09-13-project-management-pm1.md)。
+
+## PM2 持久结构（2026-09-13，实施中）
+
+独立分支 codex/project-management-implementation 从 PM1 ef3178a 继续。
+`domain/project_data/identity.py` 与 `rules.py` 负责稳定记录身份和标量/字段规则；
+`infrastructure/database/project_data_models.py` 定义表、代次、字段、状态、记录、变更证据和影响确认。
+`pm02_project_data.py` 从 pm01_projects 派生；历史迁移不修改。
+`infrastructure/filesystem/project_excel.py` 仅为可信基础设施路径的 XLSX 适配器，不能直接暴露 renderer 路径。
+表资料目录GET/POST、详情GET/PATCH已交付；字段目录GET/POST、状态目录GET/POST/PATCH通过仓储与真实HTTP验证。`application/project_data/catalog.py`协调目录命令，`infrastructure/database/project_data_catalog.py`保存字段、状态与默认回填原子事实，`project_data_impacts.py`保存字段变更确认并在写事务内复验。`adapters/http/project_data_catalog_schemas.py`声明当前目录DTO，统一Operation查询可恢复字段/状态的原始结果。
+`renderer/domains/project-data/components`当前包含已审查的数据表目录与表单组件；正式五页签、记录、文件IPC和实际导入发布仍未完成。迁移/领域/目录接口测试不能据此标记完整PM2验收。
+
+### PM2 记录与字段编辑补充（2026-09-13）
+
+`application/project_data/records.py`与领域records端口负责显式记录命令；`infrastructure/database/project_data_records.py`维护内容/状态/关联分离修订、typed身份和原子操作事实。`adapters/http/project_data_records.py`与record_schemas提供真实四接口，`project_data_impacts.py`与impact_schemas提供字段影响确认，原project_data路由PATCH字段。字段修改由catalog在同一写事务内重新核对影响事实。真实生成类型仍只有shared/api/generated.ts。记录查询、删除、批状态、文件IPC和正式页面继续实施；本次命令核验不代表完整数据管理。
+
+### PM2 查询与状态组件（2026-09-13）
+
+`domain/project_data/query.py`负责严格查询表达式和保真类型比较；`application/project_data/queries.py`校验查询身份/分页，`infrastructure/database/project_data_queries.py`在同一SQLite读快照完成过滤、稳定排序和分页，退出前清理连接临时函数。record HTTP集合GET返回真实DataRecordPage；不改变数据库结构。
+
+`renderer/domains/project-data/catalog-api.ts`负责字段/状态真实命令与原操作恢复，`components/StatusEditorDialog.tsx`及status-form-schema维护状态草稿/校验/差异提交。共享记录投影已纠正缺项与null区别。字段/记录编辑器、五页签与文件IPC尚未装配；最新范围核验见pm2-query-editor-verification.json。
+
+### PM2 数据编辑组件与客户端（2026-09-13）
+
+`renderer/domains/project-data/data-command.ts`是表/目录/记录客户端复用的原身份恢复函数；`records-api.ts`连接真实记录查询与命令，完整typed记录身份、固定请求快照和操作结果校验在领域客户端完成。
+
+`scalar-draft.ts`与`components/ScalarValueEditor.tsx`负责保真值和错误控件定位；`field-form-schema.ts`/FieldEditorDialog维护字段规则和影响确认；`record-draft.ts`/RecordEditorDialog冻结原数据比较基线并仅提交实际修改；DataRecordsTable展示真实记录页、状态与服务端分页回调。正式五页签、筛选组件、删除/批状态和受控文件流程仍待接入。最新范围报告为pm2-editors-verification.json，不替代PM2真实应用验收。
+
+## PM2 目录与详情装配增量（2026-09-13，confirmed）
+
+- `renderer/domains/project-data/pages/DataTableDirectoryPage.tsx`：表目录查询、创建/编辑原命令与草稿保护。
+- `renderer/domains/project-data/pages/DataTableDetailPage.tsx`：五页签真实读取、记录详情、筛选草稿及代次保护；写入UI单独继续C2c。
+- `renderer/domains/project-data/record-query.ts` 和 `components/RecordFilterEditor.tsx`：后端查询语法的草稿验证和编辑，不替代服务端过滤。
+- `application/project_data/deletions.py`、`domain/project_data/deletions.py`、`infrastructure/database/project_data_deletions.py`：删除用例、协议和事务/影响持久实现。HTTP适配位于`adapters/http/project_data_deletions.py`及schemas；不在页面自建引用检查。
+- `infrastructure/database/migrations/versions/pm02_status_tombstones.py`：状态历史墓碑与活动名称部分唯一；既有历史迁移保持。
+- `scripts/smoke-project-data.mjs`：隔离真实目录/详情验收，证据位于`docs/migration/project-data-directory-qa`；不冒充完整数据编辑或PM2验收。
+
+
+### PM2 修订实现中的持久文件与批量状态（2026-09-13）
+
+- `domain/project_data/status_batches.py` 与 application/database 同名模块：固定引用、按块事务、可恢复批状态；沿用项目Operation。
+- `shared/project-files.ts`、`main/project-files/`、preload固定IPC：窗口与服务实例绑定的文件令牌；渲染层不提交任意路径。
+- `application/project_data/excel.py` / `database/project_excel_inspections.py`：检查授权与持久检查事实；SQL仅在仓储。
+- `application/project_data/excel_import.py` / `database/project_excel_imports.py`：隐藏代次分段写入和短事务发布，复验影响确认及相关变更。
+- `application/project_data/excel_export.py` / `database/project_excel_exports.py`：一致读取快照、导出和原目标核验。
+- `filesystem/project_excel.py`：工作簿安全读取、新文件无覆盖发布、发布前摘要回调及只读核验；不会修改来源文件。
+- 迁移依次为 `pm02_status_batches` → `pm02_excel_inspections` → `pm02_excel_imports` → `pm02_excel_exports`，均追加在已交付 `pm02_status_tombstones` 后。主线Studio `0006_workflow_runs`分叉仍需后续统一集成。
+- 上述文件存在不代表完整PM2已验收；原编辑页面任务仍在进行，真实UI接入和全模块验收单独登记。
+
+### PM2 前端组件与验收资产（2026-09-13）
+
+`domains/project-data`新增excel-api、use-excel-inspection/import/export、status-batch-api、use-record-selection及其测试；components新增ExcelImportWizard/Mapping/InspectionPanel、ExcelExportWorkflow/Dialog、RecordStatusBatchDialog、DataOperationStatus、DataTableSourcePanel。DataRecordsTable提供可选选择工具，DataTableDirectoryPage接通真实新表Excel导入。记录批量选择、批量状态、重新导入、导出和来源事实仍需待原编辑任务提交后装配，不能视为已接入。
+
+`scripts/smoke-pm2-excel.mjs`只操纵隔离工作区并记录native picker注入边界；`scripts/measure-pm2-data.py`执行临时文件/DB测量；`scripts/verify-pm2-delivery.mjs`独立核对阶段覆盖，`--require-complete`要求真实全模块验收，当前应失败。历史PM0/PM1报告保留。
+
+### PM2 最终页面装配（2026-09-13，confirmed）
+
+此前“等待原编辑任务”描述为历史状态，已被本节替代。DataTableDetailPage 现组合五页签与真实记录/字段/状态/表资料编辑、冻结选择批量状态、Excel重新导入/导出、来源事实；use-data-table-editing 负责显式写入、稳定作用域的持久原命令恢复、CAS和草稿保护，不在页面重写事务。表查询/列显示/滚动位置按工作区/项目/表保存。
+
+三个新/扩展 smoke 脚本：smoke-project-data.mjs 覆盖编辑与双工作区/重启恢复；smoke-pm2-detail-flows.mjs 覆盖文件和批状态含10000行；smoke-pm2-native-picker.mjs 需实际原生面板操作，不注入其结果。pm2-verification.json 汇总本机证据及未执行平台。verify-pm2-delivery.mjs --require-complete 在完整交付报告后应通过。主线迁移分叉仍未合并，PM3尚未开始。
+
+### 项目管理原型对齐设计资产（2026-09-13，proposed）
+
+`docs/project-management/design-alignment/`保存全模块逐图事实、自动化四页签旧实现补充、93张审阅/112张来源覆盖、独立审查与仅文档核验脚本；不含新业务原型代码。完整目标规格为`docs/superpowers/specs/2026-09-13-project-management-prototype-alignment-design.md`，现状顶部导航为已确认约束，新增聚合字段合同和参数权威仍待设计确认。
+
+前一轮`docs/project-management/reviews/2026-09-13-prototype-alignment/`的20图审阅及7组应用截图保留历史范围。本轮没有修改页面、数据库或Studio。PM3继续暂停；恢复前需参数身份/覆盖合同裁定及主线能力与迁移分叉核验。
+
+### 原型纠偏实施计划（2026-09-13，planned）
+
+`docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`统筹B0图稿与R1–R3独立切片，三个同日前缀r1/r2/r3计划分别定义页面层级、记录路由编辑、字段聚合与数据回归。批准依据在`.ai/decisions/2026-09-13-project-alignment-design-approved.md`；旧“设计待确认”当前描述由此替代，业务代码尚未开始。Popover为计划新增，Drawer已由Modal placement提供；聚合schema/守卫迁移/状态引用为计划目标，不算已存在目录能力。
+
+## 项目管理B0视觉交付（2026-09-13）
+
+`docs/project-management/design-alignment/prototypes/`保存5组imagegen PNG、manifest与提示记录；`prototype-briefs.md`保存原图和旧代码复用映射；`prototype-interactions.md`保存精确交互规则；`implementation-ledger.json`记录B0及未来18任务，业务证据不由静态检查填充。`acceptance/b0/`保存图稿审阅入口、manual-test.md、只读资产验证脚本、核验与审查报告。B0待用户确认，业务源码与原始图库不在该包修改范围。
+
+
+### R1 对齐实际落点（2026-09-13 confirmed）
+
+以下更新覆盖上文阶段历史中“Popover 尚未存在、纠偏业务代码尚未开始”的旧状态；R2/R3 仍为计划。
+
+- `renderer/shared/components/ui/popover.tsx`：Radix 非模态 Popover，复用 OverlayHost；焦点恢复、视口碰撞及内部滚动。未复制已有 Dialog/Select。
+- `domains/projects/components/ProjectCard.tsx` 与 ProjectDirectory：最近卡片/全部条目；ProjectsWorkspace 负责独立真实查询、稳定工作区偏好与请求隔离；ProjectHeader 提供 compact 上下文。
+- `domains/project-data/components/RecordQueryToolbar.tsx`：三个互斥查询草稿、指定文本字段搜索；RecordFilterEditor 提供原语法的受控筛选/排序内容。DataTableDetailPage 统一有效查询、分页与导出；DataRecordsTable 的旧工具栏可关闭以消除重复入口。
+- `shared/components/Toaster.tsx`：可选 operationId、三条上限及更新计时；调用方仍负责原请求作用域校验。
+- `scripts/qa-project-alignment-r1.mjs`：隔离 Electron/CDP 验收与手测辅助；只使用工具创建的工作区，不增加生产调试接口。`docs/project-management/design-alignment/acceptance/r1/` 保存报告、截图、审查、手测和静态覆盖核验。
+
+来源：R1 提交与本机验收；HTTP/IPC/数据库/生成 DTO 未变。记录整页和字段整体草稿尚未实施。
+
+## 项目管理Gallery还原资料（2026-09-13）
+
+`docs/project-management/design-alignment/gallery-baseline/` 保存原始图库路径/hash/尺寸索引、历史验收适用性勘误和本轮文档静态核验。原PNG仍在主项目只读图库，不重新生成副本。当前规格与计划分别为 `docs/superpowers/specs/2026-09-13-project-management-gallery-fidelity.md`、`docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md`；B0资产仅历史参考。拟新增DataTablePageFrame为展示组合组件，尚未创建，不代表交付。
+
+### Gallery R1验收资产（2026-09-14）
+
+`docs/project-management/design-alignment/acceptance/gallery-r1/`保存逐页原图映射、未修改来源PNG副本、真实Electron截图/运行出处、独立审查、机器结果、逐项用例及用户手册。`scripts/verify-gallery-baseline.mjs`仅核验来源hash/尺寸/证据引用，不代替业务或人工视觉验收。`qa-project-alignment-r1.mjs --manual`只在有专属标记的隔离工作区运行，可注入竞争与响应丢失，不新增生产调试接口。
+
+### Gallery R2 组件责任（2026-09-14，confirmed）
+
+`renderer/domains/project-data/components/RecordEditorForm`维护已有数据草稿/校验与可见错误通知；页面负责路由、外层保存栏和会话隔离。`RecordUnsavedDialog`只呈现真实修改字段和离开选择，`DataDeletionDialog`复用真实删除预检/原操作恢复。`shared/components/ui/calendar-date-input`基于DayPicker与现有Popover提供本地日期选择，保持原文输入和日期时间业务语义，禁止系统默认日期面板。实际文件以apps/desktop/src为前缀。R3字段聚合仍未实施。
+
+### Gallery R3 字段统一保存（2026-09-14，实现已接入，验收进行中）
+
+本节替代前述“R3未实施”的当前能力描述，保留历史阶段证据。原Gallery为唯一视觉来源，只有全局导航改顶部。
+
+- `domain/project_data/schema.py` 定义完整字段候选及有界回填校验；`application/project_data/schema.py` 编排现有ProjectOperation身份；`infrastructure/database/project_data_schema.py` 负责一致读预检、持久影响证据和原子提交。既有单字段服务保持独立可用。
+- `migrations/versions/pm02_schema_drafts.py` 从实施分支实际 `pm02_excel_exports` 追加，新增内部记录变更守卫与当前状态计数索引。守卫不替代公开内容、状态、关联、结构修订；主线Studio迁移汇合尚未执行。
+- `adapters/http/project_data_schema.py` 提供真实schema预检/提交；现有project_data路由提供statuses/usage。OpenAPI生成类型只包含真实handler。状态引用由一致快照读取当前记录和活动批操作；未实现的自动化引用显式标记。
+- `renderer/domains/project-data/schema-api.ts` 复用原命令恢复；`schema-draft.ts`/`use-schema-draft.ts` 只维护本地字段候选；`use-data-table-editing.ts` 负责同一持久操作身份、作用域隔离和恢复。
+- `components/FieldEditorFields.tsx` 共享旧弹窗与新字段抽屉的RHF字段；`SchemaFieldDrawer` 仅应用本地草稿，`SchemaEditor` 外层统一保存，`SchemaImpactDrawer` 显示真实预检结果。`DataStatusTable`、`TableSettingsForm`、`DataTableSourcePanel` 分别展示真实引用、内联资料编辑和来源事实。页面仅装配现有能力。
+- `scripts/qa-project-alignment-r3.mjs` 运行专用临时工作区真实Electron/服务及持久结果恢复；`measure-schema-commit.py` 测量自建临时库1000行/4MiB边界与一万行预检。`acceptance/gallery-r3/` 保留失败与成功运行、逐图审查、手测和机器报告，未完成报告不得替代阶段通过。

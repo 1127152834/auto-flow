@@ -2,11 +2,14 @@
 
 - 项目：AutoFlow
 - 目标平台：Windows、macOS
-- 目标：在新架构中迁移 browser-automation 的非项目管理功能。
+- 目标：在新架构中迁移 browser-automation 的功能；项目管理已形成完整设计，PM1项目入口在独立实施分支交付；之后按用户验收逐阶段实施。
 - WebRPA：仅作为能力和实现思路参考，重写能力，不做运行时集成或兼容层。
 - 前端视觉方向：保留第三个原型的暖灰画布、黏土棕强调色；2026-09-12 用户明确浏览器配置采用单主内容区，无模块侧栏，内核管理从配置表单以弹窗进入。早期该模块“分栏工作台”的描述已 superseded。
 - 前端技术约束：React、shadcn/ui、Tailwind CSS，组件先于页面。
 - 协作要求：先规格和实施计划，经确认后再开始功能实现；前后端按垂直功能切片一起开发。
+- 2026-09-12（confirmed，来源：用户在项目管理审查后的明确纠正）：项目管理先形成相对完整的功能规格、跨模块业务规则、交互和总体实施计划，再小步开发。最小执行链仅是实施验收步骤；关键业务设计不留到各切片开发时临时决定。详见 `.ai/decisions/2026-09-12-project-management-complete-design-first.md`。
+- 2026-09-12（confirmed，来源：用户对数据流与环境保留的明确说明）：每表系统维护业务状态；记录再次使用由当前状态和工作流条件决定，不能加消费类型或本批历史排除。工作流可读写多表、增删记录与字段/列，显式决定业务状态变化。结束节点“保留当前环境”包含保存登录上下文并关联相关数据行，不要求额外 Bind 节点。具体关联范围、冲突和恢复为设计推荐；见 `.ai/decisions/2026-09-12-project-data-workflow-semantics.md` 和 `docs/project-management/design/README.md`。此前冲突建议已 superseded。
+- 2026-09-13（confirmed，来源：用户对完整设计稿回复“没问题”并要求里程碑计划）：`906deda` 完整设计作为规划基线，包括已有推荐的空白本地表、单表 XLSX 导出和失败后续快捷入口。当前仍只规划，PM0–PM9覆盖全模块，Studio能力按具体契约衔接；见 `.ai/decisions/2026-09-13-project-management-design-approved.md` 与 `docs/superpowers/plans/2026-09-13-project-management-milestones.md`。
 - 2026-09-12（confirmed，来源：用户明确实施指令）：代理模块已从 `codex/proxy-management@0ad2fd2` 选择性接入浏览器主线；全局导航和浏览器启动到代理组的调用仍由后续浏览器任务完成。详见 `docs/migration/proxy-management-status.md`。
 
 - 2026-09-12（confirmed，来源：本轮用户授权及隔离worktree验收）：模型管理在 `codex/model-management` / `../autoflow-model-management` 实现，已通过baseline合并验收；保留旧供应商左栏、三步接入与split编辑，凭据仅写系统存储。验收边界见 `docs/migration/model-management-verification.md`。
@@ -16,3 +19,66 @@
 - 2026-09-12（confirmed，来源：浏览器计划 Task1–10 独立复审及源代码）：浏览器 UI 使用 desktop shared shadcn/Radix + Tailwind、领域组件、RHF/Zod；查询上下文统一 ApiProvider。同一工作区重连保留编辑树，实际换目录才重置。CloakBrowser wrapper 固定0.5.9，只有其内核能力；后端 worker 处理下载与取消，License 使用共享系统凭据存储。最终页面/平台状态见 docs/migration/browser-management-validation.md。
 
 - 2026-09-12（confirmed，来源：授权实网、脱敏 fixture 和 CUA）：ProxyPanel 列表/凭据/到期字段已接通；SOCKS5 检测通过，HTTP CONNECT 实网超时。数据面密码按需取用且不落库，API Key 保留系统存储。旧“列表一律拒绝”的限制 superseded；远程管理写操作仍未实现。见 docs/migration/proxypanel-live-verification.md。
+
+- 2026-09-13（confirmed，来源：用户明确实施PM0计划）：整体里程碑及PM0执行已授权，旧“当前只规划”的阶段描述 superseded。先在codex/project-management-design完成契约、传输、FX-01–07及覆盖账本，逐里程碑用户验收；PM1才交付页面/API。主目录Studio M1在交付前提交为b2e95b3，包含工作流文档CRUD和0005迁移；旧“只有about:blank/全为WIP”的当前事实 superseded，Run仍不可执行。见 `.ai/decisions/2026-09-13-project-management-pm0-authorized.md`。
+
+- 2026-09-13（confirmed，来源：用户PM1实施授权、真实源码与自动/本机Electron验证）：`codex/project-management-pm1`从1f80f97+PM0构建，已实现项目目录/表单/上下文和10项HTTP；pm01_projects从0005派生，两张表原子保存项目与幂等快照。其余业务能力明确notImplemented。统一控件选择性接入1fb58e1，保留最新基线Studio M1与会话桥；没有第二执行器。见PM1执行卡和机器核验。PM1等待用户验收，旧“项目尚无业务实现”的当前描述superseded，PM2+未开始。
+
+- 2026-09-13（superseded，历史用户持续目标；已被后续 PM2 修订计划覆盖）：PM2–PM9曾授权在独立implementation工作区持续实施，旧逐阶段暂停规则superseded；排除画布编辑器，保留真实核心运行依赖。PM2执行卡已建立，业务实现尚未验收。
+
+- 2026-09-13（confirmed，实际源码与独立审查）：PM2基础包已交付typed身份、原子持久结构、XLSX流式适配、表资料API与组件，字段/状态目录进入真实HTTP集成，字段影响确认已有持久事实绑定。完整记录、五页签、文件IPC仍实施中。主线9490924现有正式Studio M2，旧“核心仍全部WIP”现状superseded；实施分支尚未接入，PM3须核对契约与0006/pm02迁移汇合。证据见pm2-review-foundation.md及current-baseline.md。
+
+- 2026-09-13（confirmed，实际源码/独立审查/自动验证）：PM2记录create/get/update/显式状态与字段影响preview/PATCH已由cc86607、3630e78、7a2986f交付；670后端全量及最后类型增量33定向、461前端回归通过。仍无正式数据页面、文件IPC或运行闭环；详见pm2-records-fields-verification.json，不将基础命令等同完整PM2。
+
+- 2026-09-13（confirmed，提交及核验）：PM2服务端记录筛选/排序/分页和16项数据HTTP已交付，字段/状态客户端与状态组件已提交；最后查询连接池清理竞态修复后698后端/490前端全量通过。最新报告pm2-query-editor-verification.json；尚无正式数据页面/Excel IPC/批状态，不得宣布PM2完成。B2主进程/内部通道盘点完成，旧picker直接返path不能照搬。
+
+- 2026-09-13（confirmed，实际代码/独立审查/最终自动验证）：PM2记录客户端、共享命令恢复、四类型值编辑、字段影响编辑、冻结记录草稿与记录表格已提交至737ce3e；最终564前端/86文件通过，typecheck/lint/build及OpenAPI/scripts/structure通过。后端本轮无源码变化，698测试仍指上轮报告。正式数据五页签和文件IPC尚未挂载，PM2不完整；最新pm2-editors-verification.json，继续C2/删除与耐久批状态/B2。状态删除不能物理清除历史FK引用，下一包采用软删除保持历史事实。
+
+- 2026-09-13（confirmed，实际代码与自动/隔离Electron核验）：PM2状态历史墓碑和删除HTTP已交付，head pm02_status_tombstones；正式数据目录与五页签读取已接通。719后端/606前端及本机macOS arm64目录创建/编辑/冲突/重连/重启、已有模块回归通过。旧“正式数据页未挂载”当前结论superseded；记录/字段/状态写UI、批状态、Excel发布仍待C2c/A2h/B2完成，PM2整体未完成。报告pm2-directory-deletions-verification.json；后续共享命令每次原key重发须动态校验scope/只读准入。
+
+- 2026-09-13（confirmed，来源：用户后续批准 PM2 修订实施计划）：当前只实施 PM2，完成后停在 PM2 验收点，不自动进入 PM3。此前连续实施 PM2–PM9 的授权记录已 superseded。原编辑任务六个 WIP 文件仍等待原任务提交；后续接管须依据明确交接。现有组件、后台及目录导入证据不替代详情页完整验收。
+
+- 2026-09-13（confirmed，用户明确交接）：原编辑任务已结束，原六个 WIP 正式由当前任务接管，保留后完成 PM2 集成和验收。此前等待原任务提交的阻塞已解除，PM2 完成后仍不自动进入 PM3。
+
+## PM2 本机完整交付（2026-09-13，confirmed）
+
+来源：pm2-verification.json、四组真实Electron验收。用户确认原编辑任务结束后已完成整合；旧等待记录superseded。记录/字段/状态/表资料编辑、批状态、Excel新建/替换/导出及恢复已接通真实页面。760后端、833前端全量与工程检查通过。编辑命令先持久化再HTTP，稳定工作区身份恢复，旧代次拒绝串写，脏草稿不能静默切代。10000行界面导入4396ms/翻页158ms仅本机单次实测。Windows/x64/打包未执行；原生面板与全流程测试注入范围分开。完成后停PM2验收，不开始PM3；主线Studio迁移分叉仍需后续集成。
+
+2026-09-13最终只读核对主项目HEAD为2b5365e（Studio条件/循环/变量等已继续推进），并有其他任务WIP；此实施分支未合并这些内容。后续主线集成须重新核对实际迁移/共享类型/Studio能力，不把旧M2快照作为现状。数据能力契约最终仅data=available，其余五项未实现；修正提交d05bbe1。
+
+## 项目管理原型对齐复审（2026-09-13，confirmed）
+
+来源：用户指定主项目 gallery.html 要求重新对齐，并明确“导航按照现状，用顶部导航，不要换成侧边”。当前暂停PM3草案的实施推进。PM2功能核验保留，不能将它解释为原型视觉已验收。已确认记录筛选常驻、详情Modal/整页缺失、编辑载体、字段卡片等实际偏差；纠偏建议尚待形成完整对齐规格与确认。旧仓324748a的autoflow-desktop内有自动化四页签/聚合保存/资源解析/项目数据实现与测试代码，应先提取适配，不能因当前工作树删除而判定从未实现。报告见docs/project-management/reviews/2026-09-13-prototype-alignment/README.md；原型112个唯一内容只实际视觉复核20张，本次7张应用截图不是全模块验收。
+
+## 项目管理完整对齐规格（2026-09-13）
+
+来源：`docs/project-management/design-alignment/`及完整prototype-alignment-design规格。confirmed：已看最新阅读集91张和同日候选2张，19历史排除；前轮20图审阅是历史记录，不再代表累计覆盖。顶部全局导航保留；目录卡片、独立记录详情/编辑、字段统一草稿为对齐方向。环境“删除影响预览”原图实际是完成页，不能替代预检。PM2已实现文件/批状态能力保留，字段删除仍未实现；当前外链桥仍需补。
+
+proposed：本轮完整规格尚未确认，6组补图未生成；参数定义归Studio/core、聚合字段提交及其有界回填预算是建议，不得当已批准能力。R1–R3纠偏可独立于参数裁定；R4/PM3须先裁定稳定参数身份/快照/覆盖并同步PM0 DTO。未知操作先查询由已批准PM1/PM2规则明确，本轮只勘误PM0旧文案，不改历史报告。没有新增业务实现或跨平台验证。
+
+## 对齐设计批准与执行计划（2026-09-13，confirmed）
+
+来源：用户“ok没问题，开始设计后续实施计划”及 `.ai/decisions/2026-09-13-project-alignment-design-approved.md`。4688353设计的推荐参数权威和有界聚合回填已确认，旧“待用户确认”当前状态superseded；缺图/业务实现不因此完成。已形成B0+R1/R2/R3三个切片计划，主入口`docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md`。本轮仅文档；PM3保留工程准入，参数归属不再阻塞用户决策。
+
+## 原始Gallery直接还原（2026-09-13，confirmed）
+
+用户明确只有全局左菜单改现有顶部导航，其他页面布局/交互跟随gallery具体原PNG。B0衍生图不再是视觉依据；“B0视觉通过”等当前交付解释superseded，功能证据仍只适用其原版本。R1视觉重开，R2部分实现且视觉未通过，R3未完成。当前修订计划与边界见 `.ai/decisions/2026-09-13-project-gallery-only-navigation-change.md`。原图索引共112文件，latest91；本轮重新看17图，其余不冒称再次视觉审阅。
+
+
+### Gallery G0 执行记录（2026-09-13，confirmed）
+
+用户已授权连续执行。共享Frame及页面装配完成；真实表名面包屑、200%页签换行与保存栏可见性修正。run-AatYpG真实隔离应用14项smoke通过，规格与工程问题闭合。这里只验收共用结构，R1目录与查询、R2原表单/详情、R3聚合字段仍需继续；单字段截图及B0历史评分不能证明全页还原。详见docs/project-management/design-alignment/acceptance/gallery-g0/review.md。
+
+### Gallery R1 退出（2026-09-14，confirmed）
+
+来源：acceptance/gallery-r1/machine-report.json、review.md及原PNG并排。a6a0e8e恢复原目录、项目头、同卡片记录表/工具/查询Popover；997前端测试、32后端定向及真实E2E通过，原图逐页至少85且硬结构通过。R1可进入R2，但用户手动/Windows/打包未执行，不能解释为项目管理全部完成。R2继续原003–007全页与确认；R3聚合字段仍待实施，PM3不在授权推进范围。
+
+### Gallery R2 退出（2026-09-14，confirmed）
+
+来源：acceptance/gallery-r2/machine-report.json、review.md、run-msXqcI真实E2E及原003–007。实现a08c2fe，保留真实typed身份/单命令恢复，通栏新增编辑、自有日历、详情左右区、居中未保存/删除确认。127文件1030前端、38后端、29脚本、3结构及PM2回归通过；逐页86/88/89/91/88。原生http/https外链已验证；原生文件面板完整闭环、R3、Windows、打包、用户手测未执行。连续授权允许进入R3，不进入PM3。
+
+### Gallery R3 实现与验收证据（2026-09-14，confirmed）
+
+来源：本实施分支e467035/b2d1543/800fb01、`docs/project-management/design-alignment/acceptance/gallery-r3/`。R3已实现原008/009/100/010/012/014结构、完整字段草稿及原子保存、真实状态引用、来源和设置。853后端/1126前端、33脚本/3结构与工程检查通过；真实120条部分结果修复了仓储已提交但HTTP拒绝details导致500、结果选择数清零的实际问题。最终同版本截图和回归见machine-report，不将历史B0或小测试冒称完整视觉验收。
+
+原生Excel完整链实际操作于build3，文件实现后续未改；最终build6使用独立真实IPC/HTTP/SQLite文件回归并明确E4选择注入。Windows、其他架构、打包版本和用户手测未执行。记录`gallery-delivery.md`作为统一交付入口，R3后停止，PM3未开始。旧“R3仍未实施”的当前描述由本节取代；旧报告自身不改写。

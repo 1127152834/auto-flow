@@ -1,0 +1,167 @@
+import '@testing-library/jest-dom/vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, expect, it, vi } from 'vitest'
+import { choiceTestEnvironment, chooseOption } from '../../../shared/testing/choice-user'
+import { scalarDraft } from '../scalar-draft'
+import { ScalarValueEditor } from './ScalarValueEditor'
+
+afterEach(cleanup)
+choiceTestEnvironment()
+
+it('emits every raw intermediate number draft and keeps presence distinct', async () => {
+  const change = vi.fn(); const user = userEvent.setup()
+  const draft = scalarDraft(12)
+  const view = render(<ScalarValueEditor id="amount" label="金额" type="number" draft={draft} onChange={change} allowMissing />)
+  await user.clear(screen.getByLabelText('金额'))
+  expect(change).toHaveBeenLastCalledWith({ ...draft, text: '' })
+  view.rerender(<ScalarValueEditor id="amount" label="金额" type="number" draft={{ ...draft, text: '' }} onChange={change} allowMissing />)
+  await chooseOption(user, screen.getByRole('combobox', { name: '金额值状态' }), 'missing')
+  expect(change).toHaveBeenLastCalledWith({ ...draft, text: '', presence: 'missing' })
+})
+
+it('uses controlled boolean and date controls', async () => {
+  const change = vi.fn(); const user = userEvent.setup()
+  const draft = { ...scalarDraft(true), presence: 'value' as const }
+  const view = render(<ScalarValueEditor id="flag" label="启用" type="boolean" draft={draft} onChange={change} />)
+  await chooseOption(user, screen.getByRole('combobox', { name: '启用' }), 'false')
+  expect(change).toHaveBeenLastCalledWith({ ...draft, boolean: false })
+  view.rerender(<ScalarValueEditor id="when" label="日期" type="date" draft={{ ...draft, precision: 'datetime', text: 'bad', offset: '+0' }} onChange={change} />)
+  expect(screen.getByLabelText('日期')).toHaveValue('bad')
+  expect(screen.getByLabelText('日期时区偏移')).toHaveValue('+0')
+  await user.type(screen.getByLabelText('日期时区偏移'), 'x')
+  expect(change).toHaveBeenLastCalledWith({ ...draft, precision: 'datetime', text: 'bad', offset: '+0x' })
+})
+
+it('honors disabled and readonly without emitting changes', async () => {
+  const change = vi.fn(); const user = userEvent.setup()
+  const view = render(<ScalarValueEditor id="value" label="内容" type="string" draft={scalarDraft('draft')} onChange={change} readOnly allowMissing />)
+  expect(screen.getByLabelText('内容')).toHaveAttribute('readonly')
+  expect(screen.getByRole('combobox', { name: '内容值状态' })).toHaveAttribute('aria-readonly', 'true')
+  await user.type(screen.getByLabelText('内容'), 'x'); expect(change).not.toHaveBeenCalled()
+  view.rerender(<ScalarValueEditor id="value" label="内容" type="string" draft={scalarDraft('draft')} onChange={change} disabled allowMissing />)
+  expect(screen.getByLabelText('内容')).toBeDisabled()
+  expect(screen.getByRole('combobox', { name: '内容值状态' })).toBeDisabled()
+})
+
+it('identifies missing and date editors by field and displays a non-selectable missing fact', () => {
+  const missing = scalarDraft(undefined)
+  const { rerender } = render(<>
+    <ScalarValueEditor id="first" label="客户编号" type="string" draft={missing} onChange={vi.fn()} />
+    <ScalarValueEditor id="second" label="备注" type="string" draft={missing} onChange={vi.fn()} />
+  </>)
+  expect(screen.getByRole('group', { name: '客户编号' })).toBeVisible()
+  expect(screen.getByRole('group', { name: '备注' })).toBeVisible()
+  const firstPresence = screen.getByRole('combobox', { name: '客户编号值状态' })
+  expect(firstPresence).toHaveAttribute('data-choice-value', 'missing')
+  expect(screen.queryByText('当前选项不可用，请重新选择')).not.toBeInTheDocument()
+
+  rerender(<ScalarValueEditor id="when" label="预约时间" type="date" draft={{ ...missing, presence: 'value', precision: 'datetime' }} onChange={vi.fn()} />)
+  expect(screen.getByRole('combobox', { name: '预约时间值状态' })).toBeVisible()
+  expect(screen.getByRole('combobox', { name: '预约时间精度' })).toBeVisible()
+  expect(screen.getByLabelText('预约时间时区偏移')).toBeVisible()
+})
+
+it('connects every visible label to its real control', async () => {
+  const user = userEvent.setup(); const draft = scalarDraft('text')
+  const view = render(<ScalarValueEditor id="note" label="备注内容" type="string" draft={draft} onChange={vi.fn()} />)
+  await user.click(screen.getByText('备注内容', { selector: 'label' }))
+  expect(screen.getByLabelText('备注内容')).toHaveFocus()
+
+  view.rerender(<ScalarValueEditor id="date" label="执行日期" type="date" draft={{ ...draft, precision: 'datetime', offset: 'Z' }} onChange={vi.fn()} />)
+  const precision = screen.getByRole('combobox', { name: '执行日期精度' })
+  await user.click(screen.getByText('精度', { selector: 'label' }))
+  expect(precision).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('option', { name: '日期时间' })).toHaveFocus()
+  await user.keyboard('{Escape}')
+  expect(precision).toHaveFocus()
+  await user.click(screen.getByText('时区偏移', { selector: 'label' }))
+  expect(screen.getByLabelText('执行日期时区偏移')).toHaveFocus()
+})
+
+it('uses one compact comparison label and a single-line text input for filters', () => {
+  render(<ScalarValueEditor id="filter-value" label="比较值" type="string" draft={scalarDraft('温室')} onChange={vi.fn()} compact />)
+  expect(screen.getByLabelText('比较值')).toHaveProperty('tagName', 'INPUT')
+  expect(screen.getAllByText('比较值').filter(node => !node.classList.contains('sr-only'))).toHaveLength(1)
+  expect(screen.getByRole('combobox', { name: '比较值值状态' })).toBeVisible()
+  expect(screen.getByRole('button', { name: '使用多行输入' })).toBeVisible()
+})
+
+it('preserves multiline compact text and never switches it into a single-line input', async () => {
+  const user=userEvent.setup(),change=vi.fn(),draft=scalarDraft('first')
+  const view=render(<ScalarValueEditor id="filter-value" label="比较值" type="string" draft={draft} onChange={change} compact />)
+  await user.click(screen.getByRole('button',{name:'使用多行输入'}))
+  expect(screen.getByLabelText('比较值')).toHaveProperty('tagName','TEXTAREA')
+  view.rerender(<ScalarValueEditor id="filter-value" label="比较值" type="string" draft={{...draft,text:'first\nsecond'}} onChange={change} compact />)
+  expect(screen.getByLabelText('比较值')).toHaveValue('first\nsecond')
+  expect(screen.getByRole('button',{name:'使用单行输入'})).toBeDisabled()
+  view.rerender(<ScalarValueEditor id="filter-value" label="比较值" type="string" draft={{...draft,text:'first\rsecond'}} onChange={change} compact />)
+  expect(screen.getByLabelText('比较值')).toHaveProperty('tagName','TEXTAREA')
+  expect(screen.getByLabelText('比较值')).toHaveValue('first\nsecond')
+  expect(change).not.toHaveBeenCalled()
+})
+
+it('shows presence contextually while keeping missing and null explicit', async () => {
+  const user=userEvent.setup(),draft=scalarDraft('value'),view=render(<ScalarValueEditor id="value" label="内容" type="string" draft={draft} onChange={vi.fn()} presenceDisplay="contextual" />)
+  expect(screen.queryByRole('combobox',{name:'内容值状态'})).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button',{name:'值选项'})); expect(screen.getByRole('combobox',{name:'内容值状态'})).toBeVisible()
+  view.rerender(<ScalarValueEditor id="value" label="内容" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presenceDisplay="contextual" />)
+  expect(screen.getByRole('combobox',{name:'内容值状态'})).toHaveAttribute('data-choice-value','null')
+})
+
+it('uses a single-line page editor until the value or user requests multiline input', async()=>{
+  const user=userEvent.setup(),draft=scalarDraft('short'),view=render(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={draft} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','INPUT')
+  const label=document.querySelector('[data-record-field-label]'),controls=document.querySelector('[data-record-field-controls]');expect(label?.parentElement).toBe(controls?.parentElement);expect(label?.parentElement).toHaveAttribute('data-record-field-layout','page')
+  await user.click(screen.getByRole('button',{name:'值选项'}));await user.click(screen.getByRole('button',{name:'使用多行输入'}));expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
+  view.rerender(<ScalarValueEditor id="page-text" label="摘要" type="string" draft={{...draft,text:'first\nsecond'}} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByLabelText('摘要')).toHaveValue('first\nsecond');expect(screen.getByRole('button',{name:'使用单行输入'})).toBeDisabled()
+})
+
+it('keeps page missing and null states explicit without repeating the field label',()=>{
+  render(<ScalarValueEditor id="page-null" label="备注" type="string" draft={scalarDraft(null)} onChange={vi.fn()} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByRole('button',{name:'值选项'})).toBeVisible();expect(screen.getByText('空值')).toBeVisible();expect(screen.queryByRole('combobox',{name:'备注值状态'})).not.toBeInTheDocument();expect(document.querySelectorAll('[data-record-field-label]')).toHaveLength(1)
+})
+
+it('keeps page inputs directly editable and expands value options only on request',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),missing=scalarDraft(undefined)
+  render(<ScalarValueEditor id="page-missing" label="备注" type="string" draft={missing} onChange={change} presentation="page" allowMissing presenceDisplay="contextual"/>)
+  expect(screen.queryByRole('combobox',{name:'备注值状态'})).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('备注'),'x')
+  expect(change).toHaveBeenLastCalledWith({...missing,presence:'value',text:'x'})
+  await user.click(screen.getByRole('button',{name:/值选项/}))
+  expect(screen.getByRole('combobox',{name:'备注值状态'})).toBeVisible()
+  expect(screen.getByRole('button',{name:'使用多行输入'})).toBeVisible()
+})
+
+it('uses the calendar text input for pure dates without normalizing raw drafts',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),draft={...scalarDraft(undefined),presence:'value' as const,precision:'date' as const,text:'2026-02-31'}
+  render(<ScalarValueEditor id="day" label="发布日期" type="date" draft={draft} onChange={change} presentation="page" presenceDisplay="contextual"/>)
+  expect(screen.getByRole('textbox',{name:'发布日期'})).toHaveValue('2026-02-31')
+  expect(screen.getByRole('button',{name:'选择发布日期'})).toBeVisible()
+  await user.type(screen.getByRole('textbox',{name:'发布日期'}),'x')
+  expect(change).toHaveBeenLastCalledWith({...draft,text:'2026-02-31x'})
+})
+
+it('keeps pure date dialogs on the original text input and does not compress page textareas',()=>{
+  const draft={...scalarDraft(undefined),presence:'value' as const,precision:'date' as const,text:'2026-09-10'}
+  const view=render(<ScalarValueEditor id="dialog-day" label="日期" type="date" draft={draft} onChange={vi.fn()}/>)
+  expect(screen.queryByRole('button',{name:'选择日期'})).not.toBeInTheDocument()
+  view.rerender(<ScalarValueEditor id="page-note" label="摘要" type="string" draft={scalarDraft('A\nB')} onChange={vi.fn()} presentation="page"/>)
+  expect(screen.getByLabelText('摘要')).toHaveProperty('tagName','TEXTAREA')
+  expect(screen.getByRole('group',{name:'摘要'})).toHaveClass('[&_textarea[data-af-control]]:min-h-20')
+  expect(screen.getAllByRole('button').filter(button=>button.textContent?.includes('值选项'))).toHaveLength(1)
+})
+
+it('distinguishes readonly missing, null, and empty values while allowing options inspection',async()=>{
+  const user=userEvent.setup(),change=vi.fn(),view=render(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft(undefined)} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('未填写 · 此字段只读')).toBeVisible()
+  expect(screen.getByRole('button',{name:'值选项'})).toBeEnabled()
+  await user.click(screen.getByRole('button',{name:'值选项'}))
+  expect(screen.getByRole('combobox',{name:'备注值状态'})).toHaveAttribute('aria-readonly','true')
+  view.rerender(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft(null)} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('空值 · 此字段只读')).toBeVisible()
+  view.rerender(<ScalarValueEditor id="readonly" label="备注" type="string" draft={scalarDraft('')} onChange={change} presentation="page" readOnly helperText="此字段只读"/>)
+  expect(screen.getByText('空字符串 · 此字段只读')).toBeVisible()
+  expect(change).not.toHaveBeenCalled()
+})

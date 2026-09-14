@@ -1,0 +1,135 @@
+{
+  "reviewedRun": "run-TIUvZc",
+  "batchEvidenceRun": "gallery-r3/batch-partial/run-6xknNg",
+  "reviewType": "manual-qualitative-per-state",
+  "method": "逐张实际查看截图，按对应父原图的布局结构、当前状态真实性、信息层级和关键操作可达性评分；不是像素相似度算法，不代表用户批准。",
+  "threshold": 85,
+  "allMeetThreshold": true,
+  "forcedStructureConclusion": "17 个补充状态均维持其父画面的主结构：字段类状态保持表格或右抽屉及固定操作区，恢复/冲突/忙态没有用 Toast 替代权威内容，200% 画面采用纵向滚动且未出现 document 横向溢出，批状态以同一居中结果弹窗呈现冻结请求总数和分项结果。未发现低于 85 的结构阻断。",
+  "states": [
+    {
+      "file": "r3-field-drawer-200.png",
+      "state": "新增字段抽屉 200%",
+      "score": 87,
+      "grade": "GF",
+      "structureConclusion": "200% 下抽屉保持单列表单和固定底栏，字段名称、键、类型及操作仍可到达；视口内信息减少但未横向裁断。"
+    },
+    {
+      "file": "r3-field-drawer.png",
+      "state": "新增字段抽屉",
+      "score": 90,
+      "grade": "GF",
+      "structureConclusion": "新增态右抽屉沿用 009 的标题、纵向字段、说明和底栏结构，背景字段页关系明确。"
+    },
+    {
+      "file": "r3-field-editor-200.png",
+      "state": "编辑字段抽屉 200%",
+      "score": 87,
+      "grade": "GF",
+      "structureConclusion": "200% 下只读字段键、锁、类型及取消/应用底栏清晰可达，单列滚动符合抽屉结构。"
+    },
+    {
+      "file": "r3-fields-200.png",
+      "state": "字段页 200%",
+      "score": 86,
+      "grade": "GF",
+      "structureConclusion": "缩放后主标题、数据导航和字段内容保持结构；表格依赖自身横向区域且 document 无横向溢出，当前截图顶部 Toast 占据部分空间。"
+    },
+    {
+      "file": "r3-fields-empty.png",
+      "state": "字段空态",
+      "score": 88,
+      "grade": "GF",
+      "structureConclusion": "空字段表、0 个字段摘要和新增字段主操作同时可见，结构继承 008 字段页且空态事实清楚。"
+    },
+    {
+      "file": "r3-schema-cas-conflict.png",
+      "state": "字段保存 CAS 冲突",
+      "score": 89,
+      "grade": "GF",
+      "structureConclusion": "影响抽屉保留候选摘要，明确显示预检过期/需重新预检，返回修改与确认区域位置稳定，错误没有替换草稿主体。"
+    },
+    {
+      "file": "r3-schema-preview-busy.png",
+      "state": "字段预检忙态",
+      "score": 87,
+      "grade": "GF",
+      "structureConclusion": "字段页仍显示完整候选，底部操作进入正在核对且防止重复提交；状态反馈位置稳定但忙态文案视觉权重较轻。"
+    },
+    {
+      "file": "r3-schema-rule-blocked.png",
+      "state": "字段规则阻断",
+      "score": 89,
+      "grade": "GF",
+      "structureConclusion": "影响抽屉同时呈现字段变更、已有记录影响和红色阻断摘要，返回修改可用且确认不可误触，状态真实性明确。"
+    },
+    {
+      "file": "r3-schema-save-busy.png",
+      "state": "字段提交忙态",
+      "score": 87,
+      "grade": "GF",
+      "structureConclusion": "影响抽屉冻结候选与影响内容，确认按钮进入保存中并阻止重复动作；滚动内容和固定底栏关系保持。"
+    },
+    {
+      "file": "r3-service-reconnect-dirty.png",
+      "state": "服务重连后脏草稿",
+      "score": 89,
+      "grade": "GF",
+      "structureConclusion": "重连后新增字段仍带“新增”标记，底部显示 1 项待保存，字段表及外层操作保持可见，真实草稿状态明确。"
+    },
+    {
+      "file": "r3-settings-200.png",
+      "state": "数据表设置 200%",
+      "score": 86,
+      "grade": "GF",
+      "structureConclusion": "200% 下项目、数据表标题和设置标签保持可辨，表单通过纵向滚动到达；视口密度较高但没有横向溢出。"
+    },
+    {
+      "file": "r3-source-200.png",
+      "state": "Excel 来源 200%",
+      "score": 86,
+      "grade": "GF",
+      "structureConclusion": "200% 下来源表标题与来源设置入口清楚，详情通过纵向滚动访问；页面外壳未横向裁断。"
+    },
+    {
+      "file": "r3-statuses-200.png",
+      "state": "新增状态 200%",
+      "score": 88,
+      "grade": "GF",
+      "structureConclusion": "200% 下新增状态弹窗保持名称主字段、更多选项与底栏操作，背景状态页关系清楚，弹窗可滚动且无横向截断。"
+    },
+    {
+      "file": "r3-unknown-save-pending.png",
+      "state": "保存结果待核对",
+      "score": 90,
+      "grade": "GF",
+      "structureConclusion": "响应丢失与首次查询失败后，影响抽屉保留同一字段候选并显示两处明确的待核对提示，核对原结果主操作突出。"
+    },
+    {
+      "file": "r3-unknown-save-recovered.png",
+      "state": "重启后原键恢复成功",
+      "score": 89,
+      "grade": "GF",
+      "structureConclusion": "完整重启核对后字段表显示新增字段恰好一次、底部无未保存修改，并以成功 Toast 提供结果反馈。"
+    },
+    {
+      "file": "../../batch-partial/run-6xknNg/partial-100-conflicts-20-changed.png",
+      "state": "批状态部分成功",
+      "score": 91,
+      "grade": "GF",
+      "structureConclusion": "居中结果弹窗明确冻结 120 条请求，分列展示已修改 20、冲突 100、未执行 0，并说明已提交修改保留及重新选择策略。"
+    },
+    {
+      "file": "../../batch-partial/run-6xknNg/restarted-original-progress.png",
+      "state": "批状态重启后恢复",
+      "score": 90,
+      "grade": "GF",
+      "structureConclusion": "重启后仍恢复同一批次的 20/100/0 权威结果，刷新结果和开始新批次入口可见，背景记录状态与结果相互印证。"
+    }
+  ],
+  "limitations": [
+    "评分是人工定性审查，不是自动视觉分数。",
+    "E2E 真实性来自对应 run 的机器结果；本文件只审查截图所呈现的状态与结构。",
+    "不构成用户批准。"
+  ]
+}

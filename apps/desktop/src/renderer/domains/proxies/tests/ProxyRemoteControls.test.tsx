@@ -2,6 +2,9 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { createProxyApi, type ProxyView } from '../api'
 import type { ApiClient } from '../../../shared/api/client'
 import { ProxyRemoteControls } from '../components/ProxyRemoteControls'
@@ -33,8 +36,8 @@ function fixture(status = 'queued') {
 it('edits schedule locally and submits only on explicit save with official units', async () => {
   const user = userEvent.setup(), save = vi.fn(), dirty = vi.fn()
   render(<RotationScheduleForm value={{enabled:false, mode:null, interval_minutes:null}} disabled={false} canSave onDirtyChange={dirty} onSave={save} onClear={noop} />)
-  await user.selectOptions(screen.getByLabelText('轮换模式'), 'same_city_carriers')
-  await user.selectOptions(screen.getByLabelText('轮换周期'), '30')
+  await chooseOption(user, screen.getByLabelText('轮换模式'), 'same_city_carriers')
+  await chooseOption(user, screen.getByLabelText('轮换周期'), '30')
   expect(save).not.toHaveBeenCalled()
   expect(dirty).toHaveBeenLastCalledWith(true)
   await user.click(screen.getByRole('button', {name:'开启轮换计划'}))

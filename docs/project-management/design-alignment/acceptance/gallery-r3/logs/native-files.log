@@ -1,0 +1,29 @@
+{"event":"native-file-panel-targets","pickerMode":"native-dialogs-external-operator","input":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/original.xlsx","save":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/filtered.xlsx","pid":2880}
+selected the current page in the real table UI and durably set every record status
+cleared the same frozen selection status and verified status facts through GET
+exported the applied filter with one selected data column and verified the XLSX independently with openpyxl
+a repeated save target was rejected instead of overwriting the first export
+{"event":"native-file-panel-targets","pickerMode":"native-dialogs-external-operator","input":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/replacement.xlsx","save":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/filtered.xlsx","pid":2880}
+replaced through explicit existing-field mapping and impact review; generation advanced, statuses reset, the old generation/key returned 410, and the source workbook stayed byte-identical
+a fresh Electron and sidecar instance returned the durable replacement and export-era table facts
+{"event":"native-file-panel-targets","pickerMode":"native-dialogs-external-operator","input":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/large-10000.xlsx","save":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm2-detail-8Bu0TV/filtered.xlsx","pid":4236}
+imported an actual 10000-row workbook through the directory UI in 152125 ms; rendered 50 rows per page and changed the first row on next-page navigation in 174 ms
+{
+  "evidence": "./docs/migration/pm2-detail-qa/run-cqRTZI",
+  "result": "passed",
+  "checkedAt": "2026-09-13T20:15:29.789Z",
+  "pickerMode": "native-dialogs-external-operator",
+  "scope": "PM2 detail flows; original system open/save dialogs retained for external operator interaction, renderer UI, IPC proof, HTTP, SQLite and workbook I/O real",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export",
+    "replaced through explicit existing-field mapping and impact review; generation advanced, statuses reset, the old generation/key returned 410, and the source workbook stayed byte-identical",
+    "a fresh Electron and sidecar instance returned the durable replacement and export-era table facts",
+    "imported an actual 10000-row workbook through the directory UI in 152125 ms; rendered 50 rows per page and changed the first row on next-page navigation in 174 ms"
+  ],
+  "excluded": [
+    "user-performed manual acceptance; native dialogs operated separately by the coordinator"
+  ]
+}

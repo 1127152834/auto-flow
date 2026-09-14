@@ -13,6 +13,9 @@ dependencies = [
   "httpx[socks]>=0.28,<1",
   "keyring>=25,<26",
   "tzdata>=2026.3",
+  "openpyxl==3.1.5",
+  "defusedxml==0.7.1",
+  "regex==2026.9.10",
 ]
 
 [build-system]
@@ -33,6 +36,9 @@ dev = [
   "ruff",
   "mypy",
   "types-setuptools",
+  "types-openpyxl>=3.1.5.20260827",
+  "types-defusedxml>=0.7.0.20260504",
+  "types-regex>=2026.9.10.20260911",
 ]
 build = [
   "pyinstaller",

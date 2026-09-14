@@ -24,6 +24,12 @@ function Fixture({ closeDisabled = false }: { closeDisabled?: boolean }) {
 }
 
 describe('Modal', () => {
+  it('applies an optional content class without changing the default modal', () => {
+    const view=render(<Modal open onOpenChange={()=>undefined} title="默认弹窗">内容</Modal>)
+    expect(screen.getByRole('dialog',{name:'默认弹窗'})).not.toHaveClass('max-w-[32.5rem]')
+    view.rerender(<Modal open onOpenChange={()=>undefined} title="定制弹窗" className="max-w-[32.5rem]">内容</Modal>)
+    expect(screen.getByRole('dialog',{name:'定制弹窗'})).toHaveClass('max-w-[32.5rem]')
+  })
   it.each(['Escape', 'overlay', 'close button'] as const)('closes through %s and returns focus', async (method) => {
     const user = userEvent.setup()
     function CloseFixture() {
@@ -105,4 +111,11 @@ describe('Modal', () => {
     await user.keyboard('{Escape}')
     await waitFor(() => expect(second).toHaveFocus())
   })
+})
+
+
+it('names a rich-title content region from its accessible title rather than object serialization',()=>{
+ render(<Modal open onOpenChange={()=>undefined} title={<span>删除记录</span>}>真实影响</Modal>)
+ expect(screen.getByRole('region',{name:'删除记录'})).toHaveTextContent('真实影响')
+ expect(screen.queryByRole('region',{name:'[object Object]内容'})).not.toBeInTheDocument()
 })

@@ -1,0 +1,111 @@
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
+import { parseAppLocation, projectHash, useGuardedHashNavigation } from './navigation'
+
+beforeEach(() => { window.history.replaceState(null, '', '#/projects') })
+afterEach(cleanup)
+
+it('parses project context and rejects malformed or unsupported project addresses', () => {
+  const id = '00000000-0000-0000-0000-000000000001'
+  expect(parseAppLocation(projectHash({ projectId: id, tab: 'data' }))).toMatchObject({ section: 'projects', project: { projectId: id, tab: 'data' } })
+  expect(parseAppLocation('#/projects')).toMatchObject({ section: 'projects', project: { tab: 'overview' } })
+  expect(parseAppLocation(`#/projects/${id}/bogus`).error).toBeTruthy()
+  expect(parseAppLocation('#/projects/not-an-id/overview').error).toBeTruthy()
+  expect(parseAppLocation('#/profiles').section).toBe('profiles')
+})
+
+it('keeps the route and URL when a global navigation is declined', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  result.current.registerLeaveGuard(async () => false)
+  await act(() => result.current.navigate('#/settings'))
+  expect(result.current.hash).toBe('#/projects')
+  expect(window.location.hash).toBe('#/projects')
+})
+
+it('guards back/forward and preserves the forward entry when back is cancelled', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  await act(() => result.current.navigate('#/models'))
+  const guard = vi.fn(async () => false)
+  result.current.registerLeaveGuard(guard)
+  act(() => window.history.back())
+  await waitFor(() => expect(guard).toHaveBeenCalledOnce())
+  await waitFor(() => expect(window.location.hash).toBe('#/models'))
+  expect(result.current.hash).toBe('#/models')
+  guard.mockResolvedValue(true)
+  act(() => window.history.back())
+  await waitFor(() => expect(result.current.hash).toBe('#/projects'))
+  act(() => window.history.forward())
+  await waitFor(() => expect(result.current.hash).toBe('#/models'))
+})
+
+it('guards direct hash navigation and ignores additional requests during confirmation', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  let confirm!: (allowed: boolean) => void
+  result.current.registerLeaveGuard(() => new Promise(resolve => { confirm = resolve }))
+  act(() => { window.location.hash = '#/settings' })
+  await waitFor(() => expect(confirm).toBeDefined())
+  await act(() => result.current.navigate('#/profiles'))
+  await act(async () => { confirm(false) })
+  await waitFor(() => expect(window.location.hash).toBe('#/projects'))
+  expect(result.current.hash).toBe('#/projects')
+})
+
+it('guards a new hash entry with null state after an indexed project visit', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  await act(() => result.current.navigate('#/projects/00000000-0000-0000-0000-000000000001/overview'))
+  const guard = vi.fn(async () => false)
+  result.current.registerLeaveGuard(guard)
+  act(() => { window.location.hash = '#/settings' })
+  await waitFor(() => expect(guard).toHaveBeenCalledOnce())
+  expect(window.location.hash).toContain('/overview')
+  guard.mockResolvedValue(true)
+  await act(() => result.current.navigate('#/models'))
+  expect(result.current.hash).toBe('#/models')
+})
+
+it('restores a Back event received while a global navigation confirmation is pending', async () => {
+  const { result } = renderHook(() => useGuardedHashNavigation())
+  const project = '#/projects/00000000-0000-0000-0000-000000000001/overview'
+  await act(() => result.current.navigate(project))
+  let confirm!: (allowed: boolean) => void
+  result.current.registerLeaveGuard(() => new Promise(resolve => { confirm = resolve }))
+  let navigation!: Promise<void>
+  act(() => { navigation = result.current.navigate('#/settings') })
+  act(() => window.history.back())
+  await new Promise(resolve => setTimeout(resolve, 50))
+  await act(async () => { confirm(false); await navigation })
+  expect(result.current.hash).toBe(project)
+  await waitFor(() => expect(window.location.hash).toBe(project))
+})
+
+it('round trips all five real data table tabs and rejects malformed nested addresses', () => {
+  const projectId = '00000000-0000-4000-8000-000000000001', tableId = '00000000-0000-4000-8000-000000000002'
+  for (const dataTab of ['records', 'fields', 'statuses', 'source', 'settings'] as const) {
+    const route = { projectId, tab: 'data' as const, tableId, dataTab }
+    const hash = `#/projects/${projectId}/data/${tableId}/${dataTab}`
+    expect(projectHash(route)).toBe(hash)
+    expect(parseAppLocation(hash)).toEqual({ section: 'projects', project: route })
+  }
+  for (const hash of [`#/projects/${projectId}/data/no-id/records`, `#/projects/${projectId}/data/${tableId}/bogus`, `#/projects/${projectId}/runs/${tableId}/records`, `#/projects/${projectId}/data/${tableId}`]) expect(parseAppLocation(hash).error).toBeTruthy()
+})
+
+it('round trips create, detail, and edit record routes with typed identities', () => {
+  const projectId='00000000-0000-4000-8000-000000000001',tableId='00000000-0000-4000-8000-000000000002',datasetGeneration='00000000-0000-4000-8000-000000000003'
+  const routes = [
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'create' as const} },
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'detail' as const,datasetGeneration,recordKey:{type:'text' as const,value:'中文/📄?new/edit'}} },
+    { projectId, tab:'data' as const, tableId, dataTab:'records' as const, record:{mode:'edit' as const,datasetGeneration,recordKey:{type:'integer' as const,value:'-1'}} },
+  ]
+  for (const route of routes) expect(parseAppLocation(projectHash(route))).toEqual({section:'projects',project:route})
+  const other={...routes[1],projectId:'00000000-0000-4000-8000-000000000009'}
+  expect(parseAppLocation(projectHash(other)).project).toEqual(other)
+})
+
+it.each([
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/not-a-generation/text/MQ',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/00000000-0000-4000-8000-000000000003/integer/MDAx',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/00000000-0000-4000-8000-000000000003/text/MQ==',
+  '#/projects/00000000-0000-4000-8000-000000000001/data/00000000-0000-4000-8000-000000000002/records/new/edit',
+])('rejects malformed record address %s', hash => {
+  expect(parseAppLocation(hash).error).toBeTruthy()
+})

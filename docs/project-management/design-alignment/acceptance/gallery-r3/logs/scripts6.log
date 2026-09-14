@@ -1,0 +1,45 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ history output guard resolves symlinks before any nested directory is created (21.584125ms)
+✔ containment handles Windows separators and sibling prefixes (0.3755ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (24.80775ms)
+✔ R2 wrapper reuses the exported R1 harness (5.762625ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (3.752291ms)
+✔ R3 runner exposes automatic and retained manual modes (0.870792ms)
+✔ R3 evidence matrix names every required real interaction (0.12225ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (8.710583ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (2.026667ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.579875ms)
+✔ browser management smoke creates the platform kernel layout (0.171833ms)
+✔ profile test browser smoke parses kernel and sidecar paths (2.247583ms)
+✔ profile test browser smoke validates a public kernel directory (14.899666ms)
+✔ profile test browser smoke finds a session below the manager root (2.643ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (62.132792ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (48.256084ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (48.837833ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (48.520708ms)
+✔ packaged smoke cannot silently select external health mode (1.371167ms)
+✔ cleanup rejects after the final deadline if the child never exits (13.571708ms)
+✔ cleanup observes close without requiring exit (0.522542ms)
+✔ cleanup rejects a child process error (0.407208ms)
+✔ required path exists: apps/desktop/package.json (0.526834ms)
+✔ required path exists: apps/backend/pyproject.toml (0.35225ms)
+✔ root scripts expose the foundation checks (0.235709ms)
+✔ checks sources without inventing application or visual acceptance (21.407333ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (3.922291ms)
+✔ does not allow a passed page without real evidence or missing required states (3.809166ms)
+✔ rejects duplicate source and page identities and evidence traversal (3.387083ms)
+✔ requires actual evidence files instead of an existing directory or blank path (3.672625ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (3.37775ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.802875ms)
+✔ a green machine report cannot substitute for real application evidence (0.298125ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 286.301209

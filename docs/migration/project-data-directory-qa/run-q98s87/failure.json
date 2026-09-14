@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI creates a field and confirms a real field mutation impact before editing",
+    "UI creates and edits a business status without changing any record status"
+  ],
+  "error": "timed out waiting for 新建记录: false",
+  "checkedAt": "2026-09-13T04:21:26.894Z"
+}

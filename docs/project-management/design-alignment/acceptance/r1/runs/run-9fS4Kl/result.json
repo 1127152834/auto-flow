@@ -1,0 +1,402 @@
+{
+  "result": "manual-session-ended",
+  "checkedAt": "2026-09-13T13:47:16.038Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "manual-tool",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "25e7d330f4d051c9732b9334a22f9591ccf4fdaa",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/project-data/components/RecordQueryToolbar.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/components/ScalarValueEditor.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDirectoryPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx",
+      "apps/desktop/src/renderer/shared/components/Toaster.tsx",
+      "docs/superpowers/plans/2026-09-13-project-management-visual-remediation.md",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-pm2-native-picker.mjs"
+    ],
+    "scriptSha256": "ef92f25f9837c048b39cc26f5e3eb117d6b68fe52007c0b67f6c75268e063d01",
+    "desktopBuildSha256": "76c8ec8d00f9d3f0dd289b08bf0bf91746d795a41ebef3b3dae895e0dcf7cf65"
+  },
+  "checks": [
+    "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+    "实际顶部浏览器/代理/模型/设置/总览入口及独立Studio窗口回归（仅入口，不宣称资源完整操作通过）"
+  ],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "项目",
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "manual-1789307231960",
+      "file": "manual-1789307231960.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/projects/ccf001ae-e7a2-49c7-9f54-6a63db881bb8/data/10d1a9eb-7618-4590-95a6-3a735f3c2a6a/records",
+      "viewport": {
+        "width": 720,
+        "height": 496
+      },
+      "dpr": 4,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "分页资料库",
+          "x": 98,
+          "y": 259,
+          "w": 120,
+          "h": 32
+        },
+        {
+          "tag": "THEAD",
+          "label": null,
+          "text": "记录身份标题业务状态操作",
+          "x": 25,
+          "y": 531,
+          "w": 658,
+          "h": 44
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "entry-profiles",
+      "file": "entry-profiles.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/profiles",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 5
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "浏览器配置",
+          "x": 32,
+          "y": 98,
+          "w": 392,
+          "h": 32
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "entry-proxies",
+      "file": "entry-proxies.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/proxies",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "代理管理",
+          "x": 32,
+          "y": 98,
+          "w": 1364,
+          "h": 32
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "entry-models",
+      "file": "entry-models.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/models",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 4
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "模型管理",
+          "x": 32,
+          "y": 106,
+          "w": 336,
+          "h": 36
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "entry-settings",
+      "file": "entry-settings.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/settings",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "设置",
+          "x": 189,
+          "y": 102,
+          "w": 1050,
+          "h": 36
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "entry-dashboard",
+      "file": "entry-dashboard.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/dashboard",
+      "viewport": {
+        "width": 1440,
+        "height": 993
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        993
+      ],
+      "viewportMode": "native",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "tag": "H1",
+          "label": null,
+          "text": "总览",
+          "x": 124,
+          "y": 106,
+          "w": 1180,
+          "h": 36
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "浏览器配置0个全局配置模板",
+          "x": 124,
+          "y": 312,
+          "w": 382.6640625,
+          "h": 186
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "已启用代理0个代理出口已启用",
+          "x": 522.6640625,
+          "y": 312,
+          "w": 382.6640625,
+          "h": 186
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "代理组0个本地代理组",
+          "x": 921.328125,
+          "y": 312,
+          "w": 382.6640625,
+          "h": 186
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "已安装内核0个浏览器内核",
+          "x": 124,
+          "y": 514,
+          "w": 382.6640625,
+          "h": 186
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "模型供应商0个供应商",
+          "x": 522.6640625,
+          "y": 514,
+          "w": 382.6640625,
+          "h": 186
+        },
+        {
+          "tag": "ARTICLE",
+          "label": null,
+          "text": "模型0个已配置模型",
+          "x": 921.328125,
+          "y": 514,
+          "w": 382.6640625,
+          "h": 186
+        }
+      ],
+      "checks": [
+        "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-mF9uYc",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

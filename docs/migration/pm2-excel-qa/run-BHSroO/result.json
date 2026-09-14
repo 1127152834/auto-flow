@@ -1,0 +1,18 @@
+{
+  "result": "passed",
+  "scope": "PM2 directory create-from-Excel only; system file panel result injected, all renderer UI, IPC registration/proof, HTTP, workbook reads and SQLite writes were real",
+  "checkedAt": "2026-09-13T03:22:13.125Z",
+  "checks": [
+    "global overview, browser, proxy, model and settings entries opened and returned to the project directory without mutating resources",
+    "Escape closed the new Excel wizard and restored focus to its directory entry",
+    "directory and import wizard stayed within the viewport at 200% zoom",
+    "first Excel table used injected system picker result, real IPC/file inspection/HTTP import, and persisted two records",
+    "directory reopened the same real workflow for a second independent Excel import",
+    "a fresh Electron and sidecar process retained both imported tables and their persisted API facts"
+  ],
+  "excluded": [
+    "native picker manual interaction",
+    "existing-table replacement",
+    "detail-page editing"
+  ]
+}

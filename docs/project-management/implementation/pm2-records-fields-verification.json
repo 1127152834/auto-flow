@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-09-12T22:38:25.457326+00:00",
+  "status": "passed-for-record-and-field-command-scope",
+  "milestoneStatus": "PM2-inProgress",
+  "codeCommits": [
+    "cc86607",
+    "3630e78",
+    "7a2986f"
+  ],
+  "scope": [
+    "typed record create/get/update/explicit status persistence and HTTP",
+    "field update impact preview and same-transaction revalidation with real HTTP",
+    "immutable project operation recovery for those commands"
+  ],
+  "checks": [
+    {
+      "command": "uv run pytest -q",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "passed": 670,
+      "warnings": 2,
+      "log": "/tmp/autoflow-pm2-records-fields-backend-final.log",
+      "scopeNote": "Full suite before final records type-annotation delta; delta and actual HTTP rechecked below."
+    },
+    {
+      "command": "uv run pytest tests/integration/test_project_data_records.py tests/integration/test_project_data_field_changes.py tests/contract/test_project_data_records.py tests/contract/test_project_data_field_changes.py -q",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "passed": 33,
+      "warnings": 2,
+      "scopeNote": "After final records type annotations."
+    },
+    {
+      "command": "uv run ruff check src tests",
+      "cwd": "apps/backend",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run mypy src",
+      "cwd": "apps/backend",
+      "exitCode": 0,
+      "sourceFiles": 163
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test",
+      "exitCode": 0,
+      "passed": 461,
+      "files": 76,
+      "log": "/tmp/autoflow-pm2-records-fields-frontend-final.log"
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Existing Zod PURE annotations stripped by Rollup"
+      ]
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "passed": 3
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "reviews": {
+    "recordCore": "specification-and-engineering-approved; final type delta independently approved",
+    "fieldCore": "specification-and-engineering-approved",
+    "recordHttp": "specification-and-engineering-approved",
+    "fieldHttp": "specification-and-engineering-approved",
+    "record": "docs/project-management/implementation/pm2-review-foundation.md"
+  },
+  "actualApp": {
+    "pm2DataAcceptance": "not-executed",
+    "note": "Prior foundation QA covers PM1 regression only; no new PM2 UI acceptance claimed."
+  },
+  "notVerified": [
+    "data list filtering and pagination",
+    "record deletion and fixed-target status batches",
+    "five-tab data pages",
+    "actual Excel IPC/import/export",
+    "Google Sheets live resources",
+    "core execution and End preservation",
+    "Windows runtime",
+    "macOS x64",
+    "release package"
+  ],
+  "next": [
+    "server record query",
+    "status and field domain editors",
+    "record deletion and status batches",
+    "controlled file IPC and atomic import/export",
+    "full data pages and real Electron acceptance"
+  ],
+  "followUp": {
+    "commits": [
+      "c5e40e4",
+      "beb6a3b"
+    ],
+    "recordSnapshotIssue": "Independent later review identified missing/null conflation not covered in earlier suite; fixed with 4 RED/GREEN cases, historical Operations preserved.",
+    "recordTargetedTests": 21,
+    "catalogClientTests": 17,
+    "catalogAndTableClientTests": 25,
+    "reviews": "Both specification and engineering approved independently.",
+    "scopeNote": "Queries and status UI remain uncommitted work in progress and are excluded from this report."
+  }
+}

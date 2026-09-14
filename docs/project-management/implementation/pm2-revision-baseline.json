@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-09-13T01:21:21.847979+00:00",
+  "status": "inProgress",
+  "workspaces": [
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "head": "17a0e2c3294e9e202218d92dd3cf3b46cc483b29",
+      "branch": "codex/architecture-baseline",
+      "status": " M .ai/decisions/2026-09-12-model-management-legacy-parity.md\n M .ai/memory/project-context.md\n M docs/automation-studio/PLAN.md\n?? .ai/knowledge/2026-09-12-android-runtime-options.md\n?? .ai/knowledge/2026-09-12-model-management-design-patterns.md\n?? .ai/knowledge/2026-09-13-redroid-ecosystem-research.md\n?? .ai/plans/2026-09-12-ui-refresh-phase-two.md\n?? .ai/sessions/2026-09-12-model-ui-audit.md\n?? .ai/sessions/2026-09-12-ui-refresh-current-review.md\n?? .ai/sessions/2026-09-12-ui-refresh-phase-two-concepts.md\n?? .ai/sessions/2026-09-12-ui-tactile-page-images.md\n?? apps/desktop/src/renderer/domains/automation/\n?? docs/automation-studio/MILESTONES.md\n?? docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md\n?? docs/automation-studio/WEBRPA_ENTITY_INVENTORY.md\n?? docs/migration/model-ui-audit-2026-09-12/\n?? docs/prototype/model-management/redesign-brief.md\n?? docs/prototype/ui-refresh-phase-two/\n?? docs/references/model-management-redesign-2026-09-12/\n?? docs/references/redroid-research-2026-09-13/\n?? docs/superpowers/plans/2026-09-12-ui-refresh-phase-two.md\n",
+      "changedFileSha256": {
+        ".ai/decisions/2026-09-12-model-management-legacy-parity.md": "14612563b852b7a88ff21cf2f631bb7197c4a88b07cc1878ad5f9d59c130d26b",
+        ".ai/memory/project-context.md": "faf7ae43a155abf6aa45c83c226e9e4999e881ad271e1957eac1dc28dc8d8272",
+        "docs/automation-studio/PLAN.md": "72f88719f58f4d1e7c3cff222c33debae40df46c38344b4721a2d032a8f6bdca",
+        ".ai/knowledge/2026-09-12-android-runtime-options.md": "7cb5cf665a880b48d806acf94929ded0efc5d41120a76e2acc77e246039c74ef",
+        ".ai/knowledge/2026-09-12-model-management-design-patterns.md": "a3abf859775389963df3e4806730cde6b731c8acccff9c16f7e57d91c1401ec4",
+        ".ai/knowledge/2026-09-13-redroid-ecosystem-research.md": "80258a42cc40e95f9c66d9fdc89d57c6b26315126d20acd978de944919b2fbfa",
+        ".ai/plans/2026-09-12-ui-refresh-phase-two.md": "284c1a89221c2aa888abe4b221a8f739d984f662e061757aed5d5fd670152541",
+        ".ai/sessions/2026-09-12-model-ui-audit.md": "a9ea9774164cde26a555808e283004a5d160ebe6dcfb6bc845d24a4cc486ef7f",
+        ".ai/sessions/2026-09-12-ui-refresh-current-review.md": "a08b3a614238bb03f819358a88d285eab97459040a555d813ce76f742a75b22e",
+        ".ai/sessions/2026-09-12-ui-refresh-phase-two-concepts.md": "060f74bb2bc619267cc18b1c730df6c9a1400fcf28f25f8560a20d15a2574e67",
+        ".ai/sessions/2026-09-12-ui-tactile-page-images.md": "8c5a06e19d6a4eac63d44f36b7d8a4a826f6b291caeb8ba0360c911ba7a6c515",
+        "docs/automation-studio/MILESTONES.md": "053831b238ea34ccd4c6e8a39c9368c600025d3ab6df46ac378142612f34485e",
+        "docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md": "d303db6b1c7398ff708a17099607d679b083009b7880de3caf5fb5c7c555ff7b",
+        "docs/automation-studio/WEBRPA_ENTITY_INVENTORY.md": "aab6bb939717e685a793ded6a4bee155f762a0410b336f33e80bbfcfebad46ab",
+        "docs/prototype/model-management/redesign-brief.md": "532f43f4eeda81b5e701d76a3702bbf39a849f75c31e5f269dbef7c385a90917",
+        "docs/superpowers/plans/2026-09-12-ui-refresh-phase-two.md": "fccb2dbff64e91339aed1b9dc5173e0d95edbae62ed7e07a4376972af7badca7"
+      }
+    },
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation",
+      "head": "8749739b8e73e550c80979a4d0c66373db6f1426",
+      "branch": "codex/project-management-implementation",
+      "status": " M apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx\n M apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx\n M scripts/smoke-project-data.mjs\n?? apps/backend/src/autoflow/application/project_data/status_batches.py\n?? apps/backend/src/autoflow/domain/project_data/status_batches.py\n?? apps/backend/src/autoflow/infrastructure/database/project_data_status_batch_models.py\n?? apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx\n?? apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts\n?? docs/superpowers/plans/2026-09-13-project-data-bulk-status.md\n",
+      "changedFileSha256": {
+        "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx": "0c44df9575a4046e728bf5e0e39ebb8aa59a02a90ac84aa15b1a125451db7766",
+        "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx": "6b5c10aa52d82636ad02fe4784c53f3dc0b4a998a21ba4646de991cc0f38bb1a",
+        "scripts/smoke-project-data.mjs": "61391bc6622b3c84170ede242ae47a0b1feb24b1e9e5fea712f9aa4dff354452",
+        "apps/backend/src/autoflow/application/project_data/status_batches.py": "8df886a1fba46571bb576c41fedca35aa0b7186807636a8e8faa20e9d04d3f35",
+        "apps/backend/src/autoflow/domain/project_data/status_batches.py": "8335b59abcebc9e2091e1c0205e62b3d12c9e36ca85b8375fdb9a72341e66300",
+        "apps/backend/src/autoflow/infrastructure/database/project_data_status_batch_models.py": "000f17e79b42985ba69cf2207be416b0e04cf7f9f9821e6251015a43ccb1716c",
+        "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx": "8700b76763c8da3fdaee1f3b5fd66f4cc3128e9ad5a8a82b710f00401b62797f",
+        "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts": "d64314a569f42762316b1eb03678bd8ee72f1f337de7abb7808920873d0976be",
+        "docs/superpowers/plans/2026-09-13-project-data-bulk-status.md": "bd3f4b27f5fab067db5282404575921dc2a7ca99d0371c9add7591b6275b92f0"
+      }
+    },
+    {
+      "path": "/Users/zhangtiancheng/Documents/projects/autoflow-ui-controls",
+      "exists": false
+    }
+  ]
+}

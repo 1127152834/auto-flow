@@ -1,0 +1,31 @@
+{
+  "verifiedAt": "2026-09-13T07:38:44.164722+00:00",
+  "implementationBaseline": "88efe0740e7cb9e83ad2a2455241ffab50465853",
+  "scope": "Design source coverage, file hashes, references and JSON structure only",
+  "command": "python3 docs/project-management/design-alignment/verify-alignment.py",
+  "result": "passed",
+  "checks": {
+    "uniqueManifestIds": 112,
+    "inspectedIds": 93,
+    "hashesVerified": 112,
+    "localMarkdownLinks": 16,
+    "missingArtboardDefinitions": 6
+  },
+  "inspectedByModule": {
+    "00-projects": 1,
+    "01-overview": 9,
+    "02-automation": 11,
+    "03-runs": 21,
+    "04-statistics": 11,
+    "05-data": 21,
+    "06-environments": 18,
+    "07-shared": 1
+  },
+  "limits": [
+    "Source image inspection is documented manual observation, not inferred by this validator.",
+    "No new high-fidelity artboards generated.",
+    "No business implementation, automated product tests or new Electron acceptance run.",
+    "Windows, other architectures and packaged application acceptance not executed.",
+    "Previous audit and PM0/PM1/PM2 reports are historical and not overwritten."
+  ]
+}

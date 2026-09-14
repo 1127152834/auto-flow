@@ -1,0 +1,46 @@
+{
+  "status": "structure-verified-stage-visual-not-accepted",
+  "checkedAt": "2026-09-13T15:51:48.143Z",
+  "evidenceRun": "docs/migration/project-data-directory-qa/run-AatYpG",
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI creates a field and confirms a real field mutation impact before editing",
+    "UI creates and edits a business status without changing any record status",
+    "UI creates and edits a record with real conflict reload, then explicitly changes its status",
+    "UI blocks an in-use status deletion and deletes an unreferenced status through its real operation",
+    "UI deletes the selected record after impact confirmation and retains the other record",
+    "lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion",
+    "five actual tabs display persisted field, status, source and record facts after UI writes",
+    "settings tab edits the actual table description through the shared form and command recovery",
+    "same-workspace real sidecar restart preserves draft, Escape protection and subsequent save",
+    "native 200 percent zoom with custom dropdown does not widen the application",
+    "full Electron restart retains table edits, business records and explicit status",
+    "two real workspace switches isolate data tables and restore original records"
+  ],
+  "provenance": {
+    "gitHead": "ae1e5a2e68143da22476b51b36cc51018ac34725",
+    "dirtyFiles": [
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/RecordEditPage.tsx",
+      "apps/desktop/src/renderer/domains/project-data/pages/RecordPages.test.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectOverviewPage.tsx",
+      "apps/desktop/src/renderer/domains/projects/pages/ProjectsWorkspace.tsx",
+      "docs/superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+      "docs/superpowers/specs/2026-09-13-project-management-gallery-fidelity.md",
+      "scripts/qa-project-alignment-r1.mjs",
+      "scripts/smoke-project-data.mjs"
+    ],
+    "scriptSha256": "3efb7be14476e517e8ecfa0d23c4fca76d341a5f8e013ad8d252233156a38552",
+    "buildSha256": "4ae89d7f5563d0d13b6831669e4f0daad1331e47d6f73062295301e1b4ae9169"
+  },
+  "platform": "darwin",
+  "arch": "arm64",
+  "userManual": "not-executed",
+  "milestones": {
+    "R1": "not-passed",
+    "R2": "not-passed",
+    "R3": "not-passed"
+  }
+}

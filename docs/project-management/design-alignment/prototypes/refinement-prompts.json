@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-13",
+  "mode": "built-in imagegen edits; earlier generated candidates are retained in CODEX_HOME/generated_images, only final images are committed",
+  "edits": [
+    {
+      "asset": "r1",
+      "pass": "b0_edit_",
+      "prompt": "Edit this exact prototype sheet with precise corrections. Keep sheet exactly same except: remove BOTH margin calendar dates 2025.09.13. In R1-A add clear separate button 查看全部项目 next to 最近打开 header, linking to the 全部项目 catalog pictured below; lower catalog may remain as an annotated separate state. R1-C add a third floating focused popover 排序 with field 发布日期, direction 降序, 取消 and 应用, adjacent to filter/columns. Add 批量状态 to records toolbar, disabled while no rows selected. Preserve topnav, no sidebar, legibility. No extra features."
+    },
+    {
+      "asset": "r1",
+      "pass": "b0_edit2_",
+      "prompt": "请精准编辑这张AutoFlow原型图，不要重新设计整张图。\n只修正底部R1-C记录查询工具：在顶部单行工具栏内明确显示按钮“筛选”“排序”“显示列”“批量状态”“导出”“新增记录”；目前误写的灰色“显示状态”改成可用“显示列”，旁边增加灰色禁用“批量状态”。搜索框可略缩短，为两个按钮腾出空间，所有按钮不能重叠。右边三个弹出面板筛选/排序/显示列和取消/应用保持原样。左上和右上页面保持不变。移除右下角错误的R3页脚编号，其他不改变。"
+    },
+    {
+      "asset": "r2_pages",
+      "pass": "b0_edit_",
+      "prompt": "Edit this exact AutoFlow prototype sheet only to correct semantic defects. Preserve panel arrangement, palette, all top navigation, page titles and typography. In R2-A detail: display business fields 标题/文章链接/发布日期/摘要 as clearly READ-ONLY text values instead of editable input boxes; retain copy/open link icons; retain record标识001 文本·只读. Remove invented timestamp row 最后查看 completely. In R2-B create: business state card must show a static muted badge 未设置, NOT dropdown, no chevron, explanatory 新记录不自动设置业务状态. In R2-C edit: business state card must show static badge 未设置 NOT dropdown, add 去详情设置 link; no implicit combined content+status save. Edit breadcrumb last part to 编辑记录 and back link 返回记录详情. In both R2-B and R2-C remove required red asterisks for 文章链接 and 发布日期 (optional). Keep mandatory 标题 and create record标识. Do not invent fields or people or functions. All other content remain same. No dates in sheet margin."
+    },
+    {
+      "asset": "r2_pages",
+      "pass": "b0_edit2_",
+      "prompt": "请精准编辑这张AutoFlow原型图，不要重新设计整张图。\n只修改左边R2-A记录详情中的“业务状态”卡片：把静态“未设置”小标签改为标准下拉选择框，值“未设置”，右边有向下箭头；选择框下方增加清楚的小文字“可选：待核对 / 待整理 / 已整理”，保留“保存状态”按钮，并增加一个次按钮“清空状态”。这是独立显式人工业务状态操作。中间R2-B新增和右边R2-C编辑的业务状态仍然必须是静态未设置标签，绝对不能改成下拉。其他布局、导航、文字保持不变。"
+    },
+    {
+      "asset": "r2_states",
+      "pass": "b0_edit_",
+      "prompt": "Edit this exact prototype sheet with precise corrections. Keep six-panel composition and visual style. Remove all invented 来源 form rows, 修改人/更新人 rows and person 张三. Only business fields 标题 文章链接 发布日期 摘要. Business status in edit panels is STATIC 未设置 badge, not selectable. In R2-G remove the green 保存成功 panel entirely: this panel shows ONLY unresolved save, so never show simultaneous success. Replace it with neutral note 核验完成后才显示保存结果. Replace its 取消 button with 离开视图 and note 离开不会取消已接受操作. In R2-I replace 已完成 with user-defined 已整理, no automatic run-state implication. Keep R2-H delete dialog and disabled deleting inset distinct. All other content preserve."
+    },
+    {
+      "asset": "r2_states",
+      "pass": "b0_edit3_",
+      "prompt": "仅修改右上R2-F编辑冲突：底部按钮改为“保留我的输入”和“采用最新内容”，提示改为“采用最新内容前可复制我的输入；重新编辑后再保存。不自动覆盖，不自动合并。”两份内容卡片都保留。右下角R2-I成功Toast精确文案改为“业务状态已清空”。其余所有面板布局和按钮保留不变。"
+    },
+    {
+      "asset": "r3_schema",
+      "pass": "b0_edit_",
+      "prompt": "Edit this exact prototype sheet with precise corrections. Keep four-panel composition. R3-A and background R3-B REMOVE both mini data table resource cards near top, replace oversized project header with compact breadcrumb 内容采集项目 / 资料库 and heading 资料库. Keep horizontal tabs and field table. No table resource sidebar/cards. Table show all existing fields including 发布日期 published_at 日期 and 摘要 summary 文本 and new分类; no selection checkboxes since no batch field action. R3-B key explanatory hint replace only with 保存后保留字段身份 (do not impose invented lowercase-only validation). R3-C 自动化引用 status must be 未接通 with description 此项能力尚未接入，不报告引用数量; NOT red error suggesting existing misconfigured automations. R3-D budget error remove suggestion 分批处理, instead 调整本次字段草稿后重新检查; no automatic splitting. Preserve limits1000 and4MiB, applydraft/unifiedsave semantics. Do not add features."
+    },
+    {
+      "asset": "r3_schema",
+      "pass": "b0_edit2_",
+      "prompt": "请精准编辑这张AutoFlow原型图，不要重新设计整张图。\n只修正以下三处，其他像素布局内容尽量保留：1. 左上R3-A字段表格底部必须增加整页统一保存栏，文字“2项未保存的修改”，按钮“重置草稿”“保存字段”，这是最关键内容，不要省略；可以压缩一点表格行高腾出空间。2. 摘要summary这一行的蓝色“新增”改成绿色“已保存”，本例只有标题已修改和分类新增两项未保存。3. 右上抽屉category输入框下面那行“仅支持小写字母...”删除，改成“保存后保留字段身份”。保留抽屉按钮“取消”“应用到草稿”、左下确认保存字段和1000条/4MiB上限。禁止删减其他主操作。"
+    },
+    {
+      "asset": "r3_schema",
+      "pass": "b0_edit3_",
+      "prompt": "仅修改左下角R3-C的自动化引用这一行：删除原来的状态和说明文字，重新清楚写“未接通”，说明“此能力尚未接入，不报告引用数量”。不要写未处理、未绑定、已有引用。另将确认弹窗的第一条改成“标题显示名：标题 → 资料标题”，左上R3-A已修改行显示名称改成“资料标题”。其他所有面板、统一保存栏、默认值及限额完全保留。"
+    },
+    {
+      "asset": "r3_schema",
+      "pass": "b0_edit4_",
+      "prompt": "精准修改两个小区域，不调整其他画面：左下R3-C确认弹窗，删除现有“自动化引用”整行所有标签和小字，腾出的整行重新用清晰大字写一行“自动化引用：尚未接入”，不要任何小号辅助文字或状态徽章，不显示引用数量。左上R3-A表格里url文章链接行绿色标签改为“已保存”，只允许资料标题行为已修改，分类行为新增，共2项。其余保存栏、抽屉、字段表、所有按钮、三条异常状态必须不改变。"
+    },
+    {
+      "asset": "r3_files",
+      "pass": "b0_edit_",
+      "prompt": "Redesign this AutoFlow file/batch state sheet using same warm clay UI. Critical: previous image omitted batch operations. EXACTLY SIX panels, in 3 columns x2 rows. Max resolution, readable Chinese. Header B0 / R3 · 文件与批量状态. TOP app navigation only, no sidebars. Do not split import into three panels. Panel E upper left: R3-E 导入Excel, ONE wizard with tiny stepper 文件→工作表→映射→校验→提交→结果; file资料样例.xlsx 选择文件; worksheet资料库 dropdown; two mapping rows 编号→记录标识 文本, 标题→标题 文本; green 12有效记录，忽略2空行; 取消 / 导入为新表. Panel F upper center: R3-F 重新导入: 资料库 12旧记录→15新记录; warning 新记录业务状态全部未设置；旧引用不自动关联到新数据; checkbox 我已确认替换影响; 返回修改/确认重新导入. Panel G upper right: R3-G 导出新文件: radio 整张表 / 当前筛选结果; checkboxes 标题 文章链接 发布日期; toggle 附带业务状态; 资料库-筛选.xlsx 选择保存位置; 取消/导出新文件; 不覆盖来源文件或已有目标. Panel H lower left: R3-H 文件操作状态, THREE clearly labeled INDEPENDENT alternative state cards (not concurrent): 状态1 导入中 62% [关闭进度视图] 现有数据仍可用; 状态2 导出结果待核验 [查询原操作]; 状态3 导出成功 12条记录 资料库-筛选.xlsx. Panel I lower center: R3-I 批量设置业务状态: 已选择350条记录, status 已整理 dropdown; 取消/确认设置. distinct next-state inset 处理中 200/350 progress bar; 停止后续处理 button, 已提交结果不会回滚. Panel J lower right: R3-J 批量部分完成: orange banner 部分完成; THREE LARGE NUMBERS 已修改200 /冲突100 /未执行50; conflict row 数据已更新 [查看记录]; 查看处理明细 / 关闭; sentence 重启后查询原操作，不重复处理已提交部分. Footer: 提交前可取消；接受后关闭只是离开视图；来源文件保持不变. All SIX panels mandatory. No extra standalone mapping or validation panels. DO NOT omit I or J. All sampledata fictional."
+    },
+    {
+      "asset": "r3_files",
+      "pass": "b0_edit3_",
+      "prompt": "只修改左上和中上面板：R3-E字段映射表增加第三行“地址 → 文章链接 / 文本”，压缩一点上方文件块，保留校验结果和底部取消/导入按钮。R3-F中下方重复的第一条提示改成“确认后发布新一批数据，确认前当前数据不变”。上方提示“新记录业务状态全部未设置；旧记录引用不会自动关联到新数据”必须保留。其他四个面板特别I批量状态和J部分完成必须原样保留，不能删除或替换。"
+    }
+  ]
+}

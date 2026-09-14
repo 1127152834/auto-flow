@@ -1,0 +1,23 @@
+{
+  "result": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "url": "http://127.0.0.1:54067/autoflow-link-cbae2957-cd3a-4f4d-a38a-86e0a99b1276",
+  "requests": [
+    {
+      "url": "/autoflow-link-cbae2957-cd3a-4f4d-a38a-86e0a99b1276",
+      "at": "2026-09-13T18:30:45.974Z"
+    },
+    {
+      "url": "/favicon.ico",
+      "at": "2026-09-13T18:30:46.197Z"
+    }
+  ],
+  "setup": "E2 real HTTP fixture/direct route",
+  "action": "native CUA clicks actual record open-link control",
+  "https": "native browser destination recorded separately in browser evidence",
+  "sourceHead": "8ccf9690ad78e1d031754bf7bab6540e21a759d5",
+  "buildSha256": "9bcbe64b417a6e8b719197b3b8e6a68ab8a14b2d09fdee376527ea53b4684ec8",
+  "scriptSha256": "9c5192763082ae0fc4c1736fbe7350e5d152c90a449a0fc103d4628752f2bc61",
+  "at": "2026-09-13T18:31:22.165Z"
+}

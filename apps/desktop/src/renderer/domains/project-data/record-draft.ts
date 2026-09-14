@@ -1,0 +1,93 @@
+import type { components } from '../../shared/api/generated'
+import { parseScalarDraft, scalarDraft, ScalarDraftError, type Scalar, type ScalarDraft, type ScalarDraftControl } from './scalar-draft'
+
+type Field = components['schemas']['DataFieldView']
+type RecordView = components['schemas']['DataRecordView']
+export type RecordDraft = Record<string, ScalarDraft>
+
+export class RecordDraftError extends Error {
+  constructor(readonly fieldId: string, message: string, readonly control: ScalarDraftControl = 'value') { super(message); this.name = 'RecordDraftError' }
+}
+
+export function createRecordDraft(fields: Field[], record?: RecordView, submittedValues?: components['schemas']['DataCellWrite'][]): RecordDraft {
+  const cells = new Map(record?.values.map(cell => [cell.fieldId, cell]))
+  const submitted = new Map(submittedValues?.map(value => [value.fieldId, value.value]))
+  return Object.fromEntries(fields.map(field => {
+    const fieldId=field.ref.fieldId,cell = cells.get(fieldId),mayOverride=!field.formula&&field.writable&&cell?.readable!==false&&submitted.has(fieldId)
+    return [fieldId, scalarDraft(mayOverride?submitted.get(fieldId):cell?.readable ? cell.value : undefined)]
+  }))
+}
+
+function checkValue(field: Field, value: Scalar | undefined): void {
+  if (value === undefined || value === null) return
+  const rules = field.validation
+  if (typeof value === 'string') {
+    const length = [...value].length
+    if (typeof rules.minLength === 'number' && length < rules.minLength) throw new Error(`文本长度不能少于 ${rules.minLength} 个字符`)
+    if (typeof rules.maxLength === 'number' && length > rules.maxLength) throw new Error(`文本长度不能超过 ${rules.maxLength} 个字符`)
+    // Python regex semantics are validated by the server, never reinterpreted in JS.
+  }
+  if (typeof value === 'number') {
+    if (typeof rules.minimum === 'number' && value < rules.minimum) throw new Error(`不能小于最小值 ${rules.minimum}`)
+    if (typeof rules.maximum === 'number' && value > rules.maximum) throw new Error(`不能超过最大值 ${rules.maximum}`)
+  }
+}
+
+const sameValue = (a: Scalar | undefined, b: Scalar | undefined): boolean => {
+  if (a === b) return true
+  return Boolean(a && b && typeof a === 'object' && typeof b === 'object' && a.kind === b.kind && a.precision === b.precision && a.value === b.value && a.offset === b.offset)
+}
+
+type DraftAnalysis = { values: components['schemas']['DataCellWrite'][]; errors: Record<string,{message:string;control:ScalarDraftControl}> }
+
+function analyzeRecordDraft(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): DraftAnalysis {
+  const cells=new Map(record?.values.map(cell=>[cell.fieldId,cell])),values:components['schemas']['DataCellWrite'][]=[],errors:Record<string,{message:string;control:ScalarDraftControl}>={}
+  for(const field of fields){
+    const fieldId=field.ref.fieldId,cell=cells.get(fieldId)
+    try {
+    if (field.formula || !field.writable || cell?.readable === false || (record && fieldId === identityFieldId)) {
+      if (!record && field.required) throw new RecordDraftError(fieldId, '此必填字段不可填写，当前表结构无法新增记录', 'presence')
+      continue
+    }
+    let value: Scalar | undefined
+    try { value = parseScalarDraft(field.type, drafts[fieldId] ?? scalarDraft(undefined)) } catch (error) {
+      throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效', error instanceof ScalarDraftError ? error.control : 'value')
+    }
+    // A PATCH omission leaves the existing value untouched; only explicit null clears it.
+    if (record && (value === undefined || sameValue(value, cell?.value))) continue
+    if (field.required && (value === undefined || value === null || value === '')) throw new RecordDraftError(fieldId, '请填写必填字段', value === '' ? 'value' : 'presence')
+    try { checkValue(field, value) } catch (error) {
+      throw new RecordDraftError(fieldId, error instanceof Error ? error.message : '字段值无效', 'value')
+    }
+    if (value !== undefined) values.push({ fieldId, value })
+    } catch(error) {
+      if(error instanceof RecordDraftError)errors[fieldId]={message:error.message,control:error.control}
+      else errors[fieldId]={message:error instanceof Error?error.message:'字段值无效',control:'value'}
+    }
+  }
+  return {values,errors}
+}
+
+export function recordValues(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): components['schemas']['DataCellWrite'][] {
+  const analysis=analyzeRecordDraft(fields,drafts,record,identityFieldId)
+  const first=fields.map(field=>field.ref.fieldId).find(fieldId=>analysis.errors[fieldId])
+  if(first){const error=analysis.errors[first];throw new RecordDraftError(first,error.message,error.control)}
+  return analysis.values
+}
+
+export type RecordDraftSummary = { dirtyFields: string[]; invalidFields: string[] }
+
+export function recordDraftErrors(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): Record<string,{message:string;control:ScalarDraftControl}> {
+  return analyzeRecordDraft(fields,drafts,record,identityFieldId).errors
+}
+
+export function recordDraftSummary(fields: Field[], drafts: RecordDraft, record?: RecordView, identityFieldId?: string): RecordDraftSummary {
+  const analysis=analyzeRecordDraft(fields,drafts,record,identityFieldId),baseline=createRecordDraft(fields,record),dirty=new Set(analysis.values.map(value=>value.fieldId))
+  for (const field of fields) {
+    const fieldId=field.ref.fieldId
+    if(analysis.errors[fieldId]){
+      if (JSON.stringify(drafts[fieldId])!==JSON.stringify(baseline[fieldId])&&!field.formula&&field.writable&&!(record&&fieldId===identityFieldId))dirty.add(fieldId)
+    }
+  }
+  return {dirtyFields:fields.map(field=>field.ref.fieldId).filter(fieldId=>dirty.has(fieldId)),invalidFields:fields.map(field=>field.ref.fieldId).filter(fieldId=>analysis.errors[fieldId])}
+}

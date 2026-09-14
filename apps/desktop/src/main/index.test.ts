@@ -47,7 +47,7 @@ beforeEach(async () => {
     app.emit('before-quit', event)
     if (!event.preventDefault.mock.calls.length) for (const window of FakeWindow.instances) if (!window.destroyed) window.close()
   })
-  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
+  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openExternal: vi.fn(async () => {}), openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
   vi.doMock('./settings/controller', () => ({ SettingsController: class {
     constructor(private options: SettingsControllerOptions) {}
     start = async () => {}
@@ -163,4 +163,19 @@ it('keeps Studio alive when the main window closes and permits reuse from its re
   await invoke('autoflow:settings:preferences', replacement, {})
   expect(replacement.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
   expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+})
+it('wires project file selection and denies Studio and subframe callers', async () => {
+  const main = FakeWindow.instances[0]!
+  const studioWindow = await openStudio()
+  expect(handlers.has('autoflow:project-files:choose-excel-input')).toBe(true)
+  expect(handlers.has('autoflow:project-files:choose-xlsx-output')).toBe(true)
+  await expect(invoke('autoflow:project-files:choose-excel-input', studioWindow, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+  await expect(handlers.get('autoflow:project-files:choose-excel-input')!({ ...sender(main), senderFrame: {} }, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+})
+
+it('registers controlled record links for the main frame only', async () => {
+  const main = FakeWindow.instances[0]!
+  expect(await invoke('autoflow:open-external-link', main, 'https://example.com')).toEqual({ ok: true, value: { opened: true } })
+  const studio = await openStudio()
+  expect(await invoke('autoflow:open-external-link', studio, 'https://example.com')).toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
 })

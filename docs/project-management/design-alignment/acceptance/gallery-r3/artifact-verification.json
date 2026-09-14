@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-09-13T20:59:02.091278+00:00",
+  "kind": "artifact-structure-and-provenance",
+  "status": "passed",
+  "stagedJsonParsed": 35,
+  "sourceHashes": 606,
+  "buildHashes": 5,
+  "visualPagesAndStates": 23,
+  "e2eCases": 15,
+  "caseReferences": "all exist",
+  "sourceGalleryFiles": 112,
+  "gitDiffCheck": "passed",
+  "applicationAcceptance": "not inferred from this static check; separate machine-report and visual/state review",
+  "userAcceptance": "not-executed"
+}

@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-data/components/RecordStatusBatchDialog.test.tsx src/renderer/domains/project-data/components/DataOperationStatus.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  2 passed (2)
+      Tests  17 passed (17)
+   Start at  04:41:43
+   Duration  2.50s (transform 168ms, setup 0ms, import 2.58s, tests 765ms, environment 781ms)

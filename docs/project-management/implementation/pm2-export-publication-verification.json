@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-13",
+  "status": "partialPassed",
+  "scope": "XLSX filesystem publication adapter only",
+  "tests": [
+    {
+      "command": "uv run --directory apps/backend pytest tests/unit/test_project_excel_publication.py tests/unit/test_project_excel_adapter.py -q",
+      "passed": 34
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check src/autoflow/infrastructure/filesystem/project_excel.py tests/unit/test_project_excel_publication.py",
+      "status": "passed"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src/autoflow/infrastructure/filesystem/project_excel.py",
+      "status": "passed"
+    }
+  ],
+  "review": {
+    "specification": "passed",
+    "engineering": "passed",
+    "reviewer": "status_batches",
+    "independent_test": "4 publication tests passed"
+  },
+  "verified": [
+    "evidence callback precedes no-overwrite file publication",
+    "failed evidence prevents target publication",
+    "publication response loss can be reconciled read-only",
+    "changed target and symlink are conflicts"
+  ],
+  "notExecuted": [
+    "complete export HTTP/service integration",
+    "real Electron export",
+    "Windows",
+    "packaged app"
+  ],
+  "limitations": [
+    "This is not complete PM2 acceptance.",
+    "Database evidence persistence and Operation reconciliation remain the export service responsibility."
+  ]
+}

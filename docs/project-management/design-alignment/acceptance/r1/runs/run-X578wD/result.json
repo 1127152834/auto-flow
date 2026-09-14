@@ -1,0 +1,33 @@
+{
+  "result": "manual-session-ended",
+  "checkedAt": "2026-09-13T11:02:43.340Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "manual-tool",
+  "checks": [
+    "实际顶部浏览器/代理/模型/设置/总览入口及独立Studio窗口回归（仅入口，不宣称资源完整操作通过）",
+    "生成52个未访问分页项目和120条合成记录（HTTP批量资料，不代替界面创建验收）",
+    "隔离API真实竞争编辑已提交；保留当前表单草稿后点击保存验证冲突",
+    "切换到工具创建的另一工作区",
+    "切换到工具创建的另一工作区"
+  ],
+  "injections": [
+    {
+      "kind": "read",
+      "at": "2026-09-13T11:02:35.031Z",
+      "scope": "仅当前隔离renderer，fetch测试注入"
+    },
+    {
+      "kind": "lost",
+      "at": "2026-09-13T11:02:35.033Z",
+      "scope": "仅当前隔离renderer，fetch测试注入"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-AJtbuU",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

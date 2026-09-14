@@ -1,0 +1,17 @@
+{
+  "action": "native CUA click on real record control 打开链接 文章链接",
+  "observedApp": "Google Chrome",
+  "observedTitle": "AutoFlow 外链验收",
+  "observedUrl": "http://127.0.0.1:54067/autoflow-link-cbae2957-cd3a-4f4d-a38a-86e0a99b1276",
+  "observedHeading": "外部链接已打开",
+  "fixture": "real HTTP API setup; no mock shell.openExternal",
+  "evidenceType": "native accessibility observation; source browser capture is not stored because unrelated private tabs are visible",
+  "https": {
+    "control": "打开链接 HTTPS链接",
+    "observedTitle": "Example Domain",
+    "observedAddress": "example.com/",
+    "observedHeading": "Example Domain",
+    "inputUrl": "https://example.com/",
+    "testTabClosed": true
+  }
+}

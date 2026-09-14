@@ -1,0 +1,41 @@
+{
+  "verifiedAt": "2026-09-13T08:06:41.146510+00:00",
+  "status": "passed-static-plan-checks",
+  "method": "Primary-agent writing-plans self-review; local Python assertions for references, task/file/dependency/source coverage",
+  "command": "python3 docs/project-management/design-alignment/verify-implementation-plan.py",
+  "planFiles": [
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-alignment-implementation.md",
+      "sha256": "2f1ee3e6b7924d2f56dc73ea221a6fd0e0fd951c602f578f139508d418aadedb"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-alignment-r1.md",
+      "sha256": "b1f41d02c0202acd353bb955b4ace64611de6f26dbe12b309f54bd56f928066a"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-alignment-r2.md",
+      "sha256": "c61e72e9ddd8dab38f1af458d95e0a724ac92c16182af6aebb769df72ab9e95c"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-management-alignment-r3.md",
+      "sha256": "769e9092f65a8732294256e272752fe0f3c7e608dcceeaa0a48992945ab81fe3"
+    }
+  ],
+  "checks": {
+    "plans": 4,
+    "implementationTasks": 18,
+    "checkboxSteps": 99,
+    "localLinks": 5,
+    "sourceIdsMapped": 112,
+    "dependencyCycle": false,
+    "unresolvedExistingFileReferences": 0,
+    "placeholderScan": "passed",
+    "alembicReadOnlyHead": "pm02_excel_exports"
+  },
+  "limits": [
+    "No business implementation or product tests executed",
+    "New prototypes not generated or reviewed",
+    "Windows, other architectures and packaging not executed",
+    "Future PM3 plan requires fresh core and migration baseline; G1 is an admission checklist"
+  ]
+}

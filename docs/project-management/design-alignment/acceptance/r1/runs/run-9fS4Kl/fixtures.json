@@ -1,0 +1,67 @@
+{
+  "project": {
+    "projectId": "ccf001ae-e7a2-49c7-9f54-6a63db881bb8",
+    "name": "R1分页001",
+    "description": "工具生成的分页边界资料",
+    "managementRevision": 1,
+    "lifecycleState": "active",
+    "defaultResources": {
+      "profileId": null,
+      "proxy": {
+        "mode": "sourceDefault"
+      },
+      "modelProviderId": null
+    },
+    "createdAt": "2026-09-13T13:46:10.675039Z",
+    "updatedAt": "2026-09-13T13:46:10.675039Z",
+    "lastOpenedAt": null,
+    "availability": {
+      "automations": "notImplemented",
+      "data": "available",
+      "runs": "notImplemented",
+      "environments": "notImplemented",
+      "statistics": "notImplemented",
+      "sync": "notImplemented"
+    }
+  },
+  "table": {
+    "projectId": "ccf001ae-e7a2-49c7-9f54-6a63db881bb8",
+    "tableId": "10d1a9eb-7618-4590-95a6-3a735f3c2a6a",
+    "name": "分页资料库",
+    "description": "120 条合成记录",
+    "sourceKind": "local",
+    "source": {
+      "kind": "local"
+    },
+    "datasetGeneration": "2eb6288b-e7b1-4b26-8a13-d04f4175b350",
+    "tableRevision": 1,
+    "identity": {
+      "mode": "system"
+    },
+    "slotDefinitions": [],
+    "recordCount": 0,
+    "syncSummary": {
+      "status": "notApplicable",
+      "pendingCount": 0,
+      "unknownCount": 0
+    },
+    "createdAt": "2026-09-13T13:46:10.892942Z",
+    "updatedAt": "2026-09-13T13:46:10.892942Z"
+  },
+  "field": {
+    "key": "title",
+    "name": "标题",
+    "type": "string",
+    "required": false,
+    "validation": {},
+    "ref": {
+      "projectId": "ccf001ae-e7a2-49c7-9f54-6a63db881bb8",
+      "tableId": "10d1a9eb-7618-4590-95a6-3a735f3c2a6a",
+      "datasetGeneration": "2eb6288b-e7b1-4b26-8a13-d04f4175b350",
+      "fieldId": "d202c955-0b08-45a7-9b9a-fa1b9b0c57ee"
+    },
+    "writable": true,
+    "formula": false,
+    "fieldRevision": 1
+  }
+}

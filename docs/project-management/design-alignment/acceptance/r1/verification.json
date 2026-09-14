@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-13",
+  "status": "R1-ready-for-user-acceptance",
+  "executionBaseline": "1e79c7b",
+  "validatedCodeCommit": "a13e6498da44f9e544e1ad390c2f17c2ba624c86",
+  "scope": "R1 前端目录/层级/查询/通知；复用 PM2 后端与文件能力，无新业务接口或迁移",
+  "checks": [
+    {
+      "command": "npm test",
+      "result": "passed",
+      "tests": 865,
+      "log": "logs/full-tests.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed",
+      "tests": null,
+      "log": "logs/typecheck.log"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "tests": null,
+      "log": "logs/lint.log"
+    },
+    {
+      "command": "npm run openapi:check",
+      "result": "passed",
+      "tests": null,
+      "log": "logs/openapi.log"
+    },
+    {
+      "command": "npm run test:scripts",
+      "result": "passed",
+      "tests": 22,
+      "log": "logs/scripts.log"
+    },
+    {
+      "command": "npm run test:structure",
+      "result": "passed",
+      "tests": 3,
+      "log": "logs/structure.log"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "tests": null,
+      "log": "logs/build.log"
+    },
+    {
+      "command": "uv run --directory apps/backend pytest tests/contract/test_projects.py tests/unit/test_project_data_query.py",
+      "result": "passed",
+      "tests": 21,
+      "log": "logs/backend.log"
+    }
+  ],
+  "application": {
+    "platform": "macOS arm64",
+    "result": "passed",
+    "r1": "runs/run-tpXDVQ/result.json",
+    "pm2Data": "pm2-data-result.json",
+    "pm2Detail": "pm2-detail-result.json",
+    "otherModuleEntries": "runs/run-X578wD/result.json",
+    "manualToolLifecycle": "runs/run-litxco/result.json"
+  },
+  "performance": {
+    "rows": 10000,
+    "importMilliseconds": 6363,
+    "nextPageMilliseconds": 158,
+    "scope": "单次本机真实Excel样本，不代表平台通用性能"
+  },
+  "boards": {
+    "R1-A": [
+      "runs/run-tpXDVQ/r1-a-recent.png",
+      "runs/run-tpXDVQ/r1-a-all-page2.png"
+    ],
+    "R1-B": [
+      "runs/run-tpXDVQ/r1-b-directory.png"
+    ],
+    "R1-C": [
+      "runs/run-tpXDVQ/r1-c-records.png",
+      "runs/run-tpXDVQ/r1-c-筛选.png",
+      "runs/run-tpXDVQ/r1-c-排序.png",
+      "runs/run-tpXDVQ/r1-c-显示列.png",
+      "runs/run-tpXDVQ/r1-c-筛选-200.png",
+      "runs/run-tpXDVQ/r1-c-排序-200.png",
+      "runs/run-tpXDVQ/r1-c-显示列-200.png"
+    ]
+  },
+  "limitations": [
+    "用户 R1-M01–09 尚未执行",
+    "Windows 未执行",
+    "其他架构 未执行",
+    "打包应用 未执行",
+    "系统文件面板手动选择及表格软件打开未执行；自动文件测试注入面板返回，HTTP/IPC/SQLite/XLSX真实",
+    "其他模块仅本机入口回归；不宣称全部资源操作重新手测",
+    "浏览偏好为sessionStorage会话内隔离；最近访问为后端持久事实",
+    "主项目及旧仓有其他任务改动，本任务只读，不宣称其整个目录无变更"
+  ],
+  "userAcceptance": "pending",
+  "futureMilestones": {
+    "R2": "notStarted",
+    "R3": "notStarted"
+  },
+  "review": "review-resolution.md",
+  "manual": "manual-test.md",
+  "staticVerification": "static-verification.json",
+  "assetsSha256": {
+    "runs/run-tpXDVQ/r1-a-recent.png": "3b2ba2010fb3e18943bf52984eb86591916bad1343122cb857e174bd1762db6d",
+    "runs/run-tpXDVQ/r1-a-all-page2.png": "a39db11a192a8ac0561512c1ba9f7b95cce9eb356dca67cd929063300750fc55",
+    "runs/run-tpXDVQ/r1-b-directory.png": "94593b816c6137d8638b760a4b3fb773f5066cafd660927f2661efc127e1a9e9",
+    "runs/run-tpXDVQ/r1-c-records.png": "34d484fb372eee09b1b9b7b02092cd4faedf39a03a3e31c4d1788a6f77c72b4a",
+    "runs/run-tpXDVQ/r1-c-筛选.png": "04de42fb2fed352f6f2fe3688247d35b7cee70e29e82ca3896b3f09416774968",
+    "runs/run-tpXDVQ/r1-c-排序.png": "a64ac7a866f279c559b5cbe992584bf668bd3670ae3a79524f13c4480013b209",
+    "runs/run-tpXDVQ/r1-c-显示列.png": "ed5a345bf0b46cc2594e52d34135f648980dde27c3a6d8c740716e8428443949",
+    "runs/run-tpXDVQ/r1-c-筛选-200.png": "2b22109d7ec06c8a2c133cab9fe819cd904fa0a2d8848e45aff028fa692924cb",
+    "runs/run-tpXDVQ/r1-c-排序-200.png": "684a6a74d4acdafbb04282e5cc154fc35cc0068d7f80789704bc33d86ce2a150",
+    "runs/run-tpXDVQ/r1-c-显示列-200.png": "1ec61912d69c3d38a0703b54b912b4580fe6398c4678df643c838d0bb79b6b7f"
+  }
+}

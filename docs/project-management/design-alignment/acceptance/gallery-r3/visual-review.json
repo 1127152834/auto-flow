@@ -1,0 +1,89 @@
+{
+  "reviewedRun": "run-TIUvZc",
+  "reviewType": "manual-qualitative",
+  "visualReview": "reviewed-by-agent-pending-user-approval",
+  "method": "人工逐页对照原型与真实 Electron 截图，评估结构、层级、密度、间距、控件位置和可读性；不是像素相似度算法，也不代表用户批准。",
+  "scale": "0-100；GF 表示本次人工审查认为达到 Gallery Fidelity 门槛。",
+  "gitHead": "800fb010a2c9d6dfd1df23bb9c034345ee815f87",
+  "buildSha256": "084c632df6e40675edd6041d2e6bae7de28a8c9c2fa1efd4af321459ce42e29e",
+  "scriptSha256": "b4644a4b3bcad75ff18c97adbe8d629b18125742d00dae783dc89309c7c92284",
+  "pages": [
+    {
+      "id": "fields",
+      "title": "字段与校验",
+      "reference": "05-data/008-fields-378eb2.png",
+      "actual": "runs/run-TIUvZc/r3-fields.png",
+      "score": 89,
+      "grade": "GF",
+      "rationale": "页头、字段表格、主操作位置与原图层级接近；当前保留项目级导航与真实字段元数据，表格行略密、页面留白比例与原图仍有差异。"
+    },
+    {
+      "id": "fieldEditor",
+      "title": "编辑字段抽屉",
+      "reference": "05-data/009-field-editor-c3de19.png",
+      "actual": "runs/run-TIUvZc/r3-field-editor.png",
+      "score": 90,
+      "grade": "GF",
+      "rationale": "右侧抽屉、标题/键/类型/必填/规则及固定底栏与原图结构一致；当前控件间距更紧，附加说明和示例预览属于保留能力。"
+    },
+    {
+      "id": "impact",
+      "title": "保存字段影响",
+      "reference": "05-data/100-field-impact-eb086d.png",
+      "actual": "runs/run-TIUvZc/r3-schema-impact.png",
+      "score": 88,
+      "grade": "GF",
+      "rationale": "右侧影响抽屉、逐字段变更、已有记录影响和确认底栏均可见；当前信息密度更高、抽屉略窄，文字层级比原图更拥挤。"
+    },
+    {
+      "id": "statuses",
+      "title": "数据状态",
+      "reference": "05-data/010-states-d59f55.png",
+      "actual": "runs/run-TIUvZc/r3-statuses.png",
+      "score": 91,
+      "grade": "GF",
+      "rationale": "三条状态、右侧新增入口及仅名称的新增弹窗符合原图主结构；更多选项折叠保留旧能力，弹窗宽度和背景页面密度与原图略有差异。"
+    },
+    {
+      "id": "source",
+      "title": "Excel 来源",
+      "reference": "05-data/012-source-excel-cf611c.png",
+      "actual": "runs/run-TIUvZc/r3-source.png",
+      "score": 91,
+      "grade": "GF",
+      "rationale": "来源摘要、文件资料、替换入口、本地可维护说明和重导入警示层级清楚；当前项目外壳与内容卡宽度造成少量留白差异。"
+    },
+    {
+      "id": "settings",
+      "title": "数据表设置",
+      "reference": "05-data/014-table-settings-070d7f.png",
+      "actual": "runs/run-TIUvZc/r3-settings.png",
+      "score": 90,
+      "grade": "GF",
+      "rationale": "基本信息、名称/说明、脏状态、启用的保存按钮、取消操作及危险区结构与原图一致；当前外层导航更完整，表单纵向间距略紧。"
+    }
+  ],
+  "recoveryEvidence": [
+    {
+      "id": "serviceReconnectDirty",
+      "actual": "r3-service-reconnect-dirty.png",
+      "rationale": "真实 sidecar 重连后，新增字段仍标为未保存且外层草稿保持。"
+    },
+    {
+      "id": "unknownSavePending",
+      "actual": "r3-unknown-save-pending.png",
+      "rationale": "真实 schema 已提交但响应丢失且首次原键查询失败后，UI 显示核对保存结果并保留候选。"
+    },
+    {
+      "id": "unknownSaveRecovered",
+      "actual": "r3-unknown-save-recovered.png",
+      "rationale": "完整应用重启后使用原键核对成功，新增字段恰好一项且界面回到无未保存修改。"
+    }
+  ],
+  "limitations": [
+    "评分为人工定性判断，不是像素测量。",
+    "机器 result.json 的 visualReview 保持 pending。",
+    "此审查不是用户验收或批准。"
+  ],
+  "sourceReview": "runs/run-TIUvZc/visual-review.json"
+}

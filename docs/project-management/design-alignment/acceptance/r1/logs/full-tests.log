@@ -1,0 +1,16 @@
+
+> test
+> npm --workspace @autoflow/desktop test
+
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  115 passed (115)
+      Tests  865 passed (865)
+   Start at  19:03:00
+   Duration  43.33s (transform 6.15s, setup 0ms, import 211.40s, tests 140.46s, environment 99.61s)

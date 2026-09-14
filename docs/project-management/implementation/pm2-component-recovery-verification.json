@@ -1,0 +1,83 @@
+{
+  "date": "2026-09-13",
+  "verifiedAt": "2026-09-13T04:16:15.556456+00:00",
+  "baseline": "0f07fcd",
+  "status": "partialPassed",
+  "scope": "Independent PM2 component recovery fixes; original detail editor ownership still pending",
+  "regressions": [
+    {
+      "issue": "Partial failed batch has no terminal fact-refresh callback",
+      "resolution": "onSettled for succeeded/failed once per operation within scope/context/session; does not consume failed evidence or signal success"
+    },
+    {
+      "issue": "Already loaded terminal result delivered to newly switched scope callback",
+      "resolution": "Explicit operationEpoch checked for terminal callbacks and success storage consumption",
+      "redObserved": true
+    },
+    {
+      "issue": "Second replacement impact check reuses stale confirmation",
+      "resolution": "Clear prior impact at review/back/context/table change; revoke obsolete asynchronous responses",
+      "redObserved": true
+    }
+  ],
+  "verification": [
+    {
+      "command": "npm test -- src/renderer/domains/project-data",
+      "status": "passed",
+      "files": 38,
+      "tests": 349,
+      "durationSeconds": 14.97
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "ESLint on the four modified component/test files",
+      "status": "passed"
+    },
+    {
+      "command": "npm run build",
+      "status": "passed",
+      "warnings": "Existing Zod pure annotation warnings"
+    }
+  ],
+  "reviews": {
+    "specification": "passed after counterexample repairs",
+    "engineering": "passed after explicit operation ownership repair"
+  },
+  "protectedFiles": [
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx",
+      "matchesProtectedSnapshot": true
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx",
+      "matchesProtectedSnapshot": true
+    },
+    {
+      "path": "scripts/smoke-project-data.mjs",
+      "matchesProtectedSnapshot": true
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.test.tsx",
+      "matchesProtectedSnapshot": true
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/use-data-table-editing.ts",
+      "matchesProtectedSnapshot": true
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-13-project-data-bulk-status.md",
+      "matchesProtectedSnapshot": true
+    }
+  ],
+  "notExecutedThisIncrement": [
+    "backend full suite (no backend changes)",
+    "full frontend suite outside project-data",
+    "real Electron acceptance",
+    "Windows and packaged acceptance"
+  ],
+  "completePm2": false,
+  "remaining": "Original task commit or explicit handoff required before editing DataTableDetailPage/use-data-table-editing/smoke-project-data. Detail integration and real workflows remain unaccepted."
+}

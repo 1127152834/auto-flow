@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run DataTablePageFrame.test.tsx ProjectHeader.test.tsx ProjectOverviewPage.test.tsx ProjectsWorkspace.test.tsx DataTableDetailPage.test.tsx RecordPages.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  6 passed (6)
+      Tests  64 passed (64)
+   Start at  23:54:26
+   Duration  7.93s (transform 1.16s, setup 0ms, import 9.91s, tests 7.10s, environment 4.07s)

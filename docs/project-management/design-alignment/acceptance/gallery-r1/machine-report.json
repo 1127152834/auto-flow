@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "stage": "Gallery R1",
+  "sourceRevision": "a6a0e8e",
+  "checkedAt": "2026-09-13T18:02:54.105Z",
+  "acceptance": "工程、本机端到端及独立视觉审查；不代表用户签收",
+  "runs": [
+    "runs/run-fLAsGt/result.json",
+    "runs/run-fzpgVA/result.json"
+  ],
+  "frontend": {
+    "files": 124,
+    "tests": 997,
+    "status": "passed"
+  },
+  "backendContractTests": 32,
+  "scriptTests": 29,
+  "structureTests": 3,
+  "checks": [
+    "typecheck",
+    "lint",
+    "openapi:check",
+    "build",
+    "git diff --check"
+  ],
+  "pm2Regression": {
+    "directory": {
+      "cases": 14,
+      "result": "../../../../migration/project-data-directory-qa/run-5k8x4B/result.json"
+    },
+    "excelBatch": {
+      "cases": 7,
+      "result": "../../../../migration/pm2-detail-qa/run-SIQvx6/result.json",
+      "largeTableRows": 10000,
+      "importMs": 6192,
+      "nextPageMs": 166
+    }
+  },
+  "visualScores": {
+    "projects-recent": 91,
+    "data-directory": 90,
+    "records": 89,
+    "filter": 89,
+    "create-table": 88
+  },
+  "unexecuted": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动验收",
+    "R1原生文件面板点击（本轮文件选择注入已明确；真实面板留在R3闭环验收）"
+  ],
+  "noBackendOrMigrationChange": true,
+  "readOnlyReferenceWorkspaces": [
+    "autoflow",
+    "browser-automation"
+  ],
+  "futureStages": {
+    "R2": "not-accepted",
+    "R3": "not-implemented"
+  },
+  "sourceAndBuildProvenance": "详见每个run/result.json；原始截图与runner-source.txt冻结，不覆盖候选视觉基线。"
+}

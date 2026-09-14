@@ -1,0 +1,61 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T12:28:01.214Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "759b8155f864f266d618ac45002fe07c3083bf57",
+    "scriptSha256": "cbad0ae942ae4e45d968534aa81f80566ddee8ba99af0e84354d04e75ce0067f",
+    "desktopBuildSha256": "5571243bf98c2316c5dde51a534f7c83bc3f0acf3378ecc768f0e0b43781e534"
+  },
+  "checks": [],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "failure",
+      "file": "failure.png",
+      "stateSource": "mixed-unclassified",
+      "navigation": "notClassified",
+      "level": "unclassified",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 996
+      },
+      "dpr": 2,
+      "fonts": "loaded",
+      "zoom": 1,
+      "checks": [],
+      "visualReview": "pending"
+    }
+  ],
+  "error": "项目图标/信息/菜单区域存在",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-00Kfx4",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

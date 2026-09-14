@@ -1,0 +1,297 @@
+{
+  "date": "2026-09-13",
+  "status": "historical-generated-assets-not-authoritative-for-gallery",
+  "mode": "built-in imagegen; byte-for-byte copy; no HTML substitute",
+  "sourceRoot": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/references/project-management-prototypes-2026-09-13",
+  "baseline": "205fa64",
+  "assets": [
+    {
+      "file": "r1-directory-overview.png",
+      "boardIds": [
+        "R1-A",
+        "R1-B",
+        "R1-C"
+      ],
+      "alignment": "R1",
+      "sha256": "b530847d10769aabde53c147d303dda2d2a0b6dcd6db53df91ffb63d02ebb12b",
+      "pixelWidth": 1487,
+      "pixelHeight": 1058,
+      "logicalViewport": {
+        "width": 1440,
+        "height": 1024,
+        "scope": "design reference; not rendered viewport evidence"
+      },
+      "sourceIds": [
+        "PMUI-5238b479f001",
+        "PMUI-ca940d758b68",
+        "PMUI-c496e3859302",
+        "PMUI-6729305d756d",
+        "PMUI-b3bf4542690d"
+      ],
+      "sources": [
+        {
+          "id": "PMUI-5238b479f001",
+          "file": "latest/00-projects/100-projects-prototype-5238b4.png",
+          "sha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd",
+          "approval": "未找到批准记录"
+        },
+        {
+          "id": "PMUI-ca940d758b68",
+          "file": "latest/05-data/001-data-v1-approved-ca940d.png",
+          "sha256": "ca940d758b68d6306bd2a60576b2ec5162a56f99fdef114a0fe5ef1ff21ec76d",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-c496e3859302",
+          "file": "latest/05-data/002-records-c496e3.png",
+          "sha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-6729305d756d",
+          "file": "latest/05-data/017-record-filter-672930.png",
+          "sha256": "6729305d756d578389afdebc802d34928b445370be776d68965dced79b412c55",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-b3bf4542690d",
+          "file": "latest/07-shared/100-shared-controls-b3bf45.png",
+          "sha256": "b3bf4542690de979ab5bd04200f6188d8ac5a7a9b9149c4b19f260aa50e5eb32",
+          "approval": "修订候选；未找到批准记录"
+        }
+      ],
+      "interactions": "../prototype-interactions.md",
+      "manualTest": "../acceptance/b0/manual-test.md",
+      "visualReview": "checked",
+      "userAcceptance": "notExecuted",
+      "businessEvidence": null,
+      "reviewRecord": "../acceptance/b0/review-resolution.md",
+      "generatedSource": "/Users/zhangtiancheng/.codex/generated_images/01a09849-0655-7290-bb8f-f6445d7a4c58/exec-4b3e1baa-9f3c-46ca-b5cb-f1238936f30f.png"
+    },
+    {
+      "file": "r2-record-pages.png",
+      "boardIds": [
+        "R2-A",
+        "R2-B",
+        "R2-C"
+      ],
+      "alignment": "ALIGN-DATA-01",
+      "sha256": "1a7cb6097c5b0058696ab4d21dd0180e7877ccb056ccaf2c5780d7012dc91c5b",
+      "pixelWidth": 1983,
+      "pixelHeight": 793,
+      "logicalViewport": {
+        "width": 1440,
+        "height": 1024,
+        "scope": "design reference; not rendered viewport evidence"
+      },
+      "sourceIds": [
+        "PMUI-d3f6c5774ec4",
+        "PMUI-72de4a568a24",
+        "PMUI-421c549596d2"
+      ],
+      "sources": [
+        {
+          "id": "PMUI-d3f6c5774ec4",
+          "file": "latest/05-data/003-record-detail-d3f6c5.png",
+          "sha256": "d3f6c5774ec467c1ec203d8339b8a21b14de448c318c9d034ea7921aabe17ab6",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-72de4a568a24",
+          "file": "latest/05-data/004-record-create-72de4a.png",
+          "sha256": "72de4a568a2424ba4dc886418b9e7d2aa7ec359c5006185adb1bd45e84724211",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-421c549596d2",
+          "file": "latest/05-data/005-record-edit-validation-421c54.png",
+          "sha256": "421c549596d2bca3e42334b684c3a920041b397219445793764fca45c9b040f7",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        }
+      ],
+      "interactions": "../prototype-interactions.md",
+      "manualTest": "../acceptance/b0/manual-test.md",
+      "visualReview": "checked",
+      "userAcceptance": "notExecuted",
+      "businessEvidence": null,
+      "reviewRecord": "../acceptance/b0/review-resolution.md",
+      "generatedSource": "/Users/zhangtiancheng/.codex/generated_images/01a09849-0655-7290-bb8f-f6445d7a4c58/exec-447fdd8a-1c2d-4339-a66c-5259acf98025.png"
+    },
+    {
+      "file": "r2-record-states.png",
+      "boardIds": [
+        "R2-D",
+        "R2-E",
+        "R2-F",
+        "R2-G",
+        "R2-H",
+        "R2-I"
+      ],
+      "alignment": "ALIGN-DATA-01",
+      "sha256": "f4f818ec8d87eb0020780d031a2f39e23ab38be22f1054c7cae3d8c44ba8c392",
+      "pixelWidth": 1485,
+      "pixelHeight": 1059,
+      "logicalViewport": {
+        "width": 1440,
+        "height": 1024,
+        "scope": "design reference; not rendered viewport evidence"
+      },
+      "sourceIds": [
+        "PMUI-421c549596d2",
+        "PMUI-94895605c22f",
+        "PMUI-76a0e5a3361b",
+        "PMUI-b3bf4542690d"
+      ],
+      "sources": [
+        {
+          "id": "PMUI-421c549596d2",
+          "file": "latest/05-data/005-record-edit-validation-421c54.png",
+          "sha256": "421c549596d2bca3e42334b684c3a920041b397219445793764fca45c9b040f7",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-94895605c22f",
+          "file": "latest/05-data/006-unsaved-changes-948956.png",
+          "sha256": "94895605c22fdaf29ef4383ba73d4669006bd64b6710672a8cf5a19d845a3d46",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-76a0e5a3361b",
+          "file": "latest/05-data/007-record-delete-confirm-76a0e5.png",
+          "sha256": "76a0e5a3361b1931795eb2ecab48bc13254728ca1ce733a8a2f2eefbec0700fb",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-b3bf4542690d",
+          "file": "latest/07-shared/100-shared-controls-b3bf45.png",
+          "sha256": "b3bf4542690de979ab5bd04200f6188d8ac5a7a9b9149c4b19f260aa50e5eb32",
+          "approval": "修订候选；未找到批准记录"
+        }
+      ],
+      "interactions": "../prototype-interactions.md",
+      "manualTest": "../acceptance/b0/manual-test.md",
+      "visualReview": "checked",
+      "userAcceptance": "notExecuted",
+      "businessEvidence": null,
+      "reviewRecord": "../acceptance/b0/review-resolution.md",
+      "generatedSource": "/Users/zhangtiancheng/.codex/generated_images/01a09849-0655-7290-bb8f-f6445d7a4c58/exec-e603ef7a-146d-4b0c-9d06-e36add1f74df.png"
+    },
+    {
+      "file": "r3-schema-draft.png",
+      "boardIds": [
+        "R3-A",
+        "R3-B",
+        "R3-C",
+        "R3-D"
+      ],
+      "alignment": "ALIGN-DATA-02",
+      "sha256": "10a62bde6e16b6879a9488224d7d30af67126519e465120dc36e2f8572dace86",
+      "pixelWidth": 1487,
+      "pixelHeight": 1058,
+      "logicalViewport": {
+        "width": 1440,
+        "height": 1024,
+        "scope": "design reference; not rendered viewport evidence"
+      },
+      "sourceIds": [
+        "PMUI-378eb24a5f9c",
+        "PMUI-c3de19602511",
+        "PMUI-eb086d4107db"
+      ],
+      "sources": [
+        {
+          "id": "PMUI-378eb24a5f9c",
+          "file": "latest/05-data/008-fields-378eb2.png",
+          "sha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-c3de19602511",
+          "file": "latest/05-data/009-field-editor-c3de19.png",
+          "sha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-eb086d4107db",
+          "file": "latest/05-data/100-field-impact-eb086d.png",
+          "sha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497",
+          "approval": "修订候选；未找到批准记录"
+        }
+      ],
+      "interactions": "../prototype-interactions.md",
+      "manualTest": "../acceptance/b0/manual-test.md",
+      "visualReview": "checked",
+      "userAcceptance": "notExecuted",
+      "businessEvidence": null,
+      "reviewRecord": "../acceptance/b0/review-resolution.md",
+      "generatedSource": "/Users/zhangtiancheng/.codex/generated_images/01a09849-0655-7290-bb8f-f6445d7a4c58/exec-c7600a49-ad19-4024-bfde-f5abbf547138.png"
+    },
+    {
+      "file": "r3-file-and-batch-states.png",
+      "boardIds": [
+        "R3-E",
+        "R3-F",
+        "R3-G",
+        "R3-H",
+        "R3-I",
+        "R3-J"
+      ],
+      "alignment": "ALIGN-DATA-03",
+      "sha256": "827df7a7442ed6033e8eeecb1de68301cfc2f10aeaf4df6e872b123b3df5c003",
+      "pixelWidth": 1486,
+      "pixelHeight": 1058,
+      "logicalViewport": {
+        "width": 1440,
+        "height": 1024,
+        "scope": "design reference; not rendered viewport evidence"
+      },
+      "sourceIds": [
+        "PMUI-cf611c443491",
+        "PMUI-73d061eba024",
+        "PMUI-d59f5568efae"
+      ],
+      "sources": [
+        {
+          "id": "PMUI-cf611c443491",
+          "file": "latest/05-data/012-source-excel-cf611c.png",
+          "sha256": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-73d061eba024",
+          "file": "latest/05-data/016-create-table-73d061.png",
+          "sha256": "73d061eba024d3358d415d4ed43b56d369fc6a4e4d68b217c2d2e1ade7132bbf",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        },
+        {
+          "id": "PMUI-d59f5568efae",
+          "file": "latest/05-data/010-states-d59f55.png",
+          "sha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185",
+          "approval": "旧审查快照；原归档标记当前有效，不等于新 AutoFlow 已批准"
+        }
+      ],
+      "interactions": "../prototype-interactions.md",
+      "manualTest": "../acceptance/b0/manual-test.md",
+      "visualReview": "checked",
+      "userAcceptance": "notExecuted",
+      "businessEvidence": null,
+      "reviewRecord": "../acceptance/b0/review-resolution.md",
+      "generatedSource": "/Users/zhangtiancheng/.codex/generated_images/01a09849-0655-7290-bb8f-f6445d7a4c58/exec-970b9706-3c9e-48f4-8aae-db1cb334eaf4.png"
+    }
+  ],
+  "notGenerated": [
+    "ALIGN-AUTO-01",
+    "ALIGN-AUTO-02",
+    "ALIGN-ENV-01"
+  ],
+  "galleryRevision": {
+    "date": "2026-09-13",
+    "status": "plan-revised-awaiting-review",
+    "source": "gallery-baseline/source-manifest.json",
+    "spec": "../../superpowers/specs/2026-09-13-project-management-gallery-fidelity.md",
+    "plan": "../../superpowers/plans/2026-09-13-project-management-gallery-realignment.md",
+    "navigationException": "global-sidebar-to-existing-top-navigation-only",
+    "historicalB0VisualResults": "not-valid-for-gallery-acceptance",
+    "implementationThisRevision": false
+  }
+}

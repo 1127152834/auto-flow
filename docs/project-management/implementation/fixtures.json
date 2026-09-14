@@ -1,0 +1,1400 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-13",
+  "status": "definitions-only-not-executed",
+  "designBaseline": "906deda",
+  "format": "领域验收数据；不是HTTP请求或可执行Studio IR。values以字面字段key表达，适配测试时通过本表fields查fieldId；recordSlots以显示槽名表达，适配时建立稳定slotId。所有符号身份以uuid5(NAMESPACE_URL, \"autoflow:pm0:\"+symbol)生成。",
+  "setupPolicy": "每场景独立临时Workspace；import默认为null，显式初始化步骤经未来正式命令；fixtures中的已存在版本属于历史装载。所有预期仅设计断言。",
+  "projects": [
+    {
+      "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+      "label": "P"
+    },
+    {
+      "projectId": "a50afac5-af45-5af4-8cfb-d52d3918cdfc",
+      "label": "Q"
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "FX-01",
+      "title": "共享业务",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "待办",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+          "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "excel",
+          "fields": [
+            {
+              "fieldId": "8822f1e4-5c0f-5049-998a-4125fd7f62d8",
+              "key": "account_key",
+              "type": "string"
+            },
+            {
+              "fieldId": "2fee046e-c3c8-5933-b268-a8cf2db726c6",
+              "key": "备注",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "W01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+                "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "W01"
+                }
+              },
+              "values": {
+                "account_key": "A01",
+                "备注": ""
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "W02",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+                "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "W02"
+                }
+              },
+              "values": {
+                "account_key": "A01",
+                "备注": ""
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "W03",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+                "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "W03"
+                }
+              },
+              "values": {
+                "account_key": "A01",
+                "备注": ""
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "账号",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "18979681-47a1-53e6-b85b-edaeea12b213",
+          "datasetGeneration": "ec5de736-eb54-5b4a-a237-f286da8a5138",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "excel",
+          "fields": [
+            {
+              "fieldId": "fb7bd993-4b53-51b5-90a4-f34a53790cbb",
+              "key": "用户名",
+              "type": "string"
+            },
+            {
+              "fieldId": "cf856db3-202a-5e6c-a96c-f43eb8a3d916",
+              "key": "id",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "A01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "18979681-47a1-53e6-b85b-edaeea12b213",
+                "datasetGeneration": "ec5de736-eb54-5b4a-a237-f286da8a5138",
+                "recordKey": {
+                  "type": "text",
+                  "value": "A01"
+                }
+              },
+              "values": {
+                "用户名": "fixture-account",
+                "id": "A01"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "资料",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "041bb0ff-5b11-5aaf-8af4-3cd3900510e8",
+          "datasetGeneration": "ee9038a7-aa8e-513a-b1e3-d0e99a13dfc6",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "excel",
+          "fields": [
+            {
+              "fieldId": "ba5dc876-971f-5ee7-8e74-63886b0e5058",
+              "key": "内容",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "D01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "041bb0ff-5b11-5aaf-8af4-3cd3900510e8",
+                "datasetGeneration": "ee9038a7-aa8e-513a-b1e3-d0e99a13dfc6",
+                "recordKey": {
+                  "type": "text",
+                  "value": "D01"
+                }
+              },
+              "values": {
+                "内容": "合成只读资料"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "导入三张表时statusCatalog=[]，全部statusId=null",
+        "显式创建待办表“待处理/已完成”和账号表“可用”状态；显式设置W01/W02/W03为待处理、A01为可用，状态修订从0变1；D01仍null"
+      ],
+      "scenarios": [
+        "SC-01",
+        "SC-02"
+      ]
+    },
+    {
+      "id": "FX-02",
+      "title": "独立配对",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "人员",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "1d27f722-1b2a-5cbb-b3fd-8749183aca53",
+          "datasetGeneration": "5508a120-dcb0-5e77-ad47-559c8408c765",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "8fe14c05-7f42-54b5-aac4-fc0ec52b0639",
+              "key": "姓名",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "P01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "1d27f722-1b2a-5cbb-b3fd-8749183aca53",
+                "datasetGeneration": "5508a120-dcb0-5e77-ad47-559c8408c765",
+                "recordKey": {
+                  "type": "text",
+                  "value": "P01"
+                }
+              },
+              "values": {
+                "姓名": "测试甲"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "P02",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "1d27f722-1b2a-5cbb-b3fd-8749183aca53",
+                "datasetGeneration": "5508a120-dcb0-5e77-ad47-559c8408c765",
+                "recordKey": {
+                  "type": "text",
+                  "value": "P02"
+                }
+              },
+              "values": {
+                "姓名": "测试乙"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "邮箱",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "9f13a0e5-eaaf-594b-954b-987fe3777e88",
+          "datasetGeneration": "6d2b0361-3b5f-5c4b-b4a1-37b3896f3c0d",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "67bb6b1b-004e-5a93-94c0-c1a43da1e0bf",
+              "key": "地址",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "M01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "9f13a0e5-eaaf-594b-954b-987fe3777e88",
+                "datasetGeneration": "6d2b0361-3b5f-5c4b-b4a1-37b3896f3c0d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "M01"
+                }
+              },
+              "values": {
+                "地址": "m01@example.invalid"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "M02",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "9f13a0e5-eaaf-594b-954b-987fe3777e88",
+                "datasetGeneration": "6d2b0361-3b5f-5c4b-b4a1-37b3896f3c0d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "M02"
+                }
+              },
+              "values": {
+                "地址": "m02@example.invalid"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "新账号",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "e80381cb-bf9e-5a83-9606-8640ef67c433",
+          "datasetGeneration": "0548d1f7-76ff-5fa5-9bb7-66fa81bcdc14",
+          "tableRevision": 1,
+          "identityMode": "system",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "938be249-603c-5fac-8d28-0e5b3ebda47b",
+              "key": "用户名",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": []
+        }
+      ],
+      "explicitSetup": [
+        "人员/邮箱各显式建立可用、已用状态并将两行设为可用；没有预先关联",
+        "基础流程对实际使用的人员与邮箱都明确设为已用；人员复用是独立变体中工作流省去人员状态节点，不是记录属性"
+      ],
+      "scenarios": [
+        "SC-03",
+        "SC-04",
+        "SC-05"
+      ]
+    },
+    {
+      "id": "FX-03",
+      "title": "同表角色",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "角色",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "c730a260-628c-58c3-bbe5-43c3ef92faf2",
+          "datasetGeneration": "10657ecd-4463-55a8-a516-6eecd8c93ef8",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "a3e84e7f-36d6-5e7c-b241-3d488f72d835",
+              "key": "姓名",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "R01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "c730a260-628c-58c3-bbe5-43c3ef92faf2",
+                "datasetGeneration": "10657ecd-4463-55a8-a516-6eecd8c93ef8",
+                "recordKey": {
+                  "type": "text",
+                  "value": "R01"
+                }
+              },
+              "values": {
+                "姓名": "发送者"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {
+                "managerRef": {
+                  "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                  "tableId": "c730a260-628c-58c3-bbe5-43c3ef92faf2",
+                  "datasetGeneration": "10657ecd-4463-55a8-a516-6eecd8c93ef8",
+                  "recordKey": {
+                    "type": "text",
+                    "value": "R02"
+                  }
+                }
+              }
+            },
+            {
+              "label": "R02",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "c730a260-628c-58c3-bbe5-43c3ef92faf2",
+                "datasetGeneration": "10657ecd-4463-55a8-a516-6eecd8c93ef8",
+                "recordKey": {
+                  "type": "text",
+                  "value": "R02"
+                }
+              },
+              "values": {
+                "姓名": "主管"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "R03",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "c730a260-628c-58c3-bbe5-43c3ef92faf2",
+                "datasetGeneration": "10657ecd-4463-55a8-a516-6eecd8c93ef8",
+                "recordKey": {
+                  "type": "text",
+                  "value": "R03"
+                }
+              },
+              "values": {
+                "姓名": "候补"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "managerRef为记录元数据槽，目标R02，不是标量业务字段",
+        "sender/receiver输入使用同表，显式别名另设独立变体"
+      ],
+      "scenarios": [
+        "SC-06"
+      ]
+    },
+    {
+      "id": "FX-04",
+      "title": "版本竞争",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "待办",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+          "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "2fee046e-c3c8-5933-b268-a8cf2db726c6",
+              "key": "备注",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [
+            {
+              "statusId": "118122ae-a491-5462-92dd-4b3101f249fb",
+              "name": "待处理"
+            },
+            {
+              "statusId": "077572b7-8ffc-5a7a-af7e-f20ee648eabd",
+              "name": "已申请"
+            }
+          ],
+          "records": [
+            {
+              "label": "W01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "5a9895a2-0f39-5987-b73a-e85987d95930",
+                "datasetGeneration": "ed5d51d0-6ff2-5abc-a808-263093f79a9d",
+                "recordKey": {
+                  "type": "text",
+                  "value": "W01"
+                }
+              },
+              "values": {
+                "备注": "旧值"
+              },
+              "statusId": "118122ae-a491-5462-92dd-4b3101f249fb",
+              "contentRevision": 7,
+              "statusRevision": 3,
+              "linkRevision": 2,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "从已明确初始化过的持久历史装载W01：内容7、状态3、关联2；状态目录包含待处理、已申请",
+        "此fixture不是新导入默认值，测试初始化必须同时创建有效status目录"
+      ],
+      "scenarios": [
+        "SC-07",
+        "SC-08"
+      ]
+    },
+    {
+      "id": "FX-05",
+      "title": "Sheets共享来源",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "SheetS",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "0ae709b8-a5d5-588d-a5fb-04a9ec0d4b5d",
+          "datasetGeneration": "91eb6eb5-9d78-59e3-97cf-dccaf1775305",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "sheets",
+          "fields": [
+            {
+              "fieldId": "74001cfd-f535-58a4-a4e9-6c2f658943ef",
+              "key": "数量",
+              "type": "number"
+            },
+            {
+              "fieldId": "5e63fd47-0629-5083-ae26-0c1982a42857",
+              "key": "单价",
+              "type": "number"
+            },
+            {
+              "fieldId": "cc352c2a-3188-53f5-b391-0393347a5da7",
+              "key": "合计",
+              "type": "number"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "001",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "0ae709b8-a5d5-588d-a5fb-04a9ec0d4b5d",
+                "datasetGeneration": "91eb6eb5-9d78-59e3-97cf-dccaf1775305",
+                "recordKey": {
+                  "type": "text",
+                  "value": "001"
+                }
+              },
+              "values": {
+                "数量": 1,
+                "单价": 10,
+                "合计": 10
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "SheetS",
+          "projectId": "a50afac5-af45-5af4-8cfb-d52d3918cdfc",
+          "tableId": "e43a6e78-62e6-54f7-ae88-7a82f3f4e531",
+          "datasetGeneration": "48b41f8c-92ef-5cc5-9b2d-10ece78a475e",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "sheets",
+          "fields": [
+            {
+              "fieldId": "ddd075ef-f151-57ae-9a7d-ba84dcfc5ad3",
+              "key": "复核备注",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "001",
+              "ref": {
+                "projectId": "a50afac5-af45-5af4-8cfb-d52d3918cdfc",
+                "tableId": "e43a6e78-62e6-54f7-ae88-7a82f3f4e531",
+                "datasetGeneration": "48b41f8c-92ef-5cc5-9b2d-10ece78a475e",
+                "recordKey": {
+                  "type": "text",
+                  "value": "001"
+                }
+              },
+              "values": {
+                "复核备注": ""
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "P/Q分别绑定同一物理S的不同字段；使用已验证的同一可靠id身份列",
+        "合计是来源公式的显示结果，只读；statusId仍为各项目本地值"
+      ],
+      "scenarios": [
+        "SC-09"
+      ],
+      "physicalSource": {
+        "workspaceId": "a6dd6ea1-b086-5a75-b356-2e3cd0981cb3",
+        "spreadsheetId": "fixture-spreadsheet",
+        "sheetId": 0,
+        "sheetLabel": "S",
+        "identityNamespace": "verified-fixture-id-column",
+        "recordKey": {
+          "type": "text",
+          "value": "001"
+        },
+        "row": {
+          "id": "001",
+          "数量": 1,
+          "单价": 10,
+          "合计": {
+            "formula": "=B2*C2",
+            "displayValue": 10
+          },
+          "复核备注": ""
+        }
+      },
+      "authorization": "仅合成来源；实网场景由PM6选择已授权测试表，fixture中没有连接凭据"
+    },
+    {
+      "id": "FX-06",
+      "title": "稳定身份",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "业务身份",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "b50303b3-87df-5b11-87b2-e58b2a2a57a2",
+          "datasetGeneration": "938cb52a-2f77-5428-92e1-0e602dc43570",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "8b2cce6a-356c-5217-b4f9-2b77a114aabc",
+              "key": "值",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "001",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "b50303b3-87df-5b11-87b2-e58b2a2a57a2",
+                "datasetGeneration": "938cb52a-2f77-5428-92e1-0e602dc43570",
+                "recordKey": {
+                  "type": "text",
+                  "value": "001"
+                }
+              },
+              "values": {
+                "值": "前导零"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "1",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "b50303b3-87df-5b11-87b2-e58b2a2a57a2",
+                "datasetGeneration": "938cb52a-2f77-5428-92e1-0e602dc43570",
+                "recordKey": {
+                  "type": "text",
+                  "value": "1"
+                }
+              },
+              "values": {
+                "值": "文本一"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "1",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "b50303b3-87df-5b11-87b2-e58b2a2a57a2",
+                "datasetGeneration": "938cb52a-2f77-5428-92e1-0e602dc43570",
+                "recordKey": {
+                  "type": "integer",
+                  "value": "1"
+                }
+              },
+              "values": {
+                "值": "整数一"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        },
+        {
+          "label": "系统身份",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "b0f74d4a-9e7f-5995-b937-6c1d6c4cf63a",
+          "datasetGeneration": "7e0e1592-1442-5fb9-8fd8-f438afa92517",
+          "tableRevision": 1,
+          "identityMode": "system",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "fbb5eb85-eb6b-5424-82e6-57de93921d37",
+              "key": "值",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "60585eef-00cf-557b-9790-326adb80f554",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "b0f74d4a-9e7f-5995-b937-6c1d6c4cf63a",
+                "datasetGeneration": "7e0e1592-1442-5fb9-8fd8-f438afa92517",
+                "recordKey": {
+                  "type": "uuid",
+                  "value": "60585eef-00cf-557b-9790-326adb80f554"
+                }
+              },
+              "values": {
+                "值": "完全相同"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            },
+            {
+              "label": "7ba029f5-38ef-58d8-bd14-01ab8797d8da",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "b0f74d4a-9e7f-5995-b937-6c1d6c4cf63a",
+                "datasetGeneration": "7e0e1592-1442-5fb9-8fd8-f438afa92517",
+                "recordKey": {
+                  "type": "uuid",
+                  "value": "7ba029f5-38ef-58d8-bd14-01ab8797d8da"
+                }
+              },
+              "values": {
+                "值": "完全相同"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 0,
+              "currentEnvironmentId": null,
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "按字段source值保留文本/整数类型；JSON中的整数键用规范十进制字符串承载，不放宽来源允许范围",
+        "排序/插行时保持身份；重导入新代次G2必须生成新datasetGeneration，旧引用不得自动接续"
+      ],
+      "scenarios": [
+        "SC-10"
+      ]
+    },
+    {
+      "id": "FX-07",
+      "title": "环境关联",
+      "source": "docs/project-management/design/data-and-state-rules.md",
+      "tables": [
+        {
+          "label": "账号",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "tableId": "18979681-47a1-53e6-b85b-edaeea12b213",
+          "datasetGeneration": "ec5de736-eb54-5b4a-a237-f286da8a5138",
+          "tableRevision": 1,
+          "identityMode": "business",
+          "sourceKind": "local",
+          "fields": [
+            {
+              "fieldId": "fb7bd993-4b53-51b5-90a4-f34a53790cbb",
+              "key": "用户名",
+              "type": "string"
+            }
+          ],
+          "statusCatalog": [],
+          "records": [
+            {
+              "label": "A01",
+              "ref": {
+                "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+                "tableId": "18979681-47a1-53e6-b85b-edaeea12b213",
+                "datasetGeneration": "ec5de736-eb54-5b4a-a237-f286da8a5138",
+                "recordKey": {
+                  "type": "text",
+                  "value": "A01"
+                }
+              },
+              "values": {
+                "用户名": "fixture-account"
+              },
+              "statusId": null,
+              "contentRevision": 1,
+              "statusRevision": 0,
+              "linkRevision": 2,
+              "currentEnvironmentId": "7a179a85-50bb-5ee7-8d53-03524136dd76",
+              "recordSlots": {}
+            }
+          ]
+        }
+      ],
+      "explicitSetup": [
+        "装载同项目稳定环境E01，contentGeneration=1；A01已显式关联E01，linkRevision=2",
+        "合成环境只描述身份和代次，不包含Cookie、浏览器目录或凭据"
+      ],
+      "scenarios": [
+        "SC-11",
+        "SC-12",
+        "SC-13"
+      ],
+      "environments": [
+        {
+          "environmentId": "7a179a85-50bb-5ee7-8d53-03524136dd76",
+          "projectId": "43ed3f6c-5218-5d9c-b198-9e69d8158eb8",
+          "label": "E01",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        }
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "SC-01",
+      "fixtures": [
+        "FX-01"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "上限3，必要输入W筛选待处理，A按W的account_key字段与账号表id字段（两个稳定fieldId）同类型精确匹配A01",
+        "每Task只读查询D01，明确把W设为已完成，A不改状态",
+        "核验前Task已停止使用资源并释放占用，再领取下一组"
+      ],
+      "expectedFacts": [
+        "恰好3个Task，W01/W02/W03均已完成，A01被三个Task依次使用",
+        "D01查询不产生写权；A01任何时刻只有一个有效lease"
+      ],
+      "immutableEvidence": [
+        "每Task原始输入保留领取状态；只读资料不写入"
+      ],
+      "acceptanceIds": [
+        "DATA-CLAIM-12",
+        "DATA-CLAIM-13",
+        "DATA-E2E-01"
+      ],
+      "deliveryPackages": [
+        "PM4-A",
+        "PM4-C",
+        "PM9-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-02",
+      "fixtures": [
+        "FX-01"
+      ],
+      "variant": "FX-01初始化后只绑定账号；补充不限次数变体至少5Task后用户停止，不再新建Task",
+      "steps": [
+        "仅以A01为必要输入，筛选业务最终态“可用”，上限3",
+        "每Task完成时不修改A01状态；确认释放后继续取数"
+      ],
+      "expectedFacts": [
+        "同一A01连续产生3个Task，状态与状态修订不变",
+        "无消费类型、无本批已用过滤；按当前条件取数"
+      ],
+      "immutableEvidence": [
+        "三个Task各有独立原始输入，前Task证据不被覆盖"
+      ],
+      "acceptanceIds": [
+        "DATA-IN-12",
+        "DATA-CLAIM-14",
+        "DATA-STATE-11",
+        "XE-A21",
+        "FLOW-A13"
+      ],
+      "deliveryPackages": [
+        "PM4-C"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-03",
+      "fixtures": [
+        "FX-02"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "独立筛选一人一邮箱，基础流程完成后分别显式设已用",
+        "另开独立复用变体：人员状态保持可用，只设邮箱为已用",
+        "复用变体显式新增新账号行；创建响应丢失后同操作身份查询再重试"
+      ],
+      "expectedFacts": [
+        "基础流程按状态最多形成2对，不按行号绑定",
+        "变体中P01释放后可再次使用，M01不再匹配，下一任务可使用M02",
+        "重复新增请求返回同一个RecordRef，新账号只增加1行且statusId=null"
+      ],
+      "immutableEvidence": [
+        "初始输入不追加新账号；保留同操作身份与已确认新增结果"
+      ],
+      "acceptanceIds": [
+        "DATA-IN-01",
+        "DATA-STATE-10",
+        "FLOW-A06"
+      ],
+      "deliveryPackages": [
+        "PM4-A",
+        "PM4-B",
+        "PM4-C"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-04",
+      "fixtures": [
+        "FX-02"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "准备P01/M01后，另一Task先合法取得M01",
+        "提交完整输入组竞争失败；按请求身份查询提交结果"
+      ],
+      "expectedFacts": [
+        "原组未提交Task、原始输入、queued Run或lease；批次任务数不增加",
+        "P01未被失败组留下占用；若原请求已经提交则返回原组，不能新增"
+      ],
+      "immutableEvidence": [
+        "其他Task的M01占用不被抢走"
+      ],
+      "acceptanceIds": [
+        "DATA-CLAIM-01",
+        "DATA-CLAIM-02"
+      ],
+      "deliveryPackages": [
+        "PM4-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-05",
+      "fixtures": [
+        "FX-02"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "显式确保新账号表中回执字符串字段存在并获取fieldId",
+        "显式新增一条账号，获取RecordRef；使用返回引用更新回执",
+        "用同逻辑操作身份查询新增结果；另一操作同名建列须返回冲突/ensure兼容结果"
+      ],
+      "expectedFacts": [
+        "字段及行真实可定位；新账号状态仍null，明确状态节点才改变",
+        "兼容增列不改变另一Task固定的字段证据；新增必填列缺合法填充值时拒绝"
+      ],
+      "immutableEvidence": [
+        "不得按最后一行/列名猜返回对象；源文件不变"
+      ],
+      "acceptanceIds": [
+        "DATA-SCHEMA-01",
+        "DATA-SCHEMA-02",
+        "FLOW-A14",
+        "DATA-E2E-06"
+      ],
+      "deliveryPackages": [
+        "PM4-B",
+        "PM9-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-06",
+      "fixtures": [
+        "FX-03"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "独立sender/receiver选取时要求不同记录",
+        "sender=R01，receiver按managerRef取得R02",
+        "独立别名变体receiver明确引用sender；一次写入后另一别名继续同一记录版本",
+        "回溯变体X可取R01/R02、Y仅R01"
+      ],
+      "expectedFacts": [
+        "普通角色不同；managerRef精确取R02",
+        "显式同记录别名只有一个物理lease、一个推进的版本游标",
+        "回溯找到X=R02/Y=R01，不因首个候选冲突断言耗尽"
+      ],
+      "immutableEvidence": [
+        "没有按角色顺序永久排除记录；输入角色证据保持原绑定"
+      ],
+      "acceptanceIds": [
+        "DATA-IN-09",
+        "DATA-IN-10",
+        "DATA-IN-12"
+      ],
+      "deliveryPackages": [
+        "PM4-A",
+        "PM4-B"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-07",
+      "fixtures": [
+        "FX-04"
+      ],
+      "variant": "字段人工编辑按规格允许且需CAS；业务状态/环境关联的人工修改在活动占用期间仍受阻",
+      "steps": [
+        "保存版本7/状态3的Task原始输入",
+        "本Task写备注“已核验”成功，内容变8；人工通过允许的字段编辑路径写“人工新值”使内容变9",
+        "本Task仍按自己确认的版本8再次写入，发生冲突"
+      ],
+      "expectedFacts": [
+        "当前备注为人工新值、内容9，失败写不推进版本",
+        "若人工在N1之前写到8，N1按7同样冲突；这是另一独立变体"
+      ],
+      "immutableEvidence": [
+        "Task原始备注旧值/内容7；状态3、关联2不因字段写入改变"
+      ],
+      "acceptanceIds": [
+        "DATA-VER-01",
+        "DATA-VER-02",
+        "DATA-WRITE-03",
+        "DATA-WRITE-09",
+        "FLOW-A03",
+        "FLOW-A04"
+      ],
+      "deliveryPackages": [
+        "PM4-B"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-08",
+      "fixtures": [
+        "FX-04"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "N1显式写备注确认内容8",
+        "N2显式设已申请确认状态4",
+        "N3网页失败，形成失败Run"
+      ],
+      "expectedFacts": [
+        "记录仍内容8/已申请/状态4/关联2，既有同步意图保留",
+        "下一批次只按当前条件决定是否可取"
+      ],
+      "immutableEvidence": [
+        "Task原输入保持内容7/待处理/状态3，不回滚已确认写入"
+      ],
+      "acceptanceIds": [
+        "DATA-WRITE-08",
+        "DATA-E2E-03",
+        "DATA-STATE-11",
+        "FLOW-A07",
+        "XE-A07"
+      ],
+      "deliveryPackages": [
+        "PM4-B",
+        "PM9-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-09",
+      "fixtures": [
+        "FX-05"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "P显式改数量2并推送；Q显式改复核备注“已核验”并推送",
+        "刷新公式显示值20，记录两项目独立业务状态",
+        "独立新增变体发送一次后响应丢失；重启先查询原身份/发送目标，未确认前不重复追加",
+        "P/Q竞争同一物理行lease；确认释放后另项目按本地状态重取"
+      ],
+      "expectedFacts": [
+        "数量2、备注已核验均保留；公式仍存在且本地显示20",
+        "一个发送身份不会生成重复行；未知结果仍可核验而非报告成功",
+        "两个不同RecordRef共用同一有效物理排他，状态互不覆盖"
+      ],
+      "immutableEvidence": [
+        "原Task输入中的合计10不变；本地普通字段不被拉取静默覆盖；云端状态不替换本地状态"
+      ],
+      "acceptanceIds": [
+        "DATA-SH-01",
+        "DATA-SH-03",
+        "DATA-SH-12",
+        "DATA-SH-13",
+        "DATA-ID-06",
+        "DATA-E2E-04"
+      ],
+      "deliveryPackages": [
+        "PM6-A",
+        "PM6-B",
+        "PM6-C",
+        "PM9-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-10",
+      "fixtures": [
+        "FX-06"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "为各行设置不同业务状态后排序、插入新记录",
+        "重新导入生成G2；使用旧G1引用写入",
+        "分别尝试空、重复、浮点、公式、布尔及超过来源/安全整数范围的身份"
+      ],
+      "expectedFacts": [
+        "三个业务键互不相等，两条内容相同的系统行UUID不同",
+        "同代次排序后状态跟随身份；旧代次写入拒绝；无效导入不发布半表",
+        "超范围编号必须由用户改为文本，不截断或自动舍入"
+      ],
+      "immutableEvidence": [
+        "历史Task的G1身份/值/状态保持可读"
+      ],
+      "acceptanceIds": [
+        "DATA-ID-01",
+        "DATA-ID-02",
+        "DATA-ID-03",
+        "DATA-ID-04",
+        "DATA-ID-05"
+      ],
+      "deliveryPackages": [
+        "PM2-A",
+        "PM2-B",
+        "PM6-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-11",
+      "fixtures": [
+        "FX-07"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "Task1从A01选择E01，固定内容代次1，运行中修改合成登录标记",
+        "End勾保留，明确更新E01并选择关联A01",
+        "Task2重新按A01解析E01并打开已发布内容代次2"
+      ],
+      "expectedFacts": [
+        "稳定environmentId不变，A01已指E01无需重复改引用，linkRevision仍2",
+        "Task2得到代次2与已保存登录标记；不是通过profile模板共享登录"
+      ],
+      "immutableEvidence": [
+        "Task1证据仍指代次1；没有额外Bind节点或业务状态变化"
+      ],
+      "acceptanceIds": [
+        "DATA-LINK-01",
+        "DATA-LINK-05",
+        "DATA-E2E-02",
+        "XE-C18"
+      ],
+      "deliveryPackages": [
+        "PM5-A",
+        "PM5-B",
+        "PM9-A"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-12",
+      "fixtures": [
+        "FX-07"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "独立变体End明确另存环境E02并授权替换A01关联",
+        "环境E02发布成功后，关联提交的预期linkRevision不匹配",
+        "Run因End失败成为failed，操作保留saved_unlinked",
+        "用户修复时重新确认A01与当前版本、获得新合法写权，仅续做关联"
+      ],
+      "expectedFacts": [
+        "E02保留，修复不重复保存、不新建第三个环境",
+        "关联修复后A01指E02，形成新的关联证据；历史失败Run仍failed"
+      ],
+      "immutableEvidence": [
+        "原End保存结果、原目标与原输入不变；旧Worker/旧lease不复活；网页不重跑"
+      ],
+      "acceptanceIds": [
+        "DATA-LINK-03",
+        "DATA-LINK-06",
+        "FLOW-A09",
+        "XE-A12",
+        "XE-C18"
+      ],
+      "deliveryPackages": [
+        "PM5-B"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "SC-13",
+      "fixtures": [
+        "FX-07"
+      ],
+      "variant": "每场景从原始fixture独立初始化，不继承另一场景副作用",
+      "steps": [
+        "在同Run检查点等待人工，以同一预期检查点版本同时发起继续和停止",
+        "控制两个调度顺序分别核验，成功方推进操作版本",
+        "独立TTL变体：检查点7的继续请求已接受但排队尚未开始，此时等待期限到达；另一次真正继续先开始再收到旧TTL",
+        "旧Worker失联并撤权，随后尝试提交字段/关联写入；核验前不释放资源",
+        "终止被确认后对账；服务重启不得自动重派原Task"
+      ],
+      "expectedFacts": [
+        "继续先提交：只进入同Run恢复队列，后续合法停止仍能停止；停止先提交：旧继续命令冲突",
+        "旧执行代次写入被拒绝，归属未知时lease保留；核验后才释放",
+        "已提交终态不被迟到Worker或修复覆写",
+        "排队仍受期限约束，到期撤销未开始恢复；真正继续已先开始则旧TTL不能结束已恢复Run"
+      ],
+      "immutableEvidence": [
+        "不新建替代Run或重复网页；数据业务状态不因停止改变"
+      ],
+      "acceptanceIds": [
+        "XE-A14",
+        "XE-C12",
+        "XE-C16",
+        "DATA-CLAIM-16"
+      ],
+      "deliveryPackages": [
+        "PM5-C",
+        "PM8-B"
+      ],
+      "status": "planned",
+      "evidence": []
+    }
+  ],
+  "representativeWorkflows": [
+    {
+      "id": "WF-01",
+      "title": "参数型真实执行",
+      "fixtures": [],
+      "parameters": {
+        "message": "PM0 synthetic message"
+      },
+      "steps": [
+        "打开PM3本地测试页",
+        "向页面输入本批固定message",
+        "点击提交并读取返回值",
+        "End不保留环境"
+      ],
+      "expectedFacts": [
+        "实际提交计数只增加1",
+        "不同批次参数/变量隔离；双击相同启动身份只有一个Batch"
+      ],
+      "acceptanceIds": [
+        "AU-04",
+        "AU-07",
+        "XE-C03",
+        "XE-G02",
+        "FLOW-A01",
+        "XE-A01",
+        "XE-A04"
+      ],
+      "deliveryPackages": [
+        "PM3-B",
+        "PM3-C"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "WF-02",
+      "title": "多表创建账号与状态流转",
+      "fixtures": [
+        "FX-02"
+      ],
+      "steps": [
+        "使用SC-03人员复用变体，选择可用人员与邮箱",
+        "在本地测试页确认合成注册成功",
+        "显式创建新账号记录，再显式设邮箱已用，人员不改状态",
+        "以新的明确自动化批次查询新账号"
+      ],
+      "expectedFacts": [
+        "人员释放后可再取，已用邮箱不再匹配",
+        "新账号身份可直接用于后续节点与自动化；字段、状态各有提交事实"
+      ],
+      "acceptanceIds": [
+        "DATA-IN-01",
+        "DATA-STATE-10",
+        "DATA-WRITE-02",
+        "FLOW-A06"
+      ],
+      "deliveryPackages": [
+        "PM4-A",
+        "PM4-B",
+        "PM4-C"
+      ],
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "WF-03",
+      "title": "保留环境后继续原登录",
+      "fixtures": [
+        "FX-07"
+      ],
+      "steps": [
+        "执行SC-11并在本地测试页建立合成登录标记",
+        "End更新E01并关联A01",
+        "下一批次按A01选择E01，检查登录标记",
+        "运行SC-12独立另存/关联冲突分支，核对修复"
+      ],
+      "expectedFacts": [
+        "两次运行使用同一业务环境身份，后次读取已发布新内容代次",
+        "saved_unlinked可修复，历史失败Run保持不变"
+      ],
+      "acceptanceIds": [
+        "DATA-E2E-02",
+        "DATA-LINK-01",
+        "DATA-LINK-06",
+        "XE-C18"
+      ],
+      "deliveryPackages": [
+        "PM5-A",
+        "PM5-B"
+      ],
+      "status": "planned",
+      "evidence": []
+    }
+  ]
+}

@@ -21,7 +21,7 @@ export function LocationPicker({ locations, loading, error, busy, currentCity, c
     <DialogContent className="w-[min(92vw,42rem)]">
       <DialogTitle>选择代理地点</DialogTitle>
       <DialogDescription>部分地点由多个城市共用同一个目标，切换后城市由 ProxyPanel 分配。可用容量可能随时变化。</DialogDescription>
-      <div className="flex gap-2"><Input aria-label="搜索地点" placeholder="搜索城市或运营商" value={query} onChange={e => setQuery(e.target.value)} /><Select aria-label="地点运营商" value={carrier} onChange={e => setCarrier(e.target.value)}><option value="">全部运营商</option>{carriers.map(item => <option key={item}>{item}</option>)}</Select></div>
+      <div className="flex gap-2"><Input aria-label="搜索地点" placeholder="搜索城市或运营商" value={query} onChange={e => setQuery(e.target.value)} /><Select clearable={false} aria-label="地点运营商" value={carrier} onValueChange={value => setCarrier(value ?? '')} options={[{ value: '', label: '全部运营商' }, ...carriers.map(value => ({ value, label: value }))]} /></div>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <div className="max-h-80 overflow-y-auto rounded-control border border-line" aria-busy={loading}>
         {loading ? <p role="status" className="p-5 text-sm text-muted">正在读取可用地点…</p> : items.map(item => <label key={item.id} className="flex items-start gap-3 border-b border-line p-3 last:border-0">

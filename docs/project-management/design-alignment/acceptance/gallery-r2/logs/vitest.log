@@ -1,0 +1,8 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+
+ Test Files  127 passed (127)
+      Tests  1030 passed (1030)
+   Start at  03:07:03
+   Duration  67.52s (transform 2.34s, setup 0ms, import 117.74s, tests 89.48s, environment 48.72s)

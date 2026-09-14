@@ -1,0 +1,11 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T03:19:58.407Z",
+  "checks": [
+    "global overview, browser, proxy, model and settings entries opened and returned to the project directory without mutating resources",
+    "Escape closed the new Excel wizard and restored focus to its directory entry",
+    "directory and import wizard stayed within the viewport at 200% zoom",
+    "first Excel table used injected system picker result, real IPC/file inspection/HTTP import, and persisted two records"
+  ],
+  "error": "control missing: 选择 Excel 文件"
+}

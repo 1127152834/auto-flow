@@ -1,4 +1,5 @@
 import secrets
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
 
@@ -12,11 +13,29 @@ from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.application.project_data.catalog import DataCatalogService
+from autoflow.application.project_data.deletions import DataDeletionService
+from autoflow.application.project_data.excel import ProjectExcelService
+from autoflow.application.project_data.excel_export import ProjectExcelExportService
+from autoflow.application.project_data.excel_import import ExcelImportService
+from autoflow.application.project_data.queries import DataRecordQueryService
+from autoflow.application.project_data.records import DataRecordService
+from autoflow.application.project_data.schema import DataSchemaService
+from autoflow.application.project_data.status_batches import (
+    RecordStatusBatchCoordinator,
+    RecordStatusBatchService,
+)
+from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
     ManagementHttpServices,
     register_management_routes,
+)
+from autoflow.bootstrap.project_http_routes import (
+    ProjectHttpServices,
+    register_project_routes,
 )
 from autoflow.bootstrap.proxies import (
     LazySystemCredentialStore,
@@ -40,6 +59,32 @@ from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
 from autoflow.infrastructure.database.profiles import profile_repository_transaction
+from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
+from autoflow.infrastructure.database.project_data_catalog import (
+    SqlAlchemyProjectDataCatalog,
+)
+from autoflow.infrastructure.database.project_data_deletions import (
+    SqlAlchemyProjectDataDeletions,
+)
+from autoflow.infrastructure.database.project_data_queries import (
+    SqlAlchemyProjectDataQueries,
+)
+from autoflow.infrastructure.database.project_data_records import (
+    SqlAlchemyProjectDataRecords,
+)
+from autoflow.infrastructure.database.project_data_schema import (
+    SqlAlchemyProjectDataSchema,
+)
+from autoflow.infrastructure.database.project_data_status_batches import (
+    SqlAlchemyRecordStatusBatches,
+)
+from autoflow.infrastructure.database.project_excel_exports import (
+    SqlAlchemyProjectExcelExports,
+)
+from autoflow.infrastructure.database.project_excel_imports import (
+    SqlAlchemyExcelImports,
+)
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
     create_session_factory,
@@ -80,7 +125,15 @@ def create_app(
     model_gateway: ModelGateway | None = None,
 ) -> FastAPI:
     paths = AppPaths.from_data_dir(Path(settings.data_dir))
-    for directory in (paths.database.parent, paths.logs, paths.workspace, paths.cache, paths.temp, paths.profiles, paths.kernels):
+    for directory in (
+        paths.database.parent,
+        paths.logs,
+        paths.workspace,
+        paths.cache,
+        paths.temp,
+        paths.profiles,
+        paths.kernels,
+    ):
         directory.mkdir(parents=True, exist_ok=True)
     migrate_database(paths.database)
     session_factory = create_session_factory(paths.database)
@@ -101,7 +154,9 @@ def create_app(
         installations.retry_pending()
     kernel_service = kernel_service or KernelService(
         catalog_provider,
-        CloakBrowserLicenseProvider(license_store, kernel_worker_manager.validate_license),
+        CloakBrowserLicenseProvider(
+            license_store, kernel_worker_manager.validate_license
+        ),
         license_store,
         SqlAlchemyDefaultKernelRepository(session_factory),
         installations,
@@ -111,7 +166,9 @@ def create_app(
     proxy_options = SqlAlchemyProxyOptions(session_factory)
     data_store = profile_data_store or FilesystemProfileDataStore(paths.profiles)
     usage_guard = profile_usage_guard or FilesystemProfileUsageGuard(paths.profiles)
-    data_store.retry_pending(lambda profile_id: _profile_exists(transaction, profile_id))
+    data_store.retry_pending(
+        lambda profile_id: _profile_exists(transaction, profile_id)
+    )
     profile_service = ProfileService(
         transaction,
         installed_kernel_lookup or catalog_provider,
@@ -129,9 +186,51 @@ def create_app(
     model_service.recover_credentials()
 
     app = FastAPI()
+    app.state.config = settings
     configure_openapi(app, api_version=settings.api_version)
     install_error_handlers(app)
     quiesce_gate = QuiesceGate()
+    project_excel = ProjectExcelService(
+        session_factory,
+        workspace_id=str(paths.data_dir),
+        instance_id=settings.instance_id,
+        gate=quiesce_gate,
+    )
+    excel_imports = ExcelImportService(
+        SqlAlchemyExcelImports(
+            session_factory, str(paths.data_dir), settings.instance_id
+        ),
+        quiesce_gate,
+    )
+    excel_export_executor = ThreadPoolExecutor(
+        max_workers=1, thread_name_prefix="project-export"
+    )
+    excel_exports = ProjectExcelExportService(
+        SqlAlchemyProjectExcelExports(
+            session_factory, str(paths.data_dir), settings.instance_id
+        ),
+        quiesce_gate,
+        excel_export_executor,
+    )
+    app.state.excel_exports = excel_exports
+    app.router.add_event_handler("startup", excel_exports.startup)
+    app.state.excel_imports = excel_imports
+    app.router.add_event_handler("startup", excel_imports.startup)
+    app.state.project_excel_service = project_excel
+    app.router.add_event_handler("startup", project_excel.startup)
+    status_batch_repository = SqlAlchemyRecordStatusBatches(session_factory)
+    status_batch_executor = ThreadPoolExecutor(
+        max_workers=1, thread_name_prefix="project-status"
+    )
+    status_batch_coordinator = RecordStatusBatchCoordinator(
+        status_batch_repository, quiesce_gate, status_batch_executor
+    )
+    status_batch_service = RecordStatusBatchService(
+        status_batch_repository, status_batch_coordinator
+    )
+    app.state.status_batch_service = status_batch_service
+    app.state.status_batch_coordinator = status_batch_coordinator
+    app.router.add_event_handler("startup", status_batch_coordinator.resume)
     proxy_runtime = configure_proxy_management(app, paths.database)
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
@@ -153,7 +252,23 @@ def create_app(
         settings.api_version,
         lambda: len(catalog_provider.installed()),
         lambda: [
-            *(["kernel_process_active"] if kernel_worker_manager.active_processes() else []),
+            *(
+                ["project_excel_operation_active"]
+                if project_excel.pending_operations()
+                or excel_imports.pending_operations()
+                or excel_exports.pending_operations()
+                else []
+            ),
+            *(
+                ["project_data_status_batch_active"]
+                if status_batch_repository.pending_operation_ids()
+                else []
+            ),
+            *(
+                ["kernel_process_active"]
+                if kernel_worker_manager.active_processes()
+                else []
+            ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
         ],
         quiesce_gate,
@@ -172,6 +287,13 @@ def create_app(
     async def shutdown() -> None:
         try:
             import asyncio
+
+            excel_exports.shutdown()
+            await asyncio.to_thread(excel_export_executor.shutdown, wait=True)
+            excel_imports.shutdown()
+            project_excel.shutdown()
+            status_batch_coordinator.shutdown()
+            await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
 
             await asyncio.gather(
                 test_browser_workers.shutdown(), kernel_worker_manager.shutdown()
@@ -203,6 +325,17 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
+    register_project_routes(app, ProjectHttpServices(
+        projects=ProjectService(SqlAlchemyProjects(session_factory)),
+        tables=DataTableService(SqlAlchemyProjectData(session_factory)),
+        catalog=DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory)),
+        records=DataRecordService(SqlAlchemyProjectDataRecords(session_factory)),
+        queries=DataRecordQueryService(SqlAlchemyProjectDataQueries(session_factory)),
+        deletions=DataDeletionService(SqlAlchemyProjectDataDeletions(session_factory)),
+        schema=DataSchemaService(SqlAlchemyProjectDataSchema(session_factory)),
+        status_batches=status_batch_service,
+        excel=project_excel, imports=excel_imports, exports=excel_exports,
+    ))
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
@@ -219,15 +352,15 @@ def create_app(
                     headers={"Cache-Control": "no-store"},
                 )
         if request.url.path.startswith("/api/v1/") and (
-            settings.instance_token is None or request.headers.get("x-autoflow-token") != settings.instance_token
+            settings.instance_token is None
+            or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
-            return error_response(401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接")
-        guarded_get = (
-            request.method == "GET"
-            and (
-                request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
-                or request.url.path.endswith("/models/discover")
+            return error_response(
+                401, "SIDECAR_UNAUTHORIZED", "本地服务认证失效，请重新连接"
             )
+        guarded_get = request.method == "GET" and (
+            request.url.path in {"/api/v1/kernels/catalog", "/api/v1/kernels/license"}
+            or request.url.path.endswith("/models/discover")
         )
         guarded_request = request.url.path.startswith("/api/v1/") and (
             request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get

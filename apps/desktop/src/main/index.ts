@@ -3,10 +3,12 @@ import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
 import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
+import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
+import { ProjectFilesController } from './project-files/controller'
 import { SettingsController } from './settings/controller'
 import type { UiPreferences } from '../shared/settings'
 
@@ -40,6 +42,18 @@ function applyPreferences(preferences: UiPreferences): void {
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  const projectFiles = new ProjectFilesController({
+    allowedSenderId: mainWindow.webContents.id,
+    getHostStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
+    showOpenDialog: options => dialog.showOpenDialog(mainWindow!, options as Electron.OpenDialogOptions),
+    showSaveDialog: options => dialog.showSaveDialog(mainWindow!, options as Electron.SaveDialogOptions),
+  })
+  ipcMain.removeHandler('autoflow:project-files:context')
+  ipcMain.handle('autoflow:project-files:context', event => projectFiles.getProjectFileContext(event))
+  ipcMain.removeHandler('autoflow:project-files:choose-excel-input')
+  ipcMain.handle('autoflow:project-files:choose-excel-input', (event, projectId: unknown) => projectFiles.chooseExcelInput(event, projectId))
+  ipcMain.removeHandler('autoflow:project-files:choose-xlsx-output')
+  ipcMain.handle('autoflow:project-files:choose-xlsx-output', (event, projectId: unknown, suggestedName: unknown) => projectFiles.chooseXlsxOutput(event, projectId, suggestedName))
   ipcMain.removeHandler('autoflow:copy-proxy-credentials')
   ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
     allowedSenderId: mainWindow.webContents.id,
@@ -47,6 +61,8 @@ async function createWindow(): Promise<void> {
     request: fetch,
     clipboard,
   }))
+  ipcMain.removeHandler('autoflow:open-external-link')
+  ipcMain.handle('autoflow:open-external-link', createOpenExternalLinkHandler({ allowedSenderId: mainWindow.webContents.id, openExternal: url => shell.openExternal(url) }))
   ipcMain.removeHandler('autoflow:reveal-kernel')
   ipcMain.handle('autoflow:reveal-kernel', createRevealKernelHandler({
     allowedSenderId: mainWindow.webContents.id,

@@ -1,0 +1,418 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run DataTablePageFrame.test.tsx ProjectHeader.test.tsx ProjectOverviewPage.test.tsx ProjectsWorkspace.test.tsx DataTableDetailPage.test.tsx RecordPages.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+ ❯ src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx (37 tests | 1 failed) 5135ms
+   × keeps the original gallery table heading, tabs and record form inside one content card 38ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx > keeps the original gallery table heading, tabs and record form inside one content card
+TestingLibraryElementError: Unable to find an accessible element with the role "form" and name "新建记录表单"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "新增记录":
+  [36m<h1[39m
+    [33mclass[39m=[32m"m-0 break-words text-2xl font-semibold"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mb-0 mt-1 break-words text-base text-muted"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mb-0 mt-2 text-sm text-muted"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33maria-orientation[39m=[32m"horizontal"[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1 border-b border-line w-full justify-start overflow-x-auto"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mrole[39m=[32m"tablist"[39m
+    [33mstyle[39m=[32m"outline: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "数据记录":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"radix-_r_ul_-content-records"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"active"[39m
+    [33mid[39m=[32m"radix-_r_ul_-trigger-records"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "字段与校验":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"radix-_r_ul_-content-fields"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"inactive"[39m
+    [33mid[39m=[32m"radix-_r_ul_-trigger-fields"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "业务状态":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"radix-_r_ul_-content-statuses"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"inactive"[39m
+    [33mid[39m=[32m"radix-_r_ul_-trigger-statuses"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "来源设置":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"radix-_r_ul_-content-source"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"inactive"[39m
+    [33mid[39m=[32m"radix-_r_ul_-trigger-source"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "数据表设置":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"radix-_r_ul_-content-settings"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"inactive"[39m
+    [33mid[39m=[32m"radix-_r_ul_-trigger-settings"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------tabpanel:
+
+  Name "数据记录":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-records"[39m
+    [33mclass[39m=[32m"mt-4 focus:outline-none grid gap-3"[39m
+    [33mdata-orientation[39m=[32m"horizontal"[39m
+    [33mdata-state[39m=[32m"active"[39m
+    [33mid[39m=[32m"radix-_r_ul_-content-records"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+    [33mstyle[39m=[32m"animation-duration: 0s;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "新增记录":
+  [36m<section[39m
+    [33maria-label[39m=[32m"新增记录"[39m
+    [33mclass[39m=[32m"grid min-w-0 gap-5"[39m
+    [33mdata-record-page[39m=[32m"create"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "正在加载记录表单":
+  [36m<div[39m
+    [33maria-label[39m=[32m"正在加载记录表单"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"m-0 flex items-center gap-2 text-sm text-muted"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33mclass[39m=[32m"min-w-0 overflow-clip rounded-card border border-line bg-surface"[39m
+  [33mdata-table-page-frame[39m=[32m"true"[39m
+  [33mdata-testid[39m=[32m"data-table-page-frame"[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"flex min-w-0 w-full flex-wrap items-start justify-between gap-x-8 gap-y-4 px-5 pt-5"[39m
+    [33mdata-table-page-frame-header[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0 basis-80 flex-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex min-w-0 gap-5"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"flex size-16 shrink-0 items-center justify-center rounded-card border border-clay/10 bg-clay/5 text-clay"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mfill[39m=[32m"currentColor"[39m
+            [33mheight[39m=[32m"32"[39m
+            [33mviewBox[39m=[32m"0 0 256 256"[39m
+            [33mwidth[39m=[32m"32"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-32-80a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,136Zm0,32a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,168Z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</span>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"m-0 break-words text-2xl font-semibold"[39m
+          [36m>[39m
+            [0m新增记录[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mb-0 mt-1 break-words text-base text-muted"[39m
+          [36m>[39m
+            [0m填写业务字段，保存后先写入本地。[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mb-0 mt-2 text-sm text-muted"[39m
+          [36m>[39m
+            [0m本地数据[0m
+            [0m　|　[0m
+            [0m本地可维护[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0 max-w-full overflow-x-auto"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33maria-orientation[39m=[32m"horizontal"[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 border-b border-line w-full justify-start overflow-x-auto"[39m
+        [33mdata-orientation[39m=[32m"horizontal"[39m
+        [33mrole[39m=[32m"tablist"[39m
+        [33mstyle[39m=[32m"outline: none;"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"radix-_r_ul_-content-records"[39m
+          [33maria-selected[39m=[32m"true"[39m
+          [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+          [33mdata-orientation[39m=[32m"horizontal"[39m
+          [33mdata-radix-collection-item[39m=[32m""[39m
+          [33mdata-state[39m=[32m"active"[39m
+          [33mid[39m=[32m"radix-_r_ul_-trigger-records"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m数据记录[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"radix-_r_ul_-content-fields"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+          [33mdata-orientation[39m=[32m"horizontal"[39m
+          [33mdata-radix-collection-item[39m=[32m""[39m
+          [33mdata-state[39m=[32m"inactive"[39m
+          [33mid[39m=[32m"radix-_r_ul_-trigger-fields"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m字段与校验[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"radix-_r_ul_-content-statuses"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+          [33mdata-orientation[39m=[32m"horizontal"[39m
+          [33mdata-radix-collection-item[39m=[32m""[39m
+          [33mdata-state[39m=[32m"inactive"[39m
+          [33mid[39m=[32m"radix-_r_ul_-trigger-statuses"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m业务状态[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"radix-_r_ul_-content-source"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+          [33mdata-orientation[39m=[32m"horizontal"[39m
+          [33mdata-radix-collection-item[39m=[32m""[39m
+          [33mdata-state[39m=[32m"inactive"[39m
+          [33mid[39m=[32m"radix-_r_ul_-trigger-source"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m来源设置[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"radix-_r_ul_-content-settings"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"text-muted data-[state=active]:border-b-2 data-[state=active]:border-clay rounded-t-control px-5 py-3 text-base data-[state=active]:bg-clay/5 data-[state=active]:font-semibold data-[state=active]:text-clay"[39m
+          [33mdata-orientation[39m=[32m"horizontal"[39m
+          [33mdata-radix-collection-item[39m=[32m""[39m
+          [33mdata-state[39m=[32m"inactive"[39m
+          [33mid[39m=[32m"radix-_r_ul_-trigger-settings"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m数据表设置[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"min-w-0 p-5"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-records"[39m
+      [33mclass[39m=[32m"mt-4 focus:outline-none grid gap-3"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-state[39m=[32m"active"[39m
+      [33mid[39m=[32m"radix-_r_ul_-content-records"[39m
+      [33mrole[39m=[32m"tabpanel"[39m
+      [33mstyle[39m=[32m"animation-duration: 0s;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"新增记录"[39m
+        [33mclass[39m=[32m"grid min-w-0 gap-5"[39m
+        [33mdata-record-page[39m=[32m"create"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"正在加载记录表单"[39m
+          [33mrole[39m=[32m"status"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"rounded-control bg-surface-subtle motion-safe:animate-pulse h-64"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"m-0 flex items-center gap-2 text-sm text-muted"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33mfill[39m=[32m"currentColor"[39m
+            [33mheight[39m=[32m"20"[39m
+            [33mviewBox[39m=[32m"0 0 256 256"[39m
+            [33mwidth[39m=[32m"20"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m业务状态在记录详情中单独维护。[0m
+        [36m</p>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-fields"[39m
+      [33mclass[39m=[32m"mt-4 focus:outline-none"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-state[39m=[32m"inactive"[39m
+      [33mhidden[39m=[32m""[39m
+      [33mid[39m=[32m"radix-_r_ul_-content-fields"[39m
+      [33mrole[39m=[32m"tabpanel"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-statuses"[39m
+      [33mclass[39m=[32m"mt-4 focus:outline-none"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-state[39m=[32m"inactive"[39m
+      [33mhidden[39m=[32m""[39m
+      [33mid[39m=[32m"radix-_r_ul_-content-statuses"[39m
+      [33mrole[39m=[32m"tabpanel"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-source"[39m
+      [33mclass[39m=[32m"mt-4 focus:outline-none"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-state[39m=[32m"inactive"[39m
+      [33mhidden[39m=[32m""[39m
+      [33mid[39m=[32m"radix-_r_ul_-content-source"[39m
+      [33mrole[39m=[32m"tabpanel"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m"radix-_r_ul_-trigger-settings"[39m
+      [33mclass[39m=[32m"mt-4 focus:outline-none"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdata-state[39m=[32m"inactive"[39m
+      [33mhidden[39m=[32m""[39m
+      [33mid[39m=[32m"radix-_r_ul_-content-settings"[39m
+      [33mrole[39m=[32m"tabpanel"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+  [36m</div>[39m
+[36m</section>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx:380:39
+    378|   expect(within(frame as HTMLElement).getByRole('tab',{name:'数据记录'})).…
+    379|   expect(within(frame as HTMLElement).getByRole('tab',{name:'字段与校验'}))…
+    380|   expect(within(frame as HTMLElement).getByRole('form',{name:'新建记录表单'}…
+       |                                       ^
+    381|   expect(within(frame as HTMLElement).queryByRole('complementary')).no…
+    382| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 5 passed (6)
+      Tests  1 failed | 63 passed (64)
+   Start at  23:52:45
+   Duration  8.07s (transform 1.12s, setup 0ms, import 9.85s, tests 7.23s, environment 4.06s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error command failed
+npm error command sh -c vitest run DataTablePageFrame.test.tsx ProjectHeader.test.tsx ProjectOverviewPage.test.tsx ProjectsWorkspace.test.tsx DataTableDetailPage.test.tsx RecordPages.test.tsx

@@ -1,0 +1,67 @@
+/* Tokens are a runtime API too (inline styles and future shared controls). */
+@theme static {
+  --color-canvas: #f1eee7;
+  --color-surface: #fbfaf7;
+  --color-surface-subtle: #f6f3ee;
+  --color-surface-hover: #f5f1e9;
+  --color-line: #d8d3c9;
+  --color-line-strong: #c7c0b5;
+  --color-ink: #34322e;
+  --color-muted: #625e57;
+  --color-clay: #8d4e2f;
+  --color-clay-strong: #88492c;
+  --color-clay-soft: #f2e3d7;
+  --color-sage: #71866b;
+  --color-sage-strong: #4f694a;
+  --color-sage-soft: #e6ece2;
+  --color-control-border: #8b8377;
+  --color-focus: #8d4e2f;
+  --color-on-accent: #ffffff;
+  --color-danger: #b13c32;
+  --color-danger-strong: #923329;
+  --color-danger-soft: #fbece9;
+  --color-success: #4f694a;
+  --color-success-soft: #e6ece2;
+  --color-warning: #805618;
+  --color-warning-soft: #faf0dc;
+  --color-disabled-surface: #ebe7df;
+  --color-disabled-ink: #7b746a;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --shadow-popup: 0 6px 20px rgb(52 50 46 / 12%);
+  --shadow-modal: 0 20px 64px rgb(52 50 46 / 18%);
+}
+
+:root {
+  --font-body: Inter, "Segoe UI Variable", "Microsoft YaHei UI", system-ui, sans-serif;
+  --font-code: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --text-body: 14px;
+  --leading-body: 20px;
+  --text-note: 12px;
+  --leading-note: 18px;
+  --text-section: 16px;
+  --leading-section: 24px;
+  --text-page: 24px;
+  --leading-page: 32px;
+  --space-field: 16px;
+  --space-section: 24px;
+  --control-sm: 2rem;
+  --control-md: 2.5rem;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --scrollbar-rail: 12px;
+  --scrollbar-thumb: 6px;
+  --scrollbar-thumb-min: 24px;
+  --color-overlay: rgb(52 50 46 / 32%);
+  --layer-sticky: 10;
+  --layer-popup: 30;
+  --layer-modal: 50;
+  --layer-step: 10;
+  --layer-toast: 100;
+  --motion-control: 100ms;
+  --motion-toggle: 120ms;
+  --motion-overlay: 150ms;
+  --motion-progress: 300ms;
+  --motion-spinner: 700ms;
+}

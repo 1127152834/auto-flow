@@ -1,0 +1,143 @@
+{
+  "checkedAt": "2026-09-12T22:16:22.031286+00:00",
+  "status": "passed-for-listed-foundation-scope",
+  "milestoneStatus": "PM2-inProgress",
+  "codeCommits": [
+    "677b60f",
+    "c1e4a6d",
+    "e78b0e6",
+    "d915b6c",
+    "2226d19",
+    "a872db2",
+    "d3f76af",
+    "8ff3b6e"
+  ],
+  "scope": [
+    "atomic migration and typed identities",
+    "bounded XLSX adapter only",
+    "table directory and metadata HTTP",
+    "field create/list and status create/list/update HTTP",
+    "field-impact preview/revalidation adapter only",
+    "table directory/form components, not data pages"
+  ],
+  "checks": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "exitCode": 0,
+      "passed": 636,
+      "warnings": 2,
+      "log": "/tmp/autoflow-pm2-catalog-all-backend.log",
+      "scopeNote": "Stable catalog foundation before the final optional/non-nullable PATCH schema fix; final fix validated separately below. Uncommitted A2d records are excluded."
+    },
+    {
+      "command": "uv run --directory apps/backend pytest tests/contract/test_project_data_catalog.py tests/contract/test_project_data.py -q",
+      "exitCode": 0,
+      "passed": 8,
+      "scopeNote": "After final non-nullable PATCH fix; includes omitted versus explicit-null and OpenAPI property assertions."
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test",
+      "exitCode": 0,
+      "passed": 461,
+      "files": 76,
+      "log": "/tmp/autoflow-pm2-catalog-all-frontend.log"
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check src tests",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "exitCode": 0,
+      "sourceFiles": 156,
+      "scopeNote": "Before A2d records files were created."
+    },
+    {
+      "command": "npm run openapi:check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Existing Zod PURE comment annotations stripped by Rollup"
+      ]
+    },
+    {
+      "command": "npm run test:scripts",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "exitCode": 0,
+      "passed": 3
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "coverageVerification": {
+    "result": "passed",
+    "features": 48,
+    "acceptanceScenarios": 178,
+    "executionContracts": 18,
+    "capabilityGates": 7,
+    "sourceIdsAndLinesMatch": true,
+    "dependencyGraph": "acyclic",
+    "futureFeatureEvidenceUnchangedFrom": "ef3178a",
+    "historicalPm0Pm1AndDesignUnchanged": true
+  },
+  "reviews": {
+    "record": "docs/project-management/implementation/pm2-review-foundation.md",
+    "catalogDomain": "specification-and-engineering-approved",
+    "catalogHttp": "specification-and-engineering-approved",
+    "fieldImpactAdapter": "specification-and-engineering-approved",
+    "tableComponents": "specification-and-engineering-approved",
+    "smokeOutputProtection": "specification-and-engineering-approved"
+  },
+  "actualApp": {
+    "scope": "PM1 project entry and existing-module regression ONLY",
+    "evidence": "docs/migration/project-management-pm2-foundation-qa/built-html.json",
+    "groupsPassed": 9,
+    "platform": "darwin",
+    "arch": "arm64",
+    "workspaces": "isolated temporary test workspaces",
+    "pm2DataAcceptance": "not-executed"
+  },
+  "notVerified": [
+    "PM2 data five-tab pages",
+    "record HTTP and execution occupancy",
+    "actual Excel IPC/import/export workflow",
+    "Google Sheets live resources",
+    "project automation execution and End preservation",
+    "Windows runtime",
+    "macOS x64",
+    "release package"
+  ],
+  "next": [
+    "finish and review A2d record commands",
+    "connect field mutation-impact and PATCH in the same transaction",
+    "record filtering, deletion impact and fixed-target status batches",
+    "file IPC and atomic import/export",
+    "domain components and five-tab data pages",
+    "PM2 full real Electron acceptance"
+  ],
+  "upstreamObservation": {
+    "main": "9490924",
+    "studioM2": "committed-upstream-not-integrated",
+    "migration": "0006_workflow_runs branches from 0005; integration must reconcile with pm02 without rewriting historical migrations",
+    "pm1": "ef3178a clean",
+    "design": "9c361f4 clean",
+    "ui": "1fb58e1 clean"
+  }
+}

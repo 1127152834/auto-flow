@@ -1,0 +1,217 @@
+{
+  "date": "2026-09-12",
+  "status": "proposed-design-document-verification",
+  "checked_at": "2026-09-12T14:26:52.171335+00:00",
+  "design_worktree": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-design",
+  "branch": "codex/project-management-design",
+  "pre_delivery_head": "0501c4010b1954ad635e7fd0a57d82e8f47adb95",
+  "current_main_head": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+  "legacy_revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+  "sources": [
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": "autoflow-desktop/backend/src/autoflow/models.py",
+      "kind": "git-object",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "5ce3fca4096f1468cf4cf44a3e5b097d7a986df16f68f4406256c416c2473a5b",
+      "lines": 421
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Workflow-Data-and-Execution-Model.md",
+      "kind": "git-object",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "68be3080f42ea4cc43a819b84fbf7e6908975b01bc31a79d3c071db29f90eefa",
+      "lines": 235
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Milestones/M3-SQLite-Contract.md",
+      "kind": "git-object",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "b723315429214a00d449d0121ab4afef4a29991b3901562c555a11a1ee14d85d",
+      "lines": 53
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/Milestones/M5.1-Sheets-Local-Write-Contract.md",
+      "kind": "git-object",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "6438444d74437e12bbf991c9fb4d27c1cde2c254d4e6cabe13d133ed3881263d",
+      "lines": 71
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/browser-automation",
+      "path": ".ai/01-Project-Management/M9-Run-Presets/Concurrency-Contract.md",
+      "kind": "git-object",
+      "revision": "324748abe7095f085b4ffb9467be9cb5c8851a5c",
+      "sha256": "fae2772486752d6ef3f22af4a4725e2cb012ad5587d686269b65c608498b72f7",
+      "lines": 135
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": ".ai/decisions/2026-09-12-automation-studio-window.md",
+      "kind": "git-object",
+      "revision": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+      "sha256": "265f98b935494c07b7421c4bb899fbb8c1e11599eefabe5b1336b56c610c41fe",
+      "lines": 10
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": ".ai/plans/2026-09-12-automation-studio-replication-method.md",
+      "kind": "git-object",
+      "revision": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+      "sha256": "905bcf32b28a52d6d1ea01598d7ab953c5c5bc8340f73e196b9c63d3377c7d81",
+      "lines": 11
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/PROJECT_STRUCTURE.md",
+      "kind": "git-object",
+      "revision": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+      "sha256": "ebf78f222289852cc4c4cb74f983562dbab57504ed1e7deffda7848e24f783b3",
+      "lines": 241
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/renderer/app/ApplicationHeader.tsx",
+      "kind": "git-object",
+      "revision": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+      "sha256": "9db6b42d5f4a2bfa4bc60bd0a93e3fc97b5558d61b56aa4cd7e9bed872ac3c0e",
+      "lines": 15
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/main/ipc/automation-studio.ts",
+      "kind": "git-object",
+      "revision": "4e3f059529215edbbc6b6a5cf59c0f14c9e93d0f",
+      "sha256": "57097d35e8ec29556f887f0fe208b3a115ff365063389a6904248eb9733063ee",
+      "lines": 43
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/automation-studio/PLAN.md",
+      "kind": "working-file",
+      "revision": null,
+      "sha256": "72f88719f58f4d1e7c3cff222c33debae40df46c38344b4721a2d032a8f6bdca",
+      "lines": 494
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "docs/automation-studio/REVERSE_ENGINEERED_DEVELOPMENT_PLAN.md",
+      "kind": "working-file",
+      "revision": null,
+      "sha256": "d303db6b1c7398ff708a17099607d679b083009b7880de3caf5fb5c7c555ff7b",
+      "lines": 312
+    },
+    {
+      "repository": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "path": "apps/desktop/src/renderer/domains/automation/studio/pages/StudioPage.tsx",
+      "kind": "working-file",
+      "revision": null,
+      "sha256": "986b4af7a300b68decc50d315351b3894f7731b0b553d3ce2e925fd2c35f3de7",
+      "lines": 67
+    }
+  ],
+  "documents": [
+    {
+      "path": "docs/project-management/design/README.md",
+      "sha256": "13087de3a5b3a87aad69b91506e27bb3f710943a98a6f50586e8987a995502d7",
+      "lines": 162
+    },
+    {
+      "path": "docs/project-management/design/data-and-state-rules.md",
+      "sha256": "e0e72a7b54efe26ed1b6a305baa5ba9073ec452dc899dc2deb9cf33bfb7955b6",
+      "lines": 431
+    },
+    {
+      "path": "docs/project-management/design/data-flow-and-contracts.md",
+      "sha256": "ef39d9ecd54e9925cfe6f4bd517565b67bf19bb818878f3ea8cd6c1ba8b3c3ce",
+      "lines": 237
+    },
+    {
+      "path": "docs/project-management/design/execution-and-environment.md",
+      "sha256": "fe933415ffdf62e9b7f22a68b719af4b497c9877bfc31babfb25cf8e32dc4096",
+      "lines": 462
+    },
+    {
+      "path": "docs/project-management/design/functional-structure.md",
+      "sha256": "2debc8a8b87eb3e10daf63520342c1366acfb15d5e3b9daaab0f0f166d90e93d",
+      "lines": 529
+    },
+    {
+      "path": "docs/superpowers/specs/2026-09-12-project-management-design.md",
+      "sha256": "2cb9817048c4edb959e57ea05cbe96f2c38091b076e0487300efb1004506ba8d",
+      "lines": 337
+    },
+    {
+      "path": ".ai/decisions/2026-09-12-project-data-workflow-semantics.md",
+      "sha256": "65e5b4ef95c0c4e8d8cbaeb4656d41353b59e6f9c87d14f2e6fefa7f53698fed",
+      "lines": 32
+    },
+    {
+      "path": ".ai/decisions/2026-09-12-project-management-complete-design-first.md",
+      "sha256": "ff748921cce9376161faed74364e17f77ea6cf70fe38b5f971d981319ac59e23",
+      "lines": 32
+    },
+    {
+      "path": ".ai/memory/project-context.md",
+      "sha256": "75f47bceb27efec6693318a6ff0c0b3d36a94c2963bba16aa5ee4023097bae54",
+      "lines": 20
+    },
+    {
+      "path": ".ai/sessions/2026-09-12-project-management-complete-business-design.md",
+      "sha256": "9343d235b0861148e737d87b0256d4de54170c577afb578061c36b23327606c9",
+      "lines": 22
+    }
+  ],
+  "counts": {
+    "functional_entries": 48,
+    "unique_data_acceptance_ids": 137,
+    "execution_contracts": 18,
+    "execution_gates": 7,
+    "execution_acceptance_scenarios": 25,
+    "flow_acceptance_scenarios": 16
+  },
+  "checks": {
+    "local_links_checked": 76,
+    "local_links_valid": true,
+    "balanced_fences_and_no_trailing_whitespace": true,
+    "historical_snapshots_unchanged": true,
+    "document_only_changes": true,
+    "scoped_git_diff_check": true,
+    "targeted_semantic_assertions": {
+      "no_task_without_queued_core_run": true,
+      "no_batch_history_filter": true,
+      "end_keeps_context_and_associates_rows": true,
+      "query_then_explicit_dynamic_write": true,
+      "workflow_creates_fields": true,
+      "no_requirement_for_another_user_example": true
+    }
+  },
+  "reviews": [
+    {
+      "scope": "product coverage and page flows",
+      "method": "agent draft + root integration + targeted corrections"
+    },
+    {
+      "scope": "data/status/Sheets/identity",
+      "method": "agent source comparison + root cross-document review"
+    },
+    {
+      "scope": "execution/environment cross-document consistency",
+      "method": "final bounded agent review",
+      "finding": "FLOW-05 allowed an orphan Task without CoreRun",
+      "resolution": "fixed Task/input/lease/queued CoreRun atomic commit; response-loss recovery queries same identity"
+    }
+  ],
+  "not_run": [
+    "application implementation tests",
+    "real browser workflows",
+    "Google Sheets live operations",
+    "macOS application acceptance",
+    "Windows application acceptance",
+    "cross-platform packaging/recovery"
+  ],
+  "errors": []
+}

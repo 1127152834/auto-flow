@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest'
+import { chooseOption, choiceTestEnvironment } from '../../../shared/testing/choice-user'
+
+choiceTestEnvironment()
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FormProvider, useForm, useWatch } from 'react-hook-form'
@@ -32,20 +35,20 @@ it('normalizes Preview to Stable when switching to a public kernel', async () =>
   render(<Harness />)
   expect(screen.queryByLabelText('发布通道')).not.toBeInTheDocument()
   expect(screen.getByTestId('values')).toHaveTextContent('"releaseChannel":"preview"')
-  await user.selectOptions(screen.getByLabelText('浏览器内核'), 'public|146.0.1.0')
+  await chooseOption(user, screen.getByLabelText('浏览器内核'), 'public|146.0.1.0')
   expect(screen.getByTestId('values')).toHaveTextContent('"releaseChannel":"stable"')
 })
 
 it('clears mutually exclusive proxy references as the mode changes', async () => {
   const user = userEvent.setup()
   render(<Harness />)
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'proxy')
-  await user.selectOptions(screen.getByLabelText('固定代理'), 'proxy-1')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'proxy')
+  await chooseOption(user, screen.getByLabelText('固定代理'), 'proxy-1')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyId":"proxy-1"')
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'pool')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'pool')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyId":""')
-  await user.selectOptions(screen.getByLabelText('代理池'), 'pool-1')
-  await user.selectOptions(screen.getByLabelText('代理模式'), 'none')
+  await chooseOption(user, screen.getByLabelText('代理池'), 'pool-1')
+  await chooseOption(user, screen.getByLabelText('代理模式'), 'none')
   expect(screen.getByTestId('values')).toHaveTextContent('"proxyPoolId":""')
 })
 
@@ -65,19 +68,25 @@ it('keeps kernel management available when resources are empty or failed', async
   let trigger: HTMLButtonElement | null = null
   const onManageKernel = vi.fn<NonNullable<KernelProxyFieldsProps['onManageKernel']>>((event) => { trigger = event.currentTarget })
   render(<Harness installedKernels={[]} proxyOptions={{ proxies: [], pools: [] }} kernelsError="读取内核失败" onManageKernel={onManageKernel} />)
+  screen.getByLabelText('浏览器内核').focus(); await user.keyboard('{ArrowDown}')
   expect(screen.getByRole('option', { name: '暂无已安装内核' })).toBeInTheDocument()
+  await user.keyboard('{Escape}')
   expect(screen.getByRole('alert')).toHaveTextContent('读取内核失败')
   await user.click(screen.getByRole('button', { name: '管理内核' }))
   expect(onManageKernel).toHaveBeenCalledTimes(1)
   expect(trigger).toBeInstanceOf(HTMLButtonElement)
 })
 
-it('keeps an invalid saved resource visible so the schema can block it', () => {
+it('keeps an invalid saved resource visible so the schema can block it', async () => {
   function InvalidHarness() {
     const form = useForm<ProfileFormValues>({ defaultValues: { ...emptyProfileForm, browserKernel: 'public|removed', proxyMode: 'proxy', proxyId: 'removed-proxy' } })
     return <FormProvider {...form}><KernelProxyFields installedKernels={[]} proxyOptions={{ proxies: [], pools: [] }} onManageKernel={() => undefined} /></FormProvider>
   }
+  const user = userEvent.setup()
   render(<InvalidHarness />)
+  screen.getByLabelText('浏览器内核').focus(); await user.keyboard('{ArrowDown}')
   expect(screen.getByRole('option', { name: /public · removed.*已不可用/ })).toBeInTheDocument()
+  await user.keyboard('{Escape}')
+  screen.getByLabelText('固定代理').focus(); await user.keyboard('{ArrowDown}')
   expect(screen.getByRole('option', { name: /removed-proxy.*已不可用/ })).toBeInTheDocument()
 })

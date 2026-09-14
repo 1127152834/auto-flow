@@ -1,0 +1,42 @@
+[
+  {
+    "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/data",
+    "factor": 2,
+    "native": 2,
+    "dom": {
+      "w": 720,
+      "h": 512,
+      "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/data"
+    }
+  },
+  {
+    "hash": "#/projects",
+    "factor": 1,
+    "native": 1,
+    "dom": {
+      "w": 1440,
+      "h": 1024,
+      "hash": "#/projects"
+    }
+  },
+  {
+    "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/overview",
+    "factor": null,
+    "native": 1,
+    "dom": {
+      "w": 1440,
+      "h": 1024,
+      "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/overview"
+    }
+  },
+  {
+    "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/data",
+    "factor": null,
+    "native": 2,
+    "dom": {
+      "w": 1440,
+      "h": 1024,
+      "hash": "#/projects/a696c329-e146-4ccb-9b02-3419f96338e0/data"
+    }
+  }
+]

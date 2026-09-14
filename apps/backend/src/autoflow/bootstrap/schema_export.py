@@ -12,6 +12,10 @@ from autoflow.bootstrap.http_routes import (
     register_management_routes,
     register_proxy_routes,
 )
+from autoflow.bootstrap.project_http_routes import (
+    ProjectHttpServices,
+    register_project_routes,
+)
 
 
 class _UnavailableService:
@@ -32,6 +36,8 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     configure_openapi(app, api_version=api_version)
     register_proxy_routes(app, proxies)
     register_management_routes(app, management, api_version=api_version, instance_id='schema-export')
+    projects = ProjectHttpServices(**{field.name: unavailable for field in fields(ProjectHttpServices)})
+    register_project_routes(app, projects)
     return app.openapi()
 
 

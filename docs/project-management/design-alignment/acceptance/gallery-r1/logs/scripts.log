@@ -1,0 +1,41 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ history output guard resolves symlinks before any nested directory is created (17.813792ms)
+✔ containment handles Windows separators and sibling prefixes (0.323833ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (14.067042ms)
+✔ R2 wrapper reuses the exported R1 harness (3.457667ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (1.721958ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.370125ms)
+✔ browser management smoke creates the platform kernel layout (0.177875ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.195542ms)
+✔ profile test browser smoke validates a public kernel directory (7.656375ms)
+✔ profile test browser smoke finds a session below the manager root (1.82425ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (50.789125ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (45.8185ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (47.952875ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (46.406583ms)
+✔ packaged smoke cannot silently select external health mode (1.527917ms)
+✔ cleanup rejects after the final deadline if the child never exits (10.978417ms)
+✔ cleanup observes close without requiring exit (0.268ms)
+✔ cleanup rejects a child process error (0.178208ms)
+✔ required path exists: apps/desktop/package.json (0.534875ms)
+✔ required path exists: apps/backend/pyproject.toml (0.077333ms)
+✔ root scripts expose the foundation checks (0.179583ms)
+✔ checks sources without inventing application or visual acceptance (14.308417ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (5.002916ms)
+✔ does not allow a passed page without real evidence or missing required states (2.454833ms)
+✔ rejects duplicate source and page identities and evidence traversal (2.726625ms)
+✔ requires actual evidence files instead of an existing directory or blank path (2.768541ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (4.363791ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.816ms)
+✔ a green machine report cannot substitute for real application evidence (0.277208ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 270.194292

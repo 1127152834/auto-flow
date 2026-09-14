@@ -1,0 +1,289 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T12:37:33.235Z",
+  "platform": "darwin",
+  "arch": "arm64",
+  "mode": "visual-directory",
+  "visualReview": "pending",
+  "provenance": {
+    "gitHead": "b547e5b0675c534d96d971a72e7c2ae10881712c",
+    "dirtyFiles": [],
+    "scriptSha256": "b76b4514766e10b1d187e19f483e1e7681ccda309bc044888bf73ba75c02b9b7",
+    "desktopBuildSha256": "743fdfe2fe65cd49268a881782281575eb5e5e46587ed76663175f135fa0b16c"
+  },
+  "checks": [
+    "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+    "E1: 更多编辑打开表单不导航",
+    "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复"
+  ],
+  "injections": [],
+  "commandErrors": [],
+  "screenshots": [
+    {
+      "id": "r1-a-empty",
+      "file": "r1-a-empty.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        }
+      ],
+      "checks": [],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent",
+      "file": "VR-A01-recent.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        },
+        {
+          "x": 104,
+          "y": 282,
+          "w": 608,
+          "h": 112
+        },
+        {
+          "x": 728,
+          "y": 282,
+          "w": 608,
+          "h": 112
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A02-all",
+      "file": "VR-A02-all.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "setupLevel": "E2",
+      "fixture": "第三个长名称项目经API预置，E1仅证明UI搜索/进入全部路径",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        },
+        {
+          "x": 104,
+          "y": 282,
+          "w": 1232,
+          "h": 96
+        },
+        {
+          "x": 104,
+          "y": 386,
+          "w": 1232,
+          "h": 96
+        },
+        {
+          "x": 104,
+          "y": 490,
+          "w": 1232,
+          "h": 96
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A04-no-match",
+      "file": "VR-A04-no-match.png",
+      "stateSource": "ui",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "route": "#/projects",
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "dpr": 1,
+      "fonts": "loaded",
+      "zoom": 1,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 104,
+          "y": 98,
+          "w": 1232,
+          "h": 32
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航"
+      ],
+      "visualReview": "pending"
+    },
+    {
+      "id": "VR-A01-recent-200",
+      "file": "VR-A01-recent-200.png",
+      "stateSource": "ui-with-api-fixture",
+      "navigation": "pointer",
+      "level": "E1",
+      "reference": "R1-A",
+      "setupLevel": "E2",
+      "fixture": "长名fixture经UI打开成为最近记录",
+      "route": "#/projects",
+      "viewport": {
+        "width": 360,
+        "height": 256
+      },
+      "dpr": 4,
+      "fonts": "loaded",
+      "zoom": 2,
+      "windowContentSize": [
+        1440,
+        996
+      ],
+      "viewportMode": "CDP desktop viewport override (physical macOS work area limited)",
+      "platformFonts": [
+        {
+          "familyName": "PingFang SC",
+          "postScriptName": "PingFangSC-Semibold",
+          "isCustomFont": false,
+          "glyphCount": 2
+        }
+      ],
+      "geometry": [
+        {
+          "x": 24,
+          "y": 203,
+          "w": 300,
+          "h": 32
+        },
+        {
+          "x": 24,
+          "y": 387,
+          "w": 300,
+          "h": 132
+        },
+        {
+          "x": 24,
+          "y": 535,
+          "w": 300,
+          "h": 132
+        },
+        {
+          "x": 24,
+          "y": 683,
+          "w": 300,
+          "h": 132
+        }
+      ],
+      "checks": [
+        "E1: UI创建/打开A再B，目录结构图标/信息/更多几何通过",
+        "E1: 更多编辑打开表单不导航",
+        "E1: 未访问项目仅在全部目录可见；UI无匹配可恢复"
+      ],
+      "visualReview": "pending"
+    }
+  ],
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-r1-qa-zpkVjc",
+  "excluded": [
+    "Windows",
+    "其他架构",
+    "打包应用",
+    "用户手动执行结果"
+  ]
+}

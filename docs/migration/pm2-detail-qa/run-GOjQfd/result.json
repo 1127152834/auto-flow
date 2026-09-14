@@ -1,0 +1,24 @@
+{
+  "result": "passed",
+  "checkedAt": "2026-09-13T20:53:56.068Z",
+  "pickerMode": "injected-dialog-results-E4",
+  "provenance": {
+    "gitHead": "800fb010a2c9d6dfd1df23bb9c034345ee815f87",
+    "desktopBuildSha256": "084c632df6e40675edd6041d2e6bae7de28a8c9c2fa1efd4af321459ce42e29e",
+    "scriptSha256": "2eb9cbae92432c72db87dea21aa4456bf97c23cb37ada2cfd0bb321ddbc774e2"
+  },
+  "captureMetadata": "capture-metadata.json",
+  "scope": "PM2 detail flows; system open/save panel results injected, renderer UI, IPC proof, HTTP, SQLite and workbook I/O real",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET",
+    "exported the applied filter with one selected data column and verified the XLSX independently with openpyxl",
+    "a repeated save target was rejected instead of overwriting the first export",
+    "replaced through explicit existing-field mapping and impact review; generation advanced, statuses reset, the old generation/key returned 410, and the source workbook stayed byte-identical",
+    "a fresh Electron and sidecar instance returned the durable replacement and export-era table facts",
+    "imported an actual 10000-row workbook through the directory UI in 5947 ms; rendered 50 rows per page and changed the first row on next-page navigation in 183 ms"
+  ],
+  "excluded": [
+    "manual native file-panel interaction"
+  ]
+}

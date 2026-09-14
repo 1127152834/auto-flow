@@ -1,0 +1,73 @@
+{
+  "date": "2026-09-13",
+  "verifiedAt": "2026-09-13T03:00:35.483813+00:00",
+  "status": "partialPassed",
+  "scope": "PM2 backend batch status, controlled inspection, staged import/reimport and consistent export; not complete PM2 acceptance",
+  "baseCommit": "6b794ce7430a6be97c68114eff1ae6d83d1ee4d1",
+  "tests": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "status": "passed",
+      "passed": 759,
+      "durationSeconds": 101.18
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check .",
+      "status": "passed"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "status": "passed",
+      "sourceFiles": 195
+    },
+    {
+      "command": "npm run openapi:check",
+      "status": "passed"
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:scripts",
+      "status": "passed",
+      "passed": 18
+    },
+    {
+      "command": "npm run test:structure",
+      "status": "passed",
+      "passed": 3
+    }
+  ],
+  "reviews": {
+    "specification": "passed after fixes",
+    "engineering": "passed after fixes",
+    "reviewers": [
+      "excel_services",
+      "status_batches",
+      "root integration"
+    ],
+    "closedIssues": [
+      "batch old-generation/typed identity/CAS/noop/reference guards",
+      "inspection atomic identity and consumed-token transaction; durable interruption outcome",
+      "hidden candidate visibility and final impact recheck",
+      "import cleanup after quiesce admission closes; claim ownership",
+      "previous-service file authorization invalid; durable original result query remains",
+      "export snapshot isolation and publication proof before external action",
+      "reconcile target revision CAS, startup recovery, durable pending blockers",
+      "table source display whitelist and one immutable import publication change"
+    ]
+  },
+  "migrationHead": "pm02_excel_exports",
+  "notExecuted": [
+    "complete P1 page integration (original owner active)",
+    "real Electron PM2 end-to-end",
+    "Windows",
+    "packaged app"
+  ],
+  "limitations": [
+    "UI components under independent review; backend tests do not substitute for real page acceptance.",
+    "Original owner dirty editing files are neither staged nor committed by this task.",
+    "Divergent mainline 0006_workflow_runs migration still needs explicit integration outside this task."
+  ]
+}

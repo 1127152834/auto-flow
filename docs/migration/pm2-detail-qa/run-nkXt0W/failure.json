@@ -1,0 +1,9 @@
+{
+  "result": "failed",
+  "checkedAt": "2026-09-13T04:43:20.844Z",
+  "checks": [
+    "selected the current page in the real table UI and durably set every record status",
+    "cleared the same frozen selection status and verified status facts through GET"
+  ],
+  "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    [\n      '姓名'\n    ],\n    [\n+     'Amy'\n-     'Alice'\n    ],\n    [\n+     'Alice'\n-     'Amy'\n    ]\n  ]\n"
+}

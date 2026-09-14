@@ -1,0 +1,800 @@
+{
+  "date": "2026-09-12",
+  "root": "/Users/zhangtiancheng/Documents/projects/browser-automation/.ai/01-Project-Management/Prototype-Assets-20260911",
+  "files": 198,
+  "unique_contents": 112,
+  "images": [
+    {
+      "path": "00-initial-design/automation-v1/automation-v1-approved.png",
+      "sha256": "a4520177a6d52fbf91757df3dea638203ef1d8102a0963b932df4760f674f528"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/01-search-sort.png",
+      "sha256": "7bda3913caea8a82bd516d5740171f06af71ae49981c8ff093b7fda4beb39f14"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/02-more-menu.png",
+      "sha256": "79f558a4954d50fb65fa6d4a6aa952440a82ec8ea0bbe0878f60e18be9882c21"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/03-delete-confirm.png",
+      "sha256": "54c9040c9b1e432df22f39af328ed948885a54275dfdcb05d34ffeb51bb4c2ca"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/04-delete-conflict.png",
+      "sha256": "eb1bd069a3ca99a23f195a2b9977a0f637af5341ccb11ae3dc8490352207b363"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/05-empty.png",
+      "sha256": "0abed164d2636d3a38a75c04e03535f8658fb55e36d5b7e2d9386b60f90967b9"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/06-no-results.png",
+      "sha256": "8f42cb699f7b58342b8da524b8b95e9d53d72e5e0dcb27763d1049f3652668b5"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/07-loading.png",
+      "sha256": "95c1cb5850e914a8e1c6688f55e8decbe37bca5eb3229d6719fd7564727656f9"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/08-load-error.png",
+      "sha256": "b0e31b952e74c31b5137994e569eb07c7ada9a88b4c7cd10df8146ece129607f"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/09-archived-readonly.png",
+      "sha256": "46a6a4f5d0b5cf5ca019a2813704c040bb5e1545f734fd44379fa55004761448"
+    },
+    {
+      "path": "00-initial-design/automation-v1/interaction-states/10-page-return.png",
+      "sha256": "6939c71803c56bff606e035424f0dd1680f5aef14301387a87c40a2d0b49f0c4"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/data-v1-approved.png",
+      "sha256": "ca940d758b68d6306bd2a60576b2ec5162a56f99fdef114a0fe5ef1ff21ec76d"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/01-records.png",
+      "sha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/02-record-detail.png",
+      "sha256": "d3f6c5774ec467c1ec203d8339b8a21b14de448c318c9d034ea7921aabe17ab6"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/03-record-create.png",
+      "sha256": "72de4a568a2424ba4dc886418b9e7d2aa7ec359c5006185adb1bd45e84724211"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/04-record-edit-validation.png",
+      "sha256": "421c549596d2bca3e42334b684c3a920041b397219445793764fca45c9b040f7"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/05-unsaved-changes.png",
+      "sha256": "94895605c22fdaf29ef4383ba73d4669006bd64b6710672a8cf5a19d845a3d46"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/06-record-delete-confirm.png",
+      "sha256": "76a0e5a3361b1931795eb2ecab48bc13254728ca1ce733a8a2f2eefbec0700fb"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/07-fields.png",
+      "sha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/08-field-editor.png",
+      "sha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/09-states.png",
+      "sha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/10-source-sheets.png",
+      "sha256": "8e6927321b989e65687a2b25e71d58e21097e08fd3599547f74b09e7eb1eb115"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/11-source-excel.png",
+      "sha256": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/12-source-sqlite.png",
+      "sha256": "d81799ae026b01083dc4653e55320bce4dae9351f05357ee8092abf8ceb4fef4"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/13-table-settings.png",
+      "sha256": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/14-delete-table-blocked.png",
+      "sha256": "2b8a64ed274c8796451f196674aaa115bc8499bb42a0f9b31b3ed0d75d6330d5"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/15-create-table.png",
+      "sha256": "73d061eba024d3358d415d4ed43b56d369fc6a4e4d68b217c2d2e1ade7132bbf"
+    },
+    {
+      "path": "00-initial-design/data-v1-approved/secondary-pages-v1/16-record-filter.png",
+      "sha256": "6729305d756d578389afdebc802d34928b445370be776d68965dced79b412c55"
+    },
+    {
+      "path": "00-initial-design/data-v1-candidates/01-catalog-table.png",
+      "sha256": "3df85182345571a2263a1329d7cb9f120f4ea8bfd452adfc2e95dd8bf9b34f0c"
+    },
+    {
+      "path": "00-initial-design/data-v1-candidates/02-spacious-cards.png",
+      "sha256": "ca940d758b68d6306bd2a60576b2ec5162a56f99fdef114a0fe5ef1ff21ec76d"
+    },
+    {
+      "path": "00-initial-design/data-v1-candidates/03-table-preview.png",
+      "sha256": "503f2214106d5227b6c9a6a8311e5833fa5c3e7e86f543f1c28cc732e7362aac"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/environment-main-v1-approved.png",
+      "sha256": "f757d2d1a115e9626c29312379f9001c35eb784aeec23395d0edc1176eb35685"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/01-running-environment-detail.png",
+      "sha256": "9ff896ee6a9f3494b0c545ed04c751e1890dae7d679eb4f609c8686b2635716e"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/02-manual-environment-list.png",
+      "sha256": "3a0ed24d02387cf919622fa87835a736e3b7aa52f38592b5ad32decc5a9c3f3e"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/03-persistent-environment-list.png",
+      "sha256": "83b10b064f66a1cf8c3c80d5573042146edf708739887be1b94c5f7761e18f21"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/04-persistent-environment-detail.png",
+      "sha256": "70a735e4d7485de7572fb1d92d199e6f2562aa5b929c4e970442067eb97a62ea"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/05-project-default-resources-edit.png",
+      "sha256": "00c31ca3bf0d889eaa6c0111c28b1d050d7e2a0c6123fa1a487c14dd14a80074"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/06-resource-impact-and-invalid.png",
+      "sha256": "b6a666548c7ab3d81dddb8cdf78c1af516733e0e693aa350ec30d26bf4b02938"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/07-resource-version-conflict.png",
+      "sha256": "8598c1dcd25fda5ac18d8f940976499f96d6974b4201c90645762276c12608bd"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/08-resource-unsaved-leave.png",
+      "sha256": "47ae56bb333119efc4fd3cc730421e82af2c1f13a325c82d0c02108475d0e278"
+    },
+    {
+      "path": "00-initial-design/environment-v1-approved/secondary-pages-v1/09-runtime-availability-states.png",
+      "sha256": "8eb31da6c89ca6a5f0bc7e93a381b6b24ca1958bf8a8ca4a3b7f867618e3b49a"
+    },
+    {
+      "path": "00-initial-design/environment-v1-candidates/01-list-first.png",
+      "sha256": "5777b7aff7b56f7f663a6be109215cc72dc1f2bbe1101b2bc56ce08883e36574"
+    },
+    {
+      "path": "00-initial-design/environment-v1-candidates/02-scene-first.png",
+      "sha256": "f757d2d1a115e9626c29312379f9001c35eb784aeec23395d0edc1176eb35685"
+    },
+    {
+      "path": "00-initial-design/environment-v1-candidates/03-split-workspace.png",
+      "sha256": "2f7ea6eb13fabcab508f5efd498cb76510ae583d7217d398e950abfaaec06bfe"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/01-activity-filter.png",
+      "sha256": "b960a779ac4f77f7cb1b102e4a3a1167acebf95ed1f0bbcda6c1a919627ab6dc"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/02-activity-expanded.png",
+      "sha256": "734910769df02a85edfeb3f0bb0c80bcc1257ac7062e0193bc9c18053303bbd4"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/03-new-project-empty.png",
+      "sha256": "c2947aa44aa7dc000129fd185f963163bc2f01b556a70ee79482578aafbf64b3"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/04-capability-unavailable.png",
+      "sha256": "e8dc42b85f0e6a6ac05cf00cca0f9cae2a20fde0121de5062259d81651f87fcb"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/05-initial-loading.png",
+      "sha256": "6d99f9db578abdfe0701a3d21bb198f1c05dde6a408a053a0777c80f9675e213"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/06-activity-load-error.png",
+      "sha256": "cae7e1c3cb38f9fa12d3979f052304e763ea8264fdf4086fd17ef734501f9fea"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/07-overview-load-error.png",
+      "sha256": "7d3ff7ccac9d31424f00ac774b5bae3ee1b495643f194ba263472bc14a39a8a6"
+    },
+    {
+      "path": "00-initial-design/overview-interaction-states-v1/08-attention-return.png",
+      "sha256": "bfd624d1cf4dda7ee33c25707912539e151e7dadcd19a46d84d7ee932d5bf718"
+    },
+    {
+      "path": "00-initial-design/overview-v1-approved.png",
+      "sha256": "b0f8a7e37858dd3f2742ede8b34d24cc12becba8b7f8555547390c4147dd70c8"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/01-task-list.png",
+      "sha256": "9a81f19297bf832aac891beb501de73269f34239e5d7510522346f853c409332"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/02-manual-list.png",
+      "sha256": "57f2c715e8e3b19ced71b8ca3af7e231a281133f7c3255407bd1288bbedc61b1"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/03-batch-detail.png",
+      "sha256": "459f2512d622a32170757239ea02aee82ff55b83f15e3be758ab7d18ff5760b9"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/04-task-logs.png",
+      "sha256": "3b3e7f19d784f36e3897d35561edbefb6e825a30d78ac92ea19f6211bebc80db"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/05-task-input-output.png",
+      "sha256": "7af0aa5dbf06f19fb9a22a4c1376eabbf4c08aeb69d422a41ada01e58767a81b"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/06-task-exception-evidence.png",
+      "sha256": "559ddf21e9c4f2d7db6859d8add2e0d98c59e9c0af0a7d8970df6370bdf85114"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/extended-pages/07-manual-detail.png",
+      "sha256": "20a9a703fa18906e2f6fe2b8b96e5108115df47f3c11dbfe09636c1103f6457a"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/01-task-filter.png",
+      "sha256": "cfe619a5fc0674bcdd4b33717e9dddf8cca1788f3279ae7b101fd0b7335e7b8e"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/02-capability-unavailable.png",
+      "sha256": "7c122b5f3cb6e855b451dd4ae6e8e838d57a18214859799fe2d45cc9b9a72066"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/03-empty.png",
+      "sha256": "a916def0191220ae6452a791544a86351062e600745767bda13c90917f47f223"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/04-no-results.png",
+      "sha256": "8f158b0e642b3c17ebd8f68be33e637c12de7dcbbae35232638fd7b4603c7c8b"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/05-loading.png",
+      "sha256": "b84d0ee179639493cb3b8a47a2f544f11e58970558646a31bfe98982472f711c"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/06-refresh-error.png",
+      "sha256": "28344b2ccafd4c2e127e5811103d79ca0aecfdab2b470bd20b30407572a3d7a1"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/07-stop-confirm.png",
+      "sha256": "e79f810a29f4432b215dc91330612d2a29400dc804ad10f979fc258d3931b395"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/08-force-stop-confirm.png",
+      "sha256": "00d61e05c305105a9da9680b9198cc73831ae2368b95e71d12528a48ed73185a"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/09-running-task-logs.png",
+      "sha256": "d5287cb18c62581dcee337fab070530a67ba6472cc1a0cb3977aafe05fd36bf6"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/10-manual-check-failed.png",
+      "sha256": "85b8b563e5b433f559216f6316473ee9be5468b85c513d046d7e762902147e57"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/11-manual-complete-confirm.png",
+      "sha256": "919ab528c908de9e17660b772e8f7c62840557acfd5e9afc5265cc66033f1b87"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/12-manual-expired.png",
+      "sha256": "98016b07064395eba4bac8a7d3585ae90b26cb328819e1b11e00dccd3460db7a"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/interaction-states-v1/13-evidence-missing.png",
+      "sha256": "f523b7905fd459fbdabc34e6bbab4787c8aa4467f88fba2cfde6e94ec83989b6"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/manual-detail-v2-approved/manual-detail-v2-approved.png",
+      "sha256": "d5f491b409df6758e85498a0fdfade0abe82be5aecadc9a35b9b0d238878d5a6"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/manual-detail-v2-candidates-20260910/01-scene-and-decision.png",
+      "sha256": "d5f491b409df6758e85498a0fdfade0abe82be5aecadc9a35b9b0d238878d5a6"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/manual-detail-v2-candidates-20260910/02-information-first.png",
+      "sha256": "1af273f703b9feffe791500c10ce039268aef31a4aa6b39e9e8531b00f700507"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/manual-detail-v2-candidates-20260910/03-scene-and-dock.png",
+      "sha256": "1f4f1ec24e0a1073be58e828241d55482e65f5cb0cf19cc800af6090e7cae5dd"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/run-records-v1-approved.png",
+      "sha256": "2cd36741130604777a2a305167e77724f2d6d95dae2dfd076871bca2d11825e2"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/01-task-list-approved.png",
+      "sha256": "9a81f19297bf832aac891beb501de73269f34239e5d7510522346f853c409332"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/02-manual-list-selected-v2.png",
+      "sha256": "09ab4db96ce3975e50890454cb7ab577d826949d8731f86e1418a327641aa127"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/03-batch-detail-approved.png",
+      "sha256": "459f2512d622a32170757239ea02aee82ff55b83f15e3be758ab7d18ff5760b9"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/04-task-logs-approved.png",
+      "sha256": "3b3e7f19d784f36e3897d35561edbefb6e825a30d78ac92ea19f6211bebc80db"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/05-task-input-output-approved.png",
+      "sha256": "7af0aa5dbf06f19fb9a22a4c1376eabbf4c08aeb69d422a41ada01e58767a81b"
+    },
+    {
+      "path": "00-initial-design/run-records-v1/selection-v2-20260910/06-task-exception-evidence-approved.png",
+      "sha256": "559ddf21e9c4f2d7db6859d8add2e0d98c59e9c0af0a7d8970df6370bdf85114"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/01-date-range.png",
+      "sha256": "eaef3ad61726609b5c47295bd70e6d0a16d51e4a4c52d925f4859ecbae790ae6"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/02-automation-filter.png",
+      "sha256": "9160590b9793954f8387118e95f55f8aebc747337b9dd1a8737ed4a25bb72fe8"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/03-empty.png",
+      "sha256": "6704bb14fe85124468ea3c36e6d70968d88761137954c4860f241e3f4b10f67d"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/04-loading.png",
+      "sha256": "ba31478a35ac9445e972f462fca2850695bf8f3164ba71196a485d49ee026115"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/05-load-error.png",
+      "sha256": "6e270723b6f4ecf3cfa80af8e4cca531a0b447277e2c422a325bb609df2c34bb"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/06-drilldown-tasks.png",
+      "sha256": "01b3a6f6aef7b019802d6eb1c6c55ccecb0680a6498664425fe3e88402368e31"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/07-task-detail-return.png",
+      "sha256": "e9114406e7a05dd205ae40f61f1401dfb3bc1e312889cc76b03fef5ea0e0df49"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/interaction-states/08-statistics-restored.png",
+      "sha256": "dde8efe76b2d1ed2334195dfa86deaa8af28583a9caabf292734766b65f54422"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-approved/statistics-v1-approved.png",
+      "sha256": "14eafdf1b4436b4e3841306b440604d7df68a1142832b782e7cefe95db360859"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-candidates/01-trend-first.png",
+      "sha256": "98375cc235a1eef1e982d25e7a12b956dbba0dec62ff28023ffe7c31d682bd9d"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-candidates/02-workflow-comparison.png",
+      "sha256": "dc2bfc41368ce1fc263dad490df6c6d1976e0e551ac672a483ab5475ea445a59"
+    },
+    {
+      "path": "00-initial-design/statistics-v1-candidates/03-light-summary.png",
+      "sha256": "14eafdf1b4436b4e3841306b440604d7df68a1142832b782e7cefe95db360859"
+    },
+    {
+      "path": "01-audit-snapshot/01-overview-01.png",
+      "sha256": "b0f8a7e37858dd3f2742ede8b34d24cc12becba8b7f8555547390c4147dd70c8"
+    },
+    {
+      "path": "01-audit-snapshot/02-overview-02.png",
+      "sha256": "b960a779ac4f77f7cb1b102e4a3a1167acebf95ed1f0bbcda6c1a919627ab6dc"
+    },
+    {
+      "path": "01-audit-snapshot/03-overview-03.png",
+      "sha256": "734910769df02a85edfeb3f0bb0c80bcc1257ac7062e0193bc9c18053303bbd4"
+    },
+    {
+      "path": "01-audit-snapshot/04-overview-04.png",
+      "sha256": "c2947aa44aa7dc000129fd185f963163bc2f01b556a70ee79482578aafbf64b3"
+    },
+    {
+      "path": "01-audit-snapshot/05-overview-05.png",
+      "sha256": "e8dc42b85f0e6a6ac05cf00cca0f9cae2a20fde0121de5062259d81651f87fcb"
+    },
+    {
+      "path": "01-audit-snapshot/06-overview-06.png",
+      "sha256": "6d99f9db578abdfe0701a3d21bb198f1c05dde6a408a053a0777c80f9675e213"
+    },
+    {
+      "path": "01-audit-snapshot/07-overview-07.png",
+      "sha256": "cae7e1c3cb38f9fa12d3979f052304e763ea8264fdf4086fd17ef734501f9fea"
+    },
+    {
+      "path": "01-audit-snapshot/08-overview-08.png",
+      "sha256": "7d3ff7ccac9d31424f00ac774b5bae3ee1b495643f194ba263472bc14a39a8a6"
+    },
+    {
+      "path": "01-audit-snapshot/09-overview-09.png",
+      "sha256": "bfd624d1cf4dda7ee33c25707912539e151e7dadcd19a46d84d7ee932d5bf718"
+    },
+    {
+      "path": "01-audit-snapshot/10-automation-01.png",
+      "sha256": "a4520177a6d52fbf91757df3dea638203ef1d8102a0963b932df4760f674f528"
+    },
+    {
+      "path": "01-audit-snapshot/11-automation-02.png",
+      "sha256": "7bda3913caea8a82bd516d5740171f06af71ae49981c8ff093b7fda4beb39f14"
+    },
+    {
+      "path": "01-audit-snapshot/12-automation-03.png",
+      "sha256": "79f558a4954d50fb65fa6d4a6aa952440a82ec8ea0bbe0878f60e18be9882c21"
+    },
+    {
+      "path": "01-audit-snapshot/13-automation-04.png",
+      "sha256": "54c9040c9b1e432df22f39af328ed948885a54275dfdcb05d34ffeb51bb4c2ca"
+    },
+    {
+      "path": "01-audit-snapshot/14-automation-05.png",
+      "sha256": "eb1bd069a3ca99a23f195a2b9977a0f637af5341ccb11ae3dc8490352207b363"
+    },
+    {
+      "path": "01-audit-snapshot/15-automation-06.png",
+      "sha256": "0abed164d2636d3a38a75c04e03535f8658fb55e36d5b7e2d9386b60f90967b9"
+    },
+    {
+      "path": "01-audit-snapshot/16-automation-07.png",
+      "sha256": "8f42cb699f7b58342b8da524b8b95e9d53d72e5e0dcb27763d1049f3652668b5"
+    },
+    {
+      "path": "01-audit-snapshot/17-automation-08.png",
+      "sha256": "95c1cb5850e914a8e1c6688f55e8decbe37bca5eb3229d6719fd7564727656f9"
+    },
+    {
+      "path": "01-audit-snapshot/18-automation-09.png",
+      "sha256": "b0e31b952e74c31b5137994e569eb07c7ada9a88b4c7cd10df8146ece129607f"
+    },
+    {
+      "path": "01-audit-snapshot/19-automation-10.png",
+      "sha256": "46a6a4f5d0b5cf5ca019a2813704c040bb5e1545f734fd44379fa55004761448"
+    },
+    {
+      "path": "01-audit-snapshot/20-automation-11.png",
+      "sha256": "6939c71803c56bff606e035424f0dd1680f5aef14301387a87c40a2d0b49f0c4"
+    },
+    {
+      "path": "01-audit-snapshot/21-runs-01.png",
+      "sha256": "2cd36741130604777a2a305167e77724f2d6d95dae2dfd076871bca2d11825e2"
+    },
+    {
+      "path": "01-audit-snapshot/22-runs-02.png",
+      "sha256": "9a81f19297bf832aac891beb501de73269f34239e5d7510522346f853c409332"
+    },
+    {
+      "path": "01-audit-snapshot/23-runs-03.png",
+      "sha256": "09ab4db96ce3975e50890454cb7ab577d826949d8731f86e1418a327641aa127"
+    },
+    {
+      "path": "01-audit-snapshot/24-runs-04.png",
+      "sha256": "459f2512d622a32170757239ea02aee82ff55b83f15e3be758ab7d18ff5760b9"
+    },
+    {
+      "path": "01-audit-snapshot/25-runs-05.png",
+      "sha256": "3b3e7f19d784f36e3897d35561edbefb6e825a30d78ac92ea19f6211bebc80db"
+    },
+    {
+      "path": "01-audit-snapshot/26-runs-06.png",
+      "sha256": "7af0aa5dbf06f19fb9a22a4c1376eabbf4c08aeb69d422a41ada01e58767a81b"
+    },
+    {
+      "path": "01-audit-snapshot/27-runs-07.png",
+      "sha256": "559ddf21e9c4f2d7db6859d8add2e0d98c59e9c0af0a7d8970df6370bdf85114"
+    },
+    {
+      "path": "01-audit-snapshot/28-runs-08.png",
+      "sha256": "d5f491b409df6758e85498a0fdfade0abe82be5aecadc9a35b9b0d238878d5a6"
+    },
+    {
+      "path": "01-audit-snapshot/29-runs-09.png",
+      "sha256": "cfe619a5fc0674bcdd4b33717e9dddf8cca1788f3279ae7b101fd0b7335e7b8e"
+    },
+    {
+      "path": "01-audit-snapshot/30-runs-10.png",
+      "sha256": "7c122b5f3cb6e855b451dd4ae6e8e838d57a18214859799fe2d45cc9b9a72066"
+    },
+    {
+      "path": "01-audit-snapshot/31-runs-11.png",
+      "sha256": "a916def0191220ae6452a791544a86351062e600745767bda13c90917f47f223"
+    },
+    {
+      "path": "01-audit-snapshot/32-runs-12.png",
+      "sha256": "8f158b0e642b3c17ebd8f68be33e637c12de7dcbbae35232638fd7b4603c7c8b"
+    },
+    {
+      "path": "01-audit-snapshot/33-runs-13.png",
+      "sha256": "b84d0ee179639493cb3b8a47a2f544f11e58970558646a31bfe98982472f711c"
+    },
+    {
+      "path": "01-audit-snapshot/34-runs-14.png",
+      "sha256": "28344b2ccafd4c2e127e5811103d79ca0aecfdab2b470bd20b30407572a3d7a1"
+    },
+    {
+      "path": "01-audit-snapshot/35-runs-15.png",
+      "sha256": "e79f810a29f4432b215dc91330612d2a29400dc804ad10f979fc258d3931b395"
+    },
+    {
+      "path": "01-audit-snapshot/36-runs-16.png",
+      "sha256": "00d61e05c305105a9da9680b9198cc73831ae2368b95e71d12528a48ed73185a"
+    },
+    {
+      "path": "01-audit-snapshot/37-runs-17.png",
+      "sha256": "d5287cb18c62581dcee337fab070530a67ba6472cc1a0cb3977aafe05fd36bf6"
+    },
+    {
+      "path": "01-audit-snapshot/38-runs-18.png",
+      "sha256": "85b8b563e5b433f559216f6316473ee9be5468b85c513d046d7e762902147e57"
+    },
+    {
+      "path": "01-audit-snapshot/39-runs-19.png",
+      "sha256": "919ab528c908de9e17660b772e8f7c62840557acfd5e9afc5265cc66033f1b87"
+    },
+    {
+      "path": "01-audit-snapshot/40-runs-20.png",
+      "sha256": "98016b07064395eba4bac8a7d3585ae90b26cb328819e1b11e00dccd3460db7a"
+    },
+    {
+      "path": "01-audit-snapshot/41-runs-21.png",
+      "sha256": "f523b7905fd459fbdabc34e6bbab4787c8aa4467f88fba2cfde6e94ec83989b6"
+    },
+    {
+      "path": "01-audit-snapshot/42-statistics-01.png",
+      "sha256": "14eafdf1b4436b4e3841306b440604d7df68a1142832b782e7cefe95db360859"
+    },
+    {
+      "path": "01-audit-snapshot/43-statistics-02.png",
+      "sha256": "eaef3ad61726609b5c47295bd70e6d0a16d51e4a4c52d925f4859ecbae790ae6"
+    },
+    {
+      "path": "01-audit-snapshot/44-statistics-03.png",
+      "sha256": "9160590b9793954f8387118e95f55f8aebc747337b9dd1a8737ed4a25bb72fe8"
+    },
+    {
+      "path": "01-audit-snapshot/45-statistics-04.png",
+      "sha256": "6704bb14fe85124468ea3c36e6d70968d88761137954c4860f241e3f4b10f67d"
+    },
+    {
+      "path": "01-audit-snapshot/46-statistics-05.png",
+      "sha256": "ba31478a35ac9445e972f462fca2850695bf8f3164ba71196a485d49ee026115"
+    },
+    {
+      "path": "01-audit-snapshot/47-statistics-06.png",
+      "sha256": "6e270723b6f4ecf3cfa80af8e4cca531a0b447277e2c422a325bb609df2c34bb"
+    },
+    {
+      "path": "01-audit-snapshot/48-statistics-07.png",
+      "sha256": "01b3a6f6aef7b019802d6eb1c6c55ccecb0680a6498664425fe3e88402368e31"
+    },
+    {
+      "path": "01-audit-snapshot/49-statistics-08.png",
+      "sha256": "e9114406e7a05dd205ae40f61f1401dfb3bc1e312889cc76b03fef5ea0e0df49"
+    },
+    {
+      "path": "01-audit-snapshot/50-statistics-09.png",
+      "sha256": "dde8efe76b2d1ed2334195dfa86deaa8af28583a9caabf292734766b65f54422"
+    },
+    {
+      "path": "01-audit-snapshot/51-data-01.png",
+      "sha256": "ca940d758b68d6306bd2a60576b2ec5162a56f99fdef114a0fe5ef1ff21ec76d"
+    },
+    {
+      "path": "01-audit-snapshot/52-data-02.png",
+      "sha256": "c496e3859302e6ec2f93216af9d2a3e1f32c14fac35b1c2176b390a88bdd59b3"
+    },
+    {
+      "path": "01-audit-snapshot/53-data-03.png",
+      "sha256": "d3f6c5774ec467c1ec203d8339b8a21b14de448c318c9d034ea7921aabe17ab6"
+    },
+    {
+      "path": "01-audit-snapshot/54-data-04.png",
+      "sha256": "72de4a568a2424ba4dc886418b9e7d2aa7ec359c5006185adb1bd45e84724211"
+    },
+    {
+      "path": "01-audit-snapshot/55-data-05.png",
+      "sha256": "421c549596d2bca3e42334b684c3a920041b397219445793764fca45c9b040f7"
+    },
+    {
+      "path": "01-audit-snapshot/56-data-06.png",
+      "sha256": "94895605c22fdaf29ef4383ba73d4669006bd64b6710672a8cf5a19d845a3d46"
+    },
+    {
+      "path": "01-audit-snapshot/57-data-07.png",
+      "sha256": "76a0e5a3361b1931795eb2ecab48bc13254728ca1ce733a8a2f2eefbec0700fb"
+    },
+    {
+      "path": "01-audit-snapshot/58-data-08.png",
+      "sha256": "378eb24a5f9c4b8182114cc54528d0ad0efa7120d265fc160c862946c89e66c4"
+    },
+    {
+      "path": "01-audit-snapshot/59-data-09.png",
+      "sha256": "c3de19602511ce37670b44914ac7855ec3a68bb8c4f6ce16d96a9a13dc81e6b0"
+    },
+    {
+      "path": "01-audit-snapshot/60-data-10.png",
+      "sha256": "d59f5568efae12c9b468df47739dea0f0a11fd6cf3869b31c9e9dd9557085185"
+    },
+    {
+      "path": "01-audit-snapshot/61-data-11.png",
+      "sha256": "8e6927321b989e65687a2b25e71d58e21097e08fd3599547f74b09e7eb1eb115"
+    },
+    {
+      "path": "01-audit-snapshot/62-data-12.png",
+      "sha256": "cf611c443491349d61432bb52c72f758fe02cc9a240024238e0f17e8bcbcf52e"
+    },
+    {
+      "path": "01-audit-snapshot/63-data-13.png",
+      "sha256": "d81799ae026b01083dc4653e55320bce4dae9351f05357ee8092abf8ceb4fef4"
+    },
+    {
+      "path": "01-audit-snapshot/64-data-14.png",
+      "sha256": "070d7f52a4aee7a6905012c8709d01086d3b8813f0bdbb556b267152fa0d6d00"
+    },
+    {
+      "path": "01-audit-snapshot/65-data-15.png",
+      "sha256": "2b8a64ed274c8796451f196674aaa115bc8499bb42a0f9b31b3ed0d75d6330d5"
+    },
+    {
+      "path": "01-audit-snapshot/66-data-16.png",
+      "sha256": "73d061eba024d3358d415d4ed43b56d369fc6a4e4d68b217c2d2e1ade7132bbf"
+    },
+    {
+      "path": "01-audit-snapshot/67-data-17.png",
+      "sha256": "6729305d756d578389afdebc802d34928b445370be776d68965dced79b412c55"
+    },
+    {
+      "path": "01-audit-snapshot/68-environment-01.png",
+      "sha256": "f757d2d1a115e9626c29312379f9001c35eb784aeec23395d0edc1176eb35685"
+    },
+    {
+      "path": "01-audit-snapshot/69-environment-02.png",
+      "sha256": "9ff896ee6a9f3494b0c545ed04c751e1890dae7d679eb4f609c8686b2635716e"
+    },
+    {
+      "path": "01-audit-snapshot/70-environment-03.png",
+      "sha256": "3a0ed24d02387cf919622fa87835a736e3b7aa52f38592b5ad32decc5a9c3f3e"
+    },
+    {
+      "path": "01-audit-snapshot/71-environment-04.png",
+      "sha256": "83b10b064f66a1cf8c3c80d5573042146edf708739887be1b94c5f7761e18f21"
+    },
+    {
+      "path": "01-audit-snapshot/72-environment-05.png",
+      "sha256": "70a735e4d7485de7572fb1d92d199e6f2562aa5b929c4e970442067eb97a62ea"
+    },
+    {
+      "path": "01-audit-snapshot/73-environment-06.png",
+      "sha256": "00c31ca3bf0d889eaa6c0111c28b1d050d7e2a0c6123fa1a487c14dd14a80074"
+    },
+    {
+      "path": "01-audit-snapshot/74-environment-07.png",
+      "sha256": "b6a666548c7ab3d81dddb8cdf78c1af516733e0e693aa350ec30d26bf4b02938"
+    },
+    {
+      "path": "01-audit-snapshot/75-environment-08.png",
+      "sha256": "8598c1dcd25fda5ac18d8f940976499f96d6974b4201c90645762276c12608bd"
+    },
+    {
+      "path": "01-audit-snapshot/76-environment-09.png",
+      "sha256": "47ae56bb333119efc4fd3cc730421e82af2c1f13a325c82d0c02108475d0e278"
+    },
+    {
+      "path": "01-audit-snapshot/77-environment-10.png",
+      "sha256": "8eb31da6c89ca6a5f0bc7e93a381b6b24ca1958bf8a8ca4a3b7f867618e3b49a"
+    },
+    {
+      "path": "02-refinement-20260910/data-rules-v2/01-record-occupied.png",
+      "sha256": "6fd26487657cb44de5d8f515fb38890326042f259af7b9a43b65ae2cef280bde"
+    },
+    {
+      "path": "02-refinement-20260910/data-rules-v2/02-field-impact.png",
+      "sha256": "eb086d4107db47478fe9d3b32eebac07a527b1d9964a6425e4ea3b487850e497"
+    },
+    {
+      "path": "02-refinement-20260910/data-rules-v2/03-sheets-directions.png",
+      "sha256": "d6ac8c03659ad3908e7604bf0a953f1d1159178c12e608aeb5ed0481beb9612c"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/00-shared-controls.png",
+      "sha256": "b3bf4542690de979ab5bd04200f6188d8ac5a7a9b9149c4b19f260aa50e5eb32"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/01-overview.png",
+      "sha256": "cd10948e1923a24c63e0d6080a0da630d5fed98c3034fcd6125f7808855e1553"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/02-automation-empty.png",
+      "sha256": "695f71d9b872df815e2c54e6b7666812e69f76b0ade463931675c19029c7a16e"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/03-task-log.png",
+      "sha256": "510347fcb9492154fa1cbd2d382df8e9274fe22b6af18c40c4851f9cd6be98ed"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/04-statistics-error.png",
+      "sha256": "2a8897564195b5925fe575d0e92705c4de5cf75ebc18ab4c6c0a5ee6ac2bac32"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/05-data-record.png",
+      "sha256": "d7724054d21150ea84d141beefc5ac7c383d50e8f05d0b9efafd5de07549a676"
+    },
+    {
+      "path": "02-refinement-20260910/shared-controls-v1/06-resource-defaults.png",
+      "sha256": "4455876cef6d8013c83f9cc752a9013fc00c782daa49146fb3bc0606840009f9"
+    },
+    {
+      "path": "02-refinement-20260910/statistics-rules-v2/01-metric-definition.png",
+      "sha256": "8036c5ce20b20ec5d65d6c28ad03d362d32d0287a05ef8558dc238bd92df5b96"
+    },
+    {
+      "path": "02-refinement-20260910/statistics-rules-v2/02-refreshed-summary.png",
+      "sha256": "b18988a89e35f4a3b2d9edaaea675e16bda7e740072f1a449dbcdfc244f019bc"
+    },
+    {
+      "path": "02-refinement-20260910/statistics-rules-v2/03-frozen-drilldown.png",
+      "sha256": "00b0dbc56af23470d42557071d4bfe8e669edfb01ccabebba239d01559863555"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v1/01-persistent-list-default.png",
+      "sha256": "3f90c71cb67e2a843dd0552e7bdc16ae883a95c4f09169673a3328f8fda75b05"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v1/02-rename-notes-editor.png",
+      "sha256": "2c41533b75610fab328129ba9bb4d5684b833c9ce6fca00c78fbd842ca490024"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v1/03-rename-validation-conflict.png",
+      "sha256": "ea61357bb97a68d9887fd75da5bfeeedde1a7bd822f8eb70a551fa42e00f2268"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v1/04-delete-impact-preview.png",
+      "sha256": "3a2ef6f57afe6d9b33a2f9286bf3024f14f12da785f6140116ca34f879e69a27"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v3/01-persistent-list.png",
+      "sha256": "9f9960189c44fbf9a8157c0aed92db1a67d1ac40ad941d84e4f6a9c99c1da25a"
+    },
+    {
+      "path": "03-refinement-20260911/environment-maintenance-v3/02-rename-drawer.png",
+      "sha256": "b15079893dbc41c5b8b9e140443323199bb05673ead850864546c891fdcf2b10"
+    },
+    {
+      "path": "03-refinement-20260911/environment-rules-v2/01-save-with-warning.png",
+      "sha256": "b144be36f3ca63e3e2b214b646c248a81110e755d2fa286eb0e5fc752ca01eb6"
+    },
+    {
+      "path": "03-refinement-20260911/environment-rules-v2/02-invalid-reference.png",
+      "sha256": "eaa49aead521f92a3d237fc2363228b9405d9b2c5e0078e73362195328ea0a5c"
+    },
+    {
+      "path": "03-refinement-20260911/environment-rules-v2/03-cleanup-unknown.png",
+      "sha256": "da12148a156caba5c69cfffbf3d8e9db7674b39d88b81f7e302b812deffc9981"
+    },
+    {
+      "path": "03-refinement-20260911/environment-rules-v2/04-cleanup-failed.png",
+      "sha256": "6a82d660e25b7760b18ac2acfacc0d3be804b1042249c822cb7e61da2fb443bf"
+    },
+    {
+      "path": "03-refinement-20260911/environment-rules-v2/05-cleanup-completed.png",
+      "sha256": "6c0606a45f0f7e2e16bf03957914257287163e39148bc9bac68e66e29d24f695"
+    },
+    {
+      "path": "04-standalone/01-projects-prototype.png",
+      "sha256": "5238b479f0014856c72a47dd10ff4013cb206250559ccb3aea7cfadad867b9cd"
+    }
+  ]
+}

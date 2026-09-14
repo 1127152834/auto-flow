@@ -1,0 +1,375 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=2 src/renderer/domains/project-data/components/StatusEditorDialog.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+
+ ❯ src/renderer/domains/project-data/components/StatusEditorDialog.test.tsx (18 tests | 1 failed) 1301ms
+   × matches the name-first gallery dialog and keeps optional appearance fields behind disclosure 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-data/components/StatusEditorDialog.test.tsx > matches the name-first gallery dialog and keeps optional appearance fields behind disclosure
+TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "新增状态"
+
+Here are the accessible roles:
+
+  dialog:
+
+  Name "新建状态":
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"_r_3o_"[39m
+    [33maria-labelledby[39m=[32m"_r_3p_"[39m
+    [33mclass[39m=[32m"autoflow-dialog-content fixed left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 gap-4 rounded-modal border border-line bg-surface shadow-modal focus:outline-none motion-safe:transition-all max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-w-md"[39m
+    [33mdata-overlay-depth[39m=[32m"0"[39m
+    [33mdata-placement[39m=[32m"dialog"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_3q_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"z-index: calc(var(--layer-modal) + 0 * var(--layer-step) + 1); pointer-events: auto;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-line px-6 py-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "新建状态":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-lg font-semibold text-ink"[39m
+    [33mid[39m=[32m"_r_3p_"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-muted"[39m
+    [33mid[39m=[32m"_r_3o_"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted"[39m
+    [33mid[39m=[32m"status-name-hint"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted"[39m
+    [33mid[39m=[32m"status-color-hint"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted"[39m
+    [33mid[39m=[32m"status-order-hint"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "关闭":
+  [36m<button[39m
+    [33maria-label[39m=[32m"关闭"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft text-sm h-9 w-9 shrink-0 p-0"[39m
+    [33mtitle[39m=[32m"关闭"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "选择颜色 #a86f4c":
+  [36m<button[39m
+    [33maria-label[39m=[32m"选择颜色 #a86f4c"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "选择颜色 #486b52":
+  [36m<button[39m
+    [33maria-label[39m=[32m"选择颜色 #486b52"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "选择颜色 #536b8d":
+  [36m<button[39m
+    [33maria-label[39m=[32m"选择颜色 #536b8d"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "选择颜色 #8a5d83":
+  [36m<button[39m
+    [33maria-label[39m=[32m"选择颜色 #8a5d83"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "选择颜色 #9a783f":
+  [36m<button[39m
+    [33maria-label[39m=[32m"选择颜色 #9a783f"[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "取消":
+  [36m<button[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "创建状态":
+  [36m<button[39m
+    [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed bg-clay text-on-accent shadow-sm enabled:hover:bg-clay-strong enabled:active:bg-clay-strong h-[var(--control-md)] px-4 text-sm"[39m
+    [33mform[39m=[32m"status-editor-form"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "新建状态内容":
+  [36m<div[39m
+    [33maria-label[39m=[32m"新建状态内容"[39m
+    [33mclass[39m=[32m"min-h-0 overflow-y-auto px-6 py-5 bg-surface-subtle"[39m
+    [33mrole[39m=[32m"region"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "状态名称":
+  [36m<input[39m
+    [33maria-describedby[39m=[32m"status-name-hint"[39m
+    [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+    [33mdata-af-control[39m=[32m"true"[39m
+    [33mid[39m=[32m"status-name"[39m
+    [33mname[39m=[32m"name"[39m
+  [36m/>[39m
+
+  Name "状态颜色":
+  [36m<input[39m
+    [33maria-describedby[39m=[32m"status-color-hint"[39m
+    [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+    [33mdata-af-control[39m=[32m"true"[39m
+    [33mid[39m=[32m"status-color"[39m
+    [33mname[39m=[32m"color"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "显示顺序":
+  [36m<input[39m
+    [33maria-describedby[39m=[32m"status-order-hint"[39m
+    [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+    [33mdata-af-control[39m=[32m"true"[39m
+    [33mid[39m=[32m"status-order"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mname[39m=[32m"order"[39m
+    [33mstep[39m=[32m"1"[39m
+    [33mtype[39m=[32m"number"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  contentinfo:
+
+  Name "":
+  [36m<footer[39m
+    [33mclass[39m=[32m"flex justify-end gap-3 border-t border-line px-6 py-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mclass[39m=[32m"autoflow-dialog-overlay fixed inset-0 bg-[var(--color-overlay)]"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-slot[39m=[32m"modal-overlay"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mstyle[39m=[32m"pointer-events: auto; z-index: calc(var(--layer-modal) + 0 * var(--layer-step));"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-describedby[39m=[32m"_r_3o_"[39m
+    [33maria-labelledby[39m=[32m"_r_3p_"[39m
+    [33mclass[39m=[32m"autoflow-dialog-content fixed left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 gap-4 rounded-modal border border-line bg-surface shadow-modal focus:outline-none motion-safe:transition-all max-h-[min(90vh,56rem)] w-[min(94vw,64rem)] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-w-md"[39m
+    [33mdata-overlay-depth[39m=[32m"0"[39m
+    [33mdata-placement[39m=[32m"dialog"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mid[39m=[32m"radix-_r_3q_"[39m
+    [33mrole[39m=[32m"dialog"[39m
+    [33mstyle[39m=[32m"z-index: calc(var(--layer-modal) + 0 * var(--layer-step) + 1); pointer-events: auto;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"flex items-start justify-between gap-4 border-b border-line px-6 py-5"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid gap-1"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold text-ink"[39m
+          [33mid[39m=[32m"_r_3p_"[39m
+        [36m>[39m
+          [0m新建状态[0m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted"[39m
+          [33mid[39m=[32m"_r_3o_"[39m
+        [36m>[39m
+          [0m设置状态名称、颜色和显示顺序。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<button[39m
+        [33maria-label[39m=[32m"关闭"[39m
+        [33mclass[39m=[32m"af-button relative inline-flex items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft text-sm h-9 w-9 shrink-0 p-0"[39m
+        [33mtitle[39m=[32m"关闭"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"grid place-items-center"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mfill[39m=[32m"currentColor"[39m
+                  [33mheight[39m=[32m"18"[39m
+                  [33mviewBox[39m=[32m"0 0 256 256"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</span>[39m
+            [36m</span>[39m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</header>[39m
+    [36m<div[39m
+      [33maria-label[39m=[32m"新建状态内容"[39m
+      [33mclass[39m=[32m"min-h-0 overflow-y-auto px-6 py-5 bg-surface-subtle"[39m
+      [33mrole[39m=[32m"region"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"grid gap-5"[39m
+        [33mid[39m=[32m"status-editor-form"[39m
+        [33mnovalidate[39m=[32m""[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid gap-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium text-ink"[39m
+            [33mfor[39m=[32m"status-name"[39m
+          [36m>[39m
+            [0m状态名称[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"status-name-hint"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mid[39m=[32m"status-name"[39m
+            [33mname[39m=[32m"name"[39m
+          [36m/>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-muted"[39m
+            [33mid[39m=[32m"status-name-hint"[39m
+          [36m>[39m
+            [0m1–120 个字符[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid gap-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium text-ink"[39m
+            [33mfor[39m=[32m"status-color"[39m
+          [36m>[39m
+            [0m状态颜色[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maria-describedby[39m=[32m"status-color-hint"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mid[39m=[32m"status-color"[39m
+            [33mname[39m=[32m"color"[39m
+          [36m/>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-xs text-muted"[39m
+            [33mid[39m=[32m"status-color-hint"[39m
+          [36m>[39m
+            [0m使用 #RRGGBB 格式[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33maria-label[39m=[32m"颜色预设"[39m
+          [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"选择颜色 #a86f4c"[39m
+            [33mclass[39m=[...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/project-data/components/StatusEditorDialog.test.tsx:186:17
+    184|   const submit = vi.fn().mockResolvedValue(undefined)
+    185|   render(<StatusEditorDialog open mode="create" sessionKey="gallery" o…
+    186|   expect(screen.getByRole('dialog', { name: '新增状态' })).toBeVisible()
+       |                 ^
+    187|   expect(screen.getByLabelText('状态颜色')).not.toBeVisible()
+    188|   expect(screen.getByLabelText('显示顺序')).not.toBeVisible()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  04:21:02
+   Duration  4.78s (transform 174ms, setup 0ms, import 2.50s, tests 1.30s, environment 816ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow-project-management-implementation/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=2 src/renderer/domains/project-data/components/StatusEditorDialog.test.tsx

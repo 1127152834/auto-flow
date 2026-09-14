@@ -1,0 +1,38 @@
+{
+  "result": "passed",
+  "scope": "PM2 table directory and nine local field/status/record UI commands with real HTTP; Excel, batch status, Sheets and execution not covered",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checkedAt": "2026-09-13T04:36:00.912Z",
+  "checks": [
+    "UI creates a local table through real HTTP and navigates to its records route",
+    "real competing edit preserves the draft and requires explicit reload before resaving",
+    "UI creates a field and confirms a real field mutation impact before editing",
+    "UI creates and edits a business status without changing any record status",
+    "UI creates and edits a record with real conflict reload, then explicitly changes its status",
+    "UI blocks an in-use status deletion and deletes an unreferenced status through its real operation",
+    "UI deletes the selected record after impact confirmation and retains the other record",
+    "lost real create acknowledgement survives renderer reload and recovers the original operation without duplicate insertion",
+    "five actual tabs display persisted field, status, source and record facts after UI writes",
+    "settings tab edits the actual table description through the shared form and command recovery",
+    "same-workspace real sidecar restart preserves draft, Escape protection and subsequent save",
+    "native 200 percent zoom with custom dropdown does not widen the application",
+    "full Electron restart retains table edits, business records and explicit status",
+    "two real workspace switches isolate data tables and restore original records"
+  ],
+  "zoom": {
+    "before": {
+      "inner": 720,
+      "width": 708,
+      "root": 708,
+      "trigger": 192
+    },
+    "after": {
+      "inner": 720,
+      "width": 720,
+      "root": 708,
+      "trigger": 192
+    }
+  },
+  "windows": "not-run"
+}
