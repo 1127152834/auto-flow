@@ -70,6 +70,7 @@ class InputPlan(ApiModel):
 class ParameterDefinition(ApiModel):
     parameter_id: str
     name: str
+    description: str = Field(default_factory=str)
     type: Literal["string", "number", "boolean"]
     required: StrictBool
     default_value: JsonScalar = None
@@ -102,18 +103,21 @@ class NewFromProfile(ApiModel):
     source: Literal["newFromProfile"]
     profile_id: str | None = None
     proxy_override: ProxySelection | None = None
+    model_provider_id: str | None = None
 
 
 class FixedEnvironment(ApiModel):
     source: Literal["fixedEnvironment"]
     environment_id: str
     proxy_override: ProxySelection | None = None
+    model_provider_id: str | None = None
 
 
 class InputEnvironment(ApiModel):
     source: Literal["inputEnvironment"]
     input_id: str
     proxy_override: ProxySelection | None = None
+    model_provider_id: str | None = None
 
 
 EnvironmentPolicy = Annotated[

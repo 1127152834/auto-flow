@@ -98,11 +98,12 @@ def body(workflow_id):
             {
                 "parameterId": "00000000-0000-0000-0000-000000000030",
                 "name": "开关",
+                "description": "  是否启用后续步骤  ",
                 "type": "boolean",
                 "required": False,
             }
         ],
-        "environmentPolicy": {"source": "newFromProfile"},
+        "environmentPolicy": {"source": "newFromProfile", "modelProviderId": None},
         "runPolicy": {
             "maxTasks": 1,
             "concurrency": 1,
@@ -159,18 +160,17 @@ def test_create_list_get_put_validation_and_typed_values(tmp_path):
     item = created.json()
     automation_id = item["automationId"]
     assert "defaultValue" not in item["parameterSchema"][0]
+    assert item["parameterSchema"][0]["description"] == "是否启用后续步骤"
+    assert item["environmentPolicy"]["modelProviderId"] is None
     assert (
         api.get(f"/api/v1/projects/{project_id}/automations?q=配置&sort=name").json()[
             "total"
         ]
         == 1
     )
-    assert (
-        api.get(
-            f"/api/v1/projects/{project_id}/automations/{automation_id}"
-        ).status_code
-        == 200
-    )
+    detail = api.get(f"/api/v1/projects/{project_id}/automations/{automation_id}")
+    assert detail.status_code == 200
+    assert detail.json()["parameterSchema"][0]["description"] == "是否启用后续步骤"
     updated_payload = {
         **payload,
         "description": "新版",

@@ -404,13 +404,21 @@ def _parameters(value: Any) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         raise validation_error("parameterSchema", "Must be an array")
     seen: set[str] = set()
-    result = []
+    result: list[dict[str, Any]] = []
     for index, item in enumerate(value):
         field = f"parameterSchema.{index}"
         if (
             not isinstance(item, dict)
             or not {"parameterId", "name", "type", "required"} <= set(item)
-            or set(item) - {"parameterId", "name", "type", "required", "defaultValue"}
+            or set(item)
+            - {
+                "parameterId",
+                "name",
+                "description",
+                "type",
+                "required",
+                "defaultValue",
+            }
         ):
             raise validation_error(field, "Invalid parameter definition")
         parameter_id = _uuid(item["parameterId"], f"{field}.parameterId")
@@ -423,6 +431,12 @@ def _parameters(value: Any) -> list[dict[str, Any]]:
         normalized = dict(item)
         normalized["parameterId"] = parameter_id
         normalized["name"] = _text(item["name"], f"{field}.name", required=True)
+        if any(previous["name"] == normalized["name"] for previous in result):
+            raise validation_error(f"{field}.name", "Must be unique")
+        if "description" in item:
+            normalized["description"] = _text(
+                item["description"], f"{field}.description", maximum=1000
+            )
         if type(item["required"]) is not bool:
             raise validation_error(f"{field}.required", "Must be a boolean")
         if "defaultValue" in item and not _scalar_matches(
@@ -443,9 +457,24 @@ def _environment(value: Any) -> dict[str, Any]:
     }:
         raise validation_error("environmentPolicy", "Invalid environment source")
     allowed = {
-        "newFromProfile": {"source", "profileId", "proxyOverride"},
-        "fixedEnvironment": {"source", "environmentId", "proxyOverride"},
-        "inputEnvironment": {"source", "inputId", "proxyOverride"},
+        "newFromProfile": {
+            "source",
+            "profileId",
+            "proxyOverride",
+            "modelProviderId",
+        },
+        "fixedEnvironment": {
+            "source",
+            "environmentId",
+            "proxyOverride",
+            "modelProviderId",
+        },
+        "inputEnvironment": {
+            "source",
+            "inputId",
+            "proxyOverride",
+            "modelProviderId",
+        },
     }[value["source"]]
     if set(value) - allowed:
         raise validation_error("environmentPolicy", "Unexpected field")
@@ -457,6 +486,8 @@ def _environment(value: Any) -> dict[str, Any]:
         _uuid(value.get(required_ref), f"environmentPolicy.{required_ref}")
     if "profileId" in value:
         _uuid(value["profileId"], "environmentPolicy.profileId")
+    if value.get("modelProviderId") is not None:
+        _uuid(value["modelProviderId"], "environmentPolicy.modelProviderId")
     if "proxyOverride" in value:
         _proxy(value["proxyOverride"])
     return value

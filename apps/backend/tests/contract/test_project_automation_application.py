@@ -34,8 +34,8 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         assert missing.status_code == 404 and missing.json()['error']['code'] == 'WORKFLOW_NOT_FOUND'
         body = {
             'name': '资料整理', 'description': '配置真实保存', 'workflowId': workflow.workflow_id,
-            'inputPlan': {'inputs': []}, 'parameterSchema': [{'parameterId': str(uuid4()), 'name': '关键词', 'type': 'string', 'required': False}],
-            'environmentPolicy': {'source': 'newFromProfile'},
+            'inputPlan': {'inputs': []}, 'parameterSchema': [{'parameterId': str(uuid4()), 'name': '关键词', 'description': '提供搜索关键词', 'type': 'string', 'required': False}],
+            'environmentPolicy': {'source': 'newFromProfile', 'modelProviderId': None},
             'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 300},
         }
         path = f'/api/v1/projects/{project_id}/automations'
@@ -72,4 +72,6 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         # Workspace recovery is intentionally reserved for createProject.
         assert client.get(f'/api/v1/workspace/operations/by-idempotency-key/{key}').status_code == 404
         # No consumer is allowed to infer runnable from a saved draft.
-        assert not client.get(f"{path}/{automation['automationId']}/validation").json()['runnable']
+        validation = client.get(f"{path}/{automation['automationId']}/validation").json()
+        assert not validation['runnable']
+        assert {issue['code'] for issue in validation['issues']} >= {'PROFILE_REQUIRED', 'CORE_UNAVAILABLE'}

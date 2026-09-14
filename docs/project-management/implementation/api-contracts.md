@@ -151,14 +151,14 @@ type InputRelation =
 type InputFieldBinding = {inputFieldId:string;inputFieldAlias:string;fieldRef:FieldRef}
 type InputDefinition = {inputId:string; alias:string; tableId:string; datasetGeneration:string; mode:InputMode; required:boolean; fixedRecord?:RecordRef; relation?:InputRelation; fieldBindings:InputFieldBinding[]; filter:FilterExpression; orderBy:OrderBy[]}
 type InputPlan = {inputs:InputDefinition[]}
-type ParameterDefinition = {parameterId:string; name:string; type:'string'|'number'|'boolean'; required:boolean; defaultValue?:JsonScalar}
+type ParameterDefinition = {parameterId:string; name:string; description?:string; type:'string'|'number'|'boolean'; required:boolean; defaultValue?:JsonScalar}
 type ProxySelection = {mode:'sourceDefault'|'none'|'fixed'|'pool';proxyId?:string;proxyPoolId?:string}
 type ProjectDefaultResources = {profileId:string|null;proxy:ProxySelection;modelProviderId:string|null}
 type EnvironmentSource =
   | {source:'newFromProfile';profileId?:string}
   | {source:'fixedEnvironment';environmentId:string}
   | {source:'inputEnvironment';inputId:string}
-type EnvironmentPolicy = EnvironmentSource & {proxyOverride?:ProxySelection}
+type EnvironmentPolicy = EnvironmentSource & {proxyOverride?:ProxySelection;modelProviderId?:string|null}
 type CapabilityRequirement = {capability:string; required:boolean; available:boolean; reason?:string}
 type CapabilityBinding = {capability:string;provider:string;scope:string;bindingRevision:number}
 type RunPolicy = {maxTasks?:number;concurrency:number;maxLiveInstances:number;continueAfterFailure:boolean;automaticExecutionTimeoutSeconds:number;manualDeadlineSeconds:number}
@@ -657,3 +657,11 @@ type DataStatusUsageDirectory = {
 成功响应 `{operation,records:[{clientRowId,record}]}`，同一快照位于 `operation.result.records`，首次 201、同键重放 200。结果为提交时快照。记录、每行 DataChange 与 Operation 同事务提交，任意一行失败整批不写。验证错误提供 `error.details.rowErrors:[{clientRowId,fieldId,code,message}]`；身份重复 409，结构冲突 409，类型/必填错误 422，超字节 413。错误归属继续受项目和表作用域约束。
 
 结果未知先查询既有 `/operations/by-idempotency-key/{key}`。可信 OPERATION_NOT_FOUND 后才允许显式使用原 key/payload 重发；查询失败继续待核验。前端核验完整 clientRowId 映射、项目、表、代次后才清草稿。旧数据代次的已知操作允许查询，结果不能解释成对新代次新增。
+
+### 2026-09-15 PM3 管理配置实现勘误（confirmed）
+
+依据已批准四页签图稿与本次真实 HTTP 验证：参数 `description` 可省略，传入时 trim 后为 0–1000 Unicode 码点；省略不补空字符串。参数名称 trim 后精确比较去重，不额外 casefold。`environmentPolicy.modelProviderId` 省略继承项目默认、null 不指定、UUID 指定；三个环境来源均保留该字段。
+
+代理覆盖省略才继承项目默认；显式 `sourceDefault` 直接跟随浏览器配置，不再经过项目代理。资源检查只读取已保存引用与安装事实，不表示 License 已通过或运行已开始。管理保存、工作流结构校验与运行准入分别表达；当前能力查询未接入时返回 unavailable/runnable=false，仍显示已取得的资源问题。
+
+用户要求取消 Studio demo 联合验收：真实工作流目录只读关联继续使用 core 文档身份，管理页测试资料经真实文档服务创建；不将该准备过程写成 Studio 操作或运行通过。

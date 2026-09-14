@@ -2894,6 +2894,8 @@ export type components = {
             environmentId: string;
             /** Proxyoverride */
             proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
         };
         /** FixedProxy */
         FixedProxy: {
@@ -3063,6 +3065,8 @@ export type components = {
             inputId: string;
             /** Proxyoverride */
             proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
         };
         /** InputFieldBinding */
         InputFieldBinding: {
@@ -3531,6 +3535,8 @@ export type components = {
             profileId?: string | null;
             /** Proxyoverride */
             proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
         };
         /** NewTarget */
         NewTarget: {
@@ -3586,6 +3592,8 @@ export type components = {
             parameterId: string;
             /** Name */
             name: string;
+            /** Description */
+            description?: string;
             /**
              * Type
              * @enum {string}

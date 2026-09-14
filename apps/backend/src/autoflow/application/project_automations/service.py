@@ -116,13 +116,12 @@ class ProjectAutomationService:
     def validation(self, project_id: str, automation_id: str) -> AutomationValidation:
         automation = self.get(project_id, automation_id)
         now = datetime.now(UTC)
-        if not all((self.workflow_service, self.resource_query, self.capability_query)):
+        if self.workflow_service is None or self.resource_query is None:
             issue = ValidationIssue(
-                [], "CORE_UNAVAILABLE", "Automation validation services are unavailable"
+                [], "CORE_UNAVAILABLE", "暂时无法检查运行条件，仍可保存管理配置"
             )
             return AutomationValidation("unavailable", False, False, [issue], [], now)
         assert self.resource_query is not None
-        assert self.capability_query is not None
         issues: list[ValidationIssue] = []
         workflow_blocked = False
         try:
@@ -157,7 +156,7 @@ class ProjectAutomationService:
                 ValidationIssue(
                     ["inputPlan", "inputs"],
                     "PM4_INPUTS_NOT_SUPPORTED",
-                    "Project data inputs cannot run in PM3",
+                    "已保存数据输入；数据执行能力暂未开放",
                 )
             )
         if automation.environment_policy["source"] != "newFromProfile":
@@ -165,7 +164,7 @@ class ProjectAutomationService:
                 ValidationIssue(
                     ["environmentPolicy", "source"],
                     "ENVIRONMENT_SOURCE_NOT_SUPPORTED",
-                    "Only newFromProfile can run in PM3",
+                    "当前仅支持从浏览器配置创建临时环境",
                 )
             )
         for item in self.resource_query.inspect_resources(automation):
@@ -177,6 +176,11 @@ class ProjectAutomationService:
                     item.get("resource"),
                 )
             )
+        if self.capability_query is None:
+            issues.append(ValidationIssue(
+                [], "CORE_UNAVAILABLE", "运行准入尚未开放，仍可保存管理配置"
+            ))
+            return AutomationValidation("unavailable", False, False, issues, [], now)
         capabilities = self.capability_query.inspect_capabilities(
             automation.workflow_id
         )

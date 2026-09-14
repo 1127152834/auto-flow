@@ -91,3 +91,49 @@ def test_omitted_null_and_empty_string_are_not_interchangeable():
     candidate["parameterSchema"][0]["defaultValue"] = ""
     with pytest.raises(ProjectError):
         validate_write(candidate)
+
+
+def test_parameter_description_is_trimmed_optional_and_names_are_exactly_unique():
+    candidate = payload()
+    candidate["parameterSchema"][0]["description"] = "  给运行者的说明  "
+    assert (
+        validate_write(candidate)["parameterSchema"][0]["description"]
+        == "给运行者的说明"
+    )
+    del candidate["parameterSchema"][0]["description"]
+    assert "description" not in validate_write(candidate)["parameterSchema"][0]
+    candidate["parameterSchema"][0]["description"] = "说" * 1001
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
+
+    duplicate = payload()
+    duplicate["parameterSchema"].append(
+        {
+            "parameterId": "00000000-0000-0000-0000-000000000003",
+            "name": " 数量 ",
+            "type": "string",
+            "required": False,
+        }
+    )
+    with pytest.raises(ProjectError) as error:
+        validate_write(duplicate)
+    assert "parameterSchema.1.name" in error.value.details["fields"]
+
+
+def test_environment_model_provider_preserves_inherit_none_and_uuid_states():
+    omitted = payload()
+    assert "modelProviderId" not in validate_write(omitted)["environmentPolicy"]
+    explicit_none = payload()
+    explicit_none["environmentPolicy"]["modelProviderId"] = None
+    assert validate_write(explicit_none)["environmentPolicy"]["modelProviderId"] is None
+    selected = payload()
+    selected["environmentPolicy"]["modelProviderId"] = (
+        "00000000-0000-0000-0000-000000000004"
+    )
+    assert (
+        validate_write(selected)["environmentPolicy"]["modelProviderId"]
+        == selected["environmentPolicy"]["modelProviderId"]
+    )
+    selected["environmentPolicy"]["modelProviderId"] = "not-a-uuid"
+    with pytest.raises(ProjectError):
+        validate_write(selected)

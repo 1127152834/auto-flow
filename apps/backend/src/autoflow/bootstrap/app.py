@@ -14,6 +14,9 @@ from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
+from autoflow.application.project_automations.resource_query import (
+    ProjectAutomationResourceQuery,
+)
 from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
@@ -361,6 +364,10 @@ def create_app(
         automations=ProjectAutomationService(
             SqlAlchemyProjects(session_factory), SqlAlchemyProjectAutomations(session_factory),
             workflow_service=workflow_service,
+            resource_query=ProjectAutomationResourceQuery(
+                SqlAlchemyProjects(session_factory), profile_service,
+                installed_kernel_lookup or catalog_provider, proxy_options, model_service,
+            ),
         ),
         tables=DataTableService(SqlAlchemyProjectData(session_factory)),
         catalog=DataCatalogService(SqlAlchemyProjectDataCatalog(session_factory)),
