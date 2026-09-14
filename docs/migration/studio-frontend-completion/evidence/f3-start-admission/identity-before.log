@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 run-start-boundary.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:44401) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/run-start-boundary.test.tsx > does not reuse a prepared server identifier for a different editor document
+[Toolbar] 配置已更新: { autoCloseBrowser: true, fullscreen: false, type: 'msedge' }
+
+stdout | src/renderer/domains/workflows/tests/run-start-boundary.test.tsx > does not reuse a prepared server identifier for a different editor document
+[Toolbar] 执行工作流，无头模式: false 浏览器配置: {
+  type: 'msedge',
+  executablePath: undefined,
+  userDataDir: undefined,
+  fullscreen: false,
+  autoCloseBrowser: true,
+  launchArgs: '--disable-blink-features=AutomationControlled\n' +
+    '--start-maximized\n' +
+    '--ignore-certificate-errors\n' +
+    '--ignore-ssl-errors\n' +
+    '--disable-features=IsolateOrigins,site-per-process\n' +
+    '--allow-running-insecure-content\n' +
+    '--disable-infobars\n' +
+    '--disable-notifications',
+  extensionDirs: undefined
+}
+
+stdout | src/renderer/domains/workflows/tests/run-start-boundary.test.tsx > does not reuse a prepared server identifier for a different editor document
+[Toolbar] 执行工作流，无头模式: false 浏览器配置: {
+  type: 'msedge',
+  executablePath: undefined,
+  userDataDir: undefined,
+  fullscreen: false,
+  autoCloseBrowser: true,
+  launchArgs: '--disable-blink-features=AutomationControlled\n' +
+    '--start-maximized\n' +
+    '--ignore-certificate-errors\n' +
+    '--ignore-ssl-errors\n' +
+    '--disable-features=IsolateOrigins,site-per-process\n' +
+    '--allow-running-insecure-content\n' +
+    '--disable-infobars\n' +
+    '--disable-notifications',
+  extensionDirs: undefined
+}
+
+ ❯ src/renderer/domains/workflows/tests/run-start-boundary.test.tsx (17 tests | 1 failed) 550ms
+   × does not reuse a prepared server identifier for a different editor document 21ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/run-start-boundary.test.tsx > does not reuse a prepared server identifier for a different editor document
+AssertionError: expected "create" to be called 2 times, but got 1 times
+ ❯ src/renderer/domains/workflows/tests/run-start-boundary.test.tsx:147:29
+    145|  act(()=>completed?.({workflowId:'old-server-id'}))
+    146|  fireEvent.keyDown(window,{key:'F5'});await act(async()=>{})
+    147|  expect(workflowApi.create).toHaveBeenCalledTimes(2);expect(workflowAp…
+       |                             ^
+    148| })
+    149|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  08:40:02
+   Duration  2.26s (transform 750ms, setup 108ms, import 1.12s, tests 550ms, environment 379ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 run-start-boundary.test.tsx

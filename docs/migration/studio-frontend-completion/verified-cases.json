@@ -27980,5 +27980,293 @@
     "level": "component / native API double",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-clipboard.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.accepted",
+    "capability": "接受后无SSE时重复启动被阻止",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "接受后无SSE时重复启动被阻止",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.lost",
+    "capability": "响应丢失不换新请求执行",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "响应丢失不换新请求执行",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.rejected",
+    "capability": "明确422拒绝后可以显式重试",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "明确422拒绝后可以显式重试",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.started",
+    "capability": "仅本请求started解除等待",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "仅本请求started解除等待",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.completed",
+    "capability": "仅本请求completed解除等待",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "仅本请求completed解除等待",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.stopped",
+    "capability": "仅本请求stopped解除等待",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "仅本请求stopped解除等待",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.early-terminal",
+    "capability": "终态先于HTTP不恢复等待",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "终态先于HTTP不恢复等待",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.stop",
+    "capability": "接受后可停止且等待终态确认",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "接受后可停止且等待终态确认",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.document",
+    "capability": "文档切换不复用旧服务标识",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "挂载真实Toolbar并通过F5启动",
+      "模拟具名响应/事件顺序或文档切换",
+      "核对请求数量及等待状态"
+    ],
+    "expectedUI": "文档切换不复用旧服务标识",
+    "expectedIO": "POST create/update/execute；SSE started/completed/stopped；停止请求",
+    "stateAssertion": "无第二次启动，旧事件不释放等待，错误不伪造运行状态，服务ID绑定原编辑文档",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.memory.accepted",
+    "capability": "HTTP接受期间事件流不可用",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "HTTP接受期间事件流不可用",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.memory.lost",
+    "capability": "服务已接受但响应丢失",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "服务已接受但响应丢失",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.memory.stop",
+    "capability": "停止后等待终态补读",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "停止后等待终态补读",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.http.accepted",
+    "capability": "HTTP接受期间事件流不可用",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "HTTP接受期间事件流不可用",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.http.lost",
+    "capability": "服务已接受但响应丢失",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "服务已接受但响应丢失",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.http.stop",
+    "capability": "停止后等待终态补读",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "独立内存/本地HTTP服务，暂不连接SSE",
+      "F5启动并尝试重复启动或停止",
+      "连接真实Socket补读事件"
+    ],
+    "expectedUI": "停止后等待终态补读",
+    "expectedIO": "正常服务路由及按序SSE；执行请求计数等于1",
+    "stateAssertion": "仅已确认事件解除等待，无重放；停止终态stopped",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-protocol.test.tsx"
+  },
+  {
+    "id": "F3.start-admission.browser-normal",
+    "capability": "正常运行解除启动保护并回到空闲",
+    "preconditions": {
+      "workflow": "独立单open_page节点；启动HTTP和SSE时序见具名用例"
+    },
+    "steps": [
+      "从打开列表恢复测试流程",
+      "菜单点击运行",
+      "观察Worker回传和终态"
+    ],
+    "expectedUI": "正常运行解除启动保护并回到空闲",
+    "expectedIO": "原生Worker与Mock服务",
+    "stateAssertion": "18份原文件未修改，不代表网页动作",
+    "level": "browser E2E / Mock service",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-start-admission/browser-ui.md"
   }
 ]

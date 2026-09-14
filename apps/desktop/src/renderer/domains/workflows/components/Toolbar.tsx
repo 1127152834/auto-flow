@@ -72,8 +72,25 @@ import {
 } from './controls/dropdown-menu'
 
 export function Toolbar() {
-  const [workflowId, setWorkflowId] = useState<string | null>(null)
+  const documentId = useWorkflowStore(state => state.id)
+  const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(null)
+  const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
+  const setWorkflowId = useCallback((id: string | null) => {
+    setServerWorkflow(id ? {documentId, id} : null)
+  }, [documentId])
   const startPending = useRef(false)
+  const awaitingStart = useRef<string | null>(null)
+  const [startPhase, setStartPhase] = useState<'preparing' | 'awaiting' | null>(null)
+  useEffect(() => {
+    const confirmed = (data: {workflowId?: string} | null) => {
+      if (!data?.workflowId || data.workflowId !== awaitingStart.current) return
+      awaitingStart.current = null
+      setStartPhase(null)
+    }
+    const events = ['execution:started', 'execution:completed', 'execution:stopped']
+    for (const event of events) socketService.on(event, confirmed)
+    return () => { for (const event of events) socketService.off(event, confirmed) }
+  }, [])
   const [showGlobalConfig, setShowGlobalConfig] = useState(false)
   const [showDocumentation, setShowDocumentation] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
@@ -201,7 +218,7 @@ export function Toolbar() {
   // 通用执行函数
   // startNodeId：可选，从指定节点开始运行（调试用），为空则从默认起始节点运行
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
-    if (startPending.current || useWorkflowStore.getState().executionStatus === 'running') return
+    if (startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
     if (nodes.length === 0) {
       addLog({ level: 'warning', message: '工作流没有任何节点' })
       return
@@ -225,6 +242,7 @@ export function Toolbar() {
     }
     const sourceDocumentId = useWorkflowStore.getState().id
     startPending.current = true
+    setStartPhase('preparing')
     clearLogs()
     clearCollectedData()
     setBottomPanelTab('logs')  // 切换到日志栏
@@ -316,6 +334,9 @@ export function Toolbar() {
         return
       }
       socketService.bindExecutionDocument(currentWorkflowId, sourceDocumentId)
+      // Own admission until an event confirms this request. HTTP acceptance alone is not running.
+      awaitingStart.current = currentWorkflowId
+      setStartPhase('awaiting')
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
         browserConfig,
@@ -323,8 +344,14 @@ export function Toolbar() {
         startNodeId: startNodeId || undefined,
       })
       
-      if (executeResult.error) {
-        addLog({ level: 'error', message: `执行失败: ${executeResult.error}` })
+      if (!executeResult.success) {
+        // A lost response or server failure may follow a committed start. Do not retry the action.
+        if (executeResult.httpStatus && executeResult.httpStatus >= 400 && executeResult.httpStatus < 500) {
+          awaitingStart.current = null
+        }
+        addLog({ level: 'error', message: awaitingStart.current
+          ? `启动状态尚未确认：${executeResult.error || '服务响应无效'}；等待连接恢复，或停止本次请求`
+          : `执行失败: ${executeResult.error || '服务拒绝请求'}` })
         return
       }
 
@@ -336,8 +363,9 @@ export function Toolbar() {
       addLog({ level: 'error', message: `执行异常: ${error}` })
     } finally {
       startPending.current = false
+      if (!awaitingStart.current) setStartPhase(null)
     }
-  }, [nodes, edges, variables, name, workflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
+  }, [nodes, edges, variables, name, workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
 
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {
@@ -360,14 +388,15 @@ export function Toolbar() {
   }, [executeWorkflow])
 
   const handleStop = useCallback(async () => {
-    if (workflowId) {
+    const stopWorkflowId = awaitingStart.current || useWorkflowStore.getState().currentExecutionWorkflowId || workflowId
+    if (stopWorkflowId) {
       try {
-        socketService.stopExecution(workflowId)
+        socketService.stopExecution(stopWorkflowId)
       } catch (e) {
         console.error('[Toolbar] socketService.stopExecution 失败:', e)
       }
       try {
-        const result = await workflowApi.stop(workflowId)
+        const result = await workflowApi.stop(stopWorkflowId)
         if (result.error) { addLog({ level: 'error', message: result.error }); return }
       } catch (e) {
         addLog({ level: 'warning', message: `停止 API 调用失败: ${e}` })
@@ -466,7 +495,7 @@ export function Toolbar() {
     clearWorkflow()
     setWorkflowId(null)
     addLog({ level: 'info', message: '已创建新工作流' })
-  }, [clearWorkflow, addLog])
+  }, [clearWorkflow, setWorkflowId, addLog])
 
   const { confirmLeave, draftDialog } = useDraftProtection(handleSave)
   const handleNewWorkflowClick = useCallback(async () => {
@@ -668,11 +697,11 @@ export function Toolbar() {
   
   // 更新 refs
   useEffect(() => {
-    isRunningRef.current = isRunning
+    isRunningRef.current = isRunning || startPhase === 'awaiting'
     handleRunRef.current = handleRun
     handleStopRef.current = handleStop
     doScreenshotRef.current = doScreenshot
-  }, [isRunning, handleRun, handleStop, doScreenshot])
+  }, [isRunning, startPhase, handleRun, handleStop, doScreenshot])
   
   useEffect(() => {
     const handleHotkeyRun = () => {
@@ -905,7 +934,7 @@ export function Toolbar() {
     } catch (e) {
       addLog({ level: 'error', message: `导出出错: ${e}` })
     }
-  }, [nodes, edges, variables, name, workflowId, addLog])
+  }, [nodes, edges, variables, name, workflowId, setWorkflowId, addLog])
 
   // 导出为脚本（Selenium / Playwright-JS）
   const handleExportScript = useCallback(async (target: 'selenium' | 'playwright-js') => {
@@ -952,7 +981,7 @@ export function Toolbar() {
     } catch (e) {
       addLog({ level: 'error', message: `导出出错: ${e}` })
     }
-  }, [nodes, edges, variables, name, workflowId, addLog])
+  }, [nodes, edges, variables, name, workflowId, setWorkflowId, addLog])
 
   // 导出为 JSON
   const handleExportJSON = useCallback(() => {
@@ -1355,7 +1384,10 @@ export function Toolbar() {
 
       {/* 执行控制 */}
       <div className="flex items-center gap-1.5">
-        {!isRunning ? (
+        {startPhase ? <>
+          <span role="status" className="text-xs text-amber-700">{startPhase === 'preparing' ? '正在准备运行' : '等待启动确认'}</span>
+          {startPhase === 'awaiting' && <Button size="sm" variant="destructive" onClick={handleStop}>停止启动请求</Button>}
+        </> : !isRunning ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="success" noMotion>
