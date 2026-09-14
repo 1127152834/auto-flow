@@ -1,0 +1,139 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:27974) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx (1 test | 1 failed) 1047ms
+   × uses the committed clean state for a close request before passive effects run 1046ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx > uses the committed clean state for a close request before passive effects run
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<button>[39m
+        [0m保存后立即关闭[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4 animate-fade-in"[39m
+      [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"保存配置？"[39m
+        [33maria-modal[39m=[32m"true"[39m
+        [33mclass[39m=[32m"relative bg-[hsl(var(--card))] rounded-[14px] border border-[hsl(var(--border))] shadow-pop-2xl w-full max-w-sm overflow-hidden animate-scale-in-bounce"[39m
+        [33mrole[39m=[32m"dialog"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-400))]"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"p-5 pt-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start gap-3.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-600))] border border-[hsl(var(--brand-500)/0.3)] ring-[6px] ring-[hsl(var(--brand-500)/0.12)]"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-question-mark w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2.2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 17h.01"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1 min-w-0 pt-1"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-[15px] font-semibold text-[hsl(var(--slate-900))] mb-1.5 tracking-tight"[39m
+              [36m>[39m
+                [0m保存配置？[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-[13px] leading-relaxed text-[hsl(var(--slate-600))] whitespace-pre-wrap"[39m
+              [36m>[39m
+                [0m当前配置有未提交的修改，请选择如何处理。[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-end gap-2 px-5 py-3.5 bg-[hsl(var(--slate-50))] border-t border-[hsl(var(--border))]"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] border border-[hsl(var(--slate-200))] hover:bg-[hsl(var(--slate-200))] hover:border-[hsl(var(--slate-300))] hover:text-[hsl(var(--slate-900))] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+          [36m>[39m
+            [0m取消[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] border border-[hsl(var(--slate-200))] hover:bg-[hsl(var(--slate-200))] hover:border-[hsl(var(--slate-300))] hover:text-[hsl(var(--slate-900))] h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+          [36m>[39m
+            [0m放弃修改[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-7 px-2.5 text-[12px] rounded-[6px]"[39m
+          [36m>[39m
+            [0m保存后继续[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx:19:34
+     17|  }
+     18|  render(<Parent/>);fireEvent.click(screen.getByText('保存后立即关闭'))
+     19|  await waitFor(()=>expect(close).toHaveBeenCalledTimes(1))
+       |                                  ^
+     20|  expect(screen.queryByRole('dialog',{name:'保存配置？'})).toBeNull()
+     21| })
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  04:51:16
+   Duration  2.12s (transform 168ms, setup 154ms, import 204ms, tests 1.05s, environment 597ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/settings-guard-commit.test.tsx

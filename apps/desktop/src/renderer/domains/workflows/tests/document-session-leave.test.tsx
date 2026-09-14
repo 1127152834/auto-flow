@@ -37,6 +37,7 @@ it('preserves the session after save failure', async () => {
   save.mockResolvedValueOnce(false)
   render(<Protection/>);const {promise}=await begin();await choose('保存并结束会话')
   expect(await promise).toBe(false);expect(release).not.toHaveBeenCalled();expect(store.getState().hasUnsavedChanges).toBe(true)
+  expect(screen.getByRole('alert').textContent).toContain('未完成保存')
 })
 it('discard releases without saving; does not clear the draft itself', async () => {
   render(<Protection/>);const {promise}=await begin();await choose('放弃修改并结束会话')
@@ -51,6 +52,7 @@ it('keeps responsibility and allows retry after cleanup failure', async () => {
   release.mockResolvedValueOnce(false)
   render(<Protection/>);const first=await begin();await choose('放弃修改并结束会话')
   expect(await first.promise).toBe(false);expect(getDocumentLeaveResources()).toHaveLength(1)
+  expect(screen.getByRole('alert').textContent).toContain('尚未确认结束')
   const second=await begin();await choose('放弃修改并结束会话')
   expect(await second.promise).toBe(true);expect(release).toHaveBeenCalledTimes(2)
 })

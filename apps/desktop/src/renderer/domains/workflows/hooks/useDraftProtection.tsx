@@ -1,6 +1,7 @@
 import { getStudioTransportRevision } from '../api/transport'
 import { getDocumentLeaveResources, registerDocumentLeaveHandler, type LeaveOptions } from '../lib/documentLeave'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DialogPortal } from '../components/controls/dialog-portal'
 import { ConfirmDialog } from '../components/controls/confirm-dialog'
 import { useWorkflowStore } from '../editor-store'
 import { snapshotKey } from '../lib/snapshotKey'
@@ -11,6 +12,7 @@ type Choice = 'save' | 'discard' | 'cancel'
 /** One decision releases at most one pending document replacement. */
 export function useDraftProtection(save: () => Promise<boolean>) {
   const [open, setOpen] = useState(false)
+  const [leaveError, setLeaveError] = useState('')
   const [dialog, setDialog] = useState({ title: '保存当前工作流？', message: '当前工作流有未保存的修改，请选择如何处理。', confirmText: '保存后继续', secondaryText: '放弃修改' })
   const pending = useRef<((choice: Choice) => void) | null>(null)
   const busy = useRef(false)
@@ -54,6 +56,7 @@ export function useDraftProtection(save: () => Promise<boolean>) {
       confirmText: dirty ? '保存并结束会话' : '结束会话后继续',
       secondaryText: dirty ? '放弃修改并结束会话' : '',
     } : { title: '保存当前工作流？', message: '当前工作流有未保存的修改，请选择如何处理。', confirmText: '保存后继续', secondaryText: '放弃修改' })
+    setLeaveError('')
     busy.current = true
     const revision = getStudioTransportRevision()
     const original = snapshotKey(state.exportWorkflow())
@@ -69,7 +72,10 @@ export function useDraftProtection(save: () => Promise<boolean>) {
         return false
       }
       if (!resourcesUnchanged()) throw new Error('活跃会话已变更，请重新确认离开')
-      if (choice === 'save' && dirty && !(await save())) return false
+      if (choice === 'save' && dirty && !(await save())) {
+        if (mounted.current) setLeaveError('未完成保存，未离开。草稿和活跃会话已保留，请处理保存问题后重试。')
+        return false
+      }
       if (!mounted.current || revision !== getStudioTransportRevision()) return false
       const current = useWorkflowStore.getState()
       if (snapshotKey(current.exportWorkflow()) !== original || (choice === 'save' && dirty && current.hasUnsavedChanges)) {
@@ -87,7 +93,9 @@ export function useDraftProtection(save: () => Promise<boolean>) {
       if (!stillSafe() || readResources().length) throw new Error('清理期间草稿或会话已变更，当前流程已保留')
       return true
     } catch (error) {
-      useWorkflowStore.getState().addLog({ level: 'error', message: `无法完成保存保护: ${String(error)}` })
+      const message = `无法完成保存保护: ${String(error)}`
+      useWorkflowStore.getState().addLog({ level: 'error', message })
+      if (mounted.current) setLeaveError(message)
       return false
     } finally { busy.current = false }
   }, [save])
@@ -96,9 +104,12 @@ export function useDraftProtection(save: () => Promise<boolean>) {
 
   return {
     confirmLeave,
-    draftDialog: <ConfirmDialog isOpen={open} title={dialog.title}
+    draftDialog: <><ConfirmDialog isOpen={open} title={dialog.title}
       message={dialog.message} confirmText={dialog.confirmText}
       secondaryText={dialog.secondaryText} onConfirm={() => choose('save')}
-      onSecondary={dialog.secondaryText ? () => choose('discard') : undefined} onCancel={() => choose('cancel')} />,
+      onSecondary={dialog.secondaryText ? () => choose('discard') : undefined} onCancel={() => choose('cancel')} />
+      {leaveError && <DialogPortal><div role="alert" className="fixed bottom-4 right-4 z-[1000] max-w-md rounded border border-red-300 bg-[hsl(var(--card))] p-3 text-sm shadow-lg">
+        <p>{leaveError}</p><button type="button" onClick={() => setLeaveError('')}>关闭提示</button>
+      </div></DialogPortal>}</>,
   }
 }

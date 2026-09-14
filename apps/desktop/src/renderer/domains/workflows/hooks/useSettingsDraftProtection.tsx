@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useDialogRegistry } from './stores/dialogRegistry'
 import { ConfirmDialog } from '../components/controls/confirm-dialog'
 export type SettingsLeaveGuard = () => Promise<boolean>
@@ -36,7 +36,8 @@ export function useSettingsDraftProtection(
       if (mounted.current) setPending(false)
     }
   }, [dirty, busy, save])
-  useEffect(() => {
+  // Publish the committed form state before a host close can observe the updated UI.
+  useLayoutEffect(() => {
     register?.(confirmLeave)
     return () => register?.(null)
   }, [register, confirmLeave])
