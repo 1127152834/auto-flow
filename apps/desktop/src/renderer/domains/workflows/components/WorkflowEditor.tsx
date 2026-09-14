@@ -1594,7 +1594,7 @@ export function WorkflowEditor() {
 
           {/* 视图模式切换：流程图 / 模块条（底部居中，避免与顶部搜索框重叠） */}
           {canvasWidgets?.viewSwitch !== false && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 p-0.5 rounded-[9px] bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-pop">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-0.5 p-0.5 rounded-card bg-[hsl(var(--card))] border border-[hsl(var(--border))] shadow-pop">
             <button
               onClick={async () => {
                 const wasBlock = useLayoutStore.getState().editorViewMode === 'block'
@@ -1620,7 +1620,7 @@ export function WorkflowEditor() {
                 }
               }}
               className={
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-medium transition-all ' +
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-control text-[12px] font-medium transition-all ' +
                 (editorViewMode === 'flow'
                   ? 'bg-[hsl(var(--brand-500))] text-white shadow-sm'
                   : 'text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--brand-50))]')
@@ -1631,7 +1631,7 @@ export function WorkflowEditor() {
             <button
               onClick={() => setEditorViewMode('block')}
               className={
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[12px] font-medium transition-all ' +
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-control text-[12px] font-medium transition-all ' +
                 (editorViewMode === 'block'
                   ? 'bg-[hsl(var(--brand-500))] text-white shadow-sm'
                   : 'text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--brand-50))]')
@@ -1769,7 +1769,7 @@ export function WorkflowEditor() {
               style={{
                 backgroundColor: '#f8fafc',
                 border: '1px solid #e2e8f0',
-                borderRadius: '8px',
+                borderRadius: 'var(--radius-control)',
                 cursor: 'pointer',
                 overflow: 'hidden',
               }}

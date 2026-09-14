@@ -15,7 +15,7 @@ import { cn } from '../../lib/utils'
  */
 
 const triggerCls =
-  'flex h-8 w-full items-center gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] ' +
+  'flex h-8 w-full items-center gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] ' +
   'px-2.5 py-1 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] cursor-pointer ' +
   'transition-[border-color,background-color,box-shadow] duration-150 hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] ' +
   'data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)]'
@@ -56,7 +56,7 @@ function CalendarPanel({ value, onPick }: { value: string; onPick: (v: string) =
     <div className="w-[248px] select-none">
       <div className="flex items-center justify-between gap-1 mb-2">
         <button type="button" onClick={prevMonth}
-          className="p-1 rounded-[6px] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-600))]">
+          className="p-1 rounded-control text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-600))]">
           <ChevronLeft className="w-4 h-4" />
         </button>
         <div className="flex items-center gap-1.5">
@@ -68,7 +68,7 @@ function CalendarPanel({ value, onPick }: { value: string; onPick: (v: string) =
           </SelectNative>
         </div>
         <button type="button" onClick={nextMonth}
-          className="p-1 rounded-[6px] text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-600))]">
+          className="p-1 rounded-control text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-600))]">
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -88,7 +88,7 @@ function CalendarPanel({ value, onPick }: { value: string; onPick: (v: string) =
               type="button"
               onClick={() => onPick(`${viewYear}-${pad(viewMonth + 1)}-${pad(d)}`)}
               className={cn(
-                'h-7 w-7 mx-auto rounded-[6px] text-[12.5px] flex items-center justify-center transition-colors',
+                'h-7 w-7 mx-auto rounded-control text-[12.5px] flex items-center justify-center transition-colors',
                 isSel
                   ? 'bg-[hsl(var(--brand-600))] text-white font-semibold'
                   : isToday
@@ -182,7 +182,7 @@ function TimeColumn({ label, count, value, onSelect, compact }: {
       <div
         ref={listRef}
         className={cn(
-          'w-[60px] overflow-y-auto overscroll-contain scrollbar-thin rounded-[8px] border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] p-1 space-y-0.5',
+          'w-[60px] overflow-y-auto overscroll-contain scrollbar-thin rounded-control border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] p-1 space-y-0.5',
           compact ? 'h-[128px]' : 'h-[192px]'
         )}
       >
@@ -192,7 +192,7 @@ function TimeColumn({ label, count, value, onSelect, compact }: {
             type="button"
             onClick={() => onSelect(i)}
             className={cn(
-              'w-full h-8 flex items-center justify-center rounded-[6px] text-[13.5px] tabular-nums transition-colors',
+              'w-full h-8 flex items-center justify-center rounded-control text-[13.5px] tabular-nums transition-colors',
               i === value
                 ? 'bg-[hsl(var(--brand-600))] text-white font-semibold shadow-sm'
                 : 'text-[hsl(var(--slate-700))] hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))]'
@@ -231,7 +231,7 @@ function TimePanel({ value, withSeconds, onChange, compact }: { value: string; w
         <button
           type="button"
           onClick={setNow}
-          className="px-2 py-1 rounded-[6px] text-[12px] text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
+          className="px-2 py-1 rounded-control text-[12px] text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors"
         >
           此刻
         </button>

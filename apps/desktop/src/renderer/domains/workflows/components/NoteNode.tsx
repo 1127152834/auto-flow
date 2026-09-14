@@ -149,7 +149,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
         handleClassName="!w-3 !h-3 !bg-[hsl(var(--brand-500))] !border-2 !border-white !rounded-full"
       />
       <div
-        className={`w-full h-full rounded-[12px] flex flex-col transition-shadow duration-200 ${(nodeData as any).__aiSpawning ? 'ai-node-spawn' : ''}`}
+        className={`w-full h-full rounded-card flex flex-col transition-shadow duration-200 ${(nodeData as any).__aiSpawning ? 'ai-node-spawn' : ''}`}
         style={{
           backgroundColor: colorConfig.value,
           border: `2px solid ${selected ? colorConfig.border : colorConfig.border + '60'}`,
@@ -159,7 +159,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
         }}
       >
         <div
-          className="flex items-center justify-between px-2.5 py-1.5 shrink-0 rounded-t-[10px]"
+          className="flex items-center justify-between px-2.5 py-1.5 shrink-0 rounded-t-card"
           style={{
             borderBottom: `1px dashed ${colorConfig.border}50`,
             background: `linear-gradient(180deg, ${colorConfig.border}15, transparent)`,
@@ -176,13 +176,13 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
           </div>
           {selected && (
             <div
-              className="flex items-center gap-0.5 bg-white/40 backdrop-blur-sm rounded-[6px] px-0.5 py-0.5"
+              className="flex items-center gap-0.5 bg-white/40 backdrop-blur-sm rounded-control px-0.5 py-0.5"
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="relative" ref={colorPickerRef}>
                 <button
-                  className="p-1 rounded-[4px] hover:bg-black/10 active:scale-90 transition-all"
+                  className="p-1 rounded-control hover:bg-black/10 active:scale-90 transition-all"
                   onClick={(e) => { e.stopPropagation(); setShowColorPicker(!showColorPicker) }}
                   onMouseDown={(e) => e.stopPropagation()}
                   title="选择颜色"
@@ -191,7 +191,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
                 </button>
                 {showColorPicker && (
                   <div
-                    className="absolute top-full right-0 mt-1.5 p-2 bg-[hsl(var(--card))] rounded-[10px] shadow-pop-xl border border-[hsl(var(--border))] z-[100] animate-scale-in"
+                    className="absolute top-full right-0 mt-1.5 p-2 bg-[hsl(var(--card))] rounded-card shadow-pop-xl border border-[hsl(var(--border))] z-[100] animate-scale-in"
                     style={{ width: '124px' }}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -216,7 +216,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
                 )}
               </div>
               <button
-                className="p-1 rounded-[4px] hover:bg-black/10 active:scale-90 transition-all"
+                className="p-1 rounded-control hover:bg-black/10 active:scale-90 transition-all"
                 onClick={(e) => { e.stopPropagation(); handleFontSizeChange(-1) }}
                 onMouseDown={(e) => e.stopPropagation()}
                 title="减小字体"
@@ -225,7 +225,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
               </button>
               <span className="text-[10.5px] font-mono min-w-[20px] text-center font-bold" style={{ color: colorConfig.border }}>{localFontSize}</span>
               <button
-                className="p-1 rounded-[4px] hover:bg-black/10 active:scale-90 transition-all"
+                className="p-1 rounded-control hover:bg-black/10 active:scale-90 transition-all"
                 onClick={(e) => { e.stopPropagation(); handleFontSizeChange(1) }}
                 onMouseDown={(e) => e.stopPropagation()}
                 title="增大字体"
@@ -233,7 +233,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
                 <Plus className="w-3.5 h-3.5" style={{ color: colorConfig.border }} />
               </button>
               <button
-                className={`p-1 rounded-[4px] active:scale-90 transition-all ${localFontBold ? 'bg-black/20 shadow-inner' : 'hover:bg-black/10'}`}
+                className={`p-1 rounded-control active:scale-90 transition-all ${localFontBold ? 'bg-black/20 shadow-inner' : 'hover:bg-black/10'}`}
                 onClick={(e) => { e.stopPropagation(); toggleBold() }}
                 onMouseDown={(e) => e.stopPropagation()}
                 title="加粗"
@@ -241,7 +241,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
                 <Bold className="w-3.5 h-3.5" style={{ color: colorConfig.border }} />
               </button>
               <button
-                className={`p-1 rounded-[4px] active:scale-90 transition-all ${localFontItalic ? 'bg-black/20 shadow-inner' : 'hover:bg-black/10'}`}
+                className={`p-1 rounded-control active:scale-90 transition-all ${localFontItalic ? 'bg-black/20 shadow-inner' : 'hover:bg-black/10'}`}
                 onClick={(e) => { e.stopPropagation(); toggleItalic() }}
                 onMouseDown={(e) => e.stopPropagation()}
                 title="斜体"
@@ -251,7 +251,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
             </div>
           )}
         </div>
-        <div className="flex-1 p-2.5 overflow-hidden cursor-text min-h-0 rounded-b-[10px]" onDoubleClick={handleDoubleClick}>
+        <div className="flex-1 p-2.5 overflow-hidden cursor-text min-h-0 rounded-b-card" onDoubleClick={handleDoubleClick}>
           {isEditing ? (
             <textarea
               ref={textareaRef}

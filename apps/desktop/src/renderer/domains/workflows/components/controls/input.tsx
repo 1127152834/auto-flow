@@ -7,7 +7,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 
 const inputBaseClass =
   // 基础容器
-  'flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] ' +
+  'flex h-8 w-full rounded-control px-2.5 py-1 text-[13px] ' +
   'border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] ' +
   'text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] ' +
   // 内嵌微阴影 - 提升输入感
@@ -46,7 +46,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             onClick={() => setShowPassword((v) => !v)}
             className={
               'absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center ' +
-              'h-6 w-6 rounded-[5px] text-[hsl(var(--muted-foreground))] ' +
+              'h-6 w-6 rounded-control text-[hsl(var(--muted-foreground))] ' +
               'hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] ' +
               'transition-colors duration-120 cursor-pointer'
             }

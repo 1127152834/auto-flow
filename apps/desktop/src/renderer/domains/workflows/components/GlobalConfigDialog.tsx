@@ -636,7 +636,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+            className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
           >
             <X className="w-4 h-4" />
           </button>
@@ -653,7 +653,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[12.5px] font-medium transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-control text-[12.5px] font-medium transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border ${
                     isActive
                       ? '!bg-[hsl(var(--brand-600))] !text-white !border-[hsl(var(--brand-700))] shadow-brand-glow'
                       : '!bg-transparent !text-[hsl(var(--slate-700))] !border-transparent hover:!bg-[hsl(var(--card))] hover:!text-[hsl(var(--brand-700))] hover:!border-[hsl(var(--border))] hover:shadow-xs'
@@ -662,7 +662,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                   <span
                     className={
                       isActive
-                        ? 'inline-flex items-center justify-center w-7 h-7 rounded-[6px] bg-white/25 border border-white/40 shrink-0'
+                        ? 'inline-flex items-center justify-center w-7 h-7 rounded-control bg-white/25 border border-white/40 shrink-0'
                         : `icon-chip icon-chip-${tab.accent} !w-7 !h-7`
                     }
                   >
@@ -2270,7 +2270,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
           onClick={() => setShowExportDialog(false)}
         >
           <div
-            className="bg-[hsl(var(--card))] rounded-[14px] border border-[hsl(var(--border))] shadow-pop-2xl w-full max-w-md overflow-hidden animate-scale-in"
+            className="bg-[hsl(var(--card))] rounded-modal border border-[hsl(var(--border))] shadow-pop-2xl w-full max-w-md overflow-hidden animate-scale-in"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-5 py-4 border-b border-[hsl(var(--border))] flex items-center gap-2">

@@ -155,7 +155,7 @@ export const DataTable = memo(function DataTable({
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             placeholder="筛选数据（任意列包含）…"
-            className="h-8 w-full rounded-[6px] border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] pl-7 pr-7 text-sm focus:border-[hsl(var(--brand-500))] focus:bg-[hsl(var(--card))] focus:outline-none"
+            className="h-8 w-full rounded-control border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] pl-7 pr-7 text-sm focus:border-[hsl(var(--brand-500))] focus:bg-[hsl(var(--card))] focus:outline-none"
           />
           {filterText && (
             <button

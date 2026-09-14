@@ -117,7 +117,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
   return (
     <div
       className={cn(
-        'group relative px-4 py-3 rounded-[12px] border-[1.5px] min-w-[180px] max-w-[280px]',
+        'group relative px-4 py-3 rounded-card border-[1.5px] min-w-[180px] max-w-[280px]',
         // 关键：只 transition 不会引起 reflow / 影响 RF 计算 handle 的属性
         'shadow-soft hover:shadow-pop-lg hover:border-[hsl(var(--brand-500)/0.6)]',
         'transition-[box-shadow,border-color] duration-150 ease-out',
@@ -169,7 +169,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
       </button>
 
       {isDisabled && (
-        <div className="absolute -top-2 -right-2 bg-[hsl(var(--slate-700))] text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider">
+        <div className="absolute -top-2 -right-2 bg-[hsl(var(--slate-700))] text-white text-[9.5px] font-bold px-2 py-0.5 rounded-control shadow-md uppercase tracking-wider">
           已禁用
         </div>
       )}
@@ -238,12 +238,12 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
         <>
           <Handle type="source" position={Position.Bottom} id={nodeData.moduleType === 'probability_trigger' ? 'path1' : 'true'}
             className="!bg-[hsl(var(--success-500))] !border-[2px] !border-white shadow-success-glow" style={{ left: '30%', width: `${handleSize}px`, height: `${handleSize}px` }} />
-          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-full bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>
+          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>
             {nodeData.moduleType === 'probability_trigger' ? '路径1' : nodeData.moduleType === 'face_recognition' ? '匹配' : nodeData.moduleType === 'element_visible' ? '可见' : nodeData.moduleType === 'element_exists' || nodeData.moduleType === 'image_exists' || nodeData.moduleType === 'phone_image_exists' ? '存在' : '是'}
           </div>
           <Handle type="source" position={Position.Bottom} id={nodeData.moduleType === 'probability_trigger' ? 'path2' : 'false'}
             className="!bg-[hsl(var(--danger-500))] !border-[2px] !border-white shadow-danger-glow" style={{ left: '70%', width: `${handleSize}px`, height: `${handleSize}px` }} />
-          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-full bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '70%', transform: 'translateX(-50%)' }}>
+          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '70%', transform: 'translateX(-50%)' }}>
             {nodeData.moduleType === 'probability_trigger' ? '路径2' : nodeData.moduleType === 'face_recognition' ? '不匹配' : nodeData.moduleType === 'element_visible' ? '不可见' : nodeData.moduleType === 'element_exists' || nodeData.moduleType === 'image_exists' || nodeData.moduleType === 'phone_image_exists' ? '不存在' : '否'}
           </div>
           <Handle type="source" position={Position.Right} id="error" className="!bg-[hsl(var(--warning-500))] !border-[2px] !border-white" style={{ top: '50%', width: `${handleSize * 0.83}px`, height: `${handleSize * 0.83}px` }} />
@@ -251,9 +251,9 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
       ) : nodeData.moduleType === 'loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict' ? (
         <>
           <Handle type="source" position={Position.Bottom} id="loop" className="!bg-[hsl(var(--success-500))] !border-[2px] !border-white" style={{ left: '30%', width: `${handleSize}px`, height: `${handleSize}px` }} />
-          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-full bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>循环</div>
+          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>循环</div>
           <Handle type="source" position={Position.Bottom} id="done" className="!bg-[hsl(var(--danger-500))] !border-[2px] !border-white" style={{ left: '70%', width: `${handleSize}px`, height: `${handleSize}px` }} />
-          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-full bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '70%', transform: 'translateX(-50%)' }}>完成</div>
+          <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '70%', transform: 'translateX(-50%)' }}>完成</div>
           <Handle type="source" position={Position.Right} id="error" className="!bg-[hsl(var(--warning-500))] !border-[2px] !border-white" style={{ top: '50%', width: `${handleSize * 0.83}px`, height: `${handleSize * 0.83}px` }} />
         </>
       ) : (

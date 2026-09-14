@@ -13,7 +13,7 @@ const DropdownMenuSub = DropdownMenuPrimitive.Sub
 const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
 
 const itemBase =
-  "relative flex cursor-pointer select-none items-center gap-2 rounded-[6px] px-2.5 py-1.5 text-[13px] outline-none " +
+  "relative flex cursor-pointer select-none items-center gap-2 rounded-control px-2.5 py-1.5 text-[13px] outline-none " +
   "text-[hsl(var(--slate-700))] " +
   "transition-[background-color,color,padding-left] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] " +
   "hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] hover:pl-3 " +
@@ -43,7 +43,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
 
 const subContentBase =
-  "z-50 min-w-[10rem] overflow-hidden rounded-[10px] border border-[hsl(var(--border))] " +
+  "z-50 min-w-[10rem] overflow-hidden rounded-card border border-[hsl(var(--border))] " +
   "bg-[hsl(var(--popover))] p-1.5 text-[hsl(var(--popover-foreground))] shadow-pop-xl " +
   "data-[state=open]:animate-in data-[state=closed]:animate-out " +
   "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 " +
@@ -104,7 +104,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   <DropdownMenuPrimitive.CheckboxItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-[6px] py-1.5 pl-8 pr-2.5 text-[13px] outline-none " +
+      "relative flex cursor-pointer select-none items-center rounded-control py-1.5 pl-8 pr-2.5 text-[13px] outline-none " +
         "transition-colors duration-150 " +
         "hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] " +
         "focus:bg-[hsl(var(--brand-50))] focus:text-[hsl(var(--brand-700))] " +
@@ -131,7 +131,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   <DropdownMenuPrimitive.RadioItem
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-[6px] py-1.5 pl-8 pr-2.5 text-[13px] outline-none " +
+      "relative flex cursor-pointer select-none items-center rounded-control py-1.5 pl-8 pr-2.5 text-[13px] outline-none " +
         "transition-colors duration-150 " +
         "hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] " +
         "focus:bg-[hsl(var(--brand-50))] focus:text-[hsl(var(--brand-700))] " +

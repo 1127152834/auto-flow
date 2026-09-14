@@ -162,7 +162,7 @@ export function ExportDialog({ isOpen, onClose, onExport }: ExportDialogProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
+              className="p-1.5 rounded-control text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"
             >
               <X className="w-4 h-4" />
             </button>
@@ -184,7 +184,7 @@ export function ExportDialog({ isOpen, onClose, onExport }: ExportDialogProps) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.06 }}
                     className={cn(
-                      'w-full p-3.5 rounded-[12px] border-[1.5px] transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] text-left flex items-start gap-3.5',
+                      'w-full p-3.5 rounded-card border-[1.5px] transition-all duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] text-left flex items-start gap-3.5',
                       isSelected
                         ? `${accent.activeBg} ${accent.activeBorder} ${accent.activeRing}`
                         : 'bg-[hsl(var(--card))] border-[hsl(var(--border))] hover:border-[hsl(var(--brand-500)/0.4)] hover:bg-[hsl(var(--brand-50)/0.4)] hover:shadow-soft hover:translate-x-1'
@@ -192,7 +192,7 @@ export function ExportDialog({ isOpen, onClose, onExport }: ExportDialogProps) {
                     whileHover={{ scale: 1.005 }}
                     whileTap={{ scale: 0.99 }}
                   >
-                    <div className={cn(accent.iconChip, '!w-10 !h-10 !rounded-[10px]')}>
+                    <div className={cn(accent.iconChip, '!w-10 !h-10 !rounded-card')}>
                       <Icon className="w-4.5 h-4.5" strokeWidth={2.2} />
                     </div>
                     <div className="flex-1 min-w-0">

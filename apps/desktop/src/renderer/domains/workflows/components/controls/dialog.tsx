@@ -42,11 +42,11 @@ const DialogContent = React.forwardRef<
       className={cn(
         'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 ' +
           // 弹窗主体：白底 + 圆角 + 高级阴影 + 顶部蓝渐变高光
-          'border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-pop-2xl rounded-[14px] ' +
+          'border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-pop-2xl rounded-modal ' +
           // 顶部装饰条
           'before:content-[""] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] ' +
           'before:bg-gradient-to-r before:from-[hsl(var(--brand-500))] before:via-[hsl(var(--brand-400))] before:to-[hsl(var(--info-500))] ' +
-          'before:rounded-t-[14px] ' +
+          'before:rounded-t-modal ' +
           'sm:max-w-lg ' +
           'data-[state=open]:animate-in data-[state=closed]:animate-out ' +
           'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 ' +
@@ -60,7 +60,7 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={cn(
-          'absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-[7px] ' +
+          'absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-control ' +
             'text-[hsl(var(--slate-500))] bg-transparent border border-transparent ' +
             'hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] ' +
             'transition-[background-color,color,border-color,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] ' +

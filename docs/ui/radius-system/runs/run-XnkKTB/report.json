@@ -1,0 +1,139 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-radius-qa-pzlKQe",
+  "platform": "darwin",
+  "arch": "arm64",
+  "screenshots": [
+    {
+      "name": "project-create-100",
+      "viewport": {
+        "width": 1440,
+        "height": 1003,
+        "dpr": 2
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "project-create-200",
+      "viewport": {
+        "width": 720,
+        "height": 501,
+        "dpr": 4
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "浏览器配置",
+      "viewport": {
+        "width": 1440,
+        "height": 1003,
+        "dpr": 2
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "代理管理",
+      "viewport": {
+        "width": 1440,
+        "height": 1003,
+        "dpr": 2
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "模型管理",
+      "viewport": {
+        "width": 1440,
+        "height": 1003,
+        "dpr": 2
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "设置",
+      "viewport": {
+        "width": 1440,
+        "height": 1003,
+        "dpr": 2
+      },
+      "font": "Inter, \"Segoe UI Variable\", \"Microsoft YaHei UI\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    },
+    {
+      "name": "studio",
+      "viewport": {
+        "width": 1440,
+        "height": 992,
+        "dpr": 2
+      },
+      "font": "-apple-system, \"system-ui\", \"Segoe UI Variable\", \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "real project dialog controls/cards",
+      "radii": {
+        "input": "4px",
+        "textarea": "4px",
+        "dialog": "6px",
+        "button": "4px",
+        "cards": [
+          "6px"
+        ]
+      }
+    },
+    {
+      "name": "Escape focus restoration",
+      "status": "passed"
+    },
+    {
+      "name": "independent Studio uses same scale",
+      "tokens": {
+        "control": "4px",
+        "card": "6px",
+        "modal": "6px",
+        "md": "4px",
+        "lg": "4px",
+        "xl": "6px",
+        "2xl": "6px"
+      }
+    }
+  ],
+  "sourceHead": "d3afba688fa1841c53d7fc21ca010429952ff312",
+  "sourceSha256": "db31457c30c18012c4f83a4a0c86b051cf740485e2816be0eb1b838a985e5ad8",
+  "buildSha256": "d3bcce255768d2153dce597043335a3820a820c2704a3b04bf16249663a81e9f"
+}

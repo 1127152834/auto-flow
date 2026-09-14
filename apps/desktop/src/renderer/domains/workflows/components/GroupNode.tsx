@@ -137,7 +137,7 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
       />
 
       <div
-        className="w-full h-full rounded-[12px] relative transition-shadow duration-200"
+        className="w-full h-full rounded-card relative transition-shadow duration-200"
         style={{
           backgroundColor: colorConfig.bg,
           border: `2px ${isSubflow ? 'solid' : 'dashed'} ${selected ? colorConfig.value : colorConfig.border}`,
@@ -148,7 +148,7 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
       >
         {/* 标题栏 */}
         <div
-          className="absolute -top-8 left-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] text-white text-[12px] font-semibold cursor-move shadow-soft transition-all duration-200 hover:shadow-pop"
+          className="absolute -top-8 left-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-control text-white text-[12px] font-semibold cursor-move shadow-soft transition-all duration-200 hover:shadow-pop"
           style={{
             background: `linear-gradient(135deg, ${colorConfig.value}, ${colorConfig.value}dd)`,
             border: `1px solid ${colorConfig.value}`,
@@ -201,7 +201,7 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
 
         {/* 子流程标识 */}
         {isSubflow && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[hsl(var(--success-500))] text-white text-[9.5px] font-bold uppercase tracking-wider shadow-success-glow">
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-control bg-[hsl(var(--success-500))] text-white text-[9.5px] font-bold uppercase tracking-wider shadow-success-glow">
             子流程
           </div>
         )}

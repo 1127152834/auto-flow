@@ -75,7 +75,7 @@ function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick:
     <>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div
-        className="fixed z-[9999] w-[340px] max-h-[420px] overflow-hidden flex flex-col rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl animate-scale-in"
+        className="fixed z-[9999] w-[340px] max-h-[420px] overflow-hidden flex flex-col rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl animate-scale-in"
         style={{ left, top }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -91,7 +91,7 @@ function ModulePicker({ x, y, onPick, onClose }: { x: number; y: number; onPick:
               {cat.modules.map((m) => {
                 const Icon = moduleIcons[m]
                 return (
-                  <button key={m} onClick={() => onPick(m)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-left hover:bg-[hsl(var(--brand-50))] transition-colors">
+                  <button key={m} onClick={() => onPick(m)} className="w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left hover:bg-[hsl(var(--brand-50))] transition-colors">
                     {Icon && <Icon className="w-3.5 h-3.5 text-[hsl(var(--brand-600))]" />}
                     <span className="text-[12.5px] text-[hsl(var(--slate-700))]">{moduleTypeLabels[m] || m}</span>
                   </button>
@@ -532,7 +532,7 @@ export function BlockFlowView() {
         onClick={(e) => handleRowClick(e, node.id)}
         onContextMenu={(e) => handleRowContextMenu(e, node.id)}
         className={
-          'group/row relative flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-[10px] border cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,background-color,transform] duration-150 ' +
+          'group/row relative flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-card border cursor-grab active:cursor-grabbing transition-[box-shadow,border-color,background-color,transform] duration-150 ' +
           (disabled ? 'opacity-55 grayscale-[0.4] ' : '') +
           (runStatuses[node.id] === 'running'
             ? 'bg-[hsl(var(--card))] border-[hsl(var(--brand-500))] ring-2 ring-[hsl(var(--brand-500)/0.5)] shadow-brand-glow animate-pulse'
@@ -559,7 +559,7 @@ export function BlockFlowView() {
           </button>
         ) : null}
         <span className={'w-4 text-right text-[10.5px] font-mono flex-shrink-0 tabular-nums ' + (isSel && !isRun ? 'font-bold text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))]')}>{num}</span>
-        <span className={'relative flex items-center justify-center w-7 h-7 rounded-[8px] flex-shrink-0 ' + bgCls}>
+        <span className={'relative flex items-center justify-center w-7 h-7 rounded-control flex-shrink-0 ' + bgCls}>
           {Icon && <Icon className={'w-4 h-4 ' + accentText} strokeWidth={2} />}
           {multiSelected && !isRun && (
             <span className="absolute -top-1.5 -right-1.5 bg-[hsl(var(--card))] rounded-full">
@@ -569,7 +569,7 @@ export function BlockFlowView() {
         </span>
         <div className="flex-1 min-w-0 flex items-baseline gap-2">
           {(kind === 'if' || kind === 'loop' || kind === 'parallel') && (
-            <span className={'flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10.5px] font-bold ' +
+            <span className={'flex-shrink-0 px-1.5 py-0.5 rounded-control text-[10.5px] font-bold ' +
               (kind === 'loop' ? 'bg-[hsl(var(--teal-50))] text-[hsl(var(--teal-700))]'
                 : kind === 'parallel' ? 'bg-[hsl(var(--violet-50))] text-[hsl(var(--violet-700))]'
                 : 'bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))]')}>{semanticTag}</span>
@@ -581,10 +581,10 @@ export function BlockFlowView() {
           )}
           {summary && <span className="text-[11px] text-[hsl(var(--slate-500))] truncate font-mono">{summary}</span>}
           {disabled && (
-            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-bold bg-[hsl(var(--slate-200))] text-[hsl(var(--slate-500))] border border-[hsl(var(--slate-300))]">已禁用</span>
+            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-control text-[10px] font-bold bg-[hsl(var(--slate-200))] text-[hsl(var(--slate-500))] border border-[hsl(var(--slate-300))]">已禁用</span>
           )}
           {policyText(node.data.errorPolicy as ErrorPolicy) && (
-            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-bold bg-[hsl(var(--warning-500)/0.12)] text-[hsl(var(--warning-700))] border border-[hsl(var(--warning-500)/0.3)] inline-flex items-center gap-1" title="该模块的出错处理策略">
+            <span className="flex-shrink-0 px-1.5 py-0.5 rounded-control text-[10px] font-bold bg-[hsl(var(--warning-500)/0.12)] text-[hsl(var(--warning-700))] border border-[hsl(var(--warning-500)/0.3)] inline-flex items-center gap-1" title="该模块的出错处理策略">
               <RotateCcw className="w-2.5 h-2.5" /> {policyText(node.data.errorPolicy as ErrorPolicy)}
             </span>
           )}
@@ -597,13 +597,13 @@ export function BlockFlowView() {
               const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
               setErrPopover({ nodeId: node.id, x: Math.min(r.left - 280, window.innerWidth - 320), y: r.bottom + 4 })
             }}
-            className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(node.data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
+            className={'p-1 rounded-control transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(node.data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
             title="出错处理（原地重试 / 回流上层重试 / 跳过继续）"
           ><RotateCcw className="w-3.5 h-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, 1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="下移"><ChevronDown className="w-3.5 h-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); toggleNodesDisabled([node.id]) }} className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--slate-100))] ' + (disabled ? 'text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--slate-700))]')} title={disabled ? '启用 (Ctrl+D)' : '禁用 (Ctrl+D)'}><Ban className="w-3.5 h-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); handleDelete(block.id) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] transition-colors" title="删除"><Trash2 className="w-3.5 h-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-control text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, 1) }} className="p-1 rounded-control text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="下移"><ChevronDown className="w-3.5 h-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); toggleNodesDisabled([node.id]) }} className={'p-1 rounded-control transition-colors hover:bg-[hsl(var(--slate-100))] ' + (disabled ? 'text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--slate-700))]')} title={disabled ? '启用 (Ctrl+D)' : '禁用 (Ctrl+D)'}><Ban className="w-3.5 h-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(block.id) }} className="p-1 rounded-control text-[hsl(var(--slate-400))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] transition-colors" title="删除"><Trash2 className="w-3.5 h-3.5" /></button>
         </div>
       </div>
     )
@@ -644,7 +644,7 @@ export function BlockFlowView() {
         onDragLeave={() => setOver(false)}
         onDrop={(e) => { setOver(false); handleDropAt(e, target) }}
         onClick={(e) => openPicker(target, e)}
-        className={'flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] border border-dashed cursor-pointer text-[11.5px] transition-colors ' +
+        className={'flex items-center gap-1.5 px-2.5 py-1.5 rounded-control border border-dashed cursor-pointer text-[11.5px] transition-colors ' +
           (over ? 'border-[hsl(var(--brand-500))] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))]' : 'border-[hsl(var(--slate-300))] text-[hsl(var(--slate-400))] hover:border-[hsl(var(--brand-500)/0.5)] hover:text-[hsl(var(--brand-600))]')}
       >
         <Plus className="w-3.5 h-3.5" /> {over ? '松手放入此处' : text}
@@ -669,7 +669,7 @@ export function BlockFlowView() {
         out.push(
           <div key={b.id + '^flow'} className="flex items-center gap-2 my-3 px-1">
             <span className="h-px flex-1 bg-[hsl(var(--border))]" />
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[hsl(var(--violet-50))] text-[hsl(var(--violet-700))] text-[10.5px] font-bold border border-[hsl(var(--violet-500)/0.25)]">独立流程</span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-control bg-[hsl(var(--violet-50))] text-[hsl(var(--violet-700))] text-[10.5px] font-bold border border-[hsl(var(--violet-500)/0.25)]">独立流程</span>
             <span className="h-px flex-1 bg-[hsl(var(--border))]" />
           </div>
         )
@@ -684,20 +684,20 @@ export function BlockFlowView() {
         const cc = countSteps(b.then) + countSteps(b.els)
         if (isCol) counter.n += cc
         out.push(
-          <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
+          <div key={b.id} className="rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
             <div className="bg-[hsl(var(--brand-50)/0.5)] border-b border-[hsl(var(--border))]">
               <StepRow block={b} num={num} kind="if" collapsible isCollapsed={isCol} onToggle={() => toggleCollapse(b.id)} childCount={cc} />
             </div>
             {!isCol && (<>
             <div className="pl-4 pr-2.5 py-2">
-              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] text-[10.5px] font-bold border border-[hsl(var(--success-500)/0.25)]">{lbl.yes}</div>
+              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] text-[10.5px] font-bold border border-[hsl(var(--success-500)/0.25)]">{lbl.yes}</div>
               <div className="ml-1 pl-3 border-l-2 border-[hsl(var(--success-500)/0.3)] space-y-0.5">
                 {renderSeq(b.then, counter)}
                 <EmptySlot target={{ mode: 'into', id: b.id, slot: 'then' }} text={`添加「${lbl.yes}」分支步骤`} />
               </div>
             </div>
             <div className="pl-4 pr-2.5 pb-2">
-              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-600))] text-[10.5px] font-bold border border-[hsl(var(--slate-300))]">{lbl.no}</div>
+              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-600))] text-[10.5px] font-bold border border-[hsl(var(--slate-300))]">{lbl.no}</div>
               <div className="ml-1 pl-3 border-l-2 border-[hsl(var(--slate-300))] space-y-0.5">
                 {renderSeq(b.els, counter)}
                 <EmptySlot target={{ mode: 'into', id: b.id, slot: 'els' }} text={`添加「${lbl.no}」分支步骤`} />
@@ -714,13 +714,13 @@ export function BlockFlowView() {
         const cc = countSteps(b.body)
         if (isCol) counter.n += cc
         out.push(
-          <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
+          <div key={b.id} className="rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
             <div className="bg-[hsl(var(--teal-50)/0.5)] border-b border-[hsl(var(--border))]">
               <StepRow block={b} num={num} kind="loop" collapsible isCollapsed={isCol} onToggle={() => toggleCollapse(b.id)} childCount={cc} />
             </div>
             {!isCol && (<>
             <div className="pl-4 pr-2.5 py-2">
-              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(var(--teal-50))] text-[hsl(var(--teal-700))] text-[10.5px] font-bold border border-[hsl(var(--teal-500)/0.25)]">循环体</div>
+              <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control bg-[hsl(var(--teal-50))] text-[hsl(var(--teal-700))] text-[10.5px] font-bold border border-[hsl(var(--teal-500)/0.25)]">循环体</div>
               <div className="ml-1 pl-3 border-l-2 border-[hsl(var(--teal-500)/0.35)] space-y-0.5">
                 {renderSeq(b.body, counter)}
                 <EmptySlot target={{ mode: 'into', id: b.id, slot: 'body' }} text="添加循环体步骤" />
@@ -738,7 +738,7 @@ export function BlockFlowView() {
         const cc = b.branches.reduce((m, br) => m + countSteps(br), 0)
         if (isCol) counter.n += cc
         out.push(
-          <div key={b.id} className="rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
+          <div key={b.id} className="rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop overflow-hidden">
             <div className="bg-[hsl(var(--violet-50)/0.5)] border-b border-[hsl(var(--border))]">
               <StepRow block={b} num={num} kind="parallel" collapsible isCollapsed={isCol} onToggle={() => toggleCollapse(b.id)} childCount={cc} />
             </div>
@@ -746,7 +746,7 @@ export function BlockFlowView() {
               <div className="pl-4 pr-2.5 py-2 space-y-2">
                 {b.branches.map((br, bi) => (
                   <div key={b.id + '^b' + bi}>
-                    <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[hsl(var(--violet-50))] text-[hsl(var(--violet-700))] text-[10.5px] font-bold border border-[hsl(var(--violet-500)/0.25)]">分支 {bi + 1}</div>
+                    <div className="mb-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control bg-[hsl(var(--violet-50))] text-[hsl(var(--violet-700))] text-[10.5px] font-bold border border-[hsl(var(--violet-500)/0.25)]">分支 {bi + 1}</div>
                     <div className="ml-1 pl-3 border-l-2 border-[hsl(var(--violet-500)/0.35)] space-y-0.5">
                       {renderSeq(br, counter)}
                     </div>
@@ -799,18 +799,18 @@ export function BlockFlowView() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setSelectedIds(new Set())}
-                  className="px-2 py-1 rounded-[6px] text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
+                  className="px-2 py-1 rounded-control text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
                 >取消选择</button>
               </div>
             ) : containerIds.length > 0 && (
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setCollapsed(new Set())}
-                  className="px-2 py-1 rounded-[6px] text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
+                  className="px-2 py-1 rounded-control text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
                 >展开全部</button>
                 <button
                   onClick={() => setCollapsed(new Set(containerIds))}
-                  className="px-2 py-1 rounded-[6px] text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
+                  className="px-2 py-1 rounded-control text-[11.5px] text-[hsl(var(--slate-600))] hover:bg-[hsl(var(--slate-100))] transition-colors"
                 >折叠全部</button>
               </div>
             )}
@@ -836,7 +836,7 @@ export function BlockFlowView() {
         <>
           <div className="fixed inset-0" style={{ zIndex: 2147483646 }} onClick={() => setCtxMenu(null)} onContextMenu={(e) => { e.preventDefault(); setCtxMenu(null) }} />
           <div
-            className="fixed min-w-[168px] rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl py-1 animate-scale-in"
+            className="fixed min-w-[168px] rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl py-1 animate-scale-in"
             style={{ zIndex: 2147483647, left: Math.min(ctxMenu.x, window.innerWidth - 184), top: Math.min(ctxMenu.y, window.innerHeight - 140) }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -867,7 +867,7 @@ export function BlockFlowView() {
         return createPortal(
           <>
             <div className="fixed inset-0 z-[9998]" onClick={() => setErrPopover(null)} />
-            <div className="fixed z-[9999] w-[300px] rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-3 animate-scale-in" style={{ left, top }} onClick={(e) => e.stopPropagation()}>
+            <div className="fixed z-[9999] w-[300px] rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-3 animate-scale-in" style={{ left, top }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[12.5px] font-semibold text-[hsl(var(--slate-700))]">出错处理</span>
                 <button onClick={() => setErrPopover(null)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><X className="w-3.5 h-3.5" /></button>
@@ -875,7 +875,7 @@ export function BlockFlowView() {
               <div className="grid grid-cols-2 gap-1.5 mb-2">
                 {(([['stop', '失败即停'], ['continue', '跳过继续'], ['retry-self', '原地重试'], ['retry-from', '回流上层重试']]) as [ErrorPolicy['mode'], string][]).map(([m, lbl]) => (
                   <button key={m} onClick={() => setPolicy(errPopover.nodeId, { mode: m })}
-                    className={'px-2 py-1.5 rounded-[7px] text-[11.5px] font-medium border transition-colors ' + (pol.mode === m ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
+                    className={'px-2 py-1.5 rounded-control text-[11.5px] font-medium border transition-colors ' + (pol.mode === m ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
                 ))}
               </div>
               {(pol.mode === 'retry-self' || pol.mode === 'retry-from') && (
@@ -895,13 +895,13 @@ export function BlockFlowView() {
                       <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">重试次数</label>
                       <input type="number" min={1} value={pol.maxRetries ?? 1}
                         onChange={(e) => setPolicy(errPopover.nodeId, { maxRetries: Math.max(1, parseInt(e.target.value) || 1) })}
-                        className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
+                        className="w-full mt-0.5 px-2 py-1 rounded-control text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
                     </div>
                     <div className="flex-1">
                       <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">间隔(秒)</label>
                       <input type="number" min={0} step={0.5} value={pol.interval ?? 0}
                         onChange={(e) => setPolicy(errPopover.nodeId, { interval: Math.max(0, parseFloat(e.target.value) || 0) })}
-                        className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
+                        className="w-full mt-0.5 px-2 py-1 rounded-control text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
                     </div>
                   </div>
                   {pol.mode === 'retry-from' && (
@@ -910,7 +910,7 @@ export function BlockFlowView() {
                       <div className="flex gap-1.5 mt-0.5">
                         {(([['stop', '停止流程'], ['continue', '继续往下']]) as ['stop' | 'continue', string][]).map(([v, lbl]) => (
                           <button key={v} onClick={() => setPolicy(errPopover.nodeId, { onExhausted: v })}
-                            className={'flex-1 px-2 py-1 rounded-[6px] text-[11.5px] border transition-colors ' + ((pol.onExhausted || 'stop') === v ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
+                            className={'flex-1 px-2 py-1 rounded-control text-[11.5px] border transition-colors ' + ((pol.onExhausted || 'stop') === v ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
                         ))}
                       </div>
                     </div>

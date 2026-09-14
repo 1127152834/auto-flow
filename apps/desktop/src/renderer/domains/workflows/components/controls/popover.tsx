@@ -154,7 +154,7 @@ export const PopoverContent = React.forwardRef<
     <div
       ref={contentRef}
       className={cn(
-        "absolute z-50 mt-2 rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--popover))] " +
+        "absolute z-50 mt-2 rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--popover))] " +
           "shadow-pop-xl outline-none animate-scale-in",
         align === 'start' && 'left-0',
         align === 'center' && 'left-1/2 -translate-x-1/2',

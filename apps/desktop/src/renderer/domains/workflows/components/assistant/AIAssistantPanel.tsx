@@ -1008,7 +1008,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
         <div className="flex items-center gap-2.5 min-w-0 flex-1" {...(standalone && isAgentWindow() ? { 'data-agent-drag-region': '' } : {})}>
           {/* 渐变 LOGO 圆环 */}
           <div className="relative flex-shrink-0" {...(standalone && isAgentWindow() ? { 'data-agent-drag-region': '' } : {})}>
-            <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] flex items-center justify-center shadow-brand-glow ring-1 ring-[hsl(var(--brand-500)/0.3)]" {...(standalone && isAgentWindow() ? { 'data-agent-drag-region': '' } : {})}>
+            <div className="w-9 h-9 rounded-card bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] flex items-center justify-center shadow-brand-glow ring-1 ring-[hsl(var(--brand-500)/0.3)]" {...(standalone && isAgentWindow() ? { 'data-agent-drag-region': '' } : {})}>
               <Sparkles className="w-4 h-4 text-white" strokeWidth={2.4} />
             </div>
             {configReady && (
@@ -1108,7 +1108,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                   key={s.id}
                   onClick={() => handleSelectSession(s.id)}
                   className={
-                    'group flex items-start gap-2 px-2.5 py-2 cursor-pointer rounded-[8px] transition-all duration-150 ' +
+                    'group flex items-start gap-2 px-2.5 py-2 cursor-pointer rounded-control transition-all duration-150 ' +
                     (s.id === currentSessionId
                       ? 'bg-[hsl(var(--brand-100))] border border-[hsl(var(--brand-500)/0.3)] shadow-xs'
                       : 'border border-transparent hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--border))] hover:shadow-xs')
@@ -1127,7 +1127,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                   </div>
                   <button
                     onClick={(e) => handleDeleteSession(s.id, e)}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded-[5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-control text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--danger-600))] hover:bg-[hsl(var(--danger-50))] transition-all"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
@@ -1165,7 +1165,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
               {[...aiActions].reverse().map((a) => (
                 <div
                   key={a.id}
-                  className="group flex items-center gap-2 px-2.5 py-2 rounded-[8px] border border-transparent hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--border))] transition-all"
+                  className="group flex items-center gap-2 px-2.5 py-2 rounded-control border border-transparent hover:bg-[hsl(var(--card))] hover:border-[hsl(var(--border))] transition-all"
                 >
                   <div className="icon-chip icon-chip-brand w-7 h-7 flex-shrink-0">
                     <Undo2 className="w-3.5 h-3.5" />
@@ -1179,7 +1179,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                   <button
                     onClick={() => handleRevertTo(a.id)}
                     title="回退到这一步操作之前的画布状态"
-                    className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 px-2 py-1 rounded-[6px] text-[11px] font-medium text-[hsl(var(--brand-700))] bg-[hsl(var(--brand-50))] hover:bg-[hsl(var(--brand-100))] transition-all flex-shrink-0"
+                    className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 px-2 py-1 rounded-control text-[11px] font-medium text-[hsl(var(--brand-700))] bg-[hsl(var(--brand-50))] hover:bg-[hsl(var(--brand-100))] transition-all flex-shrink-0"
                   >
                     <Undo2 className="w-3 h-3" /> 回退到此前
                   </button>
@@ -1244,7 +1244,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             {/* 使用建议提示卡片：让用户对小助手有合理预期（仅编辑器内嵌面板显示；Agent 窗口聚焦操作电脑，不展示工作流搭建提示） */}
             {!standalone && (
             <div
-              className="w-full max-w-[360px] mt-5 rounded-[10px] border border-[hsl(var(--warning-500)/0.3)] bg-[hsl(var(--warning-50))] p-3 text-left"
+              className="w-full max-w-[360px] mt-5 rounded-card border border-[hsl(var(--warning-500)/0.3)] bg-[hsl(var(--warning-50))] p-3 text-left"
               style={{ animation: 'fadeInUp 600ms cubic-bezier(0.25, 1, 0.5, 1) both' }}
             >
               <div className="flex items-center gap-1.5 mb-2">
@@ -1377,13 +1377,13 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
               <div className="flex items-center gap-2 mt-2">
                 <button
                   onClick={() => pendingApproval.resolve(true)}
-                  className="px-3 py-1 rounded-[6px] bg-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-700))] text-white text-[12px] font-medium transition-colors"
+                  className="px-3 py-1 rounded-control bg-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-700))] text-white text-[12px] font-medium transition-colors"
                 >
                   允许执行
                 </button>
                 <button
                   onClick={() => pendingApproval.resolve(false)}
-                  className="px-3 py-1 rounded-[6px] bg-[hsl(var(--card))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] text-[12px] font-medium transition-colors"
+                  className="px-3 py-1 rounded-control bg-[hsl(var(--card))] border border-[hsl(var(--border))] hover:bg-[hsl(var(--slate-100))] text-[hsl(var(--slate-700))] text-[12px] font-medium transition-colors"
                 >
                   拒绝（继续任务）
                 </button>
@@ -1414,7 +1414,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
         {(attachedImages.length > 0 || attachedDocs.length > 0) && (
           <div className="mb-2 flex items-center gap-2 flex-wrap">
             {attachedImages.map((src, i) => (
-              <div key={`img-${i}`} className="relative w-14 h-14 rounded-[8px] overflow-hidden border border-[hsl(var(--border))] group/img">
+              <div key={`img-${i}`} className="relative w-14 h-14 rounded-control overflow-hidden border border-[hsl(var(--border))] group/img">
                 <img src={src} alt={`附图${i + 1}`} className="w-full h-full object-cover" />
                 <button
                   type="button"
@@ -1429,7 +1429,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             {attachedDocs.map((d) => (
               <div
                 key={d.id}
-                className={'relative flex items-center gap-1.5 pl-2 pr-6 py-1.5 rounded-[8px] border text-[11px] max-w-[180px] group/doc ' +
+                className={'relative flex items-center gap-1.5 pl-2 pr-6 py-1.5 rounded-control border text-[11px] max-w-[180px] group/doc ' +
                   (d.status === 'error' ? 'border-[hsl(var(--danger-500)/0.4)] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))]' : 'border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] text-[hsl(var(--slate-700))]')}
                 title={d.status === 'error' ? (d.error || '解析失败') : d.name}
               >
@@ -1453,14 +1453,14 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
           </div>
         )}
         <div
-          className={'relative flex flex-col rounded-[10px] border-[1.5px] bg-[hsl(var(--card))] shadow-xs transition-[border-color,box-shadow] duration-150 ' +
+          className={'relative flex flex-col rounded-card border-[1.5px] bg-[hsl(var(--card))] shadow-xs transition-[border-color,box-shadow] duration-150 ' +
             (isDragOver ? 'border-[hsl(var(--brand-500))] ring-2 ring-[hsl(var(--brand-500)/0.25)]' : 'border-[hsl(var(--border))]')}
           onDragOver={(e) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setIsDragOver(true) } }}
           onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false) }}
           onDrop={(e) => { if (e.dataTransfer.files && e.dataTransfer.files.length > 0) { e.preventDefault(); setIsDragOver(false); void addFiles(e.dataTransfer.files) } }}
         >
           {isDragOver && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[10px] bg-[hsl(var(--brand-50)/0.92)] text-[hsl(var(--brand-700))] text-[12.5px] font-semibold pointer-events-none">
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-card bg-[hsl(var(--brand-50)/0.92)] text-[hsl(var(--brand-700))] text-[12.5px] font-semibold pointer-events-none">
               松手上传文件给小助手
             </div>
           )}
@@ -1531,7 +1531,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             <button
               type="button"
               onClick={() => setShowModelMenu((v) => !v)}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full hover:bg-[hsl(var(--slate-100))] transition-colors max-w-[200px]"
+              className="flex items-center gap-1 px-2 py-0.5 rounded-control hover:bg-[hsl(var(--slate-100))] transition-colors max-w-[200px]"
               title="切换模型"
             >
               <Cpu className="w-3 h-3 flex-shrink-0" />
@@ -1545,7 +1545,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
             {showModelMenu && (
               <>
                 <div className="fixed inset-0 z-[100]" onClick={() => setShowModelMenu(false)} />
-                <div className="absolute bottom-full right-0 mb-1.5 z-[101] w-60 max-h-72 overflow-y-auto rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-1.5 animate-fade-in-up">
+                <div className="absolute bottom-full right-0 mb-1.5 z-[101] w-60 max-h-72 overflow-y-auto rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-1.5 animate-fade-in-up">
                   <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--muted-foreground))]">选择模型</div>
                   {assistantModels.length === 0 ? (
                     <div className="px-2 py-2 text-[11.5px] text-[hsl(var(--muted-foreground))]">
@@ -1561,7 +1561,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                             updateAIAssistantConfig({ activeModelId: m.id, autoSceneRoute: false })
                             setShowModelMenu(false)
                           }}
-                          className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-[7px] text-left transition-colors ' + (on ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
+                          className={'w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-left transition-colors ' + (on ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
                         >
                           <Cpu className="w-3.5 h-3.5 flex-shrink-0 text-[hsl(var(--brand-600))]" />
                           <div className="flex-1 min-w-0">
@@ -1578,7 +1578,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                       onClick={() => {
                         updateAIAssistantConfig({ autoSceneRoute: !autoSceneRoute })
                       }}
-                      className={'w-full flex items-center gap-2 px-2 py-1.5 mt-1 rounded-[7px] text-left transition-colors border-t border-[hsl(var(--border))] ' + (autoSceneRoute ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
+                      className={'w-full flex items-center gap-2 px-2 py-1.5 mt-1 rounded-control text-left transition-colors border-t border-[hsl(var(--border))] ' + (autoSceneRoute ? 'bg-[hsl(var(--brand-100))]' : 'hover:bg-[hsl(var(--slate-100))]')}
                     >
                       <Sparkles className="w-3.5 h-3.5 flex-shrink-0 text-[hsl(var(--brand-600))]" />
                       <span className="flex-1 text-[12px] text-[hsl(var(--slate-800))]">按场景自动选模型</span>

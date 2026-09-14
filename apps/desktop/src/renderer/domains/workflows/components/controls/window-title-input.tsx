@@ -79,14 +79,14 @@ export function WindowTitleInput({ value, onChange, placeholder }: WindowTitleIn
           type="button"
           onClick={handleOpen}
           title="从已打开的窗口中选择"
-          className="flex items-center justify-center h-8 w-9 flex-shrink-0 rounded-[7px] border border-[hsl(var(--brand-500)/0.3)] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-100))] transition-colors"
+          className="flex items-center justify-center h-8 w-9 flex-shrink-0 rounded-control border border-[hsl(var(--brand-500)/0.3)] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-100))] transition-colors"
         >
           <MonitorSmartphone className="w-4 h-4" />
         </button>
       </div>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full max-h-72 overflow-y-auto rounded-[10px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-xl animate-fade-in-down">
+        <div className="absolute z-50 mt-1 w-full max-h-72 overflow-y-auto rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-xl animate-fade-in-down">
           <div className="flex items-center justify-between px-3 py-2 border-b border-[hsl(var(--border))] sticky top-0 bg-[hsl(var(--card))]">
             <span className="text-[11px] font-semibold text-[hsl(var(--slate-600))]">选择已打开的窗口</span>
             <button

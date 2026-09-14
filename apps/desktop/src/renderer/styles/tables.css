@@ -11,7 +11,7 @@
   min-width: 0;
   max-width: 100%;
   border: 1px solid var(--color-line);
-  border-radius: 6px;
+  border-radius: var(--radius-card);
   background: var(--color-surface);
 }
 .af-table-scroll:focus-visible {
@@ -48,9 +48,9 @@
 .af-table-search { display: flex; min-width: 0; flex: 1 1 18rem; max-width: 28rem; align-items: center; gap: 0; }
 .af-table-search > :first-child { flex: 0 1 8rem; min-width: 0; }
 .af-table-search > :nth-child(2) { flex: 1 1 10rem; min-width: 0; }
-.af-table-search > :first-child [data-af-control] { border-radius: 6px 0 0 6px; }
+.af-table-search > :first-child [data-af-control] { border-radius: var(--radius-control) 0 0 var(--radius-control); }
 .af-table-search > :nth-child(2) [data-af-control] { border-radius: 0; }
-.af-table-search > button { width: 2rem; border-radius: 0 6px 6px 0; }
+.af-table-search > button { width: 2rem; border-radius: 0 var(--radius-control) var(--radius-control) 0; }
 .af-table-search [data-af-control]:focus-visible { position: relative; z-index: 1; }
 .af-table-query-panel :is(.af-button, [data-af-control]) { height: var(--table-control-height); font-size: var(--table-font-size); }
 .af-table-query-panel { font-size: var(--table-font-size); }

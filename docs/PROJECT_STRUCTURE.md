@@ -430,3 +430,7 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `renderer/shared/components/ui/table{,-toolbar,-status}.tsx` 与 `renderer/styles/tables.css` 为全局表格视觉唯一落点。Table保留原生语义；TableScroll只管滚动边界；领域继续维护查询和草稿。Studio虚拟网格/Markdown通过`domains/workflows/styles/table-system.css`映射主题，不创建另一数据层。
 
 `renderer/development/table-system/` 是仅开发环境的真实组件合成资料验收入口，不加入生产导航。`scripts/qa-table-system.mjs`提供Electron截图、尺寸及键盘滚动核验；`scripts/verify-table-system.mjs`扫描14个实际表面，静态检查不代替业务通过。规格、使用点、截图对照和手测见`docs/ui/table-system/`。实施分支`codex/global-table-system`基于`bdca5ee`，保留主线同表新增与Studio；未修改后端或迁移。
+
+### 全局小圆角（2026-09-14）
+
+`renderer/styles/radii.css`集中2/4/6px尺度，同时进入主应用和Studio构建；`docs/ui/radius-system/`记录用户参考、实际截图和核验。`scripts/qa-radius-system.mjs`通过隔离Electron测量真实项目表单及独立Studio令牌，保留圆形语义元素。
