@@ -35510,5 +35510,59 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/targeted.log"
+  },
+  {
+    "id": "RECORDER.browser.offline-stop",
+    "capability": "recorder:review-and-generate",
+    "preconditions": {
+      "origin": "http://localhost:5175/studio.html",
+      "service": "Mock",
+      "workflow": "F4 录制游标与重连验收"
+    },
+    "steps": [
+      "离线后点击停止，再恢复连接并停止"
+    ],
+    "expectedUI": "失败保留3步及停止按钮；恢复后显示开始录制",
+    "expectedIO": "实际UI消费Mock请求及确认；不代表真实自动化",
+    "stateAssertion": "不丢失、不重复",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/browser-validation.md"
+  },
+  {
+    "id": "RECORDER.browser.batch-undo",
+    "capability": "recorder:review-and-generate",
+    "preconditions": {
+      "origin": "http://localhost:5175/studio.html",
+      "service": "Mock",
+      "workflow": "F4 录制游标与重连验收"
+    },
+    "steps": [
+      "生成3节点，聚焦画布，Cmd+Z / Cmd+Shift+Z"
+    ],
+    "expectedUI": "0节点 / 3节点2连线",
+    "expectedIO": "实际UI消费Mock请求及确认；不代表真实自动化",
+    "stateAssertion": "整个生成批次作为一次历史",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/browser-validation.md"
+  },
+  {
+    "id": "RECORDER.browser.save-reopen",
+    "capability": "recorder:review-and-generate",
+    "preconditions": {
+      "origin": "http://localhost:5175/studio.html",
+      "service": "Mock",
+      "workflow": "F4 录制游标与重连验收"
+    },
+    "steps": [
+      "命名保存，关闭Mock浏览器，刷新后从文件打开"
+    ],
+    "expectedUI": "3节点2连线；#name及中文文本恢复",
+    "expectedIO": "实际UI消费Mock请求及确认；不代表真实自动化",
+    "stateAssertion": "保存文档与录制参数一致",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-cursor/browser-validation.md"
   }
 ]
