@@ -1,6 +1,7 @@
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Select } from '../../../shared/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
 type Inspection = components['schemas']['ExcelInspectionView']
 type Sheet = components['schemas']['ExcelSheetInspection']
@@ -24,7 +25,7 @@ export function ExcelInspectionPanel({ inspection, selectedSheetId, checking = f
       <p>{selected.rowCount} 条数据 · 忽略 {selected.ignoredEmptyRowCount} 个空行</p>
       {selected.identityCandidates.length ? <p className="text-sm">{selected.identityCandidates.map(index => `第 ${index + 1} 列可作为候选身份`).join('；')}。候选仅表示文件内初步检查通过，仍需完整验证。</p> : <p className="text-sm text-muted">没有列通过候选身份初检，可使用系统生成身份。</p>}
       {selected.issues.map((issue, index) => <p role="alert" key={index}>{issue}</p>)}
-      <div className="max-w-full overflow-auto rounded-control border border-line"><table className="min-w-max text-sm"><thead><tr>{selected.headers.map((header, index) => <th className="max-w-64 truncate p-2 text-left" title={header} key={index}>{header || `第 ${index + 1} 列`}</th>)}</tr></thead><tbody>{selected.sample.slice(0, 10).map((row, rowIndex) => <tr key={rowIndex}>{selected.headers.map((_, columnIndex) => <td className="max-w-64 truncate p-2" title={text(row[columnIndex] ?? null)} key={columnIndex}>{text(row[columnIndex] ?? null)}</td>)}</tr>)}</tbody></table></div>
+      <TableScroll label="Excel 数据样例" className="max-w-full rounded-control border border-line"><Table className="min-w-max"><TableHeader><TableRow>{selected.headers.map((header, index) => <TableHead className="max-w-64 truncate" title={header} key={index}>{header || `第 ${index + 1} 列`}</TableHead>)}</TableRow></TableHeader><TableBody>{selected.sample.slice(0, 10).map((row, rowIndex) => <TableRow key={rowIndex}>{selected.headers.map((_, columnIndex) => <TableCell className="max-w-64 truncate" title={text(row[columnIndex] ?? null)} key={columnIndex}>{text(row[columnIndex] ?? null)}</TableCell>)}</TableRow>)}</TableBody></Table></TableScroll>
       {selected.formulaRowCount.some(count => count > 0) ? <p className="text-xs text-muted">公式单元格：{selected.formulaRowCount.map((count, index) => count > 0 ? `第 ${index + 1} 列 ${count} 行` : null).filter(Boolean).join('；')}</p> : null}
       <Button onClick={() => onContinue(selected)} disabled={disabled || checking || expired}>继续字段映射</Button>
     </div> : null}

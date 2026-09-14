@@ -1,0 +1,67 @@
+/* Scoped contract: regular forms and navigation retain their own density. */
+:root {
+  --table-font-size: 0.875rem;
+  --table-line-height: 1.25rem;
+  --table-row-height: 2rem;
+  --table-cell-inline: 0.5rem;
+  --table-cell-block: 0.3125rem;
+  --table-control-height: 2rem;
+}
+.af-table-scroll {
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+.af-table-scroll:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+.af-table { color: var(--color-ink); font-size: var(--table-font-size); line-height: var(--table-line-height); }
+.af-table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  height: var(--table-row-height);
+  padding: var(--table-cell-block) var(--table-cell-inline);
+  border-right: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+.af-table > :is(thead, tbody, tfoot) > tr > :last-child { border-right: 0; }
+.af-table > tbody:last-child > tr:last-child > :is(th, td) { border-bottom: 0; }
+.af-table > thead > tr > th {
+  background: var(--color-surface-subtle);
+  color: var(--color-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.af-table th[scope="row"] { font-weight: 500; }
+.af-table > tbody > tr:hover { background: var(--color-surface-hover); }
+.af-table > tbody > tr:is([aria-selected="true"], [data-state="selected"]) { background: var(--color-clay-soft); }
+.af-table > tbody > tr:has(.af-button) { height: 2.5rem; }
+.af-table .af-button { height: 1.75rem; padding-inline: 0.375rem; font-size: var(--table-font-size); font-weight: 500; }
+.af-table [data-status-badge] { padding: 0 0.25rem; background: transparent; font-size: var(--table-font-size); line-height: var(--table-line-height); font-weight: 400; }
+.af-table-toolbar { font-size: var(--table-font-size); line-height: var(--table-line-height); }
+.af-table-toolbar :is(.af-button, [data-af-control]) { height: var(--table-control-height); font-size: var(--table-font-size); }
+.af-table-toolbar .af-button { padding-inline: 0.625rem; font-weight: 500; box-shadow: none; }
+.af-table-toolbar [data-af-control]:not(:focus-visible):not([aria-invalid="true"]) { border-color: var(--color-line); }
+.af-table-toolbar [data-af-control]:enabled:hover { border-color: var(--color-control-border); }
+.af-table-search { display: flex; min-width: 0; flex: 1 1 18rem; max-width: 28rem; align-items: center; gap: 0; }
+.af-table-search > :first-child { flex: 0 1 8rem; min-width: 0; }
+.af-table-search > :nth-child(2) { flex: 1 1 10rem; min-width: 0; }
+.af-table-search > :first-child [data-af-control] { border-radius: 6px 0 0 6px; }
+.af-table-search > :nth-child(2) [data-af-control] { border-radius: 0; }
+.af-table-search > button { width: 2rem; border-radius: 0 6px 6px 0; }
+.af-table-search [data-af-control]:focus-visible { position: relative; z-index: 1; }
+.af-table-query-panel :is(.af-button, [data-af-control]) { height: var(--table-control-height); font-size: var(--table-font-size); }
+.af-table-query-panel { font-size: var(--table-font-size); }
+.af-table-status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--table-font-size); line-height: var(--table-line-height); white-space: nowrap; font-weight: 400; color: var(--color-muted); }
+.af-table-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--color-muted); }
+.af-table-status[data-table-status="success"] .af-table-status-dot { background: var(--color-success); }
+.af-table-status[data-table-status="warning"] .af-table-status-dot { background: var(--color-warning); }
+.af-table-status[data-table-status="danger"] .af-table-status-dot { background: var(--color-danger); }
+
+.af-table > tbody > tr > .af-table-draft-cell { padding: 2px; vertical-align: top; }
+.af-table-grid-cell > span { padding-right: 1.5rem; }
+.af-table-grid-cell [data-af-control] { font-size: var(--table-font-size); }
+.af-table-grid-cell [data-af-control]:not(textarea) { height: var(--table-control-height); }
+.af-table[data-variant="facts"] > tbody > tr:hover { background: transparent; }

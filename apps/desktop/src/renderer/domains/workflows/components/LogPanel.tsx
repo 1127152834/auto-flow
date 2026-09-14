@@ -37,6 +37,7 @@ import { DataTable } from './DataTable'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 import { DialogPortal } from './controls/dialog-portal'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
 interface LogPanelProps {
   onLogClick?: (nodeId: string) => void
@@ -958,20 +959,20 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 </div>
               ) : (
                 <div className="flex flex-col h-full">
-                  <div className="overflow-x-auto flex-1">
-                    <table className="w-full border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-muted/50">
-                          <th className="border px-2 py-1.5 text-left font-medium w-32">变量名</th>
-                          <th className="border px-2 py-1.5 text-left font-medium">值</th>
-                          <th className="border px-2 py-1.5 text-left font-medium w-20">类型</th>
-                          <th className="border px-2 py-1.5 w-12">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <TableScroll label="全局变量" className="af-studio-table-scroll flex-1">
+                    <Table className="af-studio-table">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-32">变量名</TableHead>
+                          <TableHead>值</TableHead>
+                          <TableHead className="w-20">类型</TableHead>
+                          <TableHead className="w-12">操作</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {variables.map((v) => (
-                          <tr key={v.name} className="hover:bg-muted/30">
-                            <td className="border px-2 py-1 cursor-pointer hover:bg-muted/50" onClick={() => startEditVarName(v.name)}>
+                          <TableRow key={v.name}>
+                            <TableCell className="cursor-pointer" onClick={() => startEditVarName(v.name)}>
                               {editingVarName === v.name ? (
                                 <Input 
                                   value={editVarNameValue} 
@@ -990,8 +991,8 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                                   <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-50" />
                                 </div>
                               )}
-                            </td>
-                            <td className="border px-2 py-1 cursor-pointer hover:bg-muted/50" onClick={() => startEditVar(v.name, v.value, v.type)}>
+                            </TableCell>
+                            <TableCell className="cursor-pointer" onClick={() => startEditVar(v.name, v.value, v.type)}>
                               {editingVar === v.name ? (
                                 <Input value={editVarValue} onChange={(e) => setEditVarValue(e.target.value)} className="h-6 text-xs" autoFocus
                                   onKeyDown={(e) => { if (e.key === 'Enter') saveEditVar(); if (e.key === 'Escape') setEditingVar(null); }} onBlur={saveEditVar} />
@@ -1001,18 +1002,18 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                                   <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-50" />
                                 </div>
                               )}
-                            </td>
-                            <td className="border px-2 py-1 text-muted-foreground">{v.type}</td>
-                            <td className="border px-2 py-1 text-center">
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">{v.type}</TableCell>
+                            <TableCell className="text-center">
                               <Button variant="ghost" size="icon" className="w-5 h-5" aria-label={`删除变量 ${v.name}`} onClick={() => deleteVariable(v.name)}>
                                 <Trash2 className="w-3 h-3 text-destructive" />
                               </Button>
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      </TableBody>
+                    </Table>
+                  </TableScroll>
                   <div className="pt-2 border-t mt-2 text-[10px] text-muted-foreground">
                     <span className="font-medium">引用语法：</span>
                     {'{变量名}'} · {'{列表[0]}'} · {'{列表[-1]}'} · {'{字典[键名]}'} · {'{数据[0][name]}'}

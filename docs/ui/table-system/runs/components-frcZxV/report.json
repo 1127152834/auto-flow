@@ -1,0 +1,10 @@
+{
+  "kind": "real-components-with-synthetic-props",
+  "status": "failed",
+  "sourceHead": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "screenshots": [],
+  "checks": [],
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-table-qa-diUz9z",
+  "sourceSha256": "d39d35d54c0ed7273e8309d72878cb01290364b4ea6def0151008e80a3e89c1c",
+  "error": "Error: CDP Page.navigate timeout"
+}

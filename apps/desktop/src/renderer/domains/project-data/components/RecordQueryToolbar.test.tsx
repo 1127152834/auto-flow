@@ -51,7 +51,7 @@ it('shows an optional local count and keeps the compact record actions in galler
   const user=userEvent.setup()
   const view=render(<RecordQueryToolbar {...props} totalCount={1248}/>)
   expect(screen.getByText('1,248 条')).toBeVisible(); expect(screen.getByText('本地记录')).toBeVisible()
-  expect(Array.from(screen.getByRole('toolbar').querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','more','create'])
+  expect(Array.from(screen.getByRole('group', {name:'记录工具'}).querySelectorAll('button[data-record-action]')).map(button=>button.getAttribute('data-record-action'))).toEqual(['filter','sort','columns','more','create'])
   expect(screen.getByRole('button',{name:'搜索记录'})).toBeVisible()
   await user.click(screen.getByRole('button',{name:'更多操作'}))
   expect(screen.getByRole('menuitem',{name:'批量设置状态'})).toBeVisible(); expect(screen.getByRole('menuitem',{name:'导出 Excel'})).toBeVisible()
@@ -59,16 +59,16 @@ it('shows an optional local count and keeps the compact record actions in galler
   expect(screen.queryByText('0 条')).not.toBeInTheDocument()
 })
 
-it('matches the gallery toolbar scale and centers the filter panel',async()=>{
+it('uses the approved compact shared toolbar and centers the filter panel',async()=>{
   const user=userEvent.setup()
   render(<RecordQueryToolbar {...props} totalCount={1248}/>)
-  expect(screen.getByText('1,248 条')).toHaveClass('text-[28px]')
-  expect(screen.getByRole('toolbar')).toHaveClass('[&_[data-record-action]]:h-12','[&_[data-record-action]]:text-base')
-  expect(screen.getByRole('search')).toHaveClass('[&_[data-af-control]]:h-12','[&_[data-af-control]]:text-base')
+  expect(screen.getByText('1,248 条')).toHaveClass('text-sm')
+  expect(screen.getByRole('group', {name:'记录工具'})).toHaveClass('af-table-toolbar')
+  expect(screen.getByRole('search')).toHaveClass('af-table-search')
   await user.click(screen.getByRole('button',{name:'筛选'}))
   const panel=screen.getByRole('dialog',{name:'记录筛选'})
   expect(panel).toHaveAttribute('data-align','center')
-  expect(within(panel).getByRole('heading',{name:'记录筛选'})).toHaveClass('text-xl')
+  expect(within(panel).getByRole('heading',{name:'记录筛选'})).toHaveClass('text-sm')
 })
 
 it('prompts for record content while keeping the explicit search field',()=>{
@@ -88,7 +88,7 @@ it('gives every query panel a title, close control, and geometry marker',async()
     expect(panel).toHaveAttribute('data-query-panel-size',size)
     const body=panel.querySelector('[data-query-panel-body]'),footer=panel.querySelector('[data-query-panel-footer]')
     expect(body).toBeTruthy(); expect(footer).toBeTruthy(); expect(body?.nextElementSibling).toBe(footer)
-    expect(footer).toHaveClass('[&_button]:h-10','[&_button]:text-base')
+    expect(panel).toHaveClass('af-table-query-panel')
     expect(within(footer as HTMLElement).getByRole('button',{name:'取消'})).toHaveClass('border-control-border','bg-surface')
     await user.click(within(panel).getByRole('button',{name:`关闭${panelName}`}))
   }

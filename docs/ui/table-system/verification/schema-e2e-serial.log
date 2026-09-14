@@ -1,0 +1,21 @@
+字段草稿：取消字段 (string)
+drawerCancel: E1：修改字段抽屉后取消并确认放弃，外层字段草稿未变化
+字段草稿：标题 (string)
+字段草稿：文章链接 (string)
+字段草稿：发布日期 (date)
+字段草稿：优先级 (number)
+字段草稿：已检查 (boolean)
+uiEntry: E1：项目、空白表和五字段均由真实 UI 建立
+multiFieldSave: E1+E2：一次外层确认生成五字段，数据库 tableRevision 仅增加一次
+字段草稿：待重置字段 (string)
+outerReset: E1+E2：外层重置经真实确认恢复冻结基线，数据库仍为五字段
+ruleAtomicity: E2：真实已有记录令 required 规则预检阻断，同时另一字段名称未被部分写入
+recordCasAtomicity: E2：预检后真实记录 CAS 改变令提交 409，字段名称无部分写入
+uiRuleAtomicity: E1+E2：UI 改名并收紧必填，真实预检阻断，数据库两字段均未改变
+uiRecordCasAtomicity: E1+E2：UI 候选预检后 API 竞争记录，UI 确认 409，草稿保留且字段无部分更新
+字段草稿：重连保留 (string)
+serviceReconnect: E1+E3：真实 FastAPI 重启后未保存字段草稿仍在 UI
+unknownOriginalKey: E3+E4：响应丢失和首次查询失败后完整应用重启，原 key 恢复且仅落一个字段
+settingsSequentialSave: E1+E2+E3：设置连续保存两次，真实GET与服务重连后UI均保持第二次已保存值
+visualStates: E1：字段、已保存字段编辑抽屉、三状态及新增弹窗、设置脏态均真实 UI；Excel 来源除 E4 文件选择结果外的 UI/IPC/HTTP/工作簿/SQLite 均真实；各页含 200%，视觉结论保持 pending
+R3 E2E 功能检查完成；视觉审查待人工填写：/Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/project-management/design-alignment/acceptance/gallery-r3/runs/run-RRCBkm

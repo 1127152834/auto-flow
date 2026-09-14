@@ -1,0 +1,105 @@
+{
+  "status": "implemented-verified-with-declared-manual-gaps",
+  "date": "2026-09-14T03:55:14.351277+00:00",
+  "baseCommit": "bdca5ee39aa7fef7214551a98b43463bf2aba943",
+  "branch": "codex/global-table-system",
+  "workspace": "/Users/zhangtiancheng/Documents/projects/autoflow-table-system",
+  "platform": {
+    "os": "macOS",
+    "arch": "arm64"
+  },
+  "scope": {
+    "productionSurfaces": 14,
+    "backendChanged": false,
+    "mainWorkspaceModifiedByThisTask": false,
+    "mainMerged": false
+  },
+  "sourceSha256": "c1117c02a18f4187d2690b2640b81afd7047b943ccaccd3f4db08d8902419136",
+  "prototypeSha256": "4b2a447678049231be2fa42ee8fd9cb7e4a27edca0eac5bc7faab4e807db0318",
+  "automatic": {
+    "vitest": {
+      "status": "passed",
+      "files": 254,
+      "tests": 2839,
+      "log": "vitest-final.log"
+    },
+    "typecheck": {
+      "status": "passed",
+      "log": "typecheck-final.log"
+    },
+    "lint": {
+      "status": "passed",
+      "log": "lint-final.log"
+    },
+    "build": {
+      "status": "passed",
+      "log": "build-final.log"
+    },
+    "openapi": {
+      "status": "passed",
+      "log": "openapi.log"
+    },
+    "scripts": {
+      "status": "passed",
+      "tests": 48,
+      "log": "scripts-final.log"
+    },
+    "structure": {
+      "status": "passed",
+      "log": "structure.log"
+    },
+    "tableScan": {
+      "status": "passed",
+      "report": "source-scan.json"
+    },
+    "components": {
+      "status": "passed",
+      "kind": "real-Electron-real-components-synthetic-props",
+      "screenshots": 10,
+      "report": "../runs/components-rOXBoV/report.json"
+    },
+    "records": {
+      "status": "executed-assertions-passed-suite-partial",
+      "caseGroups": 17,
+      "screenshots": 20,
+      "report": "../../../project-management/design-alignment/acceptance/record-grid-entry/runs/run-J7B7of/report.json",
+      "remaining": [
+        "E13-legacy-and-reimport-E2E",
+        "E15-native-IME",
+        "visual-review"
+      ]
+    },
+    "schema": {
+      "status": "passed",
+      "checkpoints": 12,
+      "screenshots": 21,
+      "report": "../../../project-management/design-alignment/acceptance/gallery-r3/runs/run-RRCBkm/result.json"
+    },
+    "studioWindow": {
+      "status": "passed",
+      "report": "studio-window/built-html.json"
+    }
+  },
+  "review": {
+    "spec": "no-open-blocker",
+    "engineering": "no-open-blocker",
+    "file": "../review.md"
+  },
+  "visual": {
+    "status": "agent-reviewed-candidate-not-user-approved",
+    "comparison": "../comparison.html",
+    "measured": "14px table header/body; 32px toolbar/plain rows; 40px action rows; multiline rows grow",
+    "viewportNote": "component native CSS viewport 1484×1006 (record actual each shot); records 1487×1003; schema CDP1440×1024; zoom and DPR per report. Images are not assumed identical-size canvases."
+  },
+  "notRun": [
+    "Windows",
+    "other architectures",
+    "packaged build",
+    "user manual acceptance",
+    "live external proxy/model requests",
+    "populated Studio global/pause variables in full running workflows",
+    "full native IME",
+    "record legacy/reimport cases omitted by existing record QA; no claim of complete PM2/R3 acceptance"
+  ],
+  "verificationBoundary": "Source inventory covers every real table consumer; component fixtures are not business end-to-end. File chooser results and some faults are explicitly injected; runtime calls and isolated data are real."
+}

@@ -1,0 +1,11 @@
+Table evidence: /Users/zhangtiancheng/Documents/projects/autoflow-table-system/docs/ui/table-system/runs/components-CMEv2J
+file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:68
+    if (result.exceptionDetails) throw new Error(`renderer evaluation failed: ${result.exceptionDetails.text}`)
+                                       ^
+
+Error: renderer evaluation failed: Uncaught
+    at Object.evaluate (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:68:40)
+    at async waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/electron-cdp.mjs:78:13)
+    at async file:///Users/zhangtiancheng/Documents/projects/autoflow-table-system/scripts/qa-table-system.mjs:58:3
+
+Node.js v26.7.0

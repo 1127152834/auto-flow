@@ -9,9 +9,10 @@ import { Button } from './controls/button'
 import { Input } from './controls/input'
 import { useVirtualizer } from '../hooks/useVirtualizer'
 import type { DataRow } from '../editor-store'
+import '../styles/table-system.css'
 
-const ROW_HEIGHT = 30
-const HEADER_HEIGHT = 30
+const ROW_HEIGHT = 32
+const HEADER_HEIGHT = 32
 
 interface DataTableProps {
   data: DataRow[]
@@ -47,6 +48,7 @@ export const DataTable = memo(function DataTable({
   displayLimit = 0,
 }: DataTableProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
   const getScrollElement = useCallback(() => scrollRef.current, [])
   const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null)
   const [editValue, setEditValue] = useState('')
@@ -144,16 +146,16 @@ export const DataTable = memo(function DataTable({
   const tableWidth = idColumnWidth + columns.length * columnWidth + actionColumnWidth
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="af-studio-data-grid flex h-full min-h-0 min-w-0 flex-col">
       {/* 筛选工具栏 */}
-      <div className="flex items-center gap-2 px-2 py-1.5 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex-shrink-0">
+      <div className="af-table-toolbar flex min-h-8 items-center gap-2 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 flex-shrink-0">
         <div className="relative flex-1 max-w-[260px]">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[hsl(var(--muted-foreground))]" />
           <input
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
             placeholder="筛选数据（任意列包含）…"
-            className="w-full pl-7 pr-7 h-7 text-[12px] rounded-[6px] border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] focus:outline-none focus:border-[hsl(var(--brand-500))] focus:bg-[hsl(var(--card))]"
+            className="h-8 w-full rounded-[6px] border border-[hsl(var(--border))] bg-[hsl(var(--slate-50))] pl-7 pr-7 text-sm focus:border-[hsl(var(--brand-500))] focus:bg-[hsl(var(--card))] focus:outline-none"
           />
           {filterText && (
             <button
@@ -164,15 +166,18 @@ export const DataTable = memo(function DataTable({
             </button>
           )}
         </div>
-        <span className="text-[11px] text-[hsl(var(--muted-foreground))] tabular-nums">
+        <span className="text-sm leading-5 text-[hsl(var(--muted-foreground))] tabular-nums">
           {filterText ? `匹配 ${viewIndex.length} / ${data.length} 行` : `${data.length} 行`}
           {sortCol && <span className="ml-2">· 按「{sortCol}」{sortDir === 'asc' ? '升序' : '降序'}</span>}
         </span>
       </div>
-      {/* 表头 - 固定不滚动 */}
+      {/* 表头与正文共用横向滚动容器，避免宽表滚动后错列。 */}
+      <div className="af-table-scroll af-studio-grid-scroll flex min-h-0 flex-1 flex-col" style={{ overflow: 'hidden' }}>
+      <div className="w-full flex-shrink-0 overflow-hidden">
       <div
-        className="flex bg-[hsl(var(--muted))] border-b border-[hsl(var(--border))] text-xs font-medium overflow-hidden flex-shrink-0"
-        style={{ height: HEADER_HEIGHT, minWidth: tableWidth }}
+        ref={headerRef}
+        className="af-studio-grid-header flex text-sm font-medium"
+        style={{ height: HEADER_HEIGHT, width: tableWidth }}
       >
         <div
           className="flex items-center justify-center border-r border-[hsl(var(--border))] flex-shrink-0"
@@ -201,6 +206,7 @@ export const DataTable = memo(function DataTable({
               size="icon"
               className="w-5 h-5 opacity-50 hover:opacity-100 flex-shrink-0"
               onClick={() => onDeleteColumn(col)}
+              aria-label={`删除列 ${col}`}
             >
               <X className="w-3 h-3" />
             </Button>
@@ -213,10 +219,20 @@ export const DataTable = memo(function DataTable({
           操作
         </div>
       </div>
+      </div>
 
       {/* 行区 - 虚拟滚动 */}
-      <div ref={scrollRef} className="flex-1 overflow-auto">
-        <div style={{ height: totalSize, position: 'relative', minWidth: tableWidth }}>
+      <div
+        ref={scrollRef}
+        role="region"
+        aria-label="数据预览"
+        tabIndex={0}
+        className="af-studio-grid-body min-h-0 w-full flex-1 overflow-auto"
+        onScroll={(event) => {
+          if (headerRef.current) headerRef.current.style.transform = `translateX(-${event.currentTarget.scrollLeft}px)`
+        }}
+      >
+        <div style={{ height: totalSize, minWidth: tableWidth, position: 'relative' }}>
           {virtualItems.map((v) => {
             const origIndex = viewIndex[v.index]
             const row = data[origIndex]
@@ -232,7 +248,7 @@ export const DataTable = memo(function DataTable({
                   height: ROW_HEIGHT,
                   width: tableWidth,
                 }}
-                className="flex border-b border-[hsl(var(--border))] hover:bg-[hsl(var(--muted)/0.5)] text-xs"
+                className="af-studio-grid-row flex text-sm"
               >
                 <div
                   className="flex items-center justify-center text-[hsl(var(--muted-foreground))] border-r border-[hsl(var(--border))] flex-shrink-0"
@@ -283,6 +299,7 @@ export const DataTable = memo(function DataTable({
                     size="icon"
                     className="w-5 h-5"
                     onClick={() => onDeleteRow(rowIndex)}
+                    aria-label={`删除第 ${rowIndex + 1} 行`}
                   >
                     <Trash2 className="w-3 h-3 text-[hsl(var(--danger-500))]" />
                   </Button>
@@ -291,6 +308,7 @@ export const DataTable = memo(function DataTable({
             )
           })}
         </div>
+      </div>
       </div>
     </div>
   )
