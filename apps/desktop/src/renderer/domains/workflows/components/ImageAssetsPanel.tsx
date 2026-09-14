@@ -213,6 +213,7 @@ export function ImageAssetsPanel() {
     const result = await imageAssetApi.renameFolder(folderPath, editFolderName.trim())
     if (result.error) {
       await alert(result.error)
+      return
     } else {
       await reloadAssets()
     }
@@ -229,6 +230,7 @@ export function ImageAssetsPanel() {
     const result = await imageAssetApi.rename(assetId, editAssetName.trim())
     if (result.error) {
       await alert(result.error)
+      return
     } else if (result.data?.asset) {
       // 更新本地状态
       await reloadAssets()
@@ -337,6 +339,8 @@ export function ImageAssetsPanel() {
     const result = await imageAssetApi.delete(id)
     if (!result.error) {
       deleteImageAsset(id)
+    } else {
+      await alert(result.error)
     }
   }
 

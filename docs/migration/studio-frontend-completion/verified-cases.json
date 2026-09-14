@@ -36356,5 +36356,815 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/image-panel-loading.md"
+  },
+  {
+    "id": "CONTRACT.image-write.upload.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "upload null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.upload.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "upload empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.upload.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "upload string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.upload.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "upload business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.upload.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "upload valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.create-folder.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "create-folder null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.create-folder.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "create-folder empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.create-folder.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "create-folder string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.create-folder.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "create-folder business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.create-folder.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "create-folder valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-folder.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-folder null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-folder.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-folder empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-folder.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-folder string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-folder.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-folder business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-folder.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-folder valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-folder.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-folder null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-folder.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-folder empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-folder.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-folder string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-folder.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-folder business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-folder.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-folder valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.move.null",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "move null",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.move.empty",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "move empty",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.move.string-success",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "move string-success",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.move.business-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "move business-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.move.valid",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "move valid",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.bad-asset",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "bad-asset",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.bad-created-path",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "bad-created-path",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.bad-renamed-path",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "bad-renamed-path",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.bad-moved-folder",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "bad-moved-folder",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.negative-deleted-count",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "negative-deleted-count",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.fractional-deleted-count",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "fractional-deleted-count",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.string-deleted-count",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "string-deleted-count",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.contradictory-delete",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "contradictory-delete",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.delete-ui-error",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "delete-ui-error",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
+  },
+  {
+    "id": "CONTRACT.image-write.rename-ui-retry",
+    "capability": "image-assets:confirmed-write",
+    "preconditions": {
+      "case": "rename-ui-retry",
+      "service": "受控响应"
+    },
+    "steps": [
+      "提交对应资源操作",
+      "检查回执及本地状态或错误提示"
+    ],
+    "expectedUI": "有效回执才接受；删除失败保留图片，重命名失败保留输入",
+    "expectedIO": "拒绝空或矛盾回执；合法回执保留业务字段及资产默认值",
+    "stateAssertion": "不能因HTTP200就误报资源操作成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-confirmation/targeted.log"
   }
 ]

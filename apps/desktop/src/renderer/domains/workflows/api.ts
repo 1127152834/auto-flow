@@ -1,3 +1,4 @@
+import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl} from './api/debugControl'
 import type {DebugControlRequest} from './lib/debugControlContract'
@@ -240,19 +241,19 @@ export const imageAssetApi = {
       const formData = new FormData()
       formData.append('file', file)
     if (folder) formData.append('folder', folder)
-    return apiRequest<components['schemas']['StudioImageUploadResult']>('/image-assets/upload', { method: 'POST', body: formData })
+    return checkedImageWrite(apiRequest<components['schemas']['StudioImageUploadResult']>('/image-assets/upload', { method: 'POST', body: formData }), 'asset', false)
   },
-  delete: (id: string) => apiRequest<components['schemas']['StudioImageMutationResult']>(`/image-assets/${id}`, { method: 'DELETE' }),
+  delete: (id: string) => checkedImageWrite(apiRequest<components['schemas']['StudioImageMutationResult']>(`/image-assets/${id}`, { method: 'DELETE' })),
   createFolder: (name: string, parentPath?: string) =>
-    apiRequest<components['schemas']['StudioImageFolderCreated']>('/image-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) }),
+    checkedImageWrite(apiRequest<components['schemas']['StudioImageFolderCreated']>('/image-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) }), 'path'),
   renameFolder: (oldPath: string, newName: string) =>
-    apiRequest<components['schemas']['StudioImageFolderRenamed']>('/image-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) }),
+    checkedImageWrite(apiRequest<components['schemas']['StudioImageFolderRenamed']>('/image-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) }), 'newPath'),
   deleteFolder: (folderPath: string) =>
-    apiRequest<components['schemas']['StudioImageFolderDeleted']>('/image-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) }),
+    checkedImageWrite(apiRequest<components['schemas']['StudioImageFolderDeleted']>('/image-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) }), 'deletedCount'),
   rename: (assetId: string, newName: string) =>
-    apiRequest<components['schemas']['StudioImageRenameResult']>(`/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' }),
+    checkedImageWrite(apiRequest<components['schemas']['StudioImageRenameResult']>(`/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' }), 'asset'),
   moveAsset: (assetId: string, targetFolder?: string) =>
-    apiRequest<components['schemas']['StudioImageMoved']>('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }),
+    checkedImageWrite(apiRequest<components['schemas']['StudioImageMoved']>('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) }), 'newFolder'),
 }
 
 // ==================== 定时任务 API ====================
