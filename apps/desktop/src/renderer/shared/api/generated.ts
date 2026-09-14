@@ -4836,6 +4836,78 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioRecorderBatch */
+        StudioRecorderBatch: {
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Nextseq */
+            nextSeq: number;
+            /** Data */
+            data: components["schemas"]["StudioRecorderEvent"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderEvent */
+        StudioRecorderEvent: {
+            /** Sequence */
+            sequence: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "navigate" | "click" | "dblclick" | "input" | "select" | "check" | "keypress" | "drag" | "upload" | "scroll";
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderReadRequest */
+        StudioRecorderReadRequest: {
+            /** Sessionid */
+            sessionId: string;
+            /**
+             * Afterseq
+             * @default 0
+             */
+            afterSeq: number;
+        };
+        /** StudioRecorderStartRequest */
+        StudioRecorderStartRequest: {
+            /** Sessionid */
+            sessionId: string;
+        };
+        /** StudioRecorderStarted */
+        StudioRecorderStarted: {
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Recording */
+            recording: boolean;
+            /** Nextseq */
+            nextSeq: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderStopped */
+        StudioRecorderStopped: {
+            /** Success */
+            success: boolean;
+            /** Sessionid */
+            sessionId: string;
+            /** Nextseq */
+            nextSeq: number;
+            data: components["schemas"]["StudioRecorderTail"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioRecorderTail */
+        StudioRecorderTail: {
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioRequestClaim */
         StudioRequestClaim: {
             /** Requestid */

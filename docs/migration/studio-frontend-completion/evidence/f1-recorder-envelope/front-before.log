@@ -1,0 +1,80 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/recorder-request-contract.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:83730) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/recorder-request-contract.test.ts (9 tests | 9 failed) 12ms
+   × rejects invalid session "" before sending any recorder command 7ms
+   × rejects invalid session " " before sending any recorder command 1ms
+   × rejects invalid session undefined before sending any recorder command 0ms
+   × rejects invalid session 3 before sending any recorder command 0ms
+   × rejects invalid cursor -1 before read or stop 1ms
+   × rejects invalid cursor 1.5 before read or stop 1ms
+   × rejects invalid cursor "1" before read or stop 0ms
+   × rejects invalid cursor true before read or stop 0ms
+   × rejects invalid cursor 9007199254740992 before read or stop 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid session "" before sending any recorder command
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid session " " before sending any recorder command
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid session undefined before sending any recorder command
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid session 3 before sending any recorder command
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/recorder-request-contract.test.ts:9:66
+      7|   const restore = configureStudioConnection('http://recorder.fixture',…
+      8|   try {
+      9|     expect((await recorderApi.start(session as string)).success).toBe(…
+       |                                                                  ^
+     10|     expect((await recorderApi.stop(session as string)).success).toBe(f…
+     11|     expect((await recorderApi.events(session as string)).success).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid cursor -1 before read or stop
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid cursor 1.5 before read or stop
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid cursor "1" before read or stop
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid cursor true before read or stop
+ FAIL  src/renderer/domains/workflows/tests/recorder-request-contract.test.ts > rejects invalid cursor 9007199254740992 before read or stop
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/recorder-request-contract.test.ts:19:75
+     17|   const restore = configureStudioConnection('http://recorder.fixture',…
+     18|   try {
+     19|     expect((await recorderApi.stop('session', cursor as number)).succe…
+       |                                                                           ^
+     20|     expect((await recorderApi.events('session', cursor as number)).suc…
+     21|     expect(fetcher).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed (9)
+   Start at  13:11:54
+   Duration  686ms (transform 144ms, setup 140ms, import 33ms, tests 12ms, environment 392ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/recorder-request-contract.test.ts

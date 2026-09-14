@@ -1,5 +1,6 @@
 """Shared Studio command envelopes; command-specific payloads remain separate contracts."""
 
+from itertools import pairwise
 from typing import Annotated, Any, Literal, Self
 
 from pydantic import ConfigDict, Field, JsonValue, field_validator, model_validator
@@ -551,3 +552,66 @@ class StudioPathSelectionResult(ApiModel):
         ):
             raise ValueError("failed selection requires an error or explicit cancellation and a null path")
         return self
+
+
+class StudioRecorderStartRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    session_id: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioRecorderReadRequest(StudioRecorderStartRequest):
+    after_seq: int = Field(default=0, ge=0, le=9007199254740991)
+
+
+class StudioRecorderEvent(ApiModel):
+    # Action-specific payloads remain intact; this envelope freezes delivery identity.
+    model_config = ConfigDict(extra="allow", strict=True)
+    sequence: int = Field(ge=1, le=9007199254740991)
+    type: Literal["navigate", "click", "dblclick", "input", "select", "check", "keypress", "drag", "upload", "scroll"]
+
+
+class StudioRecorderStarted(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    success: bool
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    recording: bool
+    next_seq: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioRecorderTail(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    events: list[StudioRecorderEvent]
+
+
+class StudioRecorderBatch(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    success: bool
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    next_seq: int = Field(ge=0, le=9007199254740991)
+    data: list[StudioRecorderEvent]
+
+    @model_validator(mode="after")
+    def validate_sequence(self) -> Self:
+        validate_recorder_tail(self.data, self.next_seq)
+        return self
+
+
+class StudioRecorderStopped(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    success: bool
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    next_seq: int = Field(ge=0, le=9007199254740991)
+    data: StudioRecorderTail
+
+    @model_validator(mode="after")
+    def validate_sequence(self) -> Self:
+        validate_recorder_tail(self.data.events, self.next_seq)
+        return self
+
+
+def validate_recorder_tail(events: list[StudioRecorderEvent], next_seq: int) -> None:
+    # Empty batches and the first event also need the request's afterSeq at consumption.
+    if events and events[-1].sequence != next_seq:
+        raise ValueError("录制确认游标与事件尾部不一致")
+    if any(current.sequence != previous.sequence + 1 for previous, current in pairwise(events)):
+        raise ValueError("录制事件序列必须连续且不重复")

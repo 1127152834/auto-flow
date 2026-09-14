@@ -369,10 +369,21 @@ export const elementPickerApi = {
 }
 
 // ==================== 网页智能录制器 API ====================
+function validRecorderRequest(sessionId: string, afterSeq = 0): boolean {
+  return typeof sessionId === 'string' && !!sessionId.trim() && Number.isSafeInteger(afterSeq) && afterSeq >= 0
+}
+const invalidRecorderRequest = (): Promise<ApiResponse<never>> => Promise.resolve({ success: false, error: '录制会话标识或确认游标无效' })
+
 export const recorderApi = {
-  start: (sessionId?: string) => apiRequest('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId }) }),
-  stop: (sessionId?: string, afterSeq = 0) => apiRequest('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq }) }),
-  events: (sessionId?: string, afterSeq = 0, signal?: AbortSignal) => apiRequest(`/recorder/events?afterSeq=${afterSeq}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`, { signal }),
+  start: (sessionId: string) => validRecorderRequest(sessionId)
+    ? apiRequest<components['schemas']['StudioRecorderStarted']>('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId } satisfies components['schemas']['StudioRecorderStartRequest']) })
+    : invalidRecorderRequest(),
+  stop: (sessionId: string, afterSeq = 0) => validRecorderRequest(sessionId, afterSeq)
+    ? apiRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq } satisfies components['schemas']['StudioRecorderReadRequest']) })
+    : invalidRecorderRequest(),
+  events: (sessionId: string, afterSeq = 0, signal?: AbortSignal) => validRecorderRequest(sessionId, afterSeq)
+    ? apiRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`, { signal })
+    : invalidRecorderRequest(),
   status: () => apiRequest('/recorder/status'),
 }
 

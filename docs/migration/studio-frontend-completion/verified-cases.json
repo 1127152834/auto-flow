@@ -35636,5 +35636,509 @@
     "level": "integration",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-request-binding/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.empty-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "empty-session",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.blank-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "blank-session",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.missing-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "missing-session",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.number-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "number-session",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.negative-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "negative-cursor",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.fractional-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "fractional-cursor",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.string-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "string-cursor",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.boolean-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "boolean-cursor",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.frontend.unsafe-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "unsafe-cursor",
+      "layer": "frontend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/targeted.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.stable-identity",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "stable-identity",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.missing-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "missing-session",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.empty-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "empty-session",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.blank-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "blank-session",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.number-session",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "number-session",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.negative-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "negative-cursor",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.string-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "string-cursor",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.boolean-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "boolean-cursor",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.fractional-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "fractional-cursor",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.unsafe-cursor",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "unsafe-cursor",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.events-roundtrip",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "events-roundtrip",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.stop-roundtrip",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "stop-roundtrip",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.cursor-ahead",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "cursor-ahead",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.gap",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "gap",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.duplicate",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "duplicate",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.string-sequence",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "string-sequence",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.zero-sequence",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "zero-sequence",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.unknown-action",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "unknown-action",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
+  },
+  {
+    "id": "CONTRACT.recorder-envelope.backend.null-event",
+    "capability": "recorder:delivery-envelope",
+    "preconditions": {
+      "case": "null-event",
+      "layer": "backend"
+    },
+    "steps": [
+      "按命名场景输入会话、游标或批次样例",
+      "验证拒绝或合法往返"
+    ],
+    "expectedUI": "规则测试不涉及页面显示",
+    "expectedIO": "前端非法请求不得发送；DTO非法投递信息拒绝",
+    "stateAssertion": "稳定身份及安全整数校验；合法批次保留扩展字段",
+    "level": "contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f1-recorder-envelope/python.log"
   }
 ]
