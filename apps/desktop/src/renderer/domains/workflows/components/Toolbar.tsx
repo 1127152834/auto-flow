@@ -4,6 +4,7 @@ import { CalendarClock } from 'lucide-react'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
+import { staticNumberIssues } from '../lib/staticNumberPreflight'
 // Source: WebRPA@5ccb900e, components/workflow/Toolbar.tsx; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch } from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
@@ -219,6 +220,8 @@ export function Toolbar() {
   // startNodeId：可选，从指定节点开始运行（调试用），为空则从默认起始节点运行
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
     if (startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
+    const source = useWorkflowStore.getState()
+    const { nodes, edges, variables, name, id: sourceDocumentId } = source
     if (nodes.length === 0) {
       addLog({ level: 'warning', message: '工作流没有任何节点' })
       return
@@ -226,6 +229,14 @@ export function Toolbar() {
 
     if (findExcludedModuleType(nodes, id => useCustomModuleStore.getState().modules.find(module => module.id === id)?.workflow?.nodes)) {
       addLog({ level: 'error', message: '工作流包含已排除节点；请移除这些节点后运行，原文档仍可保存或导出。' })
+      return
+    }
+
+    const numericIssues = staticNumberIssues(nodes, edges, startNodeId)
+    if (numericIssues.length) {
+      for (const issue of numericIssues) addLog({ level: 'error', nodeId: issue.nodeId,
+        message: `运行前检查失败：${issue.nodeId} · ${issue.path} · ${issue.message}` })
+      source.selectNode(numericIssues[0].nodeId)
       return
     }
 
@@ -240,7 +251,6 @@ export function Toolbar() {
       breakpoints: Array.from(useDebugStore.getState().breakpoints),
       stepMode: useDebugStore.getState().stepMode,
     }
-    const sourceDocumentId = useWorkflowStore.getState().id
     startPending.current = true
     setStartPhase('preparing')
     clearLogs()
@@ -365,7 +375,7 @@ export function Toolbar() {
       startPending.current = false
       if (!awaitingStart.current) setStartPhase(null)
     }
-  }, [nodes, edges, variables, name, workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
+  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
 
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {

@@ -1,5 +1,6 @@
 // Source: WebRPA@5ccb900e, components/ui/number-input.tsx; see SOURCE.md for license and adaptation boundaries.
 import * as React from 'react'
+import { parseFiniteNumber } from '../../lib/finiteNumber'
 import { cn } from '../../lib/utils'
 import { useWorkflowStore } from '../../editor-store'
 import { getModuleDefaultVar, VARIABLE_NAME_FIELDS } from '../../lib/moduleDefaultVars'
@@ -120,13 +121,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
 
     // 检查是否包含变量引用
     const hasVariableRef = (val: string) => val.includes('{')
-    const parseNumber = (text: string): number | null => {
-      const trimmed = text.trim()
-      if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) return null
-      const parsed = Number(trimmed)
-      return Number.isFinite(parsed) ? parsed : null
-    }
-    const parsedNumber = parseNumber(displayValue)
+    const parsedNumber = parseFiniteNumber(displayValue)
     const validationError = hasVariableRef(displayValue) || displayValue === '' ? ''
       : parsedNumber === null ? '请输入有效的有限数字或变量引用'
       : min !== undefined && parsedNumber < min ? `数值不能小于 ${min}`
@@ -181,13 +176,13 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       checkVariableInput(inputValue, pos)
 
       // Preserve partial/invalid text in the document; never parse only its numeric prefix.
-      const parsed = hasVariableRef(inputValue) ? null : parseNumber(inputValue)
+      const parsed = hasVariableRef(inputValue) ? null : parseFiniteNumber(inputValue)
       emitValue(parsed === null ? inputValue : parsed)
     }
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
       setTimeout(() => setShowSuggestions(false), 150)
-      const parsed = parseNumber(displayValue)
+      const parsed = parseFiniteNumber(displayValue)
       if (!validationError && parsed !== null && !hasVariableRef(displayValue)) {
         setDisplayValue(String(parsed))
         emitValue(parsed)

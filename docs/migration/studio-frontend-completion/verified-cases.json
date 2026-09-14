@@ -29848,5 +29848,509 @@
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/output-variable-rename-validation.md",
     "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.01",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待1abc",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待1abc",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待1abc",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.02",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待Infinity",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待Infinity",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待Infinity",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.03",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待1e999",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待1e999",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待1e999",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.04",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待空文字",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待空文字",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待空文字",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.05",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待负数",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待负数",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待负数",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.06",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待布尔",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待布尔",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待布尔",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.07",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待0",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待0",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待0",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.08",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待0.5",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待0.5",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待0.5",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.09",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待科学计数",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待科学计数",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待科学计数",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.10",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待正号",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待正号",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待正号",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.11",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待普通变量",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待普通变量",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待普通变量",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.12",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待美元变量",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待美元变量",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待美元变量",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.13",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "等待缺省",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "等待缺省",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "等待缺省",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.14",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "超时非法",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "超时非法",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "超时非法",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.15",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "重试小数",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "重试小数",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "重试小数",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.16",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "重试超上限",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "重试超上限",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "重试超上限",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.17",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "重试负数",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "重试负数",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "重试负数",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.18",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "重试间隔非法",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "重试间隔非法",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "重试间隔非法",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.19",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "禁用及非生效分支",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "禁用及非生效分支",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "禁用及非生效分支",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.20",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "内部超时例外",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "内部超时例外",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "内部超时例外",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.21",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "284入口默认共同数字",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "284入口默认共同数字",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "284入口默认共同数字",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.22",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "键盘启动拒绝",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "键盘启动拒绝",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "键盘启动拒绝",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.23",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "节点启动拒绝",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "节点启动拒绝",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "节点启动拒绝",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.24",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "AI无头启动拒绝",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "AI无头启动拒绝",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "AI无头启动拒绝",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.25",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "跳过非法上游",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "跳过非法上游",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "跳过非法上游",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.26",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "可达分支及回环终止",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "可达分支及回环终止",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "可达分支及回环终止",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.27",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "同刻编辑运行使用最新值",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "同刻编辑运行使用最新值",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "同刻编辑运行使用最新值",
+    "level": "rule/component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-static-number/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
+  },
+  {
+    "id": "F2.static-number-preflight.28",
+    "capability": "run.static-numeric-validation",
+    "preconditions": {
+      "case": "实际UI拒绝修正启动",
+      "fixture": "独立草稿及接口Spy/Mock"
+    },
+    "steps": [
+      "按static-number-preflight.test.tsx对应数据或实际UI记录操作"
+    ],
+    "expectedUI": "实际UI拒绝修正启动",
+    "expectedIO": "无效静态参数不发送create/update/execute；合法参数继续原启动链",
+    "stateAssertion": "实际UI拒绝修正启动",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/static-number-preflight.md",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/static-number-preflight.test.tsx"
   }
 ]

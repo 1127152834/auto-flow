@@ -1,0 +1,266 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/static-number-preflight.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:65006) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via keyboard
+[Toolbar] 配置已更新: { autoCloseBrowser: true, fullscreen: false, type: 'msedge' }
+
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via keyboard
+[Toolbar] 执行工作流，无头模式: false 浏览器配置: {
+  type: 'msedge',
+  executablePath: undefined,
+  userDataDir: undefined,
+  fullscreen: false,
+  autoCloseBrowser: true,
+  launchArgs: '--disable-blink-features=AutomationControlled\n' +
+    '--start-maximized\n' +
+    '--ignore-certificate-errors\n' +
+    '--ignore-ssl-errors\n' +
+    '--disable-features=IsolateOrigins,site-per-process\n' +
+    '--allow-running-insecure-content\n' +
+    '--disable-infobars\n' +
+    '--disable-notifications',
+  extensionDirs: undefined
+}
+
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via from-node
+[Toolbar] 配置已更新: { autoCloseBrowser: true, fullscreen: false, type: 'msedge' }
+
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via from-node
+[Toolbar] 执行工作流，无头模式: false 浏览器配置: {
+  type: 'msedge',
+  executablePath: undefined,
+  userDataDir: undefined,
+  fullscreen: false,
+  autoCloseBrowser: true,
+  launchArgs: '--disable-blink-features=AutomationControlled\n' +
+    '--start-maximized\n' +
+    '--ignore-certificate-errors\n' +
+    '--ignore-ssl-errors\n' +
+    '--disable-features=IsolateOrigins,site-per-process\n' +
+    '--allow-running-insecure-content\n' +
+    '--disable-infobars\n' +
+    '--disable-notifications',
+  extensionDirs: undefined
+}
+
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via assistant-headless
+[Toolbar] 配置已更新: { autoCloseBrowser: true, fullscreen: false, type: 'msedge' }
+
+stdout | src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via assistant-headless
+[Toolbar] 执行工作流，无头模式: true 浏览器配置: {
+  type: 'msedge',
+  executablePath: undefined,
+  userDataDir: undefined,
+  fullscreen: false,
+  autoCloseBrowser: true,
+  launchArgs: '--disable-blink-features=AutomationControlled\n' +
+    '--start-maximized\n' +
+    '--ignore-certificate-errors\n' +
+    '--ignore-ssl-errors\n' +
+    '--disable-features=IsolateOrigins,site-per-process\n' +
+    '--allow-running-insecure-content\n' +
+    '--disable-infobars\n' +
+    '--disable-notifications',
+  extensionDirs: undefined
+}
+
+ ❯ src/renderer/domains/workflows/tests/static-number-preflight.test.tsx (24 tests | 3 failed) 153ms
+   × rejects an unselected invalid node before any requests via keyboard 73ms
+   × rejects an unselected invalid node before any requests via from-node 29ms
+   × rejects an unselected invalid node before any requests via assistant-headless 24ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via keyboard
+AssertionError: expected "create" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st create call:
+
+    Array [
+      Object {
+        "edges": Array [],
+        "name": "未命名工作流",
+        "nodes": Array [
+          Object {
+            "data": Object {
+              "duration": "1abc",
+              "label": "固定等待",
+              "moduleType": "wait",
+            },
+            "id": "qFVTxSOGI1xSzQw-L4BaM",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "wait",
+          },
+          Object {
+            "data": Object {
+              "label": "打开网页",
+              "moduleType": "open_page",
+              "timeout": 60,
+            },
+            "id": "NrnUlRkDIkbmcnGgDMVvw",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "open_page",
+          },
+        ],
+        "variables": Array [],
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/static-number-preflight.test.tsx:48:21
+     46|   if(mode==='assistant-headless')emitAssistantUiEvent('run_workflow',{…
+     47|  })
+     48|  expect(create).not.toHaveBeenCalled();expect(update).not.toHaveBeenCa…
+       |                     ^
+     49|  expect(store.getState().logs.some(log=>log.message.includes('data.dur…
+     50|  expect(store.getState().selectedNodeId).toBe(invalid.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via from-node
+AssertionError: expected "create" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st create call:
+
+    Array [
+      Object {
+        "edges": Array [],
+        "name": "未命名工作流",
+        "nodes": Array [
+          Object {
+            "data": Object {
+              "duration": "1abc",
+              "label": "固定等待",
+              "moduleType": "wait",
+            },
+            "id": "jwbIra9gXCweKIPvXea0q",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "wait",
+          },
+          Object {
+            "data": Object {
+              "label": "打开网页",
+              "moduleType": "open_page",
+              "timeout": 60,
+            },
+            "id": "iJT2o4WDx84xNmgAyWb1Q",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "open_page",
+          },
+        ],
+        "variables": Array [],
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/static-number-preflight.test.tsx:48:21
+     46|   if(mode==='assistant-headless')emitAssistantUiEvent('run_workflow',{…
+     47|  })
+     48|  expect(create).not.toHaveBeenCalled();expect(update).not.toHaveBeenCa…
+       |                     ^
+     49|  expect(store.getState().logs.some(log=>log.message.includes('data.dur…
+     50|  expect(store.getState().selectedNodeId).toBe(invalid.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/static-number-preflight.test.tsx > rejects an unselected invalid node before any requests via assistant-headless
+AssertionError: expected "create" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st create call:
+
+    Array [
+      Object {
+        "edges": Array [],
+        "name": "未命名工作流",
+        "nodes": Array [
+          Object {
+            "data": Object {
+              "duration": "1abc",
+              "label": "固定等待",
+              "moduleType": "wait",
+            },
+            "id": "te9IF8jMqUTK1j8dG328C",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "wait",
+          },
+          Object {
+            "data": Object {
+              "label": "打开网页",
+              "moduleType": "open_page",
+              "timeout": 60,
+            },
+            "id": "tn21KzrALRwA_eDhobSZk",
+            "position": Object {
+              "x": 0,
+              "y": 0,
+            },
+            "style": undefined,
+            "type": "open_page",
+          },
+        ],
+        "variables": Array [],
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/static-number-preflight.test.tsx:48:21
+     46|   if(mode==='assistant-headless')emitAssistantUiEvent('run_workflow',{…
+     47|  })
+     48|  expect(create).not.toHaveBeenCalled();expect(update).not.toHaveBeenCa…
+       |                     ^
+     49|  expect(store.getState().logs.some(log=>log.message.includes('data.dur…
+     50|  expect(store.getState().selectedNodeId).toBe(invalid.id)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 21 passed (24)
+   Start at  10:05:07
+   Duration  2.31s (transform 884ms, setup 125ms, import 1.32s, tests 153ms, environment 594ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/static-number-preflight.test.tsx
