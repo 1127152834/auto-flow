@@ -12,6 +12,7 @@ describe.each(['memory','http'] as const)('script consumer over %s',mode=>{
  let restore:()=>void
  let execute=vi.fn<(data:{code:string;variables:Record<string,unknown>})=>void>()
  let terminate=vi.fn<()=>void>()
+ let completeHeld:(()=>void)|undefined
  let held:boolean
  let calls:Array<{url:string;event?:string}>
  let lose:string|undefined
@@ -19,11 +20,11 @@ describe.each(['memory','http'] as const)('script consumer over %s',mode=>{
  beforeEach(async()=>{
   const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value),removeItem:(key:string)=>values.delete(key)})
   vi.resetModules();mock=await import('../api/mock-server');if(mode==='http')server=await startHttpStudioFixture(mock.mockRequest)
-  held=false;lose=undefined;calls=[];execute=vi.fn();terminate=vi.fn()
+  completeHeld=undefined;held=false;lose=undefined;calls=[];execute=vi.fn();terminate=vi.fn()
   vi.stubGlobal('Worker',class {
    onmessage:((event:{data:unknown})=>void)|null=null
    onerror=null
-   postMessage(data:{code:string;variables:Record<string,unknown>}){execute(data);if(!held)queueMicrotask(()=>this.onmessage?.({data:evaluateJsScript(data.code,data.variables)}))}
+   postMessage(data:{code:string;variables:Record<string,unknown>}){execute(data);const complete=()=>this.onmessage?.({data:evaluateJsScript(data.code,data.variables)});if(held)completeHeld=complete;else queueMicrotask(complete)}
    terminate=terminate
   })
   const transport=async(input:RequestInfo|URL,init?:RequestInit)=>{
@@ -72,6 +73,13 @@ describe.each(['memory','http'] as const)('script consumer over %s',mode=>{
   await request('/workflows/js-delivery/stop',{})
   await vi.waitFor(()=>expect(terminate).toHaveBeenCalledOnce())
   expect(calls.filter(c=>c.event==='js_script_result')).toHaveLength(0)
+ })
+ it('preserves a running worker when reconnect is requested during an SSE interruption',async()=>{
+  held=true;await start();await vi.waitFor(()=>expect(execute).toHaveBeenCalledOnce(),{timeout:2000})
+  mock.configureMock({disconnect:true});await vi.waitFor(()=>expect(socketService.isConnected()).toBe(false))
+  socketService.connect();await vi.waitFor(()=>expect(socketService.isConnected()).toBe(true),{timeout:2000})
+  completeHeld?.();await vi.waitFor(()=>expect(store.getState().executionStatus).toBe('completed'),{timeout:2000})
+  expect(execute).toHaveBeenCalledOnce();expect(calls.filter(c=>c.event==='js_script_result')).toHaveLength(1)
  })
  it('rejects a malformed script event without starting a worker',async()=>{
   socketService.connect();await vi.waitFor(()=>expect(socketService.isConnected()).toBe(true))

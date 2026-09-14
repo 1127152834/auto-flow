@@ -1,5 +1,6 @@
-import { inputPromptApi, jsScriptApi } from './api'
+import { inputPromptApi, jsScriptApi, speechApi } from './api'
 import type { components } from '../../shared/api/generated'
+import { isSpeechRequest, runSpeech } from './lib/runSpeech'
 import { runJsScript } from './lib/runJsScript'
 import type { InputPromptRequest } from './types/workflow'
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
@@ -45,6 +46,7 @@ class SocketService {
   }
 
   private socket: Socket | null = null
+  private socketUrl: string | null = null
   private connected = false
   private releaseLogBuffer: (() => void) | null = null
   private inputPromptSequence = 0
@@ -120,13 +122,6 @@ class SocketService {
     }
   }
 
-  // 发送语音合成结果
-  sendTTSResult(requestId: string, success: boolean) {
-    if (this.socket?.connected) {
-      this.socket.emit('tts_result', { requestId, success })
-    }
-  }
-
   // 发送音乐播放结果
   sendPlayMusicResult(requestId: string, success: boolean, error?: string) {
     if (this.socket?.connected) {
@@ -155,35 +150,56 @@ class SocketService {
     }
   }
 
-  // 执行语音合成
-  private executeTTS(data: {
-    requestId: string
-    text: string
-    lang: string
-    rate: number
-    pitch: number
-    volume: number
-  }) {
+  private speechRequests = new Map<string, {fingerprint:string;controller:AbortController;workflowId:string}>()
+
+  private cancelSpeech(workflowId?: string) {
+    let handled = false
+    for (const [id,request] of this.speechRequests) {
+      if (!workflowId || request.workflowId === workflowId) { handled = true; request.controller.abort(); this.speechRequests.delete(id) }
+    }
+    return handled
+  }
+
+  private async executeTTS(data: components['schemas']['StudioSpeechRequest']) {
+    const socket = this.socket
+    if (!socket || !isSpeechRequest(data)) {
+      useWorkflowStore.getState().addLog({level:'error',message:'语音请求缺少有效身份或参数，未朗读'})
+      return
+    }
+    const fingerprint = JSON.stringify(data)
+    const previous = this.speechRequests.get(data.requestId)
+    if (previous) {
+      if (previous.fingerprint !== fingerprint) useWorkflowStore.getState().addLog({level:'error',message:'语音请求标识冲突，未重新朗读'})
+      return
+    }
+    const controller = new AbortController()
+    this.speechRequests.set(data.requestId,{fingerprint,controller,workflowId:data.workflowId})
+    const isCurrent = () => !controller.signal.aborted && this.socket === socket
     try {
-      const utterance = new SpeechSynthesisUtterance(data.text)
-      utterance.lang = data.lang
-      utterance.rate = data.rate
-      utterance.pitch = data.pitch
-      utterance.volume = data.volume
-
-      utterance.onend = () => {
-        this.sendTTSResult(data.requestId, true)
+      let state = await speechApi.getState(data.requestId)
+      let warned = false
+      while (isCurrent() && !state.success && (!state.httpStatus || state.httpStatus >= 500)) {
+        if (!warned) { useWorkflowStore.getState().addLog({level:'warning',message:'暂时无法确认语音请求，恢复后查询原请求；尚未朗读'}); warned = true }
+        await this.waitRequestRetry(controller.signal)
+        if (!isCurrent()) return
+        state = await speechApi.getState(data.requestId)
       }
-
-      utterance.onerror = () => {
-        this.sendTTSResult(data.requestId, false)
-      }
-
-      // 取消之前的语音
-      window.speechSynthesis.cancel()
-      window.speechSynthesis.speak(utterance)
-    } catch {
-      this.sendTTSResult(data.requestId, false)
+      if (!isCurrent()) return
+      if (!state.success || !state.data) throw new Error(state.error || '无法确认语音请求')
+      if (state.data.workflowId !== data.workflowId || state.data.nodeId !== data.nodeId) throw new Error('语音请求目标不匹配')
+      if (['completed','failed','expired'].includes(state.data.status)) return
+      if (state.data.status !== 'pending') throw new Error('语音已被领取，无法安全重播；请停止本次运行')
+      const claimId = crypto.randomUUID()
+      const claim = await this.confirmInteractiveCommand(socket,'tts_claim',{requestId:data.requestId,claimId},controller.signal)
+      if (!isCurrent()) return
+      if (!claim.success) throw new Error('语音领取尚未确认，未朗读')
+      const result = await runSpeech(data,controller.signal)
+      if (!isCurrent()) return
+      const receipt = await this.confirmInteractiveCommand(socket,'tts_result',{...result,requestId:data.requestId,claimId},controller.signal)
+      if (!isCurrent()) return
+      if (!receipt.success) throw new Error('语音结果尚未确认，保留原命令，不重新朗读')
+    } catch (error) {
+      if (isCurrent()) useWorkflowStore.getState().addLog({level:'error',message:`语音交互失败: ${error instanceof Error ? error.message : String(error)}`})
     }
   }
 
@@ -195,7 +211,7 @@ class SocketService {
     }
   }
 
-  private waitJsRetry(signal: AbortSignal) {
+  private waitRequestRetry(signal: AbortSignal) {
     return new Promise<void>(resolve => {
       const done = () => { clearTimeout(timer); signal.removeEventListener('abort', done); resolve() }
       const timer = setTimeout(done, 1000)
@@ -204,16 +220,16 @@ class SocketService {
     })
   }
 
-  private async confirmJsCommand(socket: Socket, event: string, data: unknown, signal: AbortSignal) {
+  private async confirmInteractiveCommand(socket: Socket, event: string, data: unknown, signal: AbortSignal) {
     const commandId = crypto.randomUUID()
     let receipt = await socket.command(event, data, commandId)
     while (!signal.aborted && receipt.status === 'unconfirmed') {
-      await this.waitJsRetry(signal)
+      await this.waitRequestRetry(signal)
       if (signal.aborted) break
       try {
         const confirmed = await socket.queryCommand(commandId)
         receipt = { ...confirmed, success: confirmed.success && confirmed.httpStatus < 400 }
-      } catch { /* Keep querying the original identity; never resubmit a script action. */ }
+      } catch { /* Keep querying the original identity; never resubmit an interactive action. */ }
     }
     return receipt
   }
@@ -240,7 +256,7 @@ class SocketService {
       let warned = false
       while (isCurrent() && !state.success && (!state.httpStatus || state.httpStatus >= 500)) {
         if (!warned) { useWorkflowStore.getState().addLog({level:'warning',message:'暂时无法确认脚本请求，连接恢复后查询原请求；尚未执行脚本'}); warned = true }
-        await this.waitJsRetry(controller.signal)
+        await this.waitRequestRetry(controller.signal)
         if (!isCurrent()) return
         state = await jsScriptApi.getState(data.requestId)
       }
@@ -250,12 +266,12 @@ class SocketService {
       if (['completed', 'failed', 'expired'].includes(state.data.status)) return
       if (state.data.status !== 'pending') throw new Error('脚本已被领取，无法安全重放；请停止本次运行')
       const claimId = crypto.randomUUID()
-      const claim = await this.confirmJsCommand(socket, 'js_script_claim', { requestId: data.requestId, claimId }, controller.signal)
+      const claim = await this.confirmInteractiveCommand(socket, 'js_script_claim', { requestId: data.requestId, claimId }, controller.signal)
       if (!isCurrent()) return
       if (!claim.success) throw new Error('脚本领取尚未确认，未执行脚本')
       const result = await runJsScript(data.code, data.variables, controller.signal)
       if (!isCurrent()) return
-      const receipt = await this.confirmJsCommand(socket, 'js_script_result', { ...result, requestId: data.requestId, claimId }, controller.signal)
+      const receipt = await this.confirmInteractiveCommand(socket, 'js_script_result', { ...result, requestId: data.requestId, claimId }, controller.signal)
       if (!isCurrent()) return
       if (!receipt.success) throw new Error('脚本结果尚未确认；保留原命令记录，不重新执行脚本')
     } catch (error) {
@@ -264,23 +280,13 @@ class SocketService {
   }
 
   connect() {
-    if (this.socket?.connected) {
-      return
-    }
-
-    this.releaseLogBuffer?.()
-    this.releaseLogBuffer = null
-    // 如果已有socket实例，先清理
-    if (this.socket) {
-      this.socket.removeAllListeners()
-      this.socket.disconnect()
-      this.socket = null
-    }
-
-    // 每次连接时都动态获取最新的后端地址
     const socketUrl = getBackendBaseUrl()
+    // The existing client already owns SSE retry and its cursor. Replacing it during
+    // a transient disconnect strands in-flight frontend actions and replays history.
+    if (this.socket && this.socketUrl === socketUrl) return
+    if (this.socket) this.disconnect()
     console.log('[Socket] 连接到后端:', socketUrl)
-
+    this.socketUrl = socketUrl
     this.socket = new Socket(socketUrl)
     this.socket.on('command_error', (error: unknown) => {
       if (error && typeof error === 'object' && 'status' in error && error.status === 'unconfirmed') {
@@ -516,15 +522,8 @@ class SocketService {
     })
 
     // 语音合成请求
-    this.socket.on('execution:tts_request', (data: {
-      requestId: string
-      text: string
-      lang: string
-      rate: number
-      pitch: number
-      volume: number
-    }) => {
-      this.executeTTS(data)
+    this.socket.on('execution:tts_request', (data: components['schemas']['StudioSpeechRequest']) => {
+      void this.executeTTS(data)
     })
 
     // JS脚本执行请求
@@ -573,6 +572,7 @@ class SocketService {
       healedSelectors?: { nodeId?: string; configKey?: string; oldSelector?: string; newSelector?: string }[]
     }) => {
       this.cancelJsScripts(data.workflowId)
+      this.cancelSpeech(data.workflowId)
       console.log('[Socket] 收到 execution:completed 事件 - 后端执行完成！', data)
       if (this.pendingInputPrompt?.workflowId === data.workflowId && data.result.status !== 'completed') {
         this.inputPromptSequence++
@@ -629,8 +629,6 @@ class SocketService {
         } catch { /* ignore */ }
       }
       
-      // 停止所有音频播放
-      this.stopAllAudio()
       
       // 添加完成日志
       store.addLog({
@@ -666,11 +664,10 @@ class SocketService {
     // 执行停止
     this.socket.on('execution:stopped', (data: { workflowId: string }) => {
       this.cancelJsScripts(data.workflowId)
+      this.cancelSpeech(data.workflowId)
       if (!belongsToCurrentExecution(data.workflowId)) return
       isExecuting = false  // 停止接收实时数据行
       useDebugStore.getState().clearPaused()
-      // 停止所有音频播放
-      this.stopAllAudio()
       useWorkflowStore.getState().setExecutionStatus('stopped')
     })
     
@@ -726,6 +723,7 @@ class SocketService {
     this.releaseLogBuffer?.()
     this.releaseLogBuffer = null
     this.cancelJsScripts()
+    this.cancelSpeech()
     this.jsRequests.clear()
     this.inputPromptSequence++
     clearTimeout(this.inputPromptRetry)
@@ -734,6 +732,7 @@ class SocketService {
       this.socket.removeAllListeners()
       this.socket.disconnect()
       this.socket = null
+      this.socketUrl = null
       this.connected = false
     }
     isExecuting = false
@@ -822,8 +821,7 @@ class SocketService {
 
   // 发送停止执行请求
   stopExecution(workflowId: string) {
-    // 停止所有音频
-    this.stopAllAudio()
+    if (!this.cancelSpeech(workflowId)) this.stopAllAudio()
     if (this.socket?.connected) {
       this.socket.emit('execution_stop', { workflowId })
     }

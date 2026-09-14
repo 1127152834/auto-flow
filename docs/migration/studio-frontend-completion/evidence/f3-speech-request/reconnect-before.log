@@ -1,0 +1,87 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/speech-request-delivery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:41058) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket disconnected, reason: stream interrupted; awaiting replay
+[Socket] 执行中断开连接，等待序号补读
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+[Socket] 连接到后端: http://127.0.0.1:51614
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket disconnected, reason: stream interrupted; awaiting replay
+[Socket] 执行中断开连接，等待序号补读
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+[Socket] 连接到后端: http://127.0.0.1:51614
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+ ❯ src/renderer/domains/workflows/tests/speech-request-delivery.test.ts (16 tests | 2 failed) 13584ms
+     × preserves an active utterance when reconnect is requested during an SSE interruption 2519ms
+     × preserves an active utterance when reconnect is requested during an SSE interruption 2526ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > preserves an active utterance when reconnect is requested during an SSE interruption
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > preserves an active utterance when reconnect is requested during an SSE interruption
+AssertionError: expected 'running' to be 'completed' // Object.is equality
+
+Expected: "completed"
+Received: "running"
+
+ ❯ vi.waitFor.timeout src/renderer/domains/workflows/tests/speech-request-delivery.test.ts:80:65
+     78|   socketService.connect();await vi.waitFor(()=>expect(socketService.is…
+     79|   utterance.onend?.(new Event('end') as SpeechSynthesisEvent)
+     80|   await vi.waitFor(()=>expect(store.getState().executionStatus).toBe('…
+       |                                                                 ^
+     81|   expect(execute).toHaveBeenCalledOnce();expect(calls.filter(c=>c.even…
+     82|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 14 passed (16)
+   Start at  08:21:52
+   Duration  14.41s (transform 232ms, setup 100ms, import 250ms, tests 13.58s, environment 369ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/speech-request-delivery.test.ts

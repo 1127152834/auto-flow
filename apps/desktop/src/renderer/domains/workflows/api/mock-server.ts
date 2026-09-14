@@ -1,3 +1,4 @@
+import { isSpeechRequest } from '../lib/runSpeech'
 import type { components } from '../../../shared/api/generated'
 import { mockScheduledRequest, finishScheduledFixture } from './mock-scheduled-tasks'
 import { findExcludedModuleType } from '../lib/moduleCatalog'
@@ -43,8 +44,9 @@ const retiredRecordings = new Set<string>()
 let picking = false
 let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
+const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
-let run: { js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
@@ -89,6 +91,7 @@ function finish(status: string) {
   clearTimeout(run.timer)
   if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
   if (run.js) { const request = jsRequests.get(run.js.requestId); if (request && ['pending', 'claimed'].includes(request.status)) request.status = 'expired' }
+  if (run.tts) { const request = speechRequests.get(run.tts.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
   emitMockEvent('execution:completed', { workflowId: run.id, result: { status, executedNodes: run.index, failedNodes: status === 'failed' ? 1 : 0 } })
   finishScheduledFixture(run.id, status, run.index)
   lastVariables = structuredClone(run.variables)
@@ -169,7 +172,30 @@ function submitJs(event: string, data: Json | undefined): Response {
   run.js = undefined; run.index++; tick()
   return response({success:true,requestId:data.requestId})
 }
+function submitSpeech(event: string, data: Json | undefined): Response {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.requestId !== 'string'
+    || typeof data.claimId !== 'string' || !data.claimId.trim()) return failure('语音请求及领取标识无效',422)
+  const pending = run?.tts
+  const state = speechRequests.get(data.requestId)
+  if (!run || !pending || pending.requestId !== data.requestId || !state) return failure('语音请求不存在或已结束',409)
+  if (event === 'tts_claim') {
+    if (state.status === 'claimed' && state.claimId === data.claimId) return response({success:true,requestId:data.requestId})
+    if (state.status !== 'pending') return failure('语音已由其它客户端领取',409)
+    state.status = 'claimed'; state.claimId = data.claimId
+    return response({success:true,requestId:data.requestId})
+  }
+  if (state.status !== 'claimed' || state.claimId !== data.claimId) return failure('语音结果不属于当前领取者',409)
+  if (typeof data.success !== 'boolean' || (!data.success && (typeof data.error !== 'string' || !data.error.trim()))) return failure('语音结果格式无效',422)
+  clearTimeout(run.timer)
+  state.status = data.success ? 'completed' : 'failed'
+  emitMockEvent('execution:node_complete',{workflowId:run.id,nodeId:pending.nodeId,success:data.success})
+  emitMockEvent('execution:log',{workflowId:run.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId:pending.nodeId,level:data.success?'info':'error',message:data.success?'[Mock] 已确认前端语音结果；未执行网页动作':`[Mock] 语音失败: ${data.error}`,isSystemLog:true}})
+  if (data.success) { run.tts = undefined; run.index++; tick() }
+  else finish('failed')
+  return response({success:true,requestId:data.requestId})
+}
 function applyCommand(event: string, data: Json | undefined): Response {
+  if (event === 'tts_claim' || event === 'tts_result') return submitSpeech(event,data)
   if (event === 'js_script_claim' || event === 'js_script_result') return submitJs(event, data)
   if (event === 'input_prompt_result') return submitInput(data)
   const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
@@ -215,6 +241,25 @@ function tick(skipBreakpoint = false) {
         emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
         finish('failed')
       }, 30000)
+      return
+    }
+    if (String(node.type) === 'text_to_speech') {
+      const requestId = crypto.randomUUID()
+      const payload = {requestId,workflowId:current.id,nodeId,text:data?.text??'',lang:data?.lang??'zh-CN',rate:data?.rate??1,pitch:data?.pitch??1,volume:data?.volume??1}
+      if (!isSpeechRequest(payload)) {
+        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
+        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 语音参数无效，未发起朗读',isSystemLog:true}})
+        finish('failed'); return
+      }
+      current.tts = {requestId,nodeId}
+      speechRequests.set(requestId,{requestId,workflowId:current.id,nodeId,status:'pending',claimId:null})
+      emitMockEvent('execution:tts_request',payload)
+      current.timer = setTimeout(() => {
+        if (run !== current || current.tts?.requestId !== requestId) return
+        emitMockEvent('execution:node_complete',{workflowId:current.id,nodeId,success:false})
+        emitMockEvent('execution:log',{workflowId:current.id,log:{id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待语音结果超过60秒',isSystemLog:true}})
+        finish('failed')
+      },60000)
       return
     }
     if (String(node.type) === 'input_prompt') {
@@ -349,6 +394,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (!Number.isSafeInteger(after) || after < 0) return failure('Invalid event cursor', 400)
       if (after > events.length) return failure('Event cursor exceeds the current journal', 409)
       return streamResponse(after, signal)
+    }
+    const speechQuery = path.match(/^\/events\/tts-requests\/([^/]+)$/)
+    if (speechQuery) {
+      if (method !== 'GET') return failure('语音状态查询只接受 GET',405)
+      const state = speechRequests.get(decodeURIComponent(speechQuery[1]))
+      return state ? response(state) : failure('语音请求不存在',404)
     }
     const jsQuery = path.match(/^\/events\/js-requests\/([^/]+)$/)
     if (jsQuery) {

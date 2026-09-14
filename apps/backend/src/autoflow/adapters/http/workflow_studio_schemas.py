@@ -195,7 +195,7 @@ class StudioJsScriptRequest(ApiModel):
     variables: dict[str, JsonValue]
 
 
-class StudioJsScriptState(ApiModel):
+class StudioClaimedRequestState(ApiModel):
     request_id: str = Field(min_length=1, pattern=r"\S")
     workflow_id: str = Field(min_length=1, pattern=r"\S")
     node_id: str = Field(min_length=1, pattern=r"\S")
@@ -209,11 +209,47 @@ class StudioJsScriptState(ApiModel):
         return self
 
 
-class StudioJsScriptClaim(ApiModel):
+class StudioRequestClaim(ApiModel):
     model_config = ConfigDict(strict=True, allow_inf_nan=False)
 
     request_id: str = Field(min_length=1, pattern=r"\S")
     claim_id: str = Field(min_length=1, pattern=r"\S")
+
+
+class StudioJsScriptState(StudioClaimedRequestState):
+    pass
+
+
+class StudioJsScriptClaim(StudioRequestClaim):
+    pass
+
+
+class StudioSpeechState(StudioClaimedRequestState):
+    pass
+
+
+class StudioSpeechRequest(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    node_id: str = Field(min_length=1, pattern=r"\S")
+    text: str = Field(min_length=1, pattern=r"\S")
+    lang: str = Field(min_length=1, pattern=r"\S")
+    rate: float = Field(ge=0.5, le=2)
+    pitch: float = Field(ge=0.5, le=2)
+    volume: float = Field(ge=0, le=1)
+
+
+class StudioSpeechResult(StudioRequestClaim):
+    success: bool = Field(strict=True)
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def validate_error(self) -> Self:
+        if not self.success and not (self.error and self.error.strip()):
+            raise ValueError("失败结果必须包含错误")
+        return self
 
 
 class StudioJsScriptResult(StudioJsScriptClaim):

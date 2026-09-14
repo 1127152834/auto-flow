@@ -2346,6 +2346,25 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioClaimedRequestState */
+        StudioClaimedRequestState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "claimed" | "completed" | "failed" | "expired";
+            /**
+             * Claimid
+             * @default null
+             */
+            claimId: string | null;
+        };
         /** StudioCommandLookup */
         StudioCommandLookup: {
             /** Commandid */
@@ -2563,6 +2582,13 @@ export type components = {
              */
             claimId: string | null;
         };
+        /** StudioRequestClaim */
+        StudioRequestClaim: {
+            /** Requestid */
+            requestId: string;
+            /** Claimid */
+            claimId: string;
+        };
         /** StudioSelectorAttempt */
         StudioSelectorAttempt: {
             /** Selector */
@@ -2676,6 +2702,58 @@ export type components = {
             active: boolean;
             /** @default null */
             similar: components["schemas"]["StudioSimilarElements"] | null;
+        };
+        /** StudioSpeechRequest */
+        StudioSpeechRequest: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /** Text */
+            text: string;
+            /** Lang */
+            lang: string;
+            /** Rate */
+            rate: number;
+            /** Pitch */
+            pitch: number;
+            /** Volume */
+            volume: number;
+        };
+        /** StudioSpeechResult */
+        StudioSpeechResult: {
+            /** Requestid */
+            requestId: string;
+            /** Claimid */
+            claimId: string;
+            /** Success */
+            success: boolean;
+            /**
+             * Error
+             * @default null
+             */
+            error: string | null;
+        };
+        /** StudioSpeechState */
+        StudioSpeechState: {
+            /** Requestid */
+            requestId: string;
+            /** Workflowid */
+            workflowId: string;
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "claimed" | "completed" | "failed" | "expired";
+            /**
+             * Claimid
+             * @default null
+             */
+            claimId: string | null;
         };
         /** StudioVariableTrackingCleared */
         StudioVariableTrackingCleared: {

@@ -1,0 +1,262 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/speech-execution.test.ts src/renderer/domains/workflows/tests/speech-request-delivery.test.ts src/renderer/domains/workflows/tests/js-request-delivery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:40398) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40416) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=undefined
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=undefined
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=undefined
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=undefined
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_claim
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_claim
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_claim
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_claim
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_result
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_result
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_result
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_result
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=state_query
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=state_query
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=state_query
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=state_query
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > cancels a pending speech when stopped and never submits a result
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > cancels a pending speech when stopped and never submits a result
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > cancels a pending speech when stopped and never submits a result
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > cancels a pending speech when stopped and never submits a result
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'stopped', executedNodes: 0, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: stopped
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=undefined
+[Socket] 连接到后端: http://127.0.0.1:49649
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=undefined
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=undefined
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=undefined
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_claim
+[Socket] 连接到后端: http://127.0.0.1:49654
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_claim
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_claim
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_claim
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_result
+[Socket] 连接到后端: http://127.0.0.1:49659
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_result
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_result
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_result
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=state_query
+[Socket] 连接到后端: http://127.0.0.1:49664
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=state_query
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=state_query
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=state_query
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > cancels a pending speech when stopped and never submits a result
+[Socket] 连接到后端: http://127.0.0.1:49678
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > cancels a pending speech when stopped and never submits a result
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > cancels a pending speech when stopped and never submits a result
+Execution started: speech-delivery
+
+stdout | src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > cancels a pending speech when stopped and never submits a result
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'speech-delivery',
+  result: { status: 'stopped', executedNodes: 0, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: stopped
+[Socket] 前端状态已全部更新完成！
+
+ ❯ src/renderer/domains/workflows/tests/speech-request-delivery.test.ts (14 tests | 10 failed) 9784ms
+     × executes once and confirms result with lost=undefined 428ms
+     × executes once and confirms result with lost=tts_claim 414ms
+     × executes once and confirms result with lost=tts_result 416ms
+     × executes once and confirms result with lost=state_query 1396ms
+     × cancels a pending speech when stopped and never submits a result 1414ms
+     × executes once and confirms result with lost=undefined 473ms
+     × executes once and confirms result with lost=tts_claim 472ms
+     × executes once and confirms result with lost=tts_result 437ms
+     × executes once and confirms result with lost=state_query 1506ms
+     × cancels a pending speech when stopped and never submits a result 1776ms
+(node:40424) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=undefined
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_claim
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=tts_result
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > executes once and confirms result with lost=state_query
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=undefined
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_claim
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=tts_result
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > executes once and confirms result with lost=state_query
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array []
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/workflows/tests/speech-request-delivery.test.ts:57:61
+     55|   lose=lost;await start()
+     56|   await vi.waitFor(()=>expect(store.getState().executionStatus).toBe('…
+     57|   expect(execute).toHaveBeenCalledOnce();expect(cancel).not.toHaveBeen…
+       |                                                             ^
+     58|   expect(execute.mock.calls[0][0]).toMatchObject({text:'通知',volume:0})
+     59|   expect(calls.filter(c=>c.event==='tts_claim')).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over memory > cancels a pending speech when stopped and never submits a result
+ FAIL  src/renderer/domains/workflows/tests/speech-request-delivery.test.ts > speech consumer over http > cancels a pending speech when stopped and never submits a result
+AssertionError: expected "vi.fn()" to be called once, but got 2 times
+ ❯ src/renderer/domains/workflows/tests/speech-request-delivery.test.ts:71:39
+     69|   held=true;await start();await vi.waitFor(()=>expect(execute).toHaveB…
+     70|   await request('/workflows/speech-delivery/stop',{})
+     71|   await vi.waitFor(()=>expect(cancel).toHaveBeenCalledOnce())
+       |                                       ^
+     72|   expect(calls.filter(c=>c.event==='tts_result')).toHaveLength(0)
+     73|  })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  10 failed | 33 passed (43)
+   Start at  08:15:46
+   Duration  20.34s (transform 248ms, setup 124ms, import 373ms, tests 18.37s, environment 1.15s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/speech-execution.test.ts src/renderer/domains/workflows/tests/speech-request-delivery.test.ts src/renderer/domains/workflows/tests/js-request-delivery.test.ts

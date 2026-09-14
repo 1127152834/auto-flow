@@ -26867,5 +26867,833 @@
     "level": "browser E2E / Mock persistence",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-zero-slider/browser-ui.md"
+  },
+  {
+    "id": "F3.speech.unit.end",
+    "capability": "onend确认和零音量",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "onend确认和零音量",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.error",
+    "capability": "引擎错误及迟到回调清理",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "引擎错误及迟到回调清理",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.abort",
+    "capability": "中断取消并忽略迟到完成",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "中断取消并忽略迟到完成",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.timeout",
+    "capability": "60秒超时取消",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "60秒超时取消",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.prior-abort",
+    "capability": "启动前已取消",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "启动前已取消",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.unavailable",
+    "capability": "语音引擎不可用",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "语音引擎不可用",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-0",
+    "capability": "非法请求：null",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：null",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-1",
+    "capability": "非法请求：空requestId",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：空requestId",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-2",
+    "capability": "非法请求：空文本",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：空文本",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-3",
+    "capability": "非法请求：空语言",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：空语言",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-4",
+    "capability": "非法请求：零语速",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：零语速",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-5",
+    "capability": "非法请求：越界音调",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：越界音调",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-6",
+    "capability": "非法请求：负音量",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：负音量",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-7",
+    "capability": "非法请求：字符串音量",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：字符串音量",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.unit.invalid-8",
+    "capability": "非法请求：无限语速",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "构造指定请求与引擎状态",
+      "执行runSpeech或isSpeechRequest",
+      "触发对应回调/时间/取消"
+    ],
+    "expectedUI": "非法请求：无限语速",
+    "expectedIO": "原生语音API替身，不访问网络",
+    "stateAssertion": "成功只在onend，错误不伪造成功，0不被默认值覆盖",
+    "level": "unit",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-execution.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.ownership",
+    "capability": "领取所有权、幂等结果及后继只调度一次",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "领取所有权、幂等结果及后继只调度一次",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.invalid-result",
+    "capability": "未领取/外来/错误类型结果拒绝",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "未领取/外来/错误类型结果拒绝",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.failure",
+    "capability": "失败保留且不调度后继",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "失败保留且不调度后继",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.stop",
+    "capability": "停止过期及迟到回传拒绝",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "停止过期及迟到回传拒绝",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.query",
+    "capability": "未知请求404与查询方法405",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "未知请求404与查询方法405",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.memory.invalid-volume",
+    "capability": "显式非法音量在请求前失败",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "显式非法音量在请求前失败",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.normal",
+    "capability": "正常朗读确认",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "正常朗读确认",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.lost-claim",
+    "capability": "领取响应丢失查原命令",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "领取响应丢失查原命令",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.lost-result",
+    "capability": "回传响应丢失查原命令",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "回传响应丢失查原命令",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.lost-state",
+    "capability": "状态查询断线重试",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "状态查询断线重试",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.stop",
+    "capability": "停止取消原生朗读且不回传",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "停止取消原生朗读且不回传",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.reconnect",
+    "capability": "断流期间手动重连保留在途朗读",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "断流期间手动重连保留在途朗读",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.malformed",
+    "capability": "错误事件身份不触发朗读",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "错误事件身份不触发朗读",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.memory.foreign",
+    "capability": "其他页面领取后不重播",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过memory传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "其他页面领取后不重播",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-reconnect.memory",
+    "capability": "手动重连保留在途脚本Worker",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动挂起Worker",
+      "断开SSE并调用连接恢复",
+      "完成原Worker并查询终态"
+    ],
+    "expectedUI": "手动重连保留在途脚本Worker",
+    "expectedIO": "原js_result确认一次",
+    "stateAssertion": "原Worker不重建，完成结果不因重连失效",
+    "level": "memory protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.ownership",
+    "capability": "领取所有权、幂等结果及后继只调度一次",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "领取所有权、幂等结果及后继只调度一次",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.invalid-result",
+    "capability": "未领取/外来/错误类型结果拒绝",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "未领取/外来/错误类型结果拒绝",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.failure",
+    "capability": "失败保留且不调度后继",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "失败保留且不调度后继",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.stop",
+    "capability": "停止过期及迟到回传拒绝",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "停止过期及迟到回传拒绝",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.query",
+    "capability": "未知请求404与查询方法405",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "未知请求404与查询方法405",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.protocol.http.invalid-volume",
+    "capability": "显式非法音量在请求前失败",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "显式非法音量在请求前失败",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-command-protocol.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.normal",
+    "capability": "正常朗读确认",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "正常朗读确认",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.lost-claim",
+    "capability": "领取响应丢失查原命令",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "领取响应丢失查原命令",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.lost-result",
+    "capability": "回传响应丢失查原命令",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "回传响应丢失查原命令",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.lost-state",
+    "capability": "状态查询断线重试",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "状态查询断线重试",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.stop",
+    "capability": "停止取消原生朗读且不回传",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "停止取消原生朗读且不回传",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.reconnect",
+    "capability": "断流期间手动重连保留在途朗读",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "断流期间手动重连保留在途朗读",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.malformed",
+    "capability": "错误事件身份不触发朗读",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "错误事件身份不触发朗读",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.delivery.http.foreign",
+    "capability": "其他页面领取后不重播",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动含语音节点的独立Mock流程",
+      "通过http传输执行对应具名操作",
+      "查询状态与事件并断言次数"
+    ],
+    "expectedUI": "其他页面领取后不重播",
+    "expectedIO": "GET tts-requests；tts_claim/tts_result命令；SSE按序消费",
+    "stateAssertion": "请求只领取一次，结果确认后推进；失败/过期/响应丢失不重播",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/speech-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.js-reconnect.http",
+    "capability": "手动重连保留在途脚本Worker",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "启动挂起Worker",
+      "断开SSE并调用连接恢复",
+      "完成原Worker并查询终态"
+    ],
+    "expectedUI": "手动重连保留在途脚本Worker",
+    "expectedIO": "原js_result确认一次",
+    "stateAssertion": "原Worker不重建，完成结果不因重连失效",
+    "level": "HTTP/SSE integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/js-request-delivery.test.ts"
+  },
+  {
+    "id": "F3.speech.browser-end",
+    "capability": "原生语音结束后真实界面显示流程完成",
+    "preconditions": {
+      "request": "语音节点，text=通知，lang=zh-CN，rate=pitch=1，volume=0；对应具名测试设置异常"
+    },
+    "steps": [
+      "新建独立流程并配置零音量",
+      "手动保存并运行",
+      "观察08:20:36完成回传及终态"
+    ],
+    "expectedUI": "原生语音结束后真实界面显示流程完成",
+    "expectedIO": "原生SpeechSynthesis+Mock命令确认",
+    "stateAssertion": "原18份流程数据保留，无真实网页自动化",
+    "level": "browser E2E / native speech + Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-speech-request/browser-ui.md"
   }
 ]

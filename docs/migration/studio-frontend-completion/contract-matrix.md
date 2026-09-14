@@ -82,7 +82,7 @@
 | service:imageAssetApi.renameFolder | PUT '/image-assets/folders/rename' | body: JSON.stringify({ oldPath, newName }) | components['schemas']['StudioImageFolderRenamed'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:249 | 待逐项核对；局部已验证项见上表 |
 | service:imageAssetApi.upload | POST '/image-assets/upload' | body: formData | components['schemas']['StudioImageUploadResult'] | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:240 | 待逐项核对；局部已验证项见上表 |
 | service:inputPromptApi.getState | GET &#96;/events/input-prompts/${encodeURIComponent(requestId)}&#96; | 未显式声明 | components['schemas']['StudioInputPromptState'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:618 | 待逐项核对；局部已验证项见上表 |
-| service:jsScriptApi.getState | GET &#96;/events/js-requests/${encodeURIComponent(requestId)}&#96; | 未显式声明 | components['schemas']['StudioJsScriptState'] | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:622 | 待逐项核对；局部已验证项见上表 |
+| service:jsScriptApi.getState |  | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:634 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.delete | DELETE &#96;/local-workflows/${id}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:203 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.export | GET &#96;/local-workflows/${id}/export&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:207 | 待逐项核对；局部已验证项见上表 |
 | service:localWorkflowApi.get | GET &#96;/local-workflows/load/${encodeURIComponent(filename)}&#96; | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:199 | 待逐项核对；局部已验证项见上表 |
@@ -130,6 +130,7 @@
 | service:securityApi.regenerate | POST '/security/regenerate' | 未显式声明 | { success: boolean; token?: string; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:387 | 待逐项核对；局部已验证项见上表 |
 | service:securityApi.status | GET '/security/status' | 未显式声明 | { enabled: boolean; isLocal: boolean; token: string &#124; null } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:382 | 待逐项核对；局部已验证项见上表 |
 | service:securityApi.toggle | POST '/security/toggle' | body: JSON.stringify({ enabled }) | { success: boolean; enabled?: boolean; error?: string } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:383 | 待逐项核对；局部已验证项见上表 |
+| service:speechApi.getState |  | 未显式声明 | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:637 | 待逐项核对；局部已验证项见上表 |
 | service:sponsorApi.list | GET '/sponsors/list' | 未显式声明 | { sponsors: SponsorItem[]; count: number } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:560 | 待逐项核对；局部已验证项见上表 |
 | service:sponsorApi.qrUrl |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:564 | 待逐项核对；局部已验证项见上表 |
 | service:sponsorApi.status | GET '/sponsors/status' | 未显式声明 | { wechat: boolean; alipay: boolean } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:562 | 待逐项核对；局部已验证项见上表 |
@@ -144,8 +145,8 @@
 | service:systemApi.setClipboard | POST '/system/set-clipboard' | body: JSON.stringify({ text }) | 未显式声明 | 2 | apps/desktop/src/renderer/domains/workflows/api.ts:132 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.setCustomHotkeys | POST '/system/custom-hotkeys' | body: JSON.stringify({ shortcuts }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:128 | 待逐项核对；局部已验证项见上表 |
 | service:systemApi.takeScreenshot | POST '/system/screenshot' | body: JSON.stringify(params &#124;&#124; {}) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:134 | 待逐项核对；局部已验证项见上表 |
-| service:variableTrackingApi.clear | DELETE &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingCleared'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:651 | 待逐项核对；局部已验证项见上表 |
-| service:variableTrackingApi.list | GET &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingResult'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:638 | 待逐项核对；局部已验证项见上表 |
+| service:variableTrackingApi.clear | DELETE &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingCleared'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:656 | 待逐项核对；局部已验证项见上表 |
+| service:variableTrackingApi.list | GET &#96;/workflows/${encodeURIComponent(workflowId)}/variable-tracking&#96; | 未显式声明 | components['schemas']['StudioVariableTrackingResult'] | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:643 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.create | POST '/workflows' | body: JSON.stringify(data) | 未显式声明 | 3 | apps/desktop/src/renderer/domains/workflows/api.ts:146 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.debugBreakpoints | POST &#96;/workflows/${id}/debug/breakpoints&#96; | body: JSON.stringify({ breakpoints }) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:163 | 待逐项核对；局部已验证项见上表 |
 | service:workflowApi.debugResume | POST &#96;/workflows/${id}/debug/resume&#96; | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:157 | 待逐项核对；局部已验证项见上表 |
@@ -176,44 +177,44 @@
 | event:close_local_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:746 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1554 | 字段/关联身份/恢复语义仍需核对 |
 | event:close_scheduled_tasks | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:744 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1562 | 字段/关联身份/恢复语义仍需核对 |
 | event:close_variable_tracking | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:752 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1586 | 字段/关联身份/恢复语义仍需核对 |
-| event:command_error | apps/desktop/src/renderer/domains/workflows/events.ts:285 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:connect | apps/desktop/src/renderer/domains/workflows/events.ts:293 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:disconnect | apps/desktop/src/renderer/domains/workflows/events.ts:313 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:command_error | apps/desktop/src/renderer/domains/workflows/events.ts:291 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:connect | apps/desktop/src/renderer/domains/workflows/events.ts:299 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:disconnect | apps/desktop/src/renderer/domains/workflows/events.ts:319 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:download_data | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:330 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:994 | 字段/关联身份/恢复语义仍需核对 |
 | event:editingModuleChanged | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:193 | apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:50; apps/desktop/src/renderer/domains/workflows/lib/customModuleEditing.ts:100 | 字段/关联身份/恢复语义仍需核对 |
 | event:editor_screenshot_captured | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:441 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1622 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:828 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:completed | apps/desktop/src/renderer/domains/workflows/events.ts:564 | apps/desktop/src/renderer/domains/workflows/events.ts:618 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:645 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:656 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:input_prompt | apps/desktop/src/renderer/domains/workflows/events.ts:514 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:js_script | apps/desktop/src/renderer/domains/workflows/events.ts:531 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:log | apps/desktop/src/renderer/domains/workflows/events.ts:445 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:log_batch | apps/desktop/src/renderer/domains/workflows/events.ts:481 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:node_complete | apps/desktop/src/renderer/domains/workflows/events.ts:357 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:node_start | apps/desktop/src/renderer/domains/workflows/events.ts:350 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:paused | apps/desktop/src/renderer/domains/workflows/events.ts:364 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:play_music | apps/desktop/src/renderer/domains/workflows/events.ts:536 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:play_video | apps/desktop/src/renderer/domains/workflows/events.ts:545 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:resumed | apps/desktop/src/renderer/domains/workflows/events.ts:369 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:started | apps/desktop/src/renderer/domains/workflows/events.ts:331 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:667 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:tts_request | apps/desktop/src/renderer/domains/workflows/events.ts:519 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:execution:view_image | apps/desktop/src/renderer/domains/workflows/events.ts:554 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution_stop | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:826 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:completed | apps/desktop/src/renderer/domains/workflows/events.ts:563 | apps/desktop/src/renderer/domains/workflows/events.ts:618 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:data_row | apps/desktop/src/renderer/domains/workflows/events.ts:643 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:data_row_batch | apps/desktop/src/renderer/domains/workflows/events.ts:654 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:input_prompt | apps/desktop/src/renderer/domains/workflows/events.ts:520 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:js_script | apps/desktop/src/renderer/domains/workflows/events.ts:530 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:log | apps/desktop/src/renderer/domains/workflows/events.ts:451 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:log_batch | apps/desktop/src/renderer/domains/workflows/events.ts:487 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:node_complete | apps/desktop/src/renderer/domains/workflows/events.ts:363 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:node_start | apps/desktop/src/renderer/domains/workflows/events.ts:356 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:paused | apps/desktop/src/renderer/domains/workflows/events.ts:370 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:play_music | apps/desktop/src/renderer/domains/workflows/events.ts:535 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:play_video | apps/desktop/src/renderer/domains/workflows/events.ts:544 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:resumed | apps/desktop/src/renderer/domains/workflows/events.ts:375 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:started | apps/desktop/src/renderer/domains/workflows/events.ts:337 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:stopped | apps/desktop/src/renderer/domains/workflows/events.ts:665 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:tts_request | apps/desktop/src/renderer/domains/workflows/events.ts:525 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:execution:view_image | apps/desktop/src/renderer/domains/workflows/events.ts:553 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:export_logs | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:327 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:989 | 字段/关联身份/恢复语义仍需核对 |
 | event:export_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:733 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:570; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:28 | 字段/关联身份/恢复语义仍需核对 |
 | event:fit_view | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1074 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:516; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:684; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:853; apps/desktop/src/renderer/domains/workflows/components/RecorderPanel.tsx:379; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:487 | 字段/关联身份/恢复语义仍需核对 |
 | event:focus_node | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1079 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:656 | 字段/关联身份/恢复语义仍需核对 |
 | event:highlight-node | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/components/ModuleNode.tsx:92 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:719; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:76 | apps/desktop/src/renderer/domains/workflows/events.ts:721 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:698 | apps/desktop/src/renderer/domains/workflows/events.ts:700 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:705 | apps/desktop/src/renderer/domains/workflows/events.ts:707 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:693 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:694 | apps/desktop/src/renderer/domains/workflows/events.ts:681 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:678 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:138; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:696; apps/desktop/src/renderer/domains/workflows/events.ts:712 | apps/desktop/src/renderer/domains/workflows/events.ts:714 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:695 | apps/desktop/src/renderer/domains/workflows/events.ts:688 | 字段/关联身份/恢复语义仍需核对 |
-| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:686 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:custom_action | apps/desktop/src/renderer/domains/workflows/events.ts:716; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:76 | apps/desktop/src/renderer/domains/workflows/events.ts:718 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:macro_start | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1986; apps/desktop/src/renderer/domains/workflows/events.ts:695 | apps/desktop/src/renderer/domains/workflows/events.ts:697 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:macro_stop | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:1987; apps/desktop/src/renderer/domains/workflows/events.ts:702 | apps/desktop/src/renderer/domains/workflows/events.ts:704 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:no_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:690 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:run | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:694 | apps/desktop/src/renderer/domains/workflows/events.ts:678 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:run_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:675 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:screenshot | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:138; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:696; apps/desktop/src/renderer/domains/workflows/events.ts:709 | apps/desktop/src/renderer/domains/workflows/events.ts:711 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:stop | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:695 | apps/desktop/src/renderer/domains/workflows/events.ts:685 | 字段/关联身份/恢复语义仍需核对 |
+| event:hotkey:stop_workflow | apps/desktop/src/renderer/domains/workflows/events.ts:683 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:keydown | apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx:285; apps/desktop/src/renderer/domains/workflows/components/QuickModulePicker.tsx:69; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:543; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:189; apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1033; apps/desktop/src/renderer/domains/workflows/components/controls/confirm-dialog.tsx:45; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskCreateDialog.tsx:216; apps/desktop/src/renderer/domains/workflows/components/scheduled-tasks/TaskEditDialog.tsx:255; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:36 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:keyup | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1034 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:mousemove | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:205 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
@@ -227,8 +228,8 @@
 | event:open_module_search | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:195 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1598; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:26 | 字段/关联身份/恢复语义仍需核对 |
 | event:open_scheduled_tasks | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:743 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1558 | 字段/关联身份/恢复语义仍需核对 |
 | event:open_variable_tracking | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:751 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1582 | 字段/关联身份/恢复语义仍需核对 |
-| event:play_music_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:133 | 字段/关联身份/恢复语义仍需核对 |
-| event:play_video_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:140 | 字段/关联身份/恢复语义仍需核对 |
+| event:play_music_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:128 | 字段/关联身份/恢复语义仍需核对 |
+| event:play_video_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:135 | 字段/关联身份/恢复语义仍需核对 |
 | event:refresh:image-assets | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:83 | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:585; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:785; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:790; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:796; apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:808 | 字段/关联身份/恢复语义仍需核对 |
 | event:resize | apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx:271; apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx:1805; apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts:251 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:run_single_node | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1092 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:860 | 字段/关联身份/恢复语义仍需核对 |
@@ -237,18 +238,17 @@
 | event:save_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:713 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:544; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:23 | 字段/关联身份/恢复语义仍需核对 |
 | event:scroll | apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts:250 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:selector:healed | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1067 | apps/desktop/src/renderer/domains/workflows/events.ts:627 | 字段/关联身份/恢复语义仍需核对 |
-| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:308; apps/desktop/src/renderer/domains/workflows/events.ts:843 | 字段/关联身份/恢复语义仍需核对 |
-| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:304; apps/desktop/src/renderer/domains/workflows/events.ts:835 | 字段/关联身份/恢复语义仍需核对 |
+| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:314; apps/desktop/src/renderer/domains/workflows/events.ts:841 | 字段/关联身份/恢复语义仍需核对 |
+| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:310; apps/desktop/src/renderer/domains/workflows/events.ts:833 | 字段/关联身份/恢复语义仍需核对 |
 | event:show_toast | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:428 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1454; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1527; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1637 | 字段/关联身份/恢复语义仍需核对 |
-| event:socket:reconnected | apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:63 | apps/desktop/src/renderer/domains/workflows/events.ts:297 | 字段/关联身份/恢复语义仍需核对 |
+| event:socket:reconnected | apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:63 | apps/desktop/src/renderer/domains/workflows/events.ts:303 | 字段/关联身份/恢复语义仍需核对 |
 | event:stop_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:725 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:563; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:22 | 字段/关联身份/恢复语义仍需核对 |
 | event:storage | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:190 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-error | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:15 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:29 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-restored | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:16 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:21 | 字段/关联身份/恢复语义仍需核对 |
 | event:take_screenshot | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:755 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1602 | 字段/关联身份/恢复语义仍需核对 |
-| event:tts_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:126 | 字段/关联身份/恢复语义仍需核对 |
 | event:upload_image | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:333 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:999 | 字段/关联身份/恢复语义仍需核对 |
-| event:view_image_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:147 | 字段/关联身份/恢复语义仍需核对 |
+| event:view_image_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:142 | 字段/关联身份/恢复语义仍需核对 |
 
 ## 直接网络消费入口
 
@@ -304,4 +304,4 @@
 
 对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。
 
-当前扫描：146 个服务方法、82 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
+当前扫描：147 个服务方法、81 个事件、43 个直接请求；AI 画布操作 105 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。
