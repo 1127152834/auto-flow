@@ -124,6 +124,7 @@ export function VariableNameInput({
   const [usageCount, setUsageCount] = useState(0)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const renameEdit = useRef<{ before: ReturnType<typeof useWorkflowStore.getState>; after: ReturnType<typeof useWorkflowStore.getState> } | false | null>(null)
   const previousValueRef = useRef(value)
   const isInitializedRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -253,7 +254,17 @@ export function VariableNameInput({
     const newValue = e.target.value
     // 过滤非法字符，只保留字母、数字、下划线和中文
     const filtered = newValue.replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, '')
-    onChange(filtered)
+    if (filtered !== value) {
+      const store = useWorkflowStore.getState()
+      if (renameEdit.current && renameEdit.current.after !== store) renameEdit.current = false
+      if (renameEdit.current === null) {
+        store.pushHistory()
+        const before = useWorkflowStore.getState()
+        renameEdit.current = { before, after: before }
+      }
+      onChange(filtered)
+      if (renameEdit.current) renameEdit.current.after = useWorkflowStore.getState()
+    }
     
     // 始终显示建议列表（输入为空时显示全部，有输入时显示匹配的）
     setShowSuggestions(true)
@@ -286,6 +297,7 @@ export function VariableNameInput({
   const selectVariable = (varName: string) => {
     onChange(varName)
     setShowSuggestions(false)
+    renameEdit.current = null
     previousValueRef.current = varName
     inputRef.current?.focus()
   }
@@ -301,6 +313,7 @@ export function VariableNameInput({
       
       // 如果名称没变或为空，不处理
       if (!enableRenameDetection || oldName === newName || !oldName || !newName) {
+        renameEdit.current = null
         previousValueRef.current = value
         return
       }
@@ -313,6 +326,7 @@ export function VariableNameInput({
         setPendingNewName(newName)
         setShowRenameDialog(true)
       } else {
+        renameEdit.current = null
         previousValueRef.current = value
       }
     }, 150)
@@ -327,12 +341,14 @@ export function VariableNameInput({
   const handleConfirmRename = () => {
     if (value !== pendingNewName) { setShowRenameDialog(false); return }
     const oldName = previousValueRef.current
-    replaceVariableReferences(oldName, pendingNewName)
+    replaceVariableReferences(oldName, pendingNewName, renameEdit.current || undefined)
+    renameEdit.current = null
     previousValueRef.current = pendingNewName
     setShowRenameDialog(false)
   }
 
   const handleCancelRename = () => {
+    renameEdit.current = null
     previousValueRef.current = value
     setShowRenameDialog(false)
   }

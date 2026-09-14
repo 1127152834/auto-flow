@@ -29708,5 +29708,145 @@
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md",
     "testPath": "docs/migration/studio-frontend-completion/evidence/f2-browser-script/browser-ui.md"
+  },
+  {
+    "id": "F2.output-variable-rename.01",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "连续改名一次撤销及重做"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "连续改名一次撤销及重做",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "连续改名一次撤销及重做",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.02",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "确认期间编辑不丢历史"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "确认期间编辑不丢历史",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "确认期间编辑不丢历史",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.03",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "仅改此处保留引用"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "仅改此处保留引用",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "仅改此处保留引用",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.04",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "60次输入超过历史上限"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "60次输入超过历史上限",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "60次输入超过历史上限",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.05",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "输入之间编辑保持次序"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "输入之间编辑保持次序",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "输入之间编辑保持次序",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.06",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "卸载取消迟到确认"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "卸载取消迟到确认",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "卸载取消迟到确认",
+    "level": "component with real Store",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-output-rename/targeted.log",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
+  },
+  {
+    "id": "F2.output-variable-rename.07",
+    "capability": "output-variable-name.history",
+    "preconditions": {
+      "source": "old",
+      "reference": "{old} ${old} {older}",
+      "case": "IAB输出名和引用撤销重做保存"
+    },
+    "steps": [
+      "按对应测试或实际UI记录修改输出名并确认",
+      "按场景撤销／重做或插入其他编辑"
+    ],
+    "expectedUI": "IAB输出名和引用撤销重做保存",
+    "expectedIO": "纯编辑不发送运行请求；实际UI另验证保存",
+    "stateAssertion": "IAB输出名和引用撤销重做保存",
+    "level": "browser UI with Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/output-variable-rename-validation.md",
+    "testPath": "apps/desktop/src/renderer/domains/workflows/tests/output-variable-rename.test.tsx"
   }
 ]

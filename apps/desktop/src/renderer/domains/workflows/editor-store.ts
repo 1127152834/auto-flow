@@ -296,7 +296,7 @@ interface WorkflowState {
   
   // 变量引用扫描和替换
   findVariableUsages: (varName: string) => { nodeId: string; field: string; value: string }[]
-  replaceVariableReferences: (oldName: string, newName: string) => void
+  replaceVariableReferences: (oldName: string, newName: string, edit?: { before: WorkflowState; after: WorkflowState }) => void
   
   // 日志操作
   addLog: (log: Omit<LogEntry, 'id' | 'timestamp'>) => void
@@ -2912,10 +2912,15 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     return usages
   },
 
-  replaceVariableReferences: (oldName, newName) => {
+  replaceVariableReferences: (oldName, newName, edit) => {
     if (oldName === newName || get().findVariableUsages(oldName).length === 0) return
-    get().pushHistory()
-    set({ nodes: renamedNodeReferences(get().nodes, oldName, newName), hasUnsavedChanges: true })
+    // Only coalesce this field's uninterrupted synchronous edits. Never remove intervening history.
+    const merge = edit && get() === edit.after && edit.before.id === get().id
+    if (!merge) get().pushHistory()
+    set({
+      nodes: renamedNodeReferences(get().nodes, oldName, newName), hasUnsavedChanges: true,
+      ...(merge ? { history: edit.before.history, historyIndex: edit.before.historyIndex } : {}),
+    })
   },
 
   addLogs: (logs) => {

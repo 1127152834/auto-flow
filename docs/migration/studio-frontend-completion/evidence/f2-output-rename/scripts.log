@@ -1,0 +1,37 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.036667ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.119166ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.130583ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.155875ms)
+✔ browser management smoke accepts an explicit packaged sidecar (5.702375ms)
+✔ browser management smoke creates the platform kernel layout (0.490542ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.208458ms)
+✔ profile test browser smoke validates a public kernel directory (10.762625ms)
+✔ profile test browser smoke finds a session below the manager root (2.866375ms)
+✔ packaged smoke cannot silently select external health mode (2.078291ms)
+✔ cleanup rejects after the final deadline if the child never exits (13.389958ms)
+✔ cleanup observes close without requiring exit (1.159125ms)
+✔ cleanup rejects a child process error (0.261167ms)
+✔ required path exists: apps/desktop/package.json (1.099958ms)
+✔ required path exists: apps/backend/pyproject.toml (0.132583ms)
+✔ root scripts expose the foundation checks (0.227583ms)
+(node:64585) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (18.371208ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.611125ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.097291ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (2.149ms)
+✔ inventory and matrix regenerate deterministically (692.808084ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1564.862875

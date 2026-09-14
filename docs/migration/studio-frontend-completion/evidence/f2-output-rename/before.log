@@ -1,0 +1,60 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/output-variable-rename.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:60839) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/output-variable-rename.test.tsx (3 tests | 2 failed) 156ms
+   × undoes the complete typed output name and nested reference update together 126ms
+   × preserves unrelated changes made while the rename confirmation is open 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/output-variable-rename.test.tsx > undoes the complete typed output name and nested reference update together
+AssertionError: expected 'new' to be 'old' // Object.is equality
+
+Expected: "old"
+Received: "new"
+
+ ❯ src/renderer/domains/workflows/tests/output-variable-rename.test.tsx:29:38
+     27|  expect(config(source).variableName).toBe('new');expect(config(target)…
+     28|  act(()=>useWorkflowStore.getState().undo())
+     29|  expect(config(source).variableName).toBe('old');expect(config(target)…
+       |                                      ^
+     30|  act(()=>useWorkflowStore.getState().redo());expect(config(source).var…
+     31| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/output-variable-rename.test.tsx > preserves unrelated changes made while the rename confirmation is open
+TypeError: useWorkflowStore.getState(...).setName is not a function
+ ❯ src/renderer/domains/workflows/tests/output-variable-rename.test.tsx:33:64
+     31| })
+     32| it('preserves unrelated changes made while the rename confirmation is …
+     33|  render(<Field/>);rename();act(()=>useWorkflowStore.getState().setName…
+       |                                                                ^
+     34|  fireEvent.click(screen.getByRole('button',{name:'全部更新'}));act(()=>use…
+     35|  expect(useWorkflowStore.getState().name).toBe('另一次编辑');expect(config(…
+ ❯ ../../node_modules/@testing-library/react/dist/act-compat.js:47:24
+ ❯ process.env.NODE_ENV.exports.act ../../node_modules/react/cjs/react.development.js:890:22
+ ❯ ../../node_modules/@testing-library/react/dist/act-compat.js:46:25
+ ❯ src/renderer/domains/workflows/tests/output-variable-rename.test.tsx:33:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  09:49:50
+   Duration  2.00s (transform 260ms, setup 142ms, import 448ms, tests 156ms, environment 1.01s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/output-variable-rename.test.tsx
