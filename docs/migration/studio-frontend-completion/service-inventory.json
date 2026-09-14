@@ -6953,7 +6953,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
-      "line": 1572,
+      "line": 1573,
       "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/triggers/gesture/custom`)"
     },
@@ -6963,7 +6963,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
-      "line": 1588,
+      "line": 1589,
       "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/triggers/gesture/status`)"
     },
@@ -6973,7 +6973,7 @@
       "body": "body: JSON.stringify({\n          gesture_name: recordingGestureName,\n          timeout: 30\n        })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
-      "line": 1636,
+      "line": 1637,
       "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/triggers/gesture/record`, {\n        method: 'POST',\n        headers: {'Content-Type': 'application/json'},\n        body: JSON.stringify({\n          gesture_name: recordingGestureName,\n          timeout: 30\n        })\n      })"
     },
@@ -6983,7 +6983,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
-      "line": 1679,
+      "line": 1680,
       "source": "frontend/src/components/workflow/config-panels/TriggerModuleConfigs.tsx",
       "call": "studioFetch(`${getBackendUrl()}/api/triggers/gesture/custom/${deleteGestureName}`, {\n        method: 'DELETE'\n      })"
     },

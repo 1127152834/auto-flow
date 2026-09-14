@@ -1,0 +1,2193 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/zero-slider-config.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:39132) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx (10 tests | 8 failed) 392ms
+   × speech volume 0 is labelled and preserved 162ms
+   × speech volume 0.5 is labelled and preserved 49ms
+   × speech volume 1 is labelled and preserved 43ms
+   × sound threshold 0 is labelled and preserved 29ms
+   × sound threshold 50 is labelled and preserved 24ms
+   × sound threshold 100 is labelled and preserved 22ms
+   × applies missing speech defaults without writing to the draft and names all sliders 37ms
+   × applies only the missing sound threshold default 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > speech volume 0 is labelled and preserved
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量 (0%)"
+
+Here are the accessible roles:
+
+  textbox:
+
+  Name "":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+    [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+    [33mrows[39m=[32m"3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "语言":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"lang"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"1"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-blue-800"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"text"[39m
+      [36m>[39m
+        [0m朗读文本[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<textarea[39m
+          [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+          [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+          [33mrows[39m=[32m"3"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"lang"[39m
+      [36m>[39m
+        [0m语言[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-expanded[39m=[32m"false"[39m
+        [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+        [33mdata-state[39m=[32m"closed"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mid[39m=[32m"lang"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"flex-1 truncate"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"pointer-events: none;"[39m
+          [36m>[39m
+            [0m中文(简体)[0m
+          [36m</span>[39m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"rate"[39m
+      [36m>[39m
+        [0m'语速' ([0m
+        [0m1[0m
+        [0mx)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m0.5x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m1x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m2x[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"pitch"[39m
+      [36m>[39m
+        [0m'音调' ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m低[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m正常[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m高[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volume"[39m
+      [36m>[39m
+        [0m'音量' ([0m
+        [0m100[0m
+        [0m%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 100%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"1"[39m
+          [33mmin[39m=[32m"0"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(100% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m静音[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m50%[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m100%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 border border-blue-200 rounded-lg"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-blue-800"[39m
+      [36m>[39m
+        [0m使用系统TTS引擎朗读文本，支持多种语言[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:10:21
+      8|  const onChange=vi.fn();const data:NodeData={moduleType:'text_to_speec…
+      9|  const view=render(<TextToSpeechConfig data={data} onChange={onChange}…
+     10|  const input=screen.getByRole('slider',{name:`音量 (${Math.round(volume*…
+       |                     ^
+     11|  expect(input.value).toBe(String(volume));expect(onChange).not.toHaveB…
+     12|  fireEvent.change(input,{target:{value:'0'}})
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > speech volume 0.5 is labelled and preserved
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量 (50%)"
+
+Here are the accessible roles:
+
+  textbox:
+
+  Name "":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+    [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+    [33mrows[39m=[32m"3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "语言":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"lang"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"1"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"0.5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-blue-800"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"text"[39m
+      [36m>[39m
+        [0m朗读文本[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<textarea[39m
+          [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+          [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+          [33mrows[39m=[32m"3"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"lang"[39m
+      [36m>[39m
+        [0m语言[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-expanded[39m=[32m"false"[39m
+        [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+        [33mdata-state[39m=[32m"closed"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mid[39m=[32m"lang"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"flex-1 truncate"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"pointer-events: none;"[39m
+          [36m>[39m
+            [0m中文(简体)[0m
+          [36m</span>[39m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"rate"[39m
+      [36m>[39m
+        [0m'语速' ([0m
+        [0m1[0m
+        [0mx)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m0.5x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m1x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m2x[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"pitch"[39m
+      [36m>[39m
+        [0m'音调' ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m低[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m正常[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m高[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volume"[39m
+      [36m>[39m
+        [0m'音量' ([0m
+        [0m50[0m
+        [0m%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 50%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"1"[39m
+          [33mmin[39m=[32m"0"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"0.5"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(50% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m静音[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m50%[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m100%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 border border-blue-200 rounded-lg"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-blue-800"[39m
+      [36m>[39m
+        [0m使用系统TTS引擎朗读文本，支持多种语言[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:10:21
+      8|  const onChange=vi.fn();const data:NodeData={moduleType:'text_to_speec…
+      9|  const view=render(<TextToSpeechConfig data={data} onChange={onChange}…
+     10|  const input=screen.getByRole('slider',{name:`音量 (${Math.round(volume*…
+       |                     ^
+     11|  expect(input.value).toBe(String(volume));expect(onChange).not.toHaveB…
+     12|  fireEvent.change(input,{target:{value:'0'}})
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > speech volume 1 is labelled and preserved
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量 (100%)"
+
+Here are the accessible roles:
+
+  textbox:
+
+  Name "":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+    [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+    [33mrows[39m=[32m"3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "语言":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"lang"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"1"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-blue-800"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"text"[39m
+      [36m>[39m
+        [0m朗读文本[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<textarea[39m
+          [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+          [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+          [33mrows[39m=[32m"3"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"lang"[39m
+      [36m>[39m
+        [0m语言[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-expanded[39m=[32m"false"[39m
+        [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+        [33mdata-state[39m=[32m"closed"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mid[39m=[32m"lang"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"flex-1 truncate"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"pointer-events: none;"[39m
+          [36m>[39m
+            [0m中文(简体)[0m
+          [36m</span>[39m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"rate"[39m
+      [36m>[39m
+        [0m'语速' ([0m
+        [0m1[0m
+        [0mx)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m0.5x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m1x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m2x[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"pitch"[39m
+      [36m>[39m
+        [0m'音调' ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m低[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m正常[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m高[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volume"[39m
+      [36m>[39m
+        [0m'音量' ([0m
+        [0m100[0m
+        [0m%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 100%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"1"[39m
+          [33mmin[39m=[32m"0"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(100% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m静音[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m50%[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m100%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 border border-blue-200 rounded-lg"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-blue-800"[39m
+      [36m>[39m
+        [0m使用系统TTS引擎朗读文本，支持多种语言[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:10:21
+      8|  const onChange=vi.fn();const data:NodeData={moduleType:'text_to_speec…
+      9|  const view=render(<TextToSpeechConfig data={data} onChange={onChange}…
+     10|  const input=screen.getByRole('slider',{name:`音量 (${Math.round(volume*…
+       |                     ^
+     11|  expect(input.value).toBe(String(volume));expect(onChange).not.toHaveB…
+     12|  fireEvent.change(input,{target:{value:'0'}})
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > sound threshold 0 is labelled and preserved
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > sound threshold 50 is labelled and preserved
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量阈值 (%)"
+
+Here are the accessible roles:
+
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"100"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"5"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"50"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"font-medium mb-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "检查间隔 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"checkInterval"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0.1"[39m
+  [36m/>[39m
+
+  Name "超时时间 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"timeout"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  Name "保存到变量 (可选)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+    [33mid[39m=[32m"saveToVariable"[39m
+    [33mplaceholder[39m=[32m"sound_volume"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volumeThreshold"[39m
+      [36m>[39m
+        [0m音量阈值 (%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative flex w-full touch-none select-none items-center group flex-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+              [33mstyle[39m=[32m"width: 50%;"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+            [33mmax[39m=[32m"100"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mstep[39m=[32m"5"[39m
+            [33mtype[39m=[32m"range"[39m
+            [33mvalue[39m=[32m"50"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+            [33mstyle[39m=[32m"left: calc(50% - 8px);"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-sm w-12 text-right"[39m
+        [36m>[39m
+          [0m50[0m
+          [0m%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m当系统音量达到此阈值时触发[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"checkInterval"[39m
+      [36m>[39m
+        [0m检查间隔 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"checkInterval"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0.1"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m每隔多久检查一次音量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"timeout"[39m
+      [36m>[39m
+        [0m超时时间 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"timeout"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m0表示无限等待，直到检测到声音[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"saveToVariable"[39m
+      [36m>[39m
+        [0m保存到变量 (可选)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+          [33mid[39m=[32m"saveToVariable"[39m
+          [33mplaceholder[39m=[32m"sound_volume"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m保存触发时的音量值到变量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-start gap-2"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-circle-alert w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"12"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"10"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12"[39m
+            [33my1[39m=[32m"8"[39m
+            [33my2[39m=[32m"12"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12.01"[39m
+            [33my1[39m=[32m"16"[39m
+            [33my2[39m=[32m"16"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-xs text-blue-900 dark:text-blue-100"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"font-medium mb-1"[39m
+          [36m>[39m
+            [0m使用说明：[0m
+          [36m</p>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+          [36m>[39m
+            [36m<li>[39m
+              [0m监听系统音频输出（扬声器）的音量[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m当音量达到阈值时触发工作流[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m可用于检测通知声音、提示音等[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:19:21
+     17|  const onChange=vi.fn();const data:NodeData={moduleType:'sound_trigger…
+     18|  const view=render(<SoundTriggerConfig data={data} onChange={onChange}…
+     19|  const input=screen.getByRole('slider',{name:'音量阈值 (%)'}) as HTMLInput…
+       |                     ^
+     20|  expect(input.value).toBe(String(volumeThreshold));expect(onChange).no…
+     21|  fireEvent.change(input,{target:{value:'0'}})
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > sound threshold 100 is labelled and preserved
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量阈值 (%)"
+
+Here are the accessible roles:
+
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"100"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"5"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"100"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"font-medium mb-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "检查间隔 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"checkInterval"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0.1"[39m
+  [36m/>[39m
+
+  Name "超时时间 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"timeout"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  Name "保存到变量 (可选)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+    [33mid[39m=[32m"saveToVariable"[39m
+    [33mplaceholder[39m=[32m"sound_volume"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volumeThreshold"[39m
+      [36m>[39m
+        [0m音量阈值 (%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative flex w-full touch-none select-none items-center group flex-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+              [33mstyle[39m=[32m"width: 100%;"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+            [33mmax[39m=[32m"100"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mstep[39m=[32m"5"[39m
+            [33mtype[39m=[32m"range"[39m
+            [33mvalue[39m=[32m"100"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+            [33mstyle[39m=[32m"left: calc(100% - 8px);"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-sm w-12 text-right"[39m
+        [36m>[39m
+          [0m100[0m
+          [0m%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m当系统音量达到此阈值时触发[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"checkInterval"[39m
+      [36m>[39m
+        [0m检查间隔 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"checkInterval"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0.1"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m每隔多久检查一次音量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"timeout"[39m
+      [36m>[39m
+        [0m超时时间 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"timeout"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m0表示无限等待，直到检测到声音[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"saveToVariable"[39m
+      [36m>[39m
+        [0m保存到变量 (可选)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+          [33mid[39m=[32m"saveToVariable"[39m
+          [33mplaceholder[39m=[32m"sound_volume"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m保存触发时的音量值到变量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-start gap-2"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-circle-alert w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"12"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"10"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12"[39m
+            [33my1[39m=[32m"8"[39m
+            [33my2[39m=[32m"12"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12.01"[39m
+            [33my1[39m=[32m"16"[39m
+            [33my2[39m=[32m"16"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-xs text-blue-900 dark:text-blue-100"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"font-medium mb-1"[39m
+          [36m>[39m
+            [0m使用说明：[0m
+          [36m</p>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+          [36m>[39m
+            [36m<li>[39m
+              [0m监听系统音频输出（扬声器）的音量[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m当音量达到阈值时触发工作流[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m可用于检测通知声音、提示音等[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:19:21
+     17|  const onChange=vi.fn();const data:NodeData={moduleType:'sound_trigger…
+     18|  const view=render(<SoundTriggerConfig data={data} onChange={onChange}…
+     19|  const input=screen.getByRole('slider',{name:'音量阈值 (%)'}) as HTMLInput…
+       |                     ^
+     20|  expect(input.value).toBe(String(volumeThreshold));expect(onChange).no…
+     21|  fireEvent.change(input,{target:{value:'0'}})
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > applies missing speech defaults without writing to the draft and names all sliders
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "语速 (1x)"
+
+Here are the accessible roles:
+
+  textbox:
+
+  Name "":
+  [36m<textarea[39m
+    [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+    [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+    [33mrows[39m=[32m"3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "语言":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"lang"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"2"[39m
+    [33mmin[39m=[32m"0.5"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"1"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.1"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-blue-800"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"text"[39m
+      [36m>[39m
+        [0m朗读文本[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<textarea[39m
+          [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+          [33mplaceholder[39m=[32m"要朗读的文本内容"[39m
+          [33mrows[39m=[32m"3"[39m
+        [36m/>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"lang"[39m
+      [36m>[39m
+        [0m语言[0m
+      [36m</label>[39m
+      [36m<button[39m
+        [33maria-autocomplete[39m=[32m"none"[39m
+        [33maria-expanded[39m=[32m"false"[39m
+        [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-[6px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+        [33mdata-state[39m=[32m"closed"[39m
+        [33mdir[39m=[32m"ltr"[39m
+        [33mid[39m=[32m"lang"[39m
+        [33mrole[39m=[32m"combobox"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"flex-1 truncate"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mstyle[39m=[32m"pointer-events: none;"[39m
+          [36m>[39m
+            [0m中文(简体)[0m
+          [36m</span>[39m
+        [36m</span>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"m6 9 6 6 6-6"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"rate"[39m
+      [36m>[39m
+        [0m'语速' ([0m
+        [0m1[0m
+        [0mx)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m0.5x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m1x[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m2x[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"pitch"[39m
+      [36m>[39m
+        [0m'音调' ([0m
+        [0m1[0m
+        [0m)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 33.33333333333333%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"2"[39m
+          [33mmin[39m=[32m"0.5"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(33.3333% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m低[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m正常[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m高[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volume"[39m
+      [36m>[39m
+        [0m'音量' ([0m
+        [0m100[0m
+        [0m%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative flex touch-none select-none items-center group w-full"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+            [33mstyle[39m=[32m"width: 100%;"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+          [33mmax[39m=[32m"1"[39m
+          [33mmin[39m=[32m"0"[39m
+          [33mstep[39m=[32m"0.1"[39m
+          [33mtype[39m=[32m"range"[39m
+          [33mvalue[39m=[32m"1"[39m
+        [36m/>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+          [33mstyle[39m=[32m"left: calc(100% - 8px);"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m静音[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m50%[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m100%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 border border-blue-200 rounded-lg"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-blue-800"[39m
+      [36m>[39m
+        [0m使用系统TTS引擎朗读文本，支持多种语言[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:27:68
+     25| it('applies missing speech defaults without writing to the draft and n…
+     26|  const onChange=vi.fn();render(<TextToSpeechConfig data={{label:'朗读',m…
+     27|  for(const name of ['语速 (1x)','音调 (1)','音量 (100%)'])expect((screen.get…
+       |                                                                    ^
+     28|  expect(onChange).not.toHaveBeenCalled()
+     29| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/zero-slider-config.test.tsx > applies only the missing sound threshold default
+TestingLibraryElementError: Unable to find an accessible element with the role "slider" and name "音量阈值 (%)"
+
+Here are the accessible roles:
+
+  slider:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+    [33mmax[39m=[32m"100"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"5"[39m
+    [33mtype[39m=[32m"range"[39m
+    [33mvalue[39m=[32m"50"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"font-medium mb-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "检查间隔 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"checkInterval"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0.1"[39m
+  [36m/>[39m
+
+  Name "超时时间 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"timeout"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  Name "保存到变量 (可选)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+    [33mid[39m=[32m"saveToVariable"[39m
+    [33mplaceholder[39m=[32m"sound_volume"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"volumeThreshold"[39m
+      [36m>[39m
+        [0m音量阈值 (%)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative flex w-full touch-none select-none items-center group flex-1"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative h-[5px] w-full grow overflow-hidden rounded-full bg-[hsl(var(--slate-200))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.06)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-500))] to-[hsl(var(--brand-600))] transition-[width] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]"[39m
+              [33mstyle[39m=[32m"width: 50%;"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"[39m
+            [33mmax[39m=[32m"100"[39m
+            [33mmin[39m=[32m"0"[39m
+            [33mstep[39m=[32m"5"[39m
+            [33mtype[39m=[32m"range"[39m
+            [33mvalue[39m=[32m"50"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute h-4 w-4 rounded-full border-2 border-[hsl(var(--brand-500))] bg-white shadow-soft pointer-events-none transition-[transform,box-shadow] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110 group-hover:shadow-ring group-active:scale-125"[39m
+            [33mstyle[39m=[32m"left: calc(50% - 8px);"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"text-sm w-12 text-right"[39m
+        [36m>[39m
+          [0m50[0m
+          [0m%[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m当系统音量达到此阈值时触发[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"checkInterval"[39m
+      [36m>[39m
+        [0m检查间隔 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"checkInterval"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0.1"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m每隔多久检查一次音量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"timeout"[39m
+      [36m>[39m
+        [0m超时时间 (秒)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+          [33mid[39m=[32m"timeout"[39m
+          [33minputmode[39m=[32m"numeric"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"0"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m0表示无限等待，直到检测到声音[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [33mfor[39m=[32m"saveToVariable"[39m
+      [36m>[39m
+        [0m保存到变量 (可选)[0m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"relative"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex h-8 w-full rounded-[7px] px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+          [33mid[39m=[32m"saveToVariable"[39m
+          [33mplaceholder[39m=[32m"sound_volume"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m保存触发时的音量值到变量[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-start gap-2"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-circle-alert w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"12"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"10"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12"[39m
+            [33my1[39m=[32m"8"[39m
+            [33my2[39m=[32m"12"[39m
+          [36m/>[39m
+          [36m<line[39m
+            [33mx1[39m=[32m"12"[39m
+            [33mx2[39m=[32m"12.01"[39m
+            [33my1[39m=[32m"16"[39m
+            [33my2[39m=[32m"16"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"text-xs text-blue-900 dark:text-blue-100"[39m
+        [36m>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"font-medium mb-1"[39m
+          [36m>[39m
+            [0m使用说明：[0m
+          [36m</p>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"list-disc list-inside space-y-1"[39m
+          [36m>[39m
+            [36m<li>[39m
+              [0m监听系统音频输出（扬声器）的音量[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m当音量达到阈值时触发工作流[0m
+            [36m</li>[39m
+            [36m<li>[39m
+              [0m可用于检测通知声音、提示音等[0m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/zero-slider-config.test.tsx:32:17
+     30| it('applies only the missing sound threshold default',()=>{
+     31|  const onChange=vi.fn();render(<SoundTriggerConfig data={{label:'触发',m…
+     32|  expect((screen.getByRole('slider',{name:'音量阈值 (%)'}) as HTMLInputElem…
+       |                 ^
+     33| })
+     34| it.each([['text_to_speech','volume',0.5],['sound_trigger','volumeThres…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 2 passed (10)
+   Start at  08:02:12
+   Duration  1.68s (transform 414ms, setup 98ms, import 677ms, tests 392ms, environment 388ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/zero-slider-config.test.tsx

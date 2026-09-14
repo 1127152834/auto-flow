@@ -1220,14 +1220,15 @@ export function SoundTriggerConfig({
         <Label htmlFor="volumeThreshold">音量阈值 (%)</Label>
         <div className="flex items-center gap-2">
           <Slider
+            id="volumeThreshold"
             min={0}
             max={100}
             step={5}
-            value={[(data.volumeThreshold as number) || 50]}
+            value={[(data.volumeThreshold as number) ?? 50]}
             onValueChange={(vals) => onChange('volumeThreshold', vals[0])}
             className="flex-1"
           />
-          <span className="text-sm w-12 text-right">{(data.volumeThreshold as number) || 50}%</span>
+          <span className="text-sm w-12 text-right">{(data.volumeThreshold as number) ?? 50}%</span>
         </div>
         <p className="text-xs text-muted-foreground">
           当系统音量达到此阈值时触发

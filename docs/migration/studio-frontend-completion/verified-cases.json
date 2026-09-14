@@ -26668,5 +26668,204 @@
     "level": "HTTP/SSE integration",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/log-event-timestamps.test.ts"
+  },
+  {
+    "id": "F2.zero-slider.speech-0",
+    "capability": "朗读音量0回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "朗读音量0回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.speech-0.5",
+    "capability": "朗读音量0.5回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "朗读音量0.5回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.speech-1",
+    "capability": "朗读音量1回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "朗读音量1回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.sound-0",
+    "capability": "声音阈值0回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "声音阈值0回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.sound-50",
+    "capability": "声音阈值50回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "声音阈值50回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.sound-100",
+    "capability": "声音阈值100回显和设置0",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "声音阈值100回显和设置0",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.speech-default",
+    "capability": "朗读空缺默认与三个滑块名称",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "朗读空缺默认与三个滑块名称",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.sound-default",
+    "capability": "声音阈值空缺默认",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "声音阈值空缺默认",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.speech-roundtrip",
+    "capability": "朗读零值撤销重做与往返",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "朗读零值撤销重做与往返",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.sound-roundtrip",
+    "capability": "声音阈值零值撤销重做与往返",
+    "preconditions": {
+      "node": "text_to_speech 或 sound_trigger",
+      "values": "标题对应输入，具体对象见具名测试"
+    },
+    "steps": [
+      "挂载真实配置组件或创建节点",
+      "通过滑块change为0并回显，或撤销/重做/导入导出"
+    ],
+    "expectedUI": "声音阈值零值撤销重做与往返",
+    "expectedIO": "本地onChange保存数值0，不使用默认值覆盖合法0",
+    "stateAssertion": "未操作不写草稿，0按原值保存和恢复",
+    "level": "component/rule",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/zero-slider-config.test.tsx"
+  },
+  {
+    "id": "F2.zero-slider.browser-roundtrip",
+    "capability": "两个零值通过真实界面保存重开",
+    "preconditions": {
+      "document": "F2 零值滑块验收"
+    },
+    "steps": [
+      "动作库拖入两个节点",
+      "Home键设0",
+      "Cmd+S保存",
+      "刷新并从打开列表恢复，分别选中节点"
+    ],
+    "expectedUI": "音量0%和音量阈值0均恢复",
+    "expectedIO": "Mock本地文件保存和读取；没有运行",
+    "stateAssertion": "原16文件保留，新增本次独立测试文件",
+    "level": "browser E2E / Mock persistence",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-zero-slider/browser-ui.md"
   }
 ]

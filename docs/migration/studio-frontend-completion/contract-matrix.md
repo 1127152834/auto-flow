@@ -289,10 +289,10 @@
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:2095 | POST &#96;${getBackendUrl()}/api/system/macro/stop&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:2635 | POST &#96;${getBackendUrl()}/api/system/pick-mouse-position&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx:2868 | POST &#96;${getBackendUrl()}/api/system/pick-mouse-position&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1572 | GET &#96;${getBackendUrl()}/api/triggers/gesture/custom&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1588 | GET &#96;${getBackendUrl()}/api/triggers/gesture/status&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1636 | POST &#96;${getBackendUrl()}/api/triggers/gesture/record&#96; | body: JSON.stringify({           gesture_name: recordingGestureName,           timeout: 30         }) | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1679 | DELETE &#96;${getBackendUrl()}/api/triggers/gesture/custom/${deleteGestureName}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1573 | GET &#96;${getBackendUrl()}/api/triggers/gesture/custom&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1589 | GET &#96;${getBackendUrl()}/api/triggers/gesture/status&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1637 | POST &#96;${getBackendUrl()}/api/triggers/gesture/record&#96; | body: JSON.stringify({           gesture_name: recordingGestureName,           timeout: 30         }) | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx:1680 | DELETE &#96;${getBackendUrl()}/api/triggers/gesture/custom/${deleteGestureName}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/controls/coordinate-input.tsx:39 | POST &#96;${getBackendUrl()}/api/system/pick-mouse-position&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/controls/dual-coordinate-input.tsx:40 | POST &#96;${getBackendUrl()}/api/system/pick-mouse-position&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/controls/image-asset-preview.tsx:27 | GET source | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |

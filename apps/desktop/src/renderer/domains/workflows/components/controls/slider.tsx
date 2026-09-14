@@ -2,7 +2,7 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
 
-interface SliderProps {
+interface SliderProps extends Pick<React.InputHTMLAttributes<HTMLInputElement>, "id" | "aria-label" | "aria-labelledby"> {
   value: number[]
   max?: number
   min?: number
@@ -13,7 +13,7 @@ interface SliderProps {
 }
 
 const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
-  ({ value, max = 100, min = 0, step = 1, onValueChange, className, disabled }, ref) => {
+  ({ value, max = 100, min = 0, step = 1, onValueChange, className, disabled, ...inputProps }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = parseFloat(e.target.value)
       onValueChange?.([newValue])
@@ -38,6 +38,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
           />
         </div>
         <input
+          {...inputProps}
           ref={ref}
           type="range"
           min={min}

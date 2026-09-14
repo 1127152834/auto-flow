@@ -1038,12 +1038,13 @@ export function TextToSpeechConfig({ data, onChange }: { data: NodeData; onChang
         </Select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="rate">'语速' ({(data.rate as number) || 1}x)</Label>
+        <Label htmlFor="rate">语速 ({(data.rate as number) ?? 1}x)</Label>
         <Slider
+          id="rate"
           min={0.5}
           max={2}
           step={0.1}
-          value={[(data.rate as number) || 1]}
+          value={[(data.rate as number) ?? 1]}
           onValueChange={(vals) => onChange('rate', vals[0])}
           className="w-full"
         />
@@ -1054,12 +1055,13 @@ export function TextToSpeechConfig({ data, onChange }: { data: NodeData; onChang
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="pitch">'音调' ({(data.pitch as number) || 1})</Label>
+        <Label htmlFor="pitch">音调 ({(data.pitch as number) ?? 1})</Label>
         <Slider
+          id="pitch"
           min={0.5}
           max={2}
           step={0.1}
-          value={[(data.pitch as number) || 1]}
+          value={[(data.pitch as number) ?? 1]}
           onValueChange={(vals) => onChange('pitch', vals[0])}
           className="w-full"
         />
@@ -1070,12 +1072,13 @@ export function TextToSpeechConfig({ data, onChange }: { data: NodeData; onChang
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="volume">'音量' ({Math.round(((data.volume as number) || 1) * 100)}%)</Label>
+        <Label htmlFor="volume">音量 ({Math.round(((data.volume as number) ?? 1) * 100)}%)</Label>
         <Slider
+          id="volume"
           min={0}
           max={1}
           step={0.1}
-          value={[(data.volume as number) || 1]}
+          value={[(data.volume as number) ?? 1]}
           onValueChange={(vals) => onChange('volume', vals[0])}
           className="w-full"
         />
