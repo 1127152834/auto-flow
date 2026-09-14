@@ -19,7 +19,7 @@ import { Input } from './controls/input'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
 import { cn } from '../lib/utils'
-import { workflowApi, localWorkflowApi } from '../api'
+import { browserApi, workflowApi, localWorkflowApi } from '../api'
 import { socketService } from '../events'
 import { getBackendBaseUrl } from '../api/config'
 import { GlobalConfigDialog } from './GlobalConfigDialog'
@@ -32,6 +32,7 @@ import { RecorderPanel } from './RecorderPanel'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { LocalWorkflowDialog } from './LocalWorkflowDialog'
+import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
 import { useClipboardImageMonitor } from '../hooks/useClipboardImageMonitor'
@@ -129,15 +130,6 @@ export function Toolbar() {
   // 使用选择器确保配置更新时组件重新渲染
   const config = useGlobalConfigStore((state) => state.config)
   
-  // 调试：监听配置变化
-  useEffect(() => {
-    console.log('[Toolbar] 配置已更新:', {
-      autoCloseBrowser: config.browser?.autoCloseBrowser,
-      fullscreen: config.browser?.fullscreen,
-      type: config.browser?.type
-    })
-  }, [config.browser?.autoCloseBrowser, config.browser?.fullscreen, config.browser?.type])
-  
   const name = useWorkflowStore((state) => state.name)
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
@@ -224,6 +216,7 @@ export function Toolbar() {
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
     if (transitionPending.current || startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
     const source = useWorkflowStore.getState()
+    const sourceConnection=getStudioTransportRevision()
     const { nodes, edges, variables, name, id: sourceDocumentId } = source
     if (nodes.length === 0) {
       addLog({ level: 'warning', message: '工作流没有任何节点' })
@@ -247,10 +240,14 @@ export function Toolbar() {
       breakpoints: Array.from(useDebugStore.getState().breakpoints),
       stepMode: useDebugStore.getState().stepMode,
     }
+    let selectedProfileId:string
     transitionPending.current=true
     try {
+      const profile=await browserApi.resolveProfile()
+      if(!profile.success||!profile.data){addLog({level:'error',message:profile.error||'请选择管理端浏览器配置'});return}
+      selectedProfileId=profile.data.id
       if(getDocumentLeaveResources().length&&!await requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true}))return
-      if(sourceDocumentId!==useWorkflowStore.getState().id)return
+      if(sourceDocumentId!==useWorkflowStore.getState().id||sourceConnection!==getStudioTransportRevision())return
     } finally {transitionPending.current=false}
 
     // 从指定节点开始时，给出对应节点名称提示
@@ -333,20 +330,6 @@ export function Toolbar() {
         if (updateResult.error) { addLog({level:'error',message: updateResult.error}); return }
       }
 
-      // 执行工作流
-      // 传递浏览器配置
-      const browserConfig = config.browser ? {
-        type: config.browser.type || 'msedge',
-        executablePath: config.browser.executablePath || undefined,  // 不指定时!
-        userDataDir: config.browser.userDataDir || undefined,  // 不指定时!
-        fullscreen: config.browser.fullscreen || false,
-        autoCloseBrowser: config.browser.autoCloseBrowser,
-        launchArgs: config.browser.launchArgs || undefined,  // 这个参数也没有!
-        extensionDirs: config.browser.extensionDirs || undefined
-      } : undefined
-      
-      console.log('[Toolbar] 执行工作流，无头模式:', headless, '浏览器配置:', browserConfig)
-      
       // 此时 currentWorkflowId 必然是 string（前面分支都已赋值）
       if (!currentWorkflowId) {
         addLog({ level: 'error', message: '执行失败: 工作流 ID 缺失' })
@@ -359,7 +342,7 @@ export function Toolbar() {
       setStartPhase('awaiting')
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
-        browserConfig,
+        profileId: selectedProfileId,
         ...debugOptions,
         runId,
         documentId: sourceDocumentId,
@@ -387,7 +370,7 @@ export function Toolbar() {
       startPending.current = false
       if (!awaitingStart.current) setStartPhase(null)
     }
-  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, config.browser])
+  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus])
 
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {
@@ -1377,6 +1360,8 @@ export function Toolbar() {
       </div>
 
       <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
+
+      <BrowserProfileSelect label="运行浏览器配置" disabled={isRunning || !!startPhase}/>
 
       {/* 自定义模块编辑模式按钮 */}
       {editingCustomModuleId && (

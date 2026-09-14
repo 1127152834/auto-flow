@@ -419,7 +419,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
     try {
       // 传递浏览器配置
-      const result = await elementPickerApi.start(resolvedUrl || undefined, browserConfig)
+      const result = await elementPickerApi.start(resolvedUrl || undefined)
       if (!isCurrent()) return
       if (result.error || !result.success) {
         if (result.outcomeUnknown) {

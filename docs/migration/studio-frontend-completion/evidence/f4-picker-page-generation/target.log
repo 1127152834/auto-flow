@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/picker-page-generation.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:3081) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/picker-page-generation.test.ts (4 tests | 4 failed) 74ms
+   × PICKER.page-generation.memory: rejects a selected element produced before confirmed navigation 16ms
+   × PICKER.page-generation.http: rejects a selected element produced before confirmed navigation 37ms
+   × SELECTOR.page-generation.memory: rejects a locator result produced before confirmed navigation 5ms
+   × SELECTOR.page-generation.http: rejects a locator result produced before confirmed navigation 15ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-page-generation.test.ts > PICKER.page-generation.memory: rejects a selected element produced before confirmed navigation
+ FAIL  src/renderer/domains/workflows/tests/picker-page-generation.test.ts > PICKER.page-generation.http: rejects a selected element produced before confirmed navigation
+AssertionError: expected { success: true, data: { …(12) } } to match object { success: false }
+(13 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "success": false,
++   "success": true,
+  }
+
+ ❯ checkLateResult src/renderer/domains/workflows/tests/picker-page-generation.test.ts:43:24
+     41|   release()
+     42|   // The source page is no longer current even though the service conn…
+     43|   expect(await result).toMatchObject({success:false})
+       |                        ^
+     44|  }finally{
+     45|   release();hold=false
+ ❯ src/renderer/domains/workflows/tests/picker-page-generation.test.ts:9:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/picker-page-generation.test.ts > SELECTOR.page-generation.memory: rejects a locator result produced before confirmed navigation
+ FAIL  src/renderer/domains/workflows/tests/picker-page-generation.test.ts > SELECTOR.page-generation.http: rejects a locator result produced before confirmed navigation
+AssertionError: expected { success: true, data: { …(7) } } to match object { success: false }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "success": false,
++   "success": true,
+  }
+
+ ❯ checkLateResult src/renderer/domains/workflows/tests/picker-page-generation.test.ts:43:24
+     41|   release()
+     42|   // The source page is no longer current even though the service conn…
+     43|   expect(await result).toMatchObject({success:false})
+       |                        ^
+     44|  }finally{
+     45|   release();hold=false
+ ❯ src/renderer/domains/workflows/tests/picker-page-generation.test.ts:12:2
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  04:47:37
+   Duration  814ms (transform 193ms, setup 166ms, import 73ms, tests 74ms, environment 392ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/picker-page-generation.test.ts

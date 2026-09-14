@@ -10,14 +10,14 @@ from autoflow.adapters.http.workflow_studio_schemas import (
 
 
 def test_picker_start_and_state_roundtrip():
-    request = {'sessionId': 'picker', 'url': 'https://example.test', 'browserConfig': {'locale': 'zh-CN'}}
+    request = {'sessionId': 'picker', 'url': 'https://example.test', 'profileId': 'managed-profile'}
     assert StudioPickerSessionStartRequest.model_validate(request).model_dump(by_alias=True) == request
     state = {'success': True, 'sessionId': 'picker', 'active': True, 'selected': False}
     assert StudioPickerSessionState.model_validate(state).model_dump(by_alias=True) == state
     assert StudioPickerSessionRequest.model_validate({'sessionId': 'picker'}).model_dump(by_alias=True) == {'sessionId': 'picker'}
 
 
-@pytest.mark.parametrize('patch', [{'sessionId': ''}, {'sessionId': ' '}, {'sessionId': 1}, {'url': False}, {'browserConfig': []}, {'extra': 1}])
+@pytest.mark.parametrize('patch', [{'sessionId': ''}, {'sessionId': ' '}, {'sessionId': 1}, {'url': False}, {'browserConfig': []}, {'profileId': 123}, {'profileId': ''}, {'extra': 1}])
 def test_picker_start_rejects_invalid_requests(patch):
     with pytest.raises(ValidationError):
         StudioPickerSessionStartRequest.model_validate({'sessionId': 'picker', **patch})

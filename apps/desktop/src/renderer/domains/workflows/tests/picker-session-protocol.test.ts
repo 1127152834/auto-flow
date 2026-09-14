@@ -117,7 +117,7 @@ it('keeps the same startup identity when both acknowledgement and recovery query
    if(unavailable)throw new TypeError('Failed to fetch')
    return result
   }
-  if(unavailable)throw new TypeError('Failed to fetch')
+  if(unavailable&&!String(input).endsWith('/v1/profiles'))throw new TypeError('Failed to fetch')
   return mock.mockRequest(input,init)
  })
  try{
@@ -132,6 +132,7 @@ it('keeps the same startup identity when both acknowledgement and recovery query
 it('releases an unaccepted startup identity after a definite status rejection',async()=>{
  const ids:string[]=[]
  const restore=configureStudioConnection('http://picker-unaccepted.test',async(input,init)=>{
+  if(String(input).endsWith('/v1/profiles'))return Response.json({items:[{id:'managed',name:'管理配置'}],total:1})
   if(String(input).endsWith('/start')){ids.push(JSON.parse(String(init?.body)).sessionId);throw new TypeError('Failed to fetch')}
   return Response.json({success:false,error:'会话不存在'},{status:409})
  })

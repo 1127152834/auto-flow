@@ -5076,12 +5076,10 @@ export type components = {
              */
             url: string | null;
             /**
-             * Browserconfig
+             * Profileid
              * @default null
              */
-            browserConfig: {
-                [key: string]: components["schemas"]["JsonValue"];
-            } | null;
+            profileId: string | null;
         };
         /** StudioPickerSessionState */
         StudioPickerSessionState: {

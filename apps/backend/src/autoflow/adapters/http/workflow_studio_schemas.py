@@ -865,7 +865,7 @@ class StudioPickerSessionRequest(ApiModel):
 
 class StudioPickerSessionStartRequest(StudioPickerSessionRequest):
     url: str | None = None
-    browser_config: dict[str, JsonValue] | None = None
+    profile_id: str | None = Field(default=None, min_length=1)
 
 
 class StudioPickerSessionState(ApiModel):

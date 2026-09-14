@@ -47339,5 +47339,185 @@
     "status": "通过",
     "deliveryStatus": "已实现且已验收",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-diagnostics-storage.test.ts"
+  },
+  {
+    "id": "F4-PROFILE-001",
+    "capability": "F4.1",
+    "preconditions": "两个Profile及两个选择入口",
+    "steps": [
+      "在运行入口选择第二配置，再刷新浏览器入口移除它"
+    ],
+    "expectedUI": "两个入口同步；失效ID保留并提示",
+    "expectedIO": "GET /v1/profiles；选择写入界面偏好",
+    "stateAssertion": "不自动改选，不修改流程",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-profile-select.test.tsx",
+    "description": "共享选择与失效项"
+  },
+  {
+    "id": "F4-PROFILE-002",
+    "capability": "F4.1",
+    "preconditions": "无配置列表或服务失败",
+    "steps": [
+      "刷新配置列表"
+    ],
+    "expectedUI": "空配置提示/错误信息",
+    "expectedIO": "GET /v1/profiles 空列表和错误响应",
+    "stateAssertion": "不伪造默认Profile",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-profile-select.test.tsx",
+    "description": "配置空与错误"
+  },
+  {
+    "id": "F4-PROFILE-003",
+    "capability": "F4.1",
+    "preconditions": "已打开Profile managed，旧Chrome参数存在",
+    "steps": [
+      "打开浏览器后改选deleted，启动拾取"
+    ],
+    "expectedUI": "拾取仍使用已有会话",
+    "expectedIO": "open/start仅发送profileId不含browserConfig",
+    "stateAssertion": "已有会话Profile不变",
+    "level": "integration",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts",
+    "description": "旧参数清理和会话配置冻结"
+  },
+  {
+    "id": "F4-PROFILE-004",
+    "capability": "F4.1",
+    "preconditions": "Profile查询在途",
+    "steps": [
+      "发起打开，立即关闭，再返回空列表"
+    ],
+    "expectedUI": "关闭拒绝；查询失败明确提示",
+    "expectedIO": "查询完成前不发open/close",
+    "stateAssertion": "在途占用保留；未发送启动失败后释放",
+    "level": "integration",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts",
+    "description": "配置查询中关闭"
+  },
+  {
+    "id": "F4-PROFILE-005",
+    "capability": "F4.1",
+    "preconditions": "选中deleted，服务仅返回other",
+    "steps": [
+      "请求打开"
+    ],
+    "expectedUI": "提示重新选择",
+    "expectedIO": "无浏览器POST",
+    "stateAssertion": "不替换选择，不留下占用",
+    "level": "integration",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts",
+    "description": "已删除配置"
+  },
+  {
+    "id": "F4-PROFILE-006",
+    "capability": "F4.1",
+    "preconditions": "有效Profile，工作流创建请求延迟",
+    "steps": [
+      "F5启动；准备中改选；完成创建"
+    ],
+    "expectedUI": "原运行正常提交",
+    "expectedIO": "execute携带原profileId、不含browserConfig",
+    "stateAssertion": "调试选项和配置随启动冻结",
+    "level": "component",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/run-start-boundary.test.tsx",
+    "description": "运行配置快照"
+  },
+  {
+    "id": "F4-PROFILE-007",
+    "capability": "F4.1",
+    "preconditions": "macOS arm64构建HTML，隔离工作区Mock",
+    "steps": [
+      "主窗进入Studio；打开；导航；拾取；取消关闭；确认关闭"
+    ],
+    "expectedUI": "取消保留活跃状态；确认后恢复打开",
+    "expectedIO": "通过正式UI消费浏览器/页面/拾取协议",
+    "stateAssertion": "不直接修改Store；清理确认后退出活跃状态",
+    "level": "electron-ui-mock",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/browser-status-validation.md",
+    "description": "正式窗口管理配置会话"
+  },
+  {
+    "id": "NODE.ai_chat.model-picker.entry",
+    "capability": "node:ai_chat",
+    "preconditions": "实际ConfigPanel、两节点、管理模型数据",
+    "steps": [
+      "选择模型",
+      "核对字段及另一节点",
+      "导出并导入文档"
+    ],
+    "expectedUI": "选择回显及手工字段保持",
+    "expectedIO": "本地配置选择，不调用模型服务",
+    "stateAssertion": "仅目标节点写回，文档往返保持",
+    "level": "component + editor rule",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "NODE.ai_vision.model-picker.entry",
+    "capability": "node:ai_vision",
+    "preconditions": "实际ConfigPanel、两节点、管理模型数据",
+    "steps": [
+      "选择模型",
+      "核对字段及另一节点",
+      "导出并导入文档"
+    ],
+    "expectedUI": "选择回显及手工字段保持",
+    "expectedIO": "本地配置选择，不调用模型服务",
+    "stateAssertion": "仅目标节点写回，文档往返保持",
+    "level": "component + editor rule",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "NODE.ai_vision_act.model-picker.entry",
+    "capability": "node:ai_vision_act",
+    "preconditions": "实际ConfigPanel、两节点、管理模型数据",
+    "steps": [
+      "选择模型",
+      "核对字段及另一节点",
+      "导出并导入文档"
+    ],
+    "expectedUI": "选择回显及手工字段保持",
+    "expectedIO": "本地配置选择，不调用模型服务",
+    "stateAssertion": "仅目标节点写回，文档往返保持",
+    "level": "component + editor rule",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+  },
+  {
+    "id": "NODE.ai_route.model-picker.entry",
+    "capability": "node:ai_route",
+    "preconditions": "实际ConfigPanel、两节点、管理模型数据",
+    "steps": [
+      "选择模型",
+      "核对字段及另一节点",
+      "导出并导入文档"
+    ],
+    "expectedUI": "选择回显及手工字段保持",
+    "expectedIO": "本地配置选择，不调用模型服务",
+    "stateAssertion": "仅目标节点写回，文档往返保持",
+    "level": "component + editor rule",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
   }
 ]

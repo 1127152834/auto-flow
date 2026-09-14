@@ -39,6 +39,7 @@ it('does not release browser startup while a concurrent status still reports clo
  let closes=0
  const restore=configureStudioConnection('http://browser-starting.test',async input=>{
   const path=new URL(String(input)).pathname
+  if(path.endsWith('/profiles'))return Response.json({items:[{id:'profile',name:'配置'}],total:1})
   if(path.endsWith('/open'))return new Promise<Response>(resolve=>{finish=resolve})
   if(path.endsWith('/close')){closes++;opened=false;return Response.json({success:true})}
   return Response.json({isOpen:opened,pickerActive:false,sessionId:opened?'confirmed-start':''})
@@ -49,6 +50,7 @@ it('does not release browser startup while a concurrent status still reports clo
   expect(currentBrowserSession()).toBeTruthy()
   expect((await browserApi.close()).success).toBe(false)
   expect(closes).toBe(0)
+  await vi.waitFor(()=>expect(finish).toBeTypeOf('function'))
   opened=true;finish(Response.json({success:true}));await pending
   expect((await browserApi.close()).success).toBe(true)
   expect(closes).toBe(1)

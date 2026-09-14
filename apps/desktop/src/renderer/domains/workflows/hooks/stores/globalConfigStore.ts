@@ -149,7 +149,9 @@ export interface GlobalConfig {
     runStatusHighlight: boolean  // 运行状态高亮（默认关闭；大型工作流高速运行时闪烁会卡顿）
     theme: 'default' | 'dark' | 'gray'  // 主题：默认 / 暗色(Dark Reader滤镜) / 灰色(灰度滤镜)
   }
-  // 浏览器自动化配置
+  // 仅保存管理端Profile选择；旧browser节仅用于兼容旧配置数据，不再发送启动参数。
+  browserProfileId?: string
+  // 浏览器自动化配置（历史数据）
   browser: {
     type: BrowserType
     executablePath: string  // 自定义浏览器路径（可选）
@@ -186,6 +188,7 @@ interface GlobalConfigState {
   updateQQConfig: (config: Partial<GlobalConfig['qq']>) => void
   updateFeishuConfig: (config: Partial<GlobalConfig['feishu']>) => void
   updateDisplayConfig: (config: Partial<GlobalConfig['display']>) => void
+  setBrowserProfileId: (id: string) => void
   updateBrowserConfig: (config: Partial<GlobalConfig['browser']>) => void
   resetConfig: () => void
   /** 导入整份配置（安全合并：缺失字段用默认值补齐）。返回是否成功。 */
@@ -195,6 +198,7 @@ interface GlobalConfigState {
 }
 
 const defaultConfig: GlobalConfig = {
+  browserProfileId: '',
   system: {
     checkUpdateOnStartup: true,  // 默认开启启动时检查更新
     autoDetectClipboardScreenshot: true,  // 默认开启自动识别剪贴板截图
@@ -437,6 +441,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
         })
       },
 
+      setBrowserProfileId: (id) => set({config:{...get().config,browserProfileId:id}}),
       updateBrowserConfig: (browserConfig) => {
         set({
           config: {
@@ -469,6 +474,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
             const dv = base[key]
             const iv = (inc as Record<string, any>)[key]
             if (iv === undefined) continue
+            if (key === 'browserProfileId' && typeof iv !== 'string') return false
             if (dv && typeof dv === 'object' && !Array.isArray(dv) &&
                 iv && typeof iv === 'object' && !Array.isArray(iv)) {
               merged[key] = { ...dv, ...iv }

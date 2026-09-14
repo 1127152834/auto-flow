@@ -21,3 +21,25 @@
 ## 剩余边界
 
 录制的全局会话归属、宿主离开矩阵和正式 Electron/打包验收尚未关闭。没有恢复被退役的工作流执行器，也没有扩展已排除节点。F0–F6 整体保持未完成。
+
+## 2026-09-15 页面代际与框架边界补充
+
+状态：confirmed（前端页面代际响应消费已完成专项核验；不是实际 iframe 定位验收）。
+
+冻结 `WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb` 的 `backend/app/api/element_picker.py:155–158` 中，`TestSelectorRequest` 只定义 `selector`、`hints`、`highlight`；`api_test_selector` 使用当前 `page.locator` 进行候选定位，没有结构化 `framePath` 请求合同。`backend/app/services/browser_manager.py:317–374` 的 `_get_picker_result` 遍历页面及其 frames，跳过导航期间的读取异常，直接返回采集元素；该响应没有独立 frame-path 身份。前端沿用已有 selector/hints 消费，不凭空添加结构化 framePath，也不把保留任意 hints 当作已实现框架定位。
+
+本次发现并由主任务修复的前端问题是：服务已经生成的旧页面拾取/定位响应，在同连接页面导航完成后仍会被接受。公共 API 现在同时核对页面操作代际；页面列表轮询观察到服务 revision 变化也会使旧请求失效，首次建立列表基线不会仅因读列表而取消请求。保留原拾取会话身份用于后续状态查询和恢复。
+
+新增测试文件：`apps/desktop/src/renderer/domains/workflows/tests/picker-page-generation.test.ts`。
+
+| 用例 ID | 前置与操作 | 验收结果 / 层级 |
+|---|---|---|
+| `PICKER.page-generation.memory`、`PICKER.page-generation.http` | 挂起已生成的旧元素响应，确认导航后再释放；查询失效状态并启动新会话，再读新元素 | 旧响应拒绝，新会话新元素可用 / 内存与实际本地 HTTP 消费 |
+| `SELECTOR.page-generation.memory`、`SELECTOR.page-generation.http` | 挂起已生成的定位结果，确认导航后释放；恢复后重新定位 | 旧响应拒绝，新请求正常返回 / 内存与实际本地 HTTP 消费 |
+| `SELECTOR.page-poll.memory`、`SELECTOR.page-poll.http` | 挂起定位结果，Mock 服务页面变更，通过 `browserApi.pages` 轮询观察更高 revision，再释放旧结果；恢复后重新定位 | 轮询观察使旧响应失效，新请求正常返回 / 内存与实际本地 HTTP 消费 |
+
+六项专项通过，输出见 [target-after-fix.log](evidence/f4-picker-page-generation/target-after-fix.log)。原四项红测记录见 [target.log](evidence/f4-picker-page-generation/target.log)：预期拒绝但实际返回成功；随后增加轮询观察及恢复断言，没有放宽旧响应拒绝要求。初版 HTTP 测试因使用 `String(Request)` 未识别 URL 而超时，修正测试传输包装后才收集该四项纯断言失败证据。
+
+既有 `browser-pages-protocol.test.ts` 已核验页面选择/导航修订、关闭目标及会话变化；`picker-session-protocol.test.ts` 已核验连接切换；`selector-test-context.test.tsx` 已核验节点、字段、文档变更。此次仅补同连接页面变更的在途响应缺口，没有重复上述矩阵。
+
+据此可核销 **前端已观察到页面变化后的拾取/定位响应失效及恢复** 子项。实际跨域/嵌套 iframe 查找、iframe 自身导航的识别与版本发布、脚本重注入、真实页面高亮，仍由真实浏览器后端实现和实机验证；未观察到的后端框架变化不能由前端单独推断。本批没有运行真实 iframe，没有创建假浏览器执行器，不宣称完整真实框架矩阵通过。主计划当前状态优先于本文件早期的全模块剩余边界描述。

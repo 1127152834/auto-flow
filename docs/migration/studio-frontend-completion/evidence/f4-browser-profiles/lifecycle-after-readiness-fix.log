@@ -1,0 +1,15 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:78828) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  04:43:58
+   Duration  2.18s (transform 348ms, setup 162ms, import 513ms, tests 707ms, environment 640ms)
+

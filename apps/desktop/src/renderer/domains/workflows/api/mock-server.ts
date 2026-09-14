@@ -73,6 +73,7 @@ let failNextRequiredFields = false
 let browser = false
 let url = 'about:blank'
 let browserSessionId = ''
+let browserProfileId: string | undefined
 let browserPageRevision = 0
 let targetPageId: string | null = null
 let browserPages: components['schemas']['StudioBrowserPage'][] = []
@@ -858,12 +859,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       }
       return response(browserPageState())
     }
-    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, sessionId:browserSessionId, url, mock: true })
+    if (path === '/browser/status') return response({ isOpen: browser, pickerActive:picking, pickerSessionId, sessionId:browserSessionId, profileId:browserProfileId, url, mock: true })
     if (path === '/browser/chromium-status') return response({ installed: true, ready: true, mock: true })
     if (['/browser/open','/browser/launch','/browser/navigate'].includes(path)) {
       if(body.profileId!==undefined && !mockBrowserProfiles.some(profile=>profile.id===body.profileId))return response({error:'浏览器配置已不存在，请刷新后重试'},404)
       invalidateMockScriptTests(!browser)
-      if(!browser){browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:'about:blank'}]}
+      if(!browser){browserProfileId=typeof body.profileId==='string'?body.profileId:undefined;browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:'about:blank'}]}
       browser=true;url=String(body.url||url)
       const target=browserPages.find(page=>page.pageId===targetPageId)
       if(target){target.url=url;browserPageRevision++}
@@ -922,15 +923,15 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const sessionId = pickerSessionFrom(target, body, method)
       if (!sessionId) return failure('缺少拾取会话标识', 422)
       if ((body.url != null && typeof body.url !== 'string') ||
-          (body.browserConfig != null && (typeof body.browserConfig !== 'object' || Array.isArray(body.browserConfig))) ||
-          Object.keys(body).some(key => !['sessionId','url','browserConfig'].includes(key))) return failure('拾取启动参数格式错误',422)
-      const fingerprint = JSON.stringify({ url: body.url ?? null, browserConfig: body.browserConfig ?? null })
+          (body.profileId != null && (typeof body.profileId!=='string'||!mockBrowserProfiles.some(profile=>profile.id===body.profileId))) ||
+          Object.keys(body).some(key => !['sessionId','url','profileId'].includes(key))) return failure('拾取启动参数格式错误',422)
+      const fingerprint = JSON.stringify({ url: body.url ?? null, profileId: body.profileId ?? null })
       if (sessionId === pickerSessionId) return pickerRequestFingerprint === fingerprint
         ? response({ ...pickerState(sessionId, true), isPicking: true })
         : failure('拾取会话 ID 已用于不同的启动参数', 409)
       if (retiredPickerSessions.has(sessionId)) return failure('拾取会话已结束', 409)
       if (pickerSessionId || run || recording || mockScriptTestBusy()) return failure('Mock 浏览器被占用',409)
-      if(!browser){browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:String(body.url||'about:blank')}];url=browserPages[0].url}
+      if(!browser){browserProfileId=typeof body.profileId==='string'?body.profileId:undefined;browserSessionId=crypto.randomUUID();browserPageRevision=0;targetPageId=crypto.randomUUID();browserPages=[{pageId:targetPageId,title:'空白页',url:String(body.url||'about:blank')}];url=browserPages[0].url}
       browser = true; picking = true; pickerSessionId = sessionId; pickerRequestFingerprint = fingerprint; picked = null; similarPicked = null
       return response({ ...pickerState(sessionId, true), isPicking: true })
     }

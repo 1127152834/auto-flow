@@ -1,3 +1,4 @@
+import {useGlobalConfigStore} from './hooks/stores/globalConfigStore'
 import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialWrite} from './lib/credentialContract'
@@ -347,10 +348,11 @@ export const scheduledTaskApi = {
 }
 
 // ==================== 自动化浏览器 API ====================
-let browserSession:{id:string;connection:number;unconfirmed?:boolean;starting?:string}|null=null
+let browserSession:{id:string;connection:number;profileId?:string;unconfirmed?:boolean;starting?:string}|null=null
 let browserStatusRequest=0
+let browserPageIdentity:string|null=null
 export function currentBrowserSession(){
- if(browserSession?.connection!==getStudioTransportRevision())browserSession=null
+ if(browserSession?.connection!==getStudioTransportRevision()){browserSession=null;browserPageIdentity=null}
  return browserSession?.id??null
 }
 type BrowserPages = components['schemas']['StudioBrowserPages']
@@ -364,12 +366,30 @@ async function browserPagesRequest(options?:RequestInit):Promise<ApiResponse<Bro
   if(!result.success)return result
   const data=result.data
   if(!data || typeof data.sessionId!=='string' || !data.sessionId || !Number.isSafeInteger(data.revision) || data.revision<0 || !Array.isArray(data.pages) || data.pages.some(page=>!page || typeof page.pageId!=='string' || !page.pageId || typeof page.url!=='string' || typeof page.title!=='string') || new Set(data.pages.map(page=>page.pageId)).size!==data.pages.length || (data.targetPageId!==null&&!data.pages.some(page=>page.pageId===data.targetPageId)))return {success:false,error:'浏览器页面列表结构或目标身份无效'}
-  browserSession={id:data.sessionId,connection:revision,starting:browserSession?.starting}
+  const pageIdentity=`${revision}:${data.sessionId}:${data.revision}`
+  if(browserPageIdentity!==null&&browserPageIdentity!==pageIdentity)browserStatusRequest++
+  browserPageIdentity=pageIdentity
+  browserSession={id:data.sessionId,connection:revision,starting:browserSession?.starting,profileId:browserSession?.profileId}
   return result
 }
 
 export const browserApi = {
-  profiles: () => apiRequest<components['schemas']['ProfileList']>('/v1/profiles'),
+  profiles: async () => {
+    const result=await apiRequest<components['schemas']['ProfileList']>('/v1/profiles')
+    if(!result.success)return result
+    if(!result.data||!Array.isArray(result.data.items)||!result.data.items.every(profile=>profile&&typeof profile.id==='string'&&profile.id&&typeof profile.name==='string'))return {success:false,error:'管理端浏览器配置响应无效'} as ApiResponse<components['schemas']['ProfileList']>
+    return result
+  },
+  resolveProfile: async (requestedId?:string) => {
+    const revision=getStudioTransportRevision()
+    const selected=requestedId??useGlobalConfigStore.getState().config.browserProfileId
+    const result=await browserApi.profiles()
+    if(revision!==getStudioTransportRevision())return {success:false,error:'服务已变更，未采用旧配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    if(!result.success||!result.data)return {success:false,error:result.error||'浏览器配置读取失败'} as ApiResponse<components['schemas']['ProfileRead']>
+    const profile=selected?result.data.items.find(item=>item.id===selected):result.data.items[0]
+    if(!profile)return {success:false,httpStatus:selected?404:422,error:selected?'所选浏览器配置已不可用，请重新选择':'请先在管理端创建 CloakBrowser 配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    return {success:true,data:profile} as ApiResponse<components['schemas']['ProfileRead']>
+  },
   pages: () => browserPagesRequest(),
   page: (command:components['schemas']['StudioBrowserPageCommand']) => browserPagesRequest({method:'POST',body:JSON.stringify(command)}),
   getStatus: async () => {
@@ -385,25 +405,35 @@ export const browserApi = {
       return {success:false,error:'浏览器状态响应格式错误，保留最后确认状态'} as ApiResponse<Result>
     }
     if(!result.data.isOpen){if(!browserSession?.starting)browserSession=null}
-    else if(typeof result.data.sessionId==='string'&&result.data.sessionId)browserSession={id:result.data.sessionId,connection:getStudioTransportRevision(),starting:browserSession?.starting}
+    else if(typeof result.data.sessionId==='string'&&result.data.sessionId)browserSession={id:result.data.sessionId,connection:getStudioTransportRevision(),starting:browserSession?.starting,profileId:typeof result.data?.profileId==='string'?result.data.profileId:browserSession?.profileId}
     return result
   },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
-  open: async (url?: string, browserConfig?: any, profileId?: string) => {
+  open: async (url?: string, _legacyBrowserConfig?: unknown, profileId?: string) => {
     const revision=getStudioTransportRevision()
-    const provisional=!currentBrowserSession()?crypto.randomUUID():null
-    if(provisional)browserSession={id:provisional,connection:revision,unconfirmed:true,starting:provisional}
-    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig, profileId }) })
-    if(browserSession?.starting===provisional)browserSession.starting=undefined
+    if(browserSession?.starting)return {success:false,error:'浏览器正在启动，请等待当前请求完成'}
+    browserStatusRequest++
+    const operation=crypto.randomUUID()
+    const provisional=!currentBrowserSession()?operation:null
+    if(provisional)browserSession={id:provisional,connection:revision,unconfirmed:true}
+    if(browserSession)browserSession.starting=operation
+    const profile=await browserApi.resolveProfile(browserSession?.profileId??profileId)
+    if(!profile.success||!profile.data){
+      if(browserSession?.starting===operation)browserSession.starting=undefined
+      if(browserSession?.id===provisional)browserSession=null
+      return {success:false,error:profile.error,httpStatus:profile.httpStatus}
+    }
+    if(browserSession)browserSession.profileId=profile.data.id
+    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, profileId:profile.data.id }) })
+    if(browserSession?.starting===operation)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
     if(!result.success&&result.httpStatus&&result.httpStatus<500&&browserSession?.id===provisional)browserSession=null
     else await browserApi.getStatus()
     if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
     return result
   },
-  launch: (url?: string) =>
-    apiRequest('/browser/launch', { method: 'POST', body: JSON.stringify({ url }) }),
+  launch: (url?: string):Promise<ApiResponse> => browserApi.open(url),
   close: async (sessionId=currentBrowserSession()??undefined) => {
     const revision=getStudioTransportRevision()
     if(browserSession?.starting)return {success:false,error:'浏览器启动请求仍在处理中，保留占用，请稍后重试清理'}
@@ -420,8 +450,10 @@ export const browserApi = {
     if(result.success&&result.data?.success!==false)browserSession=null
     return result
   },
-  navigate: (url: string) =>
-    apiRequest('/browser/navigate', { method: 'POST', body: JSON.stringify({ url }) }),
+  navigate: (url: string) => {
+    browserStatusRequest++
+    return apiRequest('/browser/navigate', { method: 'POST', body: JSON.stringify({ url }) })
+  },
   getUrl: () => apiRequest('/browser/url'),
   getSelector: (description: string) =>
     apiRequest('/browser/get-selector', { method: 'POST', body: JSON.stringify({ description }) }),
@@ -452,8 +484,9 @@ async function readPickerResult(path:string):Promise<ApiResponse<any>>{
   }
   const sessionId=currentPickerSession()
   const revision=getStudioTransportRevision()
+  const pageGeneration=browserStatusRequest
   const result=await apiRequest(`${path}${sessionId?pickerQuery(sessionId):''}`)
-  if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'拾取结果已过期，未应用定位信息'}
+  if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession()||pageGeneration!==browserStatusRequest)return {success:false,error:'拾取结果已过期，未应用定位信息'}
   const checked=checkedPickerSession(result,sessionId||'none')
   if(!checked.success)return checked
   const data=result.data
@@ -464,9 +497,9 @@ export const elementPickerApi = {
   /**
    * 启动元素选择器
    * @param url 可选，要打开的目标页面 URL
-   * @param browserConfig 可选，浏览器配置
+   * 使用管理端 CloakBrowser Profile，旧启动参数不再发送。
    */
-  start: async (url?: string, browserConfig?: any) => {
+  start: async (url?: string, _legacyBrowserConfig?: unknown) => {
     const revision=getStudioTransportRevision()
     let previous=currentPickerSession()
     if(!previous&&!await requestSessionTransition(true))return {success:false,error:'已取消切换到元素拾取'}
@@ -476,9 +509,17 @@ export const elementPickerApi = {
     pickerSessionId=sessionId
     const provisionalBrowser=!currentBrowserSession()?crypto.randomUUID():null
     if(provisionalBrowser)browserSession={id:provisionalBrowser,connection:revision,unconfirmed:true,starting:provisionalBrowser}
+    const profile=await browserApi.resolveProfile(browserSession?.profileId)
+    if(!profile.success||!profile.data){
+      if(!previous&&pickerSessionId===sessionId)pickerSessionId=null
+      if(browserSession?.id===provisionalBrowser)browserSession=null
+      return {success:false,error:profile.error,httpStatus:profile.httpStatus}
+    }
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'拾取请求已取消或服务已变更'}
+    if(browserSession)browserSession.profileId=profile.data.id
     let result=checkedPickerSession(await apiRequest('/element-picker/start', {
       method: 'POST',
-      body: JSON.stringify({sessionId,url:url||null,browserConfig:browserConfig||null}),
+      body: JSON.stringify({sessionId,url:url||null,profileId:profile.data.id}),
     }),sessionId)
     if(browserSession?.starting===provisionalBrowser)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
@@ -560,10 +601,11 @@ export const elementPickerApi = {
     type Result = Pick<Wire, 'success' | 'matched' | 'count'> & Partial<Omit<Wire, 'success' | 'matched' | 'count'>>
     const sessionId=currentPickerSession()
     const revision=getStudioTransportRevision()
+    const pageGeneration=browserStatusRequest
     const result = await apiRequest<Result>('/element-picker/test-selector', {
       method: 'POST', body: JSON.stringify({ selector, hints: hints || null, highlight, sessionId }),
     })
-    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'定位测试响应已过期，请重新测试'}
+    if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession()||pageGeneration!==browserStatusRequest)return {success:false,error:'定位测试响应已过期，请重新测试'}
     if (!result.success) return result
     const data = result.data
     const record = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)

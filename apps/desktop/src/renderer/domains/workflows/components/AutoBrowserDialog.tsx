@@ -1,9 +1,9 @@
+import { getStudioTransportRevision } from '../api/transport'
 // Source: WebRPA@5ccb900e, components/workflow/AutoBrowserDialog.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useState, useEffect, useRef } from 'react'
 import { X, Globe, MousePointer, Copy, Check, RefreshCw } from 'lucide-react'
 import { Button } from './controls/button'
-import type { components } from '../../../shared/api/generated'
-import {getStudioTransportRevision} from '../api/transport'
+import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { BrowserPagesPanel } from './BrowserPagesPanel'
 import { browserApi, elementPickerApi, systemApi, featurePackApi } from '../api'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -23,9 +23,6 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const [pickerActive, setPickerActive] = useState(false)
   const [loading, setLoading] = useState(false)
   const [url, setUrl] = useState('')
-  const [profiles,setProfiles]=useState<components['schemas']['ProfileRead'][]>([])
-  const [profileId,setProfileId]=useState('')
-  const [profileError,setProfileError]=useState('')
   const [copied, setCopied] = useState(false)
   const [lastSelector, setLastSelector] = useState('')
   const statusRequest = useRef(0)
@@ -45,20 +42,6 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   // 打开浏览器因缺功能模块包而失败时，用这两个状态把安装引导弹出来
   const [missingPacks, setMissingPacks] = useState<MissingPackGroup[] | null>(null)
   const [showFeaturePacks, setShowFeaturePacks] = useState(false)
-  const { config } = useGlobalConfigStore()
-
-  useEffect(()=>{
-    if(!isOpen)return
-    let active=true
-    const connection=getStudioTransportRevision()
-    void browserApi.profiles().then(result=>{
-      if(!active||connection!==getStudioTransportRevision())return
-      if(!result.success||!result.data||!Array.isArray(result.data.items)){setProfileError(result.error||'浏览器配置读取失败');return}
-      setProfiles(result.data.items);setProfileError('')
-    }).catch(error=>{if(active)setProfileError(String(error))})
-    return()=>{active=false}
-  },[isOpen])
-
   // Status failures preserve the last confirmed browser state; they do not prove closure.
   const checkStatus = async () => {
     if (commandPending.current) return
@@ -207,17 +190,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
   const handleOpenBrowser = async () => {
     if (!beginCommand()) return
     try {
-      // 传递浏览器配置
-      const browserConfig = config.browser ? {
-        type: config.browser.type || 'msedge',
-        executablePath: config.browser.executablePath || undefined,
-        userDataDir: config.browser.userDataDir || undefined,
-        fullscreen: config.browser.fullscreen || false,
-        launchArgs: config.browser.launchArgs || undefined,
-        extensionDirs: config.browser.extensionDirs || undefined
-      } : undefined
-      
-      const result = await browserApi.open(url || undefined, profileId?undefined:browserConfig, profileId||undefined)
+      const result = await browserApi.open(url || undefined, undefined, useGlobalConfigStore.getState().config.browserProfileId)
       if (result.error) {
         onLog('error', `打开浏览器失败: ${result.error}`)
         // 失败原因是「缺少功能模块包」时，直接把安装弹窗顶上来。
@@ -227,10 +200,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
       } else {
         statusRequest.current += 1
         setBrowserOpen(true)
-        const browserName = config.browser?.type === 'chrome' ? 'Chrome' : 
-                           config.browser?.type === 'firefox' ? 'Firefox' :
-                           config.browser?.type === 'chromium' ? 'Chromium' : 'Edge'
-        onLog('success', `自动化浏览器(${browserName})已打开，登录状态将自动保存`)
+        onLog('success', 'CloakBrowser 会话已打开，启动参数来自管理端配置')
       }
     } catch (error) {
       onLog('error', `打开浏览器异常: ${error}`)
@@ -344,7 +314,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
               <ul className="space-y-1.5 text-[12px] text-[hsl(var(--slate-700))]">
                 <li className="flex items-start gap-1.5">
                   <span className="text-[hsl(var(--brand-600))] mt-0.5">•</span>
-                  <span>在此浏览器中登录的账号，运行工作流时会保持登录状态</span>
+                  <span>使用管理端 CloakBrowser 配置；此临时会话的登录状态不会传给独立运行</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-[hsl(var(--brand-600))] mt-0.5">•</span>
@@ -391,11 +361,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
             </>
           )}
 
-          {!browserOpen&&<label className="block text-xs">浏览器配置<select aria-label="浏览器配置" disabled={loading} value={profileId} onChange={event=>setProfileId(event.target.value)}>
-            <option value="">沿用现有浏览器设置</option>
-            {profileId&&!profiles.some(profile=>profile.id===profileId)&&<option value={profileId}>所选配置已不可用，请重新选择</option>}
-            {profiles.map(profile=><option key={profile.id} value={profile.id}>{profile.name}</option>)}
-          </select>{profileError&&<p role="alert">{profileError}</p>}</label>}
+          {!browserOpen&&<BrowserProfileSelect disabled={loading}/>}
           {/* 浏览器控制 */}
           <div className="flex gap-2">
             {!browserOpen ? (

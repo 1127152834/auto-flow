@@ -11,6 +11,7 @@ it('keeps uncertain startup occupied until status confirms the browser identity 
  const closeBodies:unknown[]=[]
  const server=await startHttpStudioFixture(async(input)=>{
   const url=(input as Request).url
+  if(url.endsWith('/v1/profiles'))return Response.json({items:[{id:'managed',name:'管理配置'}],total:1})
   if(url.endsWith('/browser/open'))return Response.json({error:'启动回执丢失'},{status:503})
   if(url.endsWith('/browser/status'))return recovered?Response.json({isOpen:true,pickerActive:false,sessionId:'confirmed-browser'}):Response.json({error:'离线'},{status:503})
   if(url.endsWith('/browser/close')){closeBodies.push(await (input as Request).json());return Response.json({success:true})}

@@ -139,6 +139,7 @@ it.each(['start','stop','navigate'] as const)('serializes %s with other browser 
  await screen.findByRole('button',{name:'关闭浏览器'})
  if(action==='navigate')fireEvent.change(screen.getByPlaceholderText('https://example.com'),{target:{value:'https://example.test'}})
  const button=screen.getByRole('button',{name:action==='start'?'启动选择器':action==='stop'?'停止选择':'跳转'})
+ await waitFor(()=>expect((button as HTMLButtonElement).disabled).toBe(false))
  fireEvent.click(button);fireEvent.click(button);fireEvent.click(screen.getByRole('button',{name:'关闭浏览器'}))
  expect(command).toHaveBeenCalledTimes(1)
  expect(close).not.toHaveBeenCalled()

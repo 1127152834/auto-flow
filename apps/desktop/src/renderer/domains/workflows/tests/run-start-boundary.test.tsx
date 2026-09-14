@@ -37,7 +37,7 @@ it('coalesces repeated starts during preparation and freezes debug options befor
   render(<Toolbar />)
   fireEvent.keyDown(window, { key: 'F5' })
   fireEvent.keyDown(window, { key: 'F5' })
-  expect(workflowApi.create).toHaveBeenCalledTimes(1)
+  await waitFor(()=>expect(workflowApi.create).toHaveBeenCalledTimes(1))
   act(() => useDebugStore.setState({ breakpoints: new Set(), stepMode: false }))
   await act(async () => response.resolve({ success: true, data: { id: 'start-fixture' } }))
   expect(workflowApi.execute).toHaveBeenCalledTimes(1)
@@ -147,4 +147,19 @@ it('does not reuse a prepared server identifier for a different editor document'
  act(()=>completed?.({workflowId:'old-server-id'}))
  fireEvent.keyDown(window,{key:'F5'});await act(async()=>{})
  expect(workflowApi.create).toHaveBeenCalledTimes(2);expect(workflowApi.update).not.toHaveBeenCalled()
+})
+
+it('freezes the managed profile before asynchronous preparation and sends no legacy browser config',async()=>{
+ const response=deferred<Awaited<ReturnType<typeof workflowApi.create>>>()
+ vi.mocked(workflowApi.create).mockReturnValue(response.promise)
+ const profiles=await import('../hooks/stores/globalConfigStore')
+ profiles.useGlobalConfigStore.getState().setBrowserProfileId('10000000-0000-4000-8000-000000000001')
+ render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
+ await waitFor(()=>expect(workflowApi.create).toHaveBeenCalledTimes(1))
+ act(()=>profiles.useGlobalConfigStore.getState().setBrowserProfileId('changed-after-start'))
+ await act(async()=>response.resolve({success:true,data:{id:'start-fixture'}}))
+ const request=vi.mocked(workflowApi.execute).mock.calls[0][1]
+ expect(request.profileId).toBe('10000000-0000-4000-8000-000000000001')
+ expect(request).not.toHaveProperty('browserConfig')
+ profiles.useGlobalConfigStore.getState().setBrowserProfileId('')
 })

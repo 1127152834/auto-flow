@@ -1,0 +1,57 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/browser-profile-select.test.tsx src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts src/renderer/domains/workflows/tests/browser-status-protocol.test.ts src/renderer/domains/workflows/tests/browser-pages-protocol.test.ts src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx src/renderer/domains/workflows/tests/picker-session-protocol.test.ts src/renderer/domains/workflows/tests/picker-result-context.test.tsx src/renderer/domains/workflows/tests/run-start-boundary.test.tsx src/renderer/domains/workflows/tests/picker-recorder-leave.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:74587) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74589) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74590) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:74588) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx (18 tests | 1 failed) 1194ms
+   × serializes navigate with other browser commands and restores controls after rejection 57ms
+(node:75004) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75006) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75007) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75008) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75009) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:75010) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx > serializes navigate with other browser commands and restores controls after rejection
+AssertionError: expected "page" to be called 1 times, but got 0 times
+ ❯ src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx:143:18
+    141|  const button=screen.getByRole('button',{name:action==='start'?'启动选择器'…
+    142|  fireEvent.click(button);fireEvent.click(button);fireEvent.click(scree…
+    143|  expect(command).toHaveBeenCalledTimes(1)
+       |                  ^
+    144|  expect(close).not.toHaveBeenCalled()
+    145|  expect((button as HTMLButtonElement).disabled).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 124 passed (125)
+   Start at  04:43:06
+   Duration  5.42s (transform 4.26s, setup 958ms, import 6.44s, tests 6.12s, environment 5.43s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/browser-profile-select.test.tsx src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts src/renderer/domains/workflows/tests/browser-status-protocol.test.ts src/renderer/domains/workflows/tests/browser-pages-protocol.test.ts src/renderer/domains/workflows/tests/auto-browser-lifecycle.test.tsx src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx src/renderer/domains/workflows/tests/picker-session-protocol.test.ts src/renderer/domains/workflows/tests/picker-result-context.test.tsx src/renderer/domains/workflows/tests/run-start-boundary.test.tsx src/renderer/domains/workflows/tests/picker-recorder-leave.test.tsx
