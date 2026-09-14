@@ -285,3 +285,45 @@ it('successful AI edits record an independent complete before snapshot', async (
   expect(useWorkflowStore.getState().nodes[0].id).toBe('web')
   expect(useWorkflowStore.getState().variables[0].value).toBe('later')
 })
+it('does not write to a new connection after an old existence response', async () => {
+  let release!: (response: Response) => void
+  useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, showOverwriteConfirm: true } } }))
+  setStudioTransport(async (input, init) => String(input).endsWith('/check-exists') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' })); await waitFor(() => expect(release).toBeDefined())
+  const next = vi.fn(mockRequest); act(() => { setStudioTransport(next) })
+  await act(async () => release(Response.json({ exists: false })))
+  expect(next.mock.calls.some(([input]) => String(input).endsWith('/save-to-folder'))).toBe(false)
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+})
+it('does not acknowledge a saved document after connection replacement', async () => {
+  let release!: (response: Response) => void
+  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' })); await waitFor(() => expect(release).toBeDefined())
+  act(() => { setStudioTransport(mockRequest) })
+  await act(async () => release(Response.json({ success: true, filename: 'draft.json' })))
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  expect(useWorkflowStore.getState().logs.some(log => log.message.includes('工作流已保存'))).toBe(false)
+})
+it.each(['保存后继续', '放弃修改'])('invalidates a leave decision %s after connection change', async choice => {
+  render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '新建' })); await screen.findByRole('dialog', { name: '保存当前工作流？' })
+  const next = vi.fn(mockRequest); act(() => { setStudioTransport(next) })
+  fireEvent.click(screen.getByRole('button', { name: choice }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: '保存当前工作流？' })).toBeNull())
+  expect(useWorkflowStore.getState().variables[0]?.value).toBe('keep')
+  expect(next.mock.calls.some(([input]) => String(input).endsWith('/save-to-folder'))).toBe(false)
+})
+it('serializes repeated save clicks', async () => {
+  let release!: (response: Response) => void
+  const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => String(input).endsWith('/save-to-folder') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  setStudioTransport(request); render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: '保存' })); fireEvent.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(release).toBeDefined())
+  expect(request.mock.calls.filter(([input]) => String(input).endsWith('/save-to-folder'))).toHaveLength(1)
+  await act(async () => release(Response.json({ success: true, filename: 'draft.json' })))
+})
+it.each([{ success: 'true', filename: 'draft.json' }, { success: true }, { success: true, filename: 'draft.json', error: '未完成' }])('does not mark saved for malformed receipt %j', async receipt => {
+  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder') ? Response.json(receipt) : mockRequest(input, init))
+  render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.level === 'error')).toBe(true))
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+})

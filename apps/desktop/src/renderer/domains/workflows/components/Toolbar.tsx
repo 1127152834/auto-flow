@@ -7,7 +7,7 @@ import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
 import { staticNumberIssues } from '../lib/staticNumberPreflight'
 // Source: WebRPA@5ccb900e, components/workflow/Toolbar.tsx; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from '../api/transport'
+import { studioFetch, getStudioTransportRevision } from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { useCustomModuleStore } from '../hooks/stores/customModuleStore'
@@ -74,6 +74,10 @@ import {
 } from './controls/dropdown-menu'
 
 export function Toolbar() {
+  const mounted = useRef(true)
+  const savingDocument = useRef(false)
+  const defaultFolderRevision = useRef<number | null>(null)
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const documentId = useWorkflowStore(state => state.id)
   const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(null)
   const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
@@ -166,23 +170,16 @@ export function Toolbar() {
     }
   }, [name, setWorkflowName, setWorkflowNameWithHistory])
 
-  // 获取默认文件夹
+  // Cached default paths belong to the connection that returned them.
   useEffect(() => {
-    const loadDefaultFolder = async () => {
-      // 等待配置加载完成
-      const { preloadConfig } = await import('../api/config')
-      await preloadConfig()
-      
-      const API_BASE = getBackendBaseUrl()
-      studioFetch(`${API_BASE}/api/local-workflows/default-folder`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.folder) setDefaultFolder(data.folder)
-        })
-        .catch(console.error)
-    }
-    
-    loadDefaultFolder()
+    const revision = getStudioTransportRevision()
+    void localWorkflowApi.getDefaultFolder().then(result => {
+      if (!mounted.current || revision !== getStudioTransportRevision()) return
+      if (result.success && typeof result.data?.folder === 'string') {
+        defaultFolderRevision.current = revision
+        setDefaultFolder(result.data.folder)
+      }
+    }).catch(console.error)
   }, [])
 
   // 检测是否正在编辑自定义模块
@@ -418,24 +415,31 @@ export function Toolbar() {
   }, [workflowId, setExecutionStatus, addLog])
 
   const handleSave = useCallback(async (skipConfirm = false) => {
-    if (sessionStorage.getItem('editingCustomModuleId')) return saveCustomModuleEditing()
-    const workflowData = JSON.parse(exportWorkflow())
-    let filename = workflowData.name || '未命名工作流'
-    let currentFolder = config.workflow?.localFolder || defaultFolder
-    if (!currentFolder) {
-      const result = await localWorkflowApi.getDefaultFolder()
-      if (result.error) { addLog({ level: 'error', message: result.error }); return false }
-      currentFolder = result.data?.folder || ''
-      if (currentFolder) setDefaultFolder(currentFolder)
-    }
-    if (!currentFolder) {
-      if (!skipConfirm) {
-        addLog({ level: 'error', message: '未配置工作流保存路径' })
-      }
-      return false
-    }
-
+    if (savingDocument.current || !mounted.current) return false
+    savingDocument.current = true
+    const revision = getStudioTransportRevision()
+    const sourceDocument = useWorkflowStore.getState().id
+    const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
+    const requireActive = () => { if (!active()) throw new Error('保存期间服务连接或文档已变更；当前草稿保持未保存，请在原工作区核对写入结果') }
     try {
+      if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
+      const workflowData = JSON.parse(exportWorkflow())
+      let filename = workflowData.name || '未命名工作流'
+      let currentFolder = config.workflow?.localFolder || (defaultFolderRevision.current === revision ? defaultFolder : '')
+      if (!currentFolder) {
+        const result = await localWorkflowApi.getDefaultFolder()
+        requireActive()
+        if (result.error) { addLog({ level: 'error', message: result.error }); return false }
+        currentFolder = result.data?.folder || ''
+        if (currentFolder) { defaultFolderRevision.current = revision; setDefaultFolder(currentFolder) }
+      }
+      if (!currentFolder) {
+        if (!skipConfirm) {
+          addLog({ level: 'error', message: '未配置工作流保存路径' })
+        }
+        return false
+      }
+
       // 覆盖提示 / 自动副本开关
       const showOverwriteConfirm = config.workflow?.showOverwriteConfirm !== false
       const autoSaveCopy = config.workflow?.autoSaveCopy === true
@@ -448,6 +452,7 @@ export function Toolbar() {
           body: JSON.stringify({ filename, content: { _folder: currentFolder } })
         })
         const checkData = await checkResponse.json()
+        requireActive()
         if (!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean') {
           throw new Error(checkData.error || '无法确认目标文件状态')
         }
@@ -462,6 +467,7 @@ export function Toolbar() {
             `工作流 "${checkData.filename}" 已存在，是否覆盖？`,
             { type: 'warning', title: '文件已存在', confirmText: '覆盖', cancelText: '取消' }
           )
+          requireActive()
           if (!shouldOverwrite) {
             addLog({ level: 'info', message: '已取消保存' })
             return false
@@ -470,6 +476,7 @@ export function Toolbar() {
       }
 
       // 执行保存
+      requireActive()
       const API_BASE = getBackendBaseUrl()
       const savedContent = snapshotKey(JSON.stringify(workflowData))
       const response = await studioFetch(`${API_BASE}/api/local-workflows/save-to-folder`, {
@@ -481,8 +488,9 @@ export function Toolbar() {
         })
       })
       const data = await response.json()
+      requireActive()
 
-      if (response.ok && data.success) {
+      if (response.ok && data.success === true && !data.error && typeof data.filename === 'string' && data.filename.trim()) {
         if (!skipConfirm) {
           addLog({ level: 'success', message: `工作流已保存: ${data.filename}` })
         }
@@ -491,15 +499,14 @@ export function Toolbar() {
         return unchanged
       } else {
         if (!skipConfirm) {
-          addLog({ level: 'error', message: `保存失败: ${data.error}` })
+          addLog({ level: 'error', message: `保存失败: ${data.error || '服务未返回有效保存确认'}` })
         }
       }
-    } catch (e) {
-      if (!skipConfirm) {
-        addLog({ level: 'error', message: `保存出错: ${e}` })
-      }
-    }
-    return false
+      return false
+    } catch (error) {
+      if (mounted.current && !skipConfirm) addLog({ level: 'error', message: `保存失败: ${String(error)}` })
+      return false
+    } finally { savingDocument.current = false }
   }, [config.workflow?.localFolder, config.workflow?.showOverwriteConfirm, config.workflow?.autoSaveCopy, defaultFolder, exportWorkflow, addLog, confirm])
 
   const handleNewWorkflow = useCallback(() => {
@@ -1128,15 +1135,19 @@ export function Toolbar() {
       importingBundle.current = true
       setIsImportingBundle(true)
       const original = snapshotKey(exportWorkflow())
+      const revision = getStudioTransportRevision()
+      const active = () => mounted.current && revision === getStudioTransportRevision()
       try {
         const bundle = JSON.parse(await file.text())
+        if (!active()) { addLog({ level: 'warning', message: '服务连接已变更，已取消整包导入' }); return }
         if (snapshotKey(exportWorkflow()) !== original) {
           addLog({ level: 'warning', message: '读取文件期间草稿已修改，请重新导入' })
           return
         }
-        if (!(await confirmLeave())) return
+        if (!(await confirmLeave()) || !active()) return
         const accepted = snapshotKey(exportWorkflow())
         const res = await workflowBundleApi.import(bundle)
+        if (!active()) { addLog({ level: 'warning', message: '服务连接已变更，旧整包响应未应用；请在原工作区核对资源' }); return }
         if (res.error || !res.data?.success || !res.data.workflow) {
           addLog({ level: 'error', message: `整包导入失败: ${res.error || res.data?.error || '格式不正确'}` })
           return
@@ -1161,7 +1172,7 @@ export function Toolbar() {
         addLog({ level: 'success', message: `整包已导入（还原模块 ${r?.customModules || 0} 个、图片 ${r?.images || 0} 张）` })
       } catch (e) {
         addLog({ level: 'error', message: `整包文件解析失败: ${e}` })
-      } finally { importingBundle.current = false; setIsImportingBundle(false) }
+      } finally { importingBundle.current = false; if (mounted.current) setIsImportingBundle(false) }
     }
     input.click()
   }, [addLog, confirmLeave, exportWorkflow])
@@ -1484,7 +1495,8 @@ export function Toolbar() {
           <Button 
             variant="outline" 
             size="sm" 
-            className=""
+            title="文件操作"
+            aria-label="文件操作"
           >
             <MoreVertical className="w-4 h-4" />
           </Button>

@@ -42083,5 +42083,310 @@
     "level": "component-contract",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-retention/cases.json"
+  },
+  {
+    "id": "DOCUMENT.connection.save-check-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "存在检查在途"
+    },
+    "steps": [
+      "保存",
+      "服务换连接",
+      "旧存在检查返回"
+    ],
+    "expectedUI": "新连接无保存请求，草稿仍未保存",
+    "expectedIO": "新连接无保存请求，草稿仍未保存",
+    "stateAssertion": "新连接无保存请求，草稿仍未保存",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.save-receipt-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "保存写入在途"
+    },
+    "steps": [
+      "保存",
+      "服务换连接",
+      "旧成功回执"
+    ],
+    "expectedUI": "不清除未保存标记，不追加保存成功日志",
+    "expectedIO": "不清除未保存标记，不追加保存成功日志",
+    "stateAssertion": "不清除未保存标记，不追加保存成功日志",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.leave-save-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "未保存变量 draft=keep"
+    },
+    "steps": [
+      "新建",
+      "换连接",
+      "保存后继续"
+    ],
+    "expectedUI": "保留原变量，新连接没有保存请求",
+    "expectedIO": "保留原变量，新连接没有保存请求",
+    "stateAssertion": "保留原变量，新连接没有保存请求",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.leave-discard-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "未保存变量 draft=keep"
+    },
+    "steps": [
+      "新建",
+      "换连接",
+      "放弃修改"
+    ],
+    "expectedUI": "保留原变量，旧决定失效",
+    "expectedIO": "保留原变量，旧决定失效",
+    "stateAssertion": "保留原变量，旧决定失效",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.save-single-flight",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "第一次保存未完成"
+    },
+    "steps": [
+      "连续点击两次保存"
+    ],
+    "expectedUI": "只有一条保存请求",
+    "expectedIO": "只有一条保存请求",
+    "stateAssertion": "只有一条保存请求",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.save-string-success",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "服务回 success 为字符串 true"
+    },
+    "steps": [
+      "保存并接收格式错误回执"
+    ],
+    "expectedUI": "显示错误，保持未保存",
+    "expectedIO": "显示错误，保持未保存",
+    "stateAssertion": "显示错误，保持未保存",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.save-no-filename",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "服务成功但缺 filename"
+    },
+    "steps": [
+      "保存并接收缺失字段回执"
+    ],
+    "expectedUI": "显示错误，保持未保存",
+    "expectedIO": "显示错误，保持未保存",
+    "stateAssertion": "显示错误，保持未保存",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.save-error-success",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "服务同时 success=true 和 error"
+    },
+    "steps": [
+      "保存并接收冲突回执"
+    ],
+    "expectedUI": "显示错误，保持未保存",
+    "expectedIO": "显示错误，保持未保存",
+    "stateAssertion": "显示错误，保持未保存",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.load-old-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "目标文档 load 请求在途"
+    },
+    "steps": [
+      "换连接",
+      "返回旧内容"
+    ],
+    "expectedUI": "不请求离开确认，不覆盖当前草稿",
+    "expectedIO": "不请求离开确认，不覆盖当前草稿",
+    "stateAssertion": "不请求离开确认，不覆盖当前草稿",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.load-leave-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "内容已加载、离开确认在途"
+    },
+    "steps": [
+      "换连接",
+      "允许离开"
+    ],
+    "expectedUI": "不应用旧内容",
+    "expectedIO": "不应用旧内容",
+    "stateAssertion": "不应用旧内容",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.list-old-rows",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "原服务列表已有 destination"
+    },
+    "steps": [
+      "更换服务连接"
+    ],
+    "expectedUI": "旧行清空、显示刷新提示、不发送打开请求",
+    "expectedIO": "旧行清空、显示刷新提示、不发送打开请求",
+    "stateAssertion": "旧行清空、显示刷新提示、不发送打开请求",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.list-null",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "workflows=null"
+    },
+    "steps": [
+      "打开本地列表"
+    ],
+    "expectedUI": "显示格式错误，不崩溃",
+    "expectedIO": "显示格式错误，不崩溃",
+    "stateAssertion": "显示格式错误，不崩溃",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.list-missing-fields",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "workflows=[{}]"
+    },
+    "steps": [
+      "打开本地列表"
+    ],
+    "expectedUI": "显示格式错误，不崩溃",
+    "expectedIO": "显示格式错误，不崩溃",
+    "stateAssertion": "显示格式错误，不崩溃",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.list-negative-size",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "列表项 size=-1"
+    },
+    "steps": [
+      "打开本地列表"
+    ],
+    "expectedUI": "显示格式错误，不崩溃",
+    "expectedIO": "显示格式错误，不崩溃",
+    "stateAssertion": "显示格式错误，不崩溃",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.list-retry",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "首次列表503，刷新返回合法条目"
+    },
+    "steps": [
+      "打开",
+      "错误",
+      "刷新"
+    ],
+    "expectedUI": "错误消失，显示 destination",
+    "expectedIO": "错误消失，显示 destination",
+    "stateAssertion": "错误消失，显示 destination",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.delete-confirm-epoch",
+    "capability": "document:connection-isolation",
+    "preconditions": {
+      "fixture": "Mock 工作流、独立测试传输",
+      "state": "删除确认对话框打开"
+    },
+    "steps": [
+      "换连接",
+      "确认删除"
+    ],
+    "expectedUI": "新连接无删除请求",
+    "expectedIO": "新连接无删除请求",
+    "stateAssertion": "新连接无删除请求",
+    "level": "component-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/after.log"
+  },
+  {
+    "id": "DOCUMENT.connection.browser-roundtrip",
+    "capability": "document:save-open",
+    "preconditions": {
+      "origin": "localhost:5175",
+      "document": "独立零节点测试文档"
+    },
+    "steps": [
+      "名称输入 F5 文档连接隔离验收",
+      "Ctrl/Cmd+S",
+      "文件操作→打开",
+      "搜索并点击同名工作流"
+    ],
+    "expectedUI": "保存成功和已打开日志；名称恢复，打开弹窗关闭",
+    "expectedIO": "Mock 保存、列表、读取",
+    "stateAssertion": "同名零节点流程仍可保存和打开",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-document-connection/browser-validation.md"
   }
 ]

@@ -1,0 +1,65 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.31925ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.154167ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.123916ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.156875ms)
+✔ history output guard resolves symlinks before any nested directory is created (27.631042ms)
+✔ containment handles Windows separators and sibling prefixes (0.923958ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (27.173209ms)
+✔ R2 wrapper reuses the exported R1 harness (3.9915ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (3.735875ms)
+✔ R3 runner exposes automatic and retained manual modes (0.958958ms)
+✔ R3 evidence matrix names every required real interaction (0.123333ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (7.096458ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (2.0955ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (16.622958ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (8.123875ms)
+✔ browser management smoke accepts an explicit packaged sidecar (2.145333ms)
+✔ browser management smoke creates the platform kernel layout (0.195583ms)
+✔ profile test browser smoke parses kernel and sidecar paths (2.112958ms)
+✔ profile test browser smoke validates a public kernel directory (22.473792ms)
+✔ profile test browser smoke finds a session below the manager root (7.437666ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (68.822083ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (58.9ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (53.0835ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (52.11425ms)
+✔ packaged smoke cannot silently select external health mode (2.010042ms)
+✔ cleanup rejects after the final deadline if the child never exits (18.8305ms)
+✔ cleanup observes close without requiring exit (0.30075ms)
+✔ cleanup rejects a child process error (0.190417ms)
+✔ required path exists: apps/desktop/package.json (3.768291ms)
+✔ required path exists: apps/backend/pyproject.toml (0.128334ms)
+✔ root scripts expose the foundation checks (1.322625ms)
+(node:68251) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (15.894292ms)
+✔ frozen required-field data regenerates exactly without executing source modules (132.957208ms)
+✔ coverage accounts for every retained node and excludes removed nodes (4.000375ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.642667ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.098291ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (2.191792ms)
+✔ inventory and matrix regenerate deterministically (705.949875ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.204125ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.200875ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.33025ms)
+✔ checks sources without inventing application or visual acceptance (14.399167ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (6.738416ms)
+✔ does not allow a passed page without real evidence or missing required states (4.001125ms)
+✔ rejects duplicate source and page identities and evidence traversal (5.805541ms)
+✔ requires actual evidence files instead of an existing directory or blank path (4.909875ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (6.59ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (1.125125ms)
+✔ a green machine report cannot substitute for real application evidence (0.519291ms)
+ℹ tests 49
+ℹ suites 0
+ℹ pass 49
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1636.677083

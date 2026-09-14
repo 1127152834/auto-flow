@@ -60,3 +60,53 @@ it('does not replace or ask to discard after a rejected load', async () => {
   expect(beforeReplace).not.toHaveBeenCalled()
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
 })
+it('ignores a load from a replaced service connection', async () => {
+  let release!: (value: Response) => void
+  load = () => new Promise(resolve => { release = resolve })
+  const beforeReplace = vi.fn(async () => true)
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={vi.fn()} beforeReplace={beforeReplace} />)
+  fireEvent.click(await screen.findByText('destination')); await waitFor(() => expect(release).toBeDefined())
+  act(() => { setStudioTransport(mockRequest) })
+  await act(async () => release(Response.json({ success: true, content })))
+  expect(beforeReplace).not.toHaveBeenCalled(); expect(useWorkflowStore.getState().variables[0]?.value).toBe('keep')
+})
+it('rechecks service identity after the leave decision', async () => {
+  let leave!: (choice: boolean) => void
+  const beforeReplace = vi.fn(() => new Promise<boolean>(resolve => { leave = resolve }))
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={vi.fn()} beforeReplace={beforeReplace} />)
+  fireEvent.click(await screen.findByText('destination')); await waitFor(() => expect(leave).toBeDefined())
+  act(() => { setStudioTransport(mockRequest) }); await act(async () => leave(true))
+  expect(useWorkflowStore.getState().variables[0]?.value).toBe('keep')
+})
+it('clears old file rows after a connection change until explicitly refreshed', async () => {
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={vi.fn()} beforeReplace={vi.fn(async () => true)} />)
+  await screen.findByText('destination')
+  const next = vi.fn(mockRequest); act(() => { setStudioTransport(next) })
+  expect(screen.queryByText('destination')).toBeNull(); await screen.findByRole('alert')
+  expect(next.mock.calls.some(([input]) => String(input).includes('/load/'))).toBe(false)
+})
+it.each([{ workflows: null }, { workflows: [{}] }, { workflows: [{ filename: 'broken', name: 'broken', modifiedTime: '', size: -1 }] }])('shows invalid list %j as an error rather than crashing', async body => {
+  setStudioTransport(async input => String(input).endsWith('/list') ? Response.json(body) : Response.json({ folder: 'mock://open-tests' }))
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={vi.fn()} beforeReplace={vi.fn(async () => true)} />)
+  expect((await screen.findByRole('alert')).textContent).toContain('格式无效')
+  expect(screen.queryByText('destination')).toBeNull()
+})
+it('allows explicit retry after a failed list response', async () => {
+  let failed = true
+  setStudioTransport(async input => String(input).endsWith('/list')
+    ? failed ? Response.json({ error: '列表离线' }, { status: 503 }) : Response.json({ workflows: [{ filename: 'destination.json', name: 'destination', size: 100, modifiedTime: '' }] })
+    : Response.json({ folder: 'mock://open-tests' }))
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={vi.fn()} beforeReplace={vi.fn(async () => true)} />)
+  await screen.findByRole('alert'); failed = false; fireEvent.click(screen.getByRole('button', { name: '刷新' })); await screen.findByText('destination')
+  expect(screen.queryByRole('alert')).toBeNull()
+})
+it('does not delete from another connection after a pending confirmation', async () => {
+  const onLog = vi.fn()
+  render(<LocalWorkflowDialog isOpen onClose={vi.fn()} onLog={onLog} beforeReplace={vi.fn(async () => true)} />)
+  await screen.findByText('destination'); fireEvent.click(screen.getByTitle('删除工作流'))
+  await screen.findByRole('dialog', { name: '删除工作流' })
+  const next = vi.fn(mockRequest); act(() => { setStudioTransport(next) })
+  fireEvent.click(screen.getByRole('button', { name: '确定' }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: '删除工作流' })).toBeNull())
+  expect(next.mock.calls.some(([input]) => String(input).includes('/delete'))).toBe(false)
+})

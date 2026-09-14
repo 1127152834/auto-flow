@@ -1,3 +1,4 @@
+import { getStudioTransportRevision } from '../api/transport'
 import { registerDocumentLeaveHandler, type LeaveOptions } from '../lib/documentLeave'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ConfirmDialog } from '../components/controls/confirm-dialog'
@@ -43,16 +44,21 @@ export function useDraftProtection(save: () => Promise<boolean>) {
     const state = useWorkflowStore.getState()
     if (!state.hasUnsavedChanges) return true
     busy.current = true
+    const revision = getStudioTransportRevision()
     const original = snapshotKey(state.exportWorkflow())
     try {
       const choice = await new Promise<Choice>(resolve => { pending.current = resolve; setOpen(true) })
       if (choice === 'cancel' || !mounted.current) return false
+      if (revision !== getStudioTransportRevision()) {
+        useWorkflowStore.getState().addLog({ level: 'warning', message: '服务连接已变更，请重新确认离开；当前草稿已保留' })
+        return false
+      }
       if (snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original) {
         useWorkflowStore.getState().addLog({ level: 'warning', message: '确认期间草稿已修改，请重新操作' })
         return false
       }
       if (choice === 'save' && !(await save())) return false
-      if (!mounted.current) return false
+      if (!mounted.current || revision !== getStudioTransportRevision()) return false
       const current = useWorkflowStore.getState()
       if (snapshotKey(current.exportWorkflow()) !== original || (choice === 'save' && current.hasUnsavedChanges)) {
         current.addLog({ level: 'warning', message: '保存期间草稿已修改，已保留当前编辑内容' })

@@ -1,6 +1,6 @@
 import { snapshotKey } from '../lib/snapshotKey'
 // Source: WebRPA@5ccb900e, components/workflow/LocalWorkflowDialog.tsx; see SOURCE.md for license and adaptation boundaries.
-import { studioFetch } from '../api/transport'
+import { studioFetch, getStudioTransportRevision } from '../api/transport'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from './controls/button'
 import { Input } from './controls/input'
@@ -35,50 +35,59 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
   const [defaultFolder, setDefaultFolder] = useState('')
   const { confirm, ConfirmDialog } = useConfirm()
 
+  const [listError, setListError] = useState('')
+  const listSequence = useRef(0)
+  const listRevision = useRef<number | null>(null)
+  const deleting = useRef(false)
+  const currentFolder = config.workflow?.localFolder || defaultFolder
   const openVersion = useRef(0)
   const opening = useRef(false)
   useEffect(() => {
     openVersion.current++
     return () => { openVersion.current++ }
-  }, [isOpen])
-
-  const currentFolder = config.workflow?.localFolder || defaultFolder
+  }, [isOpen, currentFolder])
+  useEffect(() => {
+    const invalidate = () => {
+      openVersion.current++; listSequence.current++; listRevision.current = null
+      setWorkflows([]); setLoading(false); setDefaultFolder('')
+      setListError('服务连接已变更，请刷新当前工作区的工作流列表')
+    }
+    window.addEventListener('studio:transport-changed', invalidate)
+    return () => window.removeEventListener('studio:transport-changed', invalidate)
+  }, [])
 
   useEffect(() => {
-    const loadDefaultFolder = async () => {
-      const { preloadConfig } = await import('../api/config')
-      await preloadConfig()
-      const API_BASE = getBackendBaseUrl()
-      studioFetch(`${API_BASE}/api/local-workflows/default-folder`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.folder) setDefaultFolder(data.folder)
-        })
-        .catch(console.error)
-    }
-    loadDefaultFolder()
+    let active = true
+    const revision = getStudioTransportRevision()
+    void studioFetch(`${getBackendBaseUrl()}/api/local-workflows/default-folder`)
+      .then(async res => { const data = await res.json(); if (!res.ok || data.error) throw new Error(data.error || '默认目录读取失败'); return data })
+      .then(data => { if (active && revision === getStudioTransportRevision() && typeof data.folder === 'string') setDefaultFolder(data.folder) })
+      .catch(error => { if (active && revision === getStudioTransportRevision()) setListError(String(error)) })
+    return () => { active = false }
   }, [])
 
   const loadWorkflows = async () => {
     const folder = config.workflow?.localFolder || defaultFolder || ''
-    setLoading(true)
+    const version = openVersion.current
+    const revision = getStudioTransportRevision()
+    const sequence = ++listSequence.current
+    const active = () => version === openVersion.current && revision === getStudioTransportRevision() && sequence === listSequence.current
+    setLoading(true); setListError(''); listRevision.current = null
     try {
-      const API_BASE = getBackendBaseUrl()
-      const response = await studioFetch(`${API_BASE}/api/local-workflows/list`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store',
-        body: JSON.stringify({ folder })
+      const response = await studioFetch(`${getBackendBaseUrl()}/api/local-workflows/list`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, cache: 'no-store', body: JSON.stringify({ folder }),
       })
       const data = await response.json()
-      if (data.workflows) {
-        setWorkflows(data.workflows)
-      }
-    } catch (e) {
-      console.error('加载工作流列表失败:', e)
-    } finally {
-      setLoading(false)
-    }
+      if (!active()) return
+      if (!response.ok || data.error || !Array.isArray(data.workflows) || !data.workflows.every((item: unknown) => {
+        if (!item || typeof item !== 'object') return false
+        const row = item as Record<string, unknown>
+        return typeof row.filename === 'string' && !!row.filename.trim() && typeof row.name === 'string' && typeof row.modifiedTime === 'string' && typeof row.size === 'number' && Number.isFinite(row.size) && row.size >= 0
+      })) throw new Error(data.error || '工作流列表返回格式无效')
+      setWorkflows(data.workflows); listRevision.current = revision
+    } catch (error) {
+      if (active()) { setWorkflows([]); setListError(`加载失败：${String(error)}`) }
+    } finally { if (active()) setLoading(false) }
   }
 
   useEffect(() => {
@@ -86,12 +95,13 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
       loadWorkflows()
     }
 
-  }, [isOpen, defaultFolder, config.workflow?.localFolder])
+  }, [isOpen, currentFolder])
 
   const handleOpen = async (workflow: WorkflowInfo) => {
-    if (opening.current) return
+    if (opening.current || listRevision.current !== getStudioTransportRevision()) return
     opening.current = true
     const version = openVersion.current
+    const revision = getStudioTransportRevision()
     const original = snapshotKey(useWorkflowStore.getState().exportWorkflow())
     try {
       const API_BASE = getBackendBaseUrl()
@@ -100,13 +110,13 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
       )
       const data = await response.json()
 
-      if (version !== openVersion.current) return
+      if (version !== openVersion.current || revision !== getStudioTransportRevision()) return
       if (snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== original) {
         onLog('warning', '加载期间草稿已修改，请重新打开工作流')
         return
       }
-      if (response.ok && data.success && data.content) {
-        if (!(await beforeReplace()) || version !== openVersion.current) return
+      if (response.ok && data.success === true && !data.error && data.content) {
+        if (!(await beforeReplace()) || version !== openVersion.current || revision !== getStudioTransportRevision()) return
         const success = importWorkflow(JSON.stringify(data.content))
         if (success) {
           onLog('success', `已打开工作流: ${workflow.name}`)
@@ -123,30 +133,22 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
   }
 
   const handleDelete = async (workflow: WorkflowInfo) => {
-    const confirmed = await confirm(`确定要删除工作流 "${workflow.name}" 吗？`, {
-      type: 'warning',
-      title: '删除工作流'
-    })
-
-    if (confirmed) {
-      try {
-        const API_BASE = getBackendBaseUrl()
-        const response = await studioFetch(
-          `${API_BASE}/api/local-workflows/delete?filename=${encodeURIComponent(workflow.filename)}&folder=${encodeURIComponent(currentFolder)}`,
-          { method: 'POST' }
-        )
-        const data = await response.json()
-
-        if (data.success) {
-          onLog('success', `已删除工作流: ${workflow.name}`)
-          loadWorkflows()
-        } else {
-          onLog('error', `删除失败: ${data.error}`)
-        }
-      } catch (e) {
-        onLog('error', `删除工作流出错: ${e}`)
-      }
-    }
+    if (deleting.current || listRevision.current !== getStudioTransportRevision()) return
+    deleting.current = true
+    const revision = getStudioTransportRevision()
+    const version = openVersion.current
+    const active = () => revision === getStudioTransportRevision() && version === openVersion.current
+    try {
+      const confirmed = await confirm(`确定要删除工作流 "${workflow.name}" 吗？`, { type: 'warning', title: '删除工作流' })
+      if (!confirmed || !active()) return
+      const response = await studioFetch(`${getBackendBaseUrl()}/api/local-workflows/delete?filename=${encodeURIComponent(workflow.filename)}&folder=${encodeURIComponent(currentFolder)}`, { method: 'POST' })
+      const data = await response.json()
+      if (!active()) return
+      if (!response.ok || data.success !== true || data.error) throw new Error(data.error || '删除未返回有效确认')
+      onLog('success', `已删除工作流: ${workflow.name}`)
+      await loadWorkflows()
+    } catch (error) { if (active()) onLog('error', `删除工作流出错: ${String(error)}`) }
+    finally { deleting.current = false }
   }
 
   const filteredWorkflows = workflows.filter(w =>
@@ -256,6 +258,8 @@ export function LocalWorkflowDialog({ isOpen, onClose, onLog, beforeReplace }: L
             </code>
           </div>
         )}
+
+        {listError && <p role="alert" className="px-5 py-2 text-sm text-red-600">{listError}</p>}
 
         {/* 工作流列表 */}
         <div className="flex-1 overflow-y-auto min-h-[280px] max-h-[480px]">
