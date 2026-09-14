@@ -52,7 +52,7 @@
 | service:browserScriptTestsApi.getContext | GET &#96;${endpoint}/context&#96; | 未显式声明 | BrowserScriptContext | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:10 | 待逐项核对；局部已验证项见上表 |
 | service:browserScriptTestsApi.start |  | 未显式声明 | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api/browserScriptTests.ts:15 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.delete | DELETE &#96;/credentials/${encodeURIComponent(name)}&#96; | 未显式声明 | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:451 | 待逐项核对；局部已验证项见上表 |
-| service:credentialApi.list | GET '/credentials' | 未显式声明 | { success: boolean; credentials: CredentialItem[] } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:439 | 待逐项核对；局部已验证项见上表 |
+| service:credentialApi.list | GET '/credentials' | 未显式声明 | { success: boolean; credentials: CredentialItem[]; mock?: boolean } | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:439 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.names | GET '/credentials/names' | 未显式声明 | { success: boolean; names: string[] } | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:440 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.rename | POST '/credentials/rename' | body: JSON.stringify({ old_name: oldName, new_name: newName }) | 未显式声明 | 0 | apps/desktop/src/renderer/domains/workflows/api.ts:446 | 待逐项核对；局部已验证项见上表 |
 | service:credentialApi.upsert | POST '/credentials' | body: JSON.stringify({ name, fields, description: description &#124;&#124; '' }) | 未显式声明 | 1 | apps/desktop/src/renderer/domains/workflows/api.ts:441 | 待逐项核对；局部已验证项见上表 |
@@ -258,7 +258,7 @@
 | event:storage | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:208 | 无静态发送 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-error | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:15 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:32 | 字段/关联身份/恢复语义仍需核对 |
 | event:studio:connection-restored | apps/desktop/src/renderer/domains/workflows/components/StudioConnectionNotice.tsx:16; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:70 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:24; apps/desktop/src/renderer/domains/workflows/development/StudioMockTools.tsx:30 | 字段/关联身份/恢复语义仍需核对 |
-| event:studio:transport-changed | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:94; apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:39; apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx:45; apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx:38; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:69 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:6 | 字段/关联身份/恢复语义仍需核对 |
+| event:studio:transport-changed | apps/desktop/src/renderer/domains/workflows/components/CredentialSettings.tsx:59; apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:94; apps/desktop/src/renderer/domains/workflows/components/WebDAVSettings.tsx:39; apps/desktop/src/renderer/domains/workflows/components/controls/image-path-input.tsx:45; apps/desktop/src/renderer/domains/workflows/components/controls/path-input.tsx:38; apps/desktop/src/renderer/domains/workflows/lib/requiredFields.ts:69 | apps/desktop/src/renderer/domains/workflows/api/transport.ts:6 | 字段/关联身份/恢复语义仍需核对 |
 | event:take_screenshot | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:794 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1602 | 字段/关联身份/恢复语义仍需核对 |
 | event:upload_image | apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx:333 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:999 | 字段/关联身份/恢复语义仍需核对 |
 | event:view_image_result | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:142 | 字段/关联身份/恢复语义仍需核对 |
@@ -277,7 +277,7 @@
 | apps/desktop/src/renderer/domains/workflows/api.ts:56 | dynamic url | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/api.ts:633 | GET &#96;${endpoint}/${encodeURIComponent(requestId)}&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/AICodeAssistant.tsx:386 | POST globalConfig.ai.apiUrl | body: JSON.stringify(requestBody) | 需核对鉴权、取消、错误及资源读取 |
-| apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx:427 | GET &#96;${API_BASE}/api/local-workflows/default-folder&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
+| apps/desktop/src/renderer/domains/workflows/components/GlobalConfigDialog.tsx:319 | GET &#96;${API_BASE}/api/local-workflows/default-folder&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/ImageAssetsPanel.tsx:108 | POST &#96;${getBackendBaseUrl()}/api/system/screenshot&#96; | body: JSON.stringify({ folder: currentPath &#124;&#124; undefined }) | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:52 | GET &#96;${API_BASE}/api/local-workflows/default-folder&#96; | 未显式声明 | 需核对鉴权、取消、错误及资源读取 |
 | apps/desktop/src/renderer/domains/workflows/components/LocalWorkflowDialog.tsx:67 | POST &#96;${API_BASE}/api/local-workflows/list&#96; | body: JSON.stringify({ folder }) | 需核对鉴权、取消、错误及资源读取 |

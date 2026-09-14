@@ -436,7 +436,7 @@ export interface CredentialItem {
   updated_at: string
 }
 export const credentialApi = {
-  list: () => apiRequest<{ success: boolean; credentials: CredentialItem[] }>('/credentials'),
+  list: () => apiRequest<{ success: boolean; credentials: CredentialItem[]; mock?: boolean }>('/credentials'),
   names: () => apiRequest<{ success: boolean; names: string[] }>('/credentials/names'),
   upsert: (name: string, fields: Record<string, string>, description?: string) =>
     apiRequest('/credentials', {

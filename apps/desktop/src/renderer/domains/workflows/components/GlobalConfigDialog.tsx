@@ -13,11 +13,12 @@ import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
 import { useGlobalConfigStore, type BrowserType, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
 import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
-import { systemApi, securityApi, getAuthToken, setAuthToken, credentialApi, retentionApi, browserApi, localWorkflowApi, type CredentialItem, type RetentionConfig, type RetentionUsage } from '../api'
+import { systemApi, securityApi, getAuthToken, setAuthToken, retentionApi, browserApi, localWorkflowApi, type RetentionConfig, type RetentionUsage } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
 import { SHORTCUT_ACTIONS, eventToCombo } from '../lib/customShortcuts'
+import { CredentialSettings } from './CredentialSettings'
 import { WebDAVSettings } from './WebDAVSettings'
 
 const SCENE_LABELS: { key: AssistantScene; label: string }[] = [
@@ -179,116 +180,7 @@ function SecuritySettings() {
 }
 
 
-// 凭据库设置面板：管理本地加密凭据（口令/API Key/数据库密码等），节点里用 {{cred:名称.字段}} 引用
-function CredentialSettings() {
-  const [list, setList] = useState<CredentialItem[]>([])
-  const [loading, setLoading] = useState(false)
-  const [editing, setEditing] = useState<{ name: string; description: string; fields: { key: string; value: string }[] } | null>(null)
-  const { confirm, alert, ConfirmDialog } = useConfirm()
 
-  const refresh = async () => {
-    setLoading(true)
-    try {
-      const res = await credentialApi.list()
-      if (res.data?.credentials) setList(res.data.credentials)
-    } finally { setLoading(false) }
-  }
-  useEffect(() => { refresh() }, [])
-
-  const startNew = () => setEditing({ name: '', description: '', fields: [{ key: 'value', value: '' }] })
-  const startEdit = (c: CredentialItem) => setEditing({
-    name: c.name, description: c.description,
-    // 编辑时字段值留空表示保留原值
-    fields: c.fields.length ? c.fields.map(f => ({ key: f.key, value: '' })) : [{ key: 'value', value: '' }],
-  })
-
-  const save = async () => {
-    if (!editing) return
-    if (!editing.name.trim()) { await alert('请填写凭据名', { title: '提示' }); return }
-    const fields: Record<string, string> = {}
-    for (const f of editing.fields) {
-      if (f.key.trim()) fields[f.key.trim()] = f.value
-    }
-    if (Object.keys(fields).length === 0) { await alert('至少需要一个字段', { title: '提示' }); return }
-    const res = await credentialApi.upsert(editing.name.trim(), fields, editing.description)
-    if (res.error) { await alert(`保存失败：${res.error}`, { title: '失败' }); return }
-    setEditing(null)
-    refresh()
-  }
-
-  const del = async (name: string) => {
-    const ok = await confirm(`删除凭据「${name}」？引用它的工作流将无法解析。`, { type: 'warning', title: '删除凭据', confirmText: '删除', cancelText: '取消' })
-    if (!ok) return
-    await credentialApi.delete(name)
-    refresh()
-  }
-
-  return (
-    <>
-      <p className="text-xs text-gray-500 mb-4">
-        本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用
-        <code className="bg-gray-100 px-1 rounded mx-1">{'{{cred:名称}}'}</code> 或
-        <code className="bg-gray-100 px-1 rounded mx-1">{'{{cred:名称.字段}}'}</code> 引用，运行时自动注入，工作流文件中不含明文。
-      </p>
-      {editing ? (
-        <div className="space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-gray-700 text-xs">凭据名</Label>
-              <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="如：我的邮箱" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
-            </div>
-            <div>
-              <Label className="text-gray-700 text-xs">说明（可选）</Label>
-              <Input value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })} placeholder="用途备注" className="bg-white text-black border-gray-300 h-8 text-sm mt-1" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-gray-700 text-xs">字段（字段名 → 值；编辑时留空表示保留原值）</Label>
-            {editing.fields.map((f, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input value={f.key} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], key: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="字段名 如 value/password/api_key" className="bg-white text-black border-gray-300 h-8 text-sm w-1/3" />
-                <Input type="password" value={f.value} onChange={(e) => { const fs = [...editing.fields]; fs[i] = { ...fs[i], value: e.target.value }; setEditing({ ...editing, fields: fs }) }} placeholder="值" className="bg-white text-black border-gray-300 h-8 text-sm flex-1" />
-                <button onClick={() => setEditing({ ...editing, fields: editing.fields.filter((_, j) => j !== i) })} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing({ ...editing, fields: [...editing.fields, { key: '', value: '' }] })} className="border-gray-300 text-gray-700 hover:bg-gray-100">
-              <Plus className="w-4 h-4 mr-1" />添加字段
-            </Button>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)} className="border-gray-300 text-gray-700">取消</Button>
-            <Button type="button" size="sm" onClick={save}>保存</Button>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Button type="button" variant="outline" size="sm" onClick={startNew} className="border-gray-300 text-gray-700 hover:bg-gray-100"><Plus className="w-4 h-4 mr-1" />新增凭据</Button>
-            <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={loading} className="border-gray-300 text-gray-700"><RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /></Button>
-          </div>
-          {list.length === 0 ? (
-            <p className="text-xs text-gray-400 py-8 text-center">还没有凭据，点「新增凭据」创建</p>
-          ) : list.map((c) => (
-            <div key={c.name} className="p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-start justify-between">
-              <div className="min-w-0">
-                <div className="font-medium text-sm text-black">{c.name}</div>
-                {c.description && <div className="text-xs text-gray-500">{c.description}</div>}
-                <div className="text-xs text-gray-400 mt-1 flex flex-wrap gap-1">
-                  {c.fields.map(f => <span key={f.key} className="px-1.5 py-0.5 rounded bg-gray-100">{f.key}: {f.masked}</span>)}
-                </div>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button type="button" variant="outline" size="sm" onClick={() => startEdit(c)} className="border-gray-300 text-gray-700 h-7 px-2 text-xs">编辑</Button>
-                <button onClick={() => del(c.name)} className="p-1 text-gray-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      <ConfirmDialog />
-    </>
-  )
-}
 
 // 留存清理设置面板：录像/采集数据的自动滚动清理策略 + 手动清理
 function RetentionSettings() {

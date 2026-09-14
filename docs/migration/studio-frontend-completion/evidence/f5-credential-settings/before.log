@@ -1,0 +1,1027 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:98419) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows retryable malformed list failure without pretending the vault is empty
+An error occurred in the <CredentialSettings> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx (9 tests | 9 failed) 7277ms
+   × shows retryable http list failure without pretending the vault is empty 1033ms
+   × shows retryable business list failure without pretending the vault is empty 1007ms
+   × shows retryable malformed list failure without pretending the vault is empty 1008ms
+   × shows retryable rejected list failure without pretending the vault is empty 1006ms
+   × preserves fields after unconfirmed save {} 1096ms
+   × preserves fields after unconfirmed save {"success":"true"} 1032ms
+   × blocks duplicate trimmed field names instead of silently overwriting one 1042ms
+   × serializes saving and locks the submitted fields until failure is acknowledged 30ms
+   × shows failed deletion without silently refreshing away the outcome 20ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows retryable http list failure without pretending the vault is empty
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows retryable business list failure without pretending the vault is empty
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows retryable rejected list failure without pretending the vault is empty
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between items-center"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-plus w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m新增凭据[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-gray-400 py-8 text-center"[39m
+      [36m>[39m
+        [0m还没有凭据，点「新增凭据」创建[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between items-center"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-plus w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m新增凭据[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-gray-400 py-8 text-center"[39m
+      [36m>[39m
+        [0m还没有凭据，点「新增凭据」创建[0m
+      [36m</p>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:26:16
+     24|   })
+     25|   render(<CredentialSettings />)
+     26|   await screen.findByRole('alert')
+       |                ^
+     27|   expect(screen.queryByText(/还没有凭据/)).toBeNull()
+     28|   expect((screen.getByRole('button', { name: '新增凭据' }) as HTMLButtonEl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows retryable malformed list failure without pretending the vault is empty
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:26:16
+     24|   })
+     25|   render(<CredentialSettings />)
+     26|   await screen.findByRole('alert')
+       |                ^
+     27|   expect(screen.queryByText(/还没有凭据/)).toBeNull()
+     28|   expect((screen.getByRole('button', { name: '新增凭据' }) as HTMLButtonEl…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > preserves fields after unconfirmed save {}
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > preserves fields after unconfirmed save {"success":"true"}
+TestingLibraryElementError: Unable to find an element with the text: /保存失败/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between items-center"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-plus w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m新增凭据[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-start justify-between"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"font-medium text-sm text-black"[39m
+          [36m>[39m
+            [0mfixture[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-gray-400 mt-1 flex flex-wrap gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"px-1.5 py-0.5 rounded bg-gray-100"[39m
+            [36m>[39m
+              [0mvalue[0m
+              [0m: [0m
+              [0m•••[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 flex-shrink-0"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] rounded-[6px] border-gray-300 text-gray-700 h-7 px-2 text-xs"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m编辑[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 text-gray-400 hover:text-red-600"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-trash2 lucide-trash-2 w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M10 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 6h18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between items-center"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-plus w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m新增凭据[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-start justify-between"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"font-medium text-sm text-black"[39m
+          [36m>[39m
+            [0mfixture[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-gray-400 mt-1 flex flex-wrap gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"px-1.5 py-0.5 rounded bg-gray-100"[39m
+            [36m>[39m
+              [0mvalue[0m
+              [0m: [0m
+              [0m•••[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 flex-shrink-0"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] rounded-[6px] border-gray-300 text-gray-700 h-7 px-2 text-xs"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m编辑[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 text-gray-400 hover:text-red-600"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-trash2 lucide-trash-2 w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M10 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 6h18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:36:16
+     34|   fetcher.mockResolvedValueOnce(Response.json(body))
+     35|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     36|   await screen.findByText(/保存失败/)
+       |                ^
+     37|   expect(screen.getByPlaceholderText('值')).toHaveProperty('value', 'du…
+     38| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > blocks duplicate trimmed field names instead of silently overwriting one
+TestingLibraryElementError: Unable to find an element with the text: /字段名重复/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-2 gap-2"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+          [36m>[39m
+            [0m凭据名[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm mt-1"[39m
+            [33mplaceholder[39m=[32m"如：我的邮箱"[39m
+            [33mvalue[39m=[32m"new-fixture"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+          [36m>[39m
+            [0m说明（可选）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm mt-1"[39m
+            [33mplaceholder[39m=[32m"用途备注"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+        [36m>[39m
+          [0m字段（字段名 → 值；编辑时留空表示保留原值）[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm w-1/3"[39m
+            [33mplaceholder[39m=[32m"字段名 如 value/password/api_key"[39m
+            [33mvalue[39m=[32m"value"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative w-full"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] pr-9 bg-white text-black border-gray-300 h-8 text-sm flex-1"[39m
+              [33mplaceholder[39m=[32m"值"[39m
+              [33mtype[39m=[32m"password"[39m
+              [33mvalue[39m=[32m"dummy-value"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"显示密码"[39m
+              [33mclass[39m=[32m"absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-[5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors duration-120 cursor-pointer"[39m
+              [33mtabindex[39m=[32m"-1"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-eye h-3.5 w-3.5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-2 gap-2"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+          [36m>[39m
+            [0m凭据名[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm mt-1"[39m
+            [33mplaceholder[39m=[32m"如：我的邮箱"[39m
+            [33mvalue[39m=[32m"new-fixture"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+          [36m>[39m
+            [0m说明（可选）[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm mt-1"[39m
+            [33mplaceholder[39m=[32m"用途备注"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-700 text-xs"[39m
+        [36m>[39m
+          [0m字段（字段名 → 值；编辑时留空表示保留原值）[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] bg-white text-black border-gray-300 h-8 text-sm w-1/3"[39m
+            [33mplaceholder[39m=[32m"字段名 如 value/password/api_key"[39m
+            [33mvalue[39m=[32m"value"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative w-full"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"flex w-full rounded-[7px] px-2.5 py-1 border placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] pr-9 bg-white text-black border-gray-300 h-8 text-sm flex-1"[39m
+              [33mplaceholder[39m=[32m"值"[39m
+              [33mtype[39m=[32m"password"[39m
+              [33mvalue[39m=[32m"dummy-value"[39m
+            [36m/>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"显示密码"[39m
+              [33mclass[39m=[32m"absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-[5px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors duration-120 cursor-pointer"[39m
+              [33mtabindex[39m=[32m"-1"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-eye h-3.5 w-3.5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [...
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:45:16
+     43|   fireEvent.change(names[1], { target: { value: ' value ' } })
+     44|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     45|   await screen.findByText(/字段名重复/)
+       |                ^
+     46|   expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POS…
+     47| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > serializes saving and locks the submitted fields until failure is acknowledged
+AssertionError: expected [ [ …(2) ], [ …(2) ] ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:54:76
+     52|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     53|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     54|   expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POS…
+       |                                                                            ^
+     55|   expect((screen.getByPlaceholderText('值') as HTMLInputElement).closes…
+     56|   await act(async () => resolve(Response.json({ success: false, error:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx > shows failed deletion without silently refreshing away the outcome
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "删除凭据 fixture"
+
+Here are the accessible roles:
+
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "新增凭据":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "编辑":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] rounded-[6px] border-gray-300 text-gray-700 h-7 px-2 text-xs"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1 text-gray-400 hover:text-red-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p[39m
+      [33mclass[39m=[32m"text-xs text-gray-500 mb-4"[39m
+    [36m>[39m
+      [0m本地加密保存口令 / API Key / 数据库密码等敏感信息（Fernet 加密落盘）。在任意节点的字符串里用[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称}}[0m
+      [36m</code>[39m
+      [0m 或[0m
+      [36m<code[39m
+        [33mclass[39m=[32m"bg-gray-100 px-1 rounded mx-1"[39m
+      [36m>[39m
+        [0m{{cred:名称.字段}}[0m
+      [36m</code>[39m
+      [0m 引用，运行时自动注入，工作流文件中不含明文。[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-between items-center"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700 hover:bg-gray-100"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-plus w-4 h-4 mr-1"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 12h14"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 5v14"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m新增凭据[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] h-7 px-2.5 text-[12px] rounded-[6px] border-gray-300 text-gray-700"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-rotate-ccw w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M3 3v5h5"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3 bg-gray-50 rounded-lg border border-gray-200 flex items-start justify-between"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"font-medium text-sm text-black"[39m
+          [36m>[39m
+            [0mfixture[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-xs text-gray-400 mt-1 flex flex-wrap gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"px-1.5 py-0.5 rounded bg-gray-100"[39m
+            [36m>[39m
+              [0mvalue[0m
+              [0m: [0m
+              [0m•••[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 flex-shrink-0"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] border shadow-xs hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.6)] hover:text-[hsl(var(--brand-800))] hover:shadow-soft active:bg-[hsl(var(--brand-200))] rounded-[6px] border-gray-300 text-gray-700 h-7 px-2 text-xs"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m编辑[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"p-1 text-gray-400 hover:text-red-600"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-trash2 lucide-trash-2 w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M10 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M14 11v6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 6h18"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx:64:26
+     62|   render(<CredentialSettings />)
+     63|   await screen.findByText('fixture', { exact: true })
+     64|   fireEvent.click(screen.getByRole('button', { name: '删除凭据 fixture' }))
+       |                          ^
+     65|   fetcher.mockResolvedValueOnce(Response.json({ success: false, error:…
+     66|   fireEvent.click(screen.getByRole('button', { name: '删除', exact: true…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ src/renderer/domains/workflows/components/CredentialSettings.tsx:105:29
+    103|                 {c.description && <div className="text-xs text-gray-50…
+    104|                 <div className="text-xs text-gray-400 mt-1 flex flex-w…
+    105|                   {c.fields.map(f => <span key={f.key} className="px-1…
+       |                             ^
+    106|                 </div>
+    107|               </div>
+ ❯ CredentialSettings src/renderer/domains/workflows/components/CredentialSettings.tsx:99:20
+ ❯ Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+
+This error originated in "src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "shows retryable malformed list failure without pretending the vault is empty". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed (9)
+     Errors  1 error
+   Start at  13:38:34
+   Duration  8.11s (transform 189ms, setup 137ms, import 204ms, tests 7.28s, environment 387ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-settings-protection.test.tsx

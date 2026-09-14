@@ -37328,5 +37328,257 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-write-races/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.http-read",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "http-read",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.business-read",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "business-read",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.malformed-read",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "malformed-read",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.network-read",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "network-read",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.empty-save-receipt",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "empty-save-receipt",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.string-save-receipt",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "string-save-receipt",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.duplicate-fields",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "duplicate-fields",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.serial-save",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "serial-save",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.delete-failure",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "delete-failure",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.late-save",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "late-save",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.late-list",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "late-list",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.truthful-mock",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "truthful-mock",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.blank-field",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "blank-field",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.protection.browser-metadata",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "case": "browser-metadata",
+      "data": "仅虚构测试值/打码元数据"
+    },
+    "steps": [
+      "通过表单或列表执行对应操作",
+      "检查失败保留、重试或连接变更结果"
+    ],
+    "expectedUI": "错误明确，输入不丢失；合法保存后展示打码字段",
+    "expectedIO": "无重复提交、不跨连接发送原输入；未确认回执不关闭表单",
+    "stateAssertion": "输入校验与服务确认保持一致",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/browser-validation.md"
   }
 ]
