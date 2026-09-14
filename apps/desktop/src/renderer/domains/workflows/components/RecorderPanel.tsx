@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { nanoid } from 'nanoid'
 import { Circle, Square, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
 import { recorderApi, browserApi } from '../api'
+import {getStudioTransportRevision} from '../api/transport'
 import { useWorkflowStore, moduleTypeLabels } from '../editor-store'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { applySerpentineLayout } from '../lib/recorderLayout'
@@ -55,6 +56,11 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const [events, setEvents] = useState<RecEvent[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const documentId = useWorkflowStore(s=>s.id)
+  const [connectionRevision,setConnectionRevision]=useState(getStudioTransportRevision)
+  const originRef=useRef<{documentId:string;name:string;connection:number}|null>(null)
+  const mountedRef=useRef(true)
+  const commandBusyRef=useRef(false)
   const sessionRef = useRef<string | null>(null)
   const pendingStartRef = useRef<string | null>(null)
   const sequenceRef = useRef(0)
@@ -64,7 +70,9 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const pollRef = useRef<number | null>(null)
   const eventsRef = useRef<RecEvent[]>([])
   const addLog = useWorkflowStore((s) => s.addLog)
-  const { alert: alertDialog, ConfirmDialog } = useConfirm()
+  const { alert: alertDialog, confirm, ConfirmDialog } = useConfirm()
+  const origin=originRef.current
+  const originChanged=!!origin&&(origin.documentId!==documentId||origin.connection!==connectionRevision)
 
   useEffect(() => { eventsRef.current = events }, [events])
 
@@ -115,10 +123,10 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   }, [])
 
   const acceptBatch = useCallback((sessionId: string, response: any, stopping = false) => {
-    if (sessionRef.current !== sessionId) return
-    if (!response.success || !response.data?.success) throw new Error(response.error || response.data?.error || 'Recording request failed')
+    if (!mountedRef.current||originRef.current?.connection!==getStudioTransportRevision()||sessionRef.current !== sessionId) throw new Error('录制会话上下文已失效，未应用步骤')
+    if (!response.success || !response.data?.success) throw new Error(response.error || response.data?.error || '录制请求失败')
     const body = response.data
-    if (body.sessionId !== sessionId) throw new Error('Recording session mismatch')
+    if (body.sessionId !== sessionId) throw new Error('录制响应不属于当前会话')
     const incoming = stopping ? body.data?.events : body.data
     if (!Array.isArray(incoming) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq < 0) throw new Error('录制响应的确认游标无效，请重试')
     // 服务保留原始确认序列；UI 合并输入等步骤后，仍按原序列补读。
@@ -153,15 +161,26 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   }, [])
 
   const startRecording = useCallback(async () => {
+    if(commandBusyRef.current)return
+    if(originRef.current&&originRef.current.connection!==getStudioTransportRevision()){
+      setError('录制所属服务已变更，请关闭面板并在当前工作区重新开始')
+      return
+    }
+    commandBusyRef.current=true
     setBusy(true)
     setError('')
     const sessionId = pendingStartRef.current || nanoid()
+    const source=useWorkflowStore.getState()
+    const owner=pendingStartRef.current&&originRef.current?originRef.current:{documentId:source.id,name:source.name,connection:getStudioTransportRevision()}
+    originRef.current=owner
+    const current=()=>mountedRef.current&&owner.connection===getStudioTransportRevision()&&useWorkflowStore.getState().id===owner.documentId
     pendingStartRef.current = sessionId
     try {
       // 录制前先检查自动化浏览器是否已启动，未启动则明确提示（不用浏览器原生弹窗）
       try {
         const st: any = await browserApi.getStatus()
-        if (!st.success) { setError(st.error || 'Browser status unavailable'); return }
+        if(!current()){setError('流程或服务已变更，未启动录制');pendingStartRef.current=null;return}
+        if (!st.success) { setError(st.error || '无法读取浏览器状态'); return }
         if (!st?.data?.isOpen) {
           setBusy(false)
           await alertDialog('请先启动自动化浏览器，再开始录制。可点击工具栏的「打开浏览器」按钮启动后重试。', {
@@ -169,11 +188,22 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           })
           return
         }
-      } catch {
-        // 状态查询失败不阻断，继续尝试启动（由后端兜底返回错误）
+      } catch (error) {
+        setError(`浏览器状态查询失败：${String(error)}`)
+        return
       }
       const res: any = await recorderApi.start(sessionId)
+      if(!mountedRef.current||owner.connection!==getStudioTransportRevision())return
       if (res?.error || res?.success === false || res?.data?.success === false) {
+        if(res.outcomeUnknown){
+          sessionRef.current=sessionId
+          sequenceRef.current=0
+          setEvents([])
+          setRecording(true)
+          setError('录制启动尚未确认，请停止录制以确认尾部和释放占用')
+          return
+        }
+        if(res.httpStatus&&res.httpStatus<500)pendingStartRef.current=null
         const errMsg = res?.data?.error || res?.error || '未知错误'
         setBusy(false)
         // 后端兜底：没有活跃浏览器等错误，用醒目弹窗提示
@@ -183,16 +213,17 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         addLog({ level: 'error', message: `录制启动失败：${errMsg}` })
         return
       }
-      if (res.data?.sessionId !== sessionId || res.data?.recording !== true) throw new Error('Recording session was not started')
+      if (res.data?.sessionId !== sessionId || res.data?.recording !== true) throw new Error('服务未确认录制会话已启动')
       sessionRef.current = sessionId
       pendingStartRef.current = null
       sequenceRef.current = 0
       setEvents([])
       setRecording(true)
+      if(!current()){setError(`录制属于「${owner.name}」，请先停止；步骤不会加入当前流程`);return}
       addLog({ level: 'success', message: '已开始录制，请在浏览器中操作（点击/输入/选择）' })
       stopPolling()
       pollRef.current = window.setInterval(async () => {
-        if (pollBusyRef.current || sessionRef.current !== sessionId) return
+        if (pollBusyRef.current || sessionRef.current !== sessionId || !mountedRef.current || owner.connection!==getStudioTransportRevision()) return
         pollBusyRef.current = true
         const controller = new AbortController()
         pollAbortRef.current = controller
@@ -206,6 +237,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     } catch (e) {
       addLog({ level: 'error', message: `录制启动异常：${e}` })
     } finally {
+      commandBusyRef.current=false
       setBusy(false)
     }
   }, [addLog, acceptBatch, alertDialog, stopPolling])
@@ -213,23 +245,35 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const stopRecording = useCallback(async () => {
     const sessionId = sessionRef.current
     if (!sessionId) return false
+    if(commandBusyRef.current)return false
+    if(originRef.current?.connection!==getStudioTransportRevision()){
+      setError('录制所属服务已变更，停止请求未发送到新工作区')
+      return false
+    }
+    commandBusyRef.current=true
     setBusy(true)
     try {
       const response = await recorderApi.stop(sessionId, sequenceRef.current)
       acceptBatch(sessionId, response, true)
       stopPolling()
       setRecording(false)
+      pendingStartRef.current=null
       addLog({ level: 'info', message: '录制已停止' })
       return true
     } catch (error) {
       setError(String(error))
       addLog({ level: 'error', message: `停止录制异常：${error}` })
       return false
-    } finally { setBusy(false) }
+    } finally { commandBusyRef.current=false;setBusy(false) }
   }, [addLog, acceptBatch, stopPolling])
 
   // 事件 → 节点
   const generateNodes = useCallback(async () => {
+    const origin=originRef.current
+    if(!origin||origin.documentId!==useWorkflowStore.getState().id||origin.connection!==getStudioTransportRevision()){
+      setError('录制步骤属于其他流程或服务，不能加入当前画布')
+      return
+    }
     const evs = eventsRef.current
     if (!evs.length) {
       addLog({ level: 'warning', message: '没有录制到任何操作' })
@@ -400,9 +444,18 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     onClose()
   }, [addLog, onClose, autoWait])
 
-  useEffect(() => () => stopPolling(), [stopPolling])
+  useEffect(() => {
+    mountedRef.current=true
+    const changed=()=>{stopPolling();setConnectionRevision(getStudioTransportRevision())}
+    window.addEventListener('studio:transport-changed',changed)
+    return ()=>{mountedRef.current=false;stopPolling();window.removeEventListener('studio:transport-changed',changed)}
+  }, [stopPolling])
   const closePanel = async () => {
     if (busy) return
+    if(originRef.current&&originRef.current.connection!==getStudioTransportRevision()){
+      if((recording||eventsRef.current.length)&&!await confirm('原工作区连接已切换。关闭将丢弃尚未生成的本地录制步骤，是否关闭？',{title:'关闭旧录制',confirmText:'丢弃并关闭'}))return
+      stopPolling();setRecording(false);sessionRef.current=null;pendingStartRef.current=null;originRef.current=null;setEvents([]);setError('');onClose();return
+    }
     if (recording && !await stopRecording()) return
     onClose()
   }
@@ -421,6 +474,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       </div>
 
       {error && <div role="alert" className="px-4 py-2 text-sm text-red-700">{error}</div>}
+      {originChanged&&<div role="status" className="px-4 py-2 text-sm text-amber-700">录制属于「{origin?.name}」的原流程与服务，当前画布不可接收这些步骤。</div>}
       <div className="px-4 py-2 border-b border-[hsl(var(--border))] flex gap-2">
         {!recording ? (
           <button disabled={busy} onClick={startRecording} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 disabled:opacity-50">
@@ -431,7 +485,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
             <Square className="w-3.5 h-3.5 fill-current" /> 停止录制
           </button>
         )}
-        <button disabled={recording || busy || !events.length} onClick={generateNodes} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-sm font-medium disabled:opacity-50">
+        <button disabled={recording || busy || !events.length || originChanged} onClick={generateNodes} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-sm font-medium disabled:opacity-50">
           <Wand2 className="w-3.5 h-3.5" /> 生成节点
         </button>
       </div>

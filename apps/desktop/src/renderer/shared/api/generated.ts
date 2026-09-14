@@ -5116,6 +5116,25 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioRecorderStatus */
+        StudioRecorderStatus: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /**
+             * Sessionid
+             * @default null
+             */
+            sessionId: string | null;
+            /** Recording */
+            recording: boolean;
+            /** Nextseq */
+            nextSeq: number;
+        } & {
+            [key: string]: unknown;
+        };
         /** StudioRecorderStopped */
         StudioRecorderStopped: {
             /** Success */

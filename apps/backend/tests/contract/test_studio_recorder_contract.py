@@ -5,6 +5,7 @@ from autoflow.adapters.http.workflow_studio_schemas import (
     StudioRecorderBatch,
     StudioRecorderReadRequest,
     StudioRecorderStartRequest,
+    StudioRecorderStatus,
     StudioRecorderStopped,
 )
 
@@ -12,6 +13,25 @@ from autoflow.adapters.http.workflow_studio_schemas import (
 def test_stable_session_and_cursor():
     assert StudioRecorderStartRequest.model_validate({'sessionId': 'session'}).session_id == 'session'
     assert StudioRecorderReadRequest.model_validate({'sessionId': 'session'}).after_seq == 0
+
+
+@pytest.mark.parametrize('value', [
+    {'success': True, 'sessionId': None, 'recording': False, 'nextSeq': 0},
+    {'success': True, 'sessionId': 'session', 'recording': True, 'nextSeq': 3},
+    {'success': True, 'sessionId': 'session', 'recording': False, 'nextSeq': 3},
+])
+def test_recorder_status_roundtrip(value):
+    assert StudioRecorderStatus.model_validate(value).model_dump(by_alias=True) == value
+
+
+@pytest.mark.parametrize('patch', [
+    {'recording': 'true'}, {'nextSeq': -1}, {'nextSeq': 1.5}, {'nextSeq': True},
+    {'sessionId': ''}, {'sessionId': None, 'recording': True},
+    {'sessionId': None, 'recording': False, 'nextSeq': 1},
+])
+def test_recorder_status_requires_a_valid_owner_and_cursor(patch):
+    with pytest.raises(ValidationError):
+        StudioRecorderStatus.model_validate({'success': True, 'sessionId': 'session', 'recording': False, 'nextSeq': 0, **patch})
 
 
 @pytest.mark.parametrize('value', [

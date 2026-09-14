@@ -129,6 +129,19 @@ it('keeps the same startup identity when both acknowledgement and recovery query
  }finally{unavailable=false;await elementPickerApi.stop();restore()}
 })
 
+it('releases an unaccepted startup identity after a definite status rejection',async()=>{
+ const ids:string[]=[]
+ const restore=configureStudioConnection('http://picker-unaccepted.test',async(input,init)=>{
+  if(String(input).endsWith('/start')){ids.push(JSON.parse(String(init?.body)).sessionId);throw new TypeError('Failed to fetch')}
+  return Response.json({success:false,error:'会话不存在'},{status:409})
+ })
+ try{
+  expect(await elementPickerApi.start()).toMatchObject({success:false,httpStatus:409})
+  expect(await elementPickerApi.start()).toMatchObject({success:false,httpStatus:409})
+  expect(ids).toHaveLength(2);expect(ids[1]).not.toBe(ids[0])
+ }finally{restore()}
+})
+
 it.each(['start','status','selected','test-selector'] as const)('discards a late %s response from another connection',async action=>{
  vi.resetModules();const mock=await import('../api/mock-server')
  let hold=false,release!:()=>void

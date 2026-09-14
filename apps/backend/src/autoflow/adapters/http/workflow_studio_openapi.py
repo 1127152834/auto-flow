@@ -22,6 +22,7 @@ STUDIO_SCHEMAS = (
     schemas.StudioRecorderStartRequest,
     schemas.StudioRecorderReadRequest,
     schemas.StudioRecorderStarted,
+    schemas.StudioRecorderStatus,
     schemas.StudioRecorderBatch,
     schemas.StudioRecorderStopped,
     schemas.StudioFolderSelectRequest,

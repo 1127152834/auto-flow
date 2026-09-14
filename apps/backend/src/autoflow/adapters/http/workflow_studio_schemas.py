@@ -825,6 +825,21 @@ class StudioRecorderStarted(ApiModel):
     next_seq: int = Field(ge=0, le=9007199254740991)
 
 
+class StudioRecorderStatus(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+
+    success: Literal[True]
+    session_id: str | None = Field(default=None, min_length=1, pattern=r"\S")
+    recording: bool
+    next_seq: int = Field(ge=0, le=9007199254740991)
+
+    @model_validator(mode="after")
+    def validate_session(self) -> Self:
+        if (self.recording or self.next_seq > 0) and self.session_id is None:
+            raise ValueError("录制状态和已确认步骤必须归属明确会话")
+        return self
+
+
 class StudioRecorderTail(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
     events: list[StudioRecorderEvent]

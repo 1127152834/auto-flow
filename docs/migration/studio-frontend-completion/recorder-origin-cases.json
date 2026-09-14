@@ -1,0 +1,389 @@
+[
+  {
+    "id": "F4.RECORDER.memory.states",
+    "capability": "录制会话与来源",
+    "preconditions": "空浏览器",
+    "steps": [
+      "读取空闲状态",
+      "打开浏览器",
+      "启动并输入",
+      "重试启动",
+      "停止并查询"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "同 sessionId；nextSeq保留；停止后同ID启动不重放",
+    "stateAssertion": "中文尾部保持1步，状态正确",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.memory.identity",
+    "capability": "录制会话与来源",
+    "preconditions": "录制 record 活跃",
+    "steps": [
+      "缺少标识读/写",
+      "其他标识读/停止"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "缺标识422；异标识409",
+    "stateAssertion": "record保持录制",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.memory.replacement",
+    "capability": "录制会话与来源",
+    "preconditions": "first已停止，second录制",
+    "steps": [
+      "用 first 查询或停止"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "返回409",
+    "stateAssertion": "second保持录制",
+    "level": "内存协议",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.http.states",
+    "capability": "录制会话与来源",
+    "preconditions": "空浏览器",
+    "steps": [
+      "读取空闲状态",
+      "打开浏览器",
+      "启动并输入",
+      "重试启动",
+      "停止并查询"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "同 sessionId；nextSeq保留；停止后同ID启动不重放",
+    "stateAssertion": "中文尾部保持1步，状态正确",
+    "level": "实际本地HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.http.identity",
+    "capability": "录制会话与来源",
+    "preconditions": "录制 record 活跃",
+    "steps": [
+      "缺少标识读/写",
+      "其他标识读/停止"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "缺标识422；异标识409",
+    "stateAssertion": "record保持录制",
+    "level": "实际本地HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.http.replacement",
+    "capability": "录制会话与来源",
+    "preconditions": "first已停止，second录制",
+    "steps": [
+      "用 first 查询或停止"
+    ],
+    "expectedUI": "本例验证协议；UI在独立组件用例中验证",
+    "expectedIO": "返回409",
+    "stateAssertion": "second保持录制",
+    "level": "实际本地HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.http.lost-start",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "action": "start"
+    },
+    "steps": [
+      "服务执行后丢弃HTTP响应",
+      "查询原会话"
+    ],
+    "expectedUI": "控制返回服务确认状态",
+    "expectedIO": "命令POST仅一次，查询原sessionId",
+    "stateAssertion": "不重复启动；停止尾部完整",
+    "level": "实际本地HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.http.lost-stop",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "action": "stop"
+    },
+    "steps": [
+      "服务执行后丢弃HTTP响应",
+      "查询原会话",
+      "补读确认尾部"
+    ],
+    "expectedUI": "控制返回服务确认状态",
+    "expectedIO": "命令POST仅一次，查询原sessionId",
+    "stateAssertion": "不重复启动；停止尾部完整",
+    "level": "实际本地HTTP",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-1",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": null,
+      "recording": true,
+      "nextSeq": 0
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-2",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": "",
+      "recording": false,
+      "nextSeq": 0
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-3",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": "record",
+      "recording": "false",
+      "nextSeq": 0
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-4",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": "record",
+      "recording": false,
+      "nextSeq": -1
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-5",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": "record",
+      "recording": false,
+      "nextSeq": 0.5
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.invalid-status-6",
+    "capability": "录制会话与来源",
+    "preconditions": {
+      "sessionId": "record",
+      "recording": false,
+      "nextSeq": "1"
+    },
+    "steps": [
+      "返回非法状态"
+    ],
+    "expectedUI": "显示状态格式错误",
+    "expectedIO": "GET状态响应非法",
+    "stateAssertion": "不接受该状态",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.unaccepted",
+    "capability": "录制会话与来源",
+    "preconditions": "启动丢响应，查询确认不存在",
+    "steps": [
+      "启动",
+      "GET原会话返回409"
+    ],
+    "expectedUI": "可以重新开始",
+    "expectedIO": "返回明确409，不标结果未知",
+    "stateAssertion": "不制造活跃会话",
+    "level": "协议校验",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts"
+  },
+  {
+    "id": "F4.RECORDER.UI.availability-race",
+    "capability": "录制会话与来源",
+    "preconditions": "浏览器查询中",
+    "steps": [
+      "点击录制",
+      "切文档",
+      "释放查询"
+    ],
+    "expectedUI": "提示未启动",
+    "expectedIO": "不POST启动",
+    "stateAssertion": "新文档无录制",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.late-start",
+    "capability": "录制会话与来源",
+    "preconditions": "启动回执等待中",
+    "steps": [
+      "换文档",
+      "释放回执",
+      "停止"
+    ],
+    "expectedUI": "旧会话停止入口保留；生成禁用",
+    "expectedIO": "不启动轮询；可停止原ID",
+    "stateAssertion": "新画布无节点",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.review-origin",
+    "capability": "录制会话与来源",
+    "preconditions": "原流程已停止且有1步",
+    "steps": [
+      "换文档",
+      "尝试生成",
+      "恢复原文档",
+      "生成并撤销"
+    ],
+    "expectedUI": "新文档生成禁用",
+    "expectedIO": "不请求其他会话",
+    "stateAssertion": "只在原文档生成；撤销恢复",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.connection-race",
+    "capability": "录制会话与来源",
+    "preconditions": "正在录制",
+    "steps": [
+      "切服务",
+      "等待轮询间隔",
+      "停止"
+    ],
+    "expectedUI": "提示停止未发往新工作区",
+    "expectedIO": "不发旧轮询或停止",
+    "stateAssertion": "原预览保留",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.unknown",
+    "capability": "录制会话与来源",
+    "preconditions": "启动结果未知",
+    "steps": [
+      "开始录制",
+      "停止"
+    ],
+    "expectedUI": "停止按钮保留；尾部出现1步",
+    "expectedIO": "stop原ID且afterSeq=0",
+    "stateAssertion": "不丢尾部",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.discard",
+    "capability": "录制会话与来源",
+    "preconditions": "旧连接留有预览",
+    "steps": [
+      "切连接",
+      "关闭",
+      "取消",
+      "再关闭",
+      "确认丢弃"
+    ],
+    "expectedUI": "取消保留1步，确认关闭",
+    "expectedIO": "不向新服务停止旧会话",
+    "stateAssertion": "只显式确认清空本地预览",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.unmount",
+    "capability": "录制会话与来源",
+    "preconditions": "启动请求等待中",
+    "steps": [
+      "卸载面板",
+      "释放启动回执"
+    ],
+    "expectedUI": "无已卸载面板更新",
+    "expectedIO": "不启动轮询",
+    "stateAssertion": "无后台轮询定时器",
+    "level": "组件",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-origin.test.tsx"
+  },
+  {
+    "id": "F4.RECORDER.UI.roundtrip",
+    "capability": "录制会话与来源",
+    "preconditions": "空流程和已打开Mock浏览器",
+    "steps": [
+      "开始录制",
+      "中文输入和点击",
+      "停止",
+      "生成",
+      "撤销",
+      "重做",
+      "保存",
+      "刷新重开",
+      "F5模拟运行"
+    ],
+    "expectedUI": "两步和选择器恢复；运行completed",
+    "expectedIO": "使用正式前端与Mock接口",
+    "stateAssertion": "2→0→2节点；保存后恢复",
+    "level": "浏览器UI+Mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f4-recorder-origin/browser-ui.md"
+  }
+]

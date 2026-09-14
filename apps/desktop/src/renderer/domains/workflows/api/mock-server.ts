@@ -718,7 +718,9 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     if (path === '/recorder/start') {
-      const sessionId = typeof body.sessionId === 'string' && body.sessionId ? body.sessionId : crypto.randomUUID()
+      if(method!=='POST')return failure('启动录制仅支持 POST',405)
+      const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId : null
+      if(!sessionId||Object.keys(body).some(key=>key!=='sessionId'))return failure('录制启动参数无效',422)
       if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
       if (sessionId === recordingSessionId) return response({ success: true, sessionId, recording, nextSeq: recorded.length })
       if (!browser || run || picking || recording || mockScriptTestBusy()) return failure('请先打开空闲的 Mock 浏览器', 409)
@@ -727,15 +729,23 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       return response({ success: true, sessionId, recording: true, nextSeq: 0 })
     }
     if (path === '/recorder/events' || path === '/recorder/stop') {
+      if(method!==(path==='/recorder/events'?'GET':'POST'))return failure('录制操作 HTTP 方法错误',405)
       const requestedSession = method === 'POST' ? body.sessionId : target.searchParams.get('sessionId')
-      if (requestedSession && requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
+      if(typeof requestedSession!=='string'||!requestedSession.trim())return failure('缺少录制会话标识',422)
+      if (requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
       const afterSeq = Number(method === 'POST' ? body.afterSeq || 0 : target.searchParams.get('afterSeq') || 0)
       if (!Number.isSafeInteger(afterSeq) || afterSeq < 0 || afterSeq > recorded.length) return failure('Invalid recording cursor', 400)
       const data = recorded.filter(event => Number(event.sequence) > afterSeq)
       if (path === '/recorder/stop') { recording = false; return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data: { events: data } }) }
       return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
     }
-    if (path === '/recorder/status') return response({ recording, isRecording: recording, sessionId: recordingSessionId, nextSeq: recorded.length })
+    if (path === '/recorder/status') {
+      if(method!=='GET')return failure('录制状态仅支持 GET',405)
+      const requested=target.searchParams.get('sessionId')
+      if(requested!==null&&!requested.trim())return failure('录制会话标识无效',422)
+      if(requested&&requested!==recordingSessionId)return failure('录制会话不存在或已过期',409)
+      return response({success:true,recording,isRecording:recording,sessionId:recordingSessionId,nextSeq:recorded.length})
+    }
     if (path === '/element-picker/start') {
       if (method !== 'POST') return failure('启动拾取仅支持 POST', 405)
       const sessionId = pickerSessionFrom(target, body, method)

@@ -399,6 +399,10 @@ export const elementPickerApi = {
       const recovered=checkedPickerSession(await apiRequest(`/element-picker/status${pickerQuery(sessionId)}`),sessionId)
       if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
       if(recovered.success&&recovered.data?.active)result=recovered
+      else if(recovered.httpStatus===404||recovered.httpStatus===409){
+        if(!previous)pickerSessionId=null
+        return recovered
+      }
       else if(!recovered.success)return {...result,outcomeUnknown:true}
     }
     if(!result.success&&result.httpStatus&&result.httpStatus<500&&!previous)pickerSessionId=null
@@ -490,18 +494,58 @@ function validRecorderRequest(sessionId: string, afterSeq = 0): boolean {
   return typeof sessionId === 'string' && !!sessionId.trim() && Number.isSafeInteger(afterSeq) && afterSeq >= 0
 }
 const invalidRecorderRequest = (): Promise<ApiResponse<never>> => Promise.resolve({ success: false, error: '录制会话标识或确认游标无效' })
+async function recorderRequest<T>(path:string,sessionId:string,options:RequestInit={}):Promise<ApiResponse<T>>{
+  const revision=getStudioTransportRevision()
+  const result=await apiRequest<T>(path,options)
+  if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+  if(result.success&&(result.data as any)?.sessionId!==sessionId)return {success:false,error:'录制响应不属于请求会话'}
+  return result
+}
 
 export const recorderApi = {
-  start: (sessionId: string) => validRecorderRequest(sessionId)
-    ? apiRequest<components['schemas']['StudioRecorderStarted']>('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId } satisfies components['schemas']['StudioRecorderStartRequest']) })
-    : invalidRecorderRequest(),
-  stop: (sessionId: string, afterSeq = 0) => validRecorderRequest(sessionId, afterSeq)
-    ? apiRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq } satisfies components['schemas']['StudioRecorderReadRequest']) })
-    : invalidRecorderRequest(),
+  start: async (sessionId: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
+    if(!validRecorderRequest(sessionId))return invalidRecorderRequest()
+    const revision=getStudioTransportRevision()
+    const result=await recorderRequest<components['schemas']['StudioRecorderStarted']>('/recorder/start',sessionId,{method:'POST',body:JSON.stringify({sessionId})})
+    if(revision!==getStudioTransportRevision())return result
+    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
+    if(!result.httpStatus||result.httpStatus>=500){
+      const status=await recorderApi.status(sessionId)
+      if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+      if(status.success&&status.data?.recording)return {success:true,data:{...status.data,sessionId,success:true}}
+      if(status.httpStatus===404||status.httpStatus===409)return {success:false,error:status.error,httpStatus:status.httpStatus}
+      if(!status.success)return {success:false,error:result.error||'录制启动尚未确认',outcomeUnknown:true}
+    }
+    return {success:false,error:result.error||'服务未确认录制已启动',httpStatus:result.httpStatus}
+  },
+  stop: async (sessionId: string, afterSeq = 0):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> => {
+    if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
+    const revision=getStudioTransportRevision()
+    const result=await recorderRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop',sessionId,{method:'POST',body:JSON.stringify({sessionId,afterSeq})})
+    if(revision!==getStudioTransportRevision()||result.success||(result.httpStatus&&result.httpStatus<500))return result
+    const status=await recorderApi.status(sessionId)
+    if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+    if(status.success&&status.data&&!status.data.recording){
+      const tail=await recorderApi.events(sessionId,afterSeq)
+      if(tail.success&&tail.data?.nextSeq===status.data.nextSeq&&Array.isArray(tail.data.data))return {success:true,data:{...tail.data,data:{events:tail.data.data}}}
+    }
+    return result
+  },
   events: (sessionId: string, afterSeq = 0, signal?: AbortSignal) => validRecorderRequest(sessionId, afterSeq)
-    ? apiRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`, { signal })
+    ? recorderRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`,sessionId,{signal})
     : invalidRecorderRequest(),
-  status: () => apiRequest('/recorder/status'),
+  status: async (sessionId?:string):Promise<ApiResponse<components['schemas']['StudioRecorderStatus']>> => {
+    if(sessionId!==undefined&&!validRecorderRequest(sessionId))return invalidRecorderRequest()
+    const revision=getStudioTransportRevision()
+    const result=await apiRequest<components['schemas']['StudioRecorderStatus']>(`/recorder/status${sessionId?`?sessionId=${encodeURIComponent(sessionId)}`:''}`)
+    if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+    if(!result.success)return result
+    const data=result.data
+    if(!data||data.success!==true||typeof data.recording!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
+      (data.sessionId!==null&&(typeof data.sessionId!=='string'||!data.sessionId.trim()))||
+      ((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
+    return result
+  },
 }
 
 // ==================== 自定义模块 API ====================
