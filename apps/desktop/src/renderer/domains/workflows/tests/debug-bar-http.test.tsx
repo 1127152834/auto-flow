@@ -11,9 +11,12 @@ it.each([false,true])('controls a real HTTP fixture and rejects foreign pause ev
  vi.resetModules()
  const {mockRequest,configureMock,mockSnapshot,emitMockEvent}=await import('../api/mock-server')
  const storage=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>storage.get(key)??null,setItem:(key:string,value:string)=>storage.set(key,value)})
- let stepRequests=0
- const server=await startHttpStudioFixture((input,init)=>{
-  if((input as Request).url.endsWith('/debug/step'))stepRequests++
+ let stepRequests=0,commandQueries=0
+ let stepBody:unknown
+ const server=await startHttpStudioFixture(async(input,init)=>{
+  const request=input as Request
+  if(request.url.endsWith('/debug/step')){stepRequests++;stepBody=await request.clone().json()}
+  if(request.method==='GET' && request.url.includes('/events/commands/'))commandQueries++
   return mockRequest(input,init)
  })
  const restore=configureStudioConnection(server.origin,fetch)
@@ -30,10 +33,18 @@ it.each([false,true])('controls a real HTTP fixture and rejects foreign pause ev
   emitMockEvent('execution:resumed',{workflowId:'other'})
   await new Promise(resolve=>setTimeout(resolve,30))
   expect(useDebugStore.getState().isPaused).toBe(true)
+  const pause=useDebugStore.getState().pauseContext
   if(lostResponse)server.dropNextResponse('/api/workflows/debug-http/debug/step')
   fireEvent.click(screen.getByRole('button',{name:'单步'}))
   await screen.findByText('@ 真实HTTP下一步')
+  emitMockEvent('execution:resumed',{workflowId:'debug-http',pauseId:pause?.pauseId})
+  await new Promise(resolve=>setTimeout(resolve,30))
+  expect(useDebugStore.getState().isPaused).toBe(true)
+  expect(useDebugStore.getState().pauseContext?.pauseId).not.toBe(pause?.pauseId)
   expect(stepRequests).toBe(1)
+  expect(stepBody).toMatchObject({...pause,commandId:expect.any(String)})
+  if(lostResponse)await waitFor(()=>expect(commandQueries).toBe(1))
+  else expect(commandQueries).toBe(0)
   expect((screen.getByRole('button',{name:'单步'}) as HTMLButtonElement).disabled).toBe(false)
   fireEvent.click(screen.getByRole('button',{name:'停止'}))
   await waitFor(()=>expect(mockSnapshot().run).toBeNull())

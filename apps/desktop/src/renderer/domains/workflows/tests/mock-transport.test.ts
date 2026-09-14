@@ -92,10 +92,11 @@ describe('source-compatible mock HTTP boundary',()=>{
     expect((await request(`/workflows/${doc.id}/execute`,{})).status).toBe(409)
     await vi.advanceTimersByTimeAsync(30)
     expect(server.mockSnapshot().run).toBe(doc.id)
-    expect((await request(`/workflows/${doc.id}/debug/step`,{})).ok).toBe(true)
-    expect((await request(`/workflows/${doc.id}/debug/step`,{})).status).toBe(409)
+    const firstPause=server.mockSnapshot().pause
+    expect((await request(`/workflows/${doc.id}/debug/step`,{commandId:'first-step',...firstPause})).ok).toBe(true)
+    expect((await request(`/workflows/${doc.id}/debug/step`,{commandId:'duplicate-click',...firstPause})).status).toBe(409)
     await vi.advanceTimersByTimeAsync(300)
-    expect((await request(`/workflows/${doc.id}/debug/step`,{})).ok).toBe(true)
+    expect((await request(`/workflows/${doc.id}/debug/step`,{commandId:'next-step',...server.mockSnapshot().pause})).ok).toBe(true)
     await request(`/workflows/${doc.id}/stop`,{})
     const sequence=server.mockSnapshot().sequence
     await vi.advanceTimersByTimeAsync(2000)

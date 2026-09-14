@@ -5,9 +5,11 @@ import { Play, StepForward, Square, Bug, ChevronDown, ChevronUp } from 'lucide-r
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { useWorkflowStore } from '../editor-store'
 import { workflowApi, type ApiResponse } from '../api'
+import type {DebugControlRequest} from '../lib/debugControlContract'
 
 /** 调试控制条：命中断点/单步暂停时浮现，提供 继续 / 单步 / 停止 + 当前变量快照 */
 export function DebugBar() {
+  const pauseContext = useDebugStore((s) => s.pauseContext)
   const pauseRevision = useDebugStore((s) => s.pauseRevision)
   const isPaused = useDebugStore((s) => s.isPaused)
   const pausedLabel = useDebugStore((s) => s.pausedLabel)
@@ -29,13 +31,15 @@ export function DebugBar() {
 
   if (!isPaused) return null
 
-  const call = async (fn: (id: string) => Promise<ApiResponse>, kind: Exclude<Pending, null> = 'control') => {
-    if (!wfId || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
+  const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | ((id:string)=>Promise<ApiResponse>), kind: Exclude<Pending, null> = 'control') => {
+    if (!wfId || (kind==='control' && !pauseContext) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
     const sequence = ++requestSequence.current
     const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId
     busyRef.current = kind; setBusy(kind); setError('')
     try {
-      const result = await fn(wfId)
+      const result = kind==='stop'
+        ? await (fn as typeof workflowApi.stop)(wfId)
+        : await fn(wfId,{...pauseContext!,commandId:crypto.randomUUID()})
       if (!isCurrent()) return
       if (!result.success) {
         if (!result.httpStatus && kind === 'control') {
@@ -84,14 +88,14 @@ export function DebugBar() {
 
       <div className="flex items-center gap-2 px-4 py-2.5">
         <button
-          disabled={!wfId || !!busy}
+          disabled={!wfId || !pauseContext || !!busy}
           onClick={() => call(workflowApi.debugResume)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
         >
           <Play className="w-3.5 h-3.5 fill-current" /> 继续
         </button>
         <button
-          disabled={!wfId || !!busy}
+          disabled={!wfId || !pauseContext || !!busy}
           onClick={() => call(workflowApi.debugStep)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[hsl(var(--brand-600))] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
@@ -107,6 +111,7 @@ export function DebugBar() {
         <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : pausedReason === 'step' ? '单步执行已暂停' : '命中断点已暂停'}</span>
       </div>
 
+      {!pauseContext && <div role="alert" className="px-4 pb-3 text-sm">服务未提供暂停身份，暂不能继续或单步；仍可停止运行。</div>}
       {error && <div role="alert" className="px-4 pb-3 text-sm text-[hsl(var(--danger-600))]">{error}</div>}
 
       {showVars && (

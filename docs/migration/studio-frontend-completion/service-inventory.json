@@ -457,7 +457,7 @@
       "id": "service:browserApi.chromiumStatus",
       "operation": "browserApi.chromiumStatus",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 299,
+      "line": 301,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -467,7 +467,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/chromium-status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 299,
+          "line": 301,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -485,7 +485,7 @@
       "id": "service:browserApi.close",
       "operation": "browserApi.close",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 304,
+      "line": 306,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -495,7 +495,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/close', { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 304,
+          "line": 306,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -513,7 +513,7 @@
       "id": "service:browserApi.getSelector",
       "operation": "browserApi.getSelector",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 308,
+      "line": 310,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -523,7 +523,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/get-selector', { method: 'POST', body: JSON.stringify({ description }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 309,
+          "line": 311,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -534,7 +534,7 @@
       "id": "service:browserApi.getStatus",
       "operation": "browserApi.getStatus",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 289,
+      "line": 291,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -544,7 +544,7 @@
           "responseType": "Result",
           "call": "apiRequest<Result>('/browser/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 291,
+          "line": 293,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -568,7 +568,7 @@
       "id": "service:browserApi.getUrl",
       "operation": "browserApi.getUrl",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 307,
+      "line": 309,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -578,7 +578,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/url')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 307,
+          "line": 309,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -589,7 +589,7 @@
       "id": "service:browserApi.launch",
       "operation": "browserApi.launch",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 302,
+      "line": 304,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -599,7 +599,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/launch', { method: 'POST', body: JSON.stringify({ url }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 303,
+          "line": 305,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -610,7 +610,7 @@
       "id": "service:browserApi.navigate",
       "operation": "browserApi.navigate",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 305,
+      "line": 307,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -620,7 +620,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/navigate', { method: 'POST', body: JSON.stringify({ url }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 306,
+          "line": 308,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -644,7 +644,7 @@
       "id": "service:browserApi.open",
       "operation": "browserApi.open",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 300,
+      "line": 302,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -654,7 +654,7 @@
           "responseType": null,
           "call": "apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, browserConfig }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 301,
+          "line": 303,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -672,7 +672,7 @@
       "id": "service:browserApi.startPicker",
       "operation": "browserApi.startPicker",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 310,
+      "line": 312,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -682,7 +682,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/start', { method: 'POST', body: JSON.stringify({}) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 310,
+          "line": 312,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -700,7 +700,7 @@
       "id": "service:browserApi.stopPicker",
       "operation": "browserApi.stopPicker",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 311,
+      "line": 313,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -710,7 +710,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/stop', { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 311,
+          "line": 313,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -779,7 +779,7 @@
       "id": "service:credentialApi.delete",
       "operation": "credentialApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 440,
+      "line": 442,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -789,7 +789,7 @@
           "responseType": null,
           "call": "apiRequest(`/credentials/${encodeURIComponent(name)}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 441,
+          "line": 443,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -807,7 +807,7 @@
       "id": "service:credentialApi.list",
       "operation": "credentialApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 428,
+      "line": 430,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -817,7 +817,7 @@
           "responseType": "{ success: boolean; credentials: CredentialItem[] }",
           "call": "apiRequest<{ success: boolean; credentials: CredentialItem[] }>('/credentials')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 428,
+          "line": 430,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -835,7 +835,7 @@
       "id": "service:credentialApi.names",
       "operation": "credentialApi.names",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 429,
+      "line": 431,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -845,7 +845,7 @@
           "responseType": "{ success: boolean; names: string[] }",
           "call": "apiRequest<{ success: boolean; names: string[] }>('/credentials/names')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 429,
+          "line": 431,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -856,7 +856,7 @@
       "id": "service:credentialApi.rename",
       "operation": "credentialApi.rename",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 435,
+      "line": 437,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -866,7 +866,7 @@
           "responseType": null,
           "call": "apiRequest('/credentials/rename', {\n      method: 'POST',\n      body: JSON.stringify({ old_name: oldName, new_name: newName }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 436,
+          "line": 438,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -877,7 +877,7 @@
       "id": "service:credentialApi.upsert",
       "operation": "credentialApi.upsert",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 430,
+      "line": 432,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -887,7 +887,7 @@
           "responseType": null,
           "call": "apiRequest('/credentials', {\n      method: 'POST',\n      body: JSON.stringify({ name, fields, description: description || '' }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 431,
+          "line": 433,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -905,7 +905,7 @@
       "id": "service:customModulesApi.create",
       "operation": "customModulesApi.create",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 398,
+      "line": 400,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -915,7 +915,7 @@
           "responseType": null,
           "call": "apiRequest('/custom-modules', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 399,
+          "line": 401,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -933,7 +933,7 @@
       "id": "service:customModulesApi.delete",
       "operation": "customModulesApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 402,
+      "line": 404,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -943,7 +943,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/${id}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 403,
+          "line": 405,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -961,7 +961,7 @@
       "id": "service:customModulesApi.duplicate",
       "operation": "customModulesApi.duplicate",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 404,
+      "line": 406,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -971,7 +971,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/${id}/duplicate`, {\n      method: 'POST',\n      body: JSON.stringify(newName ? { new_name: newName } : {}),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 405,
+          "line": 407,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -989,7 +989,7 @@
       "id": "service:customModulesApi.get",
       "operation": "customModulesApi.get",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 397,
+      "line": 399,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -999,7 +999,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/${id}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 397,
+          "line": 399,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1017,7 +1017,7 @@
       "id": "service:customModulesApi.importModule",
       "operation": "customModulesApi.importModule",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 409,
+      "line": 411,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1027,7 +1027,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/import`, {\n      method: 'POST',\n      body: JSON.stringify(data),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 410,
+          "line": 412,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1045,7 +1045,7 @@
       "id": "service:customModulesApi.incrementUsage",
       "operation": "customModulesApi.incrementUsage",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 414,
+      "line": 416,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1055,7 +1055,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/${id}/increment-usage`, { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 415,
+          "line": 417,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1066,7 +1066,7 @@
       "id": "service:customModulesApi.list",
       "operation": "customModulesApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 395,
+      "line": 397,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1076,7 +1076,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules${params ? `?${new URLSearchParams(params as any).toString()}` : ''}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 396,
+          "line": 398,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1094,7 +1094,7 @@
       "id": "service:customModulesApi.update",
       "operation": "customModulesApi.update",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 400,
+      "line": 402,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1104,7 +1104,7 @@
           "responseType": null,
           "call": "apiRequest(`/custom-modules/${id}`, { method: 'PUT', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 401,
+          "line": 403,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1128,7 +1128,7 @@
       "id": "service:elementPickerApi.getResult",
       "operation": "elementPickerApi.getResult",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 327,
+      "line": 329,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1138,7 +1138,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/result')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 327,
+          "line": 329,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1149,7 +1149,7 @@
       "id": "service:elementPickerApi.getSelected",
       "operation": "elementPickerApi.getSelected",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 328,
+      "line": 330,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1159,7 +1159,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/selected')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 328,
+          "line": 330,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1183,7 +1183,7 @@
       "id": "service:elementPickerApi.getSimilar",
       "operation": "elementPickerApi.getSimilar",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 329,
+      "line": 331,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1193,7 +1193,7 @@
           "responseType": "Result",
           "call": "apiRequest<Result>('/element-picker/similar')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 333,
+          "line": 335,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1217,7 +1217,7 @@
       "id": "service:elementPickerApi.getStatus",
       "operation": "elementPickerApi.getStatus",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 346,
+      "line": 348,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1227,7 +1227,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 346,
+          "line": 348,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1238,7 +1238,7 @@
       "id": "service:elementPickerApi.start",
       "operation": "elementPickerApi.start",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 321,
+      "line": 323,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1248,7 +1248,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/start', {\n      method: 'POST',\n      body: JSON.stringify({ url: url || null, browserConfig: browserConfig || null }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 322,
+          "line": 324,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1266,7 +1266,7 @@
       "id": "service:elementPickerApi.stop",
       "operation": "elementPickerApi.stop",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 326,
+      "line": 328,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1276,7 +1276,7 @@
           "responseType": null,
           "call": "apiRequest('/element-picker/stop', { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 326,
+          "line": 328,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1300,7 +1300,7 @@
       "id": "service:elementPickerApi.testSelector",
       "operation": "elementPickerApi.testSelector",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 348,
+      "line": 350,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1310,7 +1310,7 @@
           "responseType": "Result",
           "call": "apiRequest<Result>('/element-picker/test-selector', {\n      method: 'POST', body: JSON.stringify({ selector, hints: hints || null, highlight }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 351,
+          "line": 353,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1328,7 +1328,7 @@
       "id": "service:executorApi.execute",
       "operation": "executorApi.execute",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 230,
+      "line": 232,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1338,7 +1338,7 @@
           "responseType": null,
           "call": "apiRequest('/executor/execute', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 231,
+          "line": 233,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1349,7 +1349,7 @@
       "id": "service:executorApi.getTypes",
       "operation": "executorApi.getTypes",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 232,
+      "line": 234,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1359,7 +1359,7 @@
           "responseType": null,
           "call": "apiRequest('/executor/types')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 232,
+          "line": 234,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1370,7 +1370,7 @@
       "id": "service:featurePackApi.installFromPath",
       "operation": "featurePackApi.installFromPath",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 588,
+      "line": 590,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1380,7 +1380,7 @@
           "responseType": "{ success: boolean; id?: string; name?: string; installed_files?: number; warning?: string }",
           "call": "apiRequest<{ success: boolean; id?: string; name?: string; installed_files?: number; warning?: string }>(\n      '/feature-packs/install-path', { method: 'POST', body: JSON.stringify({ path }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 589,
+          "line": 591,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1398,7 +1398,7 @@
       "id": "service:featurePackApi.installUpload",
       "operation": "featurePackApi.installUpload",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 593,
+      "line": 595,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1408,7 +1408,7 @@
           "responseType": "{ success: boolean; id?: string; name?: string; installed_files?: number; warning?: string }",
           "call": "apiRequest<{ success: boolean; id?: string; name?: string; installed_files?: number; warning?: string }>(\n      '/feature-packs/install', { method: 'POST', body: formData }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 596,
+          "line": 598,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1426,7 +1426,7 @@
       "id": "service:featurePackApi.list",
       "operation": "featurePackApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 586,
+      "line": 588,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1436,7 +1436,7 @@
           "responseType": "{ success: boolean; packs: FeaturePackInfo[] }",
           "call": "apiRequest<{ success: boolean; packs: FeaturePackInfo[] }>('/feature-packs')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 586,
+          "line": 588,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1454,7 +1454,7 @@
       "id": "service:featurePackApi.moduleHint",
       "operation": "featurePackApi.moduleHint",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 611,
+      "line": 613,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1464,7 +1464,7 @@
           "responseType": "{ success: boolean; pack: { id: string; name: string; installed: boolean } | null }",
           "call": "apiRequest<{ success: boolean; pack: { id: string; name: string; installed: boolean } | null }>(\n      `/feature-packs/module-hint/${encodeURIComponent(moduleType)}`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 612,
+          "line": 614,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1475,7 +1475,7 @@
       "id": "service:featurePackApi.preflight",
       "operation": "featurePackApi.preflight",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 601,
+      "line": 603,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1485,7 +1485,7 @@
           "responseType": "{ success: boolean; ok: boolean; missing: Array<{ alternatives: Array<{ id: string; name: string; size_mb: number; download_url?: string }>; module_types: string[] }>; message: string }",
           "call": "apiRequest<{ success: boolean; ok: boolean; missing: Array<{ alternatives: Array<{ id: string; name: string; size_mb: number; download_url?: string }>; module_types: string[] }>; message: string }>(\n      '/feature-packs/preflight', { method: 'POST', body: JSON.stringify({ module_types: moduleTypes }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 602,
+          "line": 604,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1503,7 +1503,7 @@
       "id": "service:featurePackApi.uninstall",
       "operation": "featurePackApi.uninstall",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 606,
+      "line": 608,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1513,7 +1513,7 @@
           "responseType": "{ success: boolean; removed?: number }",
           "call": "apiRequest<{ success: boolean; removed?: number }>(\n      '/feature-packs/uninstall', { method: 'POST', body: JSON.stringify({ id }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 607,
+          "line": 609,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1531,7 +1531,7 @@
       "id": "service:imageAssetApi.createFolder",
       "operation": "imageAssetApi.createFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 247,
+      "line": 249,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1541,7 +1541,7 @@
           "responseType": "components['schemas']['StudioImageFolderCreated']",
           "call": "apiRequest<components['schemas']['StudioImageFolderCreated']>('/image-assets/folders', { method: 'POST', body: JSON.stringify({ name, parentPath }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 248,
+          "line": 250,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1559,7 +1559,7 @@
       "id": "service:imageAssetApi.delete",
       "operation": "imageAssetApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 246,
+      "line": 248,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1569,7 +1569,7 @@
           "responseType": "components['schemas']['StudioImageMutationResult']",
           "call": "apiRequest<components['schemas']['StudioImageMutationResult']>(`/image-assets/${id}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 246,
+          "line": 248,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1599,7 +1599,7 @@
       "id": "service:imageAssetApi.deleteFolder",
       "operation": "imageAssetApi.deleteFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 251,
+      "line": 253,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1609,7 +1609,7 @@
           "responseType": "components['schemas']['StudioImageFolderDeleted']",
           "call": "apiRequest<components['schemas']['StudioImageFolderDeleted']>('/image-assets/folders', { method: 'DELETE', body: JSON.stringify({ folderPath }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 252,
+          "line": 254,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1627,7 +1627,7 @@
       "id": "service:imageAssetApi.get",
       "operation": "imageAssetApi.get",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 239,
+      "line": 241,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1637,7 +1637,7 @@
           "responseType": "components['schemas']['StudioImageAsset']",
           "call": "apiRequest<components['schemas']['StudioImageAsset']>(`/image-assets/${id}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 239,
+          "line": 241,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1648,7 +1648,7 @@
       "id": "service:imageAssetApi.list",
       "operation": "imageAssetApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 237,
+      "line": 239,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1658,7 +1658,7 @@
           "responseType": "components['schemas']['StudioImageAsset'][]",
           "call": "apiRequest<components['schemas']['StudioImageAsset'][]>('/image-assets')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 237,
+          "line": 239,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1724,7 +1724,7 @@
       "id": "service:imageAssetApi.listFolders",
       "operation": "imageAssetApi.listFolders",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 238,
+      "line": 240,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1734,7 +1734,7 @@
           "responseType": "string[]",
           "call": "apiRequest<string[]>('/image-assets/folders')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 238,
+          "line": 240,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1758,7 +1758,7 @@
       "id": "service:imageAssetApi.moveAsset",
       "operation": "imageAssetApi.moveAsset",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 255,
+      "line": 257,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1768,7 +1768,7 @@
           "responseType": "components['schemas']['StudioImageMoved']",
           "call": "apiRequest<components['schemas']['StudioImageMoved']>('/image-assets/move', { method: 'PUT', body: JSON.stringify({ assetId, targetFolder }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 256,
+          "line": 258,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1792,7 +1792,7 @@
       "id": "service:imageAssetApi.rename",
       "operation": "imageAssetApi.rename",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 253,
+      "line": 255,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1802,7 +1802,7 @@
           "responseType": "components['schemas']['StudioImageRenameResult']",
           "call": "apiRequest<components['schemas']['StudioImageRenameResult']>(`/image-assets/${assetId}/rename?newName=${encodeURIComponent(newName)}`, { method: 'PUT' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 254,
+          "line": 256,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1826,7 +1826,7 @@
       "id": "service:imageAssetApi.renameFolder",
       "operation": "imageAssetApi.renameFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 249,
+      "line": 251,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1836,7 +1836,7 @@
           "responseType": "components['schemas']['StudioImageFolderRenamed']",
           "call": "apiRequest<components['schemas']['StudioImageFolderRenamed']>('/image-assets/folders/rename', { method: 'PUT', body: JSON.stringify({ oldPath, newName }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 250,
+          "line": 252,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1854,7 +1854,7 @@
       "id": "service:imageAssetApi.upload",
       "operation": "imageAssetApi.upload",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 240,
+      "line": 242,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1864,7 +1864,7 @@
           "responseType": "components['schemas']['StudioImageUploadResult']",
           "call": "apiRequest<components['schemas']['StudioImageUploadResult']>('/image-assets/upload', { method: 'POST', body: formData })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 244,
+          "line": 246,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1894,7 +1894,7 @@
       "id": "service:inputPromptApi.getState",
       "operation": "inputPromptApi.getState",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 618,
+      "line": 620,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1904,7 +1904,7 @@
           "responseType": "components['schemas']['StudioInputPromptState']",
           "call": "apiRequest<components['schemas']['StudioInputPromptState']>(`/events/input-prompts/${encodeURIComponent(requestId)}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 618,
+          "line": 620,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1922,7 +1922,7 @@
       "id": "service:jsScriptApi.getState",
       "operation": "jsScriptApi.getState",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 634,
+      "line": 636,
       "source": "frontend/src/services/api.ts",
       "requests": [],
       "consumers": [
@@ -1945,7 +1945,7 @@
       "id": "service:localWorkflowApi.delete",
       "operation": "localWorkflowApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 203,
+      "line": 205,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1955,7 +1955,7 @@
           "responseType": null,
           "call": "apiRequest(`/local-workflows/${id}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 204,
+          "line": 206,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1973,7 +1973,7 @@
       "id": "service:localWorkflowApi.export",
       "operation": "localWorkflowApi.export",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 207,
+      "line": 209,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -1983,7 +1983,7 @@
           "responseType": null,
           "call": "apiRequest(`/local-workflows/${id}/export`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 207,
+          "line": 209,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -1994,7 +1994,7 @@
       "id": "service:localWorkflowApi.get",
       "operation": "localWorkflowApi.get",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 199,
+      "line": 201,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2004,7 +2004,7 @@
           "responseType": null,
           "call": "apiRequest(`/local-workflows/load/${encodeURIComponent(filename)}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 200,
+          "line": 202,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2028,7 +2028,7 @@
       "id": "service:localWorkflowApi.getActiveFolder",
       "operation": "localWorkflowApi.getActiveFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 211,
+      "line": 213,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2038,7 +2038,7 @@
           "responseType": "{ folder: string; default: string }",
           "call": "apiRequest<{ folder: string; default: string }>('/local-workflows/active-folder')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 211,
+          "line": 213,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2049,7 +2049,7 @@
       "id": "service:localWorkflowApi.getDefaultFolder",
       "operation": "localWorkflowApi.getDefaultFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 208,
+      "line": 210,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2059,7 +2059,7 @@
           "responseType": null,
           "call": "apiRequest('/local-workflows/default-folder')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 208,
+          "line": 210,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2101,7 +2101,7 @@
       "id": "service:localWorkflowApi.getSelfHeal",
       "operation": "localWorkflowApi.getSelfHeal",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 218,
+      "line": 220,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2111,7 +2111,7 @@
           "responseType": "{ success: boolean; enabled: boolean; selfHeal?: any; error?: string }",
           "call": "apiRequest<{ success: boolean; enabled: boolean; selfHeal?: any; error?: string }>(\n      `/local-workflows/self-heal/${encodeURIComponent(filename)}${folder ? `?folder=${encodeURIComponent(folder)}` : ''}`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 219,
+          "line": 221,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2129,7 +2129,7 @@
       "id": "service:localWorkflowApi.import",
       "operation": "localWorkflowApi.import",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 205,
+      "line": 207,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2139,7 +2139,7 @@
           "responseType": null,
           "call": "apiRequest('/local-workflows/import', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 206,
+          "line": 208,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2150,7 +2150,7 @@
       "id": "service:localWorkflowApi.list",
       "operation": "localWorkflowApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 189,
+      "line": 191,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2160,7 +2160,7 @@
           "responseType": null,
           "call": "apiRequest('/local-workflows/list', { \n      method: 'POST', \n      body: JSON.stringify({ folder }) \n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 190,
+          "line": 192,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2196,7 +2196,7 @@
       "id": "service:localWorkflowApi.save",
       "operation": "localWorkflowApi.save",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 201,
+      "line": 203,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2206,7 +2206,7 @@
           "responseType": null,
           "call": "apiRequest('/local-workflows/save-to-folder', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 202,
+          "line": 204,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2224,7 +2224,7 @@
       "id": "service:localWorkflowApi.setActiveFolder",
       "operation": "localWorkflowApi.setActiveFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 212,
+      "line": 214,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2234,7 +2234,7 @@
           "responseType": "{ success: boolean; folder: string }",
           "call": "apiRequest<{ success: boolean; folder: string }>('/local-workflows/active-folder', {\n      method: 'POST',\n      body: JSON.stringify({ folder }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 213,
+          "line": 215,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2264,7 +2264,7 @@
       "id": "service:localWorkflowApi.setSelfHeal",
       "operation": "localWorkflowApi.setSelfHeal",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 222,
+      "line": 224,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2274,7 +2274,7 @@
           "responseType": "{ success: boolean; enabled: boolean; error?: string }",
           "call": "apiRequest<{ success: boolean; enabled: boolean; error?: string }>(\n      '/local-workflows/self-heal', { method: 'POST', body: JSON.stringify({ filename, enabled, folder }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 223,
+          "line": 225,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2404,7 +2404,7 @@
       "id": "service:pluginApi.addReview",
       "operation": "pluginApi.addReview",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 536,
+      "line": 538,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2414,7 +2414,7 @@
           "responseType": "{ success: boolean; review?: PluginReview; summary?: { count: number; average: number }; error?: string }",
           "call": "apiRequest<{ success: boolean; review?: PluginReview; summary?: { count: number; average: number }; error?: string }>(\n      `/plugins/${encodeURIComponent(pluginId)}/reviews`,\n      { method: 'POST', body: JSON.stringify({ rating, comment: comment || '', user: user || '匿名用户' }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 537,
+          "line": 539,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2425,7 +2425,7 @@
       "id": "service:pluginApi.exportPackage",
       "operation": "pluginApi.exportPackage",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 524,
+      "line": 526,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2435,7 +2435,7 @@
           "responseType": "{ success: boolean; package?: unknown; error?: string }",
           "call": "apiRequest<{ success: boolean; package?: unknown; error?: string }>(\n      `/plugins/${encodeURIComponent(pluginId)}/export`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 525,
+          "line": 527,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2446,7 +2446,7 @@
       "id": "service:pluginApi.getMarketUrl",
       "operation": "pluginApi.getMarketUrl",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 509,
+      "line": 511,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2456,7 +2456,7 @@
           "responseType": "{ success: boolean; url: string }",
           "call": "apiRequest<{ success: boolean; url: string }>('/plugins/market-url')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 509,
+          "line": 511,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2467,7 +2467,7 @@
       "id": "service:pluginApi.getReviews",
       "operation": "pluginApi.getReviews",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 532,
+      "line": 534,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2477,7 +2477,7 @@
           "responseType": "{ success: boolean; reviews: PluginReview[]; summary: { count: number; average: number } }",
           "call": "apiRequest<{ success: boolean; reviews: PluginReview[]; summary: { count: number; average: number } }>(\n      `/plugins/${encodeURIComponent(pluginId)}/reviews`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 533,
+          "line": 535,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2488,7 +2488,7 @@
       "id": "service:pluginApi.installed",
       "operation": "pluginApi.installed",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 505,
+      "line": 507,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2498,7 +2498,7 @@
           "responseType": "{ success: boolean; plugins: PluginInfo[] }",
           "call": "apiRequest<{ success: boolean; plugins: PluginInfo[] }>('/plugins/installed')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 506,
+          "line": 508,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2509,7 +2509,7 @@
       "id": "service:pluginApi.installFromMarket",
       "operation": "pluginApi.installFromMarket",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 516,
+      "line": 518,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2519,7 +2519,7 @@
           "responseType": "{ success: boolean; error?: string }",
           "call": "apiRequest<{ success: boolean; error?: string }>(`/plugins/install-from-market/${encodeURIComponent(pluginId)}`, { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 517,
+          "line": 519,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2530,7 +2530,7 @@
       "id": "service:pluginApi.installPackage",
       "operation": "pluginApi.installPackage",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 512,
+      "line": 514,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2540,7 +2540,7 @@
           "responseType": "{ success: boolean; id?: string; moduleCount?: number; error?: string }",
           "call": "apiRequest<{ success: boolean; id?: string; moduleCount?: number; error?: string }>(\n      '/plugins/install', { method: 'POST', body: JSON.stringify({ package: pkg }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 513,
+          "line": 515,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2551,7 +2551,7 @@
       "id": "service:pluginApi.market",
       "operation": "pluginApi.market",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 507,
+      "line": 509,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2561,7 +2561,7 @@
           "responseType": "{ success: boolean; source?: string; plugins: PluginInfo[] }",
           "call": "apiRequest<{ success: boolean; source?: string; plugins: PluginInfo[] }>('/plugins/market')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 508,
+          "line": 510,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2572,7 +2572,7 @@
       "id": "service:pluginApi.publish",
       "operation": "pluginApi.publish",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 528,
+      "line": 530,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2582,7 +2582,7 @@
           "responseType": "{ success: boolean; published?: boolean; package?: unknown; exportedPath?: string; error?: string }",
           "call": "apiRequest<{ success: boolean; published?: boolean; package?: unknown; exportedPath?: string; error?: string }>(\n      `/plugins/${encodeURIComponent(pluginId)}/publish`, { method: 'POST', body: JSON.stringify({ hubUrl: hubUrl || '' }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 529,
+          "line": 531,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2593,7 +2593,7 @@
       "id": "service:pluginApi.setEnabled",
       "operation": "pluginApi.setEnabled",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 518,
+      "line": 520,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2603,7 +2603,7 @@
           "responseType": "{ success: boolean; enabled?: boolean; error?: string }",
           "call": "apiRequest<{ success: boolean; enabled?: boolean; error?: string }>(\n      `/plugins/${encodeURIComponent(pluginId)}/enable`, { method: 'POST', body: JSON.stringify({ enabled }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 519,
+          "line": 521,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2614,7 +2614,7 @@
       "id": "service:pluginApi.setMarketUrl",
       "operation": "pluginApi.setMarketUrl",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 510,
+      "line": 512,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2624,7 +2624,7 @@
           "responseType": "{ success: boolean }",
           "call": "apiRequest<{ success: boolean }>('/plugins/market-url', { method: 'POST', body: JSON.stringify({ url }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 511,
+          "line": 513,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2635,7 +2635,7 @@
       "id": "service:pluginApi.uninstall",
       "operation": "pluginApi.uninstall",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 522,
+      "line": 524,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2645,7 +2645,7 @@
           "responseType": "{ success: boolean; error?: string }",
           "call": "apiRequest<{ success: boolean; error?: string }>(`/plugins/${encodeURIComponent(pluginId)}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 523,
+          "line": 525,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2656,7 +2656,7 @@
       "id": "service:recorderApi.events",
       "operation": "recorderApi.events",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 376,
+      "line": 378,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2666,7 +2666,7 @@
           "responseType": null,
           "call": "apiRequest(`/recorder/events?afterSeq=${afterSeq}${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`, { signal })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 376,
+          "line": 378,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2684,7 +2684,7 @@
       "id": "service:recorderApi.start",
       "operation": "recorderApi.start",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 374,
+      "line": 376,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2694,7 +2694,7 @@
           "responseType": null,
           "call": "apiRequest('/recorder/start', { method: 'POST', body: JSON.stringify({ sessionId }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 374,
+          "line": 376,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2712,7 +2712,7 @@
       "id": "service:recorderApi.status",
       "operation": "recorderApi.status",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 377,
+      "line": 379,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2722,7 +2722,7 @@
           "responseType": null,
           "call": "apiRequest('/recorder/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 377,
+          "line": 379,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2733,7 +2733,7 @@
       "id": "service:recorderApi.stop",
       "operation": "recorderApi.stop",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 375,
+      "line": 377,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2743,7 +2743,7 @@
           "responseType": null,
           "call": "apiRequest('/recorder/stop', { method: 'POST', body: JSON.stringify({ sessionId, afterSeq }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 375,
+          "line": 377,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2761,7 +2761,7 @@
       "id": "service:retentionApi.cleanup",
       "operation": "retentionApi.cleanup",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 465,
+      "line": 467,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2771,7 +2771,7 @@
           "responseType": null,
           "call": "apiRequest('/retention/cleanup', { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 465,
+          "line": 467,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2789,7 +2789,7 @@
       "id": "service:retentionApi.getConfig",
       "operation": "retentionApi.getConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 458,
+      "line": 460,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2799,7 +2799,7 @@
           "responseType": "{ success: boolean; config: RetentionConfig; usage: RetentionUsage }",
           "call": "apiRequest<{ success: boolean; config: RetentionConfig; usage: RetentionUsage }>('/retention/config')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 459,
+          "line": 461,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2817,7 +2817,7 @@
       "id": "service:retentionApi.setConfig",
       "operation": "retentionApi.setConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 460,
+      "line": 462,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2827,7 +2827,7 @@
           "responseType": "{ success: boolean; config: RetentionConfig }",
           "call": "apiRequest<{ success: boolean; config: RetentionConfig }>('/retention/config', {\n      method: 'POST',\n      body: JSON.stringify(config),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 461,
+          "line": 463,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2845,7 +2845,7 @@
       "id": "service:retentionApi.usage",
       "operation": "retentionApi.usage",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 466,
+      "line": 468,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2855,7 +2855,7 @@
           "responseType": "{ success: boolean; usage: RetentionUsage }",
           "call": "apiRequest<{ success: boolean; usage: RetentionUsage }>('/retention/usage')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 466,
+          "line": 468,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2866,7 +2866,7 @@
       "id": "service:scheduledTaskApi.clearAllLogs",
       "operation": "scheduledTaskApi.clearAllLogs",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 281,
+      "line": 283,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2876,7 +2876,7 @@
           "responseType": null,
           "call": "apiRequest('/scheduled-tasks/logs/all', { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 282,
+          "line": 284,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2900,7 +2900,7 @@
       "id": "service:scheduledTaskApi.clearTaskLogs",
       "operation": "scheduledTaskApi.clearTaskLogs",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 279,
+      "line": 281,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2910,7 +2910,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}/logs`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 280,
+          "line": 282,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2934,7 +2934,7 @@
       "id": "service:scheduledTaskApi.create",
       "operation": "scheduledTaskApi.create",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 263,
+      "line": 265,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2944,7 +2944,7 @@
           "responseType": null,
           "call": "apiRequest('/scheduled-tasks', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 264,
+          "line": 266,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -2968,7 +2968,7 @@
       "id": "service:scheduledTaskApi.delete",
       "operation": "scheduledTaskApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 267,
+      "line": 269,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -2978,7 +2978,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 268,
+          "line": 270,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3002,7 +3002,7 @@
       "id": "service:scheduledTaskApi.execute",
       "operation": "scheduledTaskApi.execute",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 271,
+      "line": 273,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3012,7 +3012,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 272,
+          "line": 274,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3036,7 +3036,7 @@
       "id": "service:scheduledTaskApi.get",
       "operation": "scheduledTaskApi.get",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 262,
+      "line": 264,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3046,7 +3046,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 262,
+          "line": 264,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3064,7 +3064,7 @@
       "id": "service:scheduledTaskApi.getAllLogs",
       "operation": "scheduledTaskApi.getAllLogs",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 277,
+      "line": 279,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3074,7 +3074,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/logs/all?limit=${limit}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 278,
+          "line": 280,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3098,7 +3098,7 @@
       "id": "service:scheduledTaskApi.getStatistics",
       "operation": "scheduledTaskApi.getStatistics",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 283,
+      "line": 285,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3108,7 +3108,7 @@
           "responseType": null,
           "call": "apiRequest('/scheduled-tasks/statistics/summary')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 284,
+          "line": 286,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3132,7 +3132,7 @@
       "id": "service:scheduledTaskApi.getTaskLogs",
       "operation": "scheduledTaskApi.getTaskLogs",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 275,
+      "line": 277,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3142,7 +3142,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}/logs?limit=${limit}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 276,
+          "line": 278,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3166,7 +3166,7 @@
       "id": "service:scheduledTaskApi.list",
       "operation": "scheduledTaskApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 261,
+      "line": 263,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3176,7 +3176,7 @@
           "responseType": null,
           "call": "apiRequest('/scheduled-tasks/list')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 261,
+          "line": 263,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3200,7 +3200,7 @@
       "id": "service:scheduledTaskApi.stop",
       "operation": "scheduledTaskApi.stop",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 273,
+      "line": 275,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3210,7 +3210,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}/stop`, { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 274,
+          "line": 276,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3234,7 +3234,7 @@
       "id": "service:scheduledTaskApi.toggle",
       "operation": "scheduledTaskApi.toggle",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 269,
+      "line": 271,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3244,7 +3244,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 270,
+          "line": 272,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3268,7 +3268,7 @@
       "id": "service:scheduledTaskApi.update",
       "operation": "scheduledTaskApi.update",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 265,
+      "line": 267,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3278,7 +3278,7 @@
           "responseType": null,
           "call": "apiRequest(`/scheduled-tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 266,
+          "line": 268,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3302,7 +3302,7 @@
       "id": "service:securityApi.regenerate",
       "operation": "securityApi.regenerate",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 387,
+      "line": 389,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3312,7 +3312,7 @@
           "responseType": "{ success: boolean; token?: string; error?: string }",
           "call": "apiRequest<{ success: boolean; token?: string; error?: string }>(\n      '/security/regenerate', { method: 'POST' }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 388,
+          "line": 390,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3330,7 +3330,7 @@
       "id": "service:securityApi.status",
       "operation": "securityApi.status",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 382,
+      "line": 384,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3340,7 +3340,7 @@
           "responseType": "{ enabled: boolean; isLocal: boolean; token: string | null }",
           "call": "apiRequest<{ enabled: boolean; isLocal: boolean; token: string | null }>('/security/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 382,
+          "line": 384,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3358,7 +3358,7 @@
       "id": "service:securityApi.toggle",
       "operation": "securityApi.toggle",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 383,
+      "line": 385,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3368,7 +3368,7 @@
           "responseType": "{ success: boolean; enabled?: boolean; error?: string }",
           "call": "apiRequest<{ success: boolean; enabled?: boolean; error?: string }>(\n      '/security/toggle', { method: 'POST', body: JSON.stringify({ enabled }) }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 384,
+          "line": 386,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3386,7 +3386,7 @@
       "id": "service:speechApi.getState",
       "operation": "speechApi.getState",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 637,
+      "line": 639,
       "source": "frontend/src/services/api.ts",
       "requests": [],
       "consumers": [
@@ -3409,7 +3409,7 @@
       "id": "service:sponsorApi.list",
       "operation": "sponsorApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 560,
+      "line": 562,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3419,7 +3419,7 @@
           "responseType": "{ sponsors: SponsorItem[]; count: number }",
           "call": "apiRequest<{ sponsors: SponsorItem[]; count: number }>('/sponsors/list')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 560,
+          "line": 562,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3430,7 +3430,7 @@
       "id": "service:sponsorApi.qrUrl",
       "operation": "sponsorApi.qrUrl",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 564,
+      "line": 566,
       "source": "frontend/src/services/api.ts",
       "requests": [],
       "consumers": [],
@@ -3440,7 +3440,7 @@
       "id": "service:sponsorApi.status",
       "operation": "sponsorApi.status",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 562,
+      "line": 564,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3450,7 +3450,7 @@
           "responseType": "{ wechat: boolean; alipay: boolean }",
           "call": "apiRequest<{ wechat: boolean; alipay: boolean }>('/sponsors/status')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 562,
+          "line": 564,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3461,7 +3461,7 @@
       "id": "service:systemApi.getBrowserConfig",
       "operation": "systemApi.getBrowserConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 110,
+      "line": 112,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3471,7 +3471,7 @@
           "responseType": "{ success: boolean; config: Record<string, unknown> }",
           "call": "apiRequest<{ success: boolean; config: Record<string, unknown> }>('/system/browser-config')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 110,
+          "line": 112,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3482,7 +3482,7 @@
       "id": "service:systemApi.getConfig",
       "operation": "systemApi.getConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 108,
+      "line": 110,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3492,7 +3492,7 @@
           "responseType": null,
           "call": "apiRequest('/system/config')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 108,
+          "line": 110,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3510,7 +3510,7 @@
       "id": "service:systemApi.getMousePosition",
       "operation": "systemApi.getMousePosition",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 130,
+      "line": 132,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3520,7 +3520,7 @@
           "responseType": null,
           "call": "apiRequest('/system/mouse-position')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 130,
+          "line": 132,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3531,7 +3531,7 @@
       "id": "service:systemApi.openUrl",
       "operation": "systemApi.openUrl",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 126,
+      "line": 128,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3541,7 +3541,7 @@
           "responseType": null,
           "call": "apiRequest('/system/open-url', { method: 'POST', body: JSON.stringify({ url }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 127,
+          "line": 129,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3552,7 +3552,7 @@
       "id": "service:systemApi.screenshotBase64",
       "operation": "systemApi.screenshotBase64",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 136,
+      "line": 138,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3562,7 +3562,7 @@
           "responseType": "{ success: boolean; dataUrl?: string; width?: number; height?: number; error?: string }",
           "call": "apiRequest<{ success: boolean; dataUrl?: string; width?: number; height?: number; error?: string }>(\n      '/system/screenshot-base64', { method: 'POST', body: '{}' }\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 137,
+          "line": 139,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3573,7 +3573,7 @@
       "id": "service:systemApi.selectFile",
       "operation": "systemApi.selectFile",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 121,
+      "line": 123,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3583,7 +3583,7 @@
           "responseType": null,
           "call": "apiRequest('/system/select-file', { \n      method: 'POST', \n      body: JSON.stringify({ title, initialDir, fileTypes }) \n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 122,
+          "line": 124,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3631,7 +3631,7 @@
       "id": "service:systemApi.selectFolder",
       "operation": "systemApi.selectFolder",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 116,
+      "line": 118,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3641,7 +3641,7 @@
           "responseType": null,
           "call": "apiRequest('/system/select-folder', { \n      method: 'POST', \n      body: JSON.stringify({ title, initialDir }) \n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 117,
+          "line": 119,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3695,7 +3695,7 @@
       "id": "service:systemApi.setBrowserConfig",
       "operation": "systemApi.setBrowserConfig",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 111,
+      "line": 113,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3705,7 +3705,7 @@
           "responseType": "{ success: boolean; config: Record<string, unknown> }",
           "call": "apiRequest<{ success: boolean; config: Record<string, unknown> }>('/system/browser-config', {\n      method: 'POST',\n      body: JSON.stringify(cfg),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 112,
+          "line": 114,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3735,7 +3735,7 @@
       "id": "service:systemApi.setClipboard",
       "operation": "systemApi.setClipboard",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 132,
+      "line": 134,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3745,7 +3745,7 @@
           "responseType": null,
           "call": "apiRequest('/system/set-clipboard', { method: 'POST', body: JSON.stringify({ text }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 133,
+          "line": 135,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3769,7 +3769,7 @@
       "id": "service:systemApi.setCustomHotkeys",
       "operation": "systemApi.setCustomHotkeys",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 128,
+      "line": 130,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3779,7 +3779,7 @@
           "responseType": null,
           "call": "apiRequest('/system/custom-hotkeys', { method: 'POST', body: JSON.stringify({ shortcuts }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 129,
+          "line": 131,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3797,7 +3797,7 @@
       "id": "service:systemApi.takeScreenshot",
       "operation": "systemApi.takeScreenshot",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 134,
+      "line": 136,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3807,7 +3807,7 @@
           "responseType": null,
           "call": "apiRequest('/system/screenshot', { method: 'POST', body: JSON.stringify(params || {}) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 135,
+          "line": 137,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3818,7 +3818,7 @@
       "id": "service:variableTrackingApi.clear",
       "operation": "variableTrackingApi.clear",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 656,
+      "line": 658,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3828,7 +3828,7 @@
           "responseType": "components['schemas']['StudioVariableTrackingCleared']",
           "call": "apiRequest<components['schemas']['StudioVariableTrackingCleared']>(\n      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {method:'DELETE',signal})",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 657,
+          "line": 659,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3846,7 +3846,7 @@
       "id": "service:variableTrackingApi.list",
       "operation": "variableTrackingApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 643,
+      "line": 645,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3856,7 +3856,7 @@
           "responseType": "components['schemas']['StudioVariableTrackingResult']",
           "call": "apiRequest<components['schemas']['StudioVariableTrackingResult']>(\n      `/workflows/${encodeURIComponent(workflowId)}/variable-tracking`, {signal})",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 644,
+          "line": 646,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3874,7 +3874,7 @@
       "id": "service:workflowApi.create",
       "operation": "workflowApi.create",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 146,
+      "line": 148,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3884,7 +3884,7 @@
           "responseType": null,
           "call": "apiRequest('/workflows', { method: 'POST', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 147,
+          "line": 149,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3914,7 +3914,7 @@
       "id": "service:workflowApi.debugBreakpoints",
       "operation": "workflowApi.debugBreakpoints",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 163,
+      "line": 165,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3924,7 +3924,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}/debug/breakpoints`, { method: 'POST', body: JSON.stringify({ breakpoints }) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 164,
+          "line": 166,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3935,20 +3935,9 @@
       "id": "service:workflowApi.debugResume",
       "operation": "workflowApi.debugResume",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 157,
+      "line": 159,
       "source": "frontend/src/services/api.ts",
-      "requests": [
-        {
-          "endpoint": "`/workflows/${id}/debug/resume`",
-          "method": "POST",
-          "body": null,
-          "responseType": null,
-          "call": "apiRequest(`/workflows/${id}/debug/resume`, { method: 'POST' })",
-          "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 158,
-          "source": "frontend/src/services/api.ts"
-        }
-      ],
+      "requests": [],
       "consumers": [],
       "status": "待核对"
     },
@@ -3956,20 +3945,9 @@
       "id": "service:workflowApi.debugStep",
       "operation": "workflowApi.debugStep",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 160,
+      "line": 162,
       "source": "frontend/src/services/api.ts",
-      "requests": [
-        {
-          "endpoint": "`/workflows/${id}/debug/step`",
-          "method": "POST",
-          "body": null,
-          "responseType": null,
-          "call": "apiRequest(`/workflows/${id}/debug/step`, { method: 'POST' })",
-          "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 161,
-          "source": "frontend/src/services/api.ts"
-        }
-      ],
+      "requests": [],
       "consumers": [],
       "status": "待核对"
     },
@@ -3977,7 +3955,7 @@
       "id": "service:workflowApi.delete",
       "operation": "workflowApi.delete",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 150,
+      "line": 152,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -3987,7 +3965,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}`, { method: 'DELETE' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 151,
+          "line": 153,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -3998,7 +3976,7 @@
       "id": "service:workflowApi.execute",
       "operation": "workflowApi.execute",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 152,
+      "line": 154,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4008,7 +3986,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify(params || {}) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 153,
+          "line": 155,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4026,7 +4004,7 @@
       "id": "service:workflowApi.exportScript",
       "operation": "workflowApi.exportScript",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 176,
+      "line": 178,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4036,7 +4014,7 @@
           "responseType": "{ code: string; filename: string; target: string }",
           "call": "apiRequest<{ code: string; filename: string; target: string }>(\n      `/workflows/${id}/export-script?target=${encodeURIComponent(target)}`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 177,
+          "line": 179,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4054,7 +4032,7 @@
       "id": "service:workflowApi.get",
       "operation": "workflowApi.get",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 145,
+      "line": 147,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4064,7 +4042,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}`)",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 145,
+          "line": 147,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4075,7 +4053,7 @@
       "id": "service:workflowApi.getFullData",
       "operation": "workflowApi.getFullData",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 166,
+      "line": 168,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4085,7 +4063,7 @@
           "responseType": "{ rows: Record<string, unknown>[]; columns: string[]; total: number }",
           "call": "apiRequest<{ rows: Record<string, unknown>[]; columns: string[]; total: number }>(\n      `/workflows/${id}/data/full`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 167,
+          "line": 169,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4103,7 +4081,7 @@
       "id": "service:workflowApi.getGlobalVariables",
       "operation": "workflowApi.getGlobalVariables",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 181,
+      "line": 183,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4113,7 +4091,7 @@
           "responseType": "{ variables: Record<string, unknown>; count: number }",
           "call": "apiRequest<{ variables: Record<string, unknown>; count: number }>(\n      '/workflows/global-variables'\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 182,
+          "line": 184,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4124,7 +4102,7 @@
       "id": "service:workflowApi.getLatestFullData",
       "operation": "workflowApi.getLatestFullData",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 171,
+      "line": 173,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4134,7 +4112,7 @@
           "responseType": "{ workflow_id: string; rows: Record<string, unknown>[]; columns: string[]; total: number }",
           "call": "apiRequest<{ workflow_id: string; rows: Record<string, unknown>[]; columns: string[]; total: number }>(\n      `/workflows/data-latest/full`\n    )",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 172,
+          "line": 174,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4152,7 +4130,7 @@
       "id": "service:workflowApi.list",
       "operation": "workflowApi.list",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 144,
+      "line": 146,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4162,7 +4140,7 @@
           "responseType": null,
           "call": "apiRequest('/workflows')",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 144,
+          "line": 146,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4173,7 +4151,7 @@
       "id": "service:workflowApi.stop",
       "operation": "workflowApi.stop",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 154,
+      "line": 156,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4183,7 +4161,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}/stop`, { method: 'POST' })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 155,
+          "line": 157,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4207,7 +4185,7 @@
       "id": "service:workflowApi.update",
       "operation": "workflowApi.update",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 148,
+      "line": 150,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4217,7 +4195,7 @@
           "responseType": null,
           "call": "apiRequest(`/workflows/${id}`, { method: 'PUT', body: JSON.stringify(data) })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 149,
+          "line": 151,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4247,7 +4225,7 @@
       "id": "service:workflowBundleApi.export",
       "operation": "workflowBundleApi.export",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 471,
+      "line": 473,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4257,7 +4235,7 @@
           "responseType": "{ success: boolean; bundle?: unknown; error?: string }",
           "call": "apiRequest<{ success: boolean; bundle?: unknown; error?: string }>('/workflow-bundle/export', {\n      method: 'POST',\n      body: JSON.stringify({ name, content }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 472,
+          "line": 474,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4275,7 +4253,7 @@
       "id": "service:workflowBundleApi.import",
       "operation": "workflowBundleApi.import",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 476,
+      "line": 478,
       "source": "frontend/src/services/api.ts",
       "requests": [
         {
@@ -4285,7 +4263,7 @@
           "responseType": "{\n      success: boolean\n      name?: string\n      workflow?: { nodes: unknown[]; edges: unknown[]; variables: unknown[] }\n      restored?: { customModules: number; images: number }\n      error?: string\n    }",
           "call": "apiRequest<{\n      success: boolean\n      name?: string\n      workflow?: { nodes: unknown[]; edges: unknown[]; variables: unknown[] }\n      restored?: { customModules: number; images: number }\n      error?: string\n    }>('/workflow-bundle/import', {\n      method: 'POST',\n      body: JSON.stringify({ bundle }),\n    })",
           "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-          "line": 477,
+          "line": 479,
           "source": "frontend/src/services/api.ts"
         }
       ],
@@ -4605,7 +4583,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 830,
+          "line": 832,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -4617,7 +4595,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 567,
+          "line": 569,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4625,7 +4603,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 622,
+          "line": 624,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('execution:completed', { \n        detail: { status, executedNodes: data.result.executedNodes, failedNodes: data.result.failedNodes } \n      })"
@@ -4638,7 +4616,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 647,
+          "line": 649,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4651,7 +4629,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 658,
+          "line": 660,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4664,7 +4642,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 524,
+          "line": 526,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4677,7 +4655,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 534,
+          "line": 536,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4690,7 +4668,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 451,
+          "line": 453,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4703,7 +4681,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 489,
+          "line": 491,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4755,7 +4733,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 539,
+          "line": 541,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4768,7 +4746,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 548,
+          "line": 550,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4807,7 +4785,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 669,
+          "line": 671,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4820,7 +4798,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 529,
+          "line": 531,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4833,7 +4811,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 557,
+          "line": 559,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -4970,7 +4948,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 720,
+          "line": 722,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         },
@@ -4984,7 +4962,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 722,
+          "line": 724,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:custom_action', { detail: data })"
@@ -5003,7 +4981,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 699,
+          "line": 701,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5011,7 +4989,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 701,
+          "line": 703,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_start')"
@@ -5030,7 +5008,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 706,
+          "line": 708,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5038,7 +5016,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 708,
+          "line": 710,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:macro_stop')"
@@ -5051,7 +5029,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 694,
+          "line": 696,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5072,7 +5050,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 682,
+          "line": 684,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:run')"
@@ -5085,7 +5063,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 679,
+          "line": 681,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5110,7 +5088,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 713,
+          "line": 715,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5118,7 +5096,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 715,
+          "line": 717,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:screenshot')"
@@ -5139,7 +5117,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 689,
+          "line": 691,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('hotkey:stop')"
@@ -5152,7 +5130,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 687,
+          "line": 689,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.on"
         }
@@ -5683,7 +5661,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 631,
+          "line": 633,
           "source": "frontend/src/services/socket.ts",
           "via": "CustomEvent",
           "call": "new CustomEvent('selector:healed', { detail: { workflowId: data.workflowId, documentId: this.executionDocument?.workflowId === data.workflowId ? this.executionDocument.documentId : undefined, heals } })"
@@ -5703,7 +5681,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 845,
+          "line": 847,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -5722,7 +5700,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/events.ts",
-          "line": 837,
+          "line": 839,
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
@@ -6804,6 +6782,26 @@
       "call": "apiRequest<BrowserScriptState>(path,options)"
     },
     {
+      "endpoint": "`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/${action}`",
+      "method": "POST",
+      "body": "body:JSON.stringify(request)",
+      "responseType": null,
+      "file": "apps/desktop/src/renderer/domains/workflows/api/debugControl.ts",
+      "line": 13,
+      "source": null,
+      "call": "studioFetch(`${origin}/api/workflows/${encodeURIComponent(workflowId)}/debug/${action}`,{\n      method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:AbortSignal.timeout(10000),\n    })"
+    },
+    {
+      "endpoint": "`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`",
+      "method": "GET",
+      "body": null,
+      "responseType": null,
+      "file": "apps/desktop/src/renderer/domains/workflows/api/debugControl.ts",
+      "line": 33,
+      "source": null,
+      "call": "studioFetch(`${origin}/api/events/commands/${encodeURIComponent(request.commandId)}`,{signal:AbortSignal.timeout(10000)})"
+    },
+    {
       "endpoint": "`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`",
       "method": "GET",
       "body": null,
@@ -6849,7 +6847,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 54,
+      "line": 56,
       "source": "frontend/src/services/api.ts",
       "call": "studioFetch(url, {\n      ...options,\n      headers: isFormData\n        ? { ..._authHeader, ...(options.headers as Record<string, string>) }\n        : { 'Content-Type': 'application/json', ..._authHeader, ...(options.headers as Record<string, string>) },\n    })"
     },
@@ -6859,7 +6857,7 @@
       "body": null,
       "responseType": "components['schemas']['StudioClaimedRequestState']",
       "file": "apps/desktop/src/renderer/domains/workflows/api.ts",
-      "line": 622,
+      "line": 624,
       "source": "frontend/src/services/api.ts",
       "call": "apiRequest<components['schemas']['StudioClaimedRequestState']>(`${endpoint}/${encodeURIComponent(requestId)}`)"
     },

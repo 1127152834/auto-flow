@@ -7,6 +7,10 @@ from pydantic.json_schema import models_json_schema
 from . import workflow_studio_schemas as schemas
 
 STUDIO_SCHEMAS = (
+    schemas.StudioDebugPauseContext,
+    schemas.StudioDebugControlRequest,
+    schemas.StudioDebugControlReceipt,
+    schemas.StudioDebugControlLookup,
     schemas.StudioMcpConfig,
     schemas.StudioMcpSaveRequest,
     schemas.StudioMcpSaved,

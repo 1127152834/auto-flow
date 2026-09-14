@@ -10,7 +10,13 @@ describe.each(['memory', 'http'])('debug request validation over %s', mode => {
     vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) })
     vi.resetModules(); server = await import('../api/mock-server')
     if (mode === 'http') fixture = await startHttpStudioFixture(server.mockRequest)
-    request = (action, body = {}, method = 'POST') => {
+    let lastPause:ReturnType<typeof server.mockSnapshot>['pause']=null
+    request = (action, body, method = 'POST') => {
+      if(method==='POST' && body===undefined && /\/debug\/(step|resume)$/.test(action)){
+        lastPause=server.mockSnapshot().pause || lastPause
+        body={commandId:crypto.randomUUID(),...lastPause}
+      }
+      body ??= {}
       const init = { method, ...(method === 'GET' ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) }
       return fixture ? fetch(`${fixture.origin}/api${action}`, init) : server.mockRequest(`http://autoflow-studio.mock/api${action}`, init)
     }

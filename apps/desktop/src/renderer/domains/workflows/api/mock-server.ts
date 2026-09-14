@@ -1,3 +1,4 @@
+import {isDebugControlRequest} from '../lib/debugControlContract'
 import requiredFieldMetadata from '../development/module-required-fields.json'
 import {mockBrowserScriptTests,mockScriptTestBusy,invalidateMockScriptTests,configureMockScriptTest} from './mock-browser-script-tests'
 import { isSpeechRequest } from '../lib/runSpeech'
@@ -49,11 +50,33 @@ let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
-let run: { tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+let run: { pauseId:string|null; controlRevision:number; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
-const commandResults = new Map<string, { fingerprint: string; response: ObjectValue; status: number }>()
+type CommandRecord = { fingerprint:string; response:ObjectValue; status:number }
+const commandResults = new Map<string, CommandRecord>()
+const pendingCommands = new Map<string,{fingerprint:string;result:Promise<CommandRecord>}>()
 const response = (data: unknown, status = 200) => Response.json(data, { status })
 const failure = (message: string, status = 400) => response({ success: false, error: message, detail: message }, status)
+async function applyIdentifiedCommand(id:string,fingerprint:string,apply:()=>Response):Promise<Response> {
+  const previous=commandResults.get(id)
+  if(previous)return previous.fingerprint===fingerprint?response(previous.response,previous.status):failure('命令 ID 冲突',409)
+  const pending=pendingCommands.get(id)
+  if(pending){
+    if(pending.fingerprint!==fingerprint)return failure('命令 ID 冲突',409)
+    const result=await pending.result
+    return response(result.response,result.status)
+  }
+  const result=(async()=>{
+    let outcome:Response
+    try{outcome=apply()}catch(error){outcome=failure(error instanceof Error?error.message:'命令处理失败',500)}
+    const record={fingerprint,response:{...await outcome.json(),commandId:id},status:outcome.status}
+    commandResults.set(id,record)
+    return record
+  })()
+  pendingCommands.set(id,{fingerprint,result})
+  try{const record=await result;return response(record.response,record.status)}
+  finally{pendingCommands.delete(id)}
+}
 const encode = (e: EventRecord) => encoder.encode(`id: ${e.sequence}\nevent: ${e.event}\ndata: ${JSON.stringify(e.data)}\n\n`)
 export function emitMockEvent(event: string, data: unknown) {
   const e = { sequence: events.length + 1, event, data }
@@ -75,7 +98,7 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
     streams.clear()
   }
 }
-export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, sequence: events.length } }
+export function mockSnapshot() { return { offline, browser, recording, picking, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
 export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
   recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
@@ -226,7 +249,9 @@ function tick(skipBreakpoint = false) {
   const data = node.data as ObjectValue | undefined
   if (!skipBreakpoint && (current.step || current.breakpoints.includes(nodeId))) {
     current.paused = true
-    emitMockEvent('execution:paused', { workflowId: current.id, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, reason: current.step ? 'step' : 'breakpoint' })
+    current.pauseId = crypto.randomUUID()
+    current.controlRevision++
+    emitMockEvent('execution:paused', { workflowId: current.id, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, reason: current.step ? 'step' : 'breakpoint' })
     return
   }
   current.paused = false
@@ -346,7 +371,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         nextExecutionOrder = null
         finishedWorkflows.delete(id)
         runRows.set(id, [])
-        run = { id, nodes, index, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
+        run = { id, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables: Object.fromEntries(((doc.variables || []) as ObjectValue[]).filter(v => Object.hasOwn(v, 'value')).map(v => [String(v.name), v.value])) }
         tracking.set(id,Object.entries(run.variables).map(([name,value])=>({timestamp:new Date().toISOString(),variable_name:name,old_value:null,new_value:value,node_id:'',node_name:'[Mock] Initial values',operation:'create',value_type:typeof value})))
         run.timer = setTimeout(() => { if (run?.id === id) { emitMockEvent('execution:started', { workflowId: id }); tick() } }, 30)
         return response({ success: true, workflowId: id, mock: true })
@@ -420,7 +445,9 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     }
     const commandQuery = path.match(/^\/events\/commands\/([^/]+)$/)
     if (commandQuery && method === 'GET') {
-      const previous = commandResults.get(decodeURIComponent(commandQuery[1]))
+      const commandId=decodeURIComponent(commandQuery[1])
+      const pending=pendingCommands.get(commandId)
+      const previous = pending?await pending.result:commandResults.get(commandId)
       return previous ? response({ ...previous.response, httpStatus: previous.status }) : failure('命令不存在', 404)
     }
     if (path === '/events/commands') {
@@ -428,12 +455,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (typeof body.commandId !== 'string' || !body.commandId.trim() || typeof body.event !== 'string' || !body.event.trim()) return failure('缺少命令标识或事件名', 400)
       const id = body.commandId
       const fingerprint = JSON.stringify(body)
-      const previous = commandResults.get(id)
-      if (previous) return previous.fingerprint === fingerprint ? response(previous.response, previous.status) : failure('命令 ID 冲突', 409)
-      const outcome = applyCommand(body.event, body.data)
-      const result = { ...await outcome.json(), commandId: id }
-      commandResults.set(id, { fingerprint, response: result, status: outcome.status })
-      return response(result, outcome.status)
+      return applyIdentifiedCommand(id,fingerprint,()=>applyCommand(body.event as string,body.data))
     }
     if (path === '/local-workflows/default-folder' || path === '/local-workflows/active-folder') {
       if (method === 'POST') persist({ ...db, folder: String(body.folder || empty().folder) })
@@ -492,16 +514,26 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (action.startsWith('/debug/')) {
         if (!['/debug/resume', '/debug/step', '/debug/breakpoints'].includes(action)) return failure('未知调试操作', 404)
         if (method !== 'POST') return failure('调试操作只接受 POST 请求', 405)
-        if (!run || run.id !== id) return failure('没有活跃运行', 409)
         if (action === '/debug/breakpoints') {
+          if (!run || run.id !== id) return failure('没有活跃运行',409)
           if (!validBreakpoints(body.breakpoints, run.nodeIds)) return failure('断点必须是运行快照中的节点标识数组', 422)
           run.breakpoints = [...body.breakpoints]
+          return response({success:true})
         }
-        else {
-          if (!run.paused) return failure('运行未暂停', 409)
-          run.step = action === '/debug/step'; emitMockEvent('execution:resumed', { workflowId: id }); tick(true)
-        }
-        return response({ success: true })
+        if(!isDebugControlRequest(body))return failure('缺少有效的调试命令和暂停标识',422)
+        const controlAction=action==='/debug/step'?'step':'resume'
+        const fingerprint=JSON.stringify(['debug',id,controlAction,body.commandId,body.pauseId,body.controlRevision])
+        return applyIdentifiedCommand(body.commandId,fingerprint,()=>{
+          const receipt={...body,workflowId:id,action:controlAction}
+          if(!run || run.id!==id || !run.paused || run.pauseId!==body.pauseId || run.controlRevision!==body.controlRevision) {
+            return response({...receipt,success:false,error:'暂停上下文已过期或运行未暂停'},409)
+          }
+          run.step=controlAction==='step'
+          run.controlRevision++
+          emitMockEvent('execution:resumed',{workflowId:id,pauseId:body.pauseId,controlRevision:run.controlRevision})
+          tick(true)
+          return response({...receipt,success:true,error:null})
+        })
       }
       if (!action && method === 'GET') return db.workflows[id] ? response(db.workflows[id]) : failure('工作流不存在',404)
       if (!action && method === 'DELETE') { const workflows = { ...db.workflows }; delete workflows[id]; persist({ ...db, workflows }); return response({success:true}) }

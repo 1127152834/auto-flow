@@ -4350,6 +4350,68 @@ export type components = {
                 [key: string]: string[];
             };
         };
+        /** StudioDebugControlLookup */
+        StudioDebugControlLookup: {
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Workflowid */
+            workflowId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "resume" | "step";
+            /** Success */
+            success: boolean;
+            /** Error */
+            error: string | null;
+            /** Httpstatus */
+            httpStatus: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioDebugControlReceipt */
+        StudioDebugControlReceipt: {
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+            /** Workflowid */
+            workflowId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "resume" | "step";
+            /** Success */
+            success: boolean;
+            /** Error */
+            error: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** StudioDebugControlRequest */
+        StudioDebugControlRequest: {
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+            /** Commandid */
+            commandId: string;
+        };
+        /** StudioDebugPauseContext */
+        StudioDebugPauseContext: {
+            /** Pauseid */
+            pauseId: string;
+            /** Controlrevision */
+            controlRevision: number;
+        };
         /** StudioImageAsset */
         StudioImageAsset: {
             /** Id */

@@ -1,3 +1,5 @@
+import {sendDebugControl} from './api/debugControl'
+import type {DebugControlRequest} from './lib/debugControlContract'
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { studioFetch } from './api/transport'
@@ -154,11 +156,11 @@ export const workflowApi = {
   stop: (id: string) =>
     apiRequest(`/workflows/${id}/stop`, { method: 'POST' }),
   /** 调试：从暂停处继续 */
-  debugResume: (id: string) =>
-    apiRequest(`/workflows/${id}/debug/resume`, { method: 'POST' }),
+  debugResume: (id: string, context: DebugControlRequest) =>
+    sendDebugControl(id,'resume',context),
   /** 调试：单步执行 */
-  debugStep: (id: string) =>
-    apiRequest(`/workflows/${id}/debug/step`, { method: 'POST' }),
+  debugStep: (id: string, context: DebugControlRequest) =>
+    sendDebugControl(id,'step',context),
   /** 调试：运行中更新断点 */
   debugBreakpoints: (id: string, breakpoints: string[]) =>
     apiRequest(`/workflows/${id}/debug/breakpoints`, { method: 'POST', body: JSON.stringify({ breakpoints }) }),

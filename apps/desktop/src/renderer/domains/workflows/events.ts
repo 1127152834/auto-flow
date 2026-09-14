@@ -367,13 +367,15 @@ class SocketService {
     })
 
     // 调试：命中断点/单步 → 暂停
-    this.socket.on('execution:paused', (data: { workflowId: string; node_id: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => {
+    this.socket.on('execution:paused', (data: { workflowId: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; reason?: 'breakpoint' | 'step' }) => {
       if (data.workflowId !== useWorkflowStore.getState().currentExecutionWorkflowId) return
-      useDebugStore.getState().setPaused({ nodeId: data.node_id, label: data.label, variables: data.variables, reason: data.reason })
+      useDebugStore.getState().setPaused({ pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, reason: data.reason })
     })
     // 调试：恢复
-    this.socket.on('execution:resumed', (data: {workflowId: string}) => {
+    this.socket.on('execution:resumed', (data: {workflowId: string; pauseId?:string}) => {
       if (data.workflowId !== useWorkflowStore.getState().currentExecutionWorkflowId) return
+      const context=useDebugStore.getState().pauseContext
+      if(context && context.pauseId!==data.pauseId)return
       useDebugStore.getState().clearPaused()
     })
 

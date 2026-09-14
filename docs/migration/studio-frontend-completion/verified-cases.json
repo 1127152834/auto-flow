@@ -32040,5 +32040,668 @@
     "level": "script",
     "status": "通过",
     "evidencePath": "scripts/studio-service-inventory.test.mjs"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.concurrent-retry",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "并发发送两份相同单步，跨暂停重发，停止后查询及重发"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "200 相同确认；GET 原命令 200",
+    "stateAssertion": "只推进一次；停止后运行保持空",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.old-pause",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "执行一次单步，下一暂停重发旧上下文的新 ID"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "409",
+    "stateAssertion": "下一暂停不变",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.wrong-revision",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "错误修订发送 step，再以相同 ID 不同内容 resume"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "409 / 409",
+    "stateAssertion": "状态无变化",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.missing-all",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "发送空对象"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.missing-pause",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "仅发送 commandId"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.memory.string-revision",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "memory",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "发送字符串 controlRevision"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "service protocol",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.concurrent-retry",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "并发发送两份相同单步，跨暂停重发，停止后查询及重发"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "200 相同确认；GET 原命令 200",
+    "stateAssertion": "只推进一次；停止后运行保持空",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.old-pause",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "执行一次单步，下一暂停重发旧上下文的新 ID"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "409",
+    "stateAssertion": "下一暂停不变",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.wrong-revision",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "错误修订发送 step，再以相同 ID 不同内容 resume"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "409 / 409",
+    "stateAssertion": "状态无变化",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.missing-all",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "发送空对象"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.missing-pause",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "仅发送 commandId"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.http.string-revision",
+    "capability": "debug:step",
+    "preconditions": {
+      "transport": "http",
+      "document": "三节点；首节点前暂停"
+    },
+    "steps": [
+      "发送字符串 controlRevision"
+    ],
+    "expectedUI": "协议测试不挂载页面",
+    "expectedIO": "422",
+    "stateAssertion": "未调度",
+    "level": "HTTP integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-pause-identity.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.recovery.lost",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "response": "lost",
+      "context": "command/pause/revision=1"
+    },
+    "steps": [
+      "提交 step",
+      "只按原命令标识查询"
+    ],
+    "expectedUI": "由 SSE 控制暂停状态",
+    "expectedIO": "1 POST + 1 GET 原 commandId",
+    "stateAssertion": "确认结果身份一致；未重发 step",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.recovery.server-error",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "response": "server-error",
+      "context": "command/pause/revision=1"
+    },
+    "steps": [
+      "提交 step",
+      "只按原命令标识查询"
+    ],
+    "expectedUI": "由 SSE 控制暂停状态",
+    "expectedIO": "1 POST + 1 GET 原 commandId",
+    "stateAssertion": "确认结果身份一致；未重发 step",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.recovery.wrong-identity",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "response": "wrong-identity",
+      "context": "command/pause/revision=1"
+    },
+    "steps": [
+      "提交 step",
+      "只按原命令标识查询"
+    ],
+    "expectedUI": "由 SSE 控制暂停状态",
+    "expectedIO": "1 POST + 1 GET 原 commandId",
+    "stateAssertion": "确认结果身份一致；未重发 step",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.lookup.workflow",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "lookupMismatch": "workflow"
+    },
+    "steps": [
+      "丢弃 POST 响应",
+      "返回错误身份查询结果"
+    ],
+    "expectedUI": "保留未确认提示",
+    "expectedIO": "1 POST + 1 GET",
+    "stateAssertion": "success=false 且无确认状态码",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.lookup.pause",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "lookupMismatch": "pause"
+    },
+    "steps": [
+      "丢弃 POST 响应",
+      "返回错误身份查询结果"
+    ],
+    "expectedUI": "保留未确认提示",
+    "expectedIO": "1 POST + 1 GET",
+    "stateAssertion": "success=false 且无确认状态码",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.lookup.revision",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "lookupMismatch": "revision"
+    },
+    "steps": [
+      "丢弃 POST 响应",
+      "返回错误身份查询结果"
+    ],
+    "expectedUI": "保留未确认提示",
+    "expectedIO": "1 POST + 1 GET",
+    "stateAssertion": "success=false 且无确认状态码",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.lookup.missing",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "lookupMismatch": "missing"
+    },
+    "steps": [
+      "丢弃 POST 响应",
+      "返回错误身份查询结果"
+    ],
+    "expectedUI": "保留未确认提示",
+    "expectedIO": "1 POST + 1 GET",
+    "stateAssertion": "success=false 且无确认状态码",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.connection-replaced",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "connection": "提交中更换服务"
+    },
+    "steps": [
+      "挂起 POST",
+      "更换连接",
+      "返回旧确认"
+    ],
+    "expectedUI": "旧响应不能确认新服务状态",
+    "expectedIO": "新服务没有收到查询",
+    "stateAssertion": "结果未确认",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.confirmed-rejection",
+    "capability": "debug:command-recovery",
+    "preconditions": {
+      "response": "匹配身份的 409"
+    },
+    "steps": [
+      "提交 step"
+    ],
+    "expectedUI": "不清除暂停",
+    "expectedIO": "一次 POST",
+    "stateAssertion": "返回明确冲突，不重试",
+    "level": "service consumer",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-control-recovery.test.ts"
+  },
+  {
+    "id": "DEBUG.pause-contract.legacy-pause",
+    "capability": "debug:controls",
+    "preconditions": {
+      "pause": "缺少服务端身份"
+    },
+    "steps": [
+      "渲染 DebugBar"
+    ],
+    "expectedUI": "继续/单步禁用，停止可用",
+    "expectedIO": "不提交无身份命令",
+    "stateAssertion": "旧事件仅展示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "DEBUG.pause-contract.duplicate-pause",
+    "capability": "debug:controls",
+    "preconditions": {
+      "pause": "同 pauseId/revision"
+    },
+    "steps": [
+      "点击单步",
+      "重复发送同次暂停"
+    ],
+    "expectedUI": "等待状态不解锁",
+    "expectedIO": "请求包含稳定 commandId/pauseId/revision",
+    "stateAssertion": "未确认命令仍锁定",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx"
+  },
+  {
+    "id": "DEBUG.pause-contract.http-button.false",
+    "capability": "debug:controls",
+    "preconditions": {
+      "transport": "本地 HTTP/SSE",
+      "dropStepResponse": false
+    },
+    "steps": [
+      "启动双节点并暂停",
+      "点击单步",
+      "发送旧 resumed",
+      "点击停止"
+    ],
+    "expectedUI": "下一暂停可继续控制；旧事件不清除它；停止后调试条消失",
+    "expectedIO": "1 次 step；丢响应时 1 次查询，否则 0 次",
+    "stateAssertion": "最终只完成 1 节点且运行空",
+    "level": "component + HTTP/SSE",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-http.test.tsx"
+  },
+  {
+    "id": "DEBUG.pause-contract.http-button.true",
+    "capability": "debug:controls",
+    "preconditions": {
+      "transport": "本地 HTTP/SSE",
+      "dropStepResponse": true
+    },
+    "steps": [
+      "启动双节点并暂停",
+      "点击单步",
+      "发送旧 resumed",
+      "点击停止"
+    ],
+    "expectedUI": "下一暂停可继续控制；旧事件不清除它；停止后调试条消失",
+    "expectedIO": "1 次 step；丢响应时 1 次查询，否则 0 次",
+    "stateAssertion": "最终只完成 1 节点且运行空",
+    "level": "component + HTTP/SSE",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/debug-bar-http.test.tsx"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.roundtrip",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "roundtrip"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.pause-empty",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "pause-empty"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.command-blank",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "command-blank"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.revision-negative",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "revision-negative"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.revision-bool",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "revision-bool"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.revision-string",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "revision-string"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.revision-fraction",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "revision-fraction"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.extra-key",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "extra-key"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.action-invalid",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "action-invalid"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.success-string",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "success-string"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.failure-without-error",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "failure-without-error"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.success-with-error",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "success-with-error"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.dto.success-http500",
+    "capability": "contract:debug",
+    "preconditions": {
+      "case": "success-http500"
+    },
+    "steps": [
+      "Pydantic 验证请求/确认"
+    ],
+    "expectedUI": "不适用：DTO 测试",
+    "expectedIO": "无网络请求",
+    "stateAssertion": "合法往返一致；对应非法输入抛 ValidationError",
+    "level": "backend contract",
+    "status": "通过",
+    "evidencePath": "apps/backend/tests/contract/test_studio_debug_control.py"
+  },
+  {
+    "id": "DEBUG.pause-contract.browser-buttons",
+    "capability": "debug:ui-chain",
+    "preconditions": {
+      "url": "http://localhost:5175/studio.html",
+      "document": "F3 暂停身份与单步确认"
+    },
+    "steps": [
+      "拖入双节点",
+      "断点",
+      "运行",
+      "单步",
+      "停止",
+      "保存"
+    ],
+    "expectedUI": "断点暂停→单步暂停→停止→保存成功",
+    "expectedIO": "本例不直接抓包；HTTP 请求另测",
+    "stateAssertion": "只有 1 次 Mock 调度；不代表真实执行",
+    "level": "browser UI",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f3-debug-pause/browser-ui.md"
   }
 ]
