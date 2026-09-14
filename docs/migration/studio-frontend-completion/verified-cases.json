@@ -33056,5 +33056,157 @@
     "level": "browser UI",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-picker/browser-ui.md"
+  },
+  {
+    "id": "RESOURCE.image-cache.failure",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "failure",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 failure",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "错误和恢复记录进入日志",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "失败保留旧列表、恢复更新、重复失败去重",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.exception",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "exception",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 exception",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "错误和恢复记录进入日志",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "失败保留旧列表、恢复更新、重复失败去重",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.malformed",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "malformed",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 malformed",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "错误和恢复记录进入日志",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "失败保留旧列表、恢复更新、重复失败去重",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.refresh",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "refresh",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 refresh",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "旧请求不污染最新资源缓存",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "检查缓存保留新版本，卸载后不再接收刷新",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.local-change",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "local-change",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 local-change",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "旧请求不污染最新资源缓存",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "检查缓存保留新版本，卸载后不再接收刷新",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.unmount",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "unmount",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 unmount",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "旧请求不污染最新资源缓存",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "检查缓存保留新版本，卸载后不再接收刷新",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.failure-dedup",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "failure-dedup",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 failure-dedup",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "错误和恢复记录进入日志",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "失败保留旧列表、恢复更新、重复失败去重",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
+  },
+  {
+    "id": "RESOURCE.image-cache.connection",
+    "capability": "service:image-cache-initialization",
+    "preconditions": {
+      "scenario": "connection",
+      "data": "隔离资源列表",
+      "hook": "useStudioIntegration"
+    },
+    "steps": [
+      "触发 connection",
+      "返回旧请求或重连成功结果"
+    ],
+    "expectedUI": "旧请求不污染最新资源缓存",
+    "expectedIO": "现有 imageAssetApi.list；事件 socket:reconnected/refresh:image-assets/transport-changed 按用例触发",
+    "stateAssertion": "检查缓存保留新版本，卸载后不再接收刷新",
+    "level": "hook integration",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/studio-integration.test.tsx"
   }
 ]

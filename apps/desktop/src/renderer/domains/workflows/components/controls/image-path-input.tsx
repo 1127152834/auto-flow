@@ -4,6 +4,7 @@ import { FolderOpen, ChevronRight, Folder, Image } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import { systemApi, imageAssetApi } from '../../api'
+import { isImageAssetList } from '../../lib/imageAssetContract'
 import { getStudioTransportRevision } from '../../api/transport'
 import { ImageAssetPreview } from './image-asset-preview'
 import type { ImageAsset } from '../../types/index'
@@ -61,10 +62,7 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
         const [assetsResult, foldersResult] = await Promise.all([imageAssetApi.list(), imageAssetApi.listFolders()])
         if (!current()) return
         if (!assetsResult.success || !foldersResult.success) throw new Error(assetsResult.error || foldersResult.error || '资源服务未确认加载')
-        if (!Array.isArray(assetsResult.data) || !assetsResult.data.every(asset => asset &&
-          ['id','name','originalName','uploadedAt','folder','extension'].every(key => typeof asset[key] === 'string') &&
-          typeof asset.size === 'number' && Number.isFinite(asset.size) && asset.size >= 0 &&
-          (asset.path === null || typeof asset.path === 'string')) ||
+        if (!isImageAssetList(assetsResult.data) ||
           !Array.isArray(foldersResult.data) || !foldersResult.data.every(folder => typeof folder === 'string')) {
           throw new Error('图像资源列表格式错误')
         }

@@ -1,3 +1,5 @@
+import {isImageAssetList} from '../lib/imageAssetContract'
+import {getStudioTransportRevision} from '../api/transport'
 import { installGlobalTooltip } from '../lib/globalTooltip'
 import { useEffect, useRef } from 'react'
 import { imageAssetApi, systemApi } from '../api'
@@ -17,12 +19,35 @@ export function useStudioIntegration() {
   },[theme])
   useEffect(()=>{
     let disposed=false
+    let request=0
+    let lastError:string|null=null
+    const loadImages=async()=>{
+      const sequence=++request
+      const revision=getStudioTransportRevision()
+      const previous=useWorkflowStore.getState().imageAssets
+      const current=()=>!disposed && sequence===request && revision===getStudioTransportRevision() && previous===useWorkflowStore.getState().imageAssets
+      try {
+        const result=await imageAssetApi.list()
+        if(!current())return
+        if(!result.success)throw new Error(result.error || '资源服务未确认加载')
+        if(!isImageAssetList(result.data))throw new Error('图像资源列表格式错误')
+        useWorkflowStore.getState().setImageAssets(result.data)
+        if(lastError){useWorkflowStore.getState().addLog({level:'info',message:'图像资源加载已恢复'});lastError=null}
+      }catch(error){
+        if(!current())return
+        const message=error instanceof Error?error.message:'图像资源加载失败'
+        if(lastError!==message){useWorkflowStore.getState().addLog({level:'error',message:`图像资源加载失败: ${message}`});lastError=message}
+      }
+    }
+    const events=['socket:reconnected','refresh:image-assets','studio:transport-changed']
+    for(const event of events)window.addEventListener(event,loadImages)
     socketService.connect()
-    void imageAssetApi.list().then(images=>{
-      if(disposed)return
-      if(Array.isArray(images.data))useWorkflowStore.getState().setImageAssets(images.data)
-    })
-    return ()=>{disposed=true;socketService.disconnect()}
+    void loadImages()
+    return ()=>{
+      disposed=true
+      for(const event of events)window.removeEventListener(event,loadImages)
+      socketService.disconnect()
+    }
   },[])
   useEffect(()=>{
     const handler=(event:KeyboardEvent)=>{

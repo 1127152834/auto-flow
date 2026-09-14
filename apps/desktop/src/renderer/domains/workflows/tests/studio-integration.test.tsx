@@ -1,3 +1,4 @@
+import type {ImageAsset} from '../types'
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 vi.hoisted(() => {
@@ -6,7 +7,7 @@ vi.hoisted(() => {
 })
 const services = vi.hoisted(() => ({
   register: vi.fn<(...args: [Record<string, string>]) => Promise<{ success: boolean; error?: string }>>(async () => ({ success: true })),
-  images: vi.fn(async () => ({ success: true, data: [] })),
+  images: vi.fn<() => Promise<{success:boolean;data?:ImageAsset[];error?:string}>>(async () => ({ success: true, data: [] })),
   connect: vi.fn(), disconnect: vi.fn(), run: vi.fn(),
 }))
 vi.mock('../api', () => ({ imageAssetApi: { list: services.images }, systemApi: { setCustomHotkeys: services.register } }))
@@ -15,12 +16,14 @@ vi.mock('../lib/customShortcuts', async importOriginal => ({
   ...await importOriginal<typeof import('../lib/customShortcuts')>(),
   SHORTCUT_ACTION_MAP: { run_workflow: { run: services.run } },
 }))
+import {configureStudioConnection} from '../api/config'
 import { useStudioIntegration } from '../hooks/useStudioIntegration'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 beforeEach(() => {
   vi.clearAllMocks()
   services.register.mockReset().mockResolvedValue({ success: true })
+  services.images.mockReset().mockResolvedValue({success:true,data:[]})
   useWorkflowStore.setState({ logs: [] })
   useGlobalConfigStore.setState(state => ({ config: { ...state.config, shortcuts: { run_workflow: 'Alt+R' } } }))
 })
@@ -102,4 +105,57 @@ it.each(['edit', 'reconnect', 'unmount'] as const)('ignores obsolete registratio
   })
   await act(async () => reject(new Error('过期注册失败')))
   expect(useWorkflowStore.getState().logs).toEqual([])
+})
+
+const imageAsset:ImageAsset={id:'image',name:'image.png',originalName:'image.png',size:1,uploadedAt:'2026-09-14',folder:'',extension:'.png',path:null}
+it.each(['failure','exception','malformed'] as const)('reports image cache %s and recovers on reconnect',async mode=>{
+ useWorkflowStore.setState({imageAssets:[imageAsset]})
+ if(mode==='failure')services.images.mockResolvedValueOnce({success:false,error:'无权限'})
+ if(mode==='exception')services.images.mockRejectedValueOnce(new Error('服务离线'))
+ if(mode==='malformed')services.images.mockResolvedValueOnce({success:true,data:[{} as ImageAsset]})
+ renderHook(useStudioIntegration)
+ await waitFor(()=>expect(useWorkflowStore.getState().logs.some(log=>log.message.includes('图像资源加载失败'))).toBe(true))
+ expect(useWorkflowStore.getState().imageAssets).toEqual([imageAsset])
+ await act(async()=>window.dispatchEvent(new Event('socket:reconnected')))
+ expect(useWorkflowStore.getState().imageAssets).toEqual([])
+ expect(useWorkflowStore.getState().logs.at(-1)?.message).toBe('图像资源加载已恢复')
+})
+it.each(['refresh','local-change','unmount'] as const)('does not replace current images with an obsolete preload after %s',async action=>{
+ let resolve!:(value:{success:boolean;data:ImageAsset[]})=>void
+ services.images.mockImplementationOnce(()=>new Promise(done=>{resolve=done}))
+ useWorkflowStore.setState({imageAssets:[]})
+ const view=renderHook(useStudioIntegration)
+ const next={...imageAsset,id:'new'}
+ if(action==='refresh'){
+  services.images.mockResolvedValue({success:true,data:[next]})
+  await act(async()=>window.dispatchEvent(new Event('refresh:image-assets')))
+ }else if(action==='local-change')act(()=>useWorkflowStore.setState({imageAssets:[next]}))
+ else view.unmount()
+ await act(async()=>resolve({success:true,data:[imageAsset]}))
+ expect(useWorkflowStore.getState().imageAssets).toEqual(action==='unmount'?[]:[next])
+})
+it('deduplicates repeated resource failures until successful recovery',async()=>{
+ services.images.mockResolvedValue({success:false,error:'资源离线'});renderHook(useStudioIntegration)
+ await act(async()=>{})
+ await act(async()=>window.dispatchEvent(new Event('socket:reconnected')))
+ expect(useWorkflowStore.getState().logs.filter(log=>log.message.includes('图像资源加载失败'))).toHaveLength(1)
+ services.images.mockResolvedValue({success:true,data:[]});await act(async()=>window.dispatchEvent(new Event('socket:reconnected')))
+ services.images.mockResolvedValue({success:false,error:'资源离线'});await act(async()=>window.dispatchEvent(new Event('socket:reconnected')))
+ expect(useWorkflowStore.getState().logs.filter(log=>log.message.includes('图像资源加载失败'))).toHaveLength(2)
+})
+
+it('replaces connection-scoped image requests and removes refresh listeners on unmount',async()=>{
+ let resolve!:(value:{success:boolean;data:ImageAsset[]})=>void
+ services.images.mockImplementationOnce(()=>new Promise(done=>{resolve=done})).mockResolvedValue({success:true,data:[]})
+ const view=renderHook(useStudioIntegration)
+ let restore!:()=>void
+ act(()=>{restore=configureStudioConnection('http://next-image.fixture',fetch)})
+ try{
+  await waitFor(()=>expect(services.images).toHaveBeenCalledTimes(2))
+  await act(async()=>resolve({success:true,data:[imageAsset]}))
+  expect(useWorkflowStore.getState().imageAssets).toEqual([])
+  view.unmount()
+  window.dispatchEvent(new Event('refresh:image-assets'))
+  expect(services.images).toHaveBeenCalledTimes(2)
+ }finally{view.unmount();restore()}
 })

@@ -1,0 +1,142 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/studio-integration.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:54763) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/studio-integration.test.tsx (16 tests | 6 failed) 3173ms
+   × reports image cache failure and recovers on reconnect 1010ms
+   × reports image cache exception and recovers on reconnect 1005ms
+   × reports image cache malformed and recovers on reconnect 1004ms
+   × does not replace current images with an obsolete preload after refresh 2ms
+   × does not replace current images with an obsolete preload after local-change 1ms
+   × deduplicates repeated resource failures until successful recovery 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > reports image cache failure and recovers on reconnect
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > reports image cache exception and recovers on reconnect
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > reports image cache malformed and recovers on reconnect
+AssertionError: expected false to be true // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+  [36m</body>[39m
+[36m</html>[39m
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/studio-integration.test.tsx:116:105
+    114|  if(mode==='malformed')services.images.mockResolvedValueOnce({success:…
+    115|  renderHook(useStudioIntegration)
+    116|  await waitFor(()=>expect(useWorkflowStore.getState().logs.some(log=>l…
+       |                                                                                                         ^
+    117|  expect(useWorkflowStore.getState().imageAssets).toEqual([imageAsset])
+    118|  await act(async()=>window.dispatchEvent(new Event('socket:reconnected…
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > does not replace current images with an obsolete preload after refresh
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > does not replace current images with an obsolete preload after local-change
+AssertionError: expected [ { id: 'image', …(7) } ] to deeply equal [ { id: 'new', …(7) } ]
+
+- Expected
++ Received
+
+@@ -1,10 +1,10 @@
+  [
+    {
+      "extension": ".png",
+      "folder": "",
+-     "id": "new",
++     "id": "image",
+      "name": "image.png",
+      "originalName": "image.png",
+      "path": null,
+      "size": 1,
+      "uploadedAt": "2026-09-14",
+
+ ❯ src/renderer/domains/workflows/tests/studio-integration.test.tsx:134:50
+    132|  else view.unmount()
+    133|  await act(async()=>resolve({success:true,data:[imageAsset]}))
+    134|  expect(useWorkflowStore.getState().imageAssets).toEqual(action==='unm…
+       |                                                  ^
+    135| })
+    136| it('deduplicates repeated resource failures until successful recovery'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/studio-integration.test.tsx > deduplicates repeated resource failures until successful recovery
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ src/renderer/domains/workflows/tests/studio-integration.test.tsx:140:89
+    138|  await act(async()=>{})
+    139|  await act(async()=>window.dispatchEvent(new Event('socket:reconnected…
+    140|  expect(useWorkflowStore.getState().logs.filter(log=>log.message.inclu…
+       |                                                                                         ^
+    141|  services.images.mockResolvedValue({success:true,data:[]});await act(a…
+    142|  services.images.mockResolvedValue({success:false,error:'资源离线'});await…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+Error: 服务离线
+ ❯ src/renderer/domains/workflows/tests/studio-integration.test.tsx:113:62
+    111|  useWorkflowStore.setState({imageAssets:[imageAsset]})
+    112|  if(mode==='failure')services.images.mockResolvedValueOnce({success:fa…
+    113|  if(mode==='exception')services.images.mockRejectedValueOnce(new Error…
+       |                                                              ^
+    114|  if(mode==='malformed')services.images.mockResolvedValueOnce({success:…
+    115|  renderHook(useStudioIntegration)
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout ../../node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+
+This error originated in "src/renderer/domains/workflows/tests/studio-integration.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "reports image cache exception and recovers on reconnect". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 10 passed (16)
+     Errors  1 error
+   Start at  12:20:39
+   Duration  4.44s (transform 268ms, setup 145ms, import 368ms, tests 3.17s, environment 639ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/studio-integration.test.tsx
