@@ -502,7 +502,26 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
+async function completeRecorderTail(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderStopped']>):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> {
+  if(!first.success || !first.data?.hasMore)return first
+  const body=first.data
+  if(!Array.isArray(body.data?.events) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq<0)return {success:false,error:'录制尾部结构无效，未确认停止，请重试'}
+  const events=[...body.data.events]
+  let cursor=body.nextSeq
+  let more=body.hasMore
+  while(more){
+    const next=await recorderApi.events(sessionId,cursor)
+    if(!next.success)return {...next,data:undefined}
+    const page=next.data
+    if(!page || !Array.isArray(page.data) || !Number.isSafeInteger(page.nextSeq) || page.nextSeq<=cursor || page.data.length!==page.nextSeq-cursor || page.data.some((event,index)=>event.sequence!==cursor+index+1))return {success:false,error:'录制尾部分页不连续，未确认停止，请重试'}
+    events.push(...page.data);cursor=page.nextSeq;more=Boolean(page.hasMore)
+  }
+  return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
+}
+
 export const recorderApi = {
+  readReview: (documentId:string) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`),
+  saveReview: (documentId:string,body:components['schemas']['StudioRecordingReviewWrite']) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`,{method:'PUT',body:JSON.stringify(body)}),
   start: async (sessionId: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
     if(!validRecorderRequest(sessionId))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
@@ -522,12 +541,16 @@ export const recorderApi = {
     if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
     const result=await recorderRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop',sessionId,{method:'POST',body:JSON.stringify({sessionId,afterSeq})})
-    if(revision!==getStudioTransportRevision()||result.success||(result.httpStatus&&result.httpStatus<500))return result
+    if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success))return result
+    if(result.success)return completeRecorderTail(sessionId,result)
     const status=await recorderApi.status(sessionId)
     if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
     if(status.success&&status.data&&!status.data.recording){
       const tail=await recorderApi.events(sessionId,afterSeq)
-      if(tail.success&&tail.data?.nextSeq===status.data.nextSeq&&Array.isArray(tail.data.data))return {success:true,data:{...tail.data,data:{events:tail.data.data}}}
+      if(tail.success&&tail.data&&Array.isArray(tail.data.data)){
+        const complete=await completeRecorderTail(sessionId,{success:true,data:{...tail.data,data:{events:tail.data.data}}})
+        if(complete.data?.nextSeq===status.data.nextSeq)return complete
+      }
     }
     return result
   },

@@ -42,6 +42,7 @@ interface Database {
   runs: Record<string, StoredRun>
   runLogs: Record<string, StoredExecutionLog[]>
   folder: string
+  recordingReviews?: Record<string, ObjectValue>
 }
 const key = 'autoflow:studio:mock:database:v1'
 const empty = (): Database => ({ workflows: {}, files: {}, modules: {}, runs: {}, runLogs: {}, folder: 'mock://AutoFlow/workflows' })
@@ -717,6 +718,18 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/browser/close') { invalidateMockScriptTests(true); browser = false; closePickerSession(); recording = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
+    const recordingReview = path.match(/^\/recorder\/reviews\/([^/]+)$/)
+    if(recordingReview){
+      const id=decodeURIComponent(recordingReview[1])
+      const previous=db.recordingReviews?.[id]
+      if(method==='GET')return previous?response(previous):failure('尚无已保存的录制审查',404)
+      if(method!=='PUT')return failure('录制审查仅支持 GET/PUT',405)
+      if(!Number.isSafeInteger(body.expectedRevision)||Number(body.expectedRevision)<0||typeof body.autoWait!=='boolean'||!Array.isArray(body.events)||body.events.some(event=>!event||typeof event!=='object'||Array.isArray(event)||!Number.isSafeInteger(event.sequence)||Number(event.sequence)<1||!['navigate','click','dblclick','input','select','check','keypress','drag','upload','scroll'].includes(String(event.type)))||Object.keys(body).some(key=>!['events','autoWait','expectedRevision'].includes(key)))return failure('录制审查格式无效',422)
+      if(Number(previous?.revision||0)!==body.expectedRevision)return failure('录制审查已由其他窗口修改；保留本地步骤，请重新读取后核对',409)
+      const saved={documentId:id,revision:Number(body.expectedRevision)+1,autoWait:body.autoWait,events:body.events}
+      persist({...db,recordingReviews:{...db.recordingReviews,[id]:saved}})
+      return response(saved)
+    }
     if (path === '/recorder/start') {
       if(method!=='POST')return failure('启动录制仅支持 POST',405)
       const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId : null
@@ -735,9 +748,13 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
       const afterSeq = Number(method === 'POST' ? body.afterSeq || 0 : target.searchParams.get('afterSeq') || 0)
       if (!Number.isSafeInteger(afterSeq) || afterSeq < 0 || afterSeq > recorded.length) return failure('Invalid recording cursor', 400)
-      const data = recorded.filter(event => Number(event.sequence) > afterSeq)
-      if (path === '/recorder/stop') { recording = false; return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data: { events: data } }) }
-      return response({ success: true, sessionId: recordingSessionId, nextSeq: recorded.length, data })
+      const limit=Number(method==='POST'?body.limit||200:target.searchParams.get('limit')||200)
+      if(!Number.isSafeInteger(limit)||limit<1||limit>500)return failure('录制分页大小无效',422)
+      const data = recorded.filter(event => Number(event.sequence) > afterSeq).slice(0,limit)
+      const nextSeq=data.length?Number(data.at(-1)?.sequence):afterSeq
+      const hasMore=nextSeq<recorded.length
+      if (path === '/recorder/stop') { recording = false; return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data: { events: data } }) }
+      return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data })
     }
     if (path === '/recorder/status') {
       if(method!=='GET')return failure('录制状态仅支持 GET',405)

@@ -846,6 +846,7 @@ class StudioRecorderTail(ApiModel):
 
 
 class StudioRecorderBatch(ApiModel):
+    has_more: bool = False
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
     session_id: str = Field(min_length=1, pattern=r"\S")
@@ -859,6 +860,7 @@ class StudioRecorderBatch(ApiModel):
 
 
 class StudioRecorderStopped(ApiModel):
+    has_more: bool = False
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
     session_id: str = Field(min_length=1, pattern=r"\S")
@@ -877,3 +879,18 @@ def validate_recorder_tail(events: list[StudioRecorderEvent], next_seq: int) -> 
         raise ValueError("录制确认游标与事件尾部不一致")
     if any(current.sequence != previous.sequence + 1 for previous, current in pairwise(events)):
         raise ValueError("录制事件序列必须连续且不重复")
+
+
+class StudioRecordingReviewWrite(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    expected_revision: int = Field(ge=0, le=9007199254740991)
+    auto_wait: bool
+    events: list[StudioRecorderEvent]
+
+
+class StudioRecordingReview(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    document_id: str = Field(min_length=1, pattern=r"\S")
+    revision: int = Field(ge=1, le=9007199254740991)
+    auto_wait: bool
+    events: list[StudioRecorderEvent]

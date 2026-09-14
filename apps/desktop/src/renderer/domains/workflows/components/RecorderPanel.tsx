@@ -2,37 +2,18 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { nanoid } from 'nanoid'
+import { RecorderStepEditor } from './RecorderStepEditor'
+import { buildRecordedNodes, type RecEvent } from '../lib/recordingGeneration'
 import { Circle, Square, X, MousePointerClick, Type, ChevronDown, CheckSquare, Globe, Wand2, Trash2, ArrowUp, ArrowDown, Clock, Keyboard, Move, Upload, MoveVertical } from 'lucide-react'
 import { recorderApi, browserApi } from '../api'
 import { registerDocumentLeaveResource } from '../lib/documentLeave'
 import {getStudioTransportRevision} from '../api/transport'
-import { useWorkflowStore, moduleTypeLabels } from '../editor-store'
+import { useWorkflowStore } from '../editor-store'
 import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { applySerpentineLayout } from '../lib/recorderLayout'
 import { useConfirm } from './controls/confirm-dialog'
 import { Checkbox } from './controls/checkbox'
 
-interface RecEvent {
-  sequence?: number
-  type: 'navigate' | 'click' | 'dblclick' | 'input' | 'select' | 'check' | 'keypress' | 'drag' | 'upload' | 'scroll'
-  selector?: string
-  targetSelector?: string
-  hints?: Record<string, any>
-  targetHints?: Record<string, any>
-  value?: any
-  values?: string[]
-  text?: string
-  url?: string
-  key?: string
-  fileName?: string
-  endX?: number
-  endY?: number
-  dy?: number
-  y?: number
-  ts?: number
-  sensitive?: boolean
-  _frame?: { main?: boolean; index?: number; name?: string; selector?: string }
-}
 
 interface RecorderPanelProps {
   open: boolean
@@ -55,6 +36,13 @@ const EVENT_META: Record<string, { icon: any; label: string; color: string }> = 
 export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const [recording, setRecording] = useState(false)
   const [events, setEvents] = useState<RecEvent[]>([])
+  const [editing, setEditing] = useState<{index:number;event:RecEvent}|null>(null)
+  const [preview, setPreview] = useState<ReturnType<typeof buildRecordedNodes>|null>(null)
+  const [page,setPage] = useState(0)
+  const [reviewRevision,setReviewRevision]=useState<{documentId:string;revision:number}|null>(null)
+  const [savedReview,setSavedReview]=useState('')
+  const shownPage=Math.min(page,Math.max(0,Math.ceil(events.length/100)-1))
+
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const documentId = useWorkflowStore(s=>s.id)
@@ -69,6 +57,8 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const pollBusyRef = useRef(false)
   const pollAbortRef = useRef<AbortController | null>(null)
   const [autoWait, setAutoWait] = useState(true)
+  const autoWaitRef=useRef(autoWait)
+  autoWaitRef.current=autoWait
   const pollRef = useRef<number | null>(null)
   const eventsRef = useRef<RecEvent[]>([])
   const addLog = useWorkflowStore((s) => s.addLog)
@@ -76,7 +66,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
   const origin=originRef.current
   const originChanged=!!origin&&(origin.documentId!==documentId||origin.connection!==connectionRevision)
 
-  useEffect(() => { eventsRef.current = events }, [events])
+  useEffect(() => { eventsRef.current = events; setPreview(null) }, [events,autoWait])
 
   // 编辑：删除某步
   const deleteEvent = useCallback((idx: number) => {
@@ -99,7 +89,8 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     const frameSig = (e?: RecEvent) => JSON.stringify(e?._frame || null)
     setEvents((prev) => {
       const next = [...prev]
-      for (const ev of incoming) {
+      for (const original of incoming) {
+        const ev = original.type === 'input' && original.sensitive ? {...original,value:'',needsValue:true} : original
         const last = next[next.length - 1]
         if (ev.type === 'input' && last && last.type === 'input' && last.selector === ev.selector && frameSig(last) === frameSig(ev)) {
           next[next.length - 1] = ev
@@ -178,6 +169,8 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     const current=()=>mountedRef.current&&owner.connection===getStudioTransportRevision()&&useWorkflowStore.getState().id===owner.documentId
     pendingStartRef.current = sessionId
     try {
+      if(eventsRef.current.length && !await confirm('开始新录制会替换当前审查步骤。请先保存需要保留的审查，是否继续？',{title:'开始新录制'})){pendingStartRef.current=null;return}
+      if(!current()){pendingStartRef.current=null;return}
       // 录制前先检查自动化浏览器是否已启动，未启动则明确提示（不用浏览器原生弹窗）
       try {
         const st: any = await browserApi.getStatus()
@@ -243,7 +236,7 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       commandBusyRef.current=false
       setBusy(false)
     }
-  }, [addLog, acceptBatch, alertDialog, stopPolling])
+  }, [addLog, acceptBatch, alertDialog, stopPolling, confirm])
 
   const stopRecording = useCallback(async () => {
     const sessionId = sessionRef.current
@@ -281,6 +274,37 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     } }
   }), [stopRecording])
 
+  const reviewRequest = async (operation: 'save'|'read') => {
+    if(commandBusyRef.current || recording || activeSessionRef.current || editing)return
+    if(operation==='save' && originChanged){setError('审查属于原流程，不能保存到当前流程');return}
+    const source=useWorkflowStore.getState()
+    const revision=getStudioTransportRevision()
+    const signature=JSON.stringify([eventsRef.current,autoWait])
+    commandBusyRef.current=true;setBusy(true);setError('')
+    const current=()=>mountedRef.current && source.id===useWorkflowStore.getState().id && revision===getStudioTransportRevision()
+    try{
+      if(operation==='read' && eventsRef.current.length && !await confirm('读取已保存审查会替换当前审查步骤，是否继续？',{title:'读取录制审查'}))return
+      if(!current())return
+      const result=operation==='read'?await recorderApi.readReview(source.id):await recorderApi.saveReview(source.id,{
+        expectedRevision:reviewRevision?.documentId===source.id?reviewRevision.revision:0,
+        autoWait,events:eventsRef.current as any,
+      })
+      if(!current())return
+      if(!result.success)throw Error(result.error||'审查服务未确认成功')
+      const data=result.data
+      if(!data || data.documentId!==source.id || !Number.isSafeInteger(data.revision) || data.revision<1 || typeof data.autoWait!=='boolean' || !Array.isArray(data.events) || data.events.some(event=>!event||!Number.isSafeInteger(event.sequence)||event.sequence<1||!Object.hasOwn(EVENT_META,event.type)))throw Error('审查响应身份或结构无效')
+      setReviewRevision({documentId:source.id,revision:data.revision})
+      if(operation==='read'){
+        if(signature!==JSON.stringify([eventsRef.current,autoWaitRef.current]))throw Error('读取期间审查已修改，已保留本地步骤')
+        originRef.current={documentId:source.id,name:source.name,connection:revision}
+        setEvents(data.events);setAutoWait(data.autoWait);setPage(0);setPreview(null)
+        setSavedReview(JSON.stringify([data.events,data.autoWait]))
+      }else setSavedReview(signature)
+      addLog({level:'success',message:operation==='read'?'已恢复录制审查，未恢复或重放浏览器操作':'录制审查已保存；工作流仍需手动保存'})
+    }catch(cause){setError(cause instanceof Error?cause.message:String(cause))}
+    finally{commandBusyRef.current=false;setBusy(false)}
+  }
+
   // 事件 → 节点
   const generateNodes = useCallback(async () => {
     const origin=originRef.current
@@ -288,155 +312,20 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
       setError('录制步骤属于其他流程或服务，不能加入当前画布')
       return
     }
+    if (recording || busy || editing) return
     const evs = eventsRef.current
+    if (evs.some(event=>event.needsValue)) { setError('敏感输入仍待补值，请先编辑对应步骤'); return }
+    const newVariables = evs.filter(event=>event.variableName).map(event=>({name:event.variableName!,value:String(event.value??''),type:'string' as const,scope:'global' as const}))
+    const names = new Set(useWorkflowStore.getState().variables.map(variable=>variable.name))
+    for(const variable of newVariables){
+      if(names.has(variable.name)){setError(`变量「${variable.name}」重复或已存在，请修改名称；没有写入画布`);return}
+      names.add(variable.name)
+    }
     if (!evs.length) {
       addLog({ level: 'warning', message: '没有录制到任何操作' })
       return
     }
-    const newNodes: any[] = []
-    const newEdges: any[] = []
-    let prevId: string | null = null
-    let lastNavUrl: string | null = null
-    let seenFirstNav = false      // 是否已生成过初始"打开网页"
-    let lastActionTs = 0          // 最近一次可能触发跳转的交互(click/回车)时间戳
-    let curFrameKey = '__main__'  // 当前所处 frame（回放上下文），'__main__' 表示主文档
-
-    const mkNode = (moduleType: string, cfg: Record<string, any>, name?: string) => {
-      const id = nanoid()
-      const node = {
-        id,
-        type: 'moduleNode',
-        position: { x: 320, y: 100 + newNodes.length * 120 },
-        data: {
-          label: (moduleTypeLabels as Record<string, string>)[moduleType] || moduleType,
-          moduleType,
-          ...(name ? { name } : {}),
-          ...cfg,
-        },
-      }
-      newNodes.push(node)
-      // 与项目默认连线一致：smoothstep + 流光动画（否则直接注入的边会渲染成默认实线）
-      if (prevId) newEdges.push({ id: `e-${prevId}-${id}`, source: prevId, target: id, type: 'smoothstep', animated: true })
-      prevId = id
-      return node
-    }
-
-    // frame 身份 key：selector 最稳，其次 name，其次 index
-    const frameKeyOf = (ev: RecEvent): string => {
-      const f = ev._frame
-      if (!f || f.main) return '__main__'
-      if (f.selector) return 'sel:' + f.selector
-      if (f.name) return 'name:' + f.name
-      if (typeof f.index === 'number' && f.index >= 0) return 'idx:' + f.index
-      return '__main__'
-    }
-    // 若事件所属 frame 与当前上下文不同，插入 switch_iframe / switch_to_main 节点
-    const ensureFrame = (ev: RecEvent) => {
-      const key = frameKeyOf(ev)
-      if (key === curFrameKey) return
-      if (key === '__main__') {
-        mkNode('switch_to_main', {})
-      } else {
-        const f = ev._frame!
-        if (f.selector) mkNode('switch_iframe', { locateBy: 'selector', iframeSelector: f.selector }, 'iframe')
-        else if (f.name) mkNode('switch_iframe', { locateBy: 'name', iframeName: f.name }, 'iframe')
-        else mkNode('switch_iframe', { locateBy: 'index', iframeIndex: f.index ?? 0 }, 'iframe')
-      }
-      curFrameKey = key
-    }
-
-    for (let idx = 0; idx < evs.length; idx++) {
-      const ev = evs[idx]
-      // 自动插入等待：与上一步时间间隔较大时补一个延迟节点
-      if (autoWait && idx > 0) {
-        const prevTs = evs[idx - 1].ts || 0
-        const gap = (ev.ts || 0) - prevTs
-        if (gap >= 1500) {
-          // 传秒（wait 执行器新字段单位为秒），并限幅到 3 秒——
-          // 元素级等待已由执行器 auto-wait 保证，不必把用户思考的停顿全等上
-          mkNode('wait', { duration: Math.min(Math.max(1, Math.round(gap / 1000)), 3) })
-        }
-      }
-      if (ev.type === 'navigate') {
-        // iframe 内导航是页面内部行为，忽略
-        if (ev._frame && !ev._frame.main) continue
-        const u = ev.url || ''
-        if (!u || u.startsWith('about:')) continue
-        if (seenFirstNav && u === lastNavUrl) continue  // 同 URL 重复导航
-        lastNavUrl = u
-        curFrameKey = '__main__'  // 页面变化后回放上下文回到主文档
-        if (!seenFirstNav) {
-          // 首个导航 = 录制起始页面 → 生成"打开网页"
-          seenFirstNav = true
-          mkNode('open_page', { url: u })
-        } else if (lastActionTs && (ev.ts || 0) - lastActionTs < 10000) {
-          // 由点击/回车等交互引起的跳转（含重定向链）→ 不单独生成节点，
-          // 点击节点回放时会自然触发跳转（新标签页由后续节点 switch_to_latest 处理）
-          continue
-        } else {
-          // 与任何交互无因果关系的导航（如用户在地址栏主动输入 URL）→ 生成"打开网页"
-          mkNode('open_page', { url: u })
-        }
-      } else if (ev.type === 'click') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        lastActionTs = ev.ts || 0
-        mkNode('click_element', { selector: ev.selector, ...(ev.hints ? { selectorHints: ev.hints } : {}) }, ev.text ? ev.text.slice(0, 20) : undefined)
-      } else if (ev.type === 'dblclick') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        lastActionTs = ev.ts || 0
-        mkNode('click_element', { selector: ev.selector, clickType: 'double', ...(ev.hints ? { selectorHints: ev.hints } : {}) }, ev.text ? ev.text.slice(0, 20) : undefined)
-      } else if (ev.type === 'input') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        // typeSequential：逐字键入，忠实还原用户打字触发的联想/校验等行为
-        mkNode('input_text', { selector: ev.selector, text: String(ev.value ?? ''), typeSequential: true, ...(ev.hints ? { selectorHints: ev.hints } : {}) })
-      } else if (ev.type === 'select') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        const selCfg = Array.isArray(ev.values) && ev.values.length > 1
-          ? { selector: ev.selector, values: ev.values }                       // 多选下拉：选中全部
-          : { selector: ev.selector, value: String(ev.value ?? '') }
-        mkNode('select_dropdown', { ...selCfg, ...(ev.hints ? { selectorHints: ev.hints } : {}) }, ev.text ? ev.text.slice(0, 20) : undefined)
-      } else if (ev.type === 'check') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        mkNode('set_checkbox', { selector: ev.selector, checked: !!ev.value, ...(ev.hints ? { selectorHints: ev.hints } : {}) })
-      } else if (ev.type === 'drag') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        lastActionTs = ev.ts || 0
-        // 源与目标是同一元素(如滑块) → 用坐标拖拽(targetPosition)，否则元素到元素拖拽
-        const sameEl = !ev.targetSelector || ev.selector === ev.targetSelector
-        const dragCfg = sameEl && ev.endX != null
-          ? { sourceSelector: ev.selector, targetPosition: { x: ev.endX, y: ev.endY ?? 0 }, ...(ev.hints ? { selectorHints: ev.hints } : {}) }
-          : {
-              sourceSelector: ev.selector,
-              targetSelector: ev.targetSelector,
-              ...(ev.hints ? { selectorHints: ev.hints } : {}),
-              ...(ev.targetHints ? { targetSelectorHints: ev.targetHints } : {}),
-            }
-        mkNode('drag_element', dragCfg, ev.text ? ev.text.slice(0, 20) : undefined)
-      } else if (ev.type === 'upload') {
-        if (!ev.selector) continue
-        ensureFrame(ev)
-        // 浏览器安全限制拿不到真实路径，生成占位节点（filePath 留空，用户补填）
-        mkNode('upload_file', { selector: ev.selector, filePath: '', ...(ev.hints ? { selectorHints: ev.hints } : {}) }, ev.fileName ? ev.fileName.slice(0, 20) : undefined)
-      } else if (ev.type === 'scroll') {
-        ensureFrame(ev)
-        const dir = (ev.dy ?? 0) >= 0 ? 'down' : 'up'
-        mkNode('scroll_page', { direction: dir, distance: Math.abs(ev.dy ?? 300) || 300 })
-      } else if (ev.type === 'keypress') {
-        if (!ev.key) continue
-        ensureFrame(ev)
-        // 回车/Tab 可能触发表单提交跳转，视为"可致跳转的交互"
-        if (ev.key === 'Enter' || ev.key === 'Tab' || /Enter$/.test(ev.key)) lastActionTs = ev.ts || 0
-        // 若按键发生在具体输入元素上，用 element 目标模式（先聚焦该元素再按键），忠实还原作用目标
-        const keyCfg = ev.selector ? { keySequence: ev.key, targetType: 'element', selector: ev.selector } : { keySequence: ev.key }
-        mkNode('keyboard_action', keyCfg, ev.key)
-      }
-    }
+    const {nodes: newNodes, edges: newEdges} = buildRecordedNodes(evs, autoWait)
 
     if (!newNodes.length) {
       addLog({ level: 'warning', message: '录制事件无法转换为有效节点' })
@@ -450,13 +339,14 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
     useWorkflowStore.setState({
       nodes: [...store.nodes, ...newNodes] as any,
       edges: [...store.edges, ...newEdges] as any,
+      variables: [...store.variables, ...newVariables],
       hasUnsavedChanges: true,
     })
     emitAssistantUiEvent('fit_view', {})
     addLog({ level: 'success', message: `已根据录制生成 ${newNodes.length} 个节点` })
     setEvents([])
     onClose()
-  }, [addLog, onClose, autoWait])
+  }, [addLog, onClose, autoWait, recording, busy, editing])
 
   useEffect(() => {
     mountedRef.current=true
@@ -499,11 +389,30 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
             <Square className="w-3.5 h-3.5 fill-current" /> 停止录制
           </button>
         )}
-        <button disabled={recording || busy || !events.length || originChanged} onClick={generateNodes} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-sm font-medium disabled:opacity-50">
+        <button disabled={recording || busy || !!editing || !events.length || originChanged} onClick={generateNodes} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg gradient-primary text-white text-sm font-medium disabled:opacity-50">
           <Wand2 className="w-3.5 h-3.5" /> 生成节点
         </button>
       </div>
 
+      {!recording && <div className="px-3 py-2 text-xs flex gap-2">
+        <button disabled={busy || !!editing || !events.length || originChanged} onClick={()=>reviewRequest('save')}>保存审查</button>
+        <button disabled={busy || !!editing} onClick={()=>reviewRequest('read')}>读取审查</button>
+        {events.length>0&&<span>{savedReview===JSON.stringify([events,autoWait])?'审查已保存':'审查未保存'}</span>}
+      </div>}
+      {!recording && events.length > 0 && <div className="px-3 py-2 text-xs space-x-2">
+        <button disabled={busy || !!editing || originChanged} onClick={()=>setPreview(buildRecordedNodes(events,autoWait))}>预览生成</button>
+        <span>每页最多显示100步；原始内容完整保留</span>
+      </div>}
+      {editing && <RecorderStepEditor key={editing.index} event={editing.event} onCancel={()=>setEditing(null)} onApply={next=>{
+        if(originChanged || recording || events[editing.index]!==editing.event){setError('步骤来源已变化，请重新编辑');setEditing(null);return}
+        setEvents(previous=>previous.map((event,index)=>index===editing.index?next:event));setEditing(null);setError('')
+      }}/>}
+      {preview && <section aria-label="录制生成预览" className="max-h-48 overflow-auto px-3 py-2 text-xs">
+        <strong>将生成 {preview.nodes.length} 个节点；尚未加入画布</strong>
+        {preview.nodes.slice(0,100).map((node,index)=><div key={node.id}>{index+1}. {node.data.label} {String(node.data.url||node.data.text||node.data.selector||'')}</div>)}
+        {preview.nodes.length>100&&<p>预览前100个；加入时包含全部节点。</p>}
+        <button onClick={()=>setPreview(null)}>关闭预览</button>
+      </section>}
       <div className="flex-1 overflow-y-auto px-2 py-2 min-h-[80px]">
         {events.length === 0 ? (
           <div className="text-center text-xs text-[hsl(var(--muted-foreground))] py-8 px-3">
@@ -511,11 +420,12 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
           </div>
         ) : (
           <ol className="space-y-1">
-            {events.map((ev, i) => {
+            {events.slice(shownPage*100,(shownPage+1)*100).map((ev, offset) => {
+              const i=shownPage*100+offset
               const meta = EVENT_META[ev.type] || EVENT_META.click
               const Icon = meta.icon
               const detail = ev.type === 'navigate' ? ev.url
-                : ev.type === 'input' ? (ev.sensitive ? '••••••（密码已隐藏）' : `"${String(ev.value ?? '').slice(0, 24)}"`)
+                : ev.type === 'input' ? (ev.needsValue ? '待补值（原密码未保留）' : ev.sensitive ? '••••••（用户已补值）' : `"${String(ev.value ?? '').slice(0, 24)}"`)
                 : ev.type === 'select' ? (ev.text || String(ev.value ?? ''))
                 : ev.type === 'check' ? (ev.value ? '勾选' : '取消勾选')
                 : ev.type === 'keypress' ? ev.key
@@ -531,8 +441,9 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
                     <div className="font-medium">{meta.label}</div>
                     <div className="text-[hsl(var(--muted-foreground))] truncate" title={ev.selector || ev.url}>{detail}</div>
                   </div>
-                  {!recording && (
+                  {!recording && !editing && (
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-none">
+                      <button onClick={()=>setEditing({index:i,event:ev})} aria-label={`编辑第${i+1}步`}>编辑</button>
                       <button onClick={() => moveEvent(i, -1)} disabled={i === 0} title="上移" className="p-1 rounded hover:bg-[hsl(var(--accent))] disabled:opacity-30"><ArrowUp className="w-3 h-3" /></button>
                       <button onClick={() => moveEvent(i, 1)} disabled={i === events.length - 1} title="下移" className="p-1 rounded hover:bg-[hsl(var(--accent))] disabled:opacity-30"><ArrowDown className="w-3 h-3" /></button>
                       <button onClick={() => deleteEvent(i)} title="删除此步" className="p-1 rounded hover:bg-red-50 text-red-500"><Trash2 className="w-3 h-3" /></button>
@@ -545,6 +456,11 @@ export function RecorderPanel({ open, onClose }: RecorderPanelProps) {
         )}
       </div>
 
+      {events.length > 100 && <nav aria-label="录制步骤分页" className="px-3 py-2 text-xs flex gap-2">
+        <button disabled={shownPage===0} onClick={()=>{setPage(shownPage-1);setEditing(null)}}>上一页步骤</button>
+        <span>{shownPage+1} / {Math.ceil(events.length/100)}</span>
+        <button disabled={(shownPage+1)*100>=events.length} onClick={()=>{setPage(shownPage+1);setEditing(null)}}>下一页步骤</button>
+      </nav>}
       <div className="px-4 py-2 border-t border-[hsl(var(--border))] flex items-center justify-between text-[11px] text-[hsl(var(--muted-foreground))]">
         <span>共 {events.length} 步{recording ? ' · 录制中' : ' · 可拖删/排序后生成'}</span>
         <label className="flex items-center gap-1 cursor-pointer" title="按操作间隔自动插入等待节点">

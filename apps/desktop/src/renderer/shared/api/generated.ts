@@ -5065,6 +5065,11 @@ export type components = {
         };
         /** StudioRecorderBatch */
         StudioRecorderBatch: {
+            /**
+             * Hasmore
+             * @default false
+             */
+            hasMore: boolean;
             /** Success */
             success: boolean;
             /** Sessionid */
@@ -5137,6 +5142,11 @@ export type components = {
         };
         /** StudioRecorderStopped */
         StudioRecorderStopped: {
+            /**
+             * Hasmore
+             * @default false
+             */
+            hasMore: boolean;
             /** Success */
             success: boolean;
             /** Sessionid */
@@ -5153,6 +5163,26 @@ export type components = {
             events: components["schemas"]["StudioRecorderEvent"][];
         } & {
             [key: string]: unknown;
+        };
+        /** StudioRecordingReview */
+        StudioRecordingReview: {
+            /** Documentid */
+            documentId: string;
+            /** Revision */
+            revision: number;
+            /** Autowait */
+            autoWait: boolean;
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
+        };
+        /** StudioRecordingReviewWrite */
+        StudioRecordingReviewWrite: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Autowait */
+            autoWait: boolean;
+            /** Events */
+            events: components["schemas"]["StudioRecorderEvent"][];
         };
         /** StudioRequestClaim */
         StudioRequestClaim: {

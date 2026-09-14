@@ -65,3 +65,25 @@ def test_batch_roundtrip(stopped):
 def test_invalid_batch(events, next_seq):
     with pytest.raises(ValidationError):
         StudioRecorderBatch.model_validate({'success': True, 'sessionId': 's', 'nextSeq': next_seq, 'data': events})
+
+
+def test_review_keeps_user_order_and_extra_action_fields():
+    from autoflow.adapters.http.workflow_studio_schemas import (
+        StudioRecordingReviewWrite,
+    )
+
+    payload = {'expectedRevision': 0, 'autoWait': False, 'events': [
+        {'sequence': 2, 'type': 'input', 'selector': '#name', 'value': '中文', 'variableName': 'name'},
+        {'sequence': 1, 'type': 'navigate', 'url': 'https://local.test'},
+    ]}
+    assert StudioRecordingReviewWrite.model_validate(payload).model_dump(by_alias=True) == payload
+
+
+@pytest.mark.parametrize('patch', [{'expectedRevision': -1}, {'expectedRevision': True}, {'autoWait': 'false'}, {'events': [{'sequence': 0, 'type': 'input'}]}, {'events': [{'sequence': 1, 'type': 'unknown'}]}, {'unexpected': 1}])
+def test_review_rejects_invalid_contract(patch):
+    from autoflow.adapters.http.workflow_studio_schemas import (
+        StudioRecordingReviewWrite,
+    )
+
+    with pytest.raises(ValidationError):
+        StudioRecordingReviewWrite.model_validate({'expectedRevision': 0, 'autoWait': True, 'events': [], **patch})

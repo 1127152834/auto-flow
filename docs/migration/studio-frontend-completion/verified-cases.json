@@ -46780,5 +46780,124 @@
     "deliveryStatus": "已实现且已验收",
     "differenceClass": "AutoFlow 必要适配",
     "evidencePath": "docs/migration/studio-frontend-completion/session-leave-cases.json"
+  },
+  {
+    "id": "REC-REVIEW-edit-variable-preview",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "编辑输入并变量化，预览不写画布，整批加入并撤销重做"
+    ],
+    "expectedUI": "编辑输入并变量化，预览不写画布，整批加入并撤销重做",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "组件与浏览器UI",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review.test.tsx"
+  },
+  {
+    "id": "REC-REVIEW-sensitive",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "原敏感值剥离，待补值阻止生成，明确填写后放行"
+    ],
+    "expectedUI": "原敏感值剥离，待补值阻止生成，明确填写后放行",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "组件",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review.test.tsx"
+  },
+  {
+    "id": "REC-REVIEW-collision",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "变量冲突及非法字段不部分写入，取消保留原步骤"
+    ],
+    "expectedUI": "变量冲突及非法字段不部分写入，取消保留原步骤",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "组件",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review.test.tsx"
+  },
+  {
+    "id": "REC-REVIEW-pagination",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "205步显示100/100/5，全部生成"
+    ],
+    "expectedUI": "205步显示100/100/5，全部生成",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "组件",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review.test.tsx"
+  },
+  {
+    "id": "REC-REVIEW-persist",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "保存审查后卸载重载，读取不重启录制，409与迟到读取保留草稿"
+    ],
+    "expectedUI": "保存审查后卸载重载，读取不重启录制，409与迟到读取保留草稿",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "组件",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review.test.tsx"
+  },
+  {
+    "id": "REC-REVIEW-source-parity",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "16类事件序列自动等待开关逐项与冻结源码对比，显式审查覆盖单独验证"
+    ],
+    "expectedUI": "16类事件序列自动等待开关逐项与冻结源码对比，显式审查覆盖单独验证",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "规则",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recording-source-parity.test.ts"
+  },
+  {
+    "id": "REC-REVIEW-protocol",
+    "capability": "F4.2",
+    "preconditions": {
+      "fixture": "独立文档与Mock录制步骤；具体字段见测试同名场景"
+    },
+    "steps": [
+      "内存及HTTP：文档隔离/修订冲突/70k汉字/451条尾部分页/重试/夹具重启恢复"
+    ],
+    "expectedUI": "内存及HTTP：文档隔离/修订冲突/70k汉字/451条尾部分页/重试/夹具重启恢复",
+    "expectedIO": "审查读写/非破坏尾部补读使用原文档和会话身份；生成不保存工作流",
+    "stateAssertion": "完整内容和明确错误；不冒充真实录制或Electron",
+    "level": "HTTP与内存",
+    "status": "通过",
+    "deliveryStatus": "已实现且已验收",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts"
   }
 ]
