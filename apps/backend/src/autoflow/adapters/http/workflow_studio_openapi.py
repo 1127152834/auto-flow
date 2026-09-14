@@ -7,6 +7,12 @@ from pydantic.json_schema import models_json_schema
 from . import workflow_studio_schemas as schemas
 
 STUDIO_SCHEMAS = (
+    schemas.StudioCredentialList,
+    schemas.StudioCredentialNames,
+    schemas.StudioCredentialUpsertRequest,
+    schemas.StudioCredentialSaved,
+    schemas.StudioCredentialRenameRequest,
+    schemas.StudioCredentialConfirmed,
     schemas.StudioRecorderStartRequest,
     schemas.StudioRecorderReadRequest,
     schemas.StudioRecorderStarted,

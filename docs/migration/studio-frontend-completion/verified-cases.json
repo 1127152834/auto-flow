@@ -37580,5 +37580,1597 @@
     "level": "browser-ui-mock",
     "status": "通过",
     "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-settings/browser-validation.md"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.method-PUT-credentials",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "path": "/credentials",
+      "method": "PUT"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.method-POST-names",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "path": "/credentials/names",
+      "method": "POST"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.method-GET-rename",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "path": "/credentials/rename",
+      "method": "GET"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.literal-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "names"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.literal-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "rename"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.literal-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "__proto__"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.literal-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "constructor"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.literal-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "中文 凭据"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.partial",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "fields": [
+        "value",
+        "password"
+      ],
+      "description": "保留说明"
+    },
+    "steps": [
+      "新增两字段虚构值",
+      "只提交空 value 和空说明",
+      "读取列表及测试隔离存储"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "保留两字段及原说明；存储不包含提交值",
+    "stateAssertion": "保留两字段及原说明；存储不包含提交值",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-upsert-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": 1,
+      "fields": {
+        "value": "x"
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-upsert-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "x",
+      "fields": []
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-upsert-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "x",
+      "fields": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-upsert-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "",
+      "fields": {
+        "value": "x"
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，名称列表为空",
+    "stateAssertion": "400，名称列表为空",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-upsert-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "name": "x",
+      "fields": {}
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，名称列表为空",
+    "stateAssertion": "400，名称列表为空",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-rename-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "old_name": 1,
+      "new_name": "new"
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，fixture 不变",
+    "stateAssertion": "422，fixture 不变",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-rename-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "old_name": "fixture",
+      "new_name": " "
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，fixture 不变",
+    "stateAssertion": "400，fixture 不变",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.invalid-rename-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "old_name": "missing",
+      "new_name": "new"
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "404，fixture 不变",
+    "stateAssertion": "404，fixture 不变",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.rename-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "new_name": "fixture"
+    },
+    "steps": [
+      "创建 fixture 带说明/字段",
+      "POST 改名",
+      "读取列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "仅一条记录，名称正确，说明与字段保留",
+    "stateAssertion": "仅一条记录，名称正确，说明与字段保留",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.rename-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "new_name": "__proto__"
+    },
+    "steps": [
+      "创建 fixture 带说明/字段",
+      "POST 改名",
+      "读取列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "仅一条记录，名称正确，说明与字段保留",
+    "stateAssertion": "仅一条记录，名称正确，说明与字段保留",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.memory.conflict",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "memory",
+      "names": [
+        "one",
+        "two"
+      ]
+    },
+    "steps": [
+      "创建两条",
+      "one 改为 two",
+      "读取名称"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "409，两条名称不变",
+    "stateAssertion": "409，两条名称不变",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.method-PUT-credentials",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "path": "/credentials",
+      "method": "PUT"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.method-POST-names",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "path": "/credentials/names",
+      "method": "POST"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.method-GET-rename",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "path": "/credentials/rename",
+      "method": "GET"
+    },
+    "steps": [
+      "请求不支持的方法"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "405，不写元数据",
+    "stateAssertion": "405，不写元数据",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.literal-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "names"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.literal-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "rename"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.literal-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "__proto__"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.literal-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "constructor"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.literal-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "中文 凭据"
+    },
+    "steps": [
+      "POST 新增",
+      "GET 名称列表",
+      "DELETE 编码名称",
+      "再次 DELETE"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "名称无损登记和删除；再次删除 404",
+    "stateAssertion": "名称无损登记和删除；再次删除 404",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.partial",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "fields": [
+        "value",
+        "password"
+      ],
+      "description": "保留说明"
+    },
+    "steps": [
+      "新增两字段虚构值",
+      "只提交空 value 和空说明",
+      "读取列表及测试隔离存储"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "保留两字段及原说明；存储不包含提交值",
+    "stateAssertion": "保留两字段及原说明；存储不包含提交值",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-upsert-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": 1,
+      "fields": {
+        "value": "x"
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-upsert-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "x",
+      "fields": []
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-upsert-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "x",
+      "fields": {
+        "value": 1
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，名称列表为空",
+    "stateAssertion": "422，名称列表为空",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-upsert-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "",
+      "fields": {
+        "value": "x"
+      }
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，名称列表为空",
+    "stateAssertion": "400，名称列表为空",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-upsert-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "name": "x",
+      "fields": {}
+    },
+    "steps": [
+      "POST 数据",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，名称列表为空",
+    "stateAssertion": "400，名称列表为空",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-rename-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "old_name": 1,
+      "new_name": "new"
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "422，fixture 不变",
+    "stateAssertion": "422，fixture 不变",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-rename-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "old_name": "fixture",
+      "new_name": " "
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "400，fixture 不变",
+    "stateAssertion": "400，fixture 不变",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.invalid-rename-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "old_name": "missing",
+      "new_name": "new"
+    },
+    "steps": [
+      "创建 fixture",
+      "POST 改名",
+      "GET 名称列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "404，fixture 不变",
+    "stateAssertion": "404，fixture 不变",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.rename-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "new_name": "fixture"
+    },
+    "steps": [
+      "创建 fixture 带说明/字段",
+      "POST 改名",
+      "读取列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "仅一条记录，名称正确，说明与字段保留",
+    "stateAssertion": "仅一条记录，名称正确，说明与字段保留",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.rename-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "new_name": "__proto__"
+    },
+    "steps": [
+      "创建 fixture 带说明/字段",
+      "POST 改名",
+      "读取列表"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "仅一条记录，名称正确，说明与字段保留",
+    "stateAssertion": "仅一条记录，名称正确，说明与字段保留",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.http.conflict",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "transport": "http",
+      "names": [
+        "one",
+        "two"
+      ]
+    },
+    "steps": [
+      "创建两条",
+      "one 改为 two",
+      "读取名称"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "409，两条名称不变",
+    "stateAssertion": "409，两条名称不变",
+    "level": "http-integration",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-invalid-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": null
+    },
+    "steps": [
+      "调用 credentialApi.upsert"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-invalid-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {}
+    },
+    "steps": [
+      "调用 credentialApi.upsert"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-invalid-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": "true"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.upsert"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-invalid-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true,
+        "error": "未完成"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.upsert"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-valid",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": "文档规定的成功结构"
+    },
+    "steps": [
+      "调用 credentialApi.upsert"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "保留成功数据",
+    "stateAssertion": "保留成功数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-upsert-late",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "pending": "旧连接请求"
+    },
+    "steps": [
+      "调用 credentialApi.upsert",
+      "切换连接",
+      "完成旧请求"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不将旧连接确认应用于新连接",
+    "stateAssertion": "返回失败，不将旧连接确认应用于新连接",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-invalid-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": null
+    },
+    "steps": [
+      "调用 credentialApi.rename"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-invalid-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {}
+    },
+    "steps": [
+      "调用 credentialApi.rename"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-invalid-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": "true"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.rename"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-invalid-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true,
+        "error": "未完成"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.rename"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-valid",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": "文档规定的成功结构"
+    },
+    "steps": [
+      "调用 credentialApi.rename"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "保留成功数据",
+    "stateAssertion": "保留成功数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-rename-late",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "pending": "旧连接请求"
+    },
+    "steps": [
+      "调用 credentialApi.rename",
+      "切换连接",
+      "完成旧请求"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不将旧连接确认应用于新连接",
+    "stateAssertion": "返回失败，不将旧连接确认应用于新连接",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-invalid-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": null
+    },
+    "steps": [
+      "调用 credentialApi.delete"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-invalid-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {}
+    },
+    "steps": [
+      "调用 credentialApi.delete"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-invalid-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": "true"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.delete"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-invalid-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true,
+        "error": "未完成"
+      }
+    },
+    "steps": [
+      "调用 credentialApi.delete"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不能应用回执",
+    "stateAssertion": "返回失败，不能应用回执",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-valid",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": "文档规定的成功结构"
+    },
+    "steps": [
+      "调用 credentialApi.delete"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "保留成功数据",
+    "stateAssertion": "保留成功数据",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-delete-late",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "pending": "旧连接请求"
+    },
+    "steps": [
+      "调用 credentialApi.delete",
+      "切换连接",
+      "完成旧请求"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，不将旧连接确认应用于新连接",
+    "stateAssertion": "返回失败，不将旧连接确认应用于新连接",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-name-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true
+      }
+    },
+    "steps": [
+      "保存 fixture"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，要求确认本次凭据名称",
+    "stateAssertion": "返回失败，要求确认本次凭据名称",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-name-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true,
+        "name": 1
+      }
+    },
+    "steps": [
+      "保存 fixture"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，要求确认本次凭据名称",
+    "stateAssertion": "返回失败，要求确认本次凭据名称",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.write-name-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "receipt": {
+        "success": true,
+        "name": "another"
+      }
+    },
+    "steps": [
+      "保存 fixture"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "返回失败，要求确认本次凭据名称",
+    "stateAssertion": "返回失败，要求确认本次凭据名称",
+    "level": "protocol",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/targeted.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.metadata",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "wireKeys": [
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "打码元数据往返，不需要字段明文",
+    "stateAssertion": "打码元数据往返，不需要字段明文",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.confirmation-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "success": false
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.confirmation-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "success": 1
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.confirmation-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "success": "true"
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.confirmation-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "success": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": 1,
+        "fields": {
+          "value": "x"
+        }
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": "x",
+        "fields": []
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": "x",
+        "fields": {
+          "value": 1
+        }
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": "",
+        "fields": {
+          "value": "x"
+        }
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": " ",
+        "fields": {
+          "value": "x"
+        }
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-5",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": "x",
+        "fields": {}
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.upsert-invalid-6",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "data": {
+        "name": "x",
+        "fields": {
+          "value": ""
+        },
+        "description": 1
+      }
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.name-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "names",
+      "fields": {
+        "value": ""
+      },
+      "description": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "合法请求无损往返",
+    "stateAssertion": "合法请求无损往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.name-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "rename",
+      "fields": {
+        "value": ""
+      },
+      "description": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "合法请求无损往返",
+    "stateAssertion": "合法请求无损往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.name-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "__proto__",
+      "fields": {
+        "value": ""
+      },
+      "description": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "合法请求无损往返",
+    "stateAssertion": "合法请求无损往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.name-3",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "constructor",
+      "fields": {
+        "value": ""
+      },
+      "description": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "合法请求无损往返",
+    "stateAssertion": "合法请求无损往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.name-4",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "中文 凭据",
+      "fields": {
+        "value": ""
+      },
+      "description": null
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "合法请求无损往返",
+    "stateAssertion": "合法请求无损往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.rename-wire",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "old_name": "one",
+      "new_name": "two"
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "snake_case 往返",
+    "stateAssertion": "snake_case 往返",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.rename-invalid-0",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "old_name": 1,
+      "new_name": "two"
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.rename-invalid-1",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "old_name": "one",
+      "new_name": " "
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.rename-invalid-2",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "old_name": "",
+      "new_name": "two"
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "ValidationError",
+    "stateAssertion": "ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.dto.saved-name",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "success": true
+    },
+    "steps": [
+      "Pydantic model_validate，必要时 model_dump(by_alias=True)"
+    ],
+    "expectedUI": "协议用例无界面；不得向界面发布未确认成功",
+    "expectedIO": "缺少 name，ValidationError",
+    "stateAssertion": "缺少 name，ValidationError",
+    "level": "backend-contract",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/pytest.log"
+  },
+  {
+    "id": "SETTINGS.credentials.contract.browser-description",
+    "capability": "credentials:settings",
+    "preconditions": {
+      "name": "F5 凭据确认验收",
+      "origin": "localhost:5175，Mock"
+    },
+    "steps": [
+      "编辑说明",
+      "点击保存",
+      "刷新列表",
+      "关闭配置"
+    ],
+    "expectedUI": "列表回显 Mock 协议更新回显验收，打码 value 保留",
+    "expectedIO": "列表回显 Mock 协议更新回显验收，打码 value 保留",
+    "stateAssertion": "列表回显 Mock 协议更新回显验收，打码 value 保留",
+    "level": "browser-ui-mock",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f5-credential-protocol/browser-validation.md"
   }
 ]

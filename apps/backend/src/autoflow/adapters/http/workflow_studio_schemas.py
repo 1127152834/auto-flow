@@ -8,6 +8,60 @@ from pydantic import ConfigDict, Field, JsonValue, field_validator, model_valida
 from .schemas import ApiModel
 
 
+class StudioCredentialField(ApiModel):
+    model_config = ConfigDict(strict=True)
+    key: str
+    masked: str
+
+
+class StudioCredentialItem(ApiModel):
+    model_config = ConfigDict(strict=True)
+    name: str
+    description: str
+    fields: list[StudioCredentialField]
+    created_at: str = Field(alias="created_at")
+    updated_at: str = Field(alias="updated_at")
+
+
+class StudioCredentialConfirmed(ApiModel):
+    model_config = ConfigDict(strict=True)
+    success: Literal[True]
+
+    @field_validator("success", mode="before")
+    @classmethod
+    def explicit_success(cls, value: Any) -> bool:
+        if value is not True:
+            raise ValueError("凭据操作必须明确确认成功")
+        return True
+
+
+class StudioCredentialList(StudioCredentialConfirmed):
+    credentials: list[StudioCredentialItem]
+    mock: bool | None = None
+
+
+class StudioCredentialNames(StudioCredentialConfirmed):
+    names: list[str]
+
+
+class StudioCredentialUpsertRequest(ApiModel):
+    model_config = ConfigDict(strict=True)
+    name: str = Field(min_length=1, pattern=r"\S")
+    fields: dict[str, str] = Field(min_length=1)
+    description: str | None = None
+
+
+class StudioCredentialSaved(StudioCredentialConfirmed):
+    name: str
+    mock: bool | None = None
+
+
+class StudioCredentialRenameRequest(ApiModel):
+    model_config = ConfigDict(strict=True)
+    old_name: str = Field(alias="old_name", min_length=1, pattern=r"\S")
+    new_name: str = Field(alias="new_name", min_length=1, pattern=r"\S")
+
+
 class StudioCommandReceipt(ApiModel):
     # Preserve command-specific result fields while strictly checking the shared envelope.
     model_config = ConfigDict(extra="allow", strict=True)

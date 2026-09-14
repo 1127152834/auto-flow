@@ -1,0 +1,238 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:4004) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts (30 tests | 26 failed) 135ms
+     × rejects unsupported /credentials PUT 9ms
+     × rejects unsupported /credentials/names POST 2ms
+     × rejects unsupported /credentials/rename GET 2ms
+     × stores and deletes the literal name names 4ms
+     × stores and deletes the literal name rename 2ms
+     × stores and deletes the literal name __proto__ 2ms
+     × stores and deletes the literal name constructor 2ms
+     × stores and deletes the literal name 中文 凭据 2ms
+     × preserves existing metadata fields on partial upsert without storing secret values 3ms
+     × rejects invalid upsert {"name":1,"fields":{"value":"x"}} without adding metadata 2ms
+     × rejects invalid upsert {"name":"x","fields":[]} without adding metadata 1ms
+     × rejects invalid upsert {"name":"x","fields":{"value":1}} without adding metadata 2ms
+     × rejects invalid upsert {"name":"x","fields":{}} without adding metadata 1ms
+     × rejects unsupported /credentials PUT 20ms
+     × rejects unsupported /credentials/names POST 8ms
+     × rejects unsupported /credentials/rename GET 3ms
+     × stores and deletes the literal name names 8ms
+     × stores and deletes the literal name rename 6ms
+     × stores and deletes the literal name __proto__ 4ms
+     × stores and deletes the literal name constructor 7ms
+     × stores and deletes the literal name 中文 凭据 5ms
+     × preserves existing metadata fields on partial upsert without storing secret values 4ms
+     × rejects invalid upsert {"name":1,"fields":{"value":"x"}} without adding metadata 18ms
+     × rejects invalid upsert {"name":"x","fields":[]} without adding metadata 2ms
+     × rejects invalid upsert {"name":"x","fields":{"value":1}} without adding metadata 3ms
+     × rejects invalid upsert {"name":"x","fields":{}} without adding metadata 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 26 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects unsupported /credentials PUT
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects unsupported /credentials/names POST
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects unsupported /credentials PUT
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects unsupported /credentials/names POST
+AssertionError: expected 200 to be 405 // Object.is equality
+
+- Expected
++ Received
+
+- 405
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:21:54
+     19|   const post = (body: unknown) => ({ method: 'POST', headers: { 'conte…
+     20|   it.each([['/credentials', 'PUT'], ['/credentials/names', 'POST'], ['…
+     21|     expect((await request(path, { method })).status).toBe(405)
+       |                                                      ^
+     22|   })
+     23|   it.each(['names', 'rename', '__proto__', 'constructor', '中文 凭据'])('s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects unsupported /credentials/rename GET
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects unsupported /credentials/rename GET
+AssertionError: expected 409 to be 405 // Object.is equality
+
+- Expected
++ Received
+
+- 405
++ 409
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:21:54
+     19|   const post = (body: unknown) => ({ method: 'POST', headers: { 'conte…
+     20|   it.each([['/credentials', 'PUT'], ['/credentials/names', 'POST'], ['…
+     21|     expect((await request(path, { method })).status).toBe(405)
+       |                                                      ^
+     22|   })
+     23|   it.each(['names', 'rename', '__proto__', 'constructor', '中文 凭据'])('s…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > stores and deletes the literal name names
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > stores and deletes the literal name names
+AssertionError: expected [ 'names' ] to not include 'names'
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:27:76
+     25|     expect((await (await request('/credentials/names')).json()).names)…
+     26|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+     27|     expect((await (await request('/credentials/names')).json()).names)…
+       |                                                                            ^
+     28|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+     29|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > stores and deletes the literal name rename
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > stores and deletes the literal name rename
+AssertionError: expected 409 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 409
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:26:102
+     24|     expect((await request('/credentials', post({ name, fields: { value…
+     25|     expect((await (await request('/credentials/names')).json()).names)…
+     26|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+       |                                                                                                      ^
+     27|     expect((await (await request('/credentials/names')).json()).names)…
+     28|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > stores and deletes the literal name __proto__
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > stores and deletes the literal name __proto__
+AssertionError: expected [] to include '__proto__'
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:25:72
+     23|   it.each(['names', 'rename', '__proto__', 'constructor', '中文 凭据'])('s…
+     24|     expect((await request('/credentials', post({ name, fields: { value…
+     25|     expect((await (await request('/credentials/names')).json()).names)…
+       |                                                                        ^
+     26|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+     27|     expect((await (await request('/credentials/names')).json()).names)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > stores and deletes the literal name constructor
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > stores and deletes the literal name 中文 凭据
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > stores and deletes the literal name constructor
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > stores and deletes the literal name 中文 凭据
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:28:102
+     26|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+     27|     expect((await (await request('/credentials/names')).json()).names)…
+     28|     expect((await request(`/credentials/${encodeURIComponent(name)}`, …
+       |                                                                                                      ^
+     29|   })
+     30|   it('preserves existing metadata fields on partial upsert without sto…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > preserves existing metadata fields on partial upsert without storing secret values
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > preserves existing metadata fields on partial upsert without storing secret values
+AssertionError: expected { name: 'fixture', …(4) } to match object { description: '保留说明', …(1) }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "description": "保留说明",
++   "description": "",
+    "fields": [
+      {
+        "key": "value",
+-     },
+-     {
+-       "key": "password",
++       "masked": "•••••• (Mock)",
+      },
+    ],
+  }
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:34:35
+     32|     await request('/credentials', post({ name: 'fixture', description:…
+     33|     const result = await (await request('/credentials')).json()
+     34|     expect(result.credentials[0]).toMatchObject({ description: '保留说明',…
+       |                                   ^
+     35|     expect([...storage.values()].join('')).not.toMatch(/dummy-first|du…
+     36|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects invalid upsert {"name":1,"fields":{"value":"x"}} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects invalid upsert {"name":"x","fields":[]} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects invalid upsert {"name":"x","fields":{"value":1}} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects invalid upsert {"name":1,"fields":{"value":"x"}} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects invalid upsert {"name":"x","fields":[]} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects invalid upsert {"name":"x","fields":{"value":1}} without adding metadata
+AssertionError: expected 200 to be 422 // Object.is equality
+
+- Expected
++ Received
+
+- 422
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:44:64
+     42|     [{ name: 'x', fields: {} }, 400],
+     43|   ])('rejects invalid upsert %j without adding metadata', async (body,…
+     44|     expect((await request('/credentials', post(body))).status).toBe(st…
+       |                                                                ^
+     45|     expect((await (await request('/credentials/names')).json()).names)…
+     46|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/26]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: memory > rejects invalid upsert {"name":"x","fields":{}} without adding metadata
+ FAIL  src/renderer/domains/workflows/tests/credential-protocol.test.ts > credential metadata protocol: http > rejects invalid upsert {"name":"x","fields":{}} without adding metadata
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ src/renderer/domains/workflows/tests/credential-protocol.test.ts:44:64
+     42|     [{ name: 'x', fields: {} }, 400],
+     43|   ])('rejects invalid upsert %j without adding metadata', async (body,…
+     44|     expect((await request('/credentials', post(body))).status).toBe(st…
+       |                                                                ^
+     45|     expect((await (await request('/credentials/names')).json()).names)…
+     46|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/26]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  26 failed | 4 passed (30)
+   Start at  13:53:51
+   Duration  946ms (transform 119ms, setup 129ms, import 15ms, tests 135ms, environment 556ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-protocol.test.ts

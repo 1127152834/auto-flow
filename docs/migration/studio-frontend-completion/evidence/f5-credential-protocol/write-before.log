@@ -1,0 +1,140 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-write-contract.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:4865) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/credential-write-contract.test.ts (21 tests | 18 failed) 17ms
+   × upsert rejects malformed receipt null 7ms
+   × upsert rejects malformed receipt {} 1ms
+   × upsert rejects malformed receipt {"success":"true"} 1ms
+   × upsert rejects malformed receipt {"success":true,"error":"未完成"} 1ms
+   × upsert rejects an old connection confirmation 2ms
+   × rename rejects malformed receipt null 0ms
+   × rename rejects malformed receipt {} 0ms
+   × rename rejects malformed receipt {"success":"true"} 0ms
+   × rename rejects malformed receipt {"success":true,"error":"未完成"} 0ms
+   × rename rejects an old connection confirmation 0ms
+   × delete rejects malformed receipt null 0ms
+   × delete rejects malformed receipt {} 0ms
+   × delete rejects malformed receipt {"success":"true"} 0ms
+   × delete rejects malformed receipt {"success":true,"error":"未完成"} 0ms
+   × delete rejects an old connection confirmation 0ms
+   × upsert requires confirmation of the requested name {"success":true} 0ms
+   × upsert requires confirmation of the requested name {"success":true,"name":1} 0ms
+   × upsert requires confirmation of the requested name {"success":true,"name":"another"} 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert rejects malformed receipt null
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert rejects malformed receipt {}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert rejects malformed receipt {"success":"true"}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert rejects malformed receipt {"success":true,"error":"未完成"}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > rename rejects malformed receipt null
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > rename rejects malformed receipt {}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > rename rejects malformed receipt {"success":"true"}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > rename rejects malformed receipt {"success":true,"error":"未完成"}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > delete rejects malformed receipt null
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > delete rejects malformed receipt {}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > delete rejects malformed receipt {"success":"true"}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > delete rejects malformed receipt {"success":true,"error":"未完成"}
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/credential-write-contract.test.ts:12:52
+     10|   it.each([null, {}, { success: 'true' }, { success: true, error: '未完成…
+     11|     const restore = configureStudioConnection('http://credentials.fixt…
+     12|     try { expect((await operation.call()).success).toBe(false) } final…
+       |                                                    ^
+     13|   })
+     14|   it(`${operation.name} accepts its confirmed receipt`, async () => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert rejects an old connection confirmation
+AssertionError: expected { success: true, data: { …(2) } } to match object { success: false }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "success": false,
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/credential-write-contract.test.ts:26:29
+     24|       restoreNext = configureStudioConnection('http://next.fixture', a…
+     25|       resolve(Response.json(operation.valid))
+     26|       expect(await pending).toMatchObject({ success: false })
+       |                             ^
+     27|     } finally { restoreNext(); restore() }
+     28|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > rename rejects an old connection confirmation
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > delete rejects an old connection confirmation
+AssertionError: expected { success: true, …(1) } to match object { success: false }
+(2 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "success": false,
++   "success": true,
+  }
+
+ ❯ src/renderer/domains/workflows/tests/credential-write-contract.test.ts:26:29
+     24|       restoreNext = configureStudioConnection('http://next.fixture', a…
+     25|       resolve(Response.json(operation.valid))
+     26|       expect(await pending).toMatchObject({ success: false })
+       |                             ^
+     27|     } finally { restoreNext(); restore() }
+     28|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert requires confirmation of the requested name {"success":true}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert requires confirmation of the requested name {"success":true,"name":1}
+ FAIL  src/renderer/domains/workflows/tests/credential-write-contract.test.ts > upsert requires confirmation of the requested name {"success":true,"name":"another"}
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/credential-write-contract.test.ts:32:80
+     30| it.each([{ success: true }, { success: true, name: 1 }, { success: tru…
+     31|   const restore = configureStudioConnection('http://credentials.fixtur…
+     32|   try { expect((await credentialApi.upsert('fixture', { value: '' })).…
+       |                                                                                ^
+     33| })
+     34|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  18 failed | 3 passed (21)
+   Start at  14:00:58
+   Duration  874ms (transform 136ms, setup 129ms, import 36ms, tests 17ms, environment 573ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --maxWorkers=1 src/renderer/domains/workflows/tests/credential-write-contract.test.ts

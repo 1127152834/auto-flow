@@ -1,3 +1,4 @@
+import {checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl} from './api/debugControl'
@@ -428,28 +429,22 @@ export const customModulesApi = {
 
 
 // ==================== 凭据库 API ====================
-export interface CredentialItem {
-  name: string
-  description: string
-  fields: { key: string; masked: string }[]
-  created_at: string
-  updated_at: string
-}
+export type CredentialItem = components['schemas']['StudioCredentialItem']
 export const credentialApi = {
-  list: () => apiRequest<{ success: boolean; credentials: CredentialItem[]; mock?: boolean }>('/credentials'),
-  names: () => apiRequest<{ success: boolean; names: string[] }>('/credentials/names'),
+  list: () => apiRequest<components['schemas']['StudioCredentialList']>('/credentials'),
+  names: () => apiRequest<components['schemas']['StudioCredentialNames']>('/credentials/names'),
   upsert: (name: string, fields: Record<string, string>, description?: string) =>
-    apiRequest('/credentials', {
+    checkedCredentialWrite(apiRequest<components['schemas']['StudioCredentialSaved']>('/credentials', {
       method: 'POST',
-      body: JSON.stringify({ name, fields, description: description || '' }),
-    }),
+      body: JSON.stringify({ name, fields, description: description || '' } satisfies components['schemas']['StudioCredentialUpsertRequest']),
+    }), name.trim()),
   rename: (oldName: string, newName: string) =>
-    apiRequest('/credentials/rename', {
+    checkedCredentialWrite(apiRequest<components['schemas']['StudioCredentialConfirmed']>('/credentials/rename', {
       method: 'POST',
-      body: JSON.stringify({ old_name: oldName, new_name: newName }),
-    }),
+      body: JSON.stringify({ old_name: oldName, new_name: newName } satisfies components['schemas']['StudioCredentialRenameRequest']),
+    })),
   delete: (name: string) =>
-    apiRequest(`/credentials/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    checkedCredentialWrite(apiRequest<components['schemas']['StudioCredentialConfirmed']>(`/credentials/${encodeURIComponent(name)}`, { method: 'DELETE' })),
 }
 
 // ==================== 留存清理 API ====================

@@ -7,25 +7,48 @@ const read = (name: string, fallback: Value = {}): Value => JSON.parse(localStor
 const save = (name: string, value: Value) => localStorage.setItem(prefix + name, JSON.stringify(value))
 const json = (value: unknown, status = 200) => Response.json(value, { status })
 export function mockSettingsRequest(path: string, method: string, body: Value): Response | undefined {
-  if (path === '/credentials/names') return json({success:true,names:Object.keys(read('credentials'))})
-  if (path === '/credentials') {
-    const credentials = read('credentials')
-    if (method === 'POST') {
-      const name = String(body.name || '').trim()
-      if (!name) return json({success:false,error:'Credential name required'},400)
+  if (path === '/credentials' || path.startsWith('/credentials/')) {
+    // Names are user data, including Object prototype property names.
+    const credentials: Value = Object.assign(Object.create(null), read('credentials'))
+    const fail = (error: string, status: number) => json({success:false,error},status)
+    if (path === '/credentials/names' && method === 'GET') return json({success:true,names:Object.keys(credentials)})
+    if (path === '/credentials' && method === 'GET') return json({success:true,credentials:Object.values(credentials),mock:true})
+    if (path === '/credentials' && method === 'POST') {
+      if (typeof body.name !== 'string' || !body.fields || typeof body.fields !== 'object' || Array.isArray(body.fields)
+        || Object.values(body.fields).some(value => typeof value !== 'string')
+        || (body.description != null && typeof body.description !== 'string')) return fail('凭据格式错误',422)
+      const name = body.name.trim()
+      if (!name || !Object.keys(body.fields).length) return fail('凭据名称和字段不能为空',400)
       const previous = credentials[name] as Value | undefined
-      credentials[name] = {name,description:body.description || '',fields:Object.keys((body.fields || {}) as Value).map(key=>({key,masked:'•••••• (Mock)'})),created_at:previous?.created_at || new Date().toISOString(),updated_at:new Date().toISOString()}
-      // The fixture retains names and masked field metadata, never credential values.
+      const existing = (previous?.fields ?? []) as Array<{key:string;masked:string}>
+      const keys = [...new Set([...existing.map(field => field.key), ...Object.keys(body.fields)])]
+      credentials[name] = {name,description:body.description || previous?.description || '',
+        fields:keys.map(key => ({key,masked:'•••••• (Mock)'})),
+        created_at:previous?.created_at || new Date().toISOString(),updated_at:new Date().toISOString()}
+      // Match partial upsert semantics using metadata only; never retain secret values.
       save('credentials', credentials)
+      return json({success:true,name,mock:true})
     }
-    return json({success:true,credentials:Object.values(credentials),mock:true})
+    if (path === '/credentials/rename' && method === 'POST') {
+      if (typeof body.old_name !== 'string' || typeof body.new_name !== 'string') return fail('凭据名称格式错误',422)
+      const old = body.old_name.trim(), name = body.new_name.trim()
+      if (!old || !name) return fail('凭据名称不能为空',400)
+      if (!credentials[old]) return fail('凭据不存在',404)
+      if (old !== name && credentials[name]) return fail('凭据名称已存在',409)
+      credentials[name] = {...(credentials[old] as Value),name}
+      if (old !== name) delete credentials[old]
+      save('credentials',credentials)
+      return json({success:true})
+    }
+    if (path.startsWith('/credentials/') && method === 'DELETE') {
+      const name = path.slice('/credentials/'.length)
+      if (!credentials[name]) return fail('凭据不存在',404)
+      delete credentials[name]
+      save('credentials',credentials)
+      return json({success:true})
+    }
+    return fail('不支持的凭据操作',405)
   }
-  if (path === '/credentials/rename') {
-    const credentials=read('credentials'), old=String(body.old_name), name=String(body.new_name)
-    if (!credentials[old] || credentials[name]) return json({success:false,error:'Credential missing or name already exists'},409)
-    credentials[name]={...(credentials[old] as Value),name};delete credentials[old];save('credentials',credentials);return json({success:true})
-  }
-  if (path.startsWith('/credentials/') && method === 'DELETE') {const credentials=read('credentials');delete credentials[path.split('/').at(-1)!];save('credentials',credentials);return json({success:true})}
   if (path.startsWith('/retention/')) {
     const usage={recordings:{count:0,sizeMB:0},data:{count:0,sizeMB:0}}
     if(path==='/retention/config' && method==='POST')save('retention',{...read('retention'),...body})

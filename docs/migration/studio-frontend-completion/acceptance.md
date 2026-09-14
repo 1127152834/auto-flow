@@ -171,3 +171,7 @@ GET/DELETE合同、错误保留、清空确认、迟到请求、活跃运行清�
 ## 2026-09-14：凭据及资源后续全量
 
 凭据读取、字段校验、确认和连接保护已实现，见credential-settings-protection.md；改名/字段移除等差异单列credential-contract-gaps.md。最新全量269文件3123项通过（470.41秒），包含录制信封和资源写回执/并发。F0–F6仍未整体关闭。
+
+## F1/F5 凭据协议与生成类型（2026-09-14）
+
+40 项双传输协议、21 项写回执、22 项 Python DTO 新增测试通过；关联前端回归合计 89 项。浏览器确认虚构元数据编辑/保存/刷新。类型、lint、脚本、OpenAPI、Ruff、mypy、构建通过。详见 credential-protocol-contract.md。未声明 F1/F5 或 F0–F6 整体完成。

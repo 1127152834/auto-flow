@@ -4350,6 +4350,95 @@ export type components = {
                 [key: string]: string[];
             };
         };
+        /** StudioCredentialConfirmed */
+        StudioCredentialConfirmed: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+        };
+        /** StudioCredentialField */
+        StudioCredentialField: {
+            /** Key */
+            key: string;
+            /** Masked */
+            masked: string;
+        };
+        /** StudioCredentialItem */
+        StudioCredentialItem: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Fields */
+            fields: components["schemas"]["StudioCredentialField"][];
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+        };
+        /** StudioCredentialList */
+        StudioCredentialList: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Credentials */
+            credentials: components["schemas"]["StudioCredentialItem"][];
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+        };
+        /** StudioCredentialNames */
+        StudioCredentialNames: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Names */
+            names: string[];
+        };
+        /** StudioCredentialRenameRequest */
+        StudioCredentialRenameRequest: {
+            /** Old Name */
+            old_name: string;
+            /** New Name */
+            new_name: string;
+        };
+        /** StudioCredentialSaved */
+        StudioCredentialSaved: {
+            /**
+             * Success
+             * @constant
+             */
+            success: true;
+            /** Name */
+            name: string;
+            /**
+             * Mock
+             * @default null
+             */
+            mock: boolean | null;
+        };
+        /** StudioCredentialUpsertRequest */
+        StudioCredentialUpsertRequest: {
+            /** Name */
+            name: string;
+            /** Fields */
+            fields: {
+                [key: string]: string;
+            };
+            /**
+             * Description
+             * @default null
+             */
+            description: string | null;
+        };
         /** StudioDebugControlLookup */
         StudioDebugControlLookup: {
             /** Pauseid */
