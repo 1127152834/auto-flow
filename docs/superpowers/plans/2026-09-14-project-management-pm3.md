@@ -48,10 +48,10 @@
 - Create: `docs/prototype/project-management-pm3/batch-start-dialog.png`
 - Create: `docs/prototype/project-management-pm3/interactions.md`
 
-- [ ] **Step 1: 固定画板内容。** 只读参考主目录 `docs/references/project-management-prototypes-2026-09-13` 中的自动化列表、运行记录画板和现有顶部导航；在 `interactions.md` 列出四页签字段、启动弹窗、正常/校验/保存中/冲突/资源缺失状态。明确全局导航只使用顶部导航。参考目录当前未提交，不复制或修改其文件。
-- [ ] **Step 2: 使用 `imagegen` 生成五张 1440×1024 高保真 PNG。** 四张详情图共用相同内容框架，只切换活动页签；启动弹窗必须叠加在自动化详情上。不得输出 HTML 或加入侧栏。
-- [ ] **Step 3: 做原型自审。** 逐张核对暖灰背景、黏土棕、小圆角、细网格、字段完整性、按钮位置和 200% 缩放可实现性。`interactions.md` 记录原型与功能规格的每项对应关系。
-- [ ] **Step 4: 提交视觉基准。**
+- [x] **Step 1: 固定画板内容。** 只读参考主目录 `docs/references/project-management-prototypes-2026-09-13` 中的自动化列表、运行记录画板和现有顶部导航；在 `interactions.md` 列出四页签字段、启动弹窗、正常/校验/保存中/冲突/资源缺失状态。明确全局导航只使用顶部导航。参考目录当前未提交，不复制或修改其文件。
+- [x] **Step 2: 使用 `imagegen` 生成五张 1440×1024 高保真 PNG。** 四张详情图共用相同内容框架，只切换活动页签；启动弹窗必须叠加在自动化详情上。不得输出 HTML 或加入侧栏。
+- [x] **Step 3: 做原型自审。** 逐张核对暖灰背景、黏土棕、小圆角、细网格、字段完整性、按钮位置和 200% 缩放可实现性。`interactions.md` 记录原型与功能规格的每项对应关系。
+- [x] **Step 4: 提交视觉基准。**
 
 ```bash
 git add docs/prototype/project-management-pm3
