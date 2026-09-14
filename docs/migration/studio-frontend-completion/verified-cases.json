@@ -32745,5 +32745,316 @@
     "level": "component",
     "status": "通过",
     "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/code-editor-completions.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.loading-apply",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "挂起列表请求后返回测试图片；选取并重开"
+    ],
+    "expectedUI": "加载状态独立；回填路径；已有值仍能打开资源库",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "加载状态独立；回填路径；已有值仍能打开资源库",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.assets-failed",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "让对应服务返回失败/错误结构或异常，再点击重试"
+    ],
+    "expectedUI": "显示错误而不是空库；重试成功",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误而不是空库；重试成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.folders-failed",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "让对应服务返回失败/错误结构或异常，再点击重试"
+    ],
+    "expectedUI": "显示错误而不是空库；重试成功",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误而不是空库；重试成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.malformed-assets",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "让对应服务返回失败/错误结构或异常，再点击重试"
+    ],
+    "expectedUI": "显示错误而不是空库；重试成功",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误而不是空库；重试成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.malformed-folders",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "让对应服务返回失败/错误结构或异常，再点击重试"
+    ],
+    "expectedUI": "显示错误而不是空库；重试成功",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误而不是空库；重试成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.exception",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "让对应服务返回失败/错误结构或异常，再点击重试"
+    ],
+    "expectedUI": "显示错误而不是空库；重试成功",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误而不是空库；重试成功",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.empty",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "两列表成功返回空"
+    ],
+    "expectedUI": "显示空库，无错误",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示空库，无错误",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.late-opening",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "关闭重开后旧列表迟到"
+    ],
+    "expectedUI": "仅展示新列表",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "仅展示新列表",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.connection",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "连接更换后旧列表迟到"
+    ],
+    "expectedUI": "仅展示新服务列表",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "仅展示新服务列表",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.edit",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "启动文件选择后edit再返回旧文件"
+    ],
+    "expectedUI": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.unmount",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "启动文件选择后unmount再返回旧文件"
+    ],
+    "expectedUI": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.connection-file",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "启动文件选择后connection-file再返回旧文件"
+    ],
+    "expectedUI": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "不回填；未卸载时等待按钮最终恢复；未并发再调用",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.cancel-failure",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "先取消，再返回宿主失败"
+    ],
+    "expectedUI": "字段保留；失败有提示",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "字段保留；失败有提示",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.file-malformed",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "选择结果缺少success"
+    ],
+    "expectedUI": "显示错误，不改值",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误，不改值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.file-path-missing",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "成功结果路径为空"
+    ],
+    "expectedUI": "显示错误，不改值",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误，不改值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.file-error",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "业务失败含error"
+    ],
+    "expectedUI": "显示错误，不改值",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "显示错误，不改值",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.file-success",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "component": "ImagePathInput",
+      "service": "隔离组件夹具"
+    },
+    "steps": [
+      "返回确认成功和路径"
+    ],
+    "expectedUI": "原字段仅回填一次",
+    "expectedIO": "调用现有 image-assets/list/folders 或 system/select-file；没有真实宿主操作",
+    "stateAssertion": "原字段仅回填一次",
+    "level": "component",
+    "status": "通过",
+    "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/image-path-loading.test.tsx"
+  },
+  {
+    "id": "TOOL.image-path.browser-undo",
+    "capability": "tool:image-path-input",
+    "preconditions": {
+      "node": "ai_vision",
+      "imageSource": "url",
+      "url": "http://localhost:5175/studio.html"
+    },
+    "steps": [
+      "打开资源库",
+      "选测试图片",
+      "撤销",
+      "重做",
+      "撤回临时配置并保存原测试流程"
+    ],
+    "expectedUI": "路径应用、清空、恢复均可见",
+    "expectedIO": "使用 Mock 资源；无 AI/宿主调用",
+    "stateAssertion": "最后恢复双等待节点、0变量",
+    "level": "browser UI",
+    "status": "通过",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-image-picker/browser-ui.md"
   }
 ]

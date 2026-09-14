@@ -4,6 +4,7 @@ import { FolderOpen, ChevronRight, Folder, Image } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Button } from './button'
 import { systemApi, imageAssetApi } from '../../api'
+import { getStudioTransportRevision } from '../../api/transport'
 import { ImageAssetPreview } from './image-asset-preview'
 import type { ImageAsset } from '../../types/index'
 
@@ -22,27 +23,59 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
   const [breadcrumbs, setBreadcrumbs] = useState<string[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 加载资源
-  const loadData = useCallback(async () => {
-    const [assetsResult, foldersResult] = await Promise.all([
-      imageAssetApi.list(),
-      imageAssetApi.listFolders()
-    ])
-    if (assetsResult.data) setAssets(assetsResult.data)
-    if (foldersResult.data) setFolders(foldersResult.data)
-  }, [])
+  const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState('')
+  const [fileError, setFileError] = useState('')
+  const [selecting, setSelecting] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const fileRequest = useRef(0)
+  const filePending = useRef(false)
+  const mounted = useRef(false)
 
-  // 初始加载
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  // 打开下拉框时重新加载数据
-  useEffect(() => {
-    if (isOpen) {
-      loadData()
+    mounted.current = true
+    const invalidate = () => {
+      fileRequest.current++
+      setFileError('')
+      setAssets([])
+      setFolders([])
+      setAttempt(current => current + 1)
     }
-  }, [isOpen, loadData])
+    window.addEventListener('studio:transport-changed', invalidate)
+    return () => { window.removeEventListener('studio:transport-changed', invalidate); fileRequest.current++; mounted.current = false }
+  }, [])
+  useEffect(() => {
+    fileRequest.current++
+    setFileError('')
+  }, [value])
+
+  useEffect(() => {
+    if (!isOpen) return
+    let disposed = false
+    const revision = getStudioTransportRevision()
+    const current = () => !disposed && revision === getStudioTransportRevision()
+    setLoading(true)
+    setLoadError('')
+    void (async () => {
+      try {
+        const [assetsResult, foldersResult] = await Promise.all([imageAssetApi.list(), imageAssetApi.listFolders()])
+        if (!current()) return
+        if (!assetsResult.success || !foldersResult.success) throw new Error(assetsResult.error || foldersResult.error || '资源服务未确认加载')
+        if (!Array.isArray(assetsResult.data) || !assetsResult.data.every(asset => asset &&
+          ['id','name','originalName','uploadedAt','folder','extension'].every(key => typeof asset[key] === 'string') &&
+          typeof asset.size === 'number' && Number.isFinite(asset.size) && asset.size >= 0 &&
+          (asset.path === null || typeof asset.path === 'string')) ||
+          !Array.isArray(foldersResult.data) || !foldersResult.data.every(folder => typeof folder === 'string')) {
+          throw new Error('图像资源列表格式错误')
+        }
+        setAssets(assetsResult.data)
+        setFolders(foldersResult.data)
+      } catch (error) {
+        if (current()) setLoadError(error instanceof Error ? error.message : '图像资源加载失败')
+      } finally { if (current()) setLoading(false) }
+    })()
+    return () => { disposed = true }
+  }, [isOpen, attempt])
 
   // 获取当前路径下的项目
   const getCurrentItems = useCallback(() => {
@@ -77,18 +110,32 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
     setIsOpen(false)
   }
 
-  // 处理文件选择
+  // 文件对话框只回填发起时的字段；取消及迟到响应不改草稿。
   const handleFileSelect = async () => {
+    if (filePending.current) return
+    filePending.current = true
+    const request = ++fileRequest.current
+    const revision = getStudioTransportRevision()
+    const current = () => request === fileRequest.current && revision === getStudioTransportRevision()
+    setSelecting(true)
+    setFileError('')
     try {
       const result = await systemApi.selectFile('选择图片', undefined, [
         ['图片文件', '*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp'],
         ['所有文件', '*.*']
       ])
-      if (result.data?.success && result.data.path) {
+      if (!current()) return
+      if (!result.success) throw new Error(result.error || '选择图片失败')
+      if (typeof result.data?.success !== 'boolean') throw new Error('图片选择响应格式错误')
+      if (result.data.success) {
+        if (typeof result.data.path !== 'string' || !result.data.path) throw new Error('图片选择响应缺少路径')
         onChange(result.data.path)
-      }
+      } else if (typeof result.data.error === 'string' && result.data.error) throw new Error(result.data.error)
     } catch (error) {
-      console.error('选择文件失败:', error)
+      if (current()) setFileError(error instanceof Error ? error.message : '选择图片失败')
+    } finally {
+      filePending.current = false
+      if (mounted.current) setSelecting(false)
     }
   }
 
@@ -133,12 +180,17 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
           type="button"
           variant="tonal-warning"
           size="icon"
+          aria-label="从电脑选择图片"
+          disabled={selecting}
           onClick={handleFileSelect}
           className="shrink-0"
         >
           <FolderOpen className="w-4 h-4" />
         </Button>
+        <Button type="button" variant="outline" size="icon" aria-label="选择图像资源" onClick={() => setIsOpen(open => !open)}><Image className="w-4 h-4" /></Button>
       </div>
+
+      {fileError && <p role="alert" className="text-xs text-red-600">{fileError}</p>}
 
       {/* 下拉面板 */}
       {isOpen && (
@@ -172,7 +224,9 @@ export function ImagePathInput({ value, onChange, className, placeholder = '输�
 
           {/* 文件和文件夹列表 */}
           <div className="overflow-y-auto flex-1 p-2">
-            {subfolders.length === 0 && files.length === 0 ? (
+            {loading ? <p role="status" className="p-3 text-sm">正在加载图像资源…</p> : loadError ? (
+              <div role="alert" className="p-3 text-sm"><p>{loadError}</p><Button type="button" onClick={() => setAttempt(current => current + 1)}>重试加载图像资源</Button></div>
+            ) : subfolders.length === 0 && files.length === 0 ? (
               <div className="text-center py-8 text-gray-400 text-sm">
                 {assets.length === 0 ? (
                   <>
