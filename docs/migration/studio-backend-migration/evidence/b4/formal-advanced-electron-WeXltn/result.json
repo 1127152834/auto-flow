@@ -1,0 +1,737 @@
+{
+  "evidenceId": "BE-B4-advanced-data-formal-electron",
+  "checkedAt": "2026-09-15T19:00:16.403Z",
+  "gitHead": "6d8658960e5ff2abb0e4c31c5778edea9b2c6cda",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "11wJNC7H18pozi3J4_q08",
+  "profileId": "bc478d6c-75f1-4da5-8331-117c2f549a54",
+  "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+  "result": "passed",
+  "checks": [
+    "生产执行器注册表对 4 节点文档计算 requiresBrowser=false",
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加并配置 4 个高级数据代表节点",
+    "通过画布拖拽节点与连接手柄建立 csv_parse → list_filter → list_map → list_to_string_advanced 全数据依赖链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite；4 个节点配置、数据变量引用和 3 条边均与输入一致",
+    "HTTP 结果精确核对为 CSV 四列 → 过滤一行 → [32] → scores=[32]，且四个节点的持久化日志完整",
+    "直接读取临时 autoflow.sqlite3，文档、终态、事件、结果与日志均和正式 HTTP 响应一致",
+    "requiresBrowser=false 的纯数据链运行前、运行中和完成后均无 CloakBrowser；运行槽已释放且 sidecar 清理完成"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 4,
+    "edgeCount": 3,
+    "variables": []
+  },
+  "execution": {
+    "status": "completed",
+    "cleanupState": "completed",
+    "resultCount": 4,
+    "logCount": 5,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "documentId": "11wJNC7H18pozi3J4_q08"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+          "executionId": "ef5ae4f1-c0cc-4ddd-b27c-6c49bfb09d11",
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+          "executionId": "ef5ae4f1-c0cc-4ddd-b27c-6c49bfb09d11",
+          "success": true,
+          "sequence": 3
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "log": {
+            "sequence": 4,
+            "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-4",
+            "timestamp": "2026-09-15T19:00:14.393176+00:00",
+            "level": "success",
+            "message": "CSV解析完成，共 1 行",
+            "nodeId": "j1mCC-Bf9MOqP0BKgYQDS"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+          "executionId": "0f43cddf-d74c-4daf-9f64-bd65bbe1094b",
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+          "executionId": "0f43cddf-d74c-4daf-9f64-bd65bbe1094b",
+          "success": true,
+          "sequence": 6
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "log": {
+            "sequence": 7,
+            "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-7",
+            "timestamp": "2026-09-15T19:00:14.405648+00:00",
+            "level": "success",
+            "message": "过滤完成，得到 1 个元素",
+            "nodeId": "k-_6YMKjm5BixJ9wNji1H"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "JMfjac0U86o5cEdPM5KM1",
+          "executionId": "a3fd0515-e327-4b2b-82c6-d8939bd8d7ff",
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "JMfjac0U86o5cEdPM5KM1",
+          "executionId": "a3fd0515-e327-4b2b-82c6-d8939bd8d7ff",
+          "success": true,
+          "sequence": 9
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "log": {
+            "sequence": 10,
+            "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-10",
+            "timestamp": "2026-09-15T19:00:14.417819+00:00",
+            "level": "success",
+            "message": "映射完成，处理 1 个元素",
+            "nodeId": "JMfjac0U86o5cEdPM5KM1"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "e2mahynlLRe0c0Tc74t2t",
+          "executionId": "662d9c3f-f0eb-4fe6-980c-7542aeb6a421",
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "nodeId": "e2mahynlLRe0c0Tc74t2t",
+          "executionId": "662d9c3f-f0eb-4fe6-980c-7542aeb6a421",
+          "success": true,
+          "sequence": 12
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "log": {
+            "sequence": 13,
+            "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-13",
+            "timestamp": "2026-09-15T19:00:14.431608+00:00",
+            "level": "success",
+            "message": "列表转字符串完成",
+            "nodeId": "e2mahynlLRe0c0Tc74t2t"
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:completed",
+        "data": {
+          "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+          "workflowId": "11wJNC7H18pozi3J4_q08",
+          "result": {
+            "status": "completed",
+            "executedNodes": 4,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "sourceFamilies": {
+    "list_advanced.py": [
+      "list_reverse",
+      "list_find",
+      "list_count",
+      "list_filter",
+      "list_map",
+      "list_merge",
+      "list_flatten",
+      "list_chunk",
+      "list_remove_empty",
+      "list_intersection",
+      "list_union",
+      "list_difference",
+      "list_cartesian_product",
+      "list_shuffle",
+      "list_sample"
+    ],
+    "dict_advanced.py": [
+      "dict_merge",
+      "dict_filter",
+      "dict_map_values",
+      "dict_invert",
+      "dict_sort",
+      "dict_deep_copy",
+      "dict_get_path",
+      "dict_flatten"
+    ],
+    "string_convert.py": [
+      "csv_parse",
+      "csv_generate",
+      "list_to_string_advanced"
+    ]
+  },
+  "sourceFileHashes": {
+    "reference/WebRPA/backend/app/executors/list_advanced.py": "452c025f24c6ec86c2ea1d25addf4056f8ca12eb283596fd77aeb7330c48f9a4",
+    "reference/WebRPA/backend/app/executors/dict_advanced.py": "87a5e3dd065e4b21b6c0c78c31de867f4c99ff7f8bb527045990c5f6878bb707",
+    "reference/WebRPA/backend/app/executors/string_convert.py": "5e9cd026ffdf5692cbf5d39f25c2fad949f9140f5ef34872e37906429c54c131",
+    "reference/WebRPA/backend/app/utils/safe_expr.py": "7b7640e5b9b8fd8ffc5ec625162663e317f88da9629fb7ad55df3159d608793d",
+    "apps/backend/src/autoflow/application/workflows/executors/list_advanced.py": "2c4d0d248f56bdf6199507c037a247aac4928cefd9267fad9d9d8170ece8dcf0",
+    "apps/backend/src/autoflow/application/workflows/executors/dict_advanced.py": "31a8560d3a39319f7c2bf8de287d0ec56761c4092e4acf472daa5b3b4ed4248d",
+    "apps/backend/src/autoflow/application/workflows/executors/string_convert.py": "55b89f518986a4afe3800750b7870e2da145a564f5f28fbcaea8b90883f9ef5d",
+    "apps/backend/src/autoflow/application/workflows/executors/safe_expr.py": "b8f22ae9fe753e616f85b7fb3d67e0992c9abe5e8d249443dc8630547e738a03"
+  },
+  "targetSourceDirtyFiles": [],
+  "approvedFamilySize": 26,
+  "uiExecutedTypes": [
+    "csv_parse",
+    "list_filter",
+    "list_map",
+    "list_to_string_advanced"
+  ],
+  "notUiExecutedTypes": [
+    "list_reverse",
+    "list_find",
+    "list_count",
+    "list_merge",
+    "list_flatten",
+    "list_chunk",
+    "list_remove_empty",
+    "list_intersection",
+    "list_union",
+    "list_difference",
+    "list_cartesian_product",
+    "list_shuffle",
+    "list_sample",
+    "dict_merge",
+    "dict_filter",
+    "dict_map_values",
+    "dict_invert",
+    "dict_sort",
+    "dict_deep_copy",
+    "dict_get_path",
+    "dict_flatten",
+    "csv_generate"
+  ],
+  "uiNodes": [
+    {
+      "moduleType": "list_reverse",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_find",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_count",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_filter",
+      "sourceFile": "list_advanced.py",
+      "label": "列表过滤",
+      "status": "executed-through-ui",
+      "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+      "config": {
+        "listVariable": "parsed_rows_ui",
+        "condition": "len(x) == 4",
+        "resultVariable": "filtered_rows_ui"
+      },
+      "result": {
+        "value": [
+          [
+            "4",
+            "9",
+            "16",
+            "25"
+          ]
+        ]
+      },
+      "logs": [
+        "过滤完成，得到 1 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_map",
+      "sourceFile": "list_advanced.py",
+      "label": "列表映射",
+      "status": "executed-through-ui",
+      "nodeId": "JMfjac0U86o5cEdPM5KM1",
+      "config": {
+        "listVariable": "filtered_rows_ui",
+        "expression": "len(x) * 8",
+        "resultVariable": "mapped_scores_ui"
+      },
+      "result": {
+        "value": [
+          32
+        ]
+      },
+      "logs": [
+        "映射完成，处理 1 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_merge",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_flatten",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_chunk",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_remove_empty",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_intersection",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_union",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_difference",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_cartesian_product",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_shuffle",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_sample",
+      "sourceFile": "list_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_merge",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_filter",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_map_values",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_invert",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_sort",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_deep_copy",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_get_path",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "dict_flatten",
+      "sourceFile": "dict_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "csv_parse",
+      "sourceFile": "string_convert.py",
+      "label": "CSV解析",
+      "status": "executed-through-ui",
+      "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+      "config": {
+        "csvContent": "4;9;16;25",
+        "delimiter": ";",
+        "hasHeader": "false",
+        "resultVariable": "parsed_rows_ui"
+      },
+      "result": {
+        "value": [
+          [
+            "4",
+            "9",
+            "16",
+            "25"
+          ]
+        ]
+      },
+      "logs": [
+        "CSV解析完成，共 1 行"
+      ]
+    },
+    {
+      "moduleType": "csv_generate",
+      "sourceFile": "string_convert.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_to_string_advanced",
+      "sourceFile": "string_convert.py",
+      "label": "列表转字符串（高级）",
+      "status": "executed-through-ui",
+      "nodeId": "e2mahynlLRe0c0Tc74t2t",
+      "config": {
+        "listVariable": "mapped_scores_ui",
+        "separator": " | ",
+        "prefix": "scores=[",
+        "suffix": "]",
+        "resultVariable": "summary_text_ui"
+      },
+      "result": {
+        "value": "scores=[32]"
+      },
+      "logs": [
+        "列表转字符串完成"
+      ]
+    }
+  ],
+  "httpEvidence": {
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+        "executionId": "ef5ae4f1-c0cc-4ddd-b27c-6c49bfb09d11",
+        "values": {
+          "value": [
+            [
+              "4",
+              "9",
+              "16",
+              "25"
+            ]
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 6,
+        "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+        "executionId": "0f43cddf-d74c-4daf-9f64-bd65bbe1094b",
+        "values": {
+          "value": [
+            [
+              "4",
+              "9",
+              "16",
+              "25"
+            ]
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 9,
+        "nodeId": "JMfjac0U86o5cEdPM5KM1",
+        "executionId": "a3fd0515-e327-4b2b-82c6-d8939bd8d7ff",
+        "values": {
+          "value": [
+            32
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 12,
+        "nodeId": "e2mahynlLRe0c0Tc74t2t",
+        "executionId": "662d9c3f-f0eb-4fe6-980c-7542aeb6a421",
+        "values": {
+          "value": "scores=[32]"
+        },
+        "largeValues": {}
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-4",
+        "timestamp": "2026-09-15T19:00:14.393176+00:00",
+        "level": "success",
+        "message": "CSV解析完成，共 1 行",
+        "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 7,
+        "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-7",
+        "timestamp": "2026-09-15T19:00:14.405648+00:00",
+        "level": "success",
+        "message": "过滤完成，得到 1 个元素",
+        "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 10,
+        "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-10",
+        "timestamp": "2026-09-15T19:00:14.417819+00:00",
+        "level": "success",
+        "message": "映射完成，处理 1 个元素",
+        "nodeId": "JMfjac0U86o5cEdPM5KM1",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 13,
+        "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-13",
+        "timestamp": "2026-09-15T19:00:14.431608+00:00",
+        "level": "success",
+        "message": "列表转字符串完成",
+        "nodeId": "e2mahynlLRe0c0Tc74t2t",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 14,
+        "id": "1c10a016-9705-4942-9b42-3f9fbc52be0b-14",
+        "timestamp": "2026-09-15T19:00:15.123637+00:00",
+        "level": "success",
+        "message": "执行完成，共执行 4 个节点，失败 0 个",
+        "nodeId": null,
+        "duration": null,
+        "details": null
+      }
+    ]
+  },
+  "sqliteEvidence": {
+    "document": [
+      {
+        "id": "11wJNC7H18pozi3J4_q08",
+        "name": "B4 高级数据正式闭环",
+        "revision": 1,
+        "nodeCount": 4,
+        "edgeCount": 3,
+        "variableCount": 0
+      }
+    ],
+    "run": [
+      {
+        "runId": "1c10a016-9705-4942-9b42-3f9fbc52be0b",
+        "workflowId": "11wJNC7H18pozi3J4_q08",
+        "status": "completed",
+        "cleanupState": "completed",
+        "activeSlot": null,
+        "eventCount": 15,
+        "logCount": 5
+      }
+    ],
+    "eventTypes": [
+      {
+        "type": "execution:completed",
+        "count": 1
+      },
+      {
+        "type": "execution:log",
+        "count": 5
+      },
+      {
+        "type": "execution:node-succeeded",
+        "count": 4
+      },
+      {
+        "type": "execution:node_start",
+        "count": 4
+      },
+      {
+        "type": "execution:running",
+        "count": 1
+      }
+    ],
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+        "value": [
+          [
+            "4",
+            "9",
+            "16",
+            "25"
+          ]
+        ]
+      },
+      {
+        "sequence": 6,
+        "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+        "value": [
+          [
+            "4",
+            "9",
+            "16",
+            "25"
+          ]
+        ]
+      },
+      {
+        "sequence": 9,
+        "nodeId": "JMfjac0U86o5cEdPM5KM1",
+        "value": [
+          32
+        ]
+      },
+      {
+        "sequence": 12,
+        "nodeId": "e2mahynlLRe0c0Tc74t2t",
+        "value": "scores=[32]"
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "nodeId": "j1mCC-Bf9MOqP0BKgYQDS",
+        "message": "CSV解析完成，共 1 行"
+      },
+      {
+        "sequence": 7,
+        "nodeId": "k-_6YMKjm5BixJ9wNji1H",
+        "message": "过滤完成，得到 1 个元素"
+      },
+      {
+        "sequence": 10,
+        "nodeId": "JMfjac0U86o5cEdPM5KM1",
+        "message": "映射完成，处理 1 个元素"
+      },
+      {
+        "sequence": 13,
+        "nodeId": "e2mahynlLRe0c0Tc74t2t",
+        "message": "列表转字符串完成"
+      },
+      {
+        "sequence": 14,
+        "nodeId": null,
+        "message": "执行完成，共执行 4 个节点，失败 0 个"
+      }
+    ]
+  },
+  "requiresBrowserEvidence": {
+    "workflowRequiresBrowser": false,
+    "nodeRequiresBrowser": {
+      "csv_parse": false,
+      "list_filter": false,
+      "list_map": false,
+      "list_to_string_advanced": false
+    }
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesDuring": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "workflowDataFlow": "csv_parse.parsed_rows_ui → list_filter.filtered_rows_ui → list_map.mapped_scores_ui → list_to_string_advanced.summary_text_ui",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for Profile setup and evidence reads; SQLite used only for evidence reads; no Store or page-internal function access",
+    "claim": "4 of 26 approved advanced-data nodes executed through the formal UI; the remaining 22 are explicitly not claimed by this run"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "sheetNames": [
+    "正式结果"
+  ],
+  "values": [
+    [
+      "name",
+      "score",
+      "status"
+    ],
+    [
+      "甲",
+      1,
+      "初始"
+    ],
+    [
+      "乙",
+      "9",
+      "初始"
+    ]
+  ],
+  "freezePanes": "A2",
+  "header": {
+    "bold": true,
+    "fontColor": "00FFFFFF",
+    "fill": "004472C4",
+    "alignment": "center",
+    "borderStyle": "thin",
+    "borderColor": "002F5496"
+  },
+  "dataStyle": {
+    "firstFillType": null,
+    "alternatingFill": "00F2F2F2",
+    "firstBorderStyle": "thin",
+    "secondBorderStyle": "thin"
+  },
+  "columnWidths": {
+    "A": 8,
+    "B": 9,
+    "C": 10
+  },
+  "headerHeight": 25
+}

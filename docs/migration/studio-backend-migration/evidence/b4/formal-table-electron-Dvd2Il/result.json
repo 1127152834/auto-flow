@@ -1,0 +1,1065 @@
+{
+  "evidenceId": "BE-B4-table-formal-electron",
+  "checkedAt": "2026-09-15T19:40:08.488Z",
+  "gitHead": "6d8658960e5ff2abb0e4c31c5778edea9b2c6cda",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+  "profileId": "7dbab6e2-83f2-445c-8839-5721b610f3fb",
+  "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+  "result": "passed",
+  "checks": [
+    "表格差异、真实 OpenPyXL 与 worker 产物测试：71 passed",
+    "生产执行器注册表对表格 7 类型计算 requiresBrowser=false",
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加、输入并配置 8 个节点实例，覆盖表格全部 7 类型",
+    "通过画布拖拽节点与连接手柄建立 add_row ×2 → add_column → set_cell → get_cell → export → delete_row → clear 共享表状态链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite；8 个节点实例配置和 7 条边均与输入一致",
+    "通过 macOS Cmd+W 正常关闭 Studio，再从主窗口真实点击重开并恢复已保存节点、配置和连线",
+    "HTTP 精确核对添加、改列、改单元格、读取、导出、删除和清空的 8 个结果与日志",
+    "HTTP 下载的 XLSX 可由 OpenPyXL 重开；Sheet、值、冻结窗格、表头/隔行/边框样式、列宽和哈希有效，且产物 executionId 与 SSE 导出节点完成事件一致",
+    "直接读取临时 autoflow.sqlite3，文档、终态、事件、8 个结果、日志与 XLSX 产物索引均和 HTTP/SSE 一致",
+    "requiresBrowser=false 的纯数据链运行前、运行中和完成后均无 CloakBrowser；运行槽已释放且 sidecar 运行清理完成",
+    "停止本次 Electron/sidecar/worker 后删除临时工作区，按工作区路径检查无残留进程"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "commands": {
+    "build": "npm run build",
+    "smoke": "node scripts/smoke-studio-backend-b4-table.mjs",
+    "targetedTests": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b4_table_executor_parity.py apps/backend/tests/unit/workflows/test_browser_session_contract.py::test_workflow_worker_runs_table_family_and_registers_excel_artifact"
+  },
+  "targetedTestOutput": ".......................................................................  [100%]\n71 passed in 8.43s",
+  "workflowPersistence": {
+    "revision": 1,
+    "closedAndReopened": true,
+    "nodeCount": 8,
+    "edgeCount": 7,
+    "variables": [
+      {
+        "name": "cell_value",
+        "type": "string",
+        "scope": "global"
+      }
+    ]
+  },
+  "execution": {
+    "status": "completed",
+    "cleanupState": "completed",
+    "resultCount": 8,
+    "logCount": 9,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "documentId": "FfeEK1QV4zRPuR8eKlXn7"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+          "executionId": "5597d79b-249f-465a-bc45-62ca42c03426",
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+          "executionId": "5597d79b-249f-465a-bc45-62ca42c03426",
+          "success": true,
+          "sequence": 3
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 4,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-4",
+            "timestamp": "2026-09-15T19:40:06.579095+00:00",
+            "level": "success",
+            "message": "已添加数据行，当前共 1 行",
+            "nodeId": "7LCbawbHPRfN8sVX6p4-U"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+          "executionId": "1e83c13f-51ed-4934-9103-f6bfe92f311b",
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+          "executionId": "1e83c13f-51ed-4934-9103-f6bfe92f311b",
+          "success": true,
+          "sequence": 6
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 7,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-7",
+            "timestamp": "2026-09-15T19:40:06.614517+00:00",
+            "level": "success",
+            "message": "已添加数据行，当前共 2 行",
+            "nodeId": "WaA5mxFP7w-hUQ7JKJIhI"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+          "executionId": "c0fa4199-2e2a-4cb9-917a-be64597c0d11",
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+          "executionId": "c0fa4199-2e2a-4cb9-917a-be64597c0d11",
+          "success": true,
+          "sequence": 9
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 10,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-10",
+            "timestamp": "2026-09-15T19:40:06.637100+00:00",
+            "level": "success",
+            "message": "已添加列 'status'",
+            "nodeId": "AcRFTCA9-WFLLNFzR7pHm"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+          "executionId": "3560a595-16aa-47be-a835-c37b94245092",
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+          "executionId": "3560a595-16aa-47be-a835-c37b94245092",
+          "success": true,
+          "sequence": 12
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 13,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-13",
+            "timestamp": "2026-09-15T19:40:06.655119+00:00",
+            "level": "success",
+            "message": "已设置 [1][score] = 9",
+            "nodeId": "RLRQsgXGmDkqDb-k3iUa4"
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "hBBVsezCEwl988ZAGgLZY",
+          "executionId": "02a2a90a-bf3d-4581-a659-6d2edf85af23",
+          "sequence": 14
+        }
+      },
+      {
+        "id": 15,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "hBBVsezCEwl988ZAGgLZY",
+          "executionId": "02a2a90a-bf3d-4581-a659-6d2edf85af23",
+          "success": true,
+          "sequence": 15
+        }
+      },
+      {
+        "id": 16,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 16,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-16",
+            "timestamp": "2026-09-15T19:40:06.674325+00:00",
+            "level": "success",
+            "message": "获取 [1][score] = 9",
+            "nodeId": "hBBVsezCEwl988ZAGgLZY"
+          }
+        }
+      },
+      {
+        "id": 17,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+          "executionId": "8e507e3a-e06f-4cc8-b3e5-57586a6c75cd",
+          "sequence": 17
+        }
+      },
+      {
+        "id": 18,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+          "executionId": "8e507e3a-e06f-4cc8-b3e5-57586a6c75cd",
+          "success": true,
+          "sequence": 18
+        }
+      },
+      {
+        "id": 19,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 19,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-19",
+            "timestamp": "2026-09-15T19:40:06.716502+00:00",
+            "level": "success",
+            "message": "已导出 2 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx (Sheet: 正式结果)",
+            "nodeId": "_jzbc1WXnDXsXJgxJw-9N"
+          }
+        }
+      },
+      {
+        "id": 20,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "TjD7QfrA9efqXw52NXCsW",
+          "executionId": "d5a33cc6-2e8f-446b-89d3-d0f9cdc22c29",
+          "sequence": 20
+        }
+      },
+      {
+        "id": 21,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "TjD7QfrA9efqXw52NXCsW",
+          "executionId": "d5a33cc6-2e8f-446b-89d3-d0f9cdc22c29",
+          "success": true,
+          "sequence": 21
+        }
+      },
+      {
+        "id": 22,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 22,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-22",
+            "timestamp": "2026-09-15T19:40:06.740354+00:00",
+            "level": "success",
+            "message": "已删除第 1 行，剩余 1 行",
+            "nodeId": "TjD7QfrA9efqXw52NXCsW"
+          }
+        }
+      },
+      {
+        "id": 23,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+          "executionId": "c21f2199-74ab-4a1b-8378-5581a2a740c7",
+          "sequence": 23
+        }
+      },
+      {
+        "id": 24,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+          "executionId": "c21f2199-74ab-4a1b-8378-5581a2a740c7",
+          "success": true,
+          "sequence": 24
+        }
+      },
+      {
+        "id": 25,
+        "name": "execution:log",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "log": {
+            "sequence": 25,
+            "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-25",
+            "timestamp": "2026-09-15T19:40:06.764037+00:00",
+            "level": "success",
+            "message": "已清空数据表格 (原有 1 行)",
+            "nodeId": "ktBfY9vBRvYdHT2xxq2PX"
+          }
+        }
+      },
+      {
+        "id": 26,
+        "name": "execution:completed",
+        "data": {
+          "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+          "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+          "result": {
+            "status": "completed",
+            "executedNodes": 8,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "sourceFileHashes": {
+    "reference/WebRPA/backend/app/executors/table.py": "2751b2b124fd2c9e3d41eb95229e55f3b018b5e337e243d3e8a846e827a70a49",
+    "apps/backend/src/autoflow/application/workflows/executors/production.py": "f4e52c025f464d431741a2ca09fb64305489f1339404b18edf2f6d39eb2e4cf1",
+    "apps/backend/src/autoflow/application/workflows/executors/table.py": "ce8bd12b8b3d7b5c2ea107f242cac66a7d9d8732bfd5e3a7e1a5571b9efd4182",
+    "apps/backend/src/autoflow/domain/workflows/execution.py": "ac1e37a99cab859cec9d02290537d5350f8b4506c190439736e40c56ce74abab",
+    "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py": "73c67f632faf3cb6c07fa1c511c886f6a7e379790f8c1577839da629eb79886a",
+    "apps/backend/src/autoflow/infrastructure/filesystem/workflow_table_workbook.py": "3b0f41556c7d6e1452d3c9e8f3f3643f2ee5691e3a376dab3d55fa339e2f0e0c",
+    "apps/backend/src/autoflow/infrastructure/process/workflow_worker.py": "d9b7573111f70649f049b89b100f17d66b1ffcc8ef11e43c3ef6b9aad8b26349",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "9d099e91710ab6270c29b7f89de0675a298aa4f7dd7243965f934195533a50a2"
+  },
+  "targetSourceStatus": [
+    "M apps/backend/src/autoflow/application/workflows/executors/production.py",
+    " M apps/backend/src/autoflow/domain/workflows/execution.py",
+    " M apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py",
+    " M apps/backend/src/autoflow/infrastructure/process/workflow_worker.py",
+    " M apps/backend/src/autoflow/providers/browser/workflow_worker.py",
+    "?? apps/backend/src/autoflow/application/workflows/executors/table.py",
+    "?? apps/backend/src/autoflow/infrastructure/filesystem/workflow_table_workbook.py"
+  ],
+  "approvedFamilySize": 7,
+  "uiExecutedTypes": [
+    "table_add_row",
+    "table_add_column",
+    "table_set_cell",
+    "table_get_cell",
+    "table_export",
+    "table_delete_row",
+    "table_clear"
+  ],
+  "uiNodeInstanceCount": 8,
+  "notUiExecutedTypes": [],
+  "uiNodes": [
+    {
+      "moduleType": "table_add_row",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+          "label": "添加行",
+          "config": {
+            "rowData": "{\"name\":\"甲\",\"score\":1}"
+          },
+          "result": {
+            "row": {
+              "name": "甲",
+              "score": 1
+            },
+            "total_rows": 1
+          },
+          "logs": [
+            "已添加数据行，当前共 1 行"
+          ]
+        },
+        {
+          "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+          "label": "添加行",
+          "config": {
+            "rowData": "{\"name\":\"乙\",\"score\":2}"
+          },
+          "result": {
+            "row": {
+              "name": "乙",
+              "score": 2
+            },
+            "total_rows": 2
+          },
+          "logs": [
+            "已添加数据行，当前共 2 行"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_add_column",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+          "label": "添加列",
+          "config": {
+            "columnName": "status",
+            "defaultValue": "初始"
+          },
+          "result": {
+            "column": "status",
+            "default": "初始"
+          },
+          "logs": [
+            "已添加列 'status'"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_set_cell",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+          "label": "设置单元格",
+          "config": {
+            "rowIndex": "1",
+            "columnName": "score",
+            "cellValue": "9"
+          },
+          "result": {
+            "row": 1,
+            "column": "score",
+            "value": "9"
+          },
+          "logs": [
+            "已设置 [1][score] = 9"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_get_cell",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "hBBVsezCEwl988ZAGgLZY",
+          "label": "读取单元格",
+          "config": {
+            "rowIndex": "1",
+            "columnName": "score",
+            "variableName": "score_value_ui"
+          },
+          "result": {
+            "value": "9"
+          },
+          "logs": [
+            "获取 [1][score] = 9"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_export",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+          "label": "导出表格",
+          "config": {
+            "exportFormat": "excel",
+            "sheetName": "正式结果",
+            "savePath": "reports",
+            "fileNamePattern": "table_ui_export",
+            "variableName": "xlsx_path_ui"
+          },
+          "result": {
+            "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx",
+            "rows": 2,
+            "format": "excel",
+            "sheet_name": "正式结果",
+            "file_size": 5220
+          },
+          "logs": [
+            "已导出 2 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx (Sheet: 正式结果)"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_delete_row",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "TjD7QfrA9efqXw52NXCsW",
+          "label": "删除行",
+          "config": {
+            "rowIndex": "-1"
+          },
+          "result": {
+            "deleted": {
+              "name": "乙",
+              "score": "9",
+              "status": "初始"
+            },
+            "remaining": 1
+          },
+          "logs": [
+            "已删除第 1 行，剩余 1 行"
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "table_clear",
+      "status": "executed-through-ui",
+      "instances": [
+        {
+          "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+          "label": "清空表格",
+          "config": {},
+          "result": {
+            "cleared_rows": 1
+          },
+          "logs": [
+            "已清空数据表格 (原有 1 行)"
+          ]
+        }
+      ]
+    }
+  ],
+  "httpEvidence": {
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+        "executionId": "5597d79b-249f-465a-bc45-62ca42c03426",
+        "values": {
+          "row": {
+            "name": "甲",
+            "score": 1
+          },
+          "total_rows": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 6,
+        "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+        "executionId": "1e83c13f-51ed-4934-9103-f6bfe92f311b",
+        "values": {
+          "row": {
+            "name": "乙",
+            "score": 2
+          },
+          "total_rows": 2
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 9,
+        "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+        "executionId": "c0fa4199-2e2a-4cb9-917a-be64597c0d11",
+        "values": {
+          "column": "status",
+          "default": "初始"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 12,
+        "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+        "executionId": "3560a595-16aa-47be-a835-c37b94245092",
+        "values": {
+          "row": 1,
+          "column": "score",
+          "value": "9"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 15,
+        "nodeId": "hBBVsezCEwl988ZAGgLZY",
+        "executionId": "02a2a90a-bf3d-4581-a659-6d2edf85af23",
+        "values": {
+          "value": "9"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 18,
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "executionId": "8e507e3a-e06f-4cc8-b3e5-57586a6c75cd",
+        "values": {
+          "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx",
+          "rows": 2,
+          "format": "excel",
+          "sheet_name": "正式结果",
+          "file_size": 5220
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 21,
+        "nodeId": "TjD7QfrA9efqXw52NXCsW",
+        "executionId": "d5a33cc6-2e8f-446b-89d3-d0f9cdc22c29",
+        "values": {
+          "deleted": {
+            "name": "乙",
+            "score": "9",
+            "status": "初始"
+          },
+          "remaining": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 24,
+        "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+        "executionId": "c21f2199-74ab-4a1b-8378-5581a2a740c7",
+        "values": {
+          "cleared_rows": 1
+        },
+        "largeValues": {}
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-4",
+        "timestamp": "2026-09-15T19:40:06.579095+00:00",
+        "level": "success",
+        "message": "已添加数据行，当前共 1 行",
+        "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 7,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-7",
+        "timestamp": "2026-09-15T19:40:06.614517+00:00",
+        "level": "success",
+        "message": "已添加数据行，当前共 2 行",
+        "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 10,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-10",
+        "timestamp": "2026-09-15T19:40:06.637100+00:00",
+        "level": "success",
+        "message": "已添加列 'status'",
+        "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 13,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-13",
+        "timestamp": "2026-09-15T19:40:06.655119+00:00",
+        "level": "success",
+        "message": "已设置 [1][score] = 9",
+        "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 16,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-16",
+        "timestamp": "2026-09-15T19:40:06.674325+00:00",
+        "level": "success",
+        "message": "获取 [1][score] = 9",
+        "nodeId": "hBBVsezCEwl988ZAGgLZY",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 19,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-19",
+        "timestamp": "2026-09-15T19:40:06.716502+00:00",
+        "level": "success",
+        "message": "已导出 2 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx (Sheet: 正式结果)",
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 22,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-22",
+        "timestamp": "2026-09-15T19:40:06.740354+00:00",
+        "level": "success",
+        "message": "已删除第 1 行，剩余 1 行",
+        "nodeId": "TjD7QfrA9efqXw52NXCsW",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 25,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-25",
+        "timestamp": "2026-09-15T19:40:06.764037+00:00",
+        "level": "success",
+        "message": "已清空数据表格 (原有 1 行)",
+        "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 26,
+        "id": "ed6ce220-ceec-4a3d-9063-4079948fbcb3-26",
+        "timestamp": "2026-09-15T19:40:07.254225+00:00",
+        "level": "success",
+        "message": "执行完成，共执行 8 个节点，失败 0 个",
+        "nodeId": null,
+        "duration": null,
+        "details": null
+      }
+    ],
+    "artifacts": [
+      {
+        "artifactId": "16eaf376-1d26-4651-8e8f-14bfea1ef4f4",
+        "ordinal": 1,
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "executionId": "8e507e3a-e06f-4cc8-b3e5-57586a6c75cd",
+        "size": 5220,
+        "sha256": "c439ad33da33ce4a3452ca9d8e204b59a078c9225c49d408cdab1d070b35d77c",
+        "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "purpose": "result",
+        "eventSequence": 18
+      }
+    ]
+  },
+  "sqliteEvidence": {
+    "document": [
+      {
+        "id": "FfeEK1QV4zRPuR8eKlXn7",
+        "name": "B4 表格七类型正式闭环",
+        "revision": 1,
+        "nodeCount": 8,
+        "edgeCount": 7,
+        "variableCount": 1
+      }
+    ],
+    "run": [
+      {
+        "runId": "ed6ce220-ceec-4a3d-9063-4079948fbcb3",
+        "workflowId": "FfeEK1QV4zRPuR8eKlXn7",
+        "status": "completed",
+        "cleanupState": "completed",
+        "activeSlot": null,
+        "eventCount": 27,
+        "logCount": 9
+      }
+    ],
+    "eventTypes": [
+      {
+        "type": "execution:completed",
+        "count": 1
+      },
+      {
+        "type": "execution:log",
+        "count": 9
+      },
+      {
+        "type": "execution:node-succeeded",
+        "count": 8
+      },
+      {
+        "type": "execution:node_start",
+        "count": 8
+      },
+      {
+        "type": "execution:running",
+        "count": 1
+      }
+    ],
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+        "value": {
+          "row": {
+            "name": "甲",
+            "score": 1
+          },
+          "total_rows": 1
+        }
+      },
+      {
+        "sequence": 6,
+        "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+        "value": {
+          "row": {
+            "name": "乙",
+            "score": 2
+          },
+          "total_rows": 2
+        }
+      },
+      {
+        "sequence": 9,
+        "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+        "value": {
+          "column": "status",
+          "default": "初始"
+        }
+      },
+      {
+        "sequence": 12,
+        "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+        "value": {
+          "row": 1,
+          "column": "score",
+          "value": "9"
+        }
+      },
+      {
+        "sequence": 15,
+        "nodeId": "hBBVsezCEwl988ZAGgLZY",
+        "value": "9"
+      },
+      {
+        "sequence": 18,
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "value": {
+          "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx",
+          "rows": 2,
+          "format": "excel",
+          "sheet_name": "正式结果",
+          "file_size": 5220
+        }
+      },
+      {
+        "sequence": 21,
+        "nodeId": "TjD7QfrA9efqXw52NXCsW",
+        "value": {
+          "deleted": {
+            "name": "乙",
+            "score": "9",
+            "status": "初始"
+          },
+          "remaining": 1
+        }
+      },
+      {
+        "sequence": 24,
+        "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+        "value": {
+          "cleared_rows": 1
+        }
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "nodeId": "7LCbawbHPRfN8sVX6p4-U",
+        "message": "已添加数据行，当前共 1 行"
+      },
+      {
+        "sequence": 7,
+        "nodeId": "WaA5mxFP7w-hUQ7JKJIhI",
+        "message": "已添加数据行，当前共 2 行"
+      },
+      {
+        "sequence": 10,
+        "nodeId": "AcRFTCA9-WFLLNFzR7pHm",
+        "message": "已添加列 'status'"
+      },
+      {
+        "sequence": 13,
+        "nodeId": "RLRQsgXGmDkqDb-k3iUa4",
+        "message": "已设置 [1][score] = 9"
+      },
+      {
+        "sequence": 16,
+        "nodeId": "hBBVsezCEwl988ZAGgLZY",
+        "message": "获取 [1][score] = 9"
+      },
+      {
+        "sequence": 19,
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "message": "已导出 2 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b4-table-NE6d42/workspace/runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/outputs/reports/table_ui_export.xlsx (Sheet: 正式结果)"
+      },
+      {
+        "sequence": 22,
+        "nodeId": "TjD7QfrA9efqXw52NXCsW",
+        "message": "已删除第 1 行，剩余 1 行"
+      },
+      {
+        "sequence": 25,
+        "nodeId": "ktBfY9vBRvYdHT2xxq2PX",
+        "message": "已清空数据表格 (原有 1 行)"
+      },
+      {
+        "sequence": 26,
+        "nodeId": null,
+        "message": "执行完成，共执行 8 个节点，失败 0 个"
+      }
+    ],
+    "artifacts": [
+      {
+        "artifactId": "16eaf376-1d26-4651-8e8f-14bfea1ef4f4",
+        "ordinal": 1,
+        "nodeId": "_jzbc1WXnDXsXJgxJw-9N",
+        "executionId": "8e507e3a-e06f-4cc8-b3e5-57586a6c75cd",
+        "relativePath": "runs/ed6ce220-ceec-4a3d-9063-4079948fbcb3/artifacts/exports/a4bceecb59374c46af5f704708694048.xlsx",
+        "size": 5220,
+        "sha256": "c439ad33da33ce4a3452ca9d8e204b59a078c9225c49d408cdab1d070b35d77c",
+        "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "purpose": "result",
+        "eventSequence": 18
+      }
+    ]
+  },
+  "xlsxEvidence": {
+    "evidenceFile": "table-ui-export.xlsx",
+    "sha256": "c439ad33da33ce4a3452ca9d8e204b59a078c9225c49d408cdab1d070b35d77c",
+    "size": 5220,
+    "workbook": {
+      "sheetNames": [
+        "正式结果"
+      ],
+      "values": [
+        [
+          "name",
+          "score",
+          "status"
+        ],
+        [
+          "甲",
+          1,
+          "初始"
+        ],
+        [
+          "乙",
+          "9",
+          "初始"
+        ]
+      ],
+      "freezePanes": "A2",
+      "header": {
+        "bold": true,
+        "fontColor": "00FFFFFF",
+        "fill": "004472C4",
+        "alignment": "center",
+        "borderStyle": "thin",
+        "borderColor": "002F5496"
+      },
+      "dataStyle": {
+        "firstFillType": null,
+        "alternatingFill": "00F2F2F2",
+        "firstBorderStyle": "thin",
+        "secondBorderStyle": "thin"
+      },
+      "columnWidths": {
+        "A": 8,
+        "B": 9,
+        "C": 10
+      },
+      "headerHeight": 25
+    }
+  },
+  "artifactEventContract": {
+    "publicSse": "execution:node_complete bound by executionId",
+    "artifactIndex": "HTTP list/detail and SQLite workflow_run_artifacts",
+    "artifactRegisteredSseClaimed": false
+  },
+  "requiresBrowserEvidence": {
+    "workflowRequiresBrowser": false,
+    "nodeRequiresBrowser": {
+      "table_add_row": false,
+      "table_add_column": false,
+      "table_set_cell": false,
+      "table_get_cell": false,
+      "table_export": false,
+      "table_delete_row": false,
+      "table_clear": false
+    }
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesDuring": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "workflowDataFlow": "共享 data_rows：add_row ×2 → add_column → set_cell(row 1) → get_cell(row 1) → export(2 rows) → delete_row(row -1，规范化为 row 1) → clear(1 remaining row)",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; macOS Cmd+W for close; public sidecar APIs used only for Profile setup and evidence reads; SQLite/OpenPyXL used only for evidence reads; no Store or page-internal function access",
+    "claim": "all 7 registered table node types executed through the formal UI in 8 node instances; no other family is claimed by this run",
+    "sourceState": "The table implementation is uncommitted in the shared working tree; gitHead, git status and source hashes are recorded without claiming the implementation belongs to gitHead.",
+    "uiGeneratedVariable": "The UI auto-declared global cell_value from table_get_cell defaultData; the configured executor output name is score_value_ui. Both persisted facts are recorded without claiming cell_value was consumed."
+  },
+  "postCleanup": {
+    "electronPid": 42771,
+    "temporaryWorkspaceRemoved": true,
+    "residualProcesses": []
+  }
+}

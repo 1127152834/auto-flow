@@ -1,0 +1,117 @@
+{
+  "evidenceId": "BE-B4-table-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "gitHead": "bea60436",
+  "result": "7 approved table nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution, atomic CSV/XLSX artifact checks and formal Electron UI execution; three independent P1 findings were reproduced and fixed before commit",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "files": [
+      {
+        "path": "backend/app/executors/table.py",
+        "sha256": "2751b2b124fd2c9e3d41eb95229e55f3b018b5e337e243d3e8a846e827a70a49"
+      },
+      {
+        "path": "backend/app/services/data_collector.py",
+        "sha256": "e9cdace07d7752c37f438687f38e3c96e745a8da2b2a31ea3fd631baef1d03e1"
+      }
+    ]
+  },
+  "migratedTypes": [
+    "table_add_row",
+    "table_add_column",
+    "table_set_cell",
+    "table_get_cell",
+    "table_delete_row",
+    "table_clear",
+    "table_export"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入",
+    "executionContextAndRegistry": "AutoFlow必要适配",
+    "tableState": "AutoFlow必要适配：沿用ExecutionContext共享data_rows，不引入WebRPA全局服务",
+    "fileOutput": "AutoFlow必要适配：CSV/XLSX经运行绑定产物端口发布用户目标并登记不可变快照",
+    "xlsxRendering": "AutoFlow必要适配：保留冻结表头、隔行、边框、列宽与Sheet替换行为，以openpyxl内存渲染替换直接路径写入",
+    "safety": "AutoFlow必要适配：取消、容量、路径、凭据派生污点、跨进程输出锁、并发身份、原文件回滚、持久化清理责任及电子表格公式文本化",
+    "invalidFormat": "已批准增强：未知导出格式明确失败，不静默按CSV处理"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b4_table_executor_parity.py",
+      "result": "71 passed in 9.07s in the final family suite",
+      "coverage": "frozen normal/error branches, exact 7-type inventory, variable and shared table mutation, CSV/XLSX names, values, styles, capacity, cancellation, credential redaction, path and concurrent update behavior"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "all 7 types registered"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_pure_data_family_runs_through_http_without_browser_requirement",
+      "result": "real coordinator accepts all 88 migrated B4 node types with requiresBrowser=false"
+    },
+    "workerWithoutBrowser": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_runs_table_family_and_registers_excel_artifact",
+      "result": "six-node representative table chain produced a registered XLSX without launching CloakBrowser"
+    },
+    "artifactBoundary": {
+      "test": "apps/backend/tests/integration/test_workflow_artifacts.py",
+      "result": "relative and absolute output, immutable snapshot, path/symlink rejection, cancellation, registration rollback, post-replace fsync rollback, cross-process output locking, concurrent identity, rollback conflict preservation and persisted cleanup retry passed"
+    },
+    "combinedB4Regression": {
+      "command": "uv run pytest -q <five B4 differential family suites> -x",
+      "result": "633 passed in 80.25s after final table hardening"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-table-electron-Dvd2Il/result.json",
+      "result": "passed on darwin-arm64 development build",
+      "uiExecutedTypes": [
+        "table_add_row",
+        "table_add_column",
+        "table_set_cell",
+        "table_get_cell",
+        "table_export",
+        "table_delete_row",
+        "table_clear"
+      ],
+      "observed": "Formal Studio UI created, configured, connected, saved, closed, reopened and ran all seven types; HTTP/SSE/SQLite agreed and OpenPyXL verified the 5220-byte XLSX including values, styles and SHA-256.",
+      "note": "The formal UI run predates final internal output-lock, rollback-identity and formula-literal hardening; its workbook contained no formula-like cells. Final output-boundary behavior is covered by the 133-test affected regression and independent fault-injection review."
+    },
+    "finalAffectedRegression": {
+      "command": "uv run pytest -q <table differential + artifact integration + registry + browser-free worker + run API>",
+      "result": "135 passed in 12.67s"
+    }
+  },
+  "review": {
+    "method": "independent P0/P1 review with adversarial reproduction and two follow-up reviews",
+    "result": "initial five P1 findings were reproduced and fixed; final review found no remaining P0/P1",
+    "fixedFindings": [
+      "cleanup transition failure now directly removes the backup or persists a bounded managed retry marker",
+      "AutoFlow writers share a cross-process output lock and rollback refuses to overwrite a newer target identity",
+      "published identity comes from the fsynced staged descriptor, closing the replace-to-stat race for binary and text outputs",
+      "CSV formula prefixes are escaped in headers and values, and XLSX headers and values are forced to literal string cells"
+    ],
+    "finalReviewTests": "102 passed in 9.77s plus independent binary/text fault-injection probes",
+    "remainingP0P1": "none found",
+    "confidence": "high"
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "productionSha256": {
+    "table.py": "18074986821912f026d0792cf955506d16e5197b71adf20baadc6b4f9e2c4828",
+    "workflow_table_workbook.py": "c07eb6c5848f40dcd96c189f465a026d4356967b6a4a22668530a15e7c314ea2",
+    "workflow_artifacts.py": "df079b376b87e2021792735b705760f9096ee52af5b3849800b26c09e3a048ad",
+    "execution.py": "ac1e37a99cab859cec9d02290537d5350f8b4506c190439736e40c56ce74abab",
+    "variables.py": "c4e06cdbb1a0dc37f546e158307fb9e4b77f88b62b8e62e2af4d5168b2488093"
+  },
+  "notClaimed": [
+    "rebuilt packaged sidecar execution of the table family",
+    "macOS Intel verification",
+    "Windows verification"
+  ],
+  "userDatabaseModified": false,
+  "implementationCommit": "bea60436"
+}
