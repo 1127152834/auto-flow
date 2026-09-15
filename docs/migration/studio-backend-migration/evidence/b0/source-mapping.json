@@ -1,0 +1,36 @@
+{
+  "evidenceId": "BE-B0-source-mapping-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "scope": {
+    "approvedNodeTypes": 227,
+    "decoratorRegistrations": 226,
+    "manualRegistrations": 1,
+    "sharedCapabilities": 13,
+    "pendingNodeAcceptanceCases": 681
+  },
+  "frozenSource": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "productVersion": "3.2.0"
+  },
+  "test": {
+    "command": "cd apps/backend && uv run pytest tests/migration/test_studio_backend_source_mapping.py -q",
+    "exitCode": 0,
+    "result": "3 passed",
+    "guards": [
+      "冻结 _SUBMODULES 与实际源码模块一致",
+      "装饰器及手动 registry.register 可在冻结 AST 中定位",
+      "继承 execute 的 15 个 Apprise 节点指向 AppriseNotifyExecutor.execute",
+      "227 个节点均引用已登记的共享能力",
+      "681 条节点验收用例仍为尚未验收，未将映射核验冒充执行通过",
+      "来源、授权边界和许可证副本哈希一致"
+    ]
+  },
+  "authorizationBoundary": {
+    "confirmed": "已获得在本项目范围内使用并迁入WebRPA源码的授权",
+    "notAsserted": [
+      "具体商业授权",
+      "公开发布授权"
+    ]
+  }
+}

@@ -1,0 +1,427 @@
+{
+  "authority": {
+    "scope": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md",
+    "nodeLedger": "docs/migration/studio-frontend-completion/capabilities.json",
+    "frontendContract": "docs/migration/studio-frontend-completion/backend-handoff.md",
+    "frozenRepository": "reference/WebRPA",
+    "frozenCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "productVersion": "3.2.0",
+    "verifiedAt": "2026-09-15",
+    "license": "AGPL-3.0-or-commercial-license-as-declared-by-upstream",
+    "licenseSource": "reference/WebRPA/LICENSE",
+    "retainedLicenseCopy": "LICENSE.WebRPA",
+    "migrationGate": "本项目范围内源码使用授权已确认；保留来源、上游许可证和修改记录",
+    "sourceAuthorization": {
+      "status": "confirmed",
+      "confirmedAt": "2026-09-15",
+      "scope": "已获得在本项目范围内使用并迁入WebRPA源码的授权",
+      "nonInferences": [
+        "不推断为具体商业授权",
+        "不推断为公开发布授权"
+      ]
+    }
+  },
+  "statusLegend": {
+    "frontend": "前端已验收",
+    "mock": "Mock协议已验收",
+    "existingBackend": "真实后端已有实现",
+    "migration": "真实后端待迁入"
+  },
+  "sharedCapabilities": [
+    {
+      "id": "BE.SUPPORT.document",
+      "name": "工作流文档、子流程、自定义模块和资源",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/models/workflow.py",
+        "reference/WebRPA/backend/app/models/custom_module.py",
+        "reference/WebRPA/backend/app/api/workflows.py",
+        "reference/WebRPA/backend/app/api/local_workflows.py",
+        "reference/WebRPA/backend/app/api/custom_modules.py",
+        "reference/WebRPA/backend/app/api/workflow_bundle.py",
+        "reference/WebRPA/backend/app/api/workflow_package.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0005_workflow_documents.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/paths.py",
+        "apps/desktop/src/main/ipc/automation-studio.ts"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/document.py",
+        "apps/backend/src/autoflow/application/workflows/documents.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflows.py",
+        "apps/backend/src/autoflow/adapters/http/workflows.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B1",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/backend-handoff.md#服务族交接",
+        "docs/migration/studio-frontend-completion/schema-export-implementation.md"
+      ],
+      "risk": "原版以本地文件为主要事实源，AutoFlow要求工作区SQLite、revision并发保护和原子保存；不能复用原版路径拼接。"
+    },
+    {
+      "id": "BE.SUPPORT.executor-core",
+      "name": "执行器注册、图解析、变量、超时和错误策略",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/executors/base.py",
+        "reference/WebRPA/backend/app/executors/__init__.py",
+        "reference/WebRPA/backend/app/services/workflow_parser.py",
+        "reference/WebRPA/backend/app/services/workflow_executor.py",
+        "reference/WebRPA/backend/app/services/variable_manager.py",
+        "reference/WebRPA/backend/app/services/workflow_timeout.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/settings/runtime.py",
+        "apps/backend/src/autoflow/adapters/http/errors.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/graph.py",
+        "apps/backend/src/autoflow/domain/workflows/variables.py",
+        "apps/backend/src/autoflow/application/workflows/execution.py",
+        "apps/backend/src/autoflow/application/workflows/executors"
+      ],
+      "classification": "原版直接迁入",
+      "status": "真实后端待迁入",
+      "milestone": "B1",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/required-field-service-contract.md",
+        "docs/migration/studio-frontend-completion/log-identity-contract.md"
+      ],
+      "risk": "原执行器同时包含调度、浏览器IO和对app.main/app.api的反向导入；迁入时保留算法，把IO替换为窄端口，禁止重写成第二套调度器。"
+    },
+    {
+      "id": "BE.SUPPORT.browser-runtime",
+      "name": "CloakBrowser Profile、页面会话、定位和进程监管",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/services/browser_engine.py",
+        "reference/WebRPA/backend/app/services/browser_manager.py",
+        "reference/WebRPA/backend/app/services/browser_process.py",
+        "reference/WebRPA/backend/app/services/stealth.py",
+        "reference/WebRPA/backend/app/executors/basic.py",
+        "reference/WebRPA/backend/app/executors/advanced_browser.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/profiles/test_browser.py",
+        "apps/backend/src/autoflow/providers/browser/worker.py",
+        "apps/backend/src/autoflow/infrastructure/process/browser_processes.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/profile_data.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/kernel_installations.py",
+        "apps/backend/src/autoflow/infrastructure/credentials/cloakbrowser.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/browser_ports.py",
+        "apps/backend/src/autoflow/providers/browser/workflow_session.py",
+        "apps/backend/src/autoflow/providers/browser/workflow_actions.py",
+        "apps/backend/src/autoflow/infrastructure/process/workflow_worker.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B1",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/browser-command-validation.md",
+        "docs/migration/studio-frontend-completion/browser-status-validation.md"
+      ],
+      "risk": "原版启动Edge/Chrome/Firefox并复用全局browser_engine；AutoFlow只能消费主应用CloakBrowser Profile。页面、context、持久目录、代理、扩展和关闭语义必须实测对照。"
+    },
+    {
+      "id": "BE.SUPPORT.run-lifecycle",
+      "name": "运行、命令、事件、幂等、资源互斥和清理",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/services/workflow_runner.py",
+        "reference/WebRPA/backend/app/services/run_queue.py",
+        "reference/WebRPA/backend/app/services/execution_history.py",
+        "reference/WebRPA/backend/app/services/workflow_log_manager.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/settings/runtime.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/locking.py",
+        "apps/backend/src/autoflow/infrastructure/process/browser_processes.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0006_workflow_runs.py",
+        "apps/desktop/src/main/sidecar/supervisor.ts",
+        "apps/desktop/src/main/ipc/automation-studio.ts"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/runs.py",
+        "apps/backend/src/autoflow/application/workflows/runs.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflow_runs.py",
+        "apps/backend/src/autoflow/adapters/events/workflows.py",
+        "apps/backend/src/autoflow/adapters/http/workflow_runs.py"
+      ],
+      "classification": "已批准增强",
+      "status": "真实后端待迁入",
+      "milestone": "B1",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/command-recovery-contract.md",
+        "docs/migration/studio-frontend-completion/sse-sequence-contract.md",
+        "docs/migration/studio-frontend-completion/autoflow-error-envelope.md"
+      ],
+      "risk": "Mock已验证合同但没有真实动作；HTTP接受不能冒充动作完成，终态只能在worker和浏览器清理后提交。"
+    },
+    {
+      "id": "BE.SUPPORT.logs-artifacts",
+      "name": "日志、结果、诊断和产物",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/services/log_manager.py",
+        "reference/WebRPA/backend/app/services/workflow_log_manager.py",
+        "reference/WebRPA/backend/app/services/execution_history.py",
+        "reference/WebRPA/backend/app/services/script_exporters.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0007_workflow_artifacts.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0008_workflow_debug.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/paths.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/events.py",
+        "apps/backend/src/autoflow/application/workflows/results.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflow_events.py",
+        "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B1",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/log-identity-contract.md",
+        "docs/migration/studio-frontend-completion/log-identity-contract.md"
+      ],
+      "risk": "事件需先持久化再发布；大值和文件必须按登记引用读取，不能把任意绝对路径暴露给renderer。"
+    },
+    {
+      "id": "BE.SUPPORT.picker",
+      "name": "元素拾取、定位测试和相似元素",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/api/element_picker.py",
+        "reference/WebRPA/backend/app/services/element_picker.py",
+        "reference/WebRPA/backend/app/services/element_picker/picker.py",
+        "reference/WebRPA/backend/app/services/element_picker/script.py",
+        "reference/WebRPA/backend/app/services/element_picker/selector.py"
+      ],
+      "autoFlowReusable": [],
+      "target": [
+        "apps/backend/src/autoflow/application/workflows/inspection.py",
+        "apps/backend/src/autoflow/providers/browser/inspection.py",
+        "apps/backend/src/autoflow/infrastructure/process/inspection_worker.py",
+        "apps/backend/src/autoflow/adapters/http/inspection.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B2",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/picker-session-validation.md",
+        "docs/migration/studio-frontend-completion/similar-picker-validation.md"
+      ],
+      "risk": "原版依赖共享全局页面和进程内状态；需绑定workspace/session/page/request身份，迟到结果不得覆盖新文档。",
+      "sharedCapabilityRefs": [
+        "BE.SUPPORT.browser-runtime",
+        "BE.SUPPORT.run-lifecycle"
+      ]
+    },
+    {
+      "id": "BE.SUPPORT.recorder",
+      "name": "网页录制、步骤确认、审查和生成",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/api/recorder.py",
+        "reference/WebRPA/backend/app/services/recorder.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/recording.py",
+        "apps/backend/src/autoflow/application/workflows/recordings.py",
+        "apps/backend/src/autoflow/providers/browser/recorder.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflow_recordings.py",
+        "apps/backend/src/autoflow/adapters/http/recordings.py"
+      ],
+      "classification": "已批准增强",
+      "status": "真实后端待迁入",
+      "milestone": "B7",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/recorder-contract.md",
+        "docs/migration/studio-frontend-completion/recorder-envelope-contract.md"
+      ],
+      "risk": "原版sessionStorage排空有确认边界；AutoFlow合同要求已提交序号补读、幂等命令和异常尾部说明，不能把轮询读取当持久确认。",
+      "sharedCapabilityRefs": [
+        "BE.SUPPORT.browser-runtime",
+        "BE.SUPPORT.run-lifecycle"
+      ]
+    },
+    {
+      "id": "BE.SUPPORT.debug",
+      "name": "Debug控制、变量追踪和运行期交互",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/api/workflows.py",
+        "reference/WebRPA/backend/app/services/workflow_executor.py",
+        "reference/WebRPA/backend/app/services/variable_manager.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0008_workflow_debug.py",
+        "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/debug.py",
+        "apps/backend/src/autoflow/application/workflows/debug.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflow_debug.py",
+        "apps/backend/src/autoflow/adapters/http/workflow_debug.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B8",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/debug-pause-command-contract.md",
+        "docs/migration/studio-frontend-completion/debug-command-validation.md",
+        "docs/migration/studio-frontend-completion/debug-run-variable-validation.md"
+      ],
+      "risk": "原版控制状态主要驻留内存；正式合同要求commandId、pauseId、controlRevision和响应丢失查询，worker确认前不能更新UI事实。"
+    },
+    {
+      "id": "BE.SUPPORT.models-ai-mcp",
+      "name": "模型、MCP和AI节点",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/services/mcp_manager.py",
+        "reference/WebRPA/backend/app/executors/ai.py",
+        "reference/WebRPA/backend/app/executors/ai_tasks.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/models/service.py",
+        "apps/backend/src/autoflow/providers/model/http.py",
+        "apps/backend/src/autoflow/infrastructure/credentials/model_provider.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/application/workflows/ai.py",
+        "apps/backend/src/autoflow/application/workflows/mcp.py",
+        "apps/backend/src/autoflow/adapters/http/workflow_ai.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B5",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/mcp-service-contract.md",
+        "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
+      ],
+      "risk": "不得复制原版明文或全局配置；AI节点只引用主应用模型标识和后端秘密引用，MCP调用必须服从真实命令状态与权限结果。"
+    },
+    {
+      "id": "BE.SUPPORT.assistant-langgraph",
+      "name": "Studio LangGraph小助手",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/api/ai_assistant.py",
+        "reference/WebRPA/backend/app/services/ai_assistant_service.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/models/service.py",
+        "apps/backend/src/autoflow/providers/model/http.py",
+        "apps/backend/src/autoflow/infrastructure/credentials/model_provider.py",
+        "apps/desktop/src/renderer/domains/workflows/api/aiAssistantApi.ts",
+        "apps/desktop/src/renderer/domains/workflows/hooks/stores/aiAssistantStore.ts"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/application/workflows/assistant.py",
+        "apps/backend/src/autoflow/providers/assistant/langgraph.py",
+        "apps/backend/src/autoflow/infrastructure/database/workflow_assistant_checkpoints.py",
+        "apps/backend/src/autoflow/adapters/http/workflow_assistant.py"
+      ],
+      "classification": "已批准增强",
+      "status": "真实后端待迁入",
+      "milestone": "B5",
+      "contractRefs": [
+        "docs/automation-studio/BACKEND_GLOBAL_CONSTRAINTS.md#3-小助手langgraph-专项约束",
+        "docs/migration/studio-frontend-completion/assistant-document-protection.md",
+        "docs/migration/studio-frontend-completion/assistant-snapshot-recovery.md",
+        "docs/migration/studio-frontend-completion/settings-assistant-close.md"
+      ],
+      "risk": "LangGraph必须实际承担多轮模型、工具、权限、取消与恢复；普通工作流不改用LangGraph，恢复不得重放副作用，检查点不得保存秘密。"
+    },
+    {
+      "id": "BE.SUPPORT.credentials-integrations",
+      "name": "凭据、通知、SSH、共享、网络和外部服务",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/api/credentials.py",
+        "reference/WebRPA/backend/app/services/credential_manager.py",
+        "reference/WebRPA/backend/app/services/credential_vault.py",
+        "reference/WebRPA/backend/app/services/webdav_manager.py",
+        "reference/WebRPA/backend/app/executors/notify_apprise.py",
+        "reference/WebRPA/backend/app/executors/ssh.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/domain/credentials.py",
+        "apps/backend/src/autoflow/infrastructure/credentials/system.py",
+        "apps/backend/src/autoflow/infrastructure/credentials/redaction.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/integration_ports.py",
+        "apps/backend/src/autoflow/providers/integrations",
+        "apps/backend/src/autoflow/adapters/http/workflow_resources.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B6",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/credential-protocol-contract.md",
+        "docs/migration/studio-frontend-completion/path-service-contract.md"
+      ],
+      "risk": "各连接器的第三方依赖、平台支持和真实凭据需要逐项探测；秘密不得进入节点文档、日志、SSE、诊断或导出。"
+    },
+    {
+      "id": "BE.SUPPORT.triggers-schedules",
+      "name": "触发器和计划任务",
+      "webRpaSources": [
+        "reference/WebRPA/backend/app/executors/trigger.py",
+        "reference/WebRPA/backend/app/api/triggers.py",
+        "reference/WebRPA/backend/app/api/scheduled_tasks.py",
+        "reference/WebRPA/backend/app/services/trigger_manager.py",
+        "reference/WebRPA/backend/app/services/scheduled_task_manager.py"
+      ],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/application/settings/runtime.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/domain/workflows/triggers.py",
+        "apps/backend/src/autoflow/application/workflows/schedules.py",
+        "apps/backend/src/autoflow/providers/triggers",
+        "apps/backend/src/autoflow/adapters/http/workflow_schedules.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "真实后端待迁入",
+      "milestone": "B6",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/scheduled-tasks.md",
+        "docs/migration/studio-frontend-completion/backend-handoff.md"
+      ],
+      "risk": "触发器是长期占用资源，不得在sidecar重启后自动重放一次性动作；工作区切换、停写和退出必须先撤销监听。",
+      "sharedCapabilityRefs": [
+        "BE.SUPPORT.run-lifecycle"
+      ]
+    },
+    {
+      "id": "BE.SUPPORT.database-compatibility",
+      "name": "数据库迁移兼容与正式用户数据接入",
+      "webRpaSources": [],
+      "autoFlowReusable": [
+        "apps/backend/src/autoflow/infrastructure/database/session.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0005_workflow_documents.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0006_workflow_runs.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0007_workflow_artifacts.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0008_workflow_debug.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0009_merge_project_data.py"
+      ],
+      "target": [
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0007_android_devices.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0008_merge_android_m4.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0009_merge_android_m5.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0010_android_fleet.py",
+        "apps/backend/src/autoflow/infrastructure/database/migrations/versions/0011_merge_android_project_data.py",
+        "apps/backend/tests/integration/test_workflow_migration.py"
+      ],
+      "classification": "AutoFlow必要适配",
+      "status": "已查证待迁入",
+      "milestone": "B0",
+      "contractRefs": [
+        "docs/migration/studio-frontend-completion/acceptance.md#正式-f6-交付"
+      ],
+      "risk": "当前分支head为0009_merge_project_data；提交f573a44中的0010_android_fleet经0009_merge_android_m5连接0008_workflow_debug，与项目数据分支形成双head。必须原样恢复四个历史文件并增加0011 merge；不得恢复Android业务或操作正式数据。",
+      "missingEvidence": "拓扑已查实；仍需正式数据库只读副本的schema、数据哈希、upgrade事务回滚和重复启动证据。"
+    }
+  ]
+}

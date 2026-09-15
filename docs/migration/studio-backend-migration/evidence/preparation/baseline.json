@@ -1,0 +1,98 @@
+{
+  "kind": "studio-backend-migration-preparation-baseline",
+  "verifiedAt": "2026-09-15",
+  "repository": {
+    "path": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "branch": "codex/architecture-baseline",
+    "head": "200555417896bb68ac108ca8e33cb137f72b20a9"
+  },
+  "frozenWebRpa": {
+    "path": "/Users/zhangtiancheng/Documents/projects/autoflow/reference/WebRPA",
+    "head": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "statusClean": true,
+    "productVersion": "3.2.0",
+    "licenseSource": "reference/WebRPA/LICENSE",
+    "retainedLicenseCopy": "LICENSE.WebRPA",
+    "licenseSha256": "24753455b187a47243e0dc82071450a114b5de99aac2909aa0f437e0eac8e409",
+    "declaredLicensePath": "AGPL-3.0 or upstream commercial license",
+    "sourceAuthorization": {
+      "status": "confirmed",
+      "confirmedAt": "2026-09-15",
+      "scope": "本项目范围内使用并迁入WebRPA源码",
+      "doesNotAssert": [
+        "specific commercial license",
+        "public distribution authorization"
+      ]
+    }
+  },
+  "scope": {
+    "authority": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md",
+    "nodeCount": 227,
+    "uniqueNodeCount": 227,
+    "registrationCounts": {
+      "decorator": 226,
+      "registry.register": 1
+    },
+    "perNodeAcceptanceCaseCount": 681,
+    "sharedCapabilityCount": 13
+  },
+  "realBackend": {
+    "workflowDomainProductionFiles": 0,
+    "workflowApplicationProductionFiles": 0,
+    "contractSchemasPresent": [
+      "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
+      "apps/backend/src/autoflow/adapters/http/workflow_studio_openapi.py"
+    ],
+    "productionWorkflowRoutesRegistered": false
+  },
+  "databaseHistory": {
+    "currentCodeHead": "0009_merge_project_data",
+    "missingRecordedUserRevision": "0010_android_fleet",
+    "sourceCommit": "f573a44",
+    "verifiedChain": [
+      {
+        "revision": "0007_android_devices",
+        "downRevision": "0006_workflow_runs"
+      },
+      {
+        "revision": "0008_merge_android_m4",
+        "downRevision": [
+          "0007_android_devices",
+          "0007_workflow_artifacts"
+        ]
+      },
+      {
+        "revision": "0009_merge_android_m5",
+        "downRevision": [
+          "0008_merge_android_m4",
+          "0008_workflow_debug"
+        ]
+      },
+      {
+        "revision": "0010_android_fleet",
+        "downRevision": "0009_merge_android_m5"
+      },
+      {
+        "revision": "0009_merge_project_data",
+        "downRevision": [
+          "0008_workflow_debug",
+          "pm02_schema_drafts"
+        ]
+      }
+    ],
+    "plannedMergeRevision": {
+      "revision": "0011_merge_android_project_data",
+      "downRevision": [
+        "0010_android_fleet",
+        "0009_merge_project_data"
+      ]
+    },
+    "userDatabaseModified": false
+  },
+  "claimsBoundary": {
+    "frontendVerified": true,
+    "mockConsumptionProtocolVerified": true,
+    "realWorkflowBackendImplemented": false,
+    "productionCodeChangedByPreparation": false
+  }
+}
