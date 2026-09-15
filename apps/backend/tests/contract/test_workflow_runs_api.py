@@ -445,6 +445,9 @@ def test_web_browser_families_are_admitted_by_the_real_http_coordinator(
         "get_sibling_elements",
         "element_exists",
         "element_visible",
+        "switch_tab",
+        "extract_table_data",
+        "network_capture",
     ]
     workflow_payload = {
         **_workflow(),

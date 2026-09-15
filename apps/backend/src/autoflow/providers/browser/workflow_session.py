@@ -210,6 +210,17 @@ _MAX_CAPTURED_REQUESTS = 10_000
 _MAX_CAPTURED_REQUEST_BYTES = 8 * 1024 * 1024
 
 
+def browser_url_is_sensitive(raw_url: str) -> bool:
+    try:
+        parts = urlsplit(raw_url)
+        return bool(parts.username or parts.password) or any(
+            any(marker in key.lower() for marker in _SENSITIVE_QUERY_MARKERS)
+            for key, _value in parse_qsl(parts.query, keep_blank_values=True)
+        )
+    except (TypeError, ValueError):
+        return False
+
+
 def redact_browser_url(raw_url: str) -> str:
     try:
         parts = urlsplit(raw_url)

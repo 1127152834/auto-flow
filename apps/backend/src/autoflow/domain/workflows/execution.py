@@ -58,6 +58,16 @@ class TableWorkbookRenderer(Protocol):
         cancellation: CancellationToken | None,
     ) -> bytes: ...
 
+    async def render_grid(
+        self,
+        *,
+        rows: Sequence[Sequence[str]],
+        sheet_name: str,
+        header_row: int,
+        include_header: bool,
+        cancellation: CancellationToken | None,
+    ) -> bytes: ...
+
 
 class ModelGateway(Protocol):
     async def invoke(self, model_id: str, payload: Mapping[str, Any]) -> Any: ...

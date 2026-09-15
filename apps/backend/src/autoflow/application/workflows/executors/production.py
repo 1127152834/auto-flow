@@ -81,6 +81,7 @@ from .math_list_ops import (
     MathRoundExecutor,
     MathSqrtExecutor,
 )
+from .network_capture import NetworkCaptureExecutor
 from .network_monitor import (
     NetworkMonitorStartExecutor,
     NetworkMonitorStopExecutor,
@@ -102,6 +103,7 @@ from .string_convert import (
     CsvParseExecutor,
     ListToStringAdvancedExecutor,
 )
+from .switch_tab import SwitchTabExecutor
 from .table import (
     TableAddColumnExecutor,
     TableAddRowExecutor,
@@ -111,6 +113,7 @@ from .table import (
     TableGetCellExecutor,
     TableSetCellExecutor,
 )
+from .table_extract import ExtractTableDataExecutor
 from .utility_tools import (
     HEXToCMYKExecutor,
     MD5EncryptExecutor,
@@ -225,6 +228,9 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     NetworkMonitorStopExecutor,
     *WEB_BASIC_EXECUTORS,
     *ADVANCED_BROWSER_EXECUTORS,
+    SwitchTabExecutor,
+    ExtractTableDataExecutor,
+    NetworkCaptureExecutor,
 )
 
 

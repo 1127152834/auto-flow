@@ -23,6 +23,7 @@ from autoflow.infrastructure.filesystem.project_excel import validate_workbook_c
 
 _MAX_COLUMNS = 500
 _MAX_CELLS = 1_000_000
+_MAX_GRID_ROWS = 100_000
 _MAX_NORMALIZED_BYTES = 32 * 1024 * 1024
 _MAX_OUTPUT_BYTES = 64 * 1024 * 1024
 _LARGE_DATA_THRESHOLD = 500
@@ -206,6 +207,82 @@ def _render(
     return content
 
 
+def _render_grid(
+    rows: Sequence[Sequence[str]],
+    sheet_name: str,
+    header_row: int,
+    include_header: bool,
+    cancellation: CancellationToken | None,
+) -> bytes:
+    _raise_if_cancelled(cancellation)
+    if len(rows) > _MAX_GRID_ROWS:
+        raise ValueError("表格行数超过工作流安全限制")
+
+    max_columns = 0
+    cell_count = 0
+    normalized_bytes = 0
+    widths: list[int] = []
+    for row_index, row in enumerate(rows):
+        if row_index % 256 == 0:
+            _raise_if_cancelled(cancellation)
+        if isinstance(row, (str, bytes, bytearray)):
+            raise TypeError("表格数据格式无效")
+        max_columns = max(max_columns, len(row))
+        if max_columns > _MAX_COLUMNS:
+            raise ValueError("表格列数超过工作流安全限制")
+        cell_count += len(row)
+        if cell_count > _MAX_CELLS:
+            raise ValueError("表格单元格数量超过工作流安全限制")
+        while len(widths) < len(row):
+            widths.append(0)
+        for column_index, value in enumerate(row):
+            normalized_bytes += len(value.encode("utf-8"))
+            if normalized_bytes > _MAX_NORMALIZED_BYTES:
+                raise ValueError("表格文本大小超过工作流安全限制")
+            widths[column_index] = max(widths[column_index], len(value))
+
+    workbook = Workbook(write_only=True)
+    sheet = workbook.create_sheet(sheet_name)
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(
+        start_color="4472C4", end_color="4472C4", fill_type="solid"
+    )
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    body_alignment = Alignment(horizontal="left", vertical="center")
+    for column_index, width in enumerate(widths, 1):
+        sheet.column_dimensions[get_column_letter(column_index)].width = min(
+            width + 2, 50
+        )
+
+    output = io.BytesIO()
+    try:
+        for row_index, row in enumerate(rows):
+            if row_index % 256 == 0:
+                _raise_if_cancelled(cancellation)
+            rendered_row: list[Any] = []
+            for value in row:
+                cell = WriteOnlyCell(sheet, value=value)
+                _force_literal_string(cell, value)
+                if include_header and row_index == header_row:
+                    cell.font = header_font
+                    cell.fill = header_fill
+                    cell.alignment = header_alignment
+                else:
+                    cell.alignment = body_alignment
+                rendered_row.append(cell)
+            sheet.append(rendered_row)
+        workbook.save(output)
+    finally:
+        workbook.close()
+    content = output.getvalue()
+    if not content:
+        raise OSError("Excel导出文件大小为 0")
+    if len(content) > _MAX_OUTPUT_BYTES:
+        raise ValueError("Excel导出内容超过工作流安全限制")
+    _raise_if_cancelled(cancellation)
+    return content
+
+
 class OpenpyxlTableWorkbookRenderer:
     """Render the frozen styled table contract without filesystem access."""
 
@@ -219,4 +296,22 @@ class OpenpyxlTableWorkbookRenderer:
     ) -> bytes:
         return await asyncio.to_thread(
             _render, rows, sheet_name, existing_content, cancellation
+        )
+
+    async def render_grid(
+        self,
+        *,
+        rows: Sequence[Sequence[str]],
+        sheet_name: str,
+        header_row: int,
+        include_header: bool,
+        cancellation: CancellationToken | None,
+    ) -> bytes:
+        return await asyncio.to_thread(
+            _render_grid,
+            rows,
+            sheet_name,
+            header_row,
+            include_header,
+            cancellation,
         )
