@@ -1,0 +1,8 @@
+{
+  "head": "a5e7d4852ca5fe35fcf688dec2c87e5254450fe5",
+  "includesOriginalPM3WorkingTree": true,
+  "renderer": "f998ccd79d7437372b4ae7bcf45d0bd34418643baf1552364941c29992a7dcaa",
+  "backend": "f07f7a47dda5a381a25ca527a02b456cab6d1a691f5be4b0e6634b057e68687d",
+  "backendTests": "ac40627bb6f0e762fb74a54cf958e191fbda7980dd9a0dab76d037829788b086",
+  "purpose": "Immutable final UUID display verification snapshot; no further source sync during checks"
+}

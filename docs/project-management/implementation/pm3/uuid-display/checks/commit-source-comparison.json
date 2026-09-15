@@ -1,0 +1,9 @@
+{
+  "currentHead": "bacbccf",
+  "snapshot": "a5e7d48 plus recorded working tree",
+  "differences": {
+    "apps/desktop/src": [],
+    "apps/backend/src": [],
+    "apps/backend/tests": []
+  }
+}

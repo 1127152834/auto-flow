@@ -1,0 +1,9 @@
+{
+  "jsonFilesParsed": 14,
+  "finalScreenshotsVerified": 26,
+  "summaryLinksValid": true,
+  "qaSyntax": "passed",
+  "knownIdCheckerTests": 7,
+  "gitDiffCheck": "passed",
+  "archivedLogFormatting": "Trailing whitespace and surplus terminal blank lines normalized for git diff --check; messages, outcomes and assertions unchanged; original /tmp logs retained"
+}

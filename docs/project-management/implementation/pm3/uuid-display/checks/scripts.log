@@ -1,0 +1,76 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.118792ms)
+✔ follows barrel exports to retained database forms instead of guessing by global symbol name (0.113083ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.119292ms)
+✔ does not silently discard dynamically selected icon components or mark node cases executed (0.155792ms)
+✔ history output guard resolves symlinks before any nested directory is created (25.4015ms)
+✔ containment handles Windows separators and sibling prefixes (1.217209ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (59.595833ms)
+✔ R2 wrapper reuses the exported R1 harness (4.040667ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (1.701334ms)
+✔ R3 runner exposes automatic and retained manual modes (0.913ms)
+✔ R3 evidence matrix names every required real interaction (0.12625ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (2.933083ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (1.416334ms)
+✔ self-test accepts only a marker-owned workspace below its owner (98.430583ms)
+✔ arguments reject missing kernel paths before launching Electron (92.080667ms)
+✔ arguments reject unknown switches before launching Electron (70.039708ms)
+✔ scenario selection is validated before any workspace or Electron launch (162.768ms)
+✔ reports a known full system UUID in visible text and perceptible attributes (1.264958ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (2.519417ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (0.188166ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (0.123792ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (1.165375ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.319834ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.114792ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (11.673667ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (3.313583ms)
+✔ browser management smoke accepts an explicit packaged sidecar (3.248292ms)
+✔ browser management smoke creates the platform kernel layout (0.576667ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.166875ms)
+✔ profile test browser smoke validates a public kernel directory (18.7955ms)
+✔ profile test browser smoke finds a session below the manager root (4.245417ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir --dev (71.585875ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir (63.160042ms)
+✔ project smoke rejects invalid arguments before launching: --unknown (57.0195ms)
+✔ project smoke rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (49.595542ms)
+✔ packaged smoke cannot silently select external health mode (0.747458ms)
+✔ cleanup rejects after the final deadline if the child never exits (12.498583ms)
+✔ cleanup observes close without requiring exit (0.270667ms)
+✔ cleanup rejects a child process error (0.177208ms)
+✔ required path exists: apps/desktop/package.json (0.66275ms)
+✔ required path exists: apps/backend/pyproject.toml (0.08625ms)
+✔ root scripts expose the foundation checks (0.204542ms)
+(node:43632) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///private/tmp/autoflow-uuid-build-Qiz4xl/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /private/tmp/autoflow-uuid-build-Qiz4xl/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (21.59525ms)
+✔ frozen required-field data regenerates exactly without executing source modules (106.651542ms)
+✔ coverage accounts for every retained node and excludes removed nodes (4.483625ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.675375ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.101792ms)
+✔ the matrix includes every discovered service and event without treating declarations as passed tests (2.335625ms)
+✔ inventory and matrix regenerate deterministically (827.558916ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.194833ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.11475ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.248ms)
+✔ checks sources without inventing application or visual acceptance (17.914042ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (7.337958ms)
+✔ does not allow a passed page without real evidence or missing required states (8.594042ms)
+✔ rejects duplicate source and page identities and evidence traversal (6.957041ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.735375ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (4.224ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.851417ms)
+✔ a green machine report cannot substitute for real application evidence (1.868292ms)
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1854.3375

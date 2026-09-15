@@ -1,0 +1,18 @@
+
+> test
+> npm --workspace @autoflow/desktop test src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx
+
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-data/components/DataTableFormDialog.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/apps/desktop
+
+(node:50377) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  15:07:36
+   Duration  3.00s (transform 177ms, setup 129ms, import 1.30s, tests 870ms, environment 596ms)

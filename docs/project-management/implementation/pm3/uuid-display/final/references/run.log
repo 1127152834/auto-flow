@@ -1,0 +1,67 @@
+{
+  "status": "scenario-passed",
+  "coverage": "partial",
+  "scenario": "references",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-o37mWS",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-project-uuid-qa-o37mWS/workspace",
+  "evidence": "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384",
+  "knownIds": [
+    "faaf6fbd-4912-4682-97eb-d53fd286b55a",
+    "6c49f493-1807-4f1d-ba72-eb7ddc0f6ead",
+    "66538976-61dc-4ac6-8496-38b6b2ffc743",
+    "ec1733c5-9cbc-4500-a42a-b557cb2dda27",
+    "332a9dbb-dab4-4ed2-83c7-c02de5b8d19c",
+    "351761d0-f146-4929-835d-7cdaec2384b8",
+    "24d25bcb-1de3-4c4f-b440-202ea0b03dda",
+    "e3946423-a003-449e-97fd-de7f22a467bb",
+    "a52c6ce1-c1da-4f00-9ba1-837bed5fc3e2",
+    "9a7339a7-f841-4606-92ff-1bfadaf6c6f7",
+    "7bade29a-1df6-418b-85de-86d6a5ba50e8",
+    "fff88b0b-b147-4668-9ee0-789a8790f47d",
+    "7d03bb97-96a5-490d-af3c-8b9cf6e4759b",
+    "d97e2bf6-a389-41c7-a166-a9ff4b49f2a9",
+    "de5af083-02b9-4b10-abfe-106c40eceb42",
+    "a01d3b6b-c52b-4bba-90db-169dd9f643a7",
+    "cfdb5b54-be19-4d09-be6a-5ca94cb2ac10",
+    "d6109a09-a476-4ad2-8256-966173334728"
+  ],
+  "businessIds": [],
+  "screenshots": [
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384/31-unavailable-fixed-environment.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384/31a-synthetic-resource-error.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384/32-unavailable-model-option.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384/33-unavailable-proxy-option.png",
+    "/private/tmp/autoflow-uuid-build-Qiz4xl/docs/project-management/implementation/pm3/qa-runs/uuid-references-1789457787384/34-unavailable-browser-profile-option.png"
+  ],
+  "unimplemented": [
+    "强制停止确认"
+  ],
+  "preparation": [
+    "项目由UI创建",
+    "工作流通过生产WorkflowService创建；失效资源引用通过正式自动化HTTP写入契约准备"
+  ],
+  "faultInjections": [
+    {
+      "kind": "synthetic-http-responses",
+      "target": "automation profile resource read after page reload",
+      "httpAttempts": 3,
+      "code": "UNKNOWN_UUID_QA",
+      "purpose": "verify retained automation content and safe resource-read error presentation; not a natural backend failure"
+    }
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 1024,
+    "devicePixelRatio": 1
+  },
+  "source": {
+    "head": "a5e7d48",
+    "scriptSha256": "79b430dab33a5af5b380fdb124c277025517a9b16c822f9408591196408e62cd",
+    "mainBundleSha256": "10564b42cde33b0aa5eb15c2db5d92184536a16d34ef6d908e3545ef8039c84f",
+    "rendererHtmlSha256": "12f8b6768ef8903024e4329be3e3799aba456114c587bd0406c90e67c4966a2d",
+    "rendererAssetsSha256": "9c997bbda2d6dcdf550d7c056f487f42bc64baccdc304657ad3ceeabe7092d3e",
+    "rendererSourceSha256": "3541f2cdfd82e51b9aad54e454cab5678b72ff46a75a97bbc045e507ea0a4678"
+  },
+  "startedAt": "2026-09-15T07:36:27.383Z",
+  "finishedAt": "2026-09-15T07:36:35.841Z"
+}
