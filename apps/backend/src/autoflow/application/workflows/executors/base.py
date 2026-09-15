@@ -23,6 +23,10 @@ class ModuleResult:
 class ModuleExecutor(ABC):
     requires_browser = False
 
+    def requires_browser_for(self, config: dict[str, Any]) -> bool:
+        del config
+        return self.requires_browser
+
     @property
     @abstractmethod
     def module_type(self) -> str: ...

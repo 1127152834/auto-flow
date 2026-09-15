@@ -166,3 +166,26 @@ async def test_production_while_loop_re_evaluates_the_resolved_expression() -> N
     assert result.executed_node_ids.count("increment") == 3
     assert context.variables["total"] == 3
     assert context.variables["done"] == 1
+
+
+@pytest.mark.parametrize(
+    ("module_type", "config"),
+    [
+        ("condition", {"conditionType": "element_visible"}),
+        ("wait", {"waitType": "selector"}),
+        ("wait", {"waitType": "navigation"}),
+        ("assert_checkpoint", {"checkType": "element"}),
+    ],
+)
+def test_browser_backed_control_modes_request_cloakbrowser(
+    module_type: str, config: dict[str, object]
+) -> None:
+    document = {
+        "nodes": [_node("node", module_type, config)],
+        "edges": [],
+        "variables": [],
+    }
+
+    assert WorkflowRuntime(build_production_executor_registry()).requires_browser(
+        document
+    )

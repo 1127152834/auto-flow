@@ -53,6 +53,9 @@ def _truthy(value: Any) -> bool:
 
 @register_executor
 class ConditionExecutor(ModuleExecutor):
+    def requires_browser_for(self, config: dict[str, Any]) -> bool:
+        return config.get("conditionType") in {"element_exists", "element_visible"}
+
     @property
     def module_type(self) -> str:
         return "condition"
@@ -810,6 +813,9 @@ class GetTimeExecutor(ModuleExecutor):
 
 @register_executor
 class WaitExecutor(ModuleExecutor):
+    def requires_browser_for(self, config: dict[str, Any]) -> bool:
+        return config.get("waitType", "time") in {"selector", "navigation"}
+
     @property
     def module_type(self) -> str:
         return "wait"
@@ -955,6 +961,9 @@ def _compare(left: Any, right: Any, operator: str) -> tuple[bool, str | None]:
 
 @register_executor
 class AssertCheckpointExecutor(ModuleExecutor):
+    def requires_browser_for(self, config: dict[str, Any]) -> bool:
+        return config.get("checkType", "variable") == "element"
+
     @property
     def module_type(self) -> str:
         return "assert_checkpoint"

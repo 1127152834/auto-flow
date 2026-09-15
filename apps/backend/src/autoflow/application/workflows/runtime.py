@@ -68,8 +68,13 @@ class WorkflowRuntime:
             )
             if isinstance(module_type, str):
                 executor = self._registry.get(module_type)
-                if executor is not None and executor.requires_browser:
-                    return True
+                if executor is not None:
+                    raw_config = (
+                        data.get("config") if isinstance(data, Mapping) else None
+                    )
+                    config = dict(raw_config) if isinstance(raw_config, Mapping) else {}
+                    if executor.requires_browser_for(config):
+                        return True
         return False
 
     async def execute(

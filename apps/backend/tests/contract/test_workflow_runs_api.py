@@ -361,9 +361,7 @@ def test_network_monitor_family_is_admitted_by_the_real_http_coordinator(
     class Resources:
         owner_id: str | None = None
 
-        async def acquire(
-            self, owner_id: str, _profile_id: str, _kernel: Any
-        ) -> None:
+        async def acquire(self, owner_id: str, _profile_id: str, _kernel: Any) -> None:
             self.owner_id = owner_id
 
         async def release(self, owner_id: str) -> None:
@@ -481,9 +479,7 @@ def test_web_browser_families_are_admitted_by_the_real_http_coordinator(
     class Resources:
         owner_id: str | None = None
 
-        async def acquire(
-            self, owner_id: str, _profile_id: str, _kernel: Any
-        ) -> None:
+        async def acquire(self, owner_id: str, _profile_id: str, _kernel: Any) -> None:
             self.owner_id = owner_id
 
         async def release(self, owner_id: str) -> None:
@@ -709,6 +705,108 @@ def test_pure_data_family_runs_through_http_without_browser_requirement(
         json={
             "runId": "run-data-contract",
             "documentId": "document-data-contract",
+            "profileId": profile["id"],
+        },
+    )
+
+    assert response.status_code == 202, response.text
+    assert workers.payload is not None
+    assert workers.payload["requiresBrowser"] is False
+    assert [
+        node["data"]["moduleType"] for node in workers.payload["document"]["nodes"]
+    ] == module_types
+
+
+def test_control_variable_family_is_admitted_by_the_real_http_coordinator(
+    client: TestClient,
+    profile_payload: dict[str, object],
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    module_types = [
+        "condition",
+        "loop",
+        "foreach",
+        "infinite_loop",
+        "foreach_dict",
+        "break_loop",
+        "continue_loop",
+        "set_variable",
+        "increment_decrement",
+        "json_parse",
+        "base64",
+        "random_number",
+        "get_time",
+        "wait",
+        "stop_workflow",
+        "assert_checkpoint",
+    ]
+    workflow_payload = {
+        **_workflow(),
+        "id": "workflow-control-contract",
+        "name": "控制变量合同",
+        "clientRequestId": "create-control-contract",
+        "nodes": [
+            {
+                "id": f"control-{index}",
+                "type": "moduleNode",
+                "position": {"x": index * 240, "y": 0},
+                "data": {"moduleType": module_type, "config": {}},
+            }
+            for index, module_type in enumerate(module_types)
+        ],
+        "edges": [],
+    }
+    workflow = client.post("/api/workflows", json=workflow_payload).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    coordinator = client.app.state.workflow_services.commands
+    executable = tmp_path / "CloakBrowser"
+    executable.write_bytes(b"kernel")
+
+    class Resources:
+        owner_id: str | None = None
+
+        async def acquire(self, owner_id: str, _profile_id: str, _kernel: Any) -> None:
+            self.owner_id = owner_id
+
+        async def release(self, owner_id: str) -> None:
+            assert self.owner_id == owner_id
+            self.owner_id = None
+
+    class Workers:
+        payload: dict[str, Any] | None = None
+
+        async def start(
+            self,
+            run_id: str,
+            profile_id: str,
+            _executable: Path | None,
+            payload: dict[str, Any],
+        ) -> WorkflowWorkerSession:
+            self.payload = payload
+            return WorkflowWorkerSession(run_id, profile_id, 41, None)
+
+        async def stop(self, _run_id: str) -> None:
+            self.payload = None
+
+        def busy(self) -> bool:
+            return self.payload is not None
+
+    workers = Workers()
+    monkeypatch.setattr(coordinator, "_resources", Resources())
+    monkeypatch.setattr(coordinator, "_workers", workers)
+    monkeypatch.setattr(
+        coordinator,
+        "_installed_kernels",
+        lambda: [InstalledKernel("public", profile["browserVersion"], executable, 6)],
+    )
+    monkeypatch.setattr(coordinator, "_resolve_proxy", _no_proxy)
+
+    response = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "run-control-contract",
+            "documentId": "document-control-contract",
             "profileId": profile["id"],
         },
     )
