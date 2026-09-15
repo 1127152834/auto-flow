@@ -1,0 +1,718 @@
+{
+  "evidenceId": "BE-B4-math-statistics-formal-electron",
+  "checkedAt": "2026-09-15T18:00:00.119Z",
+  "gitHead": "f8d7e26e3b448f6e5a8df9ed623370a528bb102d",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+  "profileId": "c73054eb-2a74-421f-b7ed-1d304caa5be7",
+  "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过 Studio 全局变量面板添加 numbers=[2.4,5.6,8,16] 列表变量",
+    "通过画布原生右键菜单和配置面板添加并配置 4 个数学/统计代表节点",
+    "通过画布拖拽节点与连接手柄建立 list_sum → math_round → math_log → stat_median 纯数据链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite；全局变量、4 个节点配置和 3 条边均与输入一致",
+    "HTTP 结果精确核对为 32 → 32 → 5 → 6.8，且四个节点的持久化日志完整",
+    "直接读取临时 autoflow.sqlite3，文档、终态、事件、结果与日志均和正式 HTTP 响应一致",
+    "纯数据链完成后无 CloakBrowser 进程；运行槽已释放且 sidecar 清理状态为 completed"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 4,
+    "edgeCount": 3,
+    "variables": [
+      {
+        "name": "numbers",
+        "value": [
+          2.4,
+          5.6,
+          8,
+          16
+        ],
+        "type": "array",
+        "scope": "global"
+      }
+    ]
+  },
+  "execution": {
+    "status": "completed",
+    "cleanupState": "completed",
+    "resultCount": 4,
+    "logCount": 5,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "documentId": "IvA6OqueOnq_vRcEBrOf4"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "BDEj9bBH_OUdAOORdasZv",
+          "executionId": "ba9bdb1d-6347-476a-ba28-33a98d2f6b30",
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "BDEj9bBH_OUdAOORdasZv",
+          "executionId": "ba9bdb1d-6347-476a-ba28-33a98d2f6b30",
+          "success": true,
+          "sequence": 3
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "log": {
+            "sequence": 4,
+            "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-4",
+            "timestamp": "2026-09-15T17:59:58.248186+00:00",
+            "level": "success",
+            "message": "列表求和: 32.0",
+            "nodeId": "BDEj9bBH_OUdAOORdasZv"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "FXOMMyS44CglYSoB7jqlq",
+          "executionId": "67059d76-0790-4ebe-98d5-fc01b32ac25b",
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "FXOMMyS44CglYSoB7jqlq",
+          "executionId": "67059d76-0790-4ebe-98d5-fc01b32ac25b",
+          "success": true,
+          "sequence": 6
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "log": {
+            "sequence": 7,
+            "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-7",
+            "timestamp": "2026-09-15T17:59:58.254037+00:00",
+            "level": "success",
+            "message": "四舍五入: 32.0 → 32.0",
+            "nodeId": "FXOMMyS44CglYSoB7jqlq"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "ThAowbMbImwMt-x02OA6n",
+          "executionId": "8b145e73-1fb6-4e66-a21d-69fa4c099e33",
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "ThAowbMbImwMt-x02OA6n",
+          "executionId": "8b145e73-1fb6-4e66-a21d-69fa4c099e33",
+          "success": true,
+          "sequence": 9
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "log": {
+            "sequence": 10,
+            "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-10",
+            "timestamp": "2026-09-15T17:59:58.260096+00:00",
+            "level": "success",
+            "message": "对数运算: log2(32.0) = 5.0",
+            "nodeId": "ThAowbMbImwMt-x02OA6n"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "V-2YaLORyhElEPGX76zVv",
+          "executionId": "773cc0b3-90b8-460a-96d5-458feb95c124",
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "nodeId": "V-2YaLORyhElEPGX76zVv",
+          "executionId": "773cc0b3-90b8-460a-96d5-458feb95c124",
+          "success": true,
+          "sequence": 12
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "log": {
+            "sequence": 13,
+            "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-13",
+            "timestamp": "2026-09-15T17:59:58.266040+00:00",
+            "level": "success",
+            "message": "中位数: 6.8",
+            "nodeId": "V-2YaLORyhElEPGX76zVv"
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:completed",
+        "data": {
+          "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+          "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+          "result": {
+            "status": "completed",
+            "executedNodes": 4,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "sourceFamilies": {
+    "math_list_ops.py": [
+      "list_sum",
+      "list_average",
+      "list_max",
+      "list_min",
+      "list_sort",
+      "list_unique",
+      "list_slice",
+      "math_round",
+      "math_base_convert",
+      "math_floor",
+      "math_modulo",
+      "math_abs",
+      "math_sqrt",
+      "math_power"
+    ],
+    "math_advanced.py": [
+      "math_log",
+      "math_trig",
+      "math_exp",
+      "math_gcd",
+      "math_lcm",
+      "math_factorial",
+      "math_permutation",
+      "math_percentage",
+      "math_clamp",
+      "math_random_advanced"
+    ],
+    "statistics.py": [
+      "stat_median",
+      "stat_mode",
+      "stat_variance",
+      "stat_stdev",
+      "stat_percentile",
+      "stat_normalize",
+      "stat_standardize"
+    ]
+  },
+  "sourceFileHashes": {
+    "reference/WebRPA/backend/app/executors/math_list_ops.py": "67fd1d51b637ecacf0ac1151972d406309f459357875fcedab368f75074a8466",
+    "reference/WebRPA/backend/app/executors/math_advanced.py": "128d66e0264855c614bdfdb2f0ada4f6d8aa1e4daa603b0d2ccc745fcf04a56f",
+    "reference/WebRPA/backend/app/executors/statistics.py": "b7cca8e84f4e12ca912ad678258c938d45bd3b67d1c1af801086b67d25297a7d",
+    "apps/backend/src/autoflow/application/workflows/executors/math_list_ops.py": "e59ebee5bdedf00561bf8050b979212053158b03d950d89110b56e31efabd109",
+    "apps/backend/src/autoflow/application/workflows/executors/math_advanced.py": "8ea279ace653f94301e4e96c24e2aa8f024bb785cdea11314e3558e538fbbd83",
+    "apps/backend/src/autoflow/application/workflows/executors/statistics.py": "9316b190f96fc7e53b5250ef955a188abc5a5998bdba3eb9c48e24d3be6ec2a5"
+  },
+  "targetSourceDirtyFiles": [],
+  "approvedFamilySize": 31,
+  "uiExecutedTypes": [
+    "list_sum",
+    "math_round",
+    "math_log",
+    "stat_median"
+  ],
+  "notUiExecutedTypes": [
+    "list_average",
+    "list_max",
+    "list_min",
+    "list_sort",
+    "list_unique",
+    "list_slice",
+    "math_base_convert",
+    "math_floor",
+    "math_modulo",
+    "math_abs",
+    "math_sqrt",
+    "math_power",
+    "math_trig",
+    "math_exp",
+    "math_gcd",
+    "math_lcm",
+    "math_factorial",
+    "math_permutation",
+    "math_percentage",
+    "math_clamp",
+    "math_random_advanced",
+    "stat_mode",
+    "stat_variance",
+    "stat_stdev",
+    "stat_percentile",
+    "stat_normalize",
+    "stat_standardize"
+  ],
+  "uiNodes": [
+    {
+      "moduleType": "list_sum",
+      "sourceFile": "math_list_ops.py",
+      "label": "列表求和",
+      "status": "executed-through-ui",
+      "nodeId": "BDEj9bBH_OUdAOORdasZv",
+      "config": {
+        "listVariable": "numbers",
+        "resultVariable": "sum_value"
+      },
+      "result": {
+        "value": 32
+      },
+      "logs": [
+        "列表求和: 32.0"
+      ]
+    },
+    {
+      "moduleType": "list_average",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_max",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_min",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_sort",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_unique",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_slice",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_round",
+      "sourceFile": "math_list_ops.py",
+      "label": "四舍五入",
+      "status": "executed-through-ui",
+      "nodeId": "FXOMMyS44CglYSoB7jqlq",
+      "config": {
+        "value": "{sum_value}",
+        "decimals": 1,
+        "resultVariable": "rounded_value"
+      },
+      "result": {
+        "value": 32
+      },
+      "logs": [
+        "四舍五入: 32.0 → 32.0"
+      ]
+    },
+    {
+      "moduleType": "math_base_convert",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_floor",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_modulo",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_abs",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_sqrt",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_power",
+      "sourceFile": "math_list_ops.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_log",
+      "sourceFile": "math_advanced.py",
+      "label": "对数运算",
+      "status": "executed-through-ui",
+      "nodeId": "ThAowbMbImwMt-x02OA6n",
+      "config": {
+        "value": "{rounded_value}",
+        "base": "2",
+        "resultVariable": "logged_value"
+      },
+      "result": {
+        "value": 5
+      },
+      "logs": [
+        "对数运算: log2(32.0) = 5.0"
+      ]
+    },
+    {
+      "moduleType": "math_trig",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_exp",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_gcd",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_lcm",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_factorial",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_permutation",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_percentage",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_clamp",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "math_random_advanced",
+      "sourceFile": "math_advanced.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_median",
+      "sourceFile": "statistics.py",
+      "label": "中位数",
+      "status": "executed-through-ui",
+      "nodeId": "V-2YaLORyhElEPGX76zVv",
+      "config": {
+        "listVariable": "numbers",
+        "resultVariable": "median_value"
+      },
+      "result": {
+        "value": 6.8
+      },
+      "logs": [
+        "中位数: 6.8"
+      ]
+    },
+    {
+      "moduleType": "stat_mode",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_variance",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_stdev",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_percentile",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_normalize",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "stat_standardize",
+      "sourceFile": "statistics.py",
+      "status": "not-executed-through-ui"
+    }
+  ],
+  "httpEvidence": {
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "BDEj9bBH_OUdAOORdasZv",
+        "executionId": "ba9bdb1d-6347-476a-ba28-33a98d2f6b30",
+        "values": {
+          "value": 32
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 6,
+        "nodeId": "FXOMMyS44CglYSoB7jqlq",
+        "executionId": "67059d76-0790-4ebe-98d5-fc01b32ac25b",
+        "values": {
+          "value": 32
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 9,
+        "nodeId": "ThAowbMbImwMt-x02OA6n",
+        "executionId": "8b145e73-1fb6-4e66-a21d-69fa4c099e33",
+        "values": {
+          "value": 5
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 12,
+        "nodeId": "V-2YaLORyhElEPGX76zVv",
+        "executionId": "773cc0b3-90b8-460a-96d5-458feb95c124",
+        "values": {
+          "value": 6.8
+        },
+        "largeValues": {}
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-4",
+        "timestamp": "2026-09-15T17:59:58.248186+00:00",
+        "level": "success",
+        "message": "列表求和: 32.0",
+        "nodeId": "BDEj9bBH_OUdAOORdasZv",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 7,
+        "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-7",
+        "timestamp": "2026-09-15T17:59:58.254037+00:00",
+        "level": "success",
+        "message": "四舍五入: 32.0 → 32.0",
+        "nodeId": "FXOMMyS44CglYSoB7jqlq",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 10,
+        "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-10",
+        "timestamp": "2026-09-15T17:59:58.260096+00:00",
+        "level": "success",
+        "message": "对数运算: log2(32.0) = 5.0",
+        "nodeId": "ThAowbMbImwMt-x02OA6n",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 13,
+        "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-13",
+        "timestamp": "2026-09-15T17:59:58.266040+00:00",
+        "level": "success",
+        "message": "中位数: 6.8",
+        "nodeId": "V-2YaLORyhElEPGX76zVv",
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 14,
+        "id": "14a07de1-f27c-4b22-a3eb-f68f7768e658-14",
+        "timestamp": "2026-09-15T17:59:58.565996+00:00",
+        "level": "success",
+        "message": "执行完成，共执行 4 个节点，失败 0 个",
+        "nodeId": null,
+        "duration": null,
+        "details": null
+      }
+    ]
+  },
+  "sqliteEvidence": {
+    "document": [
+      {
+        "id": "IvA6OqueOnq_vRcEBrOf4",
+        "name": "B4 数学统计正式闭环",
+        "revision": 1,
+        "nodeCount": 4,
+        "edgeCount": 3,
+        "variableCount": 1
+      }
+    ],
+    "run": [
+      {
+        "runId": "14a07de1-f27c-4b22-a3eb-f68f7768e658",
+        "workflowId": "IvA6OqueOnq_vRcEBrOf4",
+        "status": "completed",
+        "cleanupState": "completed",
+        "activeSlot": null,
+        "eventCount": 15,
+        "logCount": 5
+      }
+    ],
+    "eventTypes": [
+      {
+        "type": "execution:completed",
+        "count": 1
+      },
+      {
+        "type": "execution:log",
+        "count": 5
+      },
+      {
+        "type": "execution:node-succeeded",
+        "count": 4
+      },
+      {
+        "type": "execution:node_start",
+        "count": 4
+      },
+      {
+        "type": "execution:running",
+        "count": 1
+      }
+    ],
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "BDEj9bBH_OUdAOORdasZv",
+        "value": 32
+      },
+      {
+        "sequence": 6,
+        "nodeId": "FXOMMyS44CglYSoB7jqlq",
+        "value": 32
+      },
+      {
+        "sequence": 9,
+        "nodeId": "ThAowbMbImwMt-x02OA6n",
+        "value": 5
+      },
+      {
+        "sequence": 12,
+        "nodeId": "V-2YaLORyhElEPGX76zVv",
+        "value": 6.8
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "nodeId": "BDEj9bBH_OUdAOORdasZv",
+        "message": "列表求和: 32.0"
+      },
+      {
+        "sequence": 7,
+        "nodeId": "FXOMMyS44CglYSoB7jqlq",
+        "message": "四舍五入: 32.0 → 32.0"
+      },
+      {
+        "sequence": 10,
+        "nodeId": "ThAowbMbImwMt-x02OA6n",
+        "message": "对数运算: log2(32.0) = 5.0"
+      },
+      {
+        "sequence": 13,
+        "nodeId": "V-2YaLORyhElEPGX76zVv",
+        "message": "中位数: 6.8"
+      },
+      {
+        "sequence": 14,
+        "nodeId": null,
+        "message": "执行完成，共执行 4 个节点，失败 0 个"
+      }
+    ]
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for Profile setup and evidence reads; SQLite used only for evidence reads; no Store or page-internal function access",
+    "claim": "4 of 31 approved math/statistics nodes executed through the formal UI; the remaining 27 are explicitly not claimed by this run"
+  }
+}
