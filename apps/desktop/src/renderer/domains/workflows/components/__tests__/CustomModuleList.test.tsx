@@ -9,6 +9,8 @@ import { useCustomModuleStore } from '../../hooks/stores/customModuleStore'
 
 let container: HTMLDivElement
 let root: Root
+const originalDeleteModule = useCustomModuleStore.getState().deleteModule
+const originalUpdateModule = useCustomModuleStore.getState().updateModule
 
 function makeModule(id: string, extra: Record<string, unknown> = {}) {
   return {
@@ -35,7 +37,11 @@ beforeEach(() => {
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  useCustomModuleStore.setState({ modules: [], isLoading: false, error: null })
+  useCustomModuleStore.setState({
+    modules: [], isLoading: false, error: null,
+    deleteModule: originalDeleteModule,
+    updateModule: originalUpdateModule,
+  })
 })
 
 afterEach(() => {
@@ -80,5 +86,56 @@ describe('CustomModuleList 渲染与交互', () => {
     // 没有使用浏览器原生 confirm
     expect(nativeConfirm).not.toHaveBeenCalled()
     nativeConfirm.mockRestore()
+  })
+
+  it('取消删除时保留模块且不发送删除请求', async () => {
+    const remove = vi.fn(async () => true)
+    useCustomModuleStore.setState({
+      modules: [makeModule('mod_keep', { display_name: '保留模块' }) as any],
+      deleteModule: remove,
+    })
+    act(() => { root.render(<CustomModuleList onCreateNew={noop} onManage={noop} onDragStart={noop} />) })
+    const delBtn = Array.from(container.querySelectorAll('button')).find((button) => button.title === '删除')!
+    act(() => { delBtn.click() })
+    const cancel = Array.from(document.body.querySelectorAll('button')).find((button) => button.textContent === '取消')!
+    await act(async () => { cancel.click() })
+    expect(remove).not.toHaveBeenCalled()
+    expect(container.textContent).toContain('保留模块')
+  })
+
+  it('删除失败时保留模块并显示服务错误', async () => {
+    const remove = vi.fn(async () => {
+      useCustomModuleStore.setState({ error: '模块仍被工作流引用，无法删除' })
+      return false
+    })
+    useCustomModuleStore.setState({
+      modules: [makeModule('mod_used', { display_name: '被引用模块' }) as any],
+      deleteModule: remove,
+    })
+    act(() => { root.render(<CustomModuleList onCreateNew={noop} onManage={noop} onDragStart={noop} />) })
+    const delBtn = Array.from(container.querySelectorAll('button')).find((button) => button.title === '删除')!
+    act(() => { delBtn.click() })
+    const confirm = Array.from(document.body.querySelectorAll('button')).find((button) => button.textContent === '删除')!
+    await act(async () => { confirm.click() })
+    expect(remove).toHaveBeenCalledWith('mod_used')
+    expect(container.textContent).toContain('被引用模块')
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain('模块仍被工作流引用，无法删除')
+  })
+
+  it('收藏更新失败时保留原状态并显示服务错误', async () => {
+    const update = vi.fn(async () => {
+      useCustomModuleStore.setState({ error: '收藏更新失败' })
+      return null
+    })
+    useCustomModuleStore.setState({
+      modules: [makeModule('mod_favorite', { display_name: '收藏候选' }) as any],
+      updateModule: update,
+    })
+    act(() => { root.render(<CustomModuleList onCreateNew={noop} onManage={noop} onDragStart={noop} />) })
+    const favorite = Array.from(container.querySelectorAll('button')).find((button) => button.title === '收藏')!
+    await act(async () => { favorite.click() })
+    expect(update).toHaveBeenCalledWith('mod_favorite', { is_favorite: true })
+    expect(container.querySelector('button[title="收藏"]')).not.toBeNull()
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain('收藏更新失败')
   })
 })

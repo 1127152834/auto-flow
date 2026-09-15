@@ -21,7 +21,7 @@ interface CustomModuleListProps {
 }
 
 export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWorkflow }: CustomModuleListProps) {
-  const { modules, updateModule, deleteModule } = useCustomModuleStore()
+  const { modules, isLoading, error, updateModule, deleteModule } = useCustomModuleStore()
   const { confirm: confirmDialog, ConfirmDialog } = useConfirm()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -181,6 +181,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
           <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={(e) => handleToggleFavorite(module, e)}
+              disabled={isLoading}
               className="p-1 rounded hover:bg-gray-200 transition-colors has-hover-only"
               title={module.is_favorite ? '取消收藏' : '收藏'}
             >
@@ -192,6 +193,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
             </button>
             <button
               onClick={() => handleDoubleClick(module)}
+              disabled={isLoading}
               className="p-1 rounded hover:bg-gray-200 transition-colors has-hover-only"
               title="编辑"
             >
@@ -199,6 +201,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
             </button>
             <button
               onClick={(e) => handleDelete(module, e)}
+              disabled={isLoading}
               className="p-1 rounded hover:bg-red-100 transition-colors has-hover-only"
               title="删除"
             >
@@ -215,6 +218,11 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
       <div className="flex flex-col h-full">
         {/* 搜索栏 */}
         <div className="p-3 border-b space-y-2">
+          {error && (
+            <div role="alert" className="rounded-[8px] border border-[hsl(var(--danger-500)/0.35)] bg-[hsl(var(--danger-50))] px-2.5 py-2 text-xs text-[hsl(var(--danger-700))]">
+              {error}
+            </div>
+          )}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
@@ -245,6 +253,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
           <div className="flex gap-2">
             <Button
               onClick={onCreateNew}
+              disabled={isLoading}
               size="sm"
               className="bg-[hsl(var(--brand-600))] flex-1 text-white"
             >
@@ -253,6 +262,7 @@ export function CustomModuleList({ onCreateNew, onManage, onDragStart, onEditWor
             </Button>
             <Button
               onClick={onManage}
+              disabled={isLoading}
               size="sm"
               variant="tonal-warning"
             >

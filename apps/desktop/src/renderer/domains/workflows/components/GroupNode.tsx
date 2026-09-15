@@ -1,8 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/GroupNode.tsx; see SOURCE.md for license and adaptation boundaries.
 import { memo, useState, useCallback } from 'react'
-import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react'
+import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react'
 import { MessageSquare, GripVertical, Workflow, Magnet } from 'lucide-react'
-import type { NodeData } from '../editor-store'
+import { useWorkflowStore, type NodeData } from '../editor-store'
 
 export interface GroupNodeData {
   label: string
@@ -35,7 +35,9 @@ const SUBFLOW_COLOR = {
 
 export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as GroupNodeData
-  const { setNodes } = useReactFlow()
+  const nodes = useWorkflowStore((state) => state.nodes)
+  const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
+  const updateNodesData = useWorkflowStore((state) => state.updateNodesData)
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(nodeData.label || '')
   
@@ -52,44 +54,20 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
     const oldName = nodeData.subflowName || nodeData.label || ''
     const newName = editValue
     
-    // 使用 setNodes 正确更新节点数据
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        // 更新当前分组节点
-        if (node.id === id) {
-          const updatedData: NodeData = {
-            ...node.data,
-            label: editValue,
-            moduleType: node.data.moduleType as any,
-          }
-          
-          // 如果是子流程，同步更新 subflowName
-          if (isSubflow && editValue) {
-            (updatedData as any).subflowName = editValue
-          }
-          
-          return {
-            ...node,
-            data: updatedData,
-          }
+    const patches: { nodeId: string; data: Partial<NodeData> }[] = [{
+      nodeId: id,
+      data: { label: editValue, ...(isSubflow ? { subflowName: editValue } : {}) },
+    }]
+    if (isSubflow && oldName !== newName) {
+      for (const node of nodes) {
+        if (node.data.moduleType === 'subflow' &&
+            (node.data.subflowGroupId === id || (oldName && node.data.subflowName === oldName))) {
+          patches.push({ nodeId: node.id, data: { subflowName: newName } })
         }
-        
-        // 如果是子流程且名称改变了，同步更新所有引用该子流程的模块
-        if (isSubflow && oldName && oldName !== newName && 
-            node.data.moduleType === 'subflow' && node.data.subflowName === oldName) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              subflowName: newName,
-            },
-          }
-        }
-        
-        return node
-      })
-    )
-  }, [editValue, nodeData, isSubflow, setNodes, id])
+      }
+    }
+    updateNodesData(patches)
+  }, [editValue, nodeData, isSubflow, nodes, updateNodesData, id])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -103,27 +81,15 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
 
   // 处理尺寸变化结束，将宽高保存到 data 中
   const handleResizeEnd = useCallback((_event: unknown, params: { width: number; height: number }) => {
-    setNodes((nodes) =>
-      nodes.map((node) =>
-        node.id === id
-          ? { ...node, data: { ...node.data, width: params.width, height: params.height } }
-          : node
-      )
-    )
-  }, [id, setNodes])
+    updateNodeData(id, { width: params.width, height: params.height })
+  }, [id, updateNodeData])
 
   // 吸附开关：默认开启（adhesion !== false）
   const adhesionEnabled = (nodeData as any).adhesion !== false
   const toggleAdhesion = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    setNodes((nodes) =>
-      nodes.map((node) =>
-        node.id === id
-          ? { ...node, data: { ...node.data, adhesion: !((node.data as any).adhesion !== false) } }
-          : node
-      )
-    )
-  }, [id, setNodes])
+    updateNodeData(id, { adhesion: !adhesionEnabled })
+  }, [adhesionEnabled, id, updateNodeData])
 
   return (
     <>

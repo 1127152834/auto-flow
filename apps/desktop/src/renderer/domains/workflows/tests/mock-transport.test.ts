@@ -47,6 +47,20 @@ describe('source-compatible mock HTTP boundary',()=>{
     expect(imported.workflow).toEqual(content)
     expect((await request('/workflow-bundle/import',{bundle:{}})).status).toBe(400)
   })
+  it('exports transitive custom-module dependencies and rejects missing references', async () => {
+    await request('/custom-modules', { id: 'inner', name: 'inner', workflow: { nodes: [], edges: [] } })
+    await request('/custom-modules', { id: 'outer', name: 'outer', workflow: { nodes: [{ id: 'nested', data: { moduleType: 'custom_module', customModuleId: 'inner' } }], edges: [] } })
+    const content = { nodes: [{ id: 'call', data: { moduleType: 'custom_module', customModuleId: 'outer' } }], edges: [], variables: [] }
+    const exported = await (await request('/workflow-bundle/export', { name: 'dependencies', content })).json()
+    expect(exported.bundle.customModules.map((module: { id: string }) => module.id)).toEqual(['outer', 'inner'])
+
+    const missing = await request('/workflow-bundle/export', {
+      name: 'missing',
+      content: { ...content, nodes: [{ id: 'call', data: { moduleType: 'custom_module', customModuleId: 'not-found' } }] },
+    })
+    expect(missing.status).toBe(422)
+    expect(await missing.json()).toMatchObject({ success: false, error: '自定义模块依赖不存在: not-found' })
+  })
   it('emits one failed completion and no success for an injected node failure',async()=>{
     vi.useFakeTimers()
     const doc=await(await request('/workflows',{nodes:[{id:'fail',type:'click_element'}],variables:[]})).json()

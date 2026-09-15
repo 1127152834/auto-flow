@@ -1,7 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/NoteNode.tsx; see SOURCE.md for license and adaptation boundaries.
 import { memo, useState, useCallback, useRef, useEffect } from 'react'
-import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react'
+import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react'
 import { StickyNote, Bold, Italic, Minus, Plus, Palette } from 'lucide-react'
+import { useWorkflowStore } from '../editor-store'
 
 export interface NoteNodeData {
   label: string
@@ -28,7 +29,7 @@ const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32]
 
 export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as NoteNodeData
-  const { setNodes } = useReactFlow()
+  const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(nodeData.content || '')
   const [showColorPicker, setShowColorPicker] = useState(false)
@@ -58,15 +59,14 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
       if (updates.fontSize !== undefined) setLocalFontSize(updates.fontSize)
       if (updates.fontBold !== undefined) setLocalFontBold(updates.fontBold)
       if (updates.fontItalic !== undefined) setLocalFontItalic(updates.fontItalic)
-      // 再更新节点数据
-      setNodes((nodes) =>
-        nodes.map((node) =>
-          node.id === id ? { ...node, data: { ...node.data, ...updates } } : node
-        )
-      )
+      updateNodeData(id, updates)
     },
-    [id, setNodes]
+    [id, updateNodeData]
   )
+
+  const handleResizeEnd = useCallback((_event: unknown, params: { width: number; height: number }) => {
+    updateNodeData(id, { width: params.width, height: params.height })
+  }, [id, updateNodeData])
 
   useEffect(() => {
     if (!isEditing) {
@@ -147,6 +147,7 @@ export const NoteNode = memo(({ id, data, selected }: NodeProps) => {
         isVisible={selected}
         lineClassName="!border-[hsl(var(--brand-500))]"
         handleClassName="!w-3 !h-3 !bg-[hsl(var(--brand-500))] !border-2 !border-white !rounded-full"
+        onResizeEnd={handleResizeEnd}
       />
       <div
         className={`w-full h-full rounded-[12px] flex flex-col transition-shadow duration-200 ${(nodeData as any).__aiSpawning ? 'ai-node-spawn' : ''}`}

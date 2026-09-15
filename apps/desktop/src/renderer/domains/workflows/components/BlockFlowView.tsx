@@ -163,8 +163,10 @@ export function BlockFlowView() {
     const moduleIds = new Set(g.nodes.map((n) => n.id))
     // 保留非模块节点（group/note/subflowHeader 等）
     const preservedNodes = nodes.filter((n) => n.type !== 'moduleNode')
+    const retainedIds = new Set([...moduleIds, ...preservedNodes.map((node) => node.id)])
     // 保留涉及非模块节点的连线（如子流程头 → 首个模块）
     const preservedEdges = edges.filter((e) => {
+      if (!retainedIds.has(e.source) || !retainedIds.has(e.target)) return false
       const sIsModule = moduleIds.has(e.source)
       const tIsModule = moduleIds.has(e.target)
       return !(sIsModule && tIsModule) // 模块↔模块的边由生成器重建，其余保留

@@ -325,25 +325,44 @@ export function createBlock(type: ModuleType, extraData?: Partial<NodeData>): Bl
  * 是否成为流程起点由插入位置决定。
  */
 export function cloneBlock(b: Block): Block {
-  const newId = nanoid()
-  const node: Node<NodeData> = {
-    ...b.node,
-    id: newId,
-    position: { ...b.node.position },
-    // 深拷贝 data，避免粘贴块与源块共享同一配置对象（改一个连带改另一个）
-    data: JSON.parse(JSON.stringify(b.node.data)) as NodeData,
-    selected: false,
+  const idMap = new Map<string, string>()
+  const collect = (block: Block) => {
+    idMap.set(block.id, nanoid())
+    if (block.kind === 'if') { block.then.forEach(collect); block.els.forEach(collect) }
+    else if (block.kind === 'loop') block.body.forEach(collect)
+    else if (block.kind === 'parallel') block.branches.forEach((branch) => branch.forEach(collect))
   }
-  if (b.kind === 'if') {
-    return { kind: 'if', id: newId, node, then: b.then.map(cloneBlock), els: b.els.map(cloneBlock), flowStart: false }
+  collect(b)
+
+  const clone = (block: Block): Block => {
+    const newId = idMap.get(block.id)!
+    const data = JSON.parse(JSON.stringify(block.node.data)) as NodeData
+    if (data.subflowGroupId && idMap.has(data.subflowGroupId)) data.subflowGroupId = idMap.get(data.subflowGroupId)
+    if (data.errorPolicy?.targetId && idMap.has(data.errorPolicy.targetId)) {
+      data.errorPolicy = { ...data.errorPolicy, targetId: idMap.get(data.errorPolicy.targetId) }
+    }
+    const node: Node<NodeData> = {
+      ...block.node,
+      id: newId,
+      ...(block.node.parentId && idMap.has(block.node.parentId)
+        ? { parentId: idMap.get(block.node.parentId) }
+        : {}),
+      position: { ...block.node.position },
+      data,
+      selected: false,
+    }
+    if (block.kind === 'if') {
+      return { kind: 'if', id: newId, node, then: block.then.map(clone), els: block.els.map(clone), flowStart: false }
+    }
+    if (block.kind === 'loop') {
+      return { kind: 'loop', id: newId, node, body: block.body.map(clone), flowStart: false }
+    }
+    if (block.kind === 'parallel') {
+      return { kind: 'parallel', id: newId, node, branches: block.branches.map((branch) => branch.map(clone)), flowStart: false }
+    }
+    return { kind: 'step', id: newId, node, flowStart: false }
   }
-  if (b.kind === 'loop') {
-    return { kind: 'loop', id: newId, node, body: b.body.map(cloneBlock), flowStart: false }
-  }
-  if (b.kind === 'parallel') {
-    return { kind: 'parallel', id: newId, node, branches: b.branches.map((br) => br.map(cloneBlock)), flowStart: false }
-  }
-  return { kind: 'step', id: newId, node, flowStart: false }
+  return clone(b)
 }
 
 // ---------- 结构树编辑（纯函数，返回新树） ----------

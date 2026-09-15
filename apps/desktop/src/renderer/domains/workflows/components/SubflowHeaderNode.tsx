@@ -1,8 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/SubflowHeaderNode.tsx; see SOURCE.md for license and adaptation boundaries.
 import { memo, useState, useCallback } from 'react'
-import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react'
+import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Workflow, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+import { useWorkflowStore, type NodeData } from '../editor-store'
 import { useConfirm } from './controls/confirm-dialog'
 
 export interface SubflowHeaderNodeData {
@@ -15,7 +16,10 @@ export interface SubflowHeaderNodeData {
 
 export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as SubflowHeaderNodeData
-  const { setNodes, getNodes, getEdges } = useReactFlow()
+  const nodes = useWorkflowStore((state) => state.nodes)
+  const edges = useWorkflowStore((state) => state.edges)
+  const onNodesChange = useWorkflowStore((state) => state.onNodesChange)
+  const updateNodesData = useWorkflowStore((state) => state.updateNodesData)
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(nodeData.label || '')
   const { alert: alertDialog, ConfirmDialog } = useConfirm()
@@ -29,8 +33,6 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
   const toggleCollapse = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     
-    const nodes = getNodes()
-    const edges = getEdges()
     const currentNode = nodes.find(n => n.id === id)
     if (!currentNode) return
     
@@ -67,32 +69,13 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
       findAllDescendants(targetId, allDescendants)
     })
     
-    // 更新节点状态
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        // 更新当前节点的折叠状态
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              collapsed: newCollapsed,
-            },
-          }
-        }
-        
-        // 隐藏或显示所有下游节点
-        if (allDescendants.has(node.id)) {
-          return {
-            ...node,
-            hidden: newCollapsed,
-          }
-        }
-        
-        return node
-      })
-    )
-  }, [id, isCollapsed, getNodes, getEdges, setNodes])
+    const nextNodes = nodes.map((node) => {
+      if (node.id === id) return { ...node, data: { ...node.data, collapsed: newCollapsed } }
+      if (allDescendants.has(node.id)) return { ...node, hidden: newCollapsed }
+      return node
+    })
+    onNodesChange(nextNodes.map((node) => ({ type: 'replace' as const, id: node.id, item: node })))
+  }, [id, isCollapsed, nodes, edges, onNodesChange])
 
   const handleDoubleClick = useCallback(() => {
     setIsEditing(true)
@@ -106,7 +89,6 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
     
     // 检查是否有重名
     if (newName) {
-      const nodes = getNodes()
       const duplicates = nodes.filter(n => {
         if (n.id === id) return false
         if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === newName) return true
@@ -121,29 +103,19 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
       }
     }
     
-    // 更新当前节点
-    nodeData.label = editValue
-    nodeData.subflowName = editValue
-    
-    // 如果名称改变了，同步更新所有引用该子流程的模块
-    if (oldName && oldName !== newName) {
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          // 更新引用了旧名称的子流程模块
-          if (node.data.moduleType === 'subflow' && node.data.subflowName === oldName) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                subflowName: newName,
-              },
-            }
-          }
-          return node
-        })
-      )
+    const patches: { nodeId: string; data: Partial<NodeData> }[] = [
+      { nodeId: id, data: { label: editValue, subflowName: editValue } },
+    ]
+    if (oldName !== newName) {
+      for (const node of nodes) {
+        if (node.data.moduleType === 'subflow' &&
+            (node.data.subflowGroupId === id || (oldName && node.data.subflowName === oldName))) {
+          patches.push({ nodeId: node.id, data: { subflowName: newName } })
+        }
+      }
     }
-  }, [editValue, nodeData, setNodes, id, getNodes])
+    updateNodesData(patches)
+  }, [editValue, nodeData, id, nodes, updateNodesData, alertDialog])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {

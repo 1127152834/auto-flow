@@ -1009,10 +1009,28 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/workflow-bundle/export') {
       const content = body.content as ObjectValue
       if (!Array.isArray(content?.nodes)) return failure('Invalid workflow bundle')
-      const serialized = JSON.stringify(content)
+      const customModules: ObjectValue[] = []
+      const pendingDocuments: ObjectValue[] = [content]
+      const visitedModules = new Set<string>()
+      while (pendingDocuments.length > 0) {
+        const document = pendingDocuments.shift()!
+        for (const node of (document.nodes || []) as ObjectValue[]) {
+          const data = (node.data || {}) as ObjectValue
+          const config = (data.config || {}) as ObjectValue
+          const moduleId = data.customModuleId || data.custom_module_id || config.customModuleId
+          if (typeof moduleId !== 'string' || !moduleId || visitedModules.has(moduleId)) continue
+          visitedModules.add(moduleId)
+          const module = db.modules[moduleId]
+          if (!module) return failure(`自定义模块依赖不存在: ${moduleId}`, 422)
+          customModules.push(module)
+          const workflow = module.workflow
+          if (workflow && typeof workflow === 'object' && !Array.isArray(workflow)) pendingDocuments.push(workflow as ObjectValue)
+        }
+      }
+      const serialized = JSON.stringify([content, ...customModules])
       const library = JSON.parse(localStorage.getItem('autoflow:studio:mock:image-assets') || '{"assets":[]}') as {assets:ObjectValue[]}
       return response({success:true,bundle:{type:'webrpa-workflow-bundle',version:1,name:body.name,exportedAt:new Date().toISOString(),workflow:content,
-        customModules:Object.values(db.modules).filter(module=>serialized.includes(String(module.id))),
+        customModules,
         images:library.assets.filter(asset=>serialized.includes(String(asset.id))).map(asset=>({id:asset.id,name:asset.name,originalName:asset.originalName,folder:asset.folder,ext:asset.extension,dataB64:String(asset.dataUrl).split(',')[1]}))}})
     }
     if (path === '/workflow-bundle/import') {
