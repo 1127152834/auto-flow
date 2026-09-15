@@ -364,11 +364,15 @@ type SheetsBindingWrite = {connectionId:string;spreadsheetId:string;sheetId:numb
 | `GET /api/v1/projects/{projectId}/batches/{batchId}` | PM3-C | — | `BatchDetail` | project + batch。 |
 | `POST /api/v1/projects/{projectId}/batches/{batchId}/stop` | PM3-C/PM8 | header key；`{expectedStatusRevision,reason}` | 202 `OperationAccepted` | 关闭领取并扇出核心 cancel；接受不等于已停止。 |
 | `POST /api/v1/projects/{projectId}/batches/{batchId}/force-stop` | PM3-C（PM8-B 复用） | header key；`{expectedStatusRevision,reason}` | 202 `OperationAccepted` | 首次随批次停止闭环交付；显式影响，未知实例隔离。 |
-| `GET /api/v1/projects/{projectId}/tasks` | PM3-C→PM7 | `batchId,automationId,status,attention,endedFrom,endedTo,page,pageSize,sort` | `Page<Task>` | project。 |
-| `GET /api/v1/projects/{projectId}/tasks/{taskId}` | PM3-C→PM7-A | — | `TaskDetail` | project + task；聚合核心快照，不复制核心状态。 |
+| `GET /api/v1/projects/{projectId}/tasks` | PM3-C→PM7 | `q,batchId,automationId,status,endedFrom,endedTo,page,pageSize,sort` | `Page<Task>` | project；搜索任务编号、冻结自动化名及输入语义值，返回业务展示字段，不要求 renderer 展示内部身份。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}` | PM3-C→PM7-A | — | `TaskDetail` | project + task；聚合核心快照、冻结节点名称和批次开始时间，不复制核心状态。 |
 | `GET /api/v1/projects/{projectId}/tasks/{taskId}/node-attempts` | PM3-C→PM7-A | `page,pageSize` | `Page<NodeAttempt>` | pageSize 默认 50、上限 200；从核心 C07 `listRunAttempts` 持久历史续读。 |
-| `GET /api/v1/projects/{projectId}/tasks/{taskId}/logs` | PM3-C→PM7-A | `afterSequence?,level?,nodeId?,pageSize` | `RunLogPage` | pageSize 默认 50、上限 200；从核心持久日志补读。缺少所需历史/replay 为明确能力未完成或 `RUN_EVENT_HISTORY_UNAVAILABLE`，不能用 snapshot 跳过日志。 |
-| `GET /api/v1/projects/{projectId}/tasks/{taskId}/outputs` | PM7-A | `page,pageSize` | `Page<RunOutput>` | project + task。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/logs` | PM3-C→PM7-A | `afterSequence?,level?,nodeId?,query?,pageSize` | `RunLogPage` | pageSize 默认 50、上限 200；按持久序号补读并支持日志内容搜索。缺少所需历史/replay 时明确失败，不能用 snapshot 跳过日志。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/outputs` | PM3-C→PM7-A | `page,pageSize` | `Page<RunOutput>` | project + task；PM3 展示基本最终输出与节点中间输出，PM7 完整互查。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/artifacts` | PM3-C→PM7-A | `page,pageSize` | `Page<RunArtifact>` | 只返回持久元数据、可用性和受控内容地址；不可用证据保留原因。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/artifacts/{artifactId}/content` | PM3-C→PM7-A | — | 受控二进制响应 | 重新校验项目、任务与产物归属；只读取持久证据登记的文件，设置 `nosniff`，不接受 renderer 路径。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/events` | PM3-C | `afterSequence` | `ProjectRunEventPage` | 持久事件有限补读；序号缺口、未来游标和跨任务/项目均明确拒绝。 |
+| `GET /api/v1/projects/{projectId}/tasks/{taskId}/events/stream` | PM3-C | `afterSequence` 或 `Last-Event-ID` | SSE | 仅作失效通知和连续增量；断线后仍由前述持久事件接口补读，终态后关闭流。 |
 | `POST /api/v1/projects/{projectId}/tasks/{taskId}/follow-up-batches` | PM7-C | header key；`{mode:'originalInputGroup',expectedTaskStatusRevision,parameterOverrides}` | 202 `OperationAccepted` | 创建新 Batch；以选定失败 Task 的每个原 `RecordRef` 候选及原输入组关系为固定候选重新验当前条件/代次/占用，不换行、不重新配对、不重放网页；候选不再有效时可少建或不建 Task，数量不保证等于选中数。 |
 | `GET /api/v1/projects/{projectId}/manual-items` | PM5-C | `status,page,pageSize,sort` | `Page<ManualItem>` | project。 |
 | `GET /api/v1/projects/{projectId}/manual-items/{manualItemId}` | PM5-C | — | `{item:ManualItem;task:TaskDetail;instance:EnvironmentInstance}` | project；人工操作的是同 Run 的现场，不把持久来源当现场。 |
@@ -381,7 +385,7 @@ PM3 实施说明（2026-09-15）：`parameters` 键为稳定 parameterId，未�
 
 ```ts
 type BatchStartRequest = {expectedAutomationRevision:number;parameters:Record<string,JsonScalar>;maxTasks?:number;concurrency?:number;environmentOverride?:EnvironmentPolicy}
-type BatchDetail = {batch:Batch;statusCounts:Record<TaskStatus,number>;taskCount:number;stopOperation:Operation|null}
+type BatchDetail = {batch:Batch;statusCounts:Record<TaskStatus,number>;taskCount:number;stopOperation:Operation|null;forceStopAllowed:boolean;forceStopAvailableAt:string|null;configurationSnapshot:JsonObject}
 type RunLogEntry = {runId:string;sequence:number;eventId:string;executionGeneration:number;nodeVisitId?:string;attempt?:number;level:'debug'|'info'|'warning'|'error';message:string;occurredAt:string}
 type RunLogPage = {items:RunLogEntry[];afterSequence:number;lastSequence:number;hasMore:boolean}
 type ManualFinishRequest = {expectedCheckpointRevision:number;expectedStatusRevision:number;outcome:'succeeded'|'failed';reason:string;retainEnvironment:{enabled:false}|{enabled:true;mode:'update'|'saveAs';targetEnvironmentId?:string;name?:string;recordTargets:{recordRef:RecordRef;expectedLinkRevision:number;replaceAllowed:boolean}[]}}

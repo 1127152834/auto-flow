@@ -118,3 +118,13 @@ e58877d/2cded8e/32c3395/f4e1d08交付历史状态墓碑、删除影响/原子命
 当前源代码800fb01；853后端、1126前端全量与工程检查通过。真实UI原子保存/409/重连/响应丢失原键、120条部分结果及完整重启、Excel源哈希和1万行分页等证据均登记`design-alignment/acceptance/gallery-r3`。记录图片/实际输入/文件选择注入、原生选择分别标注；逐图定性评价不代表用户签收。最终交付状态看machine-report.json，PM3仍未开始。
 
 收尾只读观测：主目录2f6436f，旧仓324748a，均存在其他工作树变化。本任务未写它们，不能以现状差异推断本任务修改或删改。三个既有QA目录及独立record-grid-entry任务资产继续原样保留。
+
+## PM3 管理功能最终基线（2026-09-15，confirmed）
+
+本节取代前文“PM3 尚未开始/运行 HTTP 与页面未交付”的当前描述。实施工作区分支为 `codex/project-management-pm3`；产品与专项 QA 当前源码修订为 `bdff9dd`，最终文档提交在其后追加。迁移唯一 head 为 `pm04_project_runs`，父为 `pm03_project_automations`；没有重写历史迁移。
+
+当前已交付自动化目录及四页签管理、统一保存与恢复、参数型 Batch/Task/InputSnapshot/queued CoreRun 原子创建、真实 CloakBrowser 调度、批次和任务目录、持久事件补读、日志搜索与分页、输入输出、失败截图、普通停止、30 秒宽限后的强停、旧执行代次撤权、结果不明原键恢复、重启事实查询和双工作区隔离。项目模块只拥有业务协调和投影，核心仍拥有 Workflow/PreparedContent/CoreRun/RunEvent/worker；边界见 `.ai/decisions/2026-09-14-project-automation-core-boundary.md`。
+
+用户明确排除 Studio demo UI 联合测试及画布、transport、bridge 修改。管理 QA 通过 WorkflowService 与 ProfileService 准备工作流和浏览器配置，只用于真实执行资料，不冒充 Studio 用户路径。项目数据型领取与写回、持久环境、人工处理、统计和生命周期继续属于 PM4–PM8；PM4 未开始。
+
+完整机器与真实应用证据见 `pm3/verification.json`。用户手动测试、Windows、其他 CPU 架构和打包应用未执行。

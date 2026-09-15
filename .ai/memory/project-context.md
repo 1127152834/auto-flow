@@ -123,3 +123,12 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 ## PM3 参数批次原子启动（2026-09-15，confirmed）
 
 来源：`implementation/pm3/batches/task11-review.md`、实际代码及有界独立审查。Batch、独立Task输入快照、queued CoreRun、PreparedContent及启动Operation在同一调用者Session提交；Task只投影CoreRun。物理COMMIT失败会失效连接，响应丢失仍按原键找回接受结果。此为Task11后端基础包，尚无管理端启动入口；Task12–16继续。Studio demo联调不在本次范围；不进入PM4。
+
+## PM3 管理功能交付（2026-09-15，confirmed）
+
+来源：`docs/project-management/implementation/pm3/verification.json`、当前源码修订 `bdff9dd` 和真实 Electron 证据。前段“尚无管理端入口/Task12–16继续”由本节取代。
+
+- 自动化管理、参数批次、批次与任务目录、持久日志/输出/截图、普通停止、30秒后强停、旧执行代次撤权、原键恢复、重启查询及双工作区隔离已连接真实 FastAPI、SQLite 与 CloakBrowser。
+- 强停测试只对隔离 Electron 后代树中唯一且命令匹配的真实 workflow worker 做受控 SIGSTOP；UI 仍执行真实普通停止、宽限、强停和清理。当前HEAD直接证据为 `pm3/qa-runs/uuid-runs-1789458500247/result.json`。
+- 项目模块不复制执行器；核心继续拥有 Workflow/PreparedContent/CoreRun/RunEvent/worker。用户排除 Studio demo UI 联调，不把该路径标为通过。
+- PM3 当前授权管理范围通过；原完整 PM3 合同仍 partially_verified。项目数据型执行、持久环境、人工、统计和生命周期属于 PM4–PM8，未提前实现。用户手测、Windows、其他架构及打包未执行。

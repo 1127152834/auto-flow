@@ -1,0 +1,202 @@
+{
+  "date": "2026-09-15",
+  "milestone": "PM3",
+  "status": "passed-authorized-management-scope",
+  "confidence": "high",
+  "userAcceptance": "pending",
+  "branch": "codex/project-management-pm3",
+  "sourceRevision": "bdff9dd4b28d1a51812385a05f2aaf7f4b776630",
+  "evidenceRevision": "9d6a38a25c144a97114e1bb5bd651bcab26e68a5",
+  "sourceDigest": {
+    "rendererSourceSha256": "3541f2cdfd82e51b9aad54e454cab5678b72ff46a75a97bbc045e507ea0a4678",
+    "directRunResult": "docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/result.json"
+  },
+  "scope": [
+    "自动化目录、四页签配置、统一保存、校验和命令恢复",
+    "参数型批次原子创建、调度、Batch/Task/CoreRun 持久事实",
+    "批次与任务目录、日志、输入输出、错误和截图证据",
+    "普通停止、30 秒宽限后的强制停止、旧执行代次撤权和资源清理",
+    "结果不明原键恢复、应用与服务重启后持久查询、双工作区隔离"
+  ],
+  "excludedByUser": [
+    "Studio demo UI 联合测试、画布、transport 和 bridge 修改"
+  ],
+  "deliveryPackages": {
+    "PM3-A": {
+      "status": "partially_verified",
+      "reason": "管理配置已交付；原包中的 Studio 打开与返回不在本次授权验收范围。"
+    },
+    "PM3-B": {
+      "status": "verified",
+      "reason": "参数批次、Task、输入快照和 queued CoreRun 原子提交并完成真实网页链。"
+    },
+    "PM3-C": {
+      "status": "verified",
+      "reason": "运行事实、日志、输出、截图、普通停止、强停、恢复和清理均有真实管理端证据。"
+    }
+  },
+  "commands": [
+    {
+      "command": "uv run --directory apps/backend pytest",
+      "result": "passed",
+      "details": "1407 passed, 8 skipped"
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check .",
+      "result": "passed"
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "result": "passed",
+      "details": "253 source files"
+    },
+    {
+      "command": "AUTOFLOW_TEST_CLOAKBROWSER=<installed executable> uv run --directory apps/backend pytest tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_workflow_real_cloakbrowser.py -q",
+      "result": "passed",
+      "details": "8 passed with installed CloakBrowser Chromium 145.0.7632.109.2"
+    },
+    {
+      "command": "npm test",
+      "result": "passed",
+      "details": "295 files, 3224 tests"
+    },
+    {
+      "command": "npm run openapi:check",
+      "result": "passed"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "npm run lint",
+      "result": "passed",
+      "details": "Sequential rerun passed; an earlier concurrent lint/build run saw electron-vite's temporary config and failed."
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "details": "Rebuilt before the current-head force-stop E2E."
+    },
+    {
+      "command": "npm run build && node scripts/qa-project-uuid-flow.mjs --scenario runs",
+      "result": "passed",
+      "details": "Current HEAD completed the success, failure, ordinary stop and forced-stop UI paths in real Electron/FastAPI/SQLite/CloakBrowser."
+    },
+    {
+      "command": "npm run test:scripts",
+      "result": "passed",
+      "details": "60 passed"
+    },
+    {
+      "command": "npm run test:structure",
+      "result": "passed",
+      "details": "3 passed"
+    },
+    {
+      "command": "npm run smoke:sidecar",
+      "result": "passed"
+    },
+    {
+      "command": "npm run smoke:desktop",
+      "result": "passed",
+      "details": "desktop connected in development mode on darwin/arm64"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "realApplication": [
+    {
+      "scenario": "automation-management",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/management-runs/run-eSwQYK/result.json",
+      "interactionScope": "项目、自动化和配置由 Electron UI 创建与保存；真实 HTTP 和 SQLite 读回。",
+      "fixtureScope": "工作流由 WorkflowService 准备。"
+    },
+    {
+      "scenario": "success-failure-stop-force-stop",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247/result.json",
+      "interactionScope": "当前 HEAD 的 Electron UI 创建项目和自动化、启动批次、浏览运行事实、普通停止和强停。",
+      "fixtureScope": "工作流和浏览器配置为测试资料；强停用受控 SIGSTOP 暂停当前隔离 Electron 后代中唯一 workflow_worker，真实停止、宽限、强停、撤权和清理链保持不变。"
+    },
+    {
+      "scenario": "unknown-result-recovery",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/run-qx3dfC/result.json",
+      "interactionScope": "UI 启动请求的响应及首次原键查询被丢弃，随后使用同一 Idempotency-Key 找回唯一批次。"
+    },
+    {
+      "scenario": "restart-persistence",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/run-KdlnGO/result.json",
+      "interactionScope": "应用和服务重启后通过真实服务读取持久批次，网页动作计数未增加。",
+      "limitation": "重启后的最终事实由 GET 核对，不冒充重启后完整人工浏览。"
+    },
+    {
+      "scenario": "workspace-isolation",
+      "result": "passed",
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/isolation-KdnPXj/result.json",
+      "interactionScope": "两个 marker 所有的独立工作区分别由 UI 创建项目、自动化和批次，身份互不相同。"
+    }
+  ],
+  "visualReviews": [
+    {
+      "result": "passed-limited",
+      "report": "docs/project-management/implementation/pm3/visual-review.md",
+      "scores": {
+        "batchDetail": 88,
+        "taskLog": 87,
+        "taskInputOutput": 87,
+        "taskEvidence": 86
+      },
+      "currentHeadEvidence": "docs/project-management/implementation/pm3/qa-runs/uuid-runs-1789458500247",
+      "note": "正式评分来自较早内容等价页面；当前 HEAD 已重新生成 13 张同视口截图，未发现结构回退，但未冒充新的逐页人工评分。"
+    }
+  ],
+  "reviews": {
+    "limitedCodeReview": {
+      "result": "passed",
+      "scope": "SSE、恢复身份、终态刷新、强停门槛、证据分页、对象 URL 与 disabled 状态",
+      "findingClosure": "8 of 8 closed; no new P0/P1"
+    },
+    "visualReview": {
+      "result": "passed-limited",
+      "report": "docs/project-management/implementation/pm3/visual-review.md"
+    }
+  },
+  "coverage": {
+    "authorizedManagementScope": "passed",
+    "originalMilestoneContract": "partially_verified",
+    "reason": "原合同中的 Studio 往返和后续 PM4–PM8 完整能力没有因本次管理交付而被标记完成。"
+  },
+  "historicalFailures": [
+    {
+      "evidence": "docs/project-management/implementation/pm3/qa-runs/run-sjkcAl/result.json",
+      "reason": "自然慢导航在约 1.6 秒内完成普通停止，无法进入 30 秒强停准入；保留为夹具限制证据。"
+    },
+    {
+      "reason": "首次将 lint 与 build 并发执行时，ESLint 读取 electron-vite 临时配置失败；顺序重跑通过。"
+    }
+  ],
+  "nonApplicableChecks": [
+    {
+      "command": "verify-pm0.py",
+      "reason": "该脚本冻结 PM0 静态文档状态，并按设计拒绝任何 PM1–PM3 业务证据；编号规模仍核对为 48 项功能、178 项场景、18 项契约和 7 项门槛，因此不作为 PM3 交付门禁。"
+    }
+  ],
+  "notExecuted": [
+    "Windows",
+    "其他 CPU 架构",
+    "packaged application",
+    "用户手动验收"
+  ],
+  "limitations": [
+    "项目数据型领取、写回与状态推进属于 PM4。",
+    "持久环境、人工处理、统计和项目生命周期属于 PM5–PM8。",
+    "失效资源引用专项仍有后续状态覆盖，不影响 PM3 运行管理链。",
+    "未执行 Studio demo 联合测试。"
+  ]
+}

@@ -30,7 +30,7 @@
 | Task 9 参数与运行政策控件 | pm3_management_components：两组受控组件及测试 | 四页签组件已接通真实保存并完成有界复审；新增参数说明、模型三态与内层查询草稿保护 | 冻结参数/政策合同，复用统一表格和小圆角 |
 | Task 10 管理页面/查询/命令恢复 | 主协调：页面、路由、客户端、覆盖文件 | 管理配置 E2E 通过，证据 management-runs/run-eSwQYK；资源页视觉问题已定向闭合，完整 PM3.1 未运行项仍保留 | 真实配置接口及组件先行，不使用 demo 结果 |
 | Task 11 参数批次原子创建 | 主协调：核心UoW/协调/迁移；配置智能体：规则及测试 | 已实现，最终COMMIT故障污染连接经反例修复，规格/工程复核通过；证据 batches/task11-review.md | 尚无用户启动入口，不等于可运行批次 |
-| Task 12–16 管理端调度/运行记录/停止恢复 | 主协调：调度竞争和集成；配置智能体：真实查询HTTP；组件智能体：启动弹窗 | 资源冻结适配及纯组件进行中；正式API/页面尚未接入 | 复用 CoreRun，不联合 Studio demo |
+| Task 12–16 管理端调度/运行记录/停止恢复 | 主协调：调度、共享装配、路由；配置智能体：事件适配与 QA；组件智能体：命令与启动/详情 | 已交付：真实 HTTP/CloakBrowser、管理页面、事件补读、普通停止、强停、恢复、E2E 与视觉复核均完成 | `d5f27ba`、`bacbccf`、`bdff9dd`；Studio demo 联合测试按用户指令排除 |
 
 保留 `task4-cloakbrowser.log` 的真实浏览器四节点、停止、超时及服务对象重建证据；不是 Studio UI、完整进程重启或管理端 E2E。`task4-pytest.log` 是历史版本检查，后续修改不自动继承“最终通过”。
 
@@ -800,3 +800,65 @@ Task 5/6/10/17–19 原条目中 Studio transport/画布保存/运行/IPC 测试
 - 五个正常页面已逐图人工审查（89/86/90/88/90）；资源页82分失败修复后定向复核90分。详见 `management/visual-review.md`。候选截图不是用户已确认回归基线。
 - 此检查点仍未覆盖：全部加载/保存中/错误视觉状态、真实双工作区切换、同工作区断服务时脏草稿的完整E2E、目录大规模分页端到端、200%全页滚动。组件/HTTP用例已覆盖的部分不能冒充这些真实验收；后续管理集成继续补齐。
 - Task11–16 尚未交付，参数批次/运行记录/停止恢复不能标记完成，PM3整阶段未退出。用户手测、Windows、其他架构、打包未执行。
+
+
+## 2026-09-15 05:32 暂停检查点（confirmed，Asia/Shanghai）
+
+按用户授权的定时停止指令，在当前安全边界暂停。HEAD `8aabc69`（Task 11 已提交）；以下后续改动保留在本独立工作区，**未提交、未宣称 Task 12–16 或 PM3 完成**。三个本轮子智能体均已停止；未保留本任务运行中的 Electron、后端或测试进程。主项目与旧项目仍只读。
+
+### 已有证据及其范围
+
+- `9dea366` 的自动化配置管理交付保持有效，手测入口仍为 `docs/project-management/implementation/pm3/management/manual-test.md`。
+- 真实 HTTP + 临时 SQLite + CloakBrowser：参数输入、点击、读取、连续 Run 事实、普通停止与超时清理三个情景通过。证据 `batches/checkpoint-2026-09-15/real-batch-evidence.log`；不是管理 UI、完整进程重启或 Studio E2E。后续增加的 validation.runnable 断言尚未重新运行真实测试。
+- 审查两项 P1 已定向闭合：开始日志 ACK 后再次检查停止；恢复 GET 401 不清原幂等键/请求体。日志安全点 RED/GREEN 已归档；原键恢复独立复核通过。
+- 完整后端运行曾失败：28 failed / 1351 passed / 7 skipped。27 个迁移断言仍指向 pm03，以及同 App 重复 TestClient 生命周期跨事件循环。仅更新到真实 pm04 head 和修正测试生命周期，原数据/约束/回滚断言保留；相关 8 文件组合随后 52 passed（智能体执行）。未再次运行全量，不能写最终全绿。
+- 后台 Ruff 和 mypy（252 个源文件）通过；OpenAPI 已生成。运行路由 15 项通过；证据在同一 checkpoint 目录。之后新增文件/改动不自动继承旧检查结果。
+- 事件 HTTP/SSE 连续补读、未来游标、跨项目、SQLite 一致快照/尾部缺口共 6 项定向通过（智能体执行）；新 frontend events.ts 实现后还没有 GREEN，只有最初 RED。
+- 新 QA 工具 prepare-only 曾启动真实 Electron/后端并准备隔离资料，证据 `qa-runs/run-R3XAmM`。自动 UI 成功链已写好但**尚未对最新构建执行**，停止/响应丢失/重启链尚未完成。不得把准备截图当完整 UI 通过。
+
+### 当前阻断、责任与恢复顺序
+
+| 事项 | 负责人/文件 | 当前事实及下一步 |
+|---|---|---|
+| 新增 BatchLauncher 测试失败 | 组件智能体；`project-runs/components/BatchLauncher.test.tsx` | 最后 13 项组合为 12 pass / 1 fail：测试用普通 Error 模拟明确拒绝，实际按未知结果锁定符合协议。恢复后对照测试意图使用真实 ApiClientError(422)，保留未知错误锁定反例；ESLint/typecheck 在该组合中因失败短路未执行。 |
+| 订阅/页装配收尾 | 主协调；`project-runs/events.ts`、`pages/*`、ProjectsWorkspace、AutomationDetailPage | TaskDetailPage 已实现分页但仅留 SSE 注释；接入 useRunEvents 的 onChange 精确刷新和 onError 页面提示。新 events.ts 需缺口/断连/迟到/终态反例及有限审查，不能拿旧 kernel 协议验收。 |
+| 停止接受后的强停路径 | 主协调 + 组件智能体；BatchDetailPage/hooks | hook 新增 `acknowledgeAccepted()` 只允许确认已验证 accepted Operation 后清客户端信封，后端事实仍持久。BatchDetailPage 的 onAccepted 尚未调用它，需接通并验证普通停止→强停；未知结果仍保留原键，不能任意清除。 |
+| 未完成限定审查 | 审查智能体 | events 后端+前端、capability 查询、新目录已读但未形成最终审查结论；只补这些新增范围，不从头复审整个系统。 |
+| 组件细节 | 主协调 | TaskEvidence 未生成截图文案需与已批准文案核对；暂无实际附件生产/读取能力，不能宣称异常附件完整交付。日志全文搜索目前不支持，已显式说明，但仍须对照规格登记差异而非偷偷删除。 |
+| 管理端演示与截图 | QA 智能体；`scripts/qa-project-management-pm3.mjs` | 等新构建和前述定向检查通过，跑真实 UI 创建项目/自动化→启动 2 个任务→批次→日志/输入输出；再补停止、响应丢失、重连和重启。所有新增页面仍待同视口原图比对与用户手测。 |
+| 交付资料/提交 | 主协调 | 同步 contracts/API/types/覆盖与原卡实际证据，再按有界包提交。未来阶段证据保持空，不进入 PM4。 |
+
+恢复入口：先读本段并核对 `git status`，不要覆盖或丢弃保留的未提交文件；最后一个正式包是 Task 11。新页面尚未交付可手测版本，不用旧构建宣称本轮结果。Windows、其他架构、打包和用户手测均未执行。
+
+## 2026-09-15 12:30 恢复检查点（confirmed，Asia/Shanghai）
+
+用户已明确恢复 PM3，并再次排除 Studio demo 联合测试。现场 HEAD 仍为 `8aabc69`；暂停时保留的后端运行查询、调度、事件、证据与前端运行管理改动全部仍在，未发现遗失或被覆盖。原执行卡继续作为唯一执行卡。
+
+| 当前阻断 | 文件负责人 | 完成证据 | 依赖/下一步 |
+|---|---|---|---|
+| 运行事件接入与日志连续补读 | 主协调；`project-runs/events.ts`、`TaskDetailPage.tsx` | 前端断线补读、终态、损坏游标、卸载隔离及日志游标反例通过；后端事件合同已有定向证据 | 有限工程审查结论闭合后进入真实 UI 链 |
+| 普通停止接受后继续强停 | 主协调；`hooks.ts`、`BatchDetailPage.tsx` | 普通停止与强停同页交互反例、原 accepted 身份确认及未知结果保留测试通过 | 真实 CloakBrowser 慢任务链验证时序与资源清理 |
+| 启动明确拒绝与网络未知结果 | 管理组件智能体；`BatchLauncher.tsx` 及测试 | 422 使用真实 `ApiClientError`，网络未知保留原 key；定向组合通过 | 真实响应丢失场景仍待 Electron 注入验证 |
+| 最新管理 UI 成功链 | QA 智能体；`scripts/qa-project-management-pm3.mjs` | 脚本只将 success 标记为已接线；prepare-only 与未接线场景不会冒充通过 | 最新 build 后运行 UI 创建项目/自动化→2 Task→批次/日志/输入输出 |
+| 异常链、逐图审查和全量门槛 | 主协调 + QA | 历史真实后端 CloakBrowser 证据保留 | 正常 UI 链通过后依次执行；最终重跑全量，不能沿用暂停前结果 |
+
+下一可演示交付固定为：通过真实 Electron 界面创建项目和自动化，启动两个参数任务，并在批次详情、任务日志、输入输出页读到持久事实。目标时间 45–75 分钟；估算依据是页面与接口已经存在，主要不确定性为最新构建下的真实浏览器启动和 QA 定位器对齐。
+
+## 2026-09-15 15:50 最终权威检查点（confirmed，Asia/Shanghai）
+
+用户后续明确只完成管理功能，不联合测试 Studio demo。本节取代 05:32 暂停和 12:30 恢复段落作为当前状态；历史失败和过程证据保留，不回写为通过。
+
+| 范围 | 最终状态 | 证据 |
+|---|---|---|
+| Task 11 参数批次原子创建 | completed | 原 Task 11 审查与迁移证据保留；Task、输入快照、queued CoreRun 和 Operation 同一短事务。 |
+| Task 12–16 调度、查询、事件、页面、停止恢复 | completed | 后端 `d5f27ba`，前端 `bacbccf`；有限复审 8 项全部闭合，无新增 P0/P1。 |
+| 自动化管理 | completed in authorized scope | `management-runs/run-eSwQYK/result.json`；Studio 打开/返回仍从原包扣除，不冒充通过。 |
+| 真实管理 E2E | passed | 当前 HEAD 直接强停链 `qa-runs/uuid-runs-1789458500247/result.json`；成功/失败/普通停止/恢复/重启/隔离证据见 `pm3/verification.json`。 |
+| 视觉门槛 | passed, limited | gallery 03-runs/004–007 分别 88/87/87/86；当前 HEAD 另有 13 张同视口截图，未伪造新人工评分。 |
+| 工程门槛 | passed | 后端 1407 passed/8 skipped，前端 3224 passed，真实 CloakBrowser 8 passed；Ruff、mypy、OpenAPI、typecheck、lint、build、scripts、structure、sidecar/desktop smoke 通过。 |
+
+强停不再依赖自然慢页面。自然导航在约 1.6 秒内正常清理，历史 `run-sjkcAl` 因无法进入 30 秒准入而失败。最终专项只暂停当前隔离 Electron 后代树中唯一、命令匹配且记录了 PID/开始时间的真实 workflow worker；随后由管理 UI 完成普通停止、31 秒等待、固定短语确认和真实强停，并验证同一进程身份退出、旧代次撤权、资源清理及后续批次可运行。故障注入已明确标为 synthetic-os-process-pause，不冒充自然故障。
+
+原计划的独立 `qa-project-management-pm3-faults.mjs` 没有新增：响应丢失与重启在主 PM3 QA 脚本内，强停和安全错误注入在专项 UUID QA 脚本内，继续拆分只会复制 Electron 启动与清理代码。Task 19 的 `smoke:studio` 被用户后续范围指令排除；没有修改 Studio 画布、transport 或 bridge。
+
+最终交付报告为 `docs/project-management/implementation/pm3/verification.json`，手测为 `docs/project-management/implementation/pm3/manual-test.md`。PM3 当前授权管理范围通过；原合同因 Studio 往返及后续里程碑边界保持 partially_verified。Windows、其他 CPU 架构、打包应用和用户手动测试未执行。停在 PM3，不进入 PM4。

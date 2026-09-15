@@ -441,10 +441,10 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 本节仅描述 `codex/project-management-pm3` 实施分支，不能代表主目录已经合入。
 
 - `domain/workflows/{models,validation,references,catalog,run_validation}.py` 与 `application/workflows/service.py`、`infrastructure/database/workflows.py`：当前 WebRPA 包装文档、验证、能力预检、保存及原命令结果找回，Task 2 提交 `ffa8df2`。未知节点可保存，最小四节点链通过预检才可准备执行。
-- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；Task 4 已装配真实 worker，尚无项目管理端运行入口。
+- `domain/workflows/runtime.py`：PreparedContent、CoreRun、RunEvent 及状态/代次规则；`application/workflows/runtime.py` 为同服务调用者的 UoW 端口；`infrastructure/database/workflow_runtime{,_models}.py` 为持久化落点。Task 3 持久契约已通过双审及后端回归；Task 4 已装配真实 worker，项目管理端通过 project-runs 应用层消费该唯一执行核心。
 - `0010_workflow_document_commands` 保存文档命令事实；`0011_workflow_runtime_contracts` 从 0010 顺序升级，保留历史运行证据并中断旧活动执行。有准备/运行证据时禁止有损降级，空库允许降级。历史 PM0–PM2 报告不改写。
 - `application/workflows/{browser_resources,dispatcher}.py` 解析受控资源、持久状态与事件、调度容量和清理恢复；`infrastructure/process/{workflow_worker,workflow_recovery}.py` 管理进程及原生归属；`providers/browser/{workflow_executor,workflow_worker}.py` 只执行已确认四节点。`bootstrap/workflows.py` 注册生命周期及资源锁。
-- Task 4 真实后端与 CloakBrowser 链已核验；项目自动化配置与组件进行中，HTTP/批次/运行页面尚未交付。按本轮用户指令管理端优先，Studio demo 联合验收取消。
+- Task 4 真实后端与 CloakBrowser 链、自动化配置、运行 HTTP、批次/任务页面、停止和恢复均已交付并核验。按用户指令管理端优先，Studio demo 联合验收取消。
 
 - PM3 管理配置：`domain/project_automations` 负责配置规则和身份，`application/project_automations` 协调管理命令，`infrastructure/database/project_automations.py` 在短事务中保存配置及冻结 Operation。`adapters/http/workflow_catalog.py` 仅把既有 WorkflowService 事实提供给管理资源选择；不承担 Studio demo 联调。新增迁移 `pm03_project_automations` 顺接 `0011_workflow_runtime_contracts`。
 
@@ -458,4 +458,6 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 
 ### PM3 参数批次持久化（2026-09-15）
 
-`domain/project_runs` 定义有界参数启动、冻结快照及 CoreRun 状态投影；`application/project_runs/coordinator.py` 在一个调用者数据库事务中建立批次/任务/快照/queued Run/操作结果。`infrastructure/database/project_run_models.py` 与 `project_runs.py` 保存和读取三表，`pm04_project_runs` 接 `pm03_project_automations`；名称 pm04 是迁移编号，不是进入 PM4 业务阶段。原子创建之后的调度、HTTP、管理页面仍独立交付，不能把持久化当作运行界面完成。
+`domain/project_runs` 定义有界参数启动、冻结快照及 CoreRun 状态投影；`application/project_runs/coordinator.py` 在一个调用者数据库事务中建立批次/任务/快照/queued Run/操作结果。`infrastructure/database/project_run_models.py` 与 `project_runs.py` 保存和读取三表，`pm04_project_runs` 接 `pm03_project_automations`；名称 pm04 是迁移编号，不是进入 PM4 业务阶段。
+
+`application/project_runs/{scheduler,queries,events,evidence,resources}.py` 负责管理端调度、持久查询、事件补读、证据与资源冻结；`adapters/http/project_runs.py`、`project_run_events.py` 和 `project_run_evidence.py` 提供真实 HTTP/SSE。`renderer/domains/project-runs/` 提供启动、批次/任务目录、详情、日志、输入输出、证据、普通停止、强停和原命令恢复页面。SSE 只发失效通知，持久 HTTP 负责断线补读；强停准入来自核心权威状态。最终范围与证据见 `docs/project-management/implementation/pm3/verification.json`。

@@ -1,6 +1,6 @@
 # 项目管理里程碑覆盖表
 
-- 日期：2026-09-13；状态：PM2 P0–P5实现与机器/真实macOS应用验收通过，用户验收pending。Windows与packaged未执行；原编号及PM3–PM9未来业务证据保持不变。
+- 日期：2026-09-15；状态：PM3 当前授权的管理范围已通过机器与真实 macOS 应用验收，原 PM3 合同整体为 partially verified，用户验收 pending。Windows 与 packaged 未执行；PM4–PM9 保持 planned。
 - 依据：已确认设计 `906deda`；[里程碑正文](../../superpowers/plans/2026-09-13-project-management-milestones.md)。
 - [逐条规则/测试目标映射](coverage.json)包含48项功能、178条验收场景、18项执行契约和7项能力门槛。
 - “首次可用”只代表当阶段已接通的真实子范围；“完整验收”覆盖该条全部约束。PM9对所有功能做平台与真实应用回归。
@@ -166,3 +166,17 @@ DT-01/02/10/12登记部分自动与macOS arm64实际应用证据，详见pm2-dir
 - [构建HTML回归](../../migration/project-management-regression-qa/run-4K8zpg/built-html.json)：全局入口与既有模块回归。
 
 coverage.json仅提升PM2首次实施范围。DT-12在PM2完整验收后为verified；其余需要PM4/PM6/PM7/PM8补足运行占用、Sheets公式/来源、摘要或生命周期的功能保持partially_verified。PM3–PM9场景、Windows、packaged及用户验收没有被上述结果替代。
+
+## PM3 管理范围交付更新（2026-09-15）
+
+本节以 [PM3 最终机器报告](pm3/verification.json) 为权威当前记录，保留前文 PM0–PM2 历史事实。用户排除了 Studio demo 联合测试；该排除不等于原 PM3 合同中的 Studio 打开/返回已经通过。
+
+| 状态 | 条目 | 当前证据与边界 |
+|---|---|---|
+| verified | AU-04、FLOW-A01、XE-A01、XE-A04、XE-G02、PM3-B、PM3-C | 参数配置与参数型真实启动、原子事实、原键恢复、普通停止及强停均通过真实 Electron + FastAPI + SQLite + CloakBrowser 链。 |
+| partially_verified | PM-03；AU-01/02/03/05/07/08；RUN-01–05；ENV-02/08/09；XE-A06；XE-C01/02/03/05/06/07/11/16/17；XE-G01；PM3-A | PM3 子范围可用；等待人工、项目数据型执行、持久环境、完整生命周期或 Studio 往返仍属于后续里程碑或用户排除范围。 |
+| planned | OV-02、AU-06、DT-11、DATA-IN-01–12、XE-A05 以及 PM4–PM9 项目 | 没有用管理配置、参数任务或终态重启证据冒充未实现业务能力。 |
+
+强停使用明确声明的受控 OS 进程暂停：只定位隔离 Electron 后代树中唯一、命令匹配的真实 workflow worker，记录 PID 与开始时间后暂停；UI 走普通停止、30 秒宽限和真实强停，随后确认同一进程身份退出、旧执行代次撤权、资源清理及新批次可运行。当前 HEAD 证据见 pm3/qa-runs/uuid-runs-1789458500247/result.json。
+
+Windows、其他 CPU 架构、打包应用和用户手动测试均未执行。

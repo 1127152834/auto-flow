@@ -190,3 +190,19 @@ PM0交付时只执行静态核验。无pytest/Vitest业务测试、真实应用�
 本记录取代本文件较早的PM2“进行中”结论，但保留过程历史。PM2未实现的Sheets、项目Run/Task/lease、归档生命周期及PM3–PM9能力仍按原计划为空，未伪造成功。
 
 最终实施提交：`7ad1033` 页面及耐久编辑恢复、`79230f0` 实际应用脚本/证据、`d05bbe1` 数据能力状态及生成契约。最后重跑760后端/833前端全量和全部工程检查通过；修订文档另独立提交。
+
+## PM3 当前授权管理范围（2026-09-15）
+
+本节取代本文件早期“PM3 planned”的当前解释，不改写历史检查点。权威报告为 [pm3/verification.json](pm3/verification.json)。
+
+| 包 | 当前结果 | 实际证据与剩余边界 |
+|---|---|---|
+| PM3-A 自动化管理 | partially_verified | 管理目录、四页签、统一保存、校验、资源摘要、冲突与响应丢失恢复已通过 `pm3/management-runs/run-eSwQYK/result.json`；原包中的 Studio 打开/返回由用户排除，未标通过。 |
+| PM3-B 参数型真实启动 | verified | Batch、Task、原始输入快照、queued CoreRun 与 Operation 同一短事务；真实 UI 双任务及 CloakBrowser 输入、点击、读取见 `pm3/qa-runs/uuid-runs-1789458500247/result.json`。 |
+| PM3-C 诊断与停止 | verified | 批次/任务目录、日志、输入输出、失败 PNG、普通停止、强停、恢复、重启和隔离均有真实证据；强停只用受控 OS 暂停制造不响应 worker，产品停止链和持久事实保持真实。 |
+| 独立审查 | passed | 新增 SSE、恢复身份、终态刷新、强停门槛、证据分页、对象 URL 与禁用状态的 8 项问题全部闭合，无新增 P0/P1。 |
+| 用户验收 | pending | 手测入口 `pm3/manual-test.md`。 |
+
+产品与证据提交包括 `d5f27ba`、`bacbccf`、`bdff9dd` 及其前置自动化管理提交。后端全量 1407 passed/8 skipped，前端全量 3224 passed，真实 CloakBrowser 定向 8 passed；Ruff、mypy、OpenAPI、类型、lint、build、脚本、结构、sidecar 和 desktop smoke 通过。Studio smoke 按用户后续范围指令排除。
+
+Windows、其他 CPU 架构、打包应用和用户手动测试未执行。PM4–PM9 没有被提前实现或标绿。
