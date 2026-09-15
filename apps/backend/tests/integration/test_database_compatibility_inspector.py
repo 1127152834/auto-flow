@@ -60,7 +60,7 @@ def test_inspector_upgrades_a_copy_and_preserves_source_and_rows(
     assert _fingerprint(source) == before
     assert report["source"]["unchanged"] is True
     assert report["source"]["revision"] == ["0008_workflow_debug"]
-    assert report["target"]["revision"] == ["0011_merge_android_project_data"]
+    assert report["target"]["revision"] == ["0012_workflow_document_requests"]
     assert report["comparison"]["preserved"] is True
     assert report["comparison"]["tables"]["workflow_documents"]["rowCount"] == {
         "before": 1,

@@ -19,7 +19,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["0011_merge_android_project_data"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0012_workflow_document_requests"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -40,7 +40,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0011_merge_android_project_data",)
+            ("0012_workflow_document_requests",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
@@ -112,6 +112,6 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
     with sqlite3.connect(paths.database) as connection:
         after = {table: connection.execute(f"SELECT * FROM {table}").fetchall() for table in statements}
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0011_merge_android_project_data",)
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone() == ("0012_workflow_document_requests",)
     assert after == before
     assert artifact.read_bytes() == b'{"saved":"evidence"}'

@@ -129,11 +129,11 @@
 - Create: `apps/backend/tests/unit/workflows/test_documents.py`
 - Create: `apps/backend/tests/integration/test_workflow_repository.py`
 
-- [ ] 用前端真实 fixture 写保存往返、未知字段保留、`selected/dragging` 不持久化、稳定 ID、revision 冲突、保存失败回滚和保存中继续编辑的失败测试。
-- [ ] 定义 `WorkflowDocumentRepository`，接口至少包含 `list_summaries(workspace_id, cursor, limit)`、`get(workspace_id, workflow_id)`、`create(snapshot, client_request_id)`、`update(snapshot, expected_revision, client_request_id)`、`delete(expected_revision)`。
-- [ ] 服务生成 revision、时间和内容摘要；文档与布局在同一事务写入。
-- [ ] 使用现有 `0005_workflow_documents` 表意；若字段不足，只在 B0 唯一 head 后新增一条增量迁移，不改 `0005`。
-- [ ] 运行 unit/repository 测试，并以 SQLite 故障注入验证原子性。
+- [x] 用前端真实 fixture 写保存往返、未知字段保留、`selected/dragging` 不持久化、稳定 ID、revision 冲突、保存失败回滚和保存中继续编辑的失败测试。
+- [x] 定义 `WorkflowDocumentRepository`，接口至少包含 `list_summaries(workspace_id, cursor, limit)`、`get(workspace_id, workflow_id)`、`create(snapshot, client_request_id)`、`update(snapshot, expected_revision, client_request_id)`、`delete(expected_revision)`。
+- [x] 服务生成 revision、时间和内容摘要；文档与布局在同一事务写入。
+- [x] 使用现有 `0005_workflow_documents` 表意；若字段不足，只在 B0 唯一 head 后新增一条增量迁移，不改 `0005`。
+- [x] 运行 unit/repository 测试，并以 SQLite 故障注入验证原子性。
 
 ### Task B1.2：迁入执行器注册、图解析和变量内核
 

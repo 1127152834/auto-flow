@@ -15,10 +15,13 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0011_merge_android_project_data"]
+    assert scripts.get_heads() == ["0012_workflow_document_requests"]
     assert scripts.get_revision("0011_merge_android_project_data").down_revision == (
         "0010_android_fleet",
         "0009_merge_project_data",
+    )
+    assert scripts.get_revision("0012_workflow_document_requests").down_revision == (
+        "0011_merge_android_project_data"
     )
 
 

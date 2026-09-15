@@ -1,0 +1,40 @@
+{
+  "evidenceId": "BE-B1-document-persistence-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.1 passed",
+  "capabilities": [
+    "工作流文档与画布布局同事务保存",
+    "未知文档字段保存往返",
+    "selected 与 dragging 不进入持久化文档",
+    "重复节点标识与悬空连线拒绝保存",
+    "缺少业务参数的未完成流程允许保存",
+    "稳定请求 ID 创建与更新幂等",
+    "expectedRevision 冲突保留当前文档",
+    "数据库写入故障回滚文档和幂等收据",
+    "摘要按更新时间分页"
+  ],
+  "migration": {
+    "revision": "0012_workflow_document_requests",
+    "parent": "0011_merge_android_project_data",
+    "purpose": "工作流写入请求的持久化幂等收据"
+  },
+  "tests": {
+    "focused": {
+      "command": "cd apps/backend && uv run pytest tests/unit/workflows/test_documents.py tests/integration/test_workflow_repository.py -q",
+      "exitCode": 0,
+      "result": "10 passed"
+    },
+    "migrationRegression": {
+      "command": "cd apps/backend && uv run pytest tests/unit/workflows/test_documents.py tests/integration/test_workflow_repository.py tests/integration/test_migration_heads.py tests/integration/test_studio_migration_compatibility.py tests/integration/test_database_compatibility_inspector.py tests/integration/test_project_migration.py tests/integration/test_merged_model_migrations.py tests/integration/test_project_data_migrations.py tests/integration/test_project_data_status_migration.py -q",
+      "exitCode": 0,
+      "result": "52 passed, 2 dependency deprecation warnings"
+    },
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "contractIntegrationPending": [
+    "B1.6 HTTP 路由",
+    "正式 Studio 当前 workflowApi.update 未携带 expectedRevision/clientRequestId；B1.6 需做最小传输适配，不改变 UI"
+  ],
+  "userDatabaseModified": false
+}
