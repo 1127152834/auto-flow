@@ -1,0 +1,78 @@
+{
+  "evidenceId": "BE-B4-advanced-data-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "gitHead": "eca3686",
+  "result": "26 approved advanced list, dictionary and CSV nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution and independent P1 review; formal Electron UI remains pending",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "files": [
+      {"path": "backend/app/executors/list_advanced.py", "sha256": "452c025f24c6ec86c2ea1d25addf4056f8ca12eb283596fd77aeb7330c48f9a4"},
+      {"path": "backend/app/executors/dict_advanced.py", "sha256": "87a5e3dd065e4b21b6c0c78c31de867f4c99ff7f8bb527045990c5f6878bb707"},
+      {"path": "backend/app/executors/string_convert.py", "sha256": "5e9cd026ffdf5692cbf5d39f25c2fad949f9140f5ef34872e37906429c54c131"},
+      {"path": "backend/app/utils/safe_expr.py", "sha256": "7b7640e5b9b8fd8ffc5ec625162663e317f88da9629fb7ad55df3159d608793d"}
+    ]
+  },
+  "migratedTypes": [
+    "list_reverse", "list_find", "list_count", "list_filter", "list_map",
+    "list_merge", "list_flatten", "list_chunk", "list_remove_empty",
+    "list_intersection", "list_union", "list_difference",
+    "list_cartesian_product", "list_shuffle", "list_sample", "dict_merge",
+    "dict_filter", "dict_map_values", "dict_invert", "dict_sort",
+    "dict_deep_copy", "dict_get_path", "dict_flatten", "csv_parse",
+    "csv_generate", "list_to_string_advanced"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入",
+    "importsExecutionContext": "AutoFlow必要适配",
+    "frontendFieldAliases": "AutoFlow必要适配：只在现有前端字段与冻结字段不同时保留双字段兼容",
+    "cancellation": "AutoFlow必要适配：长循环每256项让出并检查；所有变量提交在ExecutionContext边界再次检查取消",
+    "capacity": "AutoFlow必要适配：笛卡尔积、集合、嵌套、表达式AST和表达式结果使用有界限制",
+    "credentialErrors": "AutoFlow必要适配：含凭据引用的表达式错误不序列化已解析秘密",
+    "invalidEnums": "已批准增强：导入或变量化配置中的未知枚举明确失败，不静默返回错误数据"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b4_advanced_data_executor_parity.py",
+      "result": "162 passed in the family suite",
+      "coverage": "95 frozen normal/error payloads plus exact 26-type inventory, browser-free declarations, cancellation, capacity, recursion/cycle, credential redaction, invalid enum and transport-boundary cases"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "all 26 types registered"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_pure_data_family_runs_through_http_without_browser_requirement",
+      "result": "the real coordinator accepts the combined 81-node migrated B4 document with requiresBrowser=false"
+    },
+    "workerWithoutBrowser": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_runs_advanced_data_without_browser",
+      "result": "CSV parse and formatting followed by safe-expression list filtering and mapping executed through the production worker without CloakBrowser"
+    },
+    "combinedB4Regression": {
+      "command": "uv run pytest -q test_b4_data_structure_executor_parity.py test_b4_math_family_executor_parity.py test_b4_utility_tools_executor_parity.py test_b4_advanced_data_executor_parity.py",
+      "result": "560 passed before the final white-list call capacity case; the final advanced suite and affected integration set then passed 165 tests"
+    }
+  },
+  "review": {
+    "method": "independent P0/P1 review and reproduction",
+    "result": "four findings closed: unbounded expression materialization, post-cancel writes, credential error leakage and invalid enum success",
+    "remainingP0P1": 0,
+    "confidence": "high"
+  },
+  "quality": {"ruff": "passed", "mypy": "passed", "diffCheck": "passed"},
+  "productionSha256": {
+    "list_advanced.py": "2c4d0d248f56bdf6199507c037a247aac4928cefd9267fad9d9d8170ece8dcf0",
+    "dict_advanced.py": "31a8560d3a39319f7c2bf8de287d0ec56761c4092e4acf472daa5b3b4ed4248d",
+    "string_convert.py": "55b89f518986a4afe3800750b7870e2da145a564f5f28fbcaea8b90883f9ef5d",
+    "safe_expr.py": "b8f22ae9fe753e616f85b7fb3d67e0992c9abe5e8d249443dc8630547e738a03"
+  },
+  "notClaimed": [
+    "formal Electron UI execution of the 26-node family",
+    "rebuilt packaged sidecar execution",
+    "macOS Intel verification",
+    "Windows verification"
+  ],
+  "userDatabaseModified": false
+}
