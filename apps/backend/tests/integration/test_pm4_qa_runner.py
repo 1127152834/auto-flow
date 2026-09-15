@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.tables import DataTableService
+from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.projects.models import ProjectError
@@ -19,7 +20,10 @@ from autoflow.infrastructure.database.project_data import SqlAlchemyProjectData
 from autoflow.infrastructure.database.project_data_catalog import (
     SqlAlchemyProjectDataCatalog,
 )
-from autoflow.infrastructure.database.project_data_models import DataRecordRow
+from autoflow.infrastructure.database.project_data_models import (
+    DataFieldRow,
+    DataRecordRow,
+)
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectRecordLeaseRow,
@@ -31,7 +35,7 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
 )
 from tests.integration.test_project_run_data_start import _setup, uid
 from tests.qa.pm4_fake_executor import CREATE_ACCOUNT, PauseBarrier
-from tests.qa.pm4_sidecar import _create_targets, _status_inputs
+from tests.qa.pm4_sidecar import _b_capability_manifest, _create_targets, _status_inputs
 from tests.qa.pm4_v1_runner import PM4V1FakeRunner
 
 
@@ -81,6 +85,42 @@ def _grant_account_target(coordinator, account: dict) -> None:
     coordinator._resolve_status_input_ids = lambda automation: (
         automation.input_plan["inputs"][1]["inputId"],
     )
+
+
+def _grant_b_capabilities(coordinator, account: dict) -> None:
+    _grant_account_target(coordinator, account)
+
+    def manifest(session, _automation):
+        field_ids = list(
+            session.scalars(
+                select(DataFieldRow.id).where(
+                    DataFieldRow.project_id == account["projectId"],
+                    DataFieldRow.table_id == account["tableId"],
+                    DataFieldRow.dataset_generation == account["datasetGeneration"],
+                )
+            )
+        )
+        return {
+            "tableGrants": [
+                {
+                    "tableId": account["tableId"],
+                    "datasetGeneration": account["datasetGeneration"],
+                    "operations": [
+                        "readRecord",
+                        "queryRecords",
+                        "updateRecord",
+                        "deleteRecord",
+                        "addField",
+                        "ensureField",
+                        "modifyField",
+                    ],
+                    "fieldIds": field_ids,
+                    "readPurposes": ["workflow"],
+                }
+            ]
+        }
+
+    coordinator._resolve_data_capability_manifest = manifest
 
 
 @pytest.mark.asyncio
@@ -154,6 +194,71 @@ async def test_runner_completes_real_writes_terminal_facts_and_lease_release(tmp
         "账号记录": "已新增 1 条",
     }
     assert await PM4V1FakeRunner(factory).tick() is None
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_b_runner_projects_every_explicit_management_data_operation(tmp_path):
+    factory, project_id, automation, coordinator = _setup(tmp_path)
+    status, account = _target_data(factory, project_id, automation)
+    _grant_b_capabilities(coordinator, account)
+    batch = coordinator.start(
+        project_id,
+        automation.automation_id,
+        uid(),
+        {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+        },
+    )[0]
+
+    outcome = await PM4V1FakeRunner(factory, mode="b").tick()
+
+    assert outcome is not None and outcome.finalized
+    assert outcome.result.status == "succeeded"
+    task = coordinator.list_tasks(project_id, batch.batch_id)[0]
+    detail = ProjectRunQueries(factory).task_detail(project_id, task.task_id)
+    kinds = {item["kind"] for item in detail["dataWrites"]}
+    assert kinds >= {
+        "query",
+        "read",
+        "statusChange",
+        "recordCreated",
+        "recordUpdated",
+        "recordDeleted",
+        "fieldAdded",
+        "fieldEnsured",
+        "fieldModified",
+    }
+    with factory() as session:
+        active_accounts = list(
+            session.scalars(
+                select(DataRecordRow).where(
+                    DataRecordRow.project_id == project_id,
+                    DataRecordRow.table_id == account["tableId"],
+                    DataRecordRow.deleted.is_(False),
+                )
+            )
+        )
+        email = session.scalar(
+            select(DataRecordRow).where(
+                DataRecordRow.project_id == project_id,
+                DataRecordRow.table_id == automation.input_plan["inputs"][1]["tableId"],
+                DataRecordRow.deleted.is_(False),
+            )
+        )
+        added_field = session.scalar(
+            select(DataFieldRow).where(
+                DataFieldRow.project_id == project_id,
+                DataFieldRow.table_id == account["tableId"],
+                DataFieldRow.key == "qa_note",
+            )
+        )
+    assert len(active_accounts) == 1
+    assert email is not None and email.status_id == status["statusId"]
+    assert added_field is not None and added_field.name == "执行备注"
     factory.dispose()
 
 
@@ -525,6 +630,42 @@ def test_missing_qa_write_grant_rejects_start_without_durable_run_facts(tmp_path
             session.scalar(select(func.count()).select_from(ProjectOperationRow))
             == operation_count
         )
+    factory.dispose()
+
+
+def test_b_sidecar_manifest_grants_only_account_operations_and_fields(tmp_path):
+    factory, project_id, automation, _coordinator = _setup(tmp_path)
+    _status, account = _target_data(factory, project_id, automation)
+
+    with factory() as session:
+        manifest = _b_capability_manifest(session, automation)
+        field_ids = list(
+            session.scalars(
+                select(DataFieldRow.id)
+                .where(DataFieldRow.table_id == account["tableId"])
+                .order_by(DataFieldRow.position, DataFieldRow.id)
+            )
+        )
+
+    assert manifest == {
+        "tableGrants": [
+            {
+                "tableId": account["tableId"],
+                "datasetGeneration": account["datasetGeneration"],
+                "operations": [
+                    "readRecord",
+                    "queryRecords",
+                    "updateRecord",
+                    "deleteRecord",
+                    "addField",
+                    "ensureField",
+                    "modifyField",
+                ],
+                "fieldIds": field_ids,
+                "readPurposes": ["workflow"],
+            }
+        ]
+    }
     factory.dispose()
 
 

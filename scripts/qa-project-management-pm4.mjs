@@ -116,12 +116,16 @@ export async function main(cliArgs = process.argv.slice(2)) {
 
   async function launch() {
     const previous = process.env.AUTOFLOW_PM4_QA
+    const previousMode = process.env.AUTOFLOW_PM4_QA_MODE
     process.env.AUTOFLOW_PM4_QA = '1'
+    process.env.AUTOFLOW_PM4_QA_MODE = 'b'
     try {
       desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${workspace}`, '--inspect=0'], cliArgs: [] })
     } finally {
       if (previous === undefined) delete process.env.AUTOFLOW_PM4_QA
       else process.env.AUTOFLOW_PM4_QA = previous
+      if (previousMode === undefined) delete process.env.AUTOFLOW_PM4_QA_MODE
+      else process.env.AUTOFLOW_PM4_QA_MODE = previousMode
     }
     renderer = desktop.cdp
     native = await connectCdp(desktop.inspectorUrl)
@@ -417,15 +421,25 @@ print(created.workflow_id); factory.dispose()`
     await visible('输入与输出')
     await click('输入与输出', '[role=tab]')
     await visible('原始数据输入')
-    await visible('任务数据写入')
+    await visible('项目数据操作')
+    for (const label of ['查询记录', '读取记录', '编辑记录', '删除记录', '变更状态', '新增记录', '新增字段', '确保字段', '修改字段']) await visible(label)
+    await waitFor(renderer, `(()=>{const table=document.querySelector('table[aria-label="数据输入预览结果"]');const text=table?.innerText??'';return table?.querySelectorAll('tbody tr').length===2&&text.includes('人员输入')&&text.includes('邮箱输入')&&text.includes('张三')&&text.includes('zhangsan@example.test')})()`, '两条不可变原始输入显示在输入表格', 30_000)
+    await waitFor(renderer, `(()=>{const table=document.querySelector('table[aria-label="项目数据操作结果"]');const text=table?.innerText??'';return table?.querySelectorAll('tbody tr').length>=9&&text.includes('记录 ·')&&text.includes('字段 QA 备注')&&text.includes('字段 执行备注')})()`, '提交事实和稳定引用显示在数据操作表格', 30_000)
     await wait(2800)
     await capture('05-task-input-output', '03-runs/006-task-input-output-approved-7af0aa.png')
+    await renderer.evaluate(`(()=>{document.querySelector('table[aria-label="数据输入预览结果"]')?.scrollIntoView({block:'center'});return true})()`)
+    await wait(300)
+    await capture('05a-task-original-inputs', '03-runs/006-task-input-output-approved-7af0aa.png')
+    await renderer.evaluate(`(()=>{document.querySelector('table[aria-label="项目数据操作结果"] tbody tr:last-child')?.scrollIntoView({block:'center'});return true})()`)
+    await wait(300)
+    await capture('05b-task-data-operation-tail', '03-runs/006-task-input-output-approved-7af0aa.png')
     const task = await api(runtime, `/projects/${project.projectId}/tasks/${taskSummary.taskId}`)
     const events = await api(runtime, `/projects/${project.projectId}/tasks/${taskSummary.taskId}/events?afterSequence=0`)
     const markerEvent = events.items.find(item => item.kind === 'output' && item.payload?.value?.executor === 'fake')
     assert.deepEqual(markerEvent?.payload?.value, boundary)
     assert.equal(task.inputSnapshot.inputs.length, 2)
-    assert.deepEqual(task.dataWrites.map(item => item.kind).sort(), ['recordCreated', 'statusChange'])
+    const dataWriteKinds = new Set(task.dataWrites.map(item => item.kind))
+    assert.deepEqual(dataWriteKinds, new Set(['query', 'read', 'recordUpdated', 'recordDeleted', 'statusChange', 'recordCreated', 'fieldAdded', 'fieldEnsured', 'fieldModified']))
 
     const personAfter = (await api(runtime, `/projects/${project.projectId}/tables/${person.table.tableId}/records?datasetGeneration=${encodeURIComponent(person.table.datasetGeneration)}`)).items[0]
     const emailAfter = (await api(runtime, `/projects/${project.projectId}/tables/${email.table.tableId}/records?datasetGeneration=${encodeURIComponent(email.table.datasetGeneration)}`)).items[0]
@@ -438,7 +452,15 @@ print(created.workflow_id); factory.dispose()`
     assert.equal(statuses.find(item => item.statusId === emailBefore.statusId)?.name, '待使用')
     assert.equal(statuses.find(item => item.statusId === emailAfter.statusId)?.name, '已使用')
     assert.equal(accountsAfter.length, 1, '账号记录必须只新增一次')
-    checkpoint('真实管理 API/SQLite 事实已核对：人员不变、邮箱仅状态推进、账号恰好一条、任务含两个原始输入和两条显式写入。')
+    const accountFields = (await api(runtime, `/projects/${project.projectId}/tables/${account.table.tableId}/fields`)).items
+    const resultFieldId = accountFields.find(item => item.key === 'result')?.ref.fieldId
+    const accountValues = accountsAfter[0].values
+    const resultValue = Array.isArray(accountValues)
+      ? accountValues.find(item => item.fieldId === resultFieldId)?.value
+      : accountValues[resultFieldId]
+    assert.equal(resultValue, 'PM4-B-UPDATED')
+    assert.equal(accountFields.find(item => item.key === 'qa_note')?.name, '执行备注')
+    checkpoint('真实管理 API/SQLite 事实已核对：人员不变、邮箱最终为已使用、账号恰好一条且被显式更新，任务展示查询、读取、增改删、状态清空/设置及字段新增/确保/修改证据。')
 
     const facts = { projectId: project.projectId, batchId: batch.batchId, taskId: taskSummary.taskId, personBefore, personAfter: canonicalRecord(personAfter), emailBefore, emailAfter: canonicalRecord(emailAfter), accountCount: accountsAfter.length, taskInputAliases: task.inputSnapshot.inputs.map(item => item.alias), dataWrites: task.dataWrites, executionBoundary: markerEvent.payload.value }
     await writeFile(join(evidence, 'v1-facts.json'), `${JSON.stringify(facts, null, 2)}\n`)

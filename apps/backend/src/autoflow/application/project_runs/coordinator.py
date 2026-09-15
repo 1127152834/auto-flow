@@ -16,6 +16,7 @@ from autoflow.domain.project_automations.models import (
     AutomationRecord,
     automation_to_dict,
 )
+from autoflow.domain.project_data.capabilities import TableCapabilityGrant
 from autoflow.domain.project_runs.models import (
     Batch,
     BatchCounts,
@@ -23,7 +24,7 @@ from autoflow.domain.project_runs.models import (
     batch_to_dict,
 )
 from autoflow.domain.project_runs.rules import validate_batch_start
-from autoflow.domain.projects.models import ProjectOperation
+from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, thaw_json
 from autoflow.infrastructure.database.models import (
     ProjectOperationRow,
@@ -37,7 +38,10 @@ from autoflow.infrastructure.database.project_automations import (
     _record as automation_record,
 )
 from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInputGroups
-from autoflow.infrastructure.database.project_data_models import DataTableRow
+from autoflow.infrastructure.database.project_data_models import (
+    DataFieldRow,
+    DataTableRow,
+)
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectTaskInputSnapshotRow,
@@ -70,35 +74,47 @@ class ProjectRunCoordinator:
         | None = None,
         resolve_status_input_ids: Callable[[AutomationRecord], Sequence[str]]
         | None = None,
+        resolve_data_capability_manifest: Callable[
+            [Session, AutomationRecord], dict[str, Any]
+        ]
+        | None = None,
     ) -> None:
         self._factory, self._core = session_factory, core_runtime
         self._resolve_resources = resolve_resources
         self._capabilities = tuple(available_capabilities)
-        self._resolve_create_record_targets = (
-            resolve_create_record_targets or (lambda _session, _automation: ())
+        self._resolve_create_record_targets = resolve_create_record_targets or (
+            lambda _session, _automation: ()
         )
-        self._resolve_status_input_ids = (
-            resolve_status_input_ids or (lambda _automation: ())
+        self._resolve_status_input_ids = resolve_status_input_ids or (
+            lambda _automation: ()
+        )
+        self._resolve_data_capability_manifest = resolve_data_capability_manifest or (
+            lambda _session, _automation: {}
         )
 
     def inspect_capabilities(self, workflow_id: str) -> list[dict[str, Any]]:
         # Workflow shape and actual resource availability are checked separately.
         # This is the same installed worker capability used by atomic preparation.
-        return [{
-            "capability": "browser.cloakbrowser",
-            "required": True,
-            "available": "browser.cloakbrowser" in self._capabilities,
-            "reason": "本地浏览器执行能力" if "browser.cloakbrowser" in self._capabilities else "本地浏览器执行能力不可用",
-        }, {
-            "capability": "project.data",
-            "required": False,
-            "available": "project.data" in self._capabilities,
-            "reason": (
-                "项目数据执行能力可用"
-                if "project.data" in self._capabilities
-                else "项目数据执行能力未接入"
-            ),
-        }]
+        return [
+            {
+                "capability": "browser.cloakbrowser",
+                "required": True,
+                "available": "browser.cloakbrowser" in self._capabilities,
+                "reason": "本地浏览器执行能力"
+                if "browser.cloakbrowser" in self._capabilities
+                else "本地浏览器执行能力不可用",
+            },
+            {
+                "capability": "project.data",
+                "required": False,
+                "available": "project.data" in self._capabilities,
+                "reason": (
+                    "项目数据执行能力可用"
+                    if "project.data" in self._capabilities
+                    else "项目数据执行能力未接入"
+                ),
+            },
+        ]
 
     def start(
         self, project_id: str, automation_id: str, key: str, payload: dict[str, Any]
@@ -175,6 +191,11 @@ class ProjectRunCoordinator:
                 raise ProjectRunError("NOT_FOUND", "自动化不存在", 404)
             automation = automation_record(row)
             has_data_inputs = bool(automation.input_plan.get("inputs"))
+            declared_table_grants = self._validate_capability_manifest(
+                session,
+                automation,
+                self._resolve_data_capability_manifest(session, automation),
+            )
             start = validate_batch_start(
                 automation,
                 payload,
@@ -252,16 +273,50 @@ class ProjectRunCoordinator:
                     "workflowRevision": workflow.revision,
                 }
             )
-            create_record_targets = (
-                [
-                    {"tableId": table_id, "datasetGeneration": generation}
-                    for table_id, generation in self._resolve_create_record_targets(
-                        session, automation
+            create_record_targets = [
+                {"tableId": table_id, "datasetGeneration": generation}
+                for table_id, generation in self._resolve_create_record_targets(
+                    session, automation
+                )
+            ]
+            table_grants: list[dict[str, Any]] = []
+            for target in create_record_targets:
+                field_ids = list(
+                    session.scalars(
+                        select(DataFieldRow.id).where(
+                            DataFieldRow.project_id == project_id,
+                            DataFieldRow.table_id == target["tableId"],
+                            DataFieldRow.dataset_generation
+                            == target["datasetGeneration"],
+                        )
                     )
-                ]
+                )
+                table_grants.append(
+                    {
+                        **target,
+                        "operations": ["createRecord"],
+                        "fieldIds": field_ids,
+                        "readPurposes": [],
+                    }
+                )
+            table_grants.extend(declared_table_grants)
+            status_input_ids = (
+                list(self._resolve_status_input_ids(automation))
                 if has_data_inputs
                 else []
             )
+            has_data_capability = bool(
+                has_data_inputs
+                or create_record_targets
+                or table_grants
+                or status_input_ids
+            )
+            if has_data_capability and "project.data" not in self._capabilities:
+                raise ProjectRunError(
+                    "CAPABILITY_UNAVAILABLE",
+                    "项目数据执行能力不可用",
+                    409,
+                )
             operation = ProjectOperation(
                 operation_id,
                 project_id,
@@ -316,17 +371,18 @@ class ProjectRunCoordinator:
                     },
                     resource_request=resources,
                     capability_bindings=(
-                        [{
-                            "capability": "project.data",
-                            "projectId": project_id,
-                            "taskId": task_id,
-                            "executionGeneration": 1,
-                            "createRecordTargets": create_record_targets,
-                            "statusInputIds": list(
-                                self._resolve_status_input_ids(automation)
-                            ),
-                        }]
-                        if has_data_inputs
+                        [
+                            {
+                                "capability": "project.data",
+                                "projectId": project_id,
+                                "taskId": task_id,
+                                "executionGeneration": 1,
+                                "createRecordTargets": create_record_targets,
+                                "tableGrants": table_grants,
+                                "statusInputIds": status_input_ids,
+                            }
+                        ]
+                        if has_data_capability
                         else []
                     ),
                     created_at=now,
@@ -383,6 +439,74 @@ class ProjectRunCoordinator:
                 session.invalidate()
                 raise
             return batch, result_operation, False
+
+    @staticmethod
+    def _validate_capability_manifest(
+        session: Session,
+        automation: AutomationRecord,
+        manifest: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        try:
+            if not isinstance(manifest, dict):
+                raise TypeError
+            if set(manifest) - {"tableGrants"}:
+                raise ValueError
+            raw_grants = manifest.get("tableGrants", [])
+            if not isinstance(raw_grants, list):
+                raise TypeError
+
+            grants: list[dict[str, Any]] = []
+            for raw in raw_grants:
+                if not isinstance(raw, dict) or set(raw) != {
+                    "tableId",
+                    "datasetGeneration",
+                    "operations",
+                    "fieldIds",
+                    "readPurposes",
+                }:
+                    raise ValueError
+                grant = TableCapabilityGrant(
+                    raw["tableId"],
+                    raw["datasetGeneration"],
+                    frozenset(raw["operations"]),
+                    frozenset(raw["fieldIds"]),
+                    frozenset(raw["readPurposes"]),
+                )
+                table = session.get(DataTableRow, grant.table_id)
+                if (
+                    table is None
+                    or table.project_id != automation.project_id
+                    or not table.published
+                    or table.current_generation != grant.dataset_generation
+                ):
+                    raise ValueError
+                existing_fields = set(
+                    session.scalars(
+                        select(DataFieldRow.id).where(
+                            DataFieldRow.project_id == automation.project_id,
+                            DataFieldRow.table_id == grant.table_id,
+                            DataFieldRow.dataset_generation == grant.dataset_generation,
+                        )
+                    )
+                )
+                if not grant.field_ids <= existing_fields:
+                    raise ValueError
+                grants.append(
+                    {
+                        "tableId": grant.table_id,
+                        "datasetGeneration": grant.dataset_generation,
+                        "operations": sorted(grant.operations),
+                        "fieldIds": sorted(grant.field_ids),
+                        "readPurposes": sorted(grant.read_purposes),
+                    }
+                )
+            return grants
+        except (KeyError, TypeError, ValueError, ProjectError) as exc:
+            raise ProjectRunError(
+                "CAPABILITY_FACTS_INCOMPLETE",
+                "工作流数据能力声明无效",
+                409,
+            ) from exc
 
     def get_batch(self, project_id: str, batch_id: str) -> Batch:
         with self._factory() as session:
@@ -465,7 +589,9 @@ class ProjectRunCoordinator:
                     {
                         "inputId": item["inputId"],
                         "alias": item["alias"],
-                        "tableDisplay": table.name if table is not None else "数据表已失效",
+                        "tableDisplay": table.name
+                        if table is not None
+                        else "数据表已失效",
                         "recordDisplay": (
                             f"{ref.record_key.type} · {ref.record_key.value}"
                             if ref is not None
@@ -514,9 +640,7 @@ class ProjectRunCoordinator:
 
 def _present_input_issue(message: str) -> str:
     if message.startswith("ambiguous value ") and "; records " in message:
-        value, records = message.removeprefix("ambiguous value ").split(
-            "; records ", 1
-        )
+        value, records = message.removeprefix("ambiguous value ").split("; records ", 1)
         return f"关联值 {value} 同时匹配记录 {records}，请先清理重复数据"
     messages = {
         "input mode is invalid": "输入模式无效",

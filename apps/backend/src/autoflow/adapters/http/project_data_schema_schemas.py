@@ -47,6 +47,11 @@ class DataSchemaIssue(ApiModel):
     client_id: str | None
     message: str
     affected_records: int | None
+    task_id: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    run_id: str | None = Field(default=None, exclude_if=lambda value: value is None)
+    reference_sources: list[str] = Field(
+        default_factory=list, exclude_if=lambda value: not value
+    )
 
 
 class DataSchemaReferenceAvailability(ApiModel):

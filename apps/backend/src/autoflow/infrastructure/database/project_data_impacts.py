@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.project_data.rules import validate_field, validate_value
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.runtime import TERMINAL_STATUSES
 
 from .models import ProjectRow
 from .project_data_models import (
@@ -23,6 +24,8 @@ from .project_data_models import (
     DataRecordRow,
     DataTableRow,
 )
+from .project_run_models import ProjectTaskInputSnapshotRow, ProjectTaskRow
+from .workflow_runtime_models import WorkflowRunRow
 
 
 class SqlAlchemyProjectDataImpacts:
@@ -172,6 +175,22 @@ def _field_facts(
                 "Identity field type cannot be changed",
             )
         )
+    structural_change = any(
+        change[key] != current[key] for key in ("key", "type", "required", "validation")
+    )
+    active_dependencies = (
+        active_task_field_dependencies(session, project_id, table, field.id)
+        if structural_change
+        else []
+    )
+    blockers.extend(
+        _blocker(
+            "ACTIVE_TASK_FIELD_DEPENDENCY",
+            dependency,
+            "An active task depends on this field contract",
+        )
+        for dependency in active_dependencies
+    )
     revisions = {
         "tableRevision": table.table_revision,
         "fieldRevision": field.field_revision,
@@ -187,6 +206,7 @@ def _field_facts(
                 "sourceKind": table.source_kind,
                 "formula": field.formula,
                 "writable": field.writable,
+                "activeTaskDependencies": active_dependencies,
             }
         )
     )
@@ -226,6 +246,107 @@ def _field_facts(
         "blockers": blockers,
     }
     return report, hasher.hexdigest(), count
+
+
+def active_task_field_dependencies(
+    session: Session,
+    project_id: str,
+    table: DataTableRow,
+    field_id: str,
+) -> list[dict[str, Any]]:
+    dependencies: list[dict[str, Any]] = []
+    rows = session.execute(
+        select(ProjectTaskRow, ProjectTaskInputSnapshotRow, WorkflowRunRow)
+        .join(
+            ProjectTaskInputSnapshotRow,
+            ProjectTaskInputSnapshotRow.task_id == ProjectTaskRow.id,
+        )
+        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+        .where(
+            ProjectTaskRow.project_id == project_id,
+            WorkflowRunRow.status.not_in(tuple(TERMINAL_STATUSES)),
+        )
+        .order_by(ProjectTaskRow.id)
+    )
+    for task, snapshot, run in rows:
+        references: set[str] = set()
+        for item in snapshot.inputs if isinstance(snapshot.inputs, list) else []:
+            if not _input_targets_table(item, table):
+                continue
+            if any(
+                isinstance(value, dict) and value.get("fieldId") == field_id
+                for value in item.get("values", [])
+            ):
+                references.add("input.values")
+            if any(
+                _mapping_targets_field(mapping, table, field_id)
+                for mapping in item.get("fieldMappings", [])
+            ):
+                references.add("input.fieldMappings")
+        for binding in run.capability_bindings:
+            if not _binding_targets_task(binding, project_id, task.id):
+                continue
+            if any(
+                isinstance(grant, dict)
+                and grant.get("tableId") == table.id
+                and grant.get("datasetGeneration") == table.current_generation
+                and field_id in grant.get("fieldIds", [])
+                for grant in binding.get("tableGrants", [])
+            ):
+                references.add("capability.tableGrants")
+        if references:
+            order = (
+                "input.fieldMappings",
+                "input.values",
+                "capability.tableGrants",
+            )
+            dependencies.append(
+                {
+                    "type": "task",
+                    "projectId": project_id,
+                    "taskId": task.id,
+                    "runId": run.id,
+                    "references": [item for item in order if item in references],
+                }
+            )
+    return dependencies
+
+
+def _input_targets_table(item: Any, table: DataTableRow) -> bool:
+    if not isinstance(item, dict):
+        return False
+    ref = item.get("recordRef")
+    return (
+        isinstance(ref, dict)
+        and ref.get("tableId") == table.id
+        and ref.get("datasetGeneration") == table.current_generation
+    )
+
+
+def _mapping_targets_field(mapping: Any, table: DataTableRow, field_id: str) -> bool:
+    if not isinstance(mapping, dict):
+        return False
+    ref = mapping.get("fieldRef")
+    return (
+        isinstance(ref, dict)
+        and ref.get("tableId") == table.id
+        and ref.get("datasetGeneration") == table.current_generation
+        and ref.get("fieldId") == field_id
+    ) or mapping.get("fieldId") == field_id
+
+
+def _binding_targets_task(
+    binding: Any,
+    project_id: str,
+    task_id: str,
+) -> bool:
+    return (
+        isinstance(binding, dict)
+        and binding.get("capability") == "project.data"
+        and binding.get("projectId") == project_id
+        and binding.get("taskId") == task_id
+        and isinstance(binding.get("tableGrants", []), list)
+    )
 
 
 def _validate_rows(change: dict, rows: IO[str], report: dict, count: int) -> None:

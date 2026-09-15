@@ -26,6 +26,7 @@ from autoflow.bootstrap.ready import ready_line
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_data_models import (
+    DataFieldRow,
     DataStatusRow,
     DataTableRow,
 )
@@ -125,12 +126,65 @@ def _status_inputs(automation: AutomationRecord) -> Sequence[str]:
     return tuple(matches)
 
 
-def create_qa_app(settings: Settings):
+def _b_capability_manifest(
+    session: Session, automation: AutomationRecord
+) -> dict[str, list[dict[str, object]]]:
+    accounts = session.scalars(
+        select(DataTableRow).where(
+            DataTableRow.project_id == automation.project_id,
+            DataTableRow.name == "账号",
+            DataTableRow.published.is_(True),
+        )
+    ).all()
+    if len(accounts) != 1:
+        raise ProjectError(
+            "QA_FIXTURE_INCOMPLETE",
+            "PM4-B requires exactly one published account table 账号",
+            409,
+        )
+    account = accounts[0]
+    field_ids = list(
+        session.scalars(
+            select(DataFieldRow.id)
+            .where(
+                DataFieldRow.project_id == automation.project_id,
+                DataFieldRow.table_id == account.id,
+                DataFieldRow.dataset_generation == account.current_generation,
+            )
+            .order_by(DataFieldRow.position, DataFieldRow.id)
+        )
+    )
+    return {
+        "tableGrants": [
+            {
+                "tableId": account.id,
+                "datasetGeneration": account.current_generation,
+                "operations": [
+                    "readRecord",
+                    "queryRecords",
+                    "updateRecord",
+                    "deleteRecord",
+                    "addField",
+                    "ensureField",
+                    "modifyField",
+                ],
+                "fieldIds": field_ids,
+                "readPurposes": ["workflow"],
+            }
+        ]
+    }
+
+
+def create_qa_app(settings: Settings, *, mode: str = "v1"):
+    if mode not in {"v1", "b"}:
+        raise ValueError(f"unknown PM4 QA mode: {mode}")
     app = create_app(settings)
     coordinator = app.state.project_run_coordinator
     coordinator._capabilities = ("browser.cloakbrowser", "project.data")
     coordinator._resolve_create_record_targets = _create_targets
     coordinator._resolve_status_input_ids = _status_inputs
+    if mode == "b":
+        coordinator._resolve_data_capability_manifest = _b_capability_manifest
 
     scheduler = app.state.project_run_scheduler
     app.router.on_startup[:] = [
@@ -141,7 +195,7 @@ def create_qa_app(settings: Settings):
             and getattr(handler, "__name__", "") == "startup"
         )
     ]
-    loop = _RunnerLoop(PM4V1FakeRunner(app.state.session_factory))
+    loop = _RunnerLoop(PM4V1FakeRunner(app.state.session_factory, mode=mode))
     scheduler.wake = loop.wake
     app.state.pm4_qa_runner = loop
     app.router.add_event_handler("startup", loop.startup)
@@ -176,7 +230,7 @@ def main() -> None:
         renderer_origin=os.environ.get("AUTOFLOW_RENDERER_ORIGIN"),
         host_token=os.environ.get("AUTOFLOW_HOST_TOKEN"),
     )
-    app = create_qa_app(settings)
+    app = create_qa_app(settings, mode=os.environ.get("AUTOFLOW_PM4_QA_MODE", "v1"))
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((args.host, args.port))

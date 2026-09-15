@@ -18,12 +18,15 @@ from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_data_models import (
     DataChangeRow,
+    DataFieldRow,
     DataStatusRow,
     DataTableRow,
 )
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectTaskInputSnapshotRow,
+    ProjectTaskRecordQueryRow,
+    ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
 from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns, aware
@@ -341,26 +344,68 @@ def _input_identifier(inputs: list[dict[str, Any]]) -> str:
 def _data_writes(
     session: Session, project_id: str, task_id: str
 ) -> list[dict[str, Any]]:
-    rows = session.execute(
-        select(DataChangeRow, ProjectOperationRow)
-        .join(
-            ProjectOperationRow,
-            (ProjectOperationRow.project_id == DataChangeRow.project_id)
-            & (ProjectOperationRow.id == DataChangeRow.operation_id),
-        )
+    operations = session.scalars(
+        select(ProjectOperationRow)
         .where(
-            DataChangeRow.project_id == project_id,
-            DataChangeRow.origin == "workflow",
+            ProjectOperationRow.project_id == project_id,
             ProjectOperationRow.resource["taskId"].as_string() == task_id,
+            ProjectOperationRow.status == "succeeded",
         )
-        .order_by(DataChangeRow.created_at, DataChangeRow.id)
+        .order_by(ProjectOperationRow.created_at, ProjectOperationRow.id)
     ).all()
-    result: list[dict[str, Any]] = []
-    for change, operation in rows:
-        after = change.after or {}
-        before = change.before or {}
-        ref = after.get("ref") or change.resource.get("recordRef") or {}
+    result: list[tuple[datetime, dict[str, Any]]] = []
+    queries = session.scalars(
+        select(ProjectTaskRecordQueryRow)
+        .where(
+            ProjectTaskRecordQueryRow.project_id == project_id,
+            ProjectTaskRecordQueryRow.task_id == task_id,
+        )
+        .order_by(ProjectTaskRecordQueryRow.created_at, ProjectTaskRecordQueryRow.id)
+    ).all()
+    for query in queries:
+        table = session.get(DataTableRow, query.table_id)
+        result.append(
+            (
+                query.created_at,
+                {
+                    "kind": "query",
+                    "tableDisplay": table.name if table is not None else "数据表",
+                    "recordDisplay": f"命中 {query.result_count} 条",
+                    "detail": (
+                        f"读取用途：{query.request_payload.get('readPurpose', 'workflow')}"
+                    ),
+                    "outcome": "succeeded",
+                },
+            )
+        )
+    for operation in operations:
+        changes = session.scalars(
+            select(DataChangeRow)
+            .where(
+                DataChangeRow.project_id == project_id,
+                DataChangeRow.operation_id == operation.id,
+                DataChangeRow.origin == "workflow",
+            )
+            .order_by(DataChangeRow.sequence)
+        ).all()
+        if operation.kind in {"setRecordStatus", "updateRecord"} and not changes:
+            continue
+        change = changes[0] if changes else None
+        after = operation.result or {}
+        if operation.kind not in {"addField", "ensureField", "modifyField"}:
+            after = (change.after if change is not None else None) or after
+        before = (change.before if change is not None else None) or {}
+        target = after.get("target") if isinstance(after, dict) else None
+        ref = (
+            after.get("ref")
+            or (target.get("recordRef") if isinstance(target, dict) else None)
+            or (change.resource.get("recordRef") if change is not None else None)
+            or {}
+        )
         table_id = ref.get("tableId")
+        field = after.get("field") if isinstance(after, dict) else None
+        if table_id is None and isinstance(field, dict):
+            table_id = field.get("ref", {}).get("tableId")
         table = session.get(DataTableRow, table_id) if table_id else None
         common = {
             "tableDisplay": table.name if table is not None else "数据表",
@@ -369,22 +414,143 @@ def _data_writes(
         }
         if operation.kind == "setRecordStatus":
             result.append(
-                {
-                    **common,
-                    "kind": "statusChange",
-                    "previousStatus": _status_name(session, before.get("statusId")),
-                    "nextStatus": _status_name(session, after.get("statusId")),
-                }
+                (
+                    operation.created_at,
+                    {
+                        **common,
+                        "kind": "statusChange",
+                        "previousStatus": _status_name(session, before.get("statusId")),
+                        "nextStatus": _status_name(session, after.get("statusId")),
+                    },
+                )
             )
         elif operation.kind == "createRecord":
             result.append(
-                {
-                    **common,
-                    "kind": "recordCreated",
-                    "referenceDisplay": _record_display(ref),
-                }
+                (
+                    operation.created_at,
+                    {
+                        **common,
+                        "kind": "recordCreated",
+                        "referenceDisplay": _record_display(ref),
+                        "afterSummary": _value_summary(session, table_id, after),
+                    },
+                )
             )
-    return result
+        elif operation.kind == "updateRecord":
+            result.append(
+                (
+                    operation.created_at,
+                    {
+                        **common,
+                        "kind": "recordUpdated",
+                        "referenceDisplay": _record_display(ref),
+                        "beforeSummary": _value_summary(session, table_id, before),
+                        "afterSummary": _value_summary(session, table_id, after),
+                    },
+                )
+            )
+        elif operation.kind == "deleteRecord":
+            result.append(
+                (
+                    operation.created_at,
+                    {
+                        **common,
+                        "kind": "recordDeleted",
+                        "referenceDisplay": _record_display(ref),
+                        "beforeSummary": _value_summary(session, table_id, before),
+                    },
+                )
+            )
+        elif operation.kind in {
+            "addField",
+            "ensureField",
+            "modifyField",
+        } and isinstance(field, dict):
+            labels = {
+                "addField": "fieldAdded",
+                "ensureField": "fieldEnsured",
+                "modifyField": "fieldModified",
+            }
+            result.append(
+                (
+                    operation.created_at,
+                    {
+                        **common,
+                        "kind": labels[operation.kind],
+                        "recordDisplay": str(field.get("name", "字段")),
+                        "referenceDisplay": f"字段 {field.get('name', field.get('fieldId', ''))}",
+                        "beforeSummary": _field_summary(before),
+                        "afterSummary": _field_summary(field),
+                        "detail": (
+                            "字段已存在，无需变更"
+                            if operation.kind == "ensureField"
+                            and not after.get("created", True)
+                            else None
+                        ),
+                    },
+                )
+            )
+    reads = session.scalars(
+        select(ProjectTaskRecordReadRow)
+        .where(
+            ProjectTaskRecordReadRow.project_id == project_id,
+            ProjectTaskRecordReadRow.task_id == task_id,
+        )
+        .order_by(ProjectTaskRecordReadRow.created_at, ProjectTaskRecordReadRow.id)
+    ).all()
+    for read in reads:
+        table = session.get(DataTableRow, read.table_id)
+        ref = read.snapshot.get("ref", {})
+        result.append(
+            (
+                read.created_at,
+                {
+                    "kind": "read",
+                    "tableDisplay": table.name if table is not None else "数据表",
+                    "recordDisplay": _record_display(ref),
+                    "referenceDisplay": _record_display(ref),
+                    "detail": f"读取用途：{read.read_purpose}",
+                    "outcome": "succeeded",
+                },
+            )
+        )
+    return [item for _, item in sorted(result, key=lambda item: item[0])]
+
+
+def _value_summary(
+    session: Session, table_id: str | None, value: dict[str, Any]
+) -> str | None:
+    raw_values = value.get("values") if isinstance(value, dict) else None
+    if not raw_values:
+        return None
+    values = (
+        {
+            item.get("fieldId"): item.get("value")
+            for item in raw_values
+            if isinstance(item, dict)
+        }
+        if isinstance(raw_values, list)
+        else raw_values
+    )
+    if not isinstance(values, dict):
+        return None
+    fields = {
+        row.id: row.name
+        for row in session.scalars(
+            select(DataFieldRow).where(DataFieldRow.table_id == table_id)
+        )
+    }
+    parts = [
+        f"{fields.get(field_id, '字段')}：{field_value}"
+        for field_id, field_value in list(values.items())[:3]
+    ]
+    return "；".join(parts) + ("…" if len(values) > 3 else "")
+
+
+def _field_summary(value: dict[str, Any]) -> str | None:
+    if not value or "type" not in value:
+        return None
+    return f"{value.get('type')} · {'必填' if value.get('required') else '可选'}"
 
 
 def _status_name(session: Session, status_id: str | None) -> str | None:

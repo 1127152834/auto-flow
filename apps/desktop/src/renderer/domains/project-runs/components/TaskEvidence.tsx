@@ -73,9 +73,17 @@ function projectWrites(detail: Detail): TaskDataWrite[] {
   const result: TaskDataWrite[] = []
   for (const write of detail.dataWrites ?? []) {
     const outcome: TaskDataWrite['outcome'] = write.outcome === 'conflict' || write.outcome === 'unknown' ? write.outcome : 'succeeded'
-    const base = { tableDisplay: write.tableDisplay, recordDisplay: write.recordDisplay, outcome }
+    const base = {
+      tableDisplay: write.tableDisplay,
+      recordDisplay: write.recordDisplay,
+      outcome,
+      referenceDisplay: write.referenceDisplay,
+      beforeSummary: write.beforeSummary,
+      afterSummary: write.afterSummary,
+      detail: write.detail,
+    }
     if (write.kind === 'statusChange') result.push({ ...base, kind: 'statusChange', previousStatus: write.previousStatus ?? null, nextStatus: write.nextStatus ?? null })
-    else if (write.kind === 'recordCreated') result.push({ ...base, kind: 'recordCreated', referenceDisplay: write.referenceDisplay })
+    else result.push({ ...base, kind: write.kind })
   }
   return result
 }
@@ -123,7 +131,7 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
       ? onOpenArtifact ? <Button size="sm" onClick={() => onOpenArtifact(item)} aria-label={`查看失败截图：${nodeName(detail, item.nodeId, item.nodeName)}`}>查看截图</Button> : <span className="text-sm text-muted">截图已保存</span>
       : <span className="text-sm text-warning">{artifactReasons[item.unavailableReason ?? ''] ?? '截图不可用'}</span>}
   </article>)}</div>
-  return <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+  return <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
     {mode === 'evidence' ? <>
       <section className={'min-w-0 rounded-card border p-5 lg:col-span-2 ' + (failed.length || detail.run.error ? 'border-danger/30 bg-danger/10' : 'border-line bg-surface')}>
         <div className="flex flex-wrap items-start gap-3">

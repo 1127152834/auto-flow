@@ -2735,6 +2735,12 @@ export type components = {
             message: string;
             /** Affectedrecords */
             affectedRecords: number | null;
+            /** Taskid */
+            taskId?: string | null;
+            /** Runid */
+            runId?: string | null;
+            /** Referencesources */
+            referenceSources?: string[];
         };
         /** DataSchemaNew */
         DataSchemaNew: {
@@ -5299,6 +5305,12 @@ export type components = {
             nextStatus?: string | null;
             /** Referencedisplay */
             referenceDisplay?: string | null;
+            /** Beforesummary */
+            beforeSummary?: string | null;
+            /** Aftersummary */
+            afterSummary?: string | null;
+            /** Detail */
+            detail?: string | null;
         };
         /** TaskDetail */
         TaskDetail: {

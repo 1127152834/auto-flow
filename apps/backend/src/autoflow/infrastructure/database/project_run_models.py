@@ -137,3 +137,85 @@ class ProjectTaskRecordCursorRow(Base):
     link_revision: Mapped[int] = mapped_column(Integer)
     source: Mapped[str] = mapped_column(String)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProjectTaskRecordReadRow(Base):
+    """Immutable evidence that a task observed an exact record snapshot.
+
+    A read never grants a lease.  Later workflow writes use this evidence to
+    prove that an exact RecordRef came from an allowed query before attempting
+    the non-blocking dynamic lease transaction.
+    """
+
+    __tablename__ = "project_task_record_reads"
+    __table_args__ = (
+        Index("ix_project_task_record_reads_task", "task_id", "created_at"),
+        Index(
+            "ix_project_task_record_reads_ref",
+            "project_id",
+            "table_id",
+            "dataset_generation",
+            "key_type",
+            "key_value",
+        ),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.id", ondelete="RESTRICT")
+    )
+    task_id: Mapped[str] = mapped_column(
+        ForeignKey("project_tasks.id", ondelete="RESTRICT")
+    )
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="RESTRICT")
+    )
+    execution_generation: Mapped[int] = mapped_column(Integer)
+    table_id: Mapped[str] = mapped_column(String(36))
+    dataset_generation: Mapped[str] = mapped_column(String(36))
+    key_type: Mapped[str] = mapped_column(String)
+    key_value: Mapped[str] = mapped_column(String)
+    field_ids: Mapped[list] = mapped_column(JSON)
+    read_purpose: Mapped[str] = mapped_column(String)
+    content_revision: Mapped[int] = mapped_column(Integer)
+    status_revision: Mapped[int] = mapped_column(Integer)
+    link_revision: Mapped[int] = mapped_column(Integer)
+    snapshot: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProjectTaskRecordQueryRow(Base):
+    """Immutable evidence and identity for one frozen query result."""
+
+    __tablename__ = "project_task_record_queries"
+    __table_args__ = (
+        Index("ix_project_task_record_queries_task", "task_id", "created_at"),
+    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.id", ondelete="RESTRICT")
+    )
+    task_id: Mapped[str] = mapped_column(
+        ForeignKey("project_tasks.id", ondelete="RESTRICT")
+    )
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_runs.id", ondelete="RESTRICT")
+    )
+    execution_generation: Mapped[int] = mapped_column(Integer)
+    table_id: Mapped[str] = mapped_column(String(36))
+    dataset_generation: Mapped[str] = mapped_column(String(36))
+    request_digest: Mapped[str] = mapped_column(String(64))
+    request_payload: Mapped[dict] = mapped_column(JSON)
+    result_count: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ProjectTaskRecordQueryItemRow(Base):
+    """One ordered record snapshot in a frozen task query."""
+
+    __tablename__ = "project_task_record_query_items"
+    query_id: Mapped[str] = mapped_column(
+        ForeignKey("project_task_record_queries.id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    ordinal: Mapped[int] = mapped_column(Integer, primary_key=True)
+    snapshot: Mapped[dict] = mapped_column(JSON)

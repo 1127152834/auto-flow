@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm05_project_claims"
+EXPECTED_HEAD = "pm06_project_capability_reads"
 
 
 def config_for(database: Path) -> Config:
@@ -34,11 +34,22 @@ def test_claim_migration_is_the_single_head_and_creates_durable_facts(tmp_path):
                 "SELECT name FROM sqlite_master WHERE type='table'"
             )
         }
-        assert {"project_record_leases", "project_task_record_cursors"} <= tables
+        assert {
+            "project_record_leases",
+            "project_task_record_cursors",
+            "project_task_record_reads",
+        } <= tables
         batch_columns = {
             row[1] for row in connection.execute("PRAGMA table_info(project_batches)")
         }
         assert {"claim_gate_state", "selection_outcome"} <= batch_columns
+        read_columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info(project_task_record_reads)"
+            )
+        }
+        assert "execution_generation" in read_columns
 
 
 def test_claim_tables_use_restrictive_project_task_run_and_lease_references(tmp_path):
@@ -55,6 +66,11 @@ def test_claim_tables_use_restrictive_project_task_run_and_lease_references(tmp_
         "project_task_record_cursors": {
             ("project_tasks", "task_id"),
             ("project_record_leases", "lease_id"),
+        },
+        "project_task_record_reads": {
+            ("projects", "project_id"),
+            ("project_tasks", "task_id"),
+            ("workflow_runs", "run_id"),
         },
     }
     with sqlite3.connect(database) as connection:
@@ -86,6 +102,7 @@ def test_empty_claim_tables_can_downgrade_and_upgrade(tmp_path):
         }
         assert "project_record_leases" not in tables
         assert "project_task_record_cursors" not in tables
+        assert "project_task_record_reads" not in tables
         batch_columns = {
             row[1] for row in connection.execute("PRAGMA table_info(project_batches)")
         }

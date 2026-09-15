@@ -157,6 +157,9 @@ class TaskDataWriteView(ApiModel):
     previous_status: str | None = None
     next_status: str | None = None
     reference_display: str | None = None
+    before_summary: str | None = None
+    after_summary: str | None = None
+    detail: str | None = None
 
 
 class TaskDetail(ApiModel):

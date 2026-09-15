@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, cast
 from uuid import NAMESPACE_URL, uuid5
 
 from sqlalchemy import select, text
@@ -14,8 +14,16 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
 from autoflow.application.workflows.dispatcher import UNKNOWN_RESULT_ERROR
 from autoflow.domain.project_data.capabilities import (
+    AddProjectFieldCommand,
     CreateProjectRecordCommand,
+    DeleteProjectRecordCommand,
+    EnsureProjectFieldCommand,
+    ModifyProjectFieldCommand,
+    PreviewProjectFieldChangeRequest,
+    QueryProjectRecordsRequest,
+    ReadProjectRecordRequest,
     SetRecordStatusCommand,
+    UpdateProjectRecordCommand,
 )
 from autoflow.domain.project_data.identity import RecordKey, RecordKeyType
 from autoflow.domain.project_runs.input_selection import RecordRef
@@ -44,6 +52,7 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
 )
 
 from .pm4_fake_executor import (
+    ADD_ACCOUNT_FIELD,
     CREATE_ACCOUNT,
     SET_EMAIL_STATUS,
     AcknowledgementLost,
@@ -52,6 +61,7 @@ from .pm4_fake_executor import (
     PauseBarrier,
     PM4FakeExecutor,
     StepName,
+    stable_operation_id,
 )
 
 
@@ -92,6 +102,7 @@ class PM4V1FakeRunner:
         pause_barrier: PauseBarrier | None = None,
         fail_step: StepName | None = None,
         simulate_crash_before_finalize: bool = False,
+        mode: Literal["v1", "b"] = "v1",
     ) -> None:
         self._factory = factory
         self._capabilities = ProjectDataCapabilityService(
@@ -102,6 +113,7 @@ class PM4V1FakeRunner:
         self._pause_barrier = pause_barrier
         self._fail_step = fail_step
         self._simulate_crash_before_finalize = simulate_crash_before_finalize
+        self._mode = mode
 
     async def tick(self) -> PM4V1RunOutcome | None:
         self._settle_stopping_batches()
@@ -110,7 +122,10 @@ class PM4V1FakeRunner:
             return None
         callbacks = _CapabilityCallbacks(self, claim)
         result = await PM4FakeExecutor(
-            callbacks, pause_barrier=self._pause_barrier, fail_step=self._fail_step
+            callbacks,
+            pause_barrier=self._pause_barrier,
+            fail_step=self._fail_step,
+            mode=self._mode,
         ).execute(
             FakeExecutionRequest(
                 claim.task_id,
@@ -424,10 +439,49 @@ class _CapabilityCallbacks:
             claim.task_id,
             claim.run_id,
         )
+        self._email_after_clear: dict[str, Any] | None = None
+        self._account: dict[str, Any] | None = None
+        self._account_read: dict[str, Any] | None = None
+        self._disposable: dict[str, Any] | None = None
+        self._disposable_read: dict[str, Any] | None = None
+        self._added_field: dict[str, Any] | None = None
+        self._ensured_field: dict[str, Any] | None = None
+
+    def read_person(self, **arguments):
+        person = arguments["person"]
+        return self._runner._capabilities.read_record(
+            self._scope,
+            ReadProjectRecordRequest(
+                arguments["execution_generation"],
+                _record_ref(person["recordRef"]),
+                [item["fieldId"] for item in person["values"]],
+                "workflow",
+            ),
+        )
+
+    def clear_status(self, **arguments):
+        self._runner._assert_execution_active(self._claim)
+        email = arguments["email"]
+        self._email_after_clear, _replayed = self._runner._capabilities.set_record_status(
+            self._scope,
+            SetRecordStatusCommand(
+                arguments["operation_id"],
+                arguments["execution_generation"],
+                _record_ref(email["recordRef"]),
+                None,
+                email["statusRevision"],
+            ),
+        )
+        return self._email_after_clear
 
     def set_status(self, **arguments):
         self._runner._assert_execution_active(self._claim)
         email = arguments["email"]
+        expected_revision = (
+            self._email_after_clear["statusRevision"]
+            if self._email_after_clear is not None
+            else email["statusRevision"]
+        )
         result, _replayed = self._runner._capabilities.set_record_status(
             self._scope,
             SetRecordStatusCommand(
@@ -435,7 +489,7 @@ class _CapabilityCallbacks:
                 arguments["execution_generation"],
                 _record_ref(email["recordRef"]),
                 self._claim.email_status_id,
-                email["statusRevision"],
+                expected_revision,
             ),
         )
         if self._runner._lose_acknowledgement(
@@ -459,7 +513,246 @@ class _CapabilityCallbacks:
         )
         if self._runner._lose_acknowledgement(self._claim.task_id, CREATE_ACCOUNT):
             raise AcknowledgementLost
+        self._account = result
         return result
+
+    def query_account(self, **arguments):
+        result_field = self._field("result")
+        result = self._runner._capabilities.query_records(
+            self._scope,
+            QueryProjectRecordsRequest(
+                arguments["execution_generation"],
+                self._claim.project_id,
+                self._claim.account_table_id,
+                self._claim.account_generation,
+                self._field_ids(),
+                "workflow",
+                {
+                    "type": "compare",
+                    "fieldId": result_field.id,
+                    "operator": "eq",
+                    "value": self._claim.account_values[result_field.id],
+                },
+                [],
+                None,
+                10,
+            ),
+        )
+        if len(result["items"]) != 1:
+            raise ProjectError(
+                "QA_FACT_MISMATCH", "PM4-B account query must return one record", 409
+            )
+        return result
+
+    def read_account(self, **arguments):
+        if self._account is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Account was not created", 409)
+        self._account_read = self._runner._capabilities.read_record(
+            self._scope,
+            ReadProjectRecordRequest(
+                arguments["execution_generation"],
+                _record_ref(self._account["ref"]),
+                self._field_ids(),
+                "workflow",
+            ),
+        )
+        return self._account_read
+
+    def update_account(self, **arguments):
+        if self._account_read is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Account was not read", 409)
+        result_field = self._field("result")
+        result, _replayed = self._runner._capabilities.update_record(
+            self._scope,
+            UpdateProjectRecordCommand(
+                arguments["operation_id"],
+                arguments["execution_generation"],
+                _record_ref(self._account_read["ref"]),
+                {result_field.id: "PM4-B-UPDATED"},
+                self._account_read["contentRevision"],
+            ),
+        )
+        self._account = result
+        return result
+
+    def create_disposable(self, **arguments):
+        values = dict(self._claim.account_values)
+        values[self._field("result").id] = "PM4-B-DISPOSABLE"
+        self._disposable, _replayed = self._runner._capabilities.create_record(
+            self._scope,
+            CreateProjectRecordCommand(
+                arguments["operation_id"],
+                arguments["execution_generation"],
+                self._claim.project_id,
+                self._claim.account_table_id,
+                self._claim.account_generation,
+                values,
+            ),
+        )
+        return self._disposable
+
+    def read_disposable(self, **arguments):
+        if self._disposable is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Disposable row is missing", 409)
+        self._disposable_read = self._runner._capabilities.read_record(
+            self._scope,
+            ReadProjectRecordRequest(
+                arguments["execution_generation"],
+                _record_ref(self._disposable["ref"]),
+                self._field_ids(),
+                "workflow",
+            ),
+        )
+        return self._disposable_read
+
+    def delete_disposable(self, **arguments):
+        if self._disposable_read is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Disposable row was not read", 409)
+        result, _replayed = self._runner._capabilities.delete_record(
+            self._scope,
+            DeleteProjectRecordCommand(
+                arguments["operation_id"],
+                arguments["execution_generation"],
+                _record_ref(self._disposable_read["ref"]),
+                self._disposable_read["contentRevision"],
+                self._disposable_read["statusRevision"],
+                self._disposable_read["linkRevision"],
+            ),
+        )
+        return result
+
+    def add_account_field(self, **arguments):
+        command = self._field_command(arguments, ensure=False)
+        self._added_field, _replayed = self._runner._capabilities.add_field(
+            self._scope, command
+        )
+        return self._added_field
+
+    def ensure_account_field(self, **arguments):
+        if self._added_field is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Field was not added", 409)
+        command = self._field_command(
+            arguments,
+            ensure=True,
+            table_revision=self._added_field["tableRevision"],
+        )
+        self._ensured_field, _replayed = self._runner._capabilities.ensure_field(
+            self._scope, command
+        )
+        return self._ensured_field
+
+    def modify_account_field(self, **arguments):
+        if self._ensured_field is None:
+            raise ProjectError("QA_FACT_MISMATCH", "Field was not ensured", 409)
+        field = self._ensured_field["field"]
+        definition = {
+            "key": field["key"],
+            "name": "执行备注",
+            "type": field["type"],
+            "required": field["required"],
+            "validation": field["validation"],
+        }
+        preview = self._runner._capabilities.preview_field_change(
+            self._scope,
+            PreviewProjectFieldChangeRequest(
+                arguments["execution_generation"],
+                self._claim.project_id,
+                self._claim.account_table_id,
+                self._claim.account_generation,
+                field["ref"]["fieldId"],
+                definition,
+            ),
+        )
+        result, _replayed = self._runner._capabilities.modify_field(
+            self._scope,
+            ModifyProjectFieldCommand(
+                arguments["operation_id"],
+                arguments["execution_generation"],
+                self._claim.project_id,
+                self._claim.account_table_id,
+                self._claim.account_generation,
+                field["ref"]["fieldId"],
+                definition,
+                self._ensured_field["tableRevision"],
+                field["fieldRevision"],
+                preview["impactRevision"],
+            ),
+        )
+        return result
+
+    def _field_ids(self) -> list[str]:
+        with self._runner._factory() as session:
+            return list(
+                session.scalars(
+                    select(DataFieldRow.id)
+                    .where(
+                        DataFieldRow.project_id == self._claim.project_id,
+                        DataFieldRow.table_id == self._claim.account_table_id,
+                        DataFieldRow.dataset_generation == self._claim.account_generation,
+                    )
+                    .order_by(DataFieldRow.position, DataFieldRow.id)
+                )
+            )
+
+    def _field(self, key: str) -> DataFieldRow:
+        with self._runner._factory() as session:
+            field = session.scalar(
+                select(DataFieldRow).where(
+                    DataFieldRow.project_id == self._claim.project_id,
+                    DataFieldRow.table_id == self._claim.account_table_id,
+                    DataFieldRow.dataset_generation == self._claim.account_generation,
+                    DataFieldRow.key == key,
+                )
+            )
+            if field is None:
+                raise ProjectError("QA_FIXTURE_INCOMPLETE", f"Missing field {key}", 409)
+            session.expunge(field)
+            return field
+
+    def _field_command(
+        self,
+        arguments: Mapping[str, Any],
+        *,
+        ensure: bool,
+        table_revision: int | None = None,
+    ) -> AddProjectFieldCommand | EnsureProjectFieldCommand:
+        field_id = str(
+            uuid5(
+                NAMESPACE_URL,
+                stable_operation_id(
+                    self._claim.task_id,
+                    self._claim.run_id,
+                    arguments["execution_generation"],
+                    ADD_ACCOUNT_FIELD,
+                )
+                + ":field",
+            )
+        )
+        if table_revision is None:
+            with self._runner._factory() as session:
+                table = session.get(DataTableRow, self._claim.account_table_id)
+                if table is None:
+                    raise ProjectError("QA_FIXTURE_INCOMPLETE", "Account table missing", 409)
+                table_revision = table.table_revision
+        values = (
+            arguments["operation_id"],
+            arguments["execution_generation"],
+            self._claim.project_id,
+            self._claim.account_table_id,
+            self._claim.account_generation,
+            field_id,
+            {
+                "key": "qa_note",
+                "name": "QA 备注",
+                "type": "string",
+                "required": False,
+                "validation": {},
+            },
+            False,
+            None,
+            table_revision,
+        )
+        return EnsureProjectFieldCommand(*values) if ensure else AddProjectFieldCommand(*values)
 
     def query_operation(self, **arguments):
         return self._runner._capabilities.query_operation(

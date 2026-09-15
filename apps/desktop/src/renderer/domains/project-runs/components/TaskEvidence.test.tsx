@@ -75,7 +75,7 @@ it('shows frozen project inputs and explicit task data writes in the io view', (
   expect(screen.getByText('pm4@example.test', { selector: 'td span' })).toBeVisible()
   expect(screen.getByText('text · 001')).toBeVisible()
   expect(screen.getByText('地址：pm4@example.test')).toBeVisible()
-  expect(screen.getByRole('heading', { name: '任务数据写入' })).toBeVisible()
+  expect(screen.getByRole('heading', { name: '项目数据操作' })).toBeVisible()
   expect(screen.getByText('待使用 → 已使用')).toBeVisible()
 })
 

@@ -1,4 +1,4 @@
-# PM4 V1 首条三表链手动验收
+# PM4 V1 与 B 显式数据能力手动验收
 
 日期：2026-09-15。适用分支：`codex/project-management-pm4`。
 
@@ -123,5 +123,29 @@ uv run --directory apps/backend pytest \
 2. 从终端输出复制本轮 `owner` 绝对路径。
 3. 确认 `owner/.pm4-v1-qa.json` 内容的 `kind` 为 `pm4-v1-project-management-qa`、`version` 为 `1`，且目标 `workspace` 位于该 owner 内。
 4. 只清理这一个带上述标记的 `autoflow-pm4-v1-qa-*` 临时目录。不要清理用户工作区、主项目、PM3 工作区或仓库中的 `docs/project-management/implementation/pm4/qa-runs/v1-*` 证据。
+
+## 9. PM4-B 管理页核对
+
+使用第 1 节命令启动时，QA 默认运行 B 模式。完成 U01～U09 后，在任务“输入与输出”页继续核对：
+
+| 编号 | 操作 | 逐步预期 | 用户结果 |
+|---|---|---|---|
+| PM4-B-U01 | 查看“原始数据输入” | 人员、邮箱两行紧随卡片标题；显示创建 Task 时冻结的字段值；右侧操作较多时左卡片不被等高拉伸 | 未执行 |
+| PM4-B-U02 | 从“项目数据操作”表首行滚动到末行 | 依次可看到查询、读取、状态清空/设置、账号新增/编辑/删除、字段新增/确保/修改；每条显示确认状态，记录和字段操作显示稳定引用 | 未执行 |
+| PM4-B-U03 | 返回邮箱表和账号表 | 邮箱内容不变、业务状态为“已使用”；账号只保留一条，网页结果为 `PM4-B-UPDATED`；一次性账号不存在 | 未执行 |
+| PM4-B-U04 | 刷新任务页并再次打开“输入与输出” | 原始输入与数据操作事实来自持久记录，顺序和结果不丢失、不重复 | 未执行 |
+
+异常反例不要求直接修改数据库。运行：
+
+```bash
+cd /Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm4
+uv run --directory apps/backend pytest \
+  tests/integration/test_project_node_writes.py \
+  tests/integration/test_project_capability_fencing.py \
+  tests/integration/test_project_capability_review_regressions.py \
+  -q
+```
+
+重点核对：Task 自写后版本推进、人工修改后旧写冲突、查询动态 lease 失败零残留、跨表同字段 ID 不越权、引用中的记录不能删除、回填超过 1,000 行或 4 MiB 时整笔拒绝。命令通过属于自动集成证据，不能填写为用户界面手测通过。
 
 Windows、其他 CPU 架构、打包应用、真实浏览器执行、真实工作流核心接入、Studio 联合运行及本表用户手测均保持“未执行”。
