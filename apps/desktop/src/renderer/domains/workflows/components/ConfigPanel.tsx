@@ -1602,11 +1602,11 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                           <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-2">
                               <Label>重试次数</Label>
-                              <NumberInput value={pol.maxRetries ?? 1} onChange={(v) => setPol({ maxRetries: Math.max(1, (v as number) || 1) })} min={1} />
+                              <NumberInput value={pol.maxRetries ?? 1} onChange={(v) => setPol({ maxRetries: v })} min={1} />
                             </div>
                             <div className="space-y-2">
                               <Label>间隔(秒)</Label>
-                              <NumberInput value={pol.interval ?? 0} onChange={(v) => setPol({ interval: Math.max(0, (v as number) || 0) })} min={0} />
+                              <NumberInput value={pol.interval ?? 0} onChange={(v) => setPol({ interval: v })} min={0} />
                             </div>
                           </div>
                           {pol.mode === 'retry-from' && (

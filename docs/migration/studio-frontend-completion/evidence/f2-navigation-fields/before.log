@@ -1,0 +1,230 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:43420) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx (12 tests | 4 failed) 1294ms
+   × switch_tab maps seven modes and both matching selectors while retaining inactive fields 72ms
+   × switch_iframe maps all locate modes and preserves inactive targets 66ms
+   × switch_tab index draft 1abc is not silently truncated 52ms
+   × switch_tab index draft 1.5 is not silently truncated 50ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx > switch_tab maps seven modes and both matching selectors while retaining inactive fields
+AssertionError: expected undefined to be 'index' // Object.is equality
+
+- Expected:
+"index"
+
++ Received:
+undefined
+
+ ❯ src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx:45:55
+     43|   for (const [mode, option] of [['index', '按索引切换'], ['title', '按标题切换']…
+     44|     choose('切换模式', option)
+     45|     expect(store.getState().nodes[0].data.switchMode).toBe(mode)
+       |                                                       ^
+     46|     expect(screen.queryByPlaceholderText('输入标签页标题') !== null).toBe(mod…
+     47|     expect(screen.queryByPlaceholderText('输入标签页URL') !== null).toBe(mo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx > switch_iframe maps all locate modes and preserves inactive targets
+TestingLibraryElementError: Unable to find an element with the placeholder text of: 0
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<aside[39m
+      [33mclass[39m=[32m"relative border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col"[39m
+      [33mstyle[39m=[32m"width: 320px; transition: width 200ms ease-out;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3.5 border-b border-[hsl(var(--border))] flex items-center justify-between"[39m
+        [33mstyle[39m=[32m"background: linear-gradient(180deg, hsl(var(--brand-50) / 0.5), hsl(var(--card)));"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2.5 min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"icon-block icon-block-brand !w-9 !h-9 !rounded-[10px] flex-shrink-0"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-frame w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.4"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"22"[39m
+                [33mx2[39m=[32m"2"[39m
+                [33my1[39m=[32m"6"[39m
+                [33my2[39m=[32m"6"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"22"[39m
+                [33mx2[39m=[32m"2"[39m
+                [33my1[39m=[32m"18"[39m
+                [33my2[39m=[32m"18"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"6"[39m
+                [33mx2[39m=[32m"6"[39m
+                [33my1[39m=[32m"2"[39m
+                [33my2[39m=[32m"22"[39m
+              [36m/>[39m
+              [36m<line[39m
+                [33mx1[39m=[32m"18"[39m
+                [33mx2[39m=[32m"18"[39m
+                [33my1[39m=[32m"2"[39m
+                [33my2[39m=[32m"22"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-[14px] font-bold text-[hsl(var(--slate-900))] truncate tracking-tight"[39m
+            [36m>[39m
+              [0m切换iframe[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 flex items-center gap-1.5"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"badge badge-brand !py-0 !text-[9.5px]"[39m
+              [36m>[39m
+                [0mswitch_iframe[0m
+              [36m</span>[39m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-[6px]"[39m
+            [33mtitle[39m=[32m"问 AI（解释 / 优化 / 修复此模块）"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-sparkles w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 2v4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M22 4h-4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"4"[39m
+                [33mcy[39m=[32m"20"[39m
+                [33mr[39m=[32m"2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-[6px]"[39m
+            [33mtitle[39m=[32m"禁用模块 (Ctrl+D)"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-ban w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[3...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx:73:26
+     71|   ]) {
+     72|     choose('定位方式', option)
+     73|     const input = screen.getByPlaceholderText(placeholder)
+       |                          ^
+     74|     fireEvent.change(input, { target: { value: text } }); fireEvent.bl…
+     75|     expect(store.getState().nodes[0].data[field]).toBe(mode === 'index…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx > switch_tab index draft 1abc is not silently truncated
+AssertionError: expected 1 to be '1abc' // Object.is equality
+
+- Expected:
+"1abc"
+
++ Received:
+1
+
+ ❯ src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx:85:51
+     83|   const input = screen.getByPlaceholderText('0')
+     84|   fireEvent.change(input, { target: { value: text } }); fireEvent.blur…
+     85|   expect(store.getState().nodes[0].data.tabIndex).toBe(text === '1.5' …
+       |                                                   ^
+     86| })
+     87|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx > switch_tab index draft 1.5 is not silently truncated
+AssertionError: expected 1 to be 1.5 // Object.is equality
+
+- Expected
++ Received
+
+- 1.5
++ 1
+
+ ❯ src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx:85:51
+     83|   const input = screen.getByPlaceholderText('0')
+     84|   fireEvent.change(input, { target: { value: text } }); fireEvent.blur…
+     85|   expect(store.getState().nodes[0].data.tabIndex).toBe(text === '1.5' …
+       |                                                   ^
+     86| })
+     87|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 8 passed (12)
+   Start at  05:25:32
+   Duration  3.57s (transform 1.28s, setup 150ms, import 1.62s, tests 1.29s, environment 398ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx

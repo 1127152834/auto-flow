@@ -1,0 +1,255 @@
+[
+  {
+    "id": "F2.SELECTOR.ENTRY.click_element.selector",
+    "capability": "node:click_element",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.hover_element.selector",
+    "capability": "node:hover_element",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.input_text.selector",
+    "capability": "node:input_text",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.select_dropdown.selector",
+    "capability": "node:select_dropdown",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.set_checkbox.selector",
+    "capability": "node:set_checkbox",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.drag_element.sourceSelector",
+    "capability": "node:drag_element",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "sourceSelector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.drag_element.targetSelector",
+    "capability": "node:drag_element",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "targetSelector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.get_element_info.selector",
+    "capability": "node:get_element_info",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.wait_element.selector",
+    "capability": "node:wait_element",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.screenshot.selector",
+    "capability": "node:screenshot",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  },
+  {
+    "id": "F2.SELECTOR.ENTRY.wait.selector",
+    "capability": "node:wait",
+    "preconditions": {
+      "upstream": "open_page.url=https://example.test/source",
+      "field": "selector",
+      "originalSelector": "原选择器",
+      "service": "typed API stub, explicitly Mock"
+    },
+    "steps": [
+      "挂载实际ConfigPanel",
+      "wait通过下拉切等待元素；screenshot通过下拉切指定元素（其余直接进入）",
+      "点击对应字段可视化选择按钮和启动选择器",
+      "推进轮询至选中响应",
+      "撤销/重做；导出清空再导入"
+    ],
+    "expectedUI": "显示此字段对应拾取入口；条件外不显示；收到结果更新目标字段",
+    "expectedIO": "elementPickerApi.start恰好一次且URL为上游URL；getSelected恰好一次",
+    "stateAssertion": "仅目标字段写#picked；drag另一字段不变；上游URL不变；撤销原值/重做和重开新值",
+    "level": "actual component + typed service mock",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-selector-entries/tests.log"
+  }
+]

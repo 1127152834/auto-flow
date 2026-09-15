@@ -1,0 +1,20 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx src/renderer/domains/workflows/tests/web-config-remaining-fields.test.tsx src/renderer/domains/workflows/tests/web-config-branches.test.tsx src/renderer/domains/workflows/tests/web-config-text.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:50782) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50785) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50781) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50783) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  4 passed (4)
+      Tests  67 passed (67)
+   Start at  05:26:49
+   Duration  4.87s (transform 5.16s, setup 647ms, import 6.70s, tests 6.71s, environment 1.73s)

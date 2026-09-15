@@ -1,0 +1,815 @@
+[
+  {
+    "id": "F2.ADV.mode.stop",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.mode",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "通过实际下拉选择stop"
+    ],
+    "expectedUI": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.mode.continue",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.mode",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "通过实际下拉选择continue"
+    ],
+    "expectedUI": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.mode.retry-self",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.mode",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "通过实际下拉选择retry-self"
+    ],
+    "expectedUI": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.mode.retry-from",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.mode",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "通过实际下拉选择retry-from"
+    ],
+    "expectedUI": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "正确显示/隐藏目标、重试参数和耗尽策略；stop保存undefined；撤销/重做/序列化恢复",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.timeout-action.retry",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeoutAction",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择retry"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.timeout-action.skip",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeoutAction",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择skip"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.timeout-action.stop",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeoutAction",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择stop"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.exhausted.stop",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryExhaustedAction",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择stop"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.exhausted.skip",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryExhaustedAction",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择skip"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.backoff.fixed",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryBackoff",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择fixed"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.backoff.exponential",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryBackoff",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "实际下拉选择exponential"
+    ],
+    "expectedUI": "写入对应字段且撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "写入对应字段且撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.visibility",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryCount/retryDelay",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "依次设置次数0→2、间隔0→1、次数2→0"
+    ],
+    "expectedUI": "按条件显隐；隐藏时保留原间隔/退避策略",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "按条件显隐；隐藏时保留原间隔/退避策略",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.numeric.timeout.1abc",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeout",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入无效/越界值并失焦"
+    ],
+    "expectedUI": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.numeric.timeout.negative",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeout",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入无效/越界值并失焦"
+    ],
+    "expectedUI": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.numeric.retryCount.eleven",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryCount",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入无效/越界值并失焦"
+    ],
+    "expectedUI": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.numeric.retryCount.Infinity",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryCount",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入无效/越界值并失焦"
+    ],
+    "expectedUI": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.numeric.retryDelay.1abc",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "retryDelay",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入无效/越界值并失焦"
+    ],
+    "expectedUI": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "显示aria-invalid并保留原值；撤销和重开不篡改",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.target",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.targetId",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "添加另一节点并选择回流目标、修改耗尽策略和间隔"
+    ],
+    "expectedUI": "目标不含自己，保留目标ID/继续策略/2.5间隔",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "目标不含自己，保留目标ID/继续策略/2.5间隔",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.context",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "timeout",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "修改原节点后切节点，再触发已卸载字段blur"
+    ],
+    "expectedUI": "旧blur不修改新节点",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "旧blur不修改新节点",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.save",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "all",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "编辑备注、超时、次数、延迟、退避和错误处理；Mock保存/读取后重新挂载"
+    ],
+    "expectedUI": "完整配置及备注回显不变",
+    "expectedIO": "POST local-workflows/save-to-folder; GET local-workflows/load/advanced-fields.json",
+    "stateAssertion": "完整配置及备注回显不变",
+    "level": "component + mock HTTP handler",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-number.maxRetries",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入有效数字"
+    ],
+    "expectedUI": "结构化错误处理更新可撤销/重开",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "结构化错误处理更新可撤销/重开",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-number.interval",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入有效数字"
+    ],
+    "expectedUI": "结构化错误处理更新可撤销/重开",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "结构化错误处理更新可撤销/重开",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-exhausted",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.onExhausted",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "continue改stop"
+    ],
+    "expectedUI": "目标和其它字段保留；撤销/重开保留",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "目标和其它字段保留；撤销/重开保留",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-invalid.maxRetries",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入1abc"
+    ],
+    "expectedUI": "保留原文并显示无效，不写NaN",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "保留原文并显示无效，不写NaN",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-reference.maxRetries",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入{retry_value}"
+    ],
+    "expectedUI": "保留引用文本，不写NaN",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "保留引用文本，不写NaN",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.block.maxRetries",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "模块条实际打开出错处理；输入1abc再输入引用"
+    ],
+    "expectedUI": "两视图统一保留原文，非法值显示错误",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "两视图统一保留原文，非法值显示错误",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-invalid.interval",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入1abc"
+    ],
+    "expectedUI": "保留原文并显示无效，不写NaN",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "保留原文并显示无效，不写NaN",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.policy-reference.interval",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入{retry_value}"
+    ],
+    "expectedUI": "保留引用文本，不写NaN",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "保留引用文本，不写NaN",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.block.interval",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "模块条实际打开出错处理；输入1abc再输入引用"
+    ],
+    "expectedUI": "两视图统一保留原文，非法值显示错误",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "两视图统一保留原文，非法值显示错误",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.maxRetries.1abc",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.maxRetries.empty",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.maxRetries.zero",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.maxRetries.fraction",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.maxRetries",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.interval.Infinity",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight.interval.negative",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy.interval",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "设置对应错误值调用现有预检"
+    ],
+    "expectedUI": "返回具体data.errorPolicy字段路径；不修改文档",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "返回具体data.errorPolicy字段路径；不修改文档",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight-mode.stop",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "调用预检，停/继续含失效值，重试含模板"
+    ],
+    "expectedUI": "未启用字段不阻塞；变量模板交给服务解析",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "未启用字段不阻塞；变量模板交给服务解析",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight-mode.continue",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "调用预检，停/继续含失效值，重试含模板"
+    ],
+    "expectedUI": "未启用字段不阻塞；变量模板交给服务解析",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "未启用字段不阻塞；变量模板交给服务解析",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight-mode.retry-self",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "调用预检，停/继续含失效值，重试含模板"
+    ],
+    "expectedUI": "未启用字段不阻塞；变量模板交给服务解析",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "未启用字段不阻塞；变量模板交给服务解析",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.preflight-mode.retry-from",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "errorPolicy",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "调用预检，停/继续含失效值，重试含模板"
+    ],
+    "expectedUI": "未启用字段不阻塞；变量模板交给服务解析",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "未启用字段不阻塞；变量模板交给服务解析",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.name-history",
+    "capability": "F2.2.common-advanced-fields",
+    "fieldGroup": "name",
+    "preconditions": "独立close_page节点草稿；按用例设置原高级配置；实际ConfigPanel或BlockFlowView挂载",
+    "steps": [
+      "输入新备注并撤销/重做/导出重开"
+    ],
+    "expectedUI": "备注按历史恢复",
+    "expectedIO": "无服务写入；Store字段按用户输入更新",
+    "stateAssertion": "备注按历史恢复",
+    "level": "component",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.switch_tab.fraction",
+    "capability": "node:switch_tab",
+    "fieldGroup": "tabIndex",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.tabIndex且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.switch_tab.text",
+    "capability": "node:switch_tab",
+    "fieldGroup": "tabIndex",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.tabIndex且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.switch_iframe.negative",
+    "capability": "node:switch_iframe",
+    "fieldGroup": "iframeIndex",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.iframeIndex且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.switch_iframe.fraction",
+    "capability": "node:switch_iframe",
+    "fieldGroup": "iframeIndex",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.iframeIndex且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.wait_element.Infinity",
+    "capability": "node:wait_element",
+    "fieldGroup": "waitTimeout",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.waitTimeout且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight.wait_element.negative",
+    "capability": "node:wait_element",
+    "fieldGroup": "waitTimeout",
+    "preconditions": "仅目标节点及错误数值字段，默认模式",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "由既有启动预检显示具体字段问题",
+    "expectedIO": "不发运行请求",
+    "stateAssertion": "返回data.waitTimeout且不改文档值",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight-allowed.switch_tab.inactive",
+    "capability": "node:switch_tab",
+    "fieldGroup": "conditional numeric",
+    "preconditions": "inactive",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "无静态数值错误",
+    "expectedIO": "纯规则，无请求",
+    "stateAssertion": "隐藏字段不校验；模板延迟服务解析；超时允许正小数",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight-allowed.switch_iframe.inactive",
+    "capability": "node:switch_iframe",
+    "fieldGroup": "conditional numeric",
+    "preconditions": "inactive",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "无静态数值错误",
+    "expectedIO": "纯规则，无请求",
+    "stateAssertion": "隐藏字段不校验；模板延迟服务解析；超时允许正小数",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight-allowed.switch_tab.template",
+    "capability": "node:switch_tab",
+    "fieldGroup": "conditional numeric",
+    "preconditions": "template",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "无静态数值错误",
+    "expectedIO": "纯规则，无请求",
+    "stateAssertion": "隐藏字段不校验；模板延迟服务解析；超时允许正小数",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight-allowed.switch_iframe.template",
+    "capability": "node:switch_iframe",
+    "fieldGroup": "conditional numeric",
+    "preconditions": "template",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "无静态数值错误",
+    "expectedIO": "纯规则，无请求",
+    "stateAssertion": "隐藏字段不校验；模板延迟服务解析；超时允许正小数",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.web-preflight-allowed.wait_element.fraction",
+    "capability": "node:wait_element",
+    "fieldGroup": "conditional numeric",
+    "preconditions": "fraction",
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "无静态数值错误",
+    "expectedIO": "纯规则，无请求",
+    "stateAssertion": "隐藏字段不校验；模板延迟服务解析；超时允许正小数",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.page-wait-min.0",
+    "capability": "node:wait_page_load",
+    "preconditions": {
+      "timeout": 0
+    },
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "0显示具体最小值错误；1和2.5不报错",
+    "expectedIO": "纯规则，无服务请求",
+    "stateAssertion": "0仅一个data.timeout错误；合法数返回空问题",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.page-wait-min.1",
+    "capability": "node:wait_page_load",
+    "preconditions": {
+      "timeout": 1
+    },
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "0显示具体最小值错误；1和2.5不报错",
+    "expectedIO": "纯规则，无服务请求",
+    "stateAssertion": "0仅一个data.timeout错误；合法数返回空问题",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  },
+  {
+    "id": "F2.ADV.page-wait-min.2.5",
+    "capability": "node:wait_page_load",
+    "preconditions": {
+      "timeout": 2.5
+    },
+    "steps": [
+      "调用既有staticNumberIssues"
+    ],
+    "expectedUI": "0显示具体最小值错误；1和2.5不报错",
+    "expectedIO": "纯规则，无服务请求",
+    "stateAssertion": "0仅一个data.timeout错误；合法数返回空问题",
+    "level": "rule",
+    "status": "已实现且已验收",
+    "evidencePath": "docs/migration/studio-frontend-completion/evidence/f2-common-advanced/after.log"
+  }
+]

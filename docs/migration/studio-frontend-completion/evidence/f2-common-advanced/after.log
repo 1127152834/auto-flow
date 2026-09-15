@@ -1,0 +1,18 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/common-advanced-config.test.tsx src/renderer/domains/workflows/tests/static-number-preflight.test.tsx src/renderer/domains/workflows/tests/number-input-validation.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:63268) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63263) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63267) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  3 passed (3)
+      Tests  107 passed (107)
+   Start at  05:28:18
+   Duration  4.26s (transform 3.05s, setup 474ms, import 4.03s, tests 2.51s, environment 1.25s)

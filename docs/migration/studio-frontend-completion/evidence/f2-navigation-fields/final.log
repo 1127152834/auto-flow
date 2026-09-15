@@ -1,0 +1,14 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:63426) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  14 passed (14)
+   Start at  05:28:19
+   Duration  4.62s (transform 1.35s, setup 197ms, import 1.65s, tests 2.28s, environment 392ms)

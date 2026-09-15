@@ -1,0 +1,18 @@
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+src/renderer/domains/workflows/components/CredentialSettings.tsx(107,89): error TS2345: Argument of type '(this: undefined, field: { key: string; masked: string; }) => { kind: "remove"; key: string; }[] | { kind: "rename"; key: string; newKey: string; }[]' is not assignable to parameter of type '(this: undefined, value: { key: string; masked: string; }, index: number, array: { key: string; masked: string; }[]) => { kind: "remove"; key: string; } | readonly { kind: "remove"; key: string; }[]'.
+  Type '{ kind: "remove"; key: string; }[] | { kind: "rename"; key: string; newKey: string; }[]' is not assignable to type '{ kind: "remove"; key: string; } | readonly { kind: "remove"; key: string; }[]'.
+    Type '{ kind: "rename"; key: string; newKey: string; }[]' is not assignable to type '{ kind: "remove"; key: string; } | readonly { kind: "remove"; key: string; }[]'.
+      Type '{ kind: "rename"; key: string; newKey: string; }[]' is not assignable to type 'readonly { kind: "remove"; key: string; }[]'.
+        Type '{ kind: "rename"; key: string; newKey: string; }' is not assignable to type '{ kind: "remove"; key: string; }'.
+          Types of property 'kind' are incompatible.
+            Type '"rename"' is not assignable to type '"remove"'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c tsc --noEmit

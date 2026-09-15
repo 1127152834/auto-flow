@@ -1,5 +1,9 @@
 import {act,cleanup,fireEvent,render,waitFor} from '@testing-library/react'
 import {afterEach,beforeEach,expect,it,vi} from 'vitest'
+vi.hoisted(() => {
+ const values = new Map<string, string>()
+ vi.stubGlobal('localStorage', { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key) })
+})
 import {useWorkflowStore as store} from '../editor-store'
 import {staticNumberIssues} from '../lib/staticNumberPreflight'
 import {moduleCategories} from '../components/ModuleSidebar'

@@ -195,8 +195,8 @@ export interface ErrorPolicy {
   // retry-self: 原地重试当前模块；retry-from: 回流到上层模块从那里重跑
   mode: 'stop' | 'continue' | 'retry-self' | 'retry-from'
   targetId?: string  // 回流目标模块 id（仅 retry-from）
-  maxRetries?: number  // 最大重试次数
-  interval?: number  // 每次重试间隔（秒）
+  maxRetries?: number | string  // 最大重试次数；字符串保留未完成输入或变量引用
+  interval?: number | string  // 每次重试间隔（秒）；字符串保留未完成输入或变量引用
   onExhausted?: 'stop' | 'continue'  // 回流重试用尽后：停止 / 继续往下（仅 retry-from）
 }
 

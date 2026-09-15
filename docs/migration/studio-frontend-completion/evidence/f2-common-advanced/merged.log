@@ -1,0 +1,26 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/common-advanced-config.test.tsx src/renderer/domains/workflows/tests/static-number-preflight.test.tsx src/renderer/domains/workflows/tests/number-input-validation.test.tsx src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx src/renderer/domains/workflows/tests/web-config-remaining-fields.test.tsx src/renderer/domains/workflows/tests/web-config-branches.test.tsx src/renderer/domains/workflows/tests/web-config-text.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:81410) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81409) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81412) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:81411) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83307) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83908) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:84032) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  7 passed (7)
+      Tests  174 passed (174)
+   Start at  05:29:48
+   Duration  8.98s (transform 6.73s, setup 819ms, import 10.60s, tests 15.87s, environment 3.83s)

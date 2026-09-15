@@ -1,0 +1,380 @@
+{
+  "scope": "当前227保留入口直接renderSelectorInput消费者",
+  "totalNodes": 24,
+  "totalFields": 26,
+  "verifiedFields": 11,
+  "entries": [
+    {
+      "capabilityId": "node:click_element",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "ClickElementConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 128,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.click_element.selector",
+      "sourceConditions": [
+        {
+          "line": 150,
+          "expression": "(data.followNewTab as boolean)"
+        }
+      ],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:hover_element",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "HoverElementConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 171,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.hover_element.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:input_text",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "InputTextConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 202,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.input_text.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:select_dropdown",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "SelectDropdownConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 36,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.select_dropdown.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:set_checkbox",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "SetCheckboxConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 73,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.set_checkbox.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:drag_element",
+      "field": "sourceSelector",
+      "label": "源元素选择器",
+      "component": "DragElementConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 100,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.drag_element.sourceSelector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:drag_element",
+      "field": "targetSelector",
+      "label": "目标元素选择器",
+      "component": "DragElementConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 101,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.drag_element.targetSelector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:upload_file",
+      "field": "selector",
+      "label": "上传按钮选择器",
+      "component": "UploadFileConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 172,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:get_element_info",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "GetElementInfoConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 239,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.get_element_info.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:get_child_elements",
+      "field": "parentSelector",
+      "label": "父元素选择器",
+      "component": "GetChildElementsConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 301,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:get_sibling_elements",
+      "field": "elementSelector",
+      "label": "元素选择器",
+      "component": "GetSiblingElementsConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 341,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:element_exists",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "ElementExistsConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 4076,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:element_visible",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "ElementVisibleConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 4110,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:wait_element",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "WaitElementConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 335,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.wait_element.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:extract_table_data",
+      "field": "tableSelector",
+      "label": "表格选择器",
+      "component": "ExtractTableDataConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 1510,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:screenshot",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "ScreenshotConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 404,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.screenshot.selector",
+      "sourceConditions": [],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:save_image",
+      "field": "selector",
+      "label": "图片元素选择器",
+      "component": "SaveImageConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 266,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:download_file",
+      "field": "triggerSelector",
+      "label": "触发元素选择器",
+      "component": "DownloadFileConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 212,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 211,
+          "expression": "downloadMode === 'click'"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:condition",
+      "field": "leftValue",
+      "label": "元素选择器",
+      "component": "ConditionConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
+      "line": 151,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 116,
+          "expression": "(data.logicOperator as string) !== 'not'"
+        },
+        {
+          "line": 150,
+          "expression": "renderSelectorInput"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:assert_checkpoint",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "AssertCheckpointConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ControlModuleConfigs.tsx",
+      "line": 598,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 588,
+          "expression": "operator === 'matches'"
+        },
+        {
+          "line": 597,
+          "expression": "renderSelectorInput"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:wait",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "WaitConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx",
+      "line": 316,
+      "status": "已实现且已验收",
+      "caseId": "F2.SELECTOR.ENTRY.wait.selector",
+      "sourceConditions": [
+        {
+          "line": 305,
+          "expression": "(data.waitType as string) === 'time' || !data.waitType"
+        },
+        {
+          "line": 315,
+          "expression": "(data.waitType as string) === 'selector'"
+        }
+      ],
+      "remaining": null
+    },
+    {
+      "capabilityId": "node:element_change_trigger",
+      "field": "selector",
+      "label": "元素选择器",
+      "component": "ElementChangeTriggerConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/TriggerModuleConfigs.tsx",
+      "line": 1439,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 1438,
+          "expression": "renderSelectorInput"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:ai_vision",
+      "field": "imageSelector",
+      "label": "图片元素选择器",
+      "component": "AIVisionConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AIModuleConfigs.tsx",
+      "line": 211,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:ocr_captcha",
+      "field": "imageSelector",
+      "label": "验证码图片选择器",
+      "component": "OCRCaptchaConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 439,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:slider_captcha",
+      "field": "sliderSelector",
+      "label": "滑块选择器",
+      "component": "SliderCaptchaConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 468,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 475,
+          "expression": "v === '' || v.includes('{')"
+        },
+        {
+          "line": 479,
+          "expression": "isNaN(num)"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    },
+    {
+      "capabilityId": "node:slider_captcha",
+      "field": "trackSelector",
+      "label": "滑轨选择器",
+      "component": "SliderCaptchaConfig",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/AdvancedModuleConfigs.tsx",
+      "line": 469,
+      "status": "缺验收",
+      "caseId": null,
+      "sourceConditions": [
+        {
+          "line": 475,
+          "expression": "v === '' || v.includes('{')"
+        },
+        {
+          "line": 479,
+          "expression": "isNaN(num)"
+        }
+      ],
+      "remaining": "非核心入口按相同请求/正确字段写回方法核销；不重复全套共享会话错误测试"
+    }
+  ]
+}

@@ -2183,13 +2183,14 @@ export function InjectJavaScriptConfig({ data, onChange }: { data: NodeData; onC
 
 // 切换iframe配置
 export function SwitchIframeConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+  const locateBy = (data.locateBy as string) || 'index'
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor="locateBy">定位方式</Label>
         <Select
           id="locateBy"
-          value={(data.locateBy as string) || 'index'}
+          value={locateBy}
           onChange={(e) => onChange('locateBy', e.target.value)}
         >
           <option value="index">索引</option>
@@ -2201,7 +2202,7 @@ export function SwitchIframeConfig({ data, onChange }: { data: NodeData; onChang
         </p>
       </div>
 
-      {(data.locateBy as string) === 'index' && (
+      {locateBy === 'index' && (
         <div className="space-y-2">
           <Label htmlFor="iframeIndex">iframe索引</Label>
           <NumberInput
@@ -2217,7 +2218,7 @@ export function SwitchIframeConfig({ data, onChange }: { data: NodeData; onChang
         </div>
       )}
 
-      {(data.locateBy as string) === 'name' && (
+      {locateBy === 'name' && (
         <div className="space-y-2">
           <Label htmlFor="iframeName">iframe名称/ID</Label>
           <VariableInput
@@ -2231,7 +2232,7 @@ export function SwitchIframeConfig({ data, onChange }: { data: NodeData; onChang
         </div>
       )}
 
-      {(data.locateBy as string) === 'selector' && (
+      {locateBy === 'selector' && (
         <div className="space-y-2">
           <Label htmlFor="iframeSelector">iframe选择器</Label>
           <VariableInput
@@ -2298,16 +2299,11 @@ export function SwitchTabConfig({ data, onChange }: { data: NodeData; onChange: 
       {switchMode === 'index' && (
         <div className="space-y-2">
           <Label htmlFor="tabIndex">标签页索引</Label>
-          <VariableInput
-            value={String(data.tabIndex ?? 0)}
-            onChange={(v) => {
-              if (v === '' || v.includes('{')) {
-                onChange('tabIndex', v)
-              } else {
-                const num = parseInt(v)
-                onChange('tabIndex', isNaN(num) ? v : num)
-              }
-            }}
+          <NumberInput
+            id="tabIndex"
+            value={(data.tabIndex as number | string) ?? 0}
+            onChange={(v) => onChange('tabIndex', v)}
+            min={0}
             placeholder="0"
           />
           <p className="text-xs text-muted-foreground">

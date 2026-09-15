@@ -13,6 +13,7 @@ import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
 import { SelectNative } from './controls/select-native'
+import { NumberInput } from './controls/number-input'
 import { Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw } from 'lucide-react'
 import type { ModuleType } from '../types/index'
 import {
@@ -893,14 +894,14 @@ export function BlockFlowView() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">重试次数</label>
-                      <input type="number" min={1} value={pol.maxRetries ?? 1}
-                        onChange={(e) => setPolicy(errPopover.nodeId, { maxRetries: Math.max(1, parseInt(e.target.value) || 1) })}
+                      <NumberInput aria-label="出错处理重试次数" min={1} value={pol.maxRetries ?? 1}
+                        onChange={(value) => setPolicy(errPopover.nodeId, { maxRetries: value })}
                         className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
                     </div>
                     <div className="flex-1">
                       <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">间隔(秒)</label>
-                      <input type="number" min={0} step={0.5} value={pol.interval ?? 0}
-                        onChange={(e) => setPolicy(errPopover.nodeId, { interval: Math.max(0, parseFloat(e.target.value) || 0) })}
+                      <NumberInput aria-label="出错处理间隔（秒）" min={0} step={0.5} value={pol.interval ?? 0}
+                        onChange={(value) => setPolicy(errPopover.nodeId, { interval: value })}
                         className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
                     </div>
                   </div>
