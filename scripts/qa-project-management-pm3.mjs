@@ -43,8 +43,8 @@ export const scenarioPlans = Object.freeze({
   success: ['UI创建项目与自动化', '启动两个真实浏览器任务', '核对批次、任务、日志、输入与输出'],
   stop: ['UI创建慢响应自动化', '启动两个任务', 'UI普通停止并确认', '核对全部取消且浏览器临时目录清理'],
   recovery: ['UI提交启动请求后丢弃响应与首次原键查询', '用原Idempotency-Key核对结果', '确认只创建一个批次'],
-  restart: ['UI创建并完成批次', '关闭并重启Electron与后端', '由UI重新进入批次与任务详情核对持久事实'],
-  isolation: ['在两个marker所有的独立workspace分别启动', '只在第一个通过UI创建资料', '第二个目录与数据库不得出现第一份资料'],
+  restart: ['UI创建并完成批次', '关闭并重启Electron与后端', '通过重启后的真实服务读取持久批次并确认网页动作未重放'],
+  isolation: ['在两个marker所有的独立workspace分别启动', '分别通过UI创建项目、自动化与批次', '核对workspace、项目与批次身份互不相同'],
 })
 
 const options = parseQaArgs(process.argv.slice(2))
@@ -57,6 +57,26 @@ if (options.selfTest) {
   assert.notDeepEqual(scenarioPlans.stop, scenarioPlans.recovery)
   console.log('qa helper self-test passed')
   process.exit(0)
+}
+
+if (options.scenario === 'isolation' && !options.prepareOnly) {
+  const results = []
+  for (let index = 0; index < 2; index += 1) {
+    const { stdout } = await exec(process.execPath, [new URL(import.meta.url).pathname, '--scenario', 'success', ...(options.kernelDirectory ? ['--kernel-directory', options.kernelDirectory] : [])], { cwd: root, maxBuffer: 10_000_000 })
+    results.push(JSON.parse(stdout.slice(stdout.indexOf('{'))))
+  }
+  assert.notEqual(results[0].workspace, results[1].workspace)
+  assert.notEqual(results[0].uiResult.projectId, results[1].uiResult.projectId)
+  assert.notEqual(results[0].uiResult.batchId, results[1].uiResult.batchId)
+  for (const result of results) {
+    const marker = JSON.parse(await readFile(join(result.owner, '.pm3-project-management-qa.json'), 'utf8'))
+    assert.ok(isOwnedQaWorkspace(result.workspace, result.owner, marker))
+  }
+  const directory = join(root, 'docs/project-management/implementation/pm3/qa-runs')
+  await mkdir(directory, { recursive: true })
+  const evidence = await mkdtemp(join(directory, 'isolation-'))
+  const result = { status: 'passed', scenario: 'isolation', scenarioPlan: scenarioPlans.isolation, workspaces: results.map(item => ({ owner: item.owner, workspace: item.workspace, projectId: item.uiResult.projectId, batchId: item.uiResult.batchId, evidence: item.evidence })), createdAt: new Date().toISOString() }
+  await writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2)); console.log(JSON.stringify(result, null, 2)); process.exit(0)
 }
 
 const owner = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-pm3-run-qa-')))
@@ -316,21 +336,33 @@ try {
   await native.evaluate("globalThis.pm3Electron=process.getBuiltinModule('module').createRequire(process.cwd()+'/package.json')('electron');pm3Electron.BrowserWindow.getAllWindows()[0].setContentSize(1440,1024);true")
   await renderer.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(renderer, "document.body.innerText.includes('本地服务正常')", 'local backend ready', 30_000)
-  const runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
+  let runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
   assert.ok(isOwnedQaWorkspace(runtime.workspaceKey, owner, { kind: 'pm3-project-management-qa' }), 'Only the marker-owned workspace may be changed')
   const workflow = await seedWorkflow(runtime.workspaceKey, options.scenario === 'stop' ? fixture.slowUrl : fixture.url)
   const profile = await seedProfile(runtime, kernel.version)
   await capture('00-prepared')
-  if (!prepareOnly && !['success', 'stop', 'recovery'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
+  if (!prepareOnly && !['success', 'stop', 'recovery', 'restart'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
   let uiResult
   try {
-    uiResult = prepareOnly ? undefined : await runUiSuccessChain(runtime, workflow, profile, options.scenario)
+    uiResult = prepareOnly ? undefined : await runUiSuccessChain(runtime, workflow, profile, options.scenario === 'restart' ? 'success' : options.scenario)
   } catch (error) {
     await capture('99-failure')
     const failure = { status: 'failed', scenario: options.scenario, message: error instanceof Error ? error.message : String(error), url: await renderer.evaluate('location.href'), bodyText: await renderer.evaluate('document.body.innerText'), screenshots, createdAt: new Date().toISOString() }
     await writeFile(join(evidence, 'result.json'), JSON.stringify(failure, null, 2))
     console.error(`QA_FAILURE_EVIDENCE ${join(evidence, 'result.json')}`)
     throw error
+  }
+  if (!prepareOnly && options.scenario === 'restart') {
+    const requestsBefore = fixture.requests.length
+    renderer.close(); native.close(); await stop(desktop.child)
+    desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${workspace}`, '--inspect=0'], cliArgs: [] }); renderer = desktop.cdp; native = await connectCdp(desktop.inspectorUrl)
+    await waitFor(renderer, "document.body?.innerText?.includes('本地服务正常')", 'restarted backend ready', 30_000)
+    runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
+    assert.ok(isOwnedQaWorkspace(runtime.workspaceKey, owner, { kind: 'pm3-project-management-qa' }))
+    const persisted = await api(runtime, `/projects/${uiResult.projectId}/batches/${uiResult.batchId}`)
+    assert.equal(persisted.batch.status, 'completed'); await wait(1500); assert.equal(fixture.requests.length, requestsBefore)
+    await capture('08-after-restart')
+    uiResult = { ...uiResult, restart: { persistedStatus: persisted.batch.status, requestsBefore, requestsAfter: fixture.requests.length } }
   }
   const result = { status: prepareOnly ? 'prepared' : 'passed', scenario: options.scenario, scenarioPlan: scenarioPlans[options.scenario], ...(await hashes()), owner, workspace, evidence, kernel, fixtureUrl: fixture.url, slowFixtureUrl: fixture.slowUrl, workflow, profile, uiResult, screenshots, next: prepareOnly ? scenarioPlans[options.scenario] : [], commands: { success: 'node scripts/qa-project-management-pm3.mjs --scenario success', manual: 'node scripts/qa-project-management-pm3.mjs --manual --scenario success', preparation: 'node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success', explicitKernel: 'node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w' }, createdAt: new Date().toISOString() }
   await writeFile(join(evidence, 'result.json'), JSON.stringify(result, null, 2))

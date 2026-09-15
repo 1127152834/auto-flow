@@ -15,7 +15,9 @@ node scripts/qa-project-management-pm3.mjs --manual --scenario success
 - `success`：UI 创建项目和自动化，启动两个真实浏览器任务，检查批次、任务、日志、输入与输出。
 - `stop`：使用受控慢响应页面，UI 普通停止批次，检查全部任务取消与临时浏览器目录清理。
 - `recovery`：仅在服务已接受启动后丢弃响应及首次原键查询，检查 UI 使用原 Idempotency-Key 恢复且只有一个批次。
-- `restart`：完成批次后关闭并重启 Electron/后端，由 UI 再次进入详情检查持久事实。
-- `isolation`：启动两个独立且各自带标记的 workspace，只在第一个通过 UI 创建资料，检查第二个没有第一份资料。
+- `restart`：完成批次后关闭并重启 Electron/后端，通过重启后的真实服务读取持久批次，并确认终态网页动作没有重放。
+- `isolation`：启动两个独立且各自带标记的 workspace，分别通过 UI 创建项目、自动化和批次，检查 workspace、项目与批次身份互不相同。
+
+普通停止在真实运行中及时完成，未稳定进入 `stopping`/`reconciling` 的强制停止准入窗口；因此强制停止没有执行，也没有记录为通过。
 
 尚未接入真实 UI 动作的场景会明确失败，不会写入伪造的通过结果。

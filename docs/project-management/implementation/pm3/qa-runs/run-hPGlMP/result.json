@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "scenario": "restart",
+  "scenarioPlan": [
+    "UI创建并完成批次",
+    "关闭并重启Electron与后端",
+    "由UI重新进入批次与任务详情核对持久事实"
+  ],
+  "sourceSha256": "bd400f90b71d0fb2cea67df5d42e3a5b256bebb390d420be8212a9b53dd2350b",
+  "head": "53fbd1988ca1019529e42d8cbe71f981d02c4062",
+  "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-LtY2Fu",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-LtY2Fu/workspace",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP",
+  "kernel": {
+    "source": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+    "copiedTo": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-LtY2Fu/workspace/data/kernels/chromium-145.0.7632.109.2",
+    "version": "145.0.7632.109.2"
+  },
+  "fixtureUrl": "http://127.0.0.1:53518/fixture",
+  "slowFixtureUrl": "http://127.0.0.1:53518/slow",
+  "workflow": {
+    "workflowId": "2aaad8dd-3702-4b22-aeae-f8a93abbc728",
+    "parameterId": "49f0598c-c9db-4c1b-b78f-eebfc96cd90e",
+    "preparation": "工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。"
+  },
+  "profile": {
+    "profileId": "c995d0a8-997d-4308-9323-ff1f3bb51c75",
+    "preparation": "浏览器配置通过真实 HTTP ProfileService API 预置为运行资源夹具；项目与自动化仍由 UI 创建。"
+  },
+  "uiResult": {
+    "projectId": "cddf3143-e0b5-49c9-8c85-d964dd6f0967",
+    "automationName": "参数运行验收",
+    "batchId": "8f31905e-fab7-4eb6-8680-7e3068261277",
+    "taskIds": [
+      "fd0cb696-afcc-4e3c-bf39-519595f0ed4d",
+      "3e577224-33e0-4ca0-912a-89deac44409e"
+    ],
+    "profileId": "c995d0a8-997d-4308-9323-ff1f3bb51c75",
+    "restart": {
+      "persistedStatus": "completed",
+      "requestsBefore": 4,
+      "requestsAfter": 4
+    }
+  },
+  "screenshots": [
+    {
+      "name": "00-prepared",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/00-prepared.png",
+      "sha256": "b91a71b97ce90579ed7f8b66a84fa2e91022a7ac093d759c84be940d5c4b77e3"
+    },
+    {
+      "name": "01-automation",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/01-automation.png",
+      "sha256": "a2b3c8b65aa0b4903facf6c7948169e4c6555ed98c117dbe62f52ab4b7d7534c"
+    },
+    {
+      "name": "02-start-batch",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/02-start-batch.png",
+      "sha256": "4a70e8a4a788a750ec58495dbb443288816a6cb7137e1d7becd499da4a7994af"
+    },
+    {
+      "name": "04-batch-detail",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/04-batch-detail.png",
+      "sha256": "10ddacb5c526bd42aaaa35ed22d1a423d455f933f9fc1ca46dabc7ddfa40c864"
+    },
+    {
+      "name": "05-task-logs",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/05-task-logs.png",
+      "sha256": "89938e11d9a0508192fe314da7fb5a7567537c56800ea11b18e0da86a975e0f0"
+    },
+    {
+      "name": "06-task-input-output",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/06-task-input-output.png",
+      "sha256": "16c417716ef0ec99468273d9be57c4e5301a8297c55abd2eb4eeb8fbaff88755"
+    },
+    {
+      "name": "07-task-evidence",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/07-task-evidence.png",
+      "sha256": "ccce7af0bc68ddcacaa5fc418312fd2c2e30ac87b159b31eccb24d5660c66bf8"
+    },
+    {
+      "name": "08-after-restart",
+      "file": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-hPGlMP/08-after-restart.png",
+      "sha256": "c174e90daf83980dc5c2d6b4682ff3a8d809a0ea2c2d86ba571215d6114501d0"
+    }
+  ],
+  "next": [],
+  "commands": {
+    "success": "node scripts/qa-project-management-pm3.mjs --scenario success",
+    "manual": "node scripts/qa-project-management-pm3.mjs --manual --scenario success",
+    "preparation": "node scripts/qa-project-management-pm3.mjs --prepare-only --scenario success",
+    "explicitKernel": "node scripts/qa-project-management-pm3.mjs --manual --kernel-directory /path/to/chromium-x.y.z.w"
+  },
+  "createdAt": "2026-09-15T04:57:00.372Z"
+}

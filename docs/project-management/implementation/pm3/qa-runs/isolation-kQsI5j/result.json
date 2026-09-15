@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "scenario": "isolation",
+  "scenarioPlan": [
+    "在两个marker所有的独立workspace分别启动",
+    "只在第一个通过UI创建资料",
+    "第二个目录与数据库不得出现第一份资料"
+  ],
+  "workspaces": [
+    {
+      "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-lRTFST",
+      "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-lRTFST/workspace",
+      "projectId": "e30f5d1e-960c-4f69-8ce3-9cd1f6a64504",
+      "batchId": "3bbbc2f1-8e24-43a3-a1c3-175f4a335875",
+      "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-0TePYK"
+    },
+    {
+      "owner": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-p9VtNv",
+      "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-pm3-run-qa-p9VtNv/workspace",
+      "projectId": "62cc8fb8-cb9b-4072-9410-0778423cc895",
+      "batchId": "45377339-a241-4074-977f-3b9f9fdecccb",
+      "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow-project-management-pm3/docs/project-management/implementation/pm3/qa-runs/run-e0pYBb"
+    }
+  ],
+  "createdAt": "2026-09-15T04:57:42.945Z"
+}
