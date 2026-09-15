@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
@@ -154,7 +155,78 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "csv_parse",
         "csv_generate",
         "list_to_string_advanced",
+        "table_add_row",
+        "table_add_column",
+        "table_set_cell",
+        "table_get_cell",
+        "table_delete_row",
+        "table_clear",
+        "table_export",
     }
+
+
+@pytest.mark.asyncio
+async def test_runtime_propagates_sensitive_values_without_persisting_them_in_events() -> None:
+    class Sink:
+        def __init__(self) -> None:
+            self.events: list[dict[str, Any]] = []
+
+        async def publish(self, event: dict[str, Any]) -> None:
+            self.events.append(event)
+
+    sink = Sink()
+    context = ExecutionContext(
+        variables={"secret": '{"password":"S3CRET"}'},
+        sensitive_variables={"secret"},
+        events=sink,
+    )
+    document = {
+        "nodes": [
+            {
+                "id": "derive",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "string_trim",
+                    "config": {
+                        "inputText": "{secret}",
+                        "trimMode": "both",
+                        "variableName": "derived",
+                    },
+                },
+            },
+            {
+                "id": "row",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "table_add_row",
+                    "config": {"rowData": "{derived}"},
+                },
+            },
+            {
+                "id": "export",
+                "type": "moduleNode",
+                "data": {
+                    "moduleType": "table_export",
+                    "config": {"exportFormat": "csv"},
+                },
+            },
+        ],
+        "edges": [
+            {"id": "edge-1", "source": "derive", "target": "row"},
+            {"id": "edge-2", "source": "row", "target": "export"},
+        ],
+    }
+
+    result = await WorkflowRuntime(
+        build_production_executor_registry()
+    ).execute(document, context)
+
+    assert result.success is False
+    assert result.failed_node_id == "export"
+    assert context.variables["derived"] == '{"password":"S3CRET"}'
+    assert "derived" in context.sensitive_variables
+    assert context.data_rows == [{"password": "S3CRET"}]
+    assert "S3CRET" not in json.dumps(sink.events, ensure_ascii=False)
 
 
 def test_runtime_reports_whether_a_document_needs_a_browser() -> None:

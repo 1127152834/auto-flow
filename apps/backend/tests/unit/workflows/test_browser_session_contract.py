@@ -770,3 +770,101 @@ async def test_workflow_worker_reports_non_json_math_result_as_node_failure(
     assert events[-2]["error"] == "节点结果包含无法序列化的数据"
     assert events[-1]["type"] == "execution:failed"
     assert events[-1]["failedNodeId"] == "unsafe"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("table workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    module_configs = [
+        ("add-first", "table_add_row", {"rowData": '{"name":"甲","score":1}'}),
+        ("add-second", "table_add_row", {"rowData": '{"name":"乙","score":2}'}),
+        (
+            "add-column",
+            "table_add_column",
+            {"columnName": "enabled", "defaultValue": True},
+        ),
+        (
+            "set-cell",
+            "table_set_cell",
+            {"rowIndex": 1, "columnName": "score", "cellValue": 3},
+        ),
+        (
+            "get-cell",
+            "table_get_cell",
+            {"rowIndex": 1, "columnName": "score", "variableName": "score"},
+        ),
+        (
+            "export",
+            "table_export",
+            {
+                "exportFormat": "excel",
+                "savePath": "reports/result.xlsx",
+                "sheetName": "结果",
+                "variableName": "path",
+            },
+        ),
+    ]
+    artifact_root = tmp_path / "artifacts"
+    command = {
+        "runId": "run-table",
+        "workflowId": "workflow-table",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(artifact_root),
+        "document": {
+            "nodes": [
+                {
+                    "id": node_id,
+                    "type": "moduleNode",
+                    "data": {"moduleType": module_type, "config": config},
+                }
+                for node_id, module_type, config in module_configs
+            ],
+            "edges": [
+                {
+                    "id": f"edge-{index}",
+                    "source": module_configs[index][0],
+                    "target": module_configs[index + 1][0],
+                }
+                for index in range(len(module_configs) - 1)
+            ],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    completions = [
+        event for event in events if event["type"] == "execution:node_complete"
+    ]
+    assert [event["nodeId"] for event in completions] == [
+        node_id for node_id, _, _ in module_configs
+    ]
+    assert completions[4]["data"] == 3
+    assert len(completions[5]["artifactIds"]) == 1
+    target = artifact_root / "runs/run-table/outputs/reports/result.xlsx"
+    assert target.read_bytes().startswith(b"PK")
+    artifact_events = [
+        event for event in events if event["type"] == "artifact:registered"
+    ]
+    assert len(artifact_events) == 1
+    assert artifact_events[0]["mimeType"] == (
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert Path(artifact_root / artifact_events[0]["relativePath"]).read_bytes() == (
+        target.read_bytes()
+    )
+    assert events[-1]["type"] == "execution:completed"

@@ -96,6 +96,15 @@ from .string_convert import (
     CsvParseExecutor,
     ListToStringAdvancedExecutor,
 )
+from .table import (
+    TableAddColumnExecutor,
+    TableAddRowExecutor,
+    TableClearExecutor,
+    TableDeleteRowExecutor,
+    TableExportExecutor,
+    TableGetCellExecutor,
+    TableSetCellExecutor,
+)
 from .utility_tools import (
     HEXToCMYKExecutor,
     MD5EncryptExecutor,
@@ -197,6 +206,13 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     CsvParseExecutor,
     CsvGenerateExecutor,
     ListToStringAdvancedExecutor,
+    TableAddRowExecutor,
+    TableAddColumnExecutor,
+    TableSetCellExecutor,
+    TableGetCellExecutor,
+    TableDeleteRowExecutor,
+    TableClearExecutor,
+    TableExportExecutor,
 )
 
 

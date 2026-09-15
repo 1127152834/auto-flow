@@ -13,6 +13,31 @@ class CredentialReader(Protocol):
     def get_field(self, name: str, field: str) -> Any | None: ...
 
 
+_CREDENTIAL_REFERENCE = re.compile(
+    r"\{\{\s*(?:cred|凭据)\s*[:：]\s*([^{}]+?)\s*\}\}"
+)
+_VARIABLE_REFERENCE = re.compile(
+    r"(?:\$\{?|(?<!\$)\{)"
+    r"([a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)"
+)
+
+
+def references_sensitive_value(value: Any, sensitive_names: set[str]) -> bool:
+    if isinstance(value, Mapping):
+        return any(
+            references_sensitive_value(key, sensitive_names)
+            or references_sensitive_value(item, sensitive_names)
+            for key, item in value.items()
+        )
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(references_sensitive_value(item, sensitive_names) for item in value)
+    if not isinstance(value, str):
+        return False
+    if _CREDENTIAL_REFERENCE.search(value):
+        return True
+    return any(match.group(1) in sensitive_names for match in _VARIABLE_REFERENCE.finditer(value))
+
+
 def _json_safe(value: Any, depth: int = 0) -> Any:
     if depth > 20:
         return str(value)
@@ -63,10 +88,6 @@ def resolve_value(
         return value
 
     if credentials is not None and "{{" in value:
-        credential_pattern = re.compile(
-            r"\{\{\s*(?:cred|凭据)\s*[:：]\s*([^{}]+?)\s*\}\}"
-        )
-
         def replace_credential(match: re.Match[str]) -> str:
             reference = match.group(1).strip()
             if "." in reference:
@@ -82,7 +103,7 @@ def resolve_value(
                 match.group(0) if resolved is None else _replacement_text(resolved)
             )
 
-        value = credential_pattern.sub(replace_credential, value)
+        value = _CREDENTIAL_REFERENCE.sub(replace_credential, value)
 
     missing = object()
 

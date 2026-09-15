@@ -212,6 +212,13 @@ def _validate_archive(content: bytes, deadline: float) -> None:
         ) from exc
 
 
+def validate_workbook_content(content: bytes, *, max_seconds: float = 30.0) -> None:
+    """Validate an in-memory XLSX before a workflow reopens it."""
+    if len(content) > MAX_FILE_BYTES:
+        raise _error("EXCEL_FILE_TOO_LARGE", "Excel file exceeds 64 MiB")
+    _validate_archive(content, time.monotonic() + max_seconds)
+
+
 def _reject_merges(workbook: Any, sheet: Any, deadline: float) -> None:
     try:
         with workbook._archive.open(sheet._worksheet_path) as xml:

@@ -375,6 +375,40 @@
         "运行时从reference目录导入"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/table.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/table.py",
+      "changeSummary": "批量迁入7个批准的数据表格节点及默认值、变量、行列和CSV/Excel导出语义；用AutoFlow取消、容量、受管输出和产物端口替换节点内直接文件系统写入。",
+      "retainedDependencies": [
+        "Python标准库",
+        "ExecutionContext数据行与变量语义",
+        "工作流产物端口"
+      ],
+      "removedDependencies": [
+        "app.services.data_collector",
+        "后端data目录直写",
+        "进程全局文件路径"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/data_collector.py",
+      "targetPath": "apps/backend/src/autoflow/infrastructure/filesystem/workflow_table_workbook.py",
+      "changeSummary": "迁入Excel值规范化、表头样式、交替行、采样列宽和冻结首行；以openpyxl内存渲染替换Polars/xlsxwriter和直接路径写入。",
+      "retainedDependencies": [
+        "openpyxl==3.1.5",
+        "Python标准库"
+      ],
+      "removedDependencies": [
+        "polars",
+        "xlsxwriter",
+        "app.utils.paths",
+        "直接文件系统写入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

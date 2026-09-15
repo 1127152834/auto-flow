@@ -403,6 +403,13 @@ def test_pure_data_family_runs_through_http_without_browser_requirement(
         "csv_parse",
         "csv_generate",
         "list_to_string_advanced",
+        "table_add_row",
+        "table_add_column",
+        "table_set_cell",
+        "table_get_cell",
+        "table_delete_row",
+        "table_clear",
+        "table_export",
     ]
     workflow_payload = {
         **_workflow(),

@@ -120,6 +120,7 @@ class WorkflowRuntime:
             config = (
                 dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
             )
+            context.begin_node()
             result = await _execute_with_cancellation(
                 executor.execute(config, context), context
             )
@@ -129,16 +130,17 @@ class WorkflowRuntime:
                     error="节点结果包含无法序列化的数据",
                 )
             executed.append(node_id)
+            reported_result = _reported_result(result, context)
             await _publish(
                 context,
                 {
                     "type": "execution:node_complete",
                     "nodeId": node.id,
                     "executionId": execution_id,
-                    "success": result.success,
-                    "message": result.message,
-                    "error": result.error,
-                    "data": result.data,
+                    "success": reported_result.success,
+                    "message": reported_result.message,
+                    "error": reported_result.error,
+                    "data": reported_result.data,
                 },
             )
             if not result.success:
@@ -146,7 +148,7 @@ class WorkflowRuntime:
                     False,
                     tuple(executed),
                     failed_node_id=node_id,
-                    node_result=result,
+                    node_result=reported_result,
                 )
             queue.extend(
                 graph.get_next_nodes(node_id, result.branch)
@@ -154,6 +156,24 @@ class WorkflowRuntime:
                 else graph.get_next_nodes(node_id)
             )
         return WorkflowRuntimeResult(True, tuple(executed))
+
+
+def _reported_result(
+    result: ModuleResult, context: ExecutionContext
+) -> ModuleResult:
+    if not context.node_uses_sensitive_values:
+        return result
+    return ModuleResult(
+        success=result.success,
+        message="节点执行成功（结果包含凭据派生值）" if result.success else "",
+        data=None,
+        error="节点执行失败（错误包含凭据派生值）" if not result.success else None,
+        branch=result.branch,
+        duration=result.duration,
+        log_level=result.log_level,
+        skipped=result.skipped,
+        is_timeout=result.is_timeout,
+    )
 
 
 def _is_json_value(value: Any) -> bool:

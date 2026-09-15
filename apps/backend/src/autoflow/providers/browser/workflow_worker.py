@@ -16,6 +16,9 @@ from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.runs import WorkflowArtifact
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
+from autoflow.infrastructure.filesystem.workflow_table_workbook import (
+    OpenpyxlTableWorkbookRenderer,
+)
 
 from .workflow_session import launch_workflow_session
 
@@ -69,6 +72,7 @@ async def _run_in_session(
             variables=_initial_variables(document),
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
+            table_workbooks=OpenpyxlTableWorkbookRenderer(),
         )
         sink = _WorkerEventSink(
             stdout,
