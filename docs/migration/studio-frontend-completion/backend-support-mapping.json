@@ -25,7 +25,8 @@
     "frontend": "前端已验收",
     "mock": "Mock协议已验收",
     "existingBackend": "真实后端已有实现",
-    "migration": "真实后端待迁入"
+    "migration": "真实后端待迁入",
+    "migrationInProgress": "真实后端按里程碑迁入中；只有列明的子能力具有真实证据"
   },
   "sharedCapabilities": [
     {
@@ -52,13 +53,18 @@
         "apps/backend/src/autoflow/adapters/http/workflows.py"
       ],
       "classification": "AutoFlow必要适配",
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "milestone": "B1",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/backend-handoff.md#服务族交接",
         "docs/migration/studio-frontend-completion/schema-export-implementation.md"
       ],
-      "risk": "原版以本地文件为主要事实源，AutoFlow要求工作区SQLite、revision并发保护和原子保存；不能复用原版路径拼接。"
+      "risk": "原版以本地文件为主要事实源，AutoFlow要求工作区SQLite、revision并发保护和原子保存；不能复用原版路径拼接。",
+      "implementation": {
+        "completedSlice": "B1.1 工作流文档、布局、revision与请求幂等持久化",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/document-persistence.json",
+        "remaining": "子流程、自定义模块、资源包及真实HTTP合同"
+      }
     },
     {
       "id": "BE.SUPPORT.executor-core",
@@ -82,13 +88,18 @@
         "apps/backend/src/autoflow/application/workflows/executors"
       ],
       "classification": "原版直接迁入",
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "milestone": "B1",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "risk": "原执行器同时包含调度、浏览器IO和对app.main/app.api的反向导入；迁入时保留算法，把IO替换为窄端口，禁止重写成第二套调度器。"
+      "risk": "原执行器同时包含调度、浏览器IO和对app.main/app.api的反向导入；迁入时保留算法，把IO替换为窄端口，禁止重写成第二套调度器。",
+      "implementation": {
+        "completedSlice": "B1.2 图解析、变量解析、类型工具、执行器注册、线性失败即停与执行前范围预检",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/executor-core.json",
+        "remaining": "超时、重试、错误策略和B3复杂控制流"
+      }
     },
     {
       "id": "BE.SUPPORT.browser-runtime",

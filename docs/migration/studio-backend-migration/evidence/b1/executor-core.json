@@ -1,0 +1,68 @@
+{
+  "evidenceId": "BE-B1-executor-core-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "result": "B1.2 passed",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "files": [
+      "backend/app/services/workflow_parser.py",
+      "backend/app/services/variable_manager.py",
+      "backend/app/services/workflow_executor.py",
+      "backend/app/executors/base.py",
+      "backend/app/executors/type_utils.py"
+    ]
+  },
+  "verifiedBehavior": {
+    "graphCases": [
+      "linear",
+      "condition branch deduplication",
+      "loop-body and loop-done aliases",
+      "error backflow excluded from join",
+      "visual and isolated nodes"
+    ],
+    "variableCases": [
+      "brace and dollar-brace replacement",
+      "nested list and object access",
+      "variable-driven index",
+      "missing and null values",
+      "recursive object/list values",
+      "injected credential lookup",
+      "safe numeric expressions"
+    ],
+    "registryCases": [
+      "last registration wins",
+      "strict duplicate rejection",
+      "same-source registration compatibility",
+      "single lazy import"
+    ],
+    "runtimeCases": [
+      "unknown, excluded or unmigrated node rejects the whole snapshot before execution",
+      "visual nodes require no executor",
+      "linear nodes follow edges rather than document array order",
+      "failure stops later nodes"
+    ]
+  },
+  "allowedAdaptations": [
+    "AutoFlow React Flow nodes use data.moduleType as the business type while the frozen backend used node.type",
+    "global browser, credential, model, artifact and event access is replaced with injected domain ports",
+    "registry strict-mode environment variable uses the AUTOFLOW prefix and warnings use Python logging"
+  ],
+  "tests": {
+    "focused": {
+      "command": "cd apps/backend && uv run pytest tests/differential/workflows tests/unit/workflows tests/integration/test_workflow_repository.py -q",
+      "exitCode": 0,
+      "result": "100 passed"
+    },
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "notClaimed": [
+    "B1 CloakBrowser worker and five real browser nodes",
+    "retry, timeout and error policy",
+    "B3 complete condition and loop control flow",
+    "remaining 222 node executors"
+  ],
+  "userDatabaseModified": false,
+  "differentialResults": "docs/migration/studio-backend-migration/evidence/b1/executor-core-differential-results.json"
+}

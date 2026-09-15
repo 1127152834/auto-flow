@@ -1,0 +1,914 @@
+{
+  "evidenceId": "BE-B1.2-differential-results-2026-09-15",
+  "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "graph": [
+    {
+      "case": "linear",
+      "input": {
+        "id": "parity",
+        "name": "差分",
+        "nodes": [
+          {
+            "id": "a",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "a"
+            }
+          },
+          {
+            "id": "b",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "b"
+            }
+          },
+          {
+            "id": "c",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "c"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-a-b-plain",
+            "source": "a",
+            "target": "b"
+          },
+          {
+            "id": "e-b-c-plain",
+            "source": "b",
+            "target": "c"
+          }
+        ],
+        "variables": []
+      },
+      "sourceOutput": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "start": [
+          "a"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "a": [
+            "b"
+          ],
+          "b": [
+            "c"
+          ],
+          "c": []
+        },
+        "reverse": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "c": [
+            "b"
+          ]
+        },
+        "join": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "c": [
+            "b"
+          ]
+        },
+        "condition": {},
+        "loop": {},
+        "error": {}
+      },
+      "targetOutput": {
+        "nodes": [
+          "a",
+          "b",
+          "c"
+        ],
+        "start": [
+          "a"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "a": [
+            "b"
+          ],
+          "b": [
+            "c"
+          ],
+          "c": []
+        },
+        "reverse": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "c": [
+            "b"
+          ]
+        },
+        "join": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "c": [
+            "b"
+          ]
+        },
+        "condition": {},
+        "loop": {},
+        "error": {}
+      },
+      "equal": true
+    },
+    {
+      "case": "condition-dedup",
+      "input": {
+        "id": "parity",
+        "name": "差分",
+        "nodes": [
+          {
+            "id": "condition",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "condition",
+              "label": "condition"
+            }
+          },
+          {
+            "id": "yes",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "yes"
+            }
+          },
+          {
+            "id": "no",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "no"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-condition-yes-true",
+            "source": "condition",
+            "target": "yes",
+            "sourceHandle": "true"
+          },
+          {
+            "id": "e-condition-yes-true",
+            "source": "condition",
+            "target": "yes",
+            "sourceHandle": "true"
+          },
+          {
+            "id": "e-condition-no-false",
+            "source": "condition",
+            "target": "no",
+            "sourceHandle": "false"
+          }
+        ],
+        "variables": []
+      },
+      "sourceOutput": {
+        "nodes": [
+          "condition",
+          "yes",
+          "no"
+        ],
+        "start": [
+          "condition"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "condition": [],
+          "yes": [],
+          "no": []
+        },
+        "reverse": {
+          "condition": [],
+          "yes": [
+            "condition"
+          ],
+          "no": [
+            "condition"
+          ]
+        },
+        "join": {
+          "condition": [],
+          "yes": [
+            "condition"
+          ],
+          "no": [
+            "condition"
+          ]
+        },
+        "condition": {
+          "condition": {
+            "true": [
+              "yes"
+            ],
+            "false": [
+              "no"
+            ]
+          }
+        },
+        "loop": {},
+        "error": {}
+      },
+      "targetOutput": {
+        "nodes": [
+          "condition",
+          "yes",
+          "no"
+        ],
+        "start": [
+          "condition"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "condition": [],
+          "yes": [],
+          "no": []
+        },
+        "reverse": {
+          "condition": [],
+          "yes": [
+            "condition"
+          ],
+          "no": [
+            "condition"
+          ]
+        },
+        "join": {
+          "condition": [],
+          "yes": [
+            "condition"
+          ],
+          "no": [
+            "condition"
+          ]
+        },
+        "condition": {
+          "condition": {
+            "true": [
+              "yes"
+            ],
+            "false": [
+              "no"
+            ]
+          }
+        },
+        "loop": {},
+        "error": {}
+      },
+      "equal": true
+    },
+    {
+      "case": "loop-alias",
+      "input": {
+        "id": "parity",
+        "name": "差分",
+        "nodes": [
+          {
+            "id": "loop",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "loop",
+              "label": "loop"
+            }
+          },
+          {
+            "id": "body",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "body"
+            }
+          },
+          {
+            "id": "done",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "done"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-loop-body-loop-body",
+            "source": "loop",
+            "target": "body",
+            "sourceHandle": "loop-body"
+          },
+          {
+            "id": "e-loop-done-loop-done",
+            "source": "loop",
+            "target": "done",
+            "sourceHandle": "loop-done"
+          }
+        ],
+        "variables": []
+      },
+      "sourceOutput": {
+        "nodes": [
+          "loop",
+          "body",
+          "done"
+        ],
+        "start": [
+          "loop"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "loop": [],
+          "body": [],
+          "done": []
+        },
+        "reverse": {
+          "loop": [],
+          "body": [
+            "loop"
+          ],
+          "done": [
+            "loop"
+          ]
+        },
+        "join": {
+          "loop": [],
+          "body": [
+            "loop"
+          ],
+          "done": [
+            "loop"
+          ]
+        },
+        "condition": {},
+        "loop": {
+          "loop": {
+            "loop": [
+              "body"
+            ],
+            "done": [
+              "done"
+            ]
+          }
+        },
+        "error": {}
+      },
+      "targetOutput": {
+        "nodes": [
+          "loop",
+          "body",
+          "done"
+        ],
+        "start": [
+          "loop"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "loop": [],
+          "body": [],
+          "done": []
+        },
+        "reverse": {
+          "loop": [],
+          "body": [
+            "loop"
+          ],
+          "done": [
+            "loop"
+          ]
+        },
+        "join": {
+          "loop": [],
+          "body": [
+            "loop"
+          ],
+          "done": [
+            "loop"
+          ]
+        },
+        "condition": {},
+        "loop": {
+          "loop": {
+            "loop": [
+              "body"
+            ],
+            "done": [
+              "done"
+            ]
+          }
+        },
+        "error": {}
+      },
+      "equal": true
+    },
+    {
+      "case": "error-backflow",
+      "input": {
+        "id": "parity",
+        "name": "差分",
+        "nodes": [
+          {
+            "id": "a",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "a"
+            }
+          },
+          {
+            "id": "b",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "b"
+            }
+          },
+          {
+            "id": "handler",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "handler"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-a-b-plain",
+            "source": "a",
+            "target": "b"
+          },
+          {
+            "id": "e-b-handler-plain",
+            "source": "b",
+            "target": "handler"
+          },
+          {
+            "id": "e-handler-b-error",
+            "source": "handler",
+            "target": "b",
+            "sourceHandle": "error"
+          }
+        ],
+        "variables": []
+      },
+      "sourceOutput": {
+        "nodes": [
+          "a",
+          "b",
+          "handler"
+        ],
+        "start": [
+          "a"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "a": [
+            "b"
+          ],
+          "b": [
+            "handler"
+          ],
+          "handler": []
+        },
+        "reverse": {
+          "a": [],
+          "b": [
+            "a",
+            "handler"
+          ],
+          "handler": [
+            "b"
+          ]
+        },
+        "join": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "handler": [
+            "b"
+          ]
+        },
+        "condition": {},
+        "loop": {},
+        "error": {
+          "handler": [
+            "b"
+          ]
+        }
+      },
+      "targetOutput": {
+        "nodes": [
+          "a",
+          "b",
+          "handler"
+        ],
+        "start": [
+          "a"
+        ],
+        "isolated": [],
+        "adjacency": {
+          "a": [
+            "b"
+          ],
+          "b": [
+            "handler"
+          ],
+          "handler": []
+        },
+        "reverse": {
+          "a": [],
+          "b": [
+            "a",
+            "handler"
+          ],
+          "handler": [
+            "b"
+          ]
+        },
+        "join": {
+          "a": [],
+          "b": [
+            "a"
+          ],
+          "handler": [
+            "b"
+          ]
+        },
+        "condition": {},
+        "loop": {},
+        "error": {
+          "handler": [
+            "b"
+          ]
+        }
+      },
+      "equal": true
+    },
+    {
+      "case": "isolated-visual",
+      "input": {
+        "id": "parity",
+        "name": "差分",
+        "nodes": [
+          {
+            "id": "start",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "start"
+            }
+          },
+          {
+            "id": "end",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "end"
+            }
+          },
+          {
+            "id": "forgotten",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "print_log",
+              "label": "forgotten"
+            }
+          },
+          {
+            "id": "group",
+            "type": "moduleNode",
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "data": {
+              "moduleType": "group",
+              "label": "group"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "id": "e-start-end-plain",
+            "source": "start",
+            "target": "end"
+          }
+        ],
+        "variables": []
+      },
+      "sourceOutput": {
+        "nodes": [
+          "start",
+          "end",
+          "forgotten"
+        ],
+        "start": [
+          "start"
+        ],
+        "isolated": [
+          "forgotten"
+        ],
+        "adjacency": {
+          "start": [
+            "end"
+          ],
+          "end": [],
+          "forgotten": []
+        },
+        "reverse": {
+          "start": [],
+          "end": [
+            "start"
+          ],
+          "forgotten": []
+        },
+        "join": {
+          "start": [],
+          "end": [
+            "start"
+          ],
+          "forgotten": []
+        },
+        "condition": {},
+        "loop": {},
+        "error": {}
+      },
+      "targetOutput": {
+        "nodes": [
+          "start",
+          "end",
+          "forgotten"
+        ],
+        "start": [
+          "start"
+        ],
+        "isolated": [
+          "forgotten"
+        ],
+        "adjacency": {
+          "start": [
+            "end"
+          ],
+          "end": [],
+          "forgotten": []
+        },
+        "reverse": {
+          "start": [],
+          "end": [
+            "start"
+          ],
+          "forgotten": []
+        },
+        "join": {
+          "start": [],
+          "end": [
+            "start"
+          ],
+          "forgotten": []
+        },
+        "condition": {},
+        "loop": {},
+        "error": {}
+      },
+      "equal": true
+    }
+  ],
+  "variables": [
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": "你好，{name}"
+      },
+      "sourceOutput": "你好，目标",
+      "targetOutput": "你好，目标",
+      "equal": true
+    },
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": "${data[0][value]}"
+      },
+      "sourceOutput": "3",
+      "targetOutput": "3",
+      "equal": true
+    },
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": "{data[{index}][value]}"
+      },
+      "sourceOutput": "3",
+      "targetOutput": "3",
+      "equal": true
+    },
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": "空值={empty}"
+      },
+      "sourceOutput": "空值=",
+      "targetOutput": "空值=",
+      "equal": true
+    },
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": "{missing}"
+      },
+      "sourceOutput": "{missing}",
+      "targetOutput": "{missing}",
+      "equal": true
+    },
+    {
+      "input": {
+        "variables": {
+          "name": "目标",
+          "data": [
+            {
+              "value": 3
+            },
+            {
+              "value": 5
+            }
+          ],
+          "index": 0,
+          "empty": null,
+          "enabled": true
+        },
+        "value": {
+          "selector": "#{name}",
+          "values": [
+            "{data[1][value]}",
+            "${enabled}"
+          ]
+        }
+      },
+      "sourceOutput": {
+        "selector": "#目标",
+        "values": [
+          "5",
+          "True"
+        ]
+      },
+      "targetOutput": {
+        "selector": "#目标",
+        "values": [
+          "5",
+          "True"
+        ]
+      },
+      "equal": true
+    }
+  ],
+  "allEqual": true,
+  "allowedAdaptations": [
+    "data.moduleType is normalized to the frozen node.type business type",
+    "credential access is injected through CredentialReader",
+    "registry strict-mode environment variable uses the AutoFlow prefix"
+  ]
+}

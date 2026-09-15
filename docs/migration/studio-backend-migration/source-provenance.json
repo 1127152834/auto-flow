@@ -26,5 +26,105 @@
     "removedDependencies",
     "licenseRecord"
   ],
-  "migratedFiles": []
+  "migratedFiles": [
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_parser.py",
+      "targetPath": "apps/backend/src/autoflow/domain/workflows/graph.py",
+      "changeSummary": "迁入执行图、起点、条件/循环/错误分支、孤立节点及汇合前驱算法；将React Flow data.moduleType规范化为业务类型并保留原节点。",
+      "retainedDependencies": [
+        "Python 标准库"
+      ],
+      "removedDependencies": [
+        "app.models.workflow",
+        "Pydantic运行模型"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/variable_manager.py",
+      "targetPath": "apps/backend/src/autoflow/domain/workflows/variables.py",
+      "changeSummary": "迁入全局/局部作用域、递归变量替换及白名单数字表达式语义。",
+      "retainedDependencies": [
+        "Python 标准库"
+      ],
+      "removedDependencies": [],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/base.py",
+      "targetPath": "apps/backend/src/autoflow/domain/workflows/execution.py",
+      "changeSummary": "迁入嵌套变量访问和ExecutionContext变量/数据行语义；以AutoFlow窄端口替换全局浏览器、凭据、模型、产物、事件与取消依赖。",
+      "retainedDependencies": [
+        "Python 标准库"
+      ],
+      "removedDependencies": [
+        "app.services.credential_manager",
+        "Playwright具体类型",
+        "手机/桌面自动化状态",
+        "全局browser_engine"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/base.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/base.py",
+      "changeSummary": "迁入ModuleResult与ModuleExecutor合同，不携带媒体、桌面和浏览器工具函数。",
+      "retainedDependencies": [
+        "Python 标准库",
+        "autoflow.domain.workflows.execution"
+      ],
+      "removedDependencies": [
+        "Playwright具体类型",
+        "FFmpeg路径工具",
+        "桌面/手机辅助函数"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/base.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/registry.py",
+      "changeSummary": "迁入last-write-wins注册、跨来源重复检测和懒加载；严格模式环境变量改为AutoFlow命名并使用结构化日志。",
+      "retainedDependencies": [
+        "Python 标准库"
+      ],
+      "removedDependencies": [
+        "WebRPA全局导入副作用"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/type_utils.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/type_utils.py",
+      "changeSummary": "逐项迁入整数、浮点、布尔和区域转换的参数顺序、默认值及容错行为。",
+      "retainedDependencies": [
+        "Python 标准库"
+      ],
+      "removedDependencies": [],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/workflow_executor.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/runtime.py",
+      "changeSummary": "迁入B1线性节点按边执行、失败即停和分支结果入口；执行前增加227范围与已注册执行器的原子预检。完整控制流、重试和错误策略留在对应批准里程碑继续按源码迁入。",
+      "retainedDependencies": [
+        "执行图",
+        "执行器注册",
+        "ExecutionContext"
+      ],
+      "removedDependencies": [
+        "FastAPI",
+        "SQLAlchemy",
+        "WebSocket",
+        "全局browser_engine"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    }
+  ]
 }

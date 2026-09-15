@@ -157,11 +157,11 @@
 - Create: `apps/backend/tests/differential/workflows/test_variable_parity.py`
 - Create: `apps/backend/tests/unit/workflows/test_executor_registry.py`
 
-- [ ] 参数化移植冻结的 parser、variable、safe expression 与 registry 用例，先让它们对空目标实现失败。
-- [ ] 保留注册覆盖次序、起点、分支和原变量替换行为；删除 FastAPI、SQLAlchemy、全局 browser engine 依赖。
-- [ ] 定义 `ExecutionContext`，仅暴露浏览器、产物、凭据、模型、外部集成、事件、取消与时钟端口。
-- [ ] 未知/排除/尚未迁入节点在预检返回 `UNSUPPORTED_NODE_TYPE`，包含 `nodeId` 和 `path`，不执行任何节点。
-- [ ] 运行冻结差分用例与 registry 测试；证据记录源输入、源输出、目标输出和允许的 AutoFlow 适配差异。
+- [x] 参数化移植冻结的 parser、variable、safe expression 与 registry 用例，先让它们对空目标实现失败。
+- [x] 保留注册覆盖次序、起点、分支和原变量替换行为；删除 FastAPI、SQLAlchemy、全局 browser engine 依赖。
+- [x] 定义 `ExecutionContext`，仅暴露浏览器、产物、凭据、模型、外部集成、事件、取消与时钟端口。
+- [x] 未知/排除/尚未迁入节点在预检返回 `UNSUPPORTED_NODE_TYPE`，包含 `nodeId` 和 `path`，不执行任何节点。
+- [x] 运行冻结差分用例与 registry 测试；证据记录源输入、源输出、目标输出和允许的 AutoFlow 适配差异。
 
 ### Task B1.3：CloakBrowser 会话端口和受管 worker
 
