@@ -1,0 +1,41 @@
+{
+  "evidenceId": "BE-B3-graph-parser-differential-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "implementationCommit": "f871057f",
+  "result": "AutoFlow图解析器在10组冻结源码差分场景中与WebRPA一致；该结果只核销解析层，不代表控制流调度器已经完成。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "backend/app/services/workflow_parser.py",
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "coveredBehavior": [
+    "无边图与多个起点",
+    "孤立节点与视觉节点过滤",
+    "条件边去重及条件/错误边与普通邻接隔离",
+    "菱形汇合前驱",
+    "错误回流入口",
+    "合法循环回边不参与汇合等待",
+    "普通环无起点校验",
+    "缺失目标及条件节点无分支校验",
+    "输入工作流原文不被解析器修改"
+  ],
+  "verification": {
+    "pytest": "10 passed in 1.57s",
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "remaining": [
+    "生产runtime尚未在调度前消费definition.validate()",
+    "生产runtime尚未消费错误分支和汇合前驱",
+    "全局visited调度状态尚不支持循环节点重复执行",
+    "冻结校验会放过有其它合法起点的断开环及仅有false分支的条件节点；是否作为批准增强收紧需在B3调度集成时按前端合同判断"
+  ],
+  "notClaimed": [
+    "条件、循环、错误策略或并行的真实执行",
+    "子流程或自定义模块执行",
+    "正式Electron控制流验收"
+  ],
+  "userDatabaseModified": false
+}
