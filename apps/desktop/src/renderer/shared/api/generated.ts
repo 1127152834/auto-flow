@@ -3467,6 +3467,12 @@ export type components = {
             }[];
             /** Outcome */
             outcome: string;
+            /** Required */
+            required: boolean;
+            /** Detail */
+            detail?: string | null;
+            /** Scannedcount */
+            scannedCount?: number | null;
         };
         /** InputPreviewRequest */
         InputPreviewRequest: {
@@ -3477,6 +3483,10 @@ export type components = {
         InputPreviewResponse: {
             /** Runnable */
             runnable: boolean;
+            /** Selectionstatus */
+            selectionStatus: string;
+            /** Evaluatedcandidatebindings */
+            evaluatedCandidateBindings: number;
             /** Inputs */
             inputs: components["schemas"]["InputPreviewItem"][];
         };

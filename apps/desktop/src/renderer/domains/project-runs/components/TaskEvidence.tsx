@@ -51,12 +51,20 @@ function projectInputs(detail: Detail): DataInputPreviewItem[] {
       return [{ label: field.fieldName, value: show(field.value) }]
     }) : []
     const businessDisplay = values.slice(0, 2).map(value => value.value).filter(value => value && value !== '—').join(' · ')
+    const unavailableReason = item.unavailableReason
+    const outcome: DataInputPreviewItem['outcome'] = unavailableReason === 'busy'
+      ? 'temporarilyBusy'
+      : unavailableReason === 'no_match'
+        ? 'noMatch'
+        : 'ready'
     return {
       alias: typeof item.alias === 'string' && item.alias.trim() ? item.alias : `数据输入 ${index + 1}`,
       tableDisplay: typeof item.tableDisplay === 'string' ? item.tableDisplay : '项目数据表',
       recordDisplay: businessDisplay || (keyValue ? `${keyType} · ${keyValue}` : null),
       values,
-      outcome: 'ready',
+      outcome,
+      required: typeof item.required === 'boolean' ? item.required : unavailableReason ? false : true,
+      detail: unavailableReason === 'busy' ? '任务创建时该可选记录暂时被其他任务占用' : unavailableReason === 'no_match' ? '任务创建时没有符合条件的可选记录' : undefined,
     }
   })
 }

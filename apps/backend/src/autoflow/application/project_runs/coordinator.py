@@ -207,6 +207,16 @@ class ProjectRunCoordinator:
                         "数据输入配置或表结构已失效",
                         422,
                     ),
+                    "ambiguous": (
+                        "INPUT_AMBIGUOUS",
+                        "关联条件匹配到多条记录，请先修复数据",
+                        422,
+                    ),
+                    "scanBudgetExceeded": (
+                        "INPUT_SCAN_BUDGET_EXCEEDED",
+                        "候选数据量超出单次预检范围，请收紧筛选条件",
+                        409,
+                    ),
                 }
                 code, message, status = errors[selection.status]
                 raise ProjectRunError(code, message, status)
@@ -337,6 +347,7 @@ class ProjectRunCoordinator:
                 snapshot_inputs = (
                     SqlAlchemyProjectInputGroups(session).hold(
                         selection,
+                        input_plan=automation.input_plan,
                         project_id=project_id,
                         batch_id=batch_id,
                         task_id=task_id,
@@ -402,10 +413,53 @@ class ProjectRunCoordinator:
                 project_id, automation.input_plan
             )
             selected = {item.input_id: item for item in selection.inputs}
+            unavailable = {
+                item.input_id: item.reason for item in selection.unavailable_inputs
+            }
+            issue_ids = set(selection.issue_input_ids)
+            raw_issue_details = dict(selection.issue_details)
+            issue_details = {
+                input_id: _present_input_issue(message)
+                for input_id, message in selection.issue_details
+            }
+            effective_required = set(selection.effective_required_input_ids)
+            details = {
+                "noMatch": "没有符合条件的记录",
+                "temporarilyBusy": "符合条件的记录暂时被其他任务占用",
+                "ambiguous": "关联条件匹配到多条记录，请先修复数据",
+                "configurationError": "数据输入配置或表结构已失效",
+                "scanBudgetExceeded": "候选数据量超出单次预检范围，请收紧筛选条件",
+            }
             items = []
             for item in automation.input_plan.get("inputs", []):
                 table = session.get(DataTableRow, item["tableId"])
                 chosen = selected.get(item["inputId"])
+                unavailable_reason = unavailable.get(item["inputId"])
+                outcome = (
+                    "ready"
+                    if chosen is not None
+                    else (
+                        "noMatch"
+                        if unavailable_reason == "no_match"
+                        else "temporarilyBusy"
+                        if unavailable_reason == "busy"
+                        else selection.status
+                        if item["inputId"] in issue_ids
+                        else "notEvaluated"
+                    )
+                )
+                promoted_to_required = (
+                    item["inputId"] in effective_required and not item["required"]
+                )
+                detail = (
+                    "可选输入没有符合条件的记录，本次任务将保留为空"
+                    if unavailable_reason == "no_match"
+                    else "可选输入的候选记录暂被占用，本次任务将保留为空"
+                    if unavailable_reason == "busy"
+                    else "因后续必要输入依赖，本次必须提供"
+                    if promoted_to_required and outcome != "ready"
+                    else issue_details.get(item["inputId"], details.get(outcome))
+                )
                 ref = chosen.record_ref if chosen is not None else None
                 items.append(
                     {
@@ -422,10 +476,23 @@ class ProjectRunCoordinator:
                             if chosen is not None
                             else []
                         ),
-                        "outcome": "ready" if chosen is not None else selection.status,
+                        "outcome": outcome,
+                        "required": item["inputId"] in effective_required,
+                        "detail": detail,
+                        "scannedCount": (
+                            selection.evaluated_candidate_bindings
+                            if raw_issue_details.get(item["inputId"])
+                            == "record scan budget exceeded"
+                            else None
+                        ),
                     }
                 )
-            return {"runnable": selection.status == "ready", "inputs": items}
+            return {
+                "runnable": selection.status == "ready",
+                "selectionStatus": selection.status,
+                "evaluatedCandidateBindings": selection.evaluated_candidate_bindings,
+                "inputs": items,
+            }
 
     def list_tasks(self, project_id: str, batch_id: str):
         with self._factory() as session:
@@ -443,3 +510,29 @@ class ProjectRunCoordinator:
         if row is None or row.lifecycle_state == "deleted":
             raise ProjectRunError("NOT_FOUND", "项目不存在", 404)
         return row
+
+
+def _present_input_issue(message: str) -> str:
+    if message.startswith("ambiguous value ") and "; records " in message:
+        value, records = message.removeprefix("ambiguous value ").split(
+            "; records ", 1
+        )
+        return f"关联值 {value} 同时匹配记录 {records}，请先清理重复数据"
+    messages = {
+        "input mode is invalid": "输入模式无效",
+        "table identity is invalid": "数据表身份无效",
+        "table generation is no longer current": "数据表已更新，请重新选择数据表",
+        "fixed record reference is invalid": "固定记录引用无效",
+        "fixed record reference is outside this input": "固定记录不属于当前输入的数据表",
+        "related input has no relation": "关联输入缺少关联条件",
+        "relation source is invalid": "关联来源输入无效",
+        "same-record relation uses another table generation": "同一记录关联必须使用同一数据表版本",
+        "record slot relation is invalid": "记录槽关联已失效",
+        "field relation reference is invalid": "字段关联引用已失效",
+        "field relation types are incompatible": "关联字段类型不一致",
+        "relation type is invalid": "关联方式无效",
+        "record slot value is invalid": "记录槽保存的数据引用无效",
+        "record scan budget exceeded": "数据表超过单次扫描范围，将由批次调度继续查找",
+        "candidate binding budget exceeded": "完整输入组的候选组合过多，请收紧筛选条件",
+    }
+    return messages.get(message, "输入筛选、字段或状态配置已失效")

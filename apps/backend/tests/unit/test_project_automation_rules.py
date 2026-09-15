@@ -31,6 +31,20 @@ def payload():
     }
 
 
+def data_input(input_id: str, table_id: str, generation: str) -> dict:
+    return {
+        "inputId": input_id,
+        "alias": input_id,
+        "tableId": table_id,
+        "datasetGeneration": generation,
+        "mode": "independent",
+        "required": True,
+        "fieldBindings": [],
+        "filter": {"type": "all", "items": []},
+        "orderBy": [],
+    }
+
+
 def test_unicode_names_stable_ids_and_strict_parameter_values():
     value = validate_write(payload())
     assert value["name"] == "自动化 α"
@@ -137,3 +151,38 @@ def test_environment_model_provider_preserves_inherit_none_and_uuid_states():
     selected["environmentPolicy"]["modelProviderId"] = "not-a-uuid"
     with pytest.raises(ProjectError):
         validate_write(selected)
+
+
+def test_input_relation_graph_rejects_cycles_but_accepts_forward_dag_references():
+    first_id = "00000000-0000-0000-0000-000000000011"
+    second_id = "00000000-0000-0000-0000-000000000012"
+    table_id = "00000000-0000-0000-0000-000000000013"
+    generation = "00000000-0000-0000-0000-000000000014"
+
+    forward = payload()
+    first = data_input(first_id, table_id, generation)
+    first.update(
+        {
+            "mode": "related",
+            "relation": {"type": "sameRecord", "sourceInputId": second_id},
+        }
+    )
+    forward["inputPlan"] = {
+        "inputs": [first, data_input(second_id, table_id, generation)]
+    }
+    assert validate_write(forward)["inputPlan"] == forward["inputPlan"]
+
+    cyclic = payload()
+    second = data_input(second_id, table_id, generation)
+    second.update(
+        {
+            "mode": "related",
+            "relation": {"type": "sameRecord", "sourceInputId": first_id},
+        }
+    )
+    cyclic["inputPlan"] = {"inputs": [first, second]}
+    with pytest.raises(ProjectError) as error:
+        validate_write(cyclic)
+    assert error.value.details["fields"] == {
+        "inputPlan.inputs": "Input dependencies contain a cycle"
+    }

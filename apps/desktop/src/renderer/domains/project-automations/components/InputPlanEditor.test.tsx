@@ -47,6 +47,14 @@ it('refuses table change and removal when another input relation references the 
   expect(p.onChange).not.toHaveBeenCalled()
 })
 
+it('explains when an optional source becomes required by a required dependent input', () => {
+  const optionalSource = { ...input, required: false }
+  const requiredTarget = { ...input, inputId: 'i2', alias: '关联', mode: 'related' as const, relation: { type: 'sameRecord' as const, sourceInputId: 'i1' } }
+  render(<InputPlanEditor {...props({ inputs: [optionalSource, requiredTarget] })}/>)
+
+  expect(screen.getByText('“关联”启动时必须取得记录，因此此输入也必须提供。')).toBeVisible()
+})
+
 it('supports fixed records, record loading and explicit stable field bindings', async () => {
   const p = props(), load = vi.fn(), user = userEvent.setup(); const view = render(<InputPlanEditor {...p} onLoadRecords={load}/>)
   await chooseOption(user, screen.getByRole('combobox', { name: '输入模式 资料' }), 'fixedRecord')

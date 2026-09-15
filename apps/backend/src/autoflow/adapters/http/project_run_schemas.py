@@ -33,10 +33,15 @@ class InputPreviewItem(ApiModel):
     record_display: str | None
     values: list[dict[str, JsonValue]] = Field(default_factory=list)
     outcome: str
+    required: bool
+    detail: str | None = None
+    scanned_count: int | None = Field(None, ge=0)
 
 
 class InputPreviewResponse(ApiModel):
     runnable: bool
+    selection_status: str
+    evaluated_candidate_bindings: int = Field(ge=0)
     inputs: list[InputPreviewItem]
 
 

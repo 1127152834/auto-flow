@@ -8,7 +8,11 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from autoflow.domain.project_data.identity import RecordKey, RecordKeyType
+from autoflow.domain.project_data.identity import (
+    RecordKey,
+    RecordKeyType,
+    encode_record_key,
+)
 from autoflow.domain.project_data.query import (
     MISSING,
     compare_values,
@@ -17,11 +21,15 @@ from autoflow.domain.project_data.query import (
     validate_order,
 )
 from autoflow.domain.project_runs.input_selection import (
+    MAX_CANDIDATE_EVALUATIONS,
     Candidate,
+    FieldEqualsRelation,
     InputCandidates,
     InputSelection,
     LeaseKey,
     RecordRef,
+    RecordSlotRelation,
+    SameRecordRelation,
     SelectedInput,
     select_required_inputs,
 )
@@ -48,23 +56,25 @@ class SqlAlchemyProjectInputGroups:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
             return InputSelection("configurationError")
+        if not all(isinstance(item, dict) for item in raw_inputs):
+            return InputSelection("configurationError")
+        definitions = {
+            item.get("inputId"): item
+            for item in raw_inputs
+            if isinstance(item.get("inputId"), str)
+        }
+        if len(definitions) != len(raw_inputs):
+            return InputSelection("configurationError")
         sources: list[InputCandidates] = []
         for item in raw_inputs:
-            if (
-                not isinstance(item, dict)
-                or item.get("mode") != "independent"
-                or item.get("required") is not True
-                or not isinstance(item.get("inputId"), str)
-            ):
-                sources.append(InputCandidates(str(item.get("inputId", "invalid")), (), "V1 requires independent required inputs"))
-                continue
-            sources.append(self._candidates(project_id, item))
+            sources.append(self._candidates(project_id, item, definitions))
         return select_required_inputs(sources)
 
     def hold(
         self,
         selection: InputSelection,
         *,
+        input_plan: dict[str, Any],
         project_id: str,
         batch_id: str,
         task_id: str,
@@ -108,16 +118,54 @@ class SqlAlchemyProjectInputGroups:
             )
             self.session.add(cursor)
             lease_rows[lease_key] = lease
-        return [
-            _snapshot_input(selected, lease_rows[selected.lease_key].id, now)
+        selected_snapshots = {
+            selected.input_id: _snapshot_input(
+                selected, lease_rows[selected.lease_key].id, now
+            )
             for selected in selection.inputs
-        ]
+        }
+        unavailable = {
+            item.input_id: item.reason for item in selection.unavailable_inputs
+        }
+        snapshots: list[dict[str, Any]] = []
+        for item in input_plan.get("inputs", []):
+            input_id = item.get("inputId")
+            if input_id in selected_snapshots:
+                snapshots.append(selected_snapshots[input_id])
+            elif input_id in unavailable:
+                table = self.session.get(DataTableRow, item.get("tableId"))
+                snapshots.append(
+                    {
+                        "inputId": input_id,
+                        "alias": item.get("alias", input_id),
+                        "tableDisplay": table.name if table is not None else "数据表已失效",
+                        "recordRef": None,
+                        "values": [],
+                        "unavailableReason": unavailable[input_id],
+                        "capturedAt": now.isoformat(),
+                    }
+                )
+        return snapshots
 
-    def _candidates(self, project_id: str, item: dict[str, Any]) -> InputCandidates:
+    def _candidates(
+        self,
+        project_id: str,
+        item: dict[str, Any],
+        definitions: dict[str, dict[str, Any]],
+    ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
+        required, mode = item.get("required"), item.get("mode")
+        if type(required) is not bool or mode not in {
+            "independent",
+            "fixedRecord",
+            "related",
+        }:
+            return InputCandidates(input_id, (), "input mode is invalid")
         if not isinstance(table_id, str) or not isinstance(generation, str):
-            return InputCandidates(input_id, (), "table identity is invalid")
+            return InputCandidates(
+                input_id, (), "table identity is invalid", required=required, mode=mode
+            )
         table = self.session.scalar(
             select(DataTableRow).where(
                 DataTableRow.project_id == project_id,
@@ -126,7 +174,13 @@ class SqlAlchemyProjectInputGroups:
             )
         )
         if table is None or table.current_generation != generation:
-            return InputCandidates(input_id, (), "table generation is no longer current")
+            return InputCandidates(
+                input_id,
+                (),
+                "table generation is no longer current",
+                required=required,
+                mode=mode,
+            )
         fields = list(
             self.session.scalars(
                 select(DataFieldRow)
@@ -139,6 +193,17 @@ class SqlAlchemyProjectInputGroups:
             )
         )
         field_types = {field.id: field.type for field in fields}
+        definition = _selection_definition(
+            self.session,
+            project_id,
+            item,
+            definitions,
+            field_types,
+        )
+        if isinstance(definition, str):
+            return InputCandidates(
+                input_id, (), definition, required=required, mode=mode
+            )
         statuses = set(
             self.session.scalars(
                 select(DataStatusRow.id).where(
@@ -152,7 +217,9 @@ class SqlAlchemyProjectInputGroups:
             filter_value = validate_filter(item.get("filter"), field_types, statuses)
             order_value = validate_order(item.get("orderBy"), field_types)
         except ProjectError as error:  # validated management data may become stale
-            return InputCandidates(input_id, (), str(error))
+            return InputCandidates(
+                input_id, (), str(error), required=required, mode=mode, **definition
+            )
         rows = list(
             self.session.scalars(
                 select(DataRecordRow).where(
@@ -160,9 +227,18 @@ class SqlAlchemyProjectInputGroups:
                     DataRecordRow.table_id == table_id,
                     DataRecordRow.dataset_generation == generation,
                     DataRecordRow.deleted.is_(False),
-                )
+                ).limit(MAX_CANDIDATE_EVALUATIONS + 1)
             )
         )
+        if len(rows) > MAX_CANDIDATE_EVALUATIONS:
+            return InputCandidates(
+                input_id,
+                (),
+                required=required,
+                mode=mode,
+                scan_budget_exceeded=True,
+                **definition,
+            )
         rows = [row for row in rows if matches(filter_value, row.values_json, row.status_id)]
         rows.sort(key=cmp_to_key(lambda left, right: _compare_rows(left, right, order_value, field_types)))
         active = set(
@@ -202,8 +278,172 @@ class SqlAlchemyProjectInputGroups:
                 "statusRevision": row.status_revision,
                 "linkRevision": row.link_revision,
             }
-            candidates.append(Candidate(ref, lease, value, _lease_key(lease) not in active))
-        return InputCandidates(input_id, tuple(candidates))
+            try:
+                record_slots = {
+                    slot["slotId"]: (
+                        _parse_record_ref(slot["target"])
+                        if slot.get("target") is not None
+                        else None
+                    )
+                    for slot in row.record_slots
+                    if isinstance(slot, dict) and isinstance(slot.get("slotId"), str)
+                }
+            except (KeyError, TypeError, ValueError):
+                return InputCandidates(
+                    input_id,
+                    (),
+                    "record slot value is invalid",
+                    required=required,
+                    mode=mode,
+                    **definition,
+                )
+            candidates.append(
+                Candidate(
+                    ref,
+                    lease,
+                    value,
+                    _lease_key(lease) not in active,
+                    row.values_json,
+                    record_slots,
+                )
+            )
+        return InputCandidates(
+            input_id,
+            tuple(candidates),
+            required=required,
+            mode=mode,
+            **definition,
+        )
+
+
+def _selection_definition(
+    session: Session,
+    project_id: str,
+    item: dict[str, Any],
+    definitions: dict[str, dict[str, Any]],
+    target_field_types: dict[str, str],
+) -> dict[str, Any] | str:
+    mode = item["mode"]
+    if mode == "independent":
+        return {}
+    if mode == "fixedRecord":
+        try:
+            fixed = _parse_record_ref(item["fixedRecord"])
+        except (KeyError, TypeError, ValueError, ProjectError):
+            return "fixed record reference is invalid"
+        if (
+            fixed.project_id != project_id
+            or fixed.table_id != item["tableId"]
+            or fixed.dataset_generation != item["datasetGeneration"]
+        ):
+            return "fixed record reference is outside this input"
+        return {"fixed_record": fixed}
+
+    relation = item.get("relation")
+    if not isinstance(relation, dict):
+        return "related input has no relation"
+    source_id = relation.get("sourceInputId")
+    if not isinstance(source_id, str):
+        return "relation source is invalid"
+    source = definitions.get(source_id)
+    if source is None or source_id == item["inputId"]:
+        return "relation source is invalid"
+    kind = relation.get("type")
+    if kind == "sameRecord":
+        if (
+            source.get("tableId"),
+            source.get("datasetGeneration"),
+        ) != (item["tableId"], item["datasetGeneration"]):
+            return "same-record relation uses another table generation"
+        return {"relation": SameRecordRelation(source_id)}
+    if kind == "recordSlot":
+        slot_id = relation.get("slotId")
+        source_table = session.scalar(
+            select(DataTableRow).where(
+                DataTableRow.project_id == project_id,
+                DataTableRow.id == source.get("tableId"),
+                DataTableRow.current_generation == source.get("datasetGeneration"),
+                DataTableRow.published.is_(True),
+            )
+        )
+        if (
+            not isinstance(slot_id, str)
+            or source_table is None
+            or not any(
+                isinstance(slot, dict)
+                and slot.get("slotId") == slot_id
+                and slot.get("targetTableId") == item["tableId"]
+                for slot in source_table.slot_definitions
+            )
+        ):
+            return "record slot relation is invalid"
+        return {"relation": RecordSlotRelation(source_id, slot_id)}
+    if kind == "fieldEquals":
+        source_ref, target_ref = relation.get("sourceFieldRef"), relation.get(
+            "targetFieldRef"
+        )
+        if (
+            not isinstance(source_ref, dict)
+            or not isinstance(target_ref, dict)
+            or not _field_ref_matches(source_ref, project_id, source)
+            or not _field_ref_matches(target_ref, project_id, item)
+        ):
+            return "field relation reference is invalid"
+        source_field_id = cast(str, source_ref["fieldId"])
+        target_field_id = cast(str, target_ref["fieldId"])
+        source_field = session.scalar(
+            select(DataFieldRow).where(
+                DataFieldRow.project_id == project_id,
+                DataFieldRow.table_id == source["tableId"],
+                DataFieldRow.dataset_generation == source["datasetGeneration"],
+                DataFieldRow.id == source_field_id,
+            )
+        )
+        target_type = target_field_types.get(target_field_id)
+        if source_field is None or target_type is None or source_field.type != target_type:
+            return "field relation types are incompatible"
+        return {
+            "relation": FieldEqualsRelation(
+                source_id, source_field_id, target_field_id
+            )
+        }
+    return "relation type is invalid"
+
+
+def _field_ref_matches(
+    value: Any, project_id: str, definition: dict[str, Any]
+) -> bool:
+    return isinstance(value, dict) and value == {
+        "projectId": project_id,
+        "tableId": definition.get("tableId"),
+        "datasetGeneration": definition.get("datasetGeneration"),
+        "fieldId": value.get("fieldId"),
+    } and isinstance(value.get("fieldId"), str)
+
+
+def _parse_record_ref(value: Any) -> RecordRef:
+    if not isinstance(value, dict) or set(value) != {
+        "projectId",
+        "tableId",
+        "datasetGeneration",
+        "recordKey",
+    }:
+        raise ValueError("invalid record reference")
+    key = value["recordKey"]
+    if (
+        not isinstance(key, dict)
+        or set(key) != {"type", "value"}
+        or key.get("type") not in {"text", "integer", "uuid"}
+        or not isinstance(key.get("value"), str)
+    ):
+        raise ValueError("invalid record key")
+    record_key = RecordKey(cast(RecordKeyType, key["type"]), key["value"])
+    encode_record_key(record_key)
+    if not all(isinstance(value.get(name), str) for name in ("projectId", "tableId", "datasetGeneration")):
+        raise ValueError("invalid record scope")
+    return RecordRef(
+        value["projectId"], value["tableId"], value["datasetGeneration"], record_key
+    )
 
 
 def _snapshot_input(
@@ -212,6 +452,7 @@ def _snapshot_input(
     return {
         "inputId": selected.input_id,
         "leaseId": lease_id,
+        "unavailableReason": None,
         **({"capturedAt": captured_at.isoformat()} if captured_at is not None else {}),
         **_mutable(selected.value),
     }

@@ -43,6 +43,17 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
   useEffect(() => { draftCallback.current?.({ dirty: filterDirty, valid: !filterDirty }) }, [filterDirty])
   const replace = (index: number, next: InputDefinition) => onChange({ inputs: value.inputs.map((input, itemIndex) => itemIndex === index ? next : input) })
   const referencedBy = (inputId: string) => value.inputs.find(input => input.mode === 'related' && input.relation?.sourceInputId === inputId)
+  const requiredBy = (inputId: string) => value.inputs.find(candidate => {
+    if (!candidate.required) return false
+    let current: InputDefinition | undefined = candidate
+    const visited = new Set<string>()
+    while (current?.mode === 'related' && current.relation?.sourceInputId && !visited.has(current.inputId)) {
+      visited.add(current.inputId)
+      if (current.relation.sourceInputId === inputId) return true
+      current = value.inputs.find(item => item.inputId === current?.relation?.sourceInputId)
+    }
+    return false
+  })
   const add = () => {
     const table = tables[0]
     if (!table) return
@@ -53,6 +64,7 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
     {value.inputs.map((input, index) => {
       const table = tables.find(item => item.id === input.tableId)
       const reference = referencedBy(input.inputId)
+      const effectiveRequirement = !input.required ? requiredBy(input.inputId) : undefined
       const modeError = errors[`${input.inputId}.mode`]
       const tableError = errors[`${input.inputId}.tableId`]
       const inputErrors = Object.entries(errors).filter(([path, message]) => path.startsWith(`${input.inputId}.`) && Boolean(message))
@@ -108,6 +120,7 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
           }}/>
         </div>
         <label className="flex items-center gap-3 text-sm"><Switch aria-label={`必填输入 ${input.alias}`} checked={input.required} disabled={disabled} onCheckedChange={required => replace(index, { ...input, required })}/>启动时必须取得记录</label>
+        {effectiveRequirement ? <p className="m-0 text-sm text-warning">“{effectiveRequirement.alias || '未命名输入'}”启动时必须取得记录，因此此输入也必须提供。</p> : null}
         {input.mode === 'fixedRecord' ? <div className="grid gap-2"><div className="flex flex-wrap gap-2"><Select className="min-w-64 flex-1" aria-label={`固定记录 ${input.alias}`} value={input.fixedRecord ? recordKey(input.fixedRecord) : null} options={choices(table?.records ?? [], input.fixedRecord ? recordKey(input.fixedRecord) : null, record => recordKey(record.ref), record => record.label, '记录已失效')} disabled={disabled} errorMessage={errors[`${input.inputId}.fixedRecord`]} onValueChange={key => replace(index, { ...input, fixedRecord: table?.records?.find(record => recordKey(record.ref) === key)?.ref ?? null })}/>{onLoadRecords ? <Button disabled={disabled} onClick={() => onLoadRecords(input.tableId)}>读取{table?.name ?? '数据表'}记录</Button> : null}</div></div> : null}
         {input.mode === 'related' ? <fieldset className="grid gap-3 rounded-control bg-surface-subtle p-3"><legend className="text-sm font-medium">关联输入</legend>
           <div className="grid gap-2 sm:grid-cols-2"><Select aria-label={`来源输入 ${input.alias}`} value={input.relation?.sourceInputId ?? null} options={choices(sourceCandidates, input.relation?.sourceInputId, item => item.inputId, item => item.alias || '未命名输入', '数据输入引用暂不可用').map(option => ({ ...option, disabled: option.disabled || Boolean(sourceCandidates.find(item => item.inputId === option.value) && !relatedCandidates.includes(sourceCandidates.find(item => item.inputId === option.value)!)) }))} clearable={false} disabled={disabled} onValueChange={sourceInputId => { if (!sourceInputId) return; const candidate = sourceCandidates.find(item => item.inputId === sourceInputId); if (!candidate) return; const relation = relationFor(relationType, sourceInputId) ?? firstRelationFor(candidate); if (relation) replace(index, { ...input, relation }) }}/><Select aria-label={`关联方式 ${input.alias}`} value={relationType} options={[{ value: 'sameRecord', label: '同一记录', disabled: !capabilities.sameRecord }, { value: 'fieldEquals', label: '字段相等', disabled: !capabilities.fieldEquals }, { value: 'recordSlot', label: '记录槽', disabled: !capabilities.recordSlot }]} clearable={false} disabled={disabled} onValueChange={type => { if (!type || !sourceInput) return; const relation = relationFor(type, sourceInput.inputId); if (relation) replace(index, { ...input, relation }) }}/></div>

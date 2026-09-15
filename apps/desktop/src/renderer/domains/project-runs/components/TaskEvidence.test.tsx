@@ -79,6 +79,30 @@ it('shows frozen project inputs and explicit task data writes in the io view', (
   expect(screen.getByText('待使用 → 已使用')).toBeVisible()
 })
 
+it('keeps an unavailable optional input visible as frozen task evidence', () => {
+  const dataDetail: Schema['TaskDetail'] = {
+    ...detail,
+    inputSnapshot: {
+      ...detail.inputSnapshot,
+      inputs: [{
+        alias: '备用邮箱',
+        tableDisplay: '邮箱表',
+        required: false,
+        recordRef: null,
+        unavailableReason: 'no_match',
+        values: [],
+      }],
+    },
+  }
+
+  render(<TaskEvidence {...base} detail={dataDetail} mode="io" outputs={outputPage([])} artifacts={artifactPage([])}/>)
+
+  expect(screen.getByText('备用邮箱')).toBeVisible()
+  expect(screen.getByText('可选输入未找到')).toBeVisible()
+  expect(screen.getByText('不会阻止本次启动')).toBeVisible()
+  expect(screen.queryByText('可以使用')).not.toBeInTheDocument()
+})
+
 it('presents the isolated executor boundary as product language', () => {
   render(<TaskEvidence {...base} mode="io" outputs={outputPage([{
     outputId: 'boundary',

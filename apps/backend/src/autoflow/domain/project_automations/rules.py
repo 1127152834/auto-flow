@@ -120,7 +120,37 @@ def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
     for input_id, item in inputs.items():
         if "relation" in item:
             _relation(item["relation"], input_id, inputs, project_id)
+    _validate_input_dependencies(inputs)
     return value
+
+
+def _validate_input_dependencies(inputs: dict[str, dict[str, Any]]) -> None:
+    dependencies = {
+        input_id: (
+            {item["relation"]["sourceInputId"]}
+            if item.get("mode") == "related" and isinstance(item.get("relation"), dict)
+            else set()
+        )
+        for input_id, item in inputs.items()
+    }
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(input_id: str) -> None:
+        if input_id in visiting:
+            raise validation_error(
+                "inputPlan.inputs", "Input dependencies contain a cycle"
+            )
+        if input_id in visited:
+            return
+        visiting.add(input_id)
+        for dependency in dependencies[input_id]:
+            visit(dependency)
+        visiting.remove(input_id)
+        visited.add(input_id)
+
+    for input_id in inputs:
+        visit(input_id)
 
 
 def _field_bindings(value, path, project_id, table_id, generation):
