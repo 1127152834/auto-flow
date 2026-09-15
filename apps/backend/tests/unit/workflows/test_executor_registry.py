@@ -206,6 +206,8 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "wait",
         "stop_workflow",
         "assert_checkpoint",
+        "group",
+        "note",
     }
 
 

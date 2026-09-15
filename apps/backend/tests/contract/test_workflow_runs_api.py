@@ -740,6 +740,8 @@ def test_control_variable_family_is_admitted_by_the_real_http_coordinator(
         "wait",
         "stop_workflow",
         "assert_checkpoint",
+        "group",
+        "note",
     ]
     workflow_payload = {
         **_workflow(),

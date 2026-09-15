@@ -189,3 +189,27 @@ def test_browser_backed_control_modes_request_cloakbrowser(
     assert WorkflowRuntime(build_production_executor_registry()).requires_browser(
         document
     )
+
+
+@pytest.mark.asyncio
+async def test_visual_group_and_note_are_registered_but_not_dispatched() -> None:
+    document = {
+        "nodes": [
+            _node("group", "group", {}),
+            _node("note", "note", {}),
+            _node(
+                "work", "set_variable", {"variableName": "done", "variableValue": "1"}
+            ),
+        ],
+        "edges": [],
+        "variables": [],
+    }
+    context = ExecutionContext()
+
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(
+        document, context
+    )
+
+    assert result.success is True
+    assert result.executed_node_ids == ("work",)
+    assert context.variables["done"] == 1

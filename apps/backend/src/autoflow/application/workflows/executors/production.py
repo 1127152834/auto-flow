@@ -126,6 +126,7 @@ from .utility_tools import (
     URLEncodeDecodeExecutor,
     UUIDGeneratorExecutor,
 )
+from .visual import VISUAL_EXECUTORS
 from .web_basic import WEB_BASIC_EXECUTORS
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
@@ -233,6 +234,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     ExtractTableDataExecutor,
     NetworkCaptureExecutor,
     *CONTROL_VARIABLE_EXECUTORS,
+    *VISUAL_EXECUTORS,
 )
 
 
