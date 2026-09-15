@@ -17,6 +17,7 @@ from autoflow.domain.project_data.identity import (
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+from autoflow.infrastructure.database.project_claims import active_record_lease
 from autoflow.infrastructure.database.project_data import (
     _completed,
     _operation,
@@ -70,7 +71,7 @@ class SqlAlchemyProjectDataDeletions:
         with self._session_factory() as session:
             session.execute(text("BEGIN"))
             report, facts = self._record_facts(
-                session, project_id, table_id, generation, key
+                session, project_id, table_id, generation, key, check_lease=True
             )
             session.rollback()
         return self._save_impact(project_id, "deleteRecord", target, report, facts)
@@ -141,7 +142,7 @@ class SqlAlchemyProjectDataDeletions:
                 session.rollback()
                 return _operation_result(existing), _operation(existing), True
             report, facts = self._record_facts(
-                session, project_id, table_id, generation, key, True
+                session, project_id, table_id, generation, key, True, check_lease=True
             )
             self._require_impact(
                 session, project_id, "deleteRecord", report, facts, impact
@@ -344,6 +345,8 @@ class SqlAlchemyProjectDataDeletions:
         generation: str,
         key: RecordKey,
         write: bool = False,
+        *,
+        check_lease: bool = False,
     ) -> tuple[dict[str, Any], str]:
         table = SqlAlchemyProjectDataRecords._table(
             session, project_id, table_id, generation, write
@@ -353,6 +356,19 @@ class SqlAlchemyProjectDataDeletions:
         project = session.get(ProjectRow, project_id)
         assert project is not None
         blockers = _project_blockers(project, target)
+        # Task capabilities validate ownership through their write cursor instead.
+        if (
+            check_lease
+            and active_record_lease(session, project_id, table_id, generation, key)
+            is not None
+        ):
+            blockers.append(
+                _blocker(
+                    "RECORD_IN_USE",
+                    target,
+                    "Record is currently used by a running task",
+                )
+            )
         if _pending_status_target(session, target["recordRef"]):
             blockers.append(
                 _blocker(
