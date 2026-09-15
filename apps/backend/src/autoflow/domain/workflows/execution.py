@@ -72,6 +72,8 @@ class ExecutionContext:
         return resolve_value(value, self.variables, self.credentials)
 
     def set_variable(self, name: str, value: Any) -> None:
+        if self.cancellation is not None:
+            self.cancellation.raise_if_cancelled()
         self.variables[name] = value
 
     def get_variable(self, name: Any, default: Any = None) -> Any:

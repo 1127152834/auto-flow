@@ -25,6 +25,33 @@ from .data_structure import (
     StringSubstringExecutor,
     StringTrimExecutor,
 )
+from .dict_advanced import (
+    DictDeepCopyExecutor,
+    DictFilterExecutor,
+    DictFlattenExecutor,
+    DictGetPathExecutor,
+    DictInvertExecutor,
+    DictMapValuesExecutor,
+    DictMergeExecutor,
+    DictSortExecutor,
+)
+from .list_advanced import (
+    ListCartesianProductExecutor,
+    ListChunkExecutor,
+    ListCountExecutor,
+    ListDifferenceExecutor,
+    ListFilterExecutor,
+    ListFindExecutor,
+    ListFlattenExecutor,
+    ListIntersectionExecutor,
+    ListMapExecutor,
+    ListMergeExecutor,
+    ListRemoveEmptyExecutor,
+    ListReverseExecutor,
+    ListSampleExecutor,
+    ListShuffleExecutor,
+    ListUnionExecutor,
+)
 from .math_advanced import (
     MathClampExecutor,
     MathExpExecutor,
@@ -63,6 +90,11 @@ from .statistics import (
     StandardizeExecutor,
     StdevExecutor,
     VarianceExecutor,
+)
+from .string_convert import (
+    CsvGenerateExecutor,
+    CsvParseExecutor,
+    ListToStringAdvancedExecutor,
 )
 from .utility_tools import (
     HEXToCMYKExecutor,
@@ -139,6 +171,32 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     RGBToCMYKExecutor,
     HEXToCMYKExecutor,
     UUIDGeneratorExecutor,
+    ListReverseExecutor,
+    ListFindExecutor,
+    ListCountExecutor,
+    ListFilterExecutor,
+    ListMapExecutor,
+    ListMergeExecutor,
+    ListFlattenExecutor,
+    ListChunkExecutor,
+    ListRemoveEmptyExecutor,
+    ListIntersectionExecutor,
+    ListUnionExecutor,
+    ListDifferenceExecutor,
+    ListCartesianProductExecutor,
+    ListShuffleExecutor,
+    ListSampleExecutor,
+    DictMergeExecutor,
+    DictFilterExecutor,
+    DictMapValuesExecutor,
+    DictInvertExecutor,
+    DictSortExecutor,
+    DictDeepCopyExecutor,
+    DictGetPathExecutor,
+    DictFlattenExecutor,
+    CsvParseExecutor,
+    CsvGenerateExecutor,
+    ListToStringAdvancedExecutor,
 )
 
 

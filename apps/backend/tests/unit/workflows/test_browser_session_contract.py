@@ -615,6 +615,114 @@ async def test_workflow_worker_runs_utility_tools_without_browser(
 
 
 @pytest.mark.asyncio
+async def test_workflow_worker_runs_advanced_data_without_browser(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("advanced data workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    module_configs = [
+        (
+            "parse",
+            "csv_parse",
+            {
+                "csvContent": "name,score\n甲,1\n乙,2\n丙,3",
+                "hasHeader": True,
+                "delimiter": ",",
+                "resultVariable": "rows",
+            },
+        ),
+        (
+            "format-rows",
+            "list_to_string_advanced",
+            {
+                "listVariable": "rows",
+                "separator": "；",
+                "resultVariable": "rowSummary",
+            },
+        ),
+        (
+            "filter",
+            "list_filter",
+            {
+                "listVariable": "numbers",
+                "condition": "x % 2 == 0",
+                "resultVariable": "filtered",
+            },
+        ),
+        (
+            "map",
+            "list_map",
+            {
+                "listVariable": "filtered",
+                "expression": "x * 10",
+                "resultVariable": "mapped",
+            },
+        ),
+    ]
+    command = {
+        "runId": "run-advanced-data",
+        "workflowId": "workflow-advanced-data",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": node_id,
+                    "type": "moduleNode",
+                    "data": {"moduleType": module_type, "config": config},
+                }
+                for node_id, module_type, config in module_configs
+            ],
+            "edges": [
+                {
+                    "id": f"edge-{index}",
+                    "source": module_configs[index][0],
+                    "target": module_configs[index + 1][0],
+                }
+                for index in range(len(module_configs) - 1)
+            ],
+            "variables": [{"name": "numbers", "value": [1, 2, 3, 4]}],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    completions = [
+        event for event in events if event["type"] == "execution:node_complete"
+    ]
+    assert [event["nodeId"] for event in completions] == [
+        "parse",
+        "format-rows",
+        "filter",
+        "map",
+    ]
+    assert completions[0]["data"] == [
+        {"name": "甲", "score": "1"},
+        {"name": "乙", "score": "2"},
+        {"name": "丙", "score": "3"},
+    ]
+    assert completions[1]["data"] == (
+        "{'name': '甲', 'score': '1'}；"
+        "{'name': '乙', 'score': '2'}；"
+        "{'name': '丙', 'score': '3'}"
+    )
+    assert completions[2]["data"] == [2, 4]
+    assert completions[3]["data"] == [20, 40]
+    assert events[-1]["type"] == "execution:completed"
+
+
+@pytest.mark.asyncio
 async def test_workflow_worker_reports_non_json_math_result_as_node_failure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
