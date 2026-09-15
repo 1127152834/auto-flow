@@ -439,11 +439,12 @@ export function SHAEncryptConfig({ config, updateConfig }: ConfigProps) {
 
 // 时间戳转换器配置
 export function TimestampConverterConfig({ config, updateConfig }: ConfigProps) {
+  const operation = String(config.operation || 'to_timestamp')
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>操作类型</Label>
-        <Select value={String(config.operation || 'to_timestamp')} onChange={(e) => updateConfig('operation', e.target.value)}>
+        <Select value={operation} onChange={(e) => updateConfig('operation', e.target.value)}>
           <option value="to_timestamp">日期时间 → 时间戳</option>
           <option value="to_datetime">时间戳 → 日期时间</option>
         </Select>
@@ -453,10 +454,10 @@ export function TimestampConverterConfig({ config, updateConfig }: ConfigProps) 
         <VariableInput
           value={String(config.inputValue || '')}
           onChange={(v) => updateConfig('inputValue', v)}
-          placeholder={config.operation === 'to_timestamp' ? '2024-01-01 12:00:00 (留空=当前时间)' : '1704096000'}
+          placeholder={operation === 'to_timestamp' ? '2024-01-01 12:00:00 (留空=当前时间)' : '1704096000'}
         />
         <p className="text-xs text-muted-foreground">
-          {config.operation === 'to_timestamp' ? '日期时间格式需与下方格式匹配，留空则使用当前时间' : '输入时间戳数值'}
+          {operation === 'to_timestamp' ? '日期时间格式需与下方格式匹配，留空则使用当前时间' : '输入时间戳数值'}
         </p>
       </div>
       <div className="space-y-2">

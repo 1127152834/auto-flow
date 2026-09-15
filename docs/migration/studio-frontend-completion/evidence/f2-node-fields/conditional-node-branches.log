@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:87545) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.inject_javascript.conditional-ui: switches the target controls and result semantics 308ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.download_file.conditional-ui: swaps selector and direct URL without losing the chosen mode 93ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.network_capture.conditional-ui: renders browser mode fields 90ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.network_capture.conditional-ui: renders system mode fields 84ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.network_capture.conditional-ui: renders proxy mode fields 64ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.set_clipboard.conditional-ui: swaps literal text and image picker branches 52ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.scheduled_task.conditional-ui: switches date-time and delay inputs 55ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.condition.conditional-ui: switches logic arity and element locator branches 141ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.assert_checkpoint.conditional-ui: switches regex, page element and expected text branches 186ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.input_prompt.conditional-ui: exposes checkbox, option and slider-specific inputs 262ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.subflow.conditional-ui: lists group and header definitions and stores stable identity plus display name 104ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.run_workflow_file.conditional-ui: loads choices and hides dependent result controls when not waiting 91ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.string_replace.conditional-ui: changes the search contract for regular expressions 57ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.string_split.conditional-ui: preserves maxSplit input  as  21ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.string_split.conditional-ui: preserves maxSplit input {limit} as {limit} 19ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.string_split.conditional-ui: preserves maxSplit input 12 as 12 15ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.slider_captcha.conditional-ui: preserves targetDistance input  as  19ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.slider_captcha.conditional-ui: preserves targetDistance input {distance} as {distance} 15ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.slider_captcha.conditional-ui: preserves targetDistance input 240 as 240 17ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.list_operation.conditional-ui: exposes only fields used by append 63ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.list_operation.conditional-ui: exposes only fields used by insert 66ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.list_operation.conditional-ui: exposes only fields used by remove 66ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.list_operation.conditional-ui: exposes only fields used by pop 69ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.list_operation.conditional-ui: exposes only fields used by clear 68ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_extract.conditional-ui: mounts its dedicated AI task branch 34ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_classify.conditional-ui: mounts its dedicated AI task branch 30ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_summarize.conditional-ui: mounts its dedicated AI task branch 30ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_translate.conditional-ui: mounts its dedicated AI task branch 28ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_sentiment.conditional-ui: mounts its dedicated AI task branch 26ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_normalize.conditional-ui: mounts its dedicated AI task branch 38ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_route.conditional-ui: mounts its dedicated AI task branch 29ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_dedup_semantic.conditional-ui: uses a list input instead of the shared text input 27ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_smart_scraper.conditional-ui: switches local, cloud and Azure provider fields 174ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_element_selector.conditional-ui: switches local, cloud and Azure provider fields 136ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.firecrawl_scrape.conditional-ui: each returned format toggles the document array 84ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.firecrawl_crawl.conditional-ui: each returned format toggles the document array 70ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.image_ocr.conditional-ui: switches file and region controls and describes recognition type 102ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.timestamp_converter.conditional-ui: changes the input contract with the conversion direction 59ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.python_script.conditional-ui: switches the inline editor to a file path 66ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.webhook_trigger.conditional-ui: generates a stable URL and reports clipboard application 33ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.file_watcher_trigger.conditional-ui: hydrates an empty node from the shared file setting 22ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.email_trigger.conditional-ui: atomically hydrates all empty connection defaults 32ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.api_trigger.conditional-ui: hydrates defaults and exposes the POST request body 91ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_generate_image.conditional-ui: hydrates only its matching global media service 52ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ai_generate_video.conditional-ui: hydrates only its matching global media service 46ms
+ ✓ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.ssh_connect.conditional-ui: hydrates host identity without overriding explicit node values 30ms
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  13:59:04
+   Duration  5.80s (transform 1.24s, setup 152ms, import 1.70s, tests 3.27s, environment 558ms)
