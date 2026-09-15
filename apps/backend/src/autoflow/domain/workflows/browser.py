@@ -65,6 +65,18 @@ class BrowserDownloadPort(Protocol):
     async def save_as(self, path: Path) -> None: ...
 
 
+class BrowserRequestWatchPort(Protocol):
+    @property
+    def active(self) -> bool: ...
+
+    @property
+    def overflowed(self) -> bool: ...
+
+    def captured_requests(self) -> list[dict[str, Any]]: ...
+
+    def stop(self) -> None: ...
+
+
 class BrowserPagePort(Protocol):
     @property
     def id(self) -> str: ...
@@ -96,6 +108,10 @@ class BrowserPagePort(Protocol):
     async def capture_download(
         self, action: Callable[[], Awaitable[None]]
     ) -> BrowserDownloadPort: ...
+
+    def begin_request_watch(
+        self, *, filter_type: str, url_pattern: str
+    ) -> BrowserRequestWatchPort: ...
 
 
 class BrowserSessionPort(Protocol):

@@ -80,6 +80,11 @@ from .math_list_ops import (
     MathRoundExecutor,
     MathSqrtExecutor,
 )
+from .network_monitor import (
+    NetworkMonitorStartExecutor,
+    NetworkMonitorStopExecutor,
+    NetworkMonitorWaitExecutor,
+)
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .registry import ExecutorRegistry
 from .statistics import (
@@ -213,6 +218,9 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     TableDeleteRowExecutor,
     TableClearExecutor,
     TableExportExecutor,
+    NetworkMonitorStartExecutor,
+    NetworkMonitorWaitExecutor,
+    NetworkMonitorStopExecutor,
 )
 
 

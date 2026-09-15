@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -12,6 +14,7 @@ from autoflow.domain.workflows.browser import (
     BrowserDownloadPort,
     BrowserLocatorPort,
     BrowserPagePort,
+    BrowserRequestWatchPort,
     CurrentPageClosed,
     UnknownPage,
 )
@@ -98,6 +101,101 @@ class CloakBrowserWorkflowDownload(BrowserDownloadPort):
         await self._raw.save_as(str(path))
 
 
+_SENSITIVE_REQUEST_HEADERS = frozenset(
+    {"authorization", "proxy-authorization", "cookie", "set-cookie", "x-api-key"}
+)
+_MAX_CAPTURED_REQUESTS = 10_000
+_MAX_CAPTURED_REQUEST_BYTES = 8 * 1024 * 1024
+
+
+class CloakBrowserWorkflowRequestWatch(BrowserRequestWatchPort):
+    def __init__(self, raw_page: Any, *, filter_type: str, url_pattern: str) -> None:
+        self._raw_page = raw_page
+        self._filter_type = filter_type
+        self._url_pattern = url_pattern.lower()
+        self._captured: list[dict[str, Any]] = []
+        self._captured_bytes = 0
+        self._active = True
+        self._overflowed = False
+        self._raw_page.on("request", self._on_request)
+
+    @property
+    def active(self) -> bool:
+        return self._active
+
+    @property
+    def overflowed(self) -> bool:
+        return self._overflowed
+
+    def _on_request(self, request: Any) -> None:
+        if not self._active or self._overflowed:
+            return
+        try:
+            url = str(request.url)
+            resource_type = str(request.resource_type)
+            if self._filter_type == "api" and resource_type not in {"fetch", "xhr"}:
+                return
+            if self._filter_type == "img" and resource_type != "image":
+                return
+            if self._filter_type == "media" and resource_type not in {
+                "media",
+                "video",
+                "audio",
+            }:
+                return
+            if self._filter_type == "m3u8" and ".m3u8" not in url.lower():
+                return
+            if self._url_pattern and self._url_pattern not in url.lower():
+                return
+
+            raw_headers = request.headers if hasattr(request, "headers") else {}
+            headers = {
+                str(key): (
+                    "[已隐藏]"
+                    if str(key).lower() in _SENSITIVE_REQUEST_HEADERS
+                    else str(value)
+                )
+                for key, value in dict(raw_headers).items()
+            }
+            captured = {
+                "url": url,
+                "method": str(request.method),
+                "resource_type": resource_type,
+                "timestamp": time.time(),
+                "headers": headers,
+            }
+            size = len(
+                json.dumps(captured, ensure_ascii=False, separators=(",", ":")).encode(
+                    "utf-8"
+                )
+            )
+            if (
+                len(self._captured) >= _MAX_CAPTURED_REQUESTS
+                or self._captured_bytes + size > _MAX_CAPTURED_REQUEST_BYTES
+            ):
+                self._overflowed = True
+                return
+            self._captured.append(captured)
+            self._captured_bytes += size
+        except Exception:  # noqa: BLE001 -- request callbacks cannot fail page work.
+            return
+
+    def captured_requests(self) -> list[dict[str, Any]]:
+        return [
+            {**request, "headers": dict(request.get("headers", {}))}
+            for request in self._captured
+        ]
+
+    def stop(self) -> None:
+        if not self._active:
+            return
+        self._active = False
+        try:
+            self._raw_page.remove_listener("request", self._on_request)
+        except Exception:  # noqa: BLE001,S110 -- page may already be closed.
+            pass
+
+
 class CloakBrowserWorkflowPage(BrowserPagePort):
     def __init__(self, page_id: str, raw: Any) -> None:
         self._id = page_id
@@ -150,6 +248,13 @@ class CloakBrowserWorkflowPage(BrowserPagePort):
         async with self._raw.expect_download() as download_info:
             await action()
         return CloakBrowserWorkflowDownload(await download_info.value)
+
+    def begin_request_watch(
+        self, *, filter_type: str, url_pattern: str
+    ) -> CloakBrowserWorkflowRequestWatch:
+        return CloakBrowserWorkflowRequestWatch(
+            self._raw, filter_type=filter_type, url_pattern=url_pattern
+        )
 
 
 class CloakBrowserWorkflowSession:

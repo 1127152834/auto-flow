@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Protocol
 
-from .browser import BrowserSessionPort
+from .browser import BrowserRequestWatchPort, BrowserSessionPort
 from .variables import CredentialReader, references_sensitive_value, resolve_value
 
 
@@ -98,6 +98,7 @@ class ExecutionContext:
     clock: WorkflowClock = field(default_factory=WorkflowClock)
     data_rows: list[dict[str, Any]] = field(default_factory=list)
     sensitive_table_cells: set[tuple[int, Any]] = field(default_factory=set)
+    network_monitors: dict[Any, BrowserRequestWatchPort] = field(default_factory=dict)
     current_row: dict[str, Any] = field(default_factory=dict)
     loop_stack: list[dict[str, Any]] = field(default_factory=list)
     progress: Callable[[str, str], Awaitable[None]] | None = None

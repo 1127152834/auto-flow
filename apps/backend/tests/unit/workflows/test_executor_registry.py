@@ -162,6 +162,9 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "table_delete_row",
         "table_clear",
         "table_export",
+        "network_monitor_start",
+        "network_monitor_wait",
+        "network_monitor_stop",
     }
 
 

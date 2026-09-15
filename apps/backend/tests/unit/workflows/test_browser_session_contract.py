@@ -26,6 +26,7 @@ class RawPage:
             save_as=self._save_download,
         )
         self.saved_download: str | None = None
+        self.listeners: dict[str, list[Any]] = {}
 
     def is_closed(self) -> bool:
         return self.closed
@@ -54,6 +55,16 @@ class RawPage:
             return download
 
         return ExpectedDownload()
+
+    def on(self, name: str, listener: Any) -> None:
+        self.listeners.setdefault(name, []).append(listener)
+
+    def remove_listener(self, name: str, listener: Any) -> None:
+        self.listeners.get(name, []).remove(listener)
+
+    def emit(self, name: str, value: Any) -> None:
+        for listener in list(self.listeners.get(name, [])):
+            listener(value)
 
 
 class RawContext:
@@ -129,6 +140,85 @@ async def test_page_download_port_captures_action_and_saves_explicit_path(
     assert action_calls == ["clicked"]
     assert download.suggested_filename == "report.csv"
     assert raw.pages[0].saved_download == str(target)
+
+
+def test_page_request_watch_filters_redacts_and_stops() -> None:
+    raw = RawContext()
+    session = CloakBrowserWorkflowSession.from_context(raw)
+    page = raw.pages[0]
+    watch = session.current_page().begin_request_watch(
+        filter_type="api", url_pattern="/v1/"
+    )
+
+    page.emit(
+        "request",
+        SimpleNamespace(
+            url="https://local.test/v1/items",
+            method="POST",
+            resource_type="fetch",
+            headers={"authorization": "Bearer secret", "accept": "application/json"},
+        ),
+    )
+    page.emit(
+        "request",
+        SimpleNamespace(
+            url="https://local.test/v1/logo.png",
+            method="GET",
+            resource_type="image",
+            headers={},
+        ),
+    )
+
+    captured = watch.captured_requests()
+    assert len(captured) == 1
+    assert captured[0]["url"] == "https://local.test/v1/items"
+    assert captured[0]["headers"] == {
+        "authorization": "[已隐藏]",
+        "accept": "application/json",
+    }
+    assert watch.active is True
+    assert watch.overflowed is False
+
+    watch.stop()
+    page.emit(
+        "request",
+        SimpleNamespace(
+            url="https://local.test/v1/after-stop",
+            method="GET",
+            resource_type="xhr",
+            headers={},
+        ),
+    )
+    assert len(watch.captured_requests()) == 1
+    assert watch.active is False
+
+
+def test_page_request_watch_reports_capacity_instead_of_silent_truncation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_session._MAX_CAPTURED_REQUESTS", 1
+    )
+    raw = RawContext()
+    session = CloakBrowserWorkflowSession.from_context(raw)
+    watch = session.current_page().begin_request_watch(
+        filter_type="all", url_pattern=""
+    )
+
+    for suffix in ("first", "second"):
+        raw.pages[0].emit(
+            "request",
+            SimpleNamespace(
+                url=f"https://local.test/{suffix}",
+                method="GET",
+                resource_type="fetch",
+                headers={},
+            ),
+        )
+
+    assert len(watch.captured_requests()) == 1
+    assert watch.overflowed is True
+    watch.stop()
 
 
 def test_workflow_worker_launches_only_cloakbrowser_with_frozen_profile_options(
