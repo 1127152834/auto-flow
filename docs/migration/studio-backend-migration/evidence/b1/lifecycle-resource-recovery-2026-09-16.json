@@ -1,0 +1,64 @@
+{
+  "evidenceId": "BE-B1-lifecycle-resource-recovery-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "currentHead": "4ac6500",
+  "branch": "codex/architecture-baseline",
+  "result": "B1 resource deletion races and abnormal worker/sidecar recovery passed at the application, process and bootstrap boundaries",
+  "validationCases": [
+    "BE-B1-008",
+    "BE-B1-009"
+  ],
+  "verifiedBehavior": [
+    "an active workflow lease prevents ProfileService.remove from deleting the selected Profile directory",
+    "the same active workflow lease prevents KernelService.remove from staging or deleting the selected CloakBrowser kernel",
+    "after the coordinator releases the run lease, both Profile and kernel deletion complete and the matching default kernel is cleared",
+    "a real managed Python worker that exits with status 17 has its marked descendant and private run directory removed before the exit callback runs",
+    "a nonzero worker exit changes the durable run to failed with WORKFLOW_EXECUTION_FAILED only after the application resource lease is released",
+    "the worker crash callback does not start another worker or replay a node action",
+    "a new sidecar assembly converts a durable orphaned running record to interrupted during create_app startup",
+    "sidecar recovery is idempotent, preserves all pre-recovery events, adds one interruption fact, emits no node execution events and starts no worker",
+    "the recovered active slot is reusable and the newly assembled worker manager owns no process"
+  ],
+  "tests": {
+    "focused": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_sidecar_recovery.py apps/backend/tests/integration/test_workflow_resource_ownership.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/integration/test_workflow_run_repository.py apps/backend/tests/unit/workflows/test_run_admission_failures.py",
+      "exitCode": 0,
+      "result": "23 passed, 2 dependency deprecation warnings"
+    },
+    "relatedRegression": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_run_coordinator.py apps/backend/tests/unit/workflows/test_run_admission_failures.py apps/backend/tests/integration/test_workflow_resource_ownership.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/integration/test_workflow_run_repository.py apps/backend/tests/integration/test_workflow_sidecar_recovery.py apps/backend/tests/contract/test_workflow_runs_api.py apps/backend/tests/integration/test_sidecar_shutdown.py apps/backend/tests/unit/test_profile_test_browser.py apps/backend/tests/unit/test_browser_processes.py",
+      "exitCode": 0,
+      "result": "53 passed, 2 dependency deprecation warnings",
+      "durationSeconds": 38.16
+    },
+    "ruff": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend ruff check apps/backend/tests/integration/test_workflow_resource_ownership.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/integration/test_workflow_run_repository.py apps/backend/tests/integration/test_workflow_sidecar_recovery.py apps/backend/tests/unit/workflows/test_run_admission_failures.py",
+      "exitCode": 0,
+      "result": "All checks passed"
+    }
+  },
+  "testBoundaries": {
+    "resourceDeletion": "real SQLite repositories and real filesystem Profile/kernel locks in an isolated temporary directory",
+    "workerCrash": "real Python subprocess and descendant in a new process group; the fixture inherits the unique run cache marker used by managed CloakBrowser descendants",
+    "coordinatorFailure": "controlled worker port reports a nonzero exit so the application state machine and resource release can be asserted deterministically",
+    "sidecarRecovery": "fresh create_app assembly over a temporary durable database; WorkflowWorkerManager.start is observed and must remain uncalled"
+  },
+  "fileHashes": {
+    "apps/backend/tests/integration/test_workflow_resource_ownership.py": "04eeddd354f39c2dc12ac6924f6ed55e765162b6331f6bead7585483ca93c41d",
+    "apps/backend/tests/integration/test_workflow_worker_protocol.py": "685bde9f0b25b1f10ad20731dcdc83454c9a39ea233b3c78197db429dec32f8c",
+    "apps/backend/tests/integration/test_workflow_run_repository.py": "05f454ac48a3eebd51732f4af6276d6baab6c53c28161969ec6cb9e73aa0b9d4",
+    "apps/backend/tests/integration/test_workflow_sidecar_recovery.py": "e6ee52da6166ed9533c73da77d62adcd198791334b626fcfab6ffc98e69917db",
+    "apps/backend/tests/unit/workflows/test_run_admission_failures.py": "64cae3b357ccea5771101e8c291ed409c796fe1eb27148e62d633927cc470c56"
+  },
+  "productionCodeModified": false,
+  "userDatabaseModified": false,
+  "electronOrBrowserStarted": false,
+  "managedTestProcessesRemaining": false,
+  "notClaimed": [
+    "real CloakBrowser action success; existing B1 real-browser evidence owns that claim",
+    "browser-process crash while the worker remains alive",
+    "formal Electron Profile/kernel deletion interaction",
+    "macOS Intel or Windows real-machine verification"
+  ],
+  "productionGapsFound": []
+}
