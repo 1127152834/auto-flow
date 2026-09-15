@@ -1,0 +1,116 @@
+{
+  "evidenceId": "BE-B4-math-number-statistics-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "gitHead": "64d5dd2",
+  "result": "31 approved nodes passed frozen-source differential, production registration, HTTP admission and browser-free worker execution; formal Electron UI remains pending",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "files": [
+      {
+        "path": "backend/app/executors/math_list_ops.py",
+        "sha256": "67fd1d51b637ecacf0ac1151972d406309f459357875fcedab368f75074a8466",
+        "approvedTypes": 14
+      },
+      {
+        "path": "backend/app/executors/math_advanced.py",
+        "sha256": "128d66e0264855c614bdfdb2f0ada4f6d8aa1e4daa603b0d2ccc745fcf04a56f",
+        "approvedTypes": 10
+      },
+      {
+        "path": "backend/app/executors/statistics.py",
+        "sha256": "b7cca8e84f4e12ca912ad678258c938d45bd3b67d1c1af801086b67d25297a7d",
+        "approvedTypes": 7
+      }
+    ]
+  },
+  "migratedTypes": [
+    "list_sum",
+    "list_average",
+    "list_max",
+    "list_min",
+    "list_sort",
+    "list_unique",
+    "list_slice",
+    "math_round",
+    "math_base_convert",
+    "math_floor",
+    "math_modulo",
+    "math_abs",
+    "math_sqrt",
+    "math_power",
+    "math_log",
+    "math_trig",
+    "math_exp",
+    "math_gcd",
+    "math_lcm",
+    "math_factorial",
+    "math_permutation",
+    "math_percentage",
+    "math_clamp",
+    "math_random_advanced",
+    "stat_median",
+    "stat_mode",
+    "stat_variance",
+    "stat_stdev",
+    "stat_percentile",
+    "stat_normalize",
+    "stat_standardize"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入",
+    "importsExecutionContextAndCancellation": "AutoFlow必要适配",
+    "transportSafety": "AutoFlow必要适配：complex、NaN和Infinity在事件边界转为可定位节点失败",
+    "boundedCombinatorics": "AutoFlow必要适配：排列组合在同步计算前协作估算，最多10000个计算项与4000位十进制结果"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b4_math_family_executor_parity.py",
+      "result": "221 passed after bounded-result fix",
+      "coverage": "180 frozen-source behavior payloads, complete 31-type source/target sets, 31 browser-free declarations, three production-token cancellation cases, complex/non-finite raw executor observations, two oversized combinatorics guards and one exact 4000-digit boundary"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "all 31 types registered with no duplicate"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_pure_data_family_runs_through_http_without_browser_requirement",
+      "result": "real coordinator accepts the combined 46-node data/math document with requiresBrowser=false"
+    },
+    "workerWithoutBrowser": {
+      "tests": [
+        "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_runs_math_and_statistics_without_browser",
+        "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_reports_non_json_math_result_as_node_failure"
+      ],
+      "result": "five representative nodes from all three source files execute without CloakBrowser; an unsafe numeric result becomes a persisted node failure instead of a worker serialization crash"
+    },
+    "sharedRegression": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q <B1/B2/B4 affected workflow suites>",
+      "result": "458 passed before the exact boundary adjustment; 14 directly affected capacity/cancellation cases passed after the adjustment",
+      "scope": "B1/B2/B4 differential, artifacts, worker, registry, admission, coordinator and HTTP run contract"
+    }
+  },
+  "review": {
+    "result": "no P0/P1 after fixes",
+    "fixed": [
+      "production cancellation exception could be swallowed by frozen broad handlers",
+      "unbounded synchronous math.perm/math.comb",
+      "4000-digit conservative off-by-one"
+    ],
+    "confidence": "high"
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "notClaimed": [
+    "formal Electron UI execution of the 31-node family",
+    "rebuilt packaged sidecar execution",
+    "macOS Intel verification",
+    "Windows verification",
+    "fine-grained interruption inside Python C math/statistics calls after admitted bounded computation begins"
+  ],
+  "userDatabaseModified": false
+}

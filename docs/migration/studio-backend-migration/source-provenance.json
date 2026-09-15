@@ -327,6 +327,54 @@
         "节点内直接open与不受控相对工作目录"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/math_list_ops.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/math_list_ops.py",
+      "changeSummary": "批量迁入列表聚合、排序、切片、取整、进制转换、余数、绝对值、开方与幂的14个批准执行器，保留字段别名、Python数值语义、变量写入及中文错误。",
+      "retainedDependencies": [
+        "Python 3.11标准库",
+        "ExecutionContext变量语义",
+        "ModuleExecutor/ModuleResult"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行上下文",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/math_advanced.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/math_advanced.py",
+      "changeSummary": "批量迁入对数、三角、指数、最大公约数、最小公倍数、阶乘、排列组合、百分比、限制范围及高级随机的10个批准执行器；排列组合在原计算前增加AutoFlow传输容量与协作取消护栏。",
+      "retainedDependencies": [
+        "Python 3.11标准库",
+        "ExecutionContext变量语义",
+        "ModuleExecutor/ModuleResult"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行上下文",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/statistics.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/statistics.py",
+      "changeSummary": "批量迁入中位数、众数、样本方差、样本标准差、百分位、归一化及标准化的7个批准执行器，保留冻结Python 3.11统计语义和过滤规则。",
+      "retainedDependencies": [
+        "Python 3.11标准库",
+        "ExecutionContext变量语义",
+        "ModuleExecutor/ModuleResult"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行上下文",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }
