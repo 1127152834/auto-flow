@@ -55,7 +55,7 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：`wait_page_load`、`page_load_complete` 已完成冻结源码差分、正式注册、HTTP 准入、macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口验收；`network_monitor_start`、`network_monitor_wait`、`network_monitor_stop` 已完成冻结源码差分、正式注册、CloakBrowser 请求监听适配和 HTTP 准入，真实 CloakBrowser/SSE/正式 Electron 集中验收仍待执行。目录包需重建，其余网页节点继续按模块族迁入。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
+| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：B1 的 5 个基础节点及 B2 的 27 个节点已完成冻结源码差分、正式注册及 HTTP 准入。其中 `wait_page_load`、`page_load_complete` 已通过 macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口；11 个基础网页节点与 11 个高级网页节点已接入共享页面、iframe、鼠标、下载和文件选择端口，真实 CloakBrowser 用例已建立但本机当前没有隔离测试内核，因此未执行；3 个网络监听节点仍待真实请求捕获、SSE 和正式 UI 集中验收。目录包需重建，剩余 `switch_tab`、`extract_table_data`、`network_capture` 三个节点继续按源码模块族迁入。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
 | BE-B2-002 | CSS、XPath、多匹配、零匹配、非法语法 | 行为与冻结执行器一致；错误含 nodeId/path | 尚未验收 |
 | BE-B2-003 | 主页、同域/跨域嵌套 iframe、开放 Shadow DOM | 目标身份正确，不回退到其它页面或框架 | 尚未验收 |
 | BE-B2-004 | 弹窗、新标签、刷新、前进/后退、页关闭和下载 | 页面选择和关闭策略与原版一致，丢失当前页明确失败 | 尚未验收 |

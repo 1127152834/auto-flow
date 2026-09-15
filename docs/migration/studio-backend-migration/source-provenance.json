@@ -442,6 +442,45 @@
         "原样保存Authorization/Cookie等敏感请求头"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/basic.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
+      "changeSummary": "批量迁入11个批准的基础网页执行器，保留页面、iframe、弹窗、脚本和等待语义；用AutoFlow CloakBrowser显式页面/活动frame端口替换全局页面，并阻止敏感变量进入网页脚本上下文。",
+      "retainedDependencies": [
+        "Python标准库",
+        "ExecutionContext变量语义",
+        "CloakBrowser页面与定位器端口",
+        "workflow_actions选择器兜底"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "Playwright具体页面类型",
+        "敏感变量网页注入",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/advanced_browser.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
+      "changeSummary": "批量迁入11个批准的高级网页执行器，保留下拉、勾选、拖拽、滚动、上传下载、图片、亲属元素和判断语义；文件结果改由AutoFlow产物端口登记，并加入流式容量和取消护栏。",
+      "retainedDependencies": [
+        "Python标准库",
+        "httpx",
+        "ExecutionContext变量语义",
+        "CloakBrowser页面/定位器/鼠标/下载端口",
+        "WorkflowArtifactStore"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_engine",
+        "节点内任意文件直写",
+        "Windows全局文件选择器枚举兜底",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

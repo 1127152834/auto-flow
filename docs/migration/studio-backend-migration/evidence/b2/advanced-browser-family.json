@@ -1,0 +1,74 @@
+{
+  "evidenceId": "BE-B2-advanced-browser-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "11个批准的高级网页节点已完成冻结源码差分、生产注册、共享CloakBrowser动作端口和真实HTTP协调器准入；真实CloakBrowser用例已建立但因本机无隔离测试内核而未执行，正式Electron集中验收尚未执行。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "backend/app/executors/advanced_browser.py",
+    "sha256": "a404711f7e0b354bab4fd14f118e261e9b085e54fa7c57474cc3da96a0dcb9a7",
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "migratedTypes": [
+    "select_dropdown",
+    "set_checkbox",
+    "drag_element",
+    "scroll_page",
+    "upload_file",
+    "download_file",
+    "save_image",
+    "get_child_elements",
+    "get_sibling_elements",
+    "element_exists",
+    "element_visible"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入：原生和自定义下拉、勾选、拖拽、滚动、上传、下载、图片保存、亲属元素查询及存在/可见判断保留冻结默认值和分支。",
+    "browserBoundary": "AutoFlow必要适配：通过既有CloakBrowser locator/page/mouse/download/file chooser窄端口执行，不读取全局browser_engine。",
+    "artifactBoundary": "AutoFlow必要适配：下载和图片使用运行绑定ArtifactWriter；URL下载流式限制64 MiB，点击下载临时文件必清理。",
+    "cancellation": "AutoFlow必要适配：URL下载在请求前、每个数据块及产物发布前检查运行取消。",
+    "excludedFallback": "明确排除：未迁入冻结实现中的Windows全局文件选择器枚举兜底。",
+    "urlRedaction": "AutoFlow必要适配：页面URL输出移除userinfo并遮蔽敏感查询参数；冻结业务分支和非敏感错误文本保持不变。",
+    "frameDelegation": "AutoFlow必要适配：iframe包装器以底层frame身份稳定匹配，页面级导航、键盘、截图及事件调用委托给所属顶层页面。",
+    "capacity": "AutoFlow必要适配：图片和URL下载限制64 MiB并明确失败；大JSON节点结果通过现有ArtifactWriter外置，事件保留摘要和产物引用。"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b2_advanced_browser_executor_parity.py",
+      "result": "冻结差分、批准集合、端口缺失错误、文件选择、64 MiB流式上限及分块取消通过"
+    },
+    "browserProvider": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py",
+      "result": "select/check/uncheck/drag/mouse/scroll/upload/file chooser及locator集合语义通过"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "11种节点全部注册且requiresBrowser=true"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_web_browser_families_are_admitted_by_the_real_http_coordinator",
+      "result": "真实协调器接收22节点批量文档并向worker下发原始节点序列，requiresBrowser=true"
+    },
+    "affectedRegression": {
+      "command": "cd apps/backend && uv run pytest -q tests/differential/workflows/test_b2_web_basic_executor_parity.py tests/differential/workflows/test_b2_advanced_browser_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_workflow_artifacts.py tests/integration/test_b2_web_basic_cloakbrowser_flow.py tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
+      "result": "163 passed, 2 opt-in real-CloakBrowser tests skipped"
+    },
+    "capacityAndCancellation": {
+      "test": "apps/backend/tests/integration/test_workflow_artifacts.py and apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_externalizes_large_node_result",
+      "result": "二进制写盘后取消会删除未登记文件；超过64 KiB的JSON节点结果写入登记产物，worker事件只保留摘要和artifactIds"
+    }
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "productionSha256BeforeCommit": "0f36d86784952843f0d92cc8c20fde69b99c0959420597b638361056ac5bdd5a",
+  "notClaimed": [
+    "真实CloakBrowser高级网页动作矩阵",
+    "URL下载不启动浏览器的动态准入优化",
+    "正式Electron UI执行",
+    "打包sidecar执行",
+    "macOS Intel或Windows验证"
+  ],
+  "userDatabaseModified": false
+}

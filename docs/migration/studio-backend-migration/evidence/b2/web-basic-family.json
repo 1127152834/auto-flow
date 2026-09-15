@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B2-web-basic-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "11个批准的基础网页节点已完成冻结源码差分、生产注册、共享页面/iframe适配和真实HTTP协调器准入；真实CloakBrowser用例已建立但因本机无隔离测试内核而未执行，正式Electron集中验收尚未执行。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "backend/app/executors/basic.py",
+    "sha256": "e2eec52c5ad66d68c4065f7ffd328f418fdafeda0c65e36588c07fca0da7a99c",
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "migratedTypes": [
+    "use_opened_page",
+    "close_page",
+    "refresh_page",
+    "go_back",
+    "go_forward",
+    "switch_iframe",
+    "switch_to_main",
+    "hover_element",
+    "handle_dialog",
+    "inject_javascript",
+    "wait_element"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入：页面匹配与导航、前进后退、三种iframe定位、悬停、弹窗、四种脚本注入模式及四种元素等待状态保留冻结语义和中文结果。",
+    "browserBoundary": "AutoFlow必要适配：全局Playwright页面替换为CloakBrowser会话窄端口；活动iframe由会话显式选择，切换页面时恢复主文档。",
+    "secretBoundary": "AutoFlow必要适配：inject_javascript不会把标记为敏感的运行变量复制进网页JavaScript上下文。",
+    "pageIdentity": "已批准增强：当前页关闭时明确失败，不静默改用其他标签页。",
+    "urlRedaction": "AutoFlow必要适配：页面URL输出移除userinfo并遮蔽敏感查询参数；冻结业务分支和非敏感错误文本保持不变。",
+    "frameDelegation": "AutoFlow必要适配：iframe包装器以底层frame身份稳定匹配，页面级导航、键盘、截图及事件调用委托给所属顶层页面。"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b2_web_basic_executor_parity.py",
+      "result": "76 passed",
+      "coverage": "69个冻结输入分支，加批准集合、真实ExecutionContext iframe状态、毫秒超时端口、敏感变量隔离及URL凭据脱敏"
+    },
+    "browserProvider": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py",
+      "result": "页面导航、标签选择、frame选择/清除、事件监听、脚本求值及悬停端口通过"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "11种节点全部注册且requiresBrowser=true"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_web_browser_families_are_admitted_by_the_real_http_coordinator",
+      "result": "真实协调器接收22节点批量文档并向worker下发原始节点序列，requiresBrowser=true"
+    },
+    "affectedRegression": {
+      "command": "cd apps/backend && uv run pytest -q tests/differential/workflows/test_b2_web_basic_executor_parity.py tests/differential/workflows/test_b2_advanced_browser_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_workflow_artifacts.py tests/integration/test_b2_web_basic_cloakbrowser_flow.py tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
+      "result": "163 passed, 2 opt-in real-CloakBrowser tests skipped"
+    },
+    "capacityAndCancellation": {
+      "test": "apps/backend/tests/integration/test_workflow_artifacts.py and apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_externalizes_large_node_result",
+      "result": "二进制写盘后取消会删除未登记文件；超过64 KiB的JSON节点结果写入登记产物，worker事件只保留摘要和artifactIds"
+    }
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed"
+  },
+  "productionSha256BeforeCommit": "0b661d6432a8e1916cf340032a14e32544a9b04e4c6a1f1a8a7da8edc98dd13d",
+  "notClaimed": [
+    "真实CloakBrowser基础网页动作矩阵",
+    "正式Electron UI执行",
+    "打包sidecar执行",
+    "macOS Intel或Windows验证"
+  ],
+  "userDatabaseModified": false
+}

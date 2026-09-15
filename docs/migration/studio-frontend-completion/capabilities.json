@@ -351,7 +351,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -394,13 +394,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -411,12 +412,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.use_opened_page.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#UseOpenedPageExecutor",
@@ -424,11 +425,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 use_opened_page 的默认配置、合法分支和错误分支；配置键为 action, matchMode, pageIdentifier, url, waitUntil",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：操作已打开的网页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.use_opened_page.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -436,7 +437,7 @@
           ],
           "operation": "通过正式传输提交包含 use_opened_page 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.use_opened_page.real-execution",
@@ -451,7 +452,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -512,7 +513,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -545,13 +546,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -562,12 +564,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.close_page.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#ClosePageExecutor",
@@ -575,11 +577,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 close_page 的默认配置、合法分支和错误分支；配置键为 无专属配置键",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：关闭网页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.close_page.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -587,7 +589,7 @@
           ],
           "operation": "通过正式传输提交包含 close_page 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.close_page.real-execution",
@@ -602,7 +604,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -691,7 +693,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -728,13 +730,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -745,12 +748,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.refresh_page.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#RefreshPageExecutor",
@@ -758,11 +761,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 refresh_page 的默认配置、合法分支和错误分支；配置键为 waitUntil",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：刷新页面模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.refresh_page.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -770,7 +773,7 @@
           ],
           "operation": "通过正式传输提交包含 refresh_page 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.refresh_page.real-execution",
@@ -785,7 +788,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -874,7 +877,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -911,13 +914,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -928,12 +932,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.go_back.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#GoBackExecutor",
@@ -941,11 +945,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 go_back 的默认配置、合法分支和错误分支；配置键为 waitUntil",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：返回上一页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.go_back.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -953,7 +957,7 @@
           ],
           "operation": "通过正式传输提交包含 go_back 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.go_back.real-execution",
@@ -968,7 +972,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1057,7 +1061,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1094,13 +1098,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -1111,12 +1116,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.go_forward.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#GoForwardExecutor",
@@ -1124,11 +1129,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 go_forward 的默认配置、合法分支和错误分支；配置键为 waitUntil",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：前进下一页模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.go_forward.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -1136,7 +1141,7 @@
           ],
           "operation": "通过正式传输提交包含 go_forward 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.go_forward.real-execution",
@@ -1151,7 +1156,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1504,7 +1509,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1550,13 +1555,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -1567,12 +1573,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.switch_iframe.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#SwitchIframeExecutor",
@@ -1580,11 +1586,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 switch_iframe 的默认配置、合法分支和错误分支；配置键为 iframeIndex, iframeName, iframeSelector, locateBy",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：切换到iframe模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.switch_iframe.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -1592,7 +1598,7 @@
           ],
           "operation": "通过正式传输提交包含 switch_iframe 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.switch_iframe.real-execution",
@@ -1607,7 +1613,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -1670,7 +1676,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1710,13 +1716,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -1727,12 +1734,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.switch_to_main.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#SwitchToMainExecutor",
@@ -1740,11 +1747,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 switch_to_main 的默认配置、合法分支和错误分支；配置键为 无专属配置键",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：切换回主页面模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.switch_to_main.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -1752,7 +1759,7 @@
           ],
           "operation": "通过正式传输提交包含 switch_to_main 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.switch_to_main.real-execution",
@@ -1767,7 +1774,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -2495,7 +2502,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -2543,13 +2550,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -2560,12 +2568,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.hover_element.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#HoverElementExecutor",
@@ -2573,11 +2581,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 hover_element 的默认配置、合法分支和错误分支；配置键为 force, hoverDuration, selector, selectorHints, timeout",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：悬停元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.hover_element.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -2585,7 +2593,7 @@
           ],
           "operation": "通过正式传输提交包含 hover_element 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.hover_element.real-execution",
@@ -2600,7 +2608,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -2923,7 +2931,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -2969,7 +2977,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -2986,12 +2994,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.select_dropdown.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#SelectDropdownExecutor",
@@ -2999,11 +3007,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 select_dropdown 的默认配置、合法分支和错误分支；配置键为 selectBy, selector, selectorHints, timeout, value, values",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：下拉框选择模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.select_dropdown.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -3011,7 +3019,7 @@
           ],
           "operation": "通过正式传输提交包含 select_dropdown 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.select_dropdown.real-execution",
@@ -3026,7 +3034,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3123,7 +3131,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3164,7 +3172,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -3181,12 +3189,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.set_checkbox.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#SetCheckboxExecutor",
@@ -3194,11 +3202,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 set_checkbox 的默认配置、合法分支和错误分支；配置键为 checked, selector, selectorHints",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：设置复选框模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.set_checkbox.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -3206,7 +3214,7 @@
           ],
           "operation": "通过正式传输提交包含 set_checkbox 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.set_checkbox.real-execution",
@@ -3221,7 +3229,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3296,7 +3304,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3339,7 +3347,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -3356,12 +3364,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.drag_element.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#DragElementExecutor",
@@ -3369,11 +3377,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 drag_element 的默认配置、合法分支和错误分支；配置键为 selectorHints, sourceSelector, targetPosition, targetSelector, targetSelectorHints",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：拖拽元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.drag_element.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -3381,7 +3389,7 @@
           ],
           "operation": "通过正式传输提交包含 drag_element 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.drag_element.real-execution",
@@ -3396,7 +3404,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3525,7 +3533,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3567,7 +3575,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -3584,12 +3592,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.scroll_page.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#ScrollPageExecutor",
@@ -3597,11 +3605,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 scroll_page 的默认配置、合法分支和错误分支；配置键为 direction, distance, scrollMode, selector",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：滚动页面模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.scroll_page.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -3609,7 +3617,7 @@
           ],
           "operation": "通过正式传输提交包含 scroll_page 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.scroll_page.real-execution",
@@ -3624,7 +3632,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3749,7 +3757,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3790,13 +3798,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -3807,12 +3816,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.handle_dialog.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#HandleDialogExecutor",
@@ -3820,11 +3829,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 handle_dialog 的默认配置、合法分支和错误分支；配置键为 dialogAction, promptText, saveMessage",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：处理弹窗模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.handle_dialog.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -3832,7 +3841,7 @@
           ],
           "operation": "通过正式传输提交包含 handle_dialog 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.handle_dialog.real-execution",
@@ -3847,7 +3856,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -3940,7 +3949,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -3983,7 +3992,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -4000,12 +4009,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.upload_file.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#UploadFileExecutor",
@@ -4013,11 +4022,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 upload_file 的默认配置、合法分支和错误分支；配置键为 filePath, selector, timeout",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：上传文件模块执行器\n\n多级策略：\n1. 直接 set_input_files（目标本身是 input[type=file]）\n2. Playwright expect_file_chooser 拦截（浏览器内 file chooser）\n3. JS 注入到页面内隐藏的 input[type=file]\n4. 系统原生对话框兜底：点击按钮后用 Windows API 向对话框输入路径并确认",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.upload_file.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -4025,7 +4034,7 @@
           ],
           "operation": "通过正式传输提交包含 upload_file 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.upload_file.real-execution",
@@ -4040,7 +4049,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -4221,7 +4230,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -4267,13 +4276,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -4284,12 +4294,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.inject_javascript.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#InjectJavaScriptExecutor",
@@ -4297,11 +4307,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 inject_javascript 的默认配置、合法分支和错误分支；配置键为 injectMode, javascriptCode, saveResult, targetIndex, targetUrl",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：JS脚本注入模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.inject_javascript.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -4309,7 +4319,7 @@
           ],
           "operation": "通过正式传输提交包含 inject_javascript 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.inject_javascript.real-execution",
@@ -4324,7 +4334,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -4697,7 +4707,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -4738,7 +4748,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -4755,12 +4765,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.get_child_elements.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#GetChildElementsExecutor",
@@ -4768,11 +4778,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 get_child_elements 的默认配置、合法分支和错误分支；配置键为 childSelector, parentSelector, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：获取子元素列表模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.get_child_elements.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -4780,7 +4790,7 @@
           ],
           "operation": "通过正式传输提交包含 get_child_elements 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.get_child_elements.real-execution",
@@ -4795,7 +4805,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -4920,7 +4930,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -4962,7 +4972,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -4979,12 +4989,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.get_sibling_elements.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#GetSiblingElementsExecutor",
@@ -4992,11 +5002,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 get_sibling_elements 的默认配置、合法分支和错误分支；配置键为 elementSelector, includeSelf, siblingType, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：获取兄弟元素列表模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.get_sibling_elements.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -5004,7 +5014,7 @@
           ],
           "operation": "通过正式传输提交包含 get_sibling_elements 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.get_sibling_elements.real-execution",
@@ -5019,7 +5029,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5114,7 +5124,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5152,7 +5162,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -5169,12 +5179,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.element_exists.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#ElementExistsExecutor",
@@ -5182,11 +5192,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 element_exists 的默认配置、合法分支和错误分支；配置键为 selector",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：元素存在判断模块执行器 - 判断元素是否存在于页面中,类似条件判断模块",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.element_exists.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -5194,7 +5204,7 @@
           ],
           "operation": "通过正式传输提交包含 element_exists 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.element_exists.real-execution",
@@ -5209,7 +5219,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5304,7 +5314,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5342,7 +5352,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -5359,12 +5369,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.element_visible.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#ElementVisibleExecutor",
@@ -5372,11 +5382,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 element_visible 的默认配置、合法分支和错误分支；配置键为 selector",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：元素可见判断模块执行器 - 判断元素是否可见,类似条件判断模块",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.element_visible.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -5384,7 +5394,7 @@
           ],
           "operation": "通过正式传输提交包含 element_visible 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.element_visible.real-execution",
@@ -5399,7 +5409,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5544,7 +5554,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5587,13 +5597,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/web_basic.py",
           "apps/backend/src/autoflow/application/workflows/executors/basic.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -5604,12 +5615,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.wait_element.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/basic.py#WaitElementExecutor",
@@ -5617,11 +5628,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 wait_element 的默认配置、合法分支和错误分支；配置键为 selector, selectorHints, waitCondition, waitTimeout",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：等待元素模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.wait_element.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -5629,7 +5640,7 @@
           ],
           "operation": "通过正式传输提交包含 wait_element 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/web-basic-family.json"
         },
         {
           "id": "BE.wait_element.real-execution",
@@ -5644,7 +5655,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -6244,7 +6255,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -6288,7 +6299,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -6305,12 +6316,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.save_image.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#SaveImageExecutor",
@@ -6318,11 +6329,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 save_image 的默认配置、合法分支和错误分支；配置键为 savePath, selector, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：保存图片模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.save_image.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -6330,7 +6341,7 @@
           ],
           "operation": "通过正式传输提交包含 save_image 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.save_image.real-execution",
@@ -6345,7 +6356,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -6509,7 +6520,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -6557,7 +6568,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/advanced_browser.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -6574,12 +6585,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "冻结源码差分、正式注册、共享CloakBrowser端口和真实HTTP协调器准入已通过；真实CloakBrowser动作矩阵、正式Electron UI、重建目录包及其他平台仍待集中验收。",
       "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
       "acceptanceCases": [
         {
           "id": "BE.download_file.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced_browser.py#DownloadFileExecutor",
@@ -6587,11 +6598,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 download_file 的默认配置、合法分支和错误分支；配置键为 downloadMode, downloadUrl, fileName, savePath, triggerSelector, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：下载文件模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.download_file.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -6599,7 +6610,7 @@
           ],
           "operation": "通过正式传输提交包含 download_file 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/advanced-browser-family.json"
         },
         {
           "id": "BE.download_file.real-execution",
@@ -6614,7 +6625,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实页面副作用与正式UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
