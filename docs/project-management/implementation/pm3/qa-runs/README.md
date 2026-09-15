@@ -21,6 +21,6 @@ node scripts/qa-project-management-pm3.mjs --manual --scenario success
 
 普通停止在真实运行中及时完成，未稳定进入 `stopping`/`reconciling` 的强制停止准入窗口；因此强制停止没有执行，也没有记录为通过。
 
-Failure 场景当前状态为 blocked：真实任务以 `WORKFLOW_NODE_TIMEOUT` 失败，后端附件接口返回 `available image/png`，但任务页在附件提交前缓存空页；返回批次并重新打开任务后仍显示“本次运行未生成截图或附件”，无法从 UI 打开预览。失败证据保存在对应 `run-*` 目录，不能记为通过。
+Failure 场景已在重建当前 renderer 后通过：真实任务以 `WORKFLOW_NODE_TIMEOUT` 失败，后端返回 `available image/png`，UI 打开了失败截图预览。`run-hB8hGK` 等较早目录使用旧 renderer，只作为 stale-build 失败证据，不代表当前源码结论；当前通过证据见 `run-aLealp`。
 
 尚未接入真实 UI 动作的场景会明确失败，不会写入伪造的通过结果。
