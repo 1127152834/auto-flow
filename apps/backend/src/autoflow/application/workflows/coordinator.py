@@ -208,14 +208,22 @@ class WorkflowRunCoordinator:
                     await self._workers.stop(run_id)
                 if acquired and self._resources.owner_id == run_id:
                     await self._resources.release(run_id)
+                failure = (
+                    {
+                        "code": error.code,
+                        "message": str(error),
+                    }
+                    if isinstance(error, LicenseInvalid)
+                    else {
+                        "code": "RUN_START_FAILED",
+                        "message": "工作流浏览器启动失败",
+                    }
+                )
                 failed = self._runs.finish(
                     run_id,
                     status="failed",
                     cleanup_completed=True,
-                    error={
-                        "code": "RUN_START_FAILED",
-                        "message": "工作流浏览器启动失败",
-                    },
+                    error=failure,
                     terminal_log=_terminal_log("failed", 0, 0),
                 )
                 await self._events.publish(
@@ -235,6 +243,8 @@ class WorkflowRunCoordinator:
                         "当前工作区已有活跃浏览器会话",
                         409,
                     ) from error
+                if isinstance(error, LicenseInvalid):
+                    raise
                 if isinstance(error, (RuntimeError, OSError)):
                     raise WorkflowRunError(
                         "RUN_START_FAILED", "工作流浏览器启动失败", 503

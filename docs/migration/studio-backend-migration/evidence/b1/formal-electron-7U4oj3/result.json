@@ -1,0 +1,35 @@
+{
+  "evidenceId": "BE-B1-formal-electron",
+  "checkedAt": "2026-09-15T15:57:59.455Z",
+  "gitHead": "55cd82fa5c723dd396eb3f910f6dfd7eb093362b",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "UBBw4j8e9Ya6mve21wYPm",
+  "profileId": "865724ec-d272-45e8-a0c8-607d7eb5944b",
+  "runId": "d9be450e-d8a9-4a16-87fd-d6eafd7badb0",
+  "stoppedRunId": "c63673d3-aeaf-4ad0-86ba-a81dba084b81",
+  "result": "passed",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "通过 macOS 系统级 Cmd+W 触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变",
+    "再次通过系统级 Cmd+W 并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增",
+    "正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理",
+    "活跃运行与未保存草稿并存时取消正常关窗，浏览器运行、窗口、草稿和已保存文档均保持原状态",
+    "放弃草稿并结束活跃运行后，先确认 stopped 与清理完成，再关闭 Studio；保存修订未被草稿覆盖"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "packageBoundary": null,
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard plus macOS native close button; no Store access"
+  }
+}

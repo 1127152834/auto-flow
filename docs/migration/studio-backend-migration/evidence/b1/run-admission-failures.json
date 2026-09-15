@@ -1,0 +1,28 @@
+{
+  "evidenceId": "BE-B1-run-admission-failures-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "partial pass for BE-B1-009",
+  "classification": "AutoFlow必要适配",
+  "verified": [
+    "missing Profile creates no run and acquires no resource",
+    "missing CloakBrowser kernel creates no run and acquires no resource",
+    "missing licensed-edition License records LICENSE_INVALID and releases the Profile/kernel lease",
+    "proxy resolution failure records a failed terminal run and releases the lease",
+    "worker startup failure records a failed terminal run and releases the lease"
+  ],
+  "tests": {
+    "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_run_admission_failures.py apps/backend/tests/differential/workflows/test_b2_page_load_executor_parity.py apps/backend/tests/differential/workflows/test_b1_executor_parity.py",
+    "result": "46 passed"
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "remaining": [
+    "Profile/kernel deletion races",
+    "formal HTTP and Electron combinations",
+    "licensed and proxy secrets scan"
+  ],
+  "userDatabaseModified": false
+}

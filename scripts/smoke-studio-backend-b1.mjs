@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -17,6 +18,12 @@ const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidenc
 const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b1-'))
 const pageUrl = pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href
+const slowServer = createServer(() => undefined)
+await new Promise((resolve, reject) => {
+  slowServer.once('error', reject)
+  slowServer.listen(0, '127.0.0.1', resolve)
+})
+const slowUrl = `http://127.0.0.1:${slowServer.address().port}/pending-navigation`
 const checks = []
 const observedEvents = []
 let desktop
@@ -101,17 +108,35 @@ try {
   assert.equal(saved.edges.length, 4)
   checkpoint('正式保存经真实 HTTP 写入 SQLite，返回修订 1')
 
-  await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));if(!w)return false;w.destroy();return true})()")
+  await setInput(studio, 'input[placeholder="工作流名称"]', 'B1 五节点正式闭环 · 关窗保存')
+  await closeWindowThroughOs(desktop.child.pid)
+  await waitFor(studio, "document.body?.innerText.includes('保存当前工作流？')", 'normal-close draft prompt')
+  await click(studio, '取消')
+  assert.equal(await hasStudioTarget(desktop.debugOrigin), true)
+  assert.equal(await studio.evaluate("document.querySelector('input[placeholder=\"工作流名称\"]')?.value"), 'B1 五节点正式闭环 · 关窗保存')
+  assert.equal((await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)).revision, 1)
+  checkpoint('通过 macOS 系统级 Cmd+W 触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变')
+
+  await closeWindowThroughOs(desktop.child.pid)
+  await waitFor(studio, "document.body?.innerText.includes('保存当前工作流？')", 'second normal-close draft prompt')
+  await click(studio, '保存后继续')
   studio.close(); studio = undefined
   await waitForNoStudio(desktop.debugOrigin)
+  const closedSaved = await waitForValue(async () => {
+    const value = await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)
+    return value.revision === 2 && value.name === 'B1 五节点正式闭环 · 关窗保存' ? value : null
+  }, 'normal-close saved revision', 10_000)
+  checkpoint('再次通过系统级 Cmd+W 并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增')
   studio = await openStudioFromMain(main, desktop.debugOrigin)
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库')", 'reopened Studio', 30_000)
   await click(studio, '打开')
-  await click(studio, '打开工作流 B1 五节点正式闭环', '[role="button"]')
-  await waitFor(studio, "document.querySelector('input[placeholder=\"工作流名称\"]')?.value === 'B1 五节点正式闭环' && document.querySelectorAll('.react-flow__node').length === 5", 'persisted workflow reopen')
+  await click(studio, '打开工作流 B1 五节点正式闭环 · 关窗保存', '[role="button"]')
+  await waitFor(studio, "document.querySelector('input[placeholder=\"工作流名称\"]')?.value === 'B1 五节点正式闭环 · 关窗保存' && document.querySelectorAll('.react-flow__node').length === 5", 'persisted workflow reopen')
   assert.equal(await studio.evaluate("document.querySelectorAll('.react-flow__edge').length"), 4)
-  checkpoint('关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线')
+  assert.equal(closedSaved.nodes.length, 5)
+  assert.equal(closedSaved.edges.length, 4)
+  checkpoint('正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线')
 
   await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
   await click(studio, '运行 (F5)', '[role="menuitem"]')
@@ -141,6 +166,46 @@ try {
   assert.deepEqual(leaked, [])
   checkpoint('运行终态后 CloakBrowser 进程树和临时会话均已清理')
 
+  await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
+  await setInput(studio, '[placeholder="https://example.com"]', slowUrl)
+  await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+  await click(studio, '运行 (F5)', '[role="menuitem"]')
+  const stoppedRun = await waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+    const candidate = page.items.find(item => item.runId !== runId)
+    if (!candidate) return null
+    const detail = await api(runtime, `/workflow-runs/${encodeURIComponent(candidate.runId)}`)
+    return detail.status === 'running' ? detail : null
+  }, 'second active run', 20_000)
+  await closeWindowThroughOs(desktop.child.pid)
+  await waitFor(studio, "document.body?.innerText.includes('结束活跃会话后离开？')", 'active-run normal-close prompt')
+  await click(studio, '取消')
+  assert.equal(await hasStudioTarget(desktop.debugOrigin), true)
+  assert.equal((await api(runtime, `/workflow-runs/${encodeURIComponent(stoppedRun.runId)}`)).status, 'running')
+  assert.equal((await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)).revision, 2)
+  checkpoint('活跃运行与未保存草稿并存时取消正常关窗，浏览器运行、窗口、草稿和已保存文档均保持原状态')
+
+  await closeWindowThroughOs(desktop.child.pid)
+  await waitFor(studio, "document.body?.innerText.includes('结束活跃会话后离开？')", 'second active-run normal-close prompt')
+  await click(studio, '放弃修改并结束会话')
+  studio.close(); studio = undefined
+  await waitForNoStudio(desktop.debugOrigin, 30_000)
+  const stopped = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(stoppedRun.runId)}`)
+    return value.status === 'stopped' ? value : null
+  }, 'normal-close stopped run cleanup', 30_000)
+  assert.equal(stopped.status, 'stopped')
+  assert.equal((await api(runtime, `/workflows/${encodeURIComponent(saved.id)}`)).revision, 2)
+  await waitForValue(async () => {
+    const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
+    return processes.length === 0 ? true : null
+  }, 'normal-close browser cleanup', 10_000)
+  checkpoint('放弃草稿并结束活跃运行后，先确认 stopped 与清理完成，再关闭 Studio；保存修订未被草稿覆盖')
+
+  studio = await openStudioFromMain(main, desktop.debugOrigin)
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
+  await waitFor(studio, "document.body?.innerText.includes('模块库')", 'final reopened Studio', 30_000)
+
   const packageBoundary = desktop.packaged ? await verifyPackageBoundary() : null
   if (packageBoundary) checkpoint('目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址')
 
@@ -148,10 +213,10 @@ try {
   const report = {
     evidenceId: 'BE-B1-formal-electron', checkedAt: new Date().toISOString(),
     gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-    buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, runId,
+    buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, runId, stoppedRunId: stoppedRun.runId,
     result: 'passed', checks, platform: `${process.platform}-${process.arch}`,
     entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary,
-    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse, keyboard and window close; no Store access' },
+    boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard plus macOS system-level Command-W close shortcut; no Store access' },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
@@ -161,6 +226,8 @@ try {
   throw error
 } finally {
   eventAbort?.abort(); studio?.close(); main?.close(); native?.close(); await stop(desktop?.child)
+  slowServer.closeAllConnections()
+  await new Promise(resolve => slowServer.close(resolve))
   await rm(userData, { recursive: true, force: true })
 }
 
@@ -241,6 +308,25 @@ async function waitForNoStudio(origin, timeoutMs = 15_000) {
     await wait(100)
   }
   throw new Error('timed out waiting for Studio window close')
+}
+
+async function hasStudioTarget(origin) {
+  const targets = await (await fetch(`${origin}/json/list`)).json()
+  return targets.some(target => target.type === 'page' && target.url.includes('studio.html'))
+}
+
+async function closeWindowThroughOs(pid) {
+  assert.equal(process.platform, 'darwin', '原生窗口关闭验收目前只在 macOS 实机执行；其他平台必须单独记录')
+  assert.equal(await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>w.getTitle().includes('工作流工作台'));if(!w)return false;qaElectron.app.focus({steal:true});w.show();w.focus();return true})()"), true)
+  await wait(250)
+  execFileSync('osascript', [
+    '-e', 'tell application "System Events"',
+    '-e', `set targetProcess to first application process whose unix id is ${pid}`,
+    '-e', 'set frontmost of targetProcess to true',
+    '-e', 'keystroke "w" using command down',
+    '-e', 'end tell',
+  ])
+  await wait(150)
 }
 
 async function waitForValue(read, description, timeoutMs) {
