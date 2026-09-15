@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import copy
 import importlib
 import json
@@ -8,12 +9,15 @@ import random
 import subprocess
 import sys
 from pathlib import Path
+from threading import Event
 from typing import Any
+from unittest.mock import patch
 from uuid import UUID
 
 import pytest
 
 from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.providers.browser.workflow_worker import _ThreadCancellation
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 FROZEN_BACKEND = REPOSITORY_ROOT / "reference" / "WebRPA" / "backend"
@@ -80,13 +84,23 @@ def _source_result(payload: dict[str, Any]) -> dict[str, Any]:
 async def _target_result(payload: dict[str, Any]) -> dict[str, Any]:
     module = _target_module()
     generator = random.Random(int(payload.get("seed", 8675309)))
-    module.secrets.choice = generator.choice
-    module.uuid.uuid1 = lambda: UUID("12345678-1234-1234-9234-123456789abc")
-    module.uuid.uuid4 = lambda: UUID("12345678-1234-4234-9234-123456789abc")
     context = ExecutionContext(variables=copy.deepcopy(payload.get("variables", {})))
-    result = await _target_executors()[payload["type"]]().execute(
-        copy.deepcopy(payload["config"]), context
-    )
+    with (
+        patch.object(module.secrets, "choice", generator.choice),
+        patch.object(
+            module.uuid,
+            "uuid1",
+            lambda: UUID("12345678-1234-1234-9234-123456789abc"),
+        ),
+        patch.object(
+            module.uuid,
+            "uuid4",
+            lambda: UUID("12345678-1234-4234-9234-123456789abc"),
+        ),
+    ):
+        result = await _target_executors()[payload["type"]]().execute(
+            copy.deepcopy(payload["config"]), context
+        )
     return {
         "success": result.success,
         "message": result.message,
@@ -313,3 +327,38 @@ async def test_migrated_utility_tools_match_frozen_source(
     payload: dict[str, Any],
 ) -> None:
     assert await _target_result(payload) == _source_result(payload)
+
+
+@pytest.mark.asyncio
+async def test_random_password_generation_has_a_runtime_capacity_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _target_module()
+    monkeypatch.setattr(module.secrets, "choice", lambda charset: charset[0])
+
+    result = await module.RandomPasswordGeneratorExecutor().execute(
+        {"length": 1_048_577}, ExecutionContext()
+    )
+
+    assert result.success is False
+    assert result.error == "生成长度超过工作流安全限制"
+
+
+@pytest.mark.asyncio
+async def test_random_password_generation_cooperatively_observes_cancellation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _target_module()
+    monkeypatch.setattr(module.secrets, "choice", lambda charset: charset[0])
+    stop = Event()
+    task = asyncio.create_task(
+        module.RandomPasswordGeneratorExecutor().execute(
+            {"length": 500_000},
+            ExecutionContext(cancellation=_ThreadCancellation(stop)),
+        )
+    )
+    await asyncio.sleep(0)
+    stop.set()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task

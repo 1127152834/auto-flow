@@ -7,6 +7,8 @@ source module are outside the approved Studio scope and are intentionally absent
 
 from __future__ import annotations
 
+import asyncio
+
 # ruff: noqa: BLE001, DTZ005, DTZ006, DTZ007 -- preserve frozen result/time semantics.
 import hashlib
 import secrets
@@ -19,6 +21,8 @@ from autoflow.domain.workflows.execution import ExecutionContext
 
 from .base import ModuleExecutor, ModuleResult
 from .type_utils import to_float, to_int
+
+_MAX_RANDOM_PASSWORD_LENGTH = 1_048_576
 
 
 class RandomPasswordGeneratorExecutor(ModuleExecutor):
@@ -59,6 +63,9 @@ class RandomPasswordGeneratorExecutor(ModuleExecutor):
         result_variable = config.get("resultVariable", "random_password")
 
         try:
+            if length > _MAX_RANDOM_PASSWORD_LENGTH:
+                return ModuleResult(success=False, error="生成长度超过工作流安全限制")
+
             # 构建字符集
             charset = ""
             if include_uppercase:
@@ -79,7 +86,14 @@ class RandomPasswordGeneratorExecutor(ModuleExecutor):
                 charset = "".join(c for c in charset if c not in ambiguous)
 
             # 生成密码
-            password = "".join(secrets.choice(charset) for _ in range(length))
+            password_chars: list[str] = []
+            for index in range(length):
+                if context.cancellation is not None and index % 4096 == 0:
+                    context.cancellation.raise_if_cancelled()
+                    await asyncio.sleep(0)
+                    context.cancellation.raise_if_cancelled()
+                password_chars.append(secrets.choice(charset))
+            password = "".join(password_chars)
 
             if result_variable:
                 context.set_variable(result_variable, password)
