@@ -1,0 +1,42 @@
+{
+  "evidenceId": "BE-B0-migration-graph-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "restoredFromAutoFlowCommit": "f573a44",
+  "restoredFiles": {
+    "0007_android_devices.py": "03b1c995f0cf542b1f7db29181efb39e3f9e585ffb9012e1298795a6c209ed2d",
+    "0008_merge_android_m4.py": "743ef6ed9cf442377e5b8bc300e58db247ae95aea75eb8b0a8caf158b3754e01",
+    "0009_merge_android_m5.py": "0d56f34fc9d647896d7dd1ece2c8ff81aca163582b27b692b318053864a0de32",
+    "0010_android_fleet.py": "9e49465c1f0db103273ab7c6cbbf810307caca0f1c883d3c2add41fdafa6507c"
+  },
+  "targetHead": {
+    "revision": "0011_merge_android_project_data",
+    "downRevision": [
+      "0010_android_fleet",
+      "0009_merge_project_data"
+    ],
+    "headCount": 1
+  },
+  "focusedTest": {
+    "command": "cd apps/backend && uv run pytest tests/integration/test_studio_migration_compatibility.py tests/integration/test_migration_heads.py -q",
+    "exitCode": 0,
+    "result": "10 passed",
+    "coverage": [
+      "空库与 0005、0008、0009 双分支、0010 历史库升级",
+      "重复升级幂等",
+      "未知 revision 明确失败且源库字节不变",
+      "迁移中途故障整笔回滚并可再次启动",
+      "已有工作流、Android 设备及资源行保留"
+    ]
+  },
+  "relatedRegression": {
+    "command": "cd apps/backend && uv run pytest tests/migration/test_studio_backend_source_mapping.py tests/integration/test_migration_heads.py tests/integration/test_studio_migration_compatibility.py tests/integration/test_database_compatibility_inspector.py tests/integration/test_project_migration.py tests/integration/test_merged_model_migrations.py tests/integration/test_project_data_migrations.py tests/integration/test_project_data_status_migration.py -q",
+    "exitCode": 0,
+    "result": "45 passed, 2 dependency deprecation warnings"
+  },
+  "alembicHeads": {
+    "command": "cd apps/backend && uv run alembic -c src/autoflow/infrastructure/database/alembic.ini heads",
+    "exitCode": 0,
+    "result": "0011_merge_android_project_data (head)"
+  },
+  "userDatabaseModified": false
+}

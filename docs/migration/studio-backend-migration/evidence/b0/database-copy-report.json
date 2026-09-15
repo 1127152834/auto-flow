@@ -1,0 +1,52 @@
+{
+  "evidenceId": "BE-B0-database-copy-tool-2026-09-15",
+  "recordedAt": "2026-09-15",
+  "fixtureOnly": true,
+  "formalUserDatabaseCopy": {
+    "status": "外部等待",
+    "reason": "尚未提供脱敏的正式用户数据库副本；本轮未读取或修改真实用户数据库",
+    "pendingCases": [
+      "BE-B0-004",
+      "BE-B0-005"
+    ]
+  },
+  "test": {
+    "command": "cd apps/backend && uv run pytest tests/integration/test_database_compatibility_inspector.py -q",
+    "exitCode": 0,
+    "result": "5 passed",
+    "guards": [
+      "源库通过 SQLite mode=ro 打开",
+      "源目标同路径、目标已存在、非 SQLite 输入均拒绝",
+      "未知 revision 明确失败且源库保持不变",
+      "报告不包含秘密字段值",
+      "副本升级后逐表比较行数和非秘密列哈希"
+    ]
+  },
+  "sanitizedFixture": {
+    "sourceRevision": [
+      "0008_workflow_debug"
+    ],
+    "targetRevision": [
+      "0011_merge_android_project_data"
+    ],
+    "sourceUnchanged": true,
+    "sourceSize": 249856,
+    "sourceSha256": "5c46fe3b7ef625434aef984d5a33f870b69f49e4908b5d7400dbc4773339af1a",
+    "targetSize": 520192,
+    "targetSha256": "f3a97bef670446912eebd0039a00b52466e88c84cf7a1acd0e10394494a068a1",
+    "workflowDocumentRows": {
+      "before": 1,
+      "after": 1
+    },
+    "workflowDocumentDataHash": {
+      "before": "53d95b0f7e964425d6356b1a808361b3d35a9cf9deedcd6b38b98942914e961e",
+      "after": "53d95b0f7e964425d6356b1a808361b3d35a9cf9deedcd6b38b98942914e961e"
+    },
+    "foreignKeyViolations": [],
+    "preserved": true
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed"
+  }
+}
