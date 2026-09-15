@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
@@ -221,6 +222,15 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
         "execution:node_complete",
         "execution:log",
         "execution:completed",
+    ]
+    logs, total, next_cursor = runs.logs(
+        "run-1", cursor=0, limit=20, query=None, levels=(), node_id=None
+    )
+    assert total == 2
+    assert next_cursor is None
+    assert [item["message"] for item in logs] == [
+        "已打开网页",
+        "执行完成，共执行 1 个节点，失败 0 个",
     ]
 
 

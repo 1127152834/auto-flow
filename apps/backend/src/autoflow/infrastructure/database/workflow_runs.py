@@ -98,7 +98,9 @@ class SqlAlchemyWorkflowRuns:
             if previous is not None:
                 if previous.request_hash != request_hash:
                     session.rollback()
-                    raise WorkflowRunError("RUN_ID_CONFLICT", "运行 ID 已用于不同的请求", 409)
+                    raise WorkflowRunError(
+                        "RUN_ID_CONFLICT", "运行 ID 已用于不同的请求", 409
+                    )
                 result = _run(previous)
                 session.rollback()
                 return result
@@ -235,9 +237,7 @@ class SqlAlchemyWorkflowRuns:
                     WorkflowRunRow.payload["documentId"].as_string() == document_id
                 )
             rows = session.scalars(
-                statement.order_by(
-                    WorkflowRunRow.started_at.desc(), WorkflowRunRow.id
-                )
+                statement.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id)
             ).all()
             total = len(rows)
             page = rows[cursor : cursor + limit]
@@ -250,6 +250,7 @@ class SqlAlchemyWorkflowRuns:
         *,
         status: TerminalRunStatus,
         error: dict[str, Any] | None,
+        terminal_log: dict[str, Any] | None,
         now: datetime,
     ) -> WorkflowRun:
         with self._session_factory() as session:
@@ -259,10 +260,27 @@ class SqlAlchemyWorkflowRuns:
                 result = _run(run)
                 if result.status != status:
                     session.rollback()
-                    raise WorkflowRunError("RUN_ALREADY_FINISHED", "运行已经以其他状态结束", 409)
+                    raise WorkflowRunError(
+                        "RUN_ALREADY_FINISHED", "运行已经以其他状态结束", 409
+                    )
                 session.rollback()
                 return result
             sequence = self._next_sequence(session, run_id)
+            if terminal_log is not None:
+                session.add(
+                    WorkflowRunEventRow(
+                        run_id=run_id,
+                        seq=sequence,
+                        payload={
+                            "type": "execution:log",
+                            "occurredAt": _iso(now),
+                            "payload": copy.deepcopy(terminal_log),
+                            "nodeId": None,
+                            "executionId": None,
+                        },
+                    )
+                )
+                sequence += 1
             session.add(
                 WorkflowRunEventRow(
                     run_id=run_id,
@@ -286,6 +304,8 @@ class SqlAlchemyWorkflowRuns:
                     "error": copy.deepcopy(error),
                 }
             )
+            if terminal_log is not None:
+                value["logCount"] = int(value.get("logCount", 0)) + 1
             run.payload = value
             run.active_slot = None
             session.commit()
@@ -359,13 +379,15 @@ class SqlAlchemyWorkflowRuns:
                     WorkflowRunArtifactRow.run_id == run_id
                 )
             ).all()
-            if any(row.payload.get("relativePath") == relative_path for row in existing):
+            if any(
+                row.payload.get("relativePath") == relative_path for row in existing
+            ):
                 session.rollback()
                 raise WorkflowRunError("ARTIFACT_ALREADY_EXISTS", "产物文件已存在", 409)
             ordinal_value = session.scalar(
-                select(func.coalesce(func.max(WorkflowRunArtifactRow.ordinal), 0)).where(
-                    WorkflowRunArtifactRow.run_id == run_id
-                )
+                select(
+                    func.coalesce(func.max(WorkflowRunArtifactRow.ordinal), 0)
+                ).where(WorkflowRunArtifactRow.run_id == run_id)
             )
             row = WorkflowRunArtifactRow(
                 run_id=run_id,

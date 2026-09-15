@@ -67,6 +67,7 @@ class WorkflowRunRepository(Protocol):
         *,
         status: TerminalRunStatus,
         error: dict[str, Any] | None,
+        terminal_log: dict[str, Any] | None,
         now: datetime,
     ) -> WorkflowRun: ...
 
@@ -90,7 +91,9 @@ class WorkflowRunRepository(Protocol):
         self, run_id: str, *, cursor: int, limit: int
     ) -> tuple[WorkflowArtifact, ...]: ...
 
-    def get_artifact(self, run_id: str, artifact_id: str) -> WorkflowArtifact | None: ...
+    def get_artifact(
+        self, run_id: str, artifact_id: str
+    ) -> WorkflowArtifact | None: ...
 
 
 def _sanitize_profile(value: Any) -> Any:
@@ -128,7 +131,9 @@ class WorkflowRunService:
 
     def start(self, start: WorkflowRunStart) -> WorkflowRun:
         if not start.run_id or not start.workflow_id or not start.profile_id:
-            raise WorkflowRunError("RUN_REQUEST_INVALID", "运行标识、工作流和浏览器配置不能为空", 422)
+            raise WorkflowRunError(
+                "RUN_REQUEST_INVALID", "运行标识、工作流和浏览器配置不能为空", 422
+            )
         if start.mode not in {"run", "debug"}:
             raise WorkflowRunError("RUN_REQUEST_INVALID", "运行模式无效", 422)
         sanitized = WorkflowRunStart(
@@ -239,7 +244,8 @@ class WorkflowRunService:
                     {
                         "sequence": event.sequence,
                         "nodeId": event.node_id,
-                        "executionId": event.execution_id or f"{run_id}-{event.sequence}",
+                        "executionId": event.execution_id
+                        or f"{run_id}-{event.sequence}",
                         "values": values,
                     }
                 )
@@ -254,9 +260,7 @@ class WorkflowRunService:
         if cursor < 0 or limit < 1 or limit > 500:
             raise WorkflowRunError("RUN_ARTIFACT_PAGE_INVALID", "产物分页参数无效", 422)
         self.get(run_id)
-        items = self._repository.list_artifacts(
-            run_id, cursor=cursor, limit=limit + 1
-        )
+        items = self._repository.list_artifacts(run_id, cursor=cursor, limit=limit + 1)
         page = items[:limit]
         return page, page[-1].ordinal if len(items) > limit and page else None
 
@@ -316,13 +320,18 @@ class WorkflowRunService:
         status: TerminalRunStatus,
         cleanup_completed: bool,
         error: dict[str, Any] | None = None,
+        terminal_log: dict[str, Any] | None = None,
     ) -> WorkflowRun:
         if not cleanup_completed:
             raise WorkflowRunError(
                 "RUN_CLEANUP_INCOMPLETE", "浏览器与进程清理完成前不能结束运行"
             )
         return self._repository.finish(
-            run_id, status=status, error=copy.deepcopy(error), now=self._clock()
+            run_id,
+            status=status,
+            error=copy.deepcopy(error),
+            terminal_log=copy.deepcopy(terminal_log),
+            now=self._clock(),
         )
 
     def recover_interrupted(self) -> tuple[WorkflowRun, ...]:

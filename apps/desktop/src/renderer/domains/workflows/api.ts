@@ -459,7 +459,6 @@ export const browserApi = {
     type Result = components['schemas']['StudioBrowserStatus']
     const revision=getStudioTransportRevision()
     const request=browserStatusRequest
-    if(!currentBrowserSession())browserSession={id:crypto.randomUUID(),connection:revision,unconfirmed:true}
     const result = await apiRequest<Result>('/browser/status')
     if(revision!==getStudioTransportRevision())return {success:false,error:'浏览器所属服务已变更，状态未应用'} as ApiResponse<Result>
     if(request!==browserStatusRequest)return {success:false,error:'浏览器状态查询已过期，未应用旧状态'} as ApiResponse<Result>

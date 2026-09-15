@@ -67,9 +67,7 @@ class WorkflowRunCoordinator:
         runtime: WorkflowRuntime,
         profiles: ProfileService | ProfileReader,
         installed_kernels: Callable[[], Sequence[InstalledKernel]],
-        resolve_proxy: Callable[
-            [Profile, str], Awaitable[ProfileBrowserProxy | None]
-        ],
+        resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None],
         workers: WorkflowWorkers,
         resources: WorkflowResources,
@@ -97,7 +95,9 @@ class WorkflowRunCoordinator:
         run_id = _required_string(request, "runId")
         document_id = _required_string(request, "documentId")
         profile_id = _required_string(request, "profileId")
-        mode = "debug" if bool(request.get("debug") or request.get("stepMode")) else "run"
+        mode = (
+            "debug" if bool(request.get("debug") or request.get("stepMode")) else "run"
+        )
         headless = request.get("headless", False)
         if not isinstance(headless, bool):
             raise WorkflowRunError("RUN_REQUEST_INVALID", "headless 必须是布尔值", 422)
@@ -216,6 +216,7 @@ class WorkflowRunCoordinator:
                         "code": "RUN_START_FAILED",
                         "message": "工作流浏览器启动失败",
                     },
+                    terminal_log=_terminal_log("failed", 0, 0),
                 )
                 await self._events.publish(
                     "execution:completed",
@@ -363,7 +364,9 @@ class WorkflowRunCoordinator:
         intent = self._terminal_intents.pop(run_id, None)
         if run.stop_requested:
             terminal: TerminalRunStatus = "stopped"
-        elif intent and intent.get("type") == "execution:completed" and return_code == 0:
+        elif (
+            intent and intent.get("type") == "execution:completed" and return_code == 0
+        ):
             terminal = "completed"
         else:
             terminal = "failed"
@@ -378,6 +381,11 @@ class WorkflowRunCoordinator:
             status=terminal,
             cleanup_completed=True,
             error=error,
+            terminal_log=_terminal_log(
+                terminal,
+                int((intent or {}).get("executedNodes") or 0),
+                1 if terminal == "failed" else 0,
+            ),
         )
         if terminal == "stopped":
             await self._events.publish("execution:stopped", _event_identity(finished))
@@ -406,6 +414,28 @@ class WorkflowRunCoordinator:
 
 def datetime_now() -> datetime:
     return datetime.now(UTC)
+
+
+def _terminal_log(
+    status: TerminalRunStatus, executed_nodes: int, failed_nodes: int
+) -> dict[str, str]:
+    label = {
+        "completed": "执行完成",
+        "stopped": "执行已停止",
+        "failed": "执行失败",
+        "interrupted": "执行已中断",
+    }[status]
+    level = (
+        "success"
+        if status == "completed"
+        else "info"
+        if status == "stopped"
+        else "error"
+    )
+    return {
+        "level": level,
+        "message": f"{label}，共执行 {executed_nodes} 个节点，失败 {failed_nodes} 个",
+    }
 
 
 def _profile_snapshot(profile: Profile) -> dict[str, Any]:

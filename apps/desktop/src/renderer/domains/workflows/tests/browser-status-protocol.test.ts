@@ -15,6 +15,13 @@ it.each([{},null,[],{isOpen:true},{isOpen:'false',pickerActive:false},{isOpen:fa
  const restore=configureStudioConnection('http://status-invalid.test',async()=>Response.json(value))
  try{expect(await browserApi.getStatus()).toMatchObject({success:false,error:'浏览器状态响应格式错误，保留最后确认状态'})}finally{restore()}
 })
+it.each([404,503])('does not invent browser occupancy when the initial status read fails with %s',async status=>{
+ const restore=configureStudioConnection('http://browser-status-failed.test',async()=>Response.json({error:'状态不可用'},{status}))
+ try{
+  expect((await browserApi.getStatus()).success).toBe(false)
+  expect(currentBrowserSession()).toBeNull()
+ }finally{restore()}
+})
 it.each(['status','pages'] as const)('does not resurrect occupancy from a late %s response after confirmed closure',async kind=>{
  let delay=false
  let finish!:(response:Response)=>void

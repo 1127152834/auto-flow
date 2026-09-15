@@ -1,0 +1,27 @@
+{
+  "evidenceId": "BE-B1-formal-electron",
+  "checkedAt": "2026-09-15T15:29:14.370Z",
+  "gitHead": "b2e4e8d9e197ab0e2b54efbb58d9e480eeac0283",
+  "buildSha256": "651668c9a710856dc8e3c19bc8b85476cb66336340d97f495058de3953dd8b52",
+  "workflowId": "t4r5GIVNYZikvpy5fWSTN",
+  "profileId": "d6cd7fe7-b135-4a74-9b87-a300fc780f8e",
+  "runId": "d0c2ad0a-fd5d-4827-8f95-160f4d7b345a",
+  "result": "passed",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理"
+  ],
+  "platform": "darwin-arm64",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse, keyboard and window close; no Store access"
+  }
+}
