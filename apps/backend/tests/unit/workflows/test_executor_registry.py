@@ -190,11 +190,29 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "element_exists",
         "element_visible",
         "save_image",
+        "condition",
+        "loop",
+        "foreach",
+        "infinite_loop",
+        "foreach_dict",
+        "break_loop",
+        "continue_loop",
+        "set_variable",
+        "increment_decrement",
+        "json_parse",
+        "base64",
+        "random_number",
+        "get_time",
+        "wait",
+        "stop_workflow",
+        "assert_checkpoint",
     }
 
 
 @pytest.mark.asyncio
-async def test_runtime_propagates_sensitive_values_without_persisting_them_in_events() -> None:
+async def test_runtime_propagates_sensitive_values_without_persisting_them_in_events() -> (
+    None
+):
     class Sink:
         def __init__(self) -> None:
             self.events: list[dict[str, Any]] = []
@@ -245,9 +263,9 @@ async def test_runtime_propagates_sensitive_values_without_persisting_them_in_ev
         ],
     }
 
-    result = await WorkflowRuntime(
-        build_production_executor_registry()
-    ).execute(document, context)
+    result = await WorkflowRuntime(build_production_executor_registry()).execute(
+        document, context
+    )
 
     assert result.success is False
     assert result.failed_node_id == "export"

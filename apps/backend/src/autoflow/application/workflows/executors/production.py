@@ -9,6 +9,7 @@ from .basic import (
     OpenPageExecutor,
     ScreenshotExecutor,
 )
+from .control_variable import CONTROL_VARIABLE_EXECUTORS
 from .data_structure import (
     DictGetExecutor,
     DictKeysExecutor,
@@ -231,6 +232,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     SwitchTabExecutor,
     ExtractTableDataExecutor,
     NetworkCaptureExecutor,
+    *CONTROL_VARIABLE_EXECUTORS,
 )
 
 
