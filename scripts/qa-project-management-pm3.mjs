@@ -24,7 +24,7 @@ export function parseQaArgs(args) {
     else if (value === '--self-test') result.selfTest = true
     else if (value === '--scenario') {
       const scenario = args[++index]
-      if (!['success', 'stop', 'recovery', 'restart', 'isolation'].includes(scenario)) throw new Error('--scenario must be success, stop, recovery, restart, or isolation')
+      if (!['success', 'failure', 'stop', 'recovery', 'restart', 'isolation'].includes(scenario)) throw new Error('--scenario must be success, failure, stop, recovery, restart, or isolation')
       result.scenario = scenario
     }
     else if (value === '--kernel-directory') {
@@ -41,6 +41,7 @@ export function isOwnedQaWorkspace(path, ownerPath, marker) {
 
 export const scenarioPlans = Object.freeze({
   success: ['UI创建项目与自动化', '启动两个真实浏览器任务', '核对批次、任务、日志、输入与输出'],
+  failure: ['UI创建缺失点击目标的自动化', '启动真实浏览器任务并等待失败', '打开异常证据中的真实PNG预览'],
   stop: ['UI创建慢响应自动化', '启动两个任务', 'UI普通停止并确认', '核对全部取消且浏览器临时目录清理'],
   recovery: ['UI提交启动请求后丢弃响应与首次原键查询', '用原Idempotency-Key核对结果', '确认只创建一个批次'],
   restart: ['UI创建并完成批次', '关闭并重启Electron与后端', '通过重启后的真实服务读取持久批次并确认网页动作未重放'],
@@ -176,7 +177,7 @@ async function capture(name) {
   screenshots.push({ name, file, sha256: createHash('sha256').update(Buffer.from(data, 'base64')).digest('hex') })
 }
 
-async function seedWorkflow(workspaceKey, url) {
+async function seedWorkflow(workspaceKey, url, scenario) {
   const workflowId = randomUUID()
   const parameterId = randomUUID()
   const code = `from pathlib import Path
@@ -192,11 +193,12 @@ document=workflow_payload(sys.argv[2]); document['content']['name']='PM3真实�
 nodes=document['content']['nodes']; nodes[0]['data']['url']=sys.argv[3]
 nodes[1]['data'].update(selector='#field',text='真实点击输入',clearBefore=False)
 nodes[2]['data']['selector']='#button'; nodes[3]['data'].update(selector='#button',attribute='data-clicked')
+if sys.argv[5]=='failure': nodes[2]['data'].update(selector='#missing-submit',timeout=1)
 nodes.append({'id':'read-input','type':'get_element_info','position':{'x':100,'y':560},'data':{'moduleType':'get_element_info','selector':'#field','attribute':'value','variableName':'实际输入'}})
 document['content']['edges'].append({'id':'edge-input-read','source':'read','target':'read-input'})
 created=WorkflowService(SqlAlchemyWorkflowRepository(factory)).create(document,str(uuid4()))
 print(created.workflow_id); factory.dispose()`
-  const { stdout } = await exec('uv', ['run', '--directory', 'apps/backend', 'python', '-c', code, workspaceKey, workflowId, url, parameterId], { cwd: root })
+  const { stdout } = await exec('uv', ['run', '--directory', 'apps/backend', 'python', '-c', code, workspaceKey, workflowId, url, parameterId, scenario], { cwd: root })
   return { workflowId: stdout.trim(), parameterId, preparation: '工作流文档通过 WorkflowService 预置；Studio 不在本次验收范围。项目与自动化必须通过 UI 创建。' }
 }
 
@@ -207,6 +209,12 @@ async function seedProfile(runtime, browserVersion) {
 
 async function click(text, selector = 'button') {
   const point = await waitFor(renderer, `(()=>{const visibleText=e=>{const c=e.cloneNode(true);c.querySelectorAll('[aria-hidden=true]').forEach(n=>n.remove());return c.textContent.trim()};const items=[...document.querySelectorAll(${JSON.stringify(selector)})].filter(e=>e.getClientRects().length&&!e.disabled&&(visibleText(e)===${JSON.stringify(text)}||e.getAttribute('aria-label')===${JSON.stringify(text)}||e.labels?.[0]?.textContent.trim()===${JSON.stringify(text)}));if(items.length!==1)return null;const e=items[0];e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=${JSON.stringify(selector)}==='[role=option]'?r.x+12:r.x+r.width/2,y=r.y+r.height/2;return e.contains(document.elementFromPoint(x,y))?{x,y}:null})()`, `control ${text}`)
+  for (const type of ['mousePressed', 'mouseReleased']) await renderer.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
+  await wait(120)
+}
+
+async function clickRowButton(rowText, buttonText) {
+  const point = await waitFor(renderer, `(()=>{const row=[...document.querySelectorAll('tbody tr')].find(e=>e.textContent.includes(${JSON.stringify(rowText)}));const e=row&&[...row.querySelectorAll('button')].find(e=>e.textContent.includes(${JSON.stringify(buttonText)}));if(!e||e.disabled)return null;e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`, `row ${rowText} button ${buttonText}`)
   for (const type of ['mousePressed', 'mouseReleased']) await renderer.command('Input.dispatchMouseEvent', { type, ...point, button: 'left', clickCount: 1 })
   await wait(120)
 }
@@ -310,14 +318,28 @@ async function runUiSuccessChain(runtime, workflow, profile, scenario = 'success
     assert.equal(detail.statusCounts.succeeded, 2)
     await waitFor(renderer, "document.body.innerText.includes('成功 2')", 'terminal batch projection', 10_000)
   }
-  await click('查看任务', 'tbody tr:first-child button'); await waitFor(renderer, "document.body.innerText.includes('输入与输出')", 'task detail')
+  const tasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${batch.batchId}`)
+  const selectedTask = scenario === 'failure' ? tasks.items.find(item => item.status === 'failed' || item.status === 'timed_out') : tasks.items[0]
+  assert.ok(selectedTask)
+  await clickRowButton(selectedTask.taskId, '查看任务'); await waitFor(renderer, "document.body.innerText.includes('输入与输出')", 'task detail')
   await capture('05-task-logs'); await click('输入与输出', '[role=tab]'); await capture('06-task-input-output')
   await click('异常与证据', '[role=tab]'); await capture('07-task-evidence')
-  const tasks = await api(runtime, `/projects/${project.projectId}/tasks?batchId=${batch.batchId}`)
   assert.equal(tasks.total, 2)
-  const task = await api(runtime, `/projects/${project.projectId}/tasks/${tasks.items[0].taskId}`)
+  const task = await api(runtime, `/projects/${project.projectId}/tasks/${selectedTask.taskId}`)
   assert.deepEqual(Object.values(task.inputSnapshot.parameters).sort((left, right) => String(left).localeCompare(String(right))), [0, '保留 false/0/null 语义'])
   assert.ok(fixture.requests.length >= (scenario === 'success' ? 2 : 1), 'real browser tasks must request the local fixture')
+  if (scenario === 'failure') {
+    assert.ok(['failed', 'timed_out'].includes(task.task.status))
+    const artifacts = await api(runtime, `/projects/${project.projectId}/tasks/${task.task.taskId}/artifacts?page=1&pageSize=100`)
+    const screenshot = artifacts.items.find(item => item.kind === 'screenshot' && item.availability === 'available')
+    assert.ok(screenshot?.mediaType === 'image/png' && screenshot.byteSize > 0)
+    if (!(await renderer.evaluate(`!!document.querySelector('[aria-label=${JSON.stringify(`查看失败截图：${screenshot.nodeId}`)}]')`))) {
+      await click('← 返回批次'); await clickRowButton(selectedTask.taskId, '查看任务'); await click('异常与证据', '[role=tab]')
+    }
+    await click(`查看失败截图：${screenshot.nodeId}`)
+    await waitFor(renderer, `!!document.querySelector('img[alt=${JSON.stringify(`失败截图：${screenshot.nodeId}`)}]')`, 'failure PNG preview')
+    await capture('08-failure-preview')
+  }
   return { projectId: project.projectId, automationName: '参数运行验收', batchId: batch.batchId, taskIds: tasks.items.map(item => item.taskId), profileId: profile.profileId, ...(recoveryKey ? { recoveryKey } : {}) }
 }
 
@@ -338,10 +360,10 @@ try {
   await waitFor(renderer, "document.body.innerText.includes('本地服务正常')", 'local backend ready', 30_000)
   let runtime = await renderer.evaluate('window.autoflow.getRuntimeContext()')
   assert.ok(isOwnedQaWorkspace(runtime.workspaceKey, owner, { kind: 'pm3-project-management-qa' }), 'Only the marker-owned workspace may be changed')
-  const workflow = await seedWorkflow(runtime.workspaceKey, options.scenario === 'stop' ? fixture.slowUrl : fixture.url)
+  const workflow = await seedWorkflow(runtime.workspaceKey, options.scenario === 'stop' ? fixture.slowUrl : fixture.url, options.scenario)
   const profile = await seedProfile(runtime, kernel.version)
   await capture('00-prepared')
-  if (!prepareOnly && !['success', 'stop', 'recovery', 'restart'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
+  if (!prepareOnly && !['success', 'failure', 'stop', 'recovery', 'restart'].includes(options.scenario)) throw new Error(`scenario ${options.scenario} is planned but not yet wired to UI actions; no run fact was created`)
   let uiResult
   try {
     uiResult = prepareOnly ? undefined : await runUiSuccessChain(runtime, workflow, profile, options.scenario === 'restart' ? 'success' : options.scenario)
