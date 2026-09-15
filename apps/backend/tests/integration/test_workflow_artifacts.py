@@ -137,6 +137,43 @@ async def test_registration_failure_removes_unowned_file(
 
 
 @pytest.mark.asyncio
+async def test_binary_artifact_cancellation_after_write_removes_unowned_file(
+    artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
+) -> None:
+    store, repository = artifacts
+
+    class Cancellation:
+        checks = 0
+
+        @property
+        def cancelled(self) -> bool:
+            return self.checks >= 2
+
+        def raise_if_cancelled(self) -> None:
+            self.checks += 1
+            if self.cancelled:
+                raise RuntimeError("workflow execution stopped")
+
+    writer = store.writer(
+        run_id="run-artifacts",
+        node_id="shot",
+        execution_id="execution-cancelled",
+        purpose="result",
+        cancellation=Cancellation(),
+    )
+
+    with pytest.raises(RuntimeError, match="workflow execution stopped"):
+        await writer.write_bytes(
+            name="cancelled.png", content=b"image", mime_type="image/png"
+        )
+
+    assert not (
+        store._root / "runs/run-artifacts/artifacts/cancelled.png"
+    ).exists()
+    assert repository.list_artifacts("run-artifacts", cursor=0, limit=20) == ()
+
+
+@pytest.mark.asyncio
 async def test_disk_failure_does_not_register_artifact(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,

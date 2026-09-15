@@ -8,6 +8,10 @@ from typing import Any
 from autoflow.domain.workflows.browser import BrowserLocatorPort, BrowserPagePort
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.providers.browser.workflow_actions import wait_for_locator
+from autoflow.providers.browser.workflow_session import (
+    redact_browser_error,
+    redact_browser_url,
+)
 
 from .base import ModuleExecutor, ModuleResult
 from .registry import register_executor
@@ -29,6 +33,16 @@ def _page(context: ExecutionContext) -> BrowserPagePort | None:
         return None
     try:
         return context.browser.current_page()
+    except Exception:  # noqa: BLE001 -- executor serializes browser state as a node error.
+        return None
+
+
+def _active_page(context: ExecutionContext) -> BrowserPagePort | None:
+    if context.browser is None:
+        return None
+    try:
+        active_page = getattr(context.browser, "active_page", None)
+        return active_page() if active_page is not None else context.browser.current_page()
     except Exception:  # noqa: BLE001 -- executor serializes browser state as a node error.
         return None
 
@@ -63,9 +77,14 @@ class OpenPageExecutor(ModuleExecutor):
                 timeout_ms=float(_timeout_ms(config, context) or 0),
             )
             await page.bring_to_front()
-            return ModuleResult(success=True, message=f"已打开网页: {url}")
+            return ModuleResult(
+                success=True, message=f"已打开网页: {redact_browser_url(str(url))}"
+            )
         except Exception as error:  # noqa: BLE001 -- provider errors are node results.
-            return ModuleResult(success=False, error=f"打开网页失败: {error}")
+            return ModuleResult(
+                success=False,
+                error=f"打开网页失败: {redact_browser_error(error, str(url))}",
+            )
 
 
 @register_executor
@@ -86,7 +105,7 @@ class ClickElementExecutor(ModuleExecutor):
         timeout_ms = _timeout_ms(config, context)
         if not selector:
             return ModuleResult(success=False, error="选择器不能为空")
-        page = _page(context)
+        page = _active_page(context)
         if page is None or context.browser is None:
             return ModuleResult(success=False, error="没有打开的页面")
         watch = context.browser.begin_new_page_watch()
@@ -119,7 +138,11 @@ class ClickElementExecutor(ModuleExecutor):
                 watch, follow=follow_new_tab
             )
             watch = None
-            suffix = f"，已跟进新标签页：{followed.url}" if followed else ""
+            suffix = (
+                f"，已跟进新标签页：{redact_browser_url(followed.url)}"
+                if followed
+                else ""
+            )
             return ModuleResult(success=True, message=f"已点击元素: {selector}{suffix}")
         except Exception as error:  # noqa: BLE001 -- provider errors are node results.
             diagnostic = ""
@@ -176,7 +199,7 @@ class InputTextExecutor(ModuleExecutor):
         timeout_ms = _timeout_ms(config, context)
         if not selector:
             return ModuleResult(success=False, error="选择器不能为空")
-        page = _page(context)
+        page = _active_page(context)
         if page is None:
             return ModuleResult(success=False, error="没有打开的页面")
         try:
@@ -243,7 +266,7 @@ class GetElementInfoExecutor(ModuleExecutor):
         timeout_ms = _timeout_ms(config, context)
         if not selector:
             return ModuleResult(success=False, error="选择器不能为空")
-        page = _page(context)
+        page = _active_page(context)
         if page is None:
             return ModuleResult(success=False, error="没有打开的页面")
         try:
@@ -317,7 +340,7 @@ class ScreenshotExecutor(ModuleExecutor):
         save_path = context.resolve_value(config.get("savePath", ""))
         pattern = context.resolve_value(config.get("fileNamePattern", ""))
         variable_name = config.get("variableName", "")
-        page = _page(context)
+        page = _active_page(context) if screenshot_type == "element" else _page(context)
         if page is None:
             return ModuleResult(success=False, error="没有打开的页面")
         if context.artifacts is None:

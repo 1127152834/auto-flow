@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>AutoFlow B2 网页动作受控页面</title>
+    <style>
+      body { font-family: sans-serif; margin: 32px; min-height: 1600px; }
+      #drag-source, #drag-target { display: inline-block; margin: 8px; padding: 16px; border: 1px solid #777; }
+      #drag-target { min-width: 120px; }
+      #spacer { height: 900px; }
+    </style>
+  </head>
+  <body>
+    <select id="choice">
+      <option value="first">第一项</option>
+      <option value="second">第二项</option>
+    </select>
+    <label><input id="enabled" type="checkbox" />启用</label>
+    <div id="drag-source" draggable="true">拖拽源</div>
+    <div
+      id="drag-target"
+      ondragover="event.preventDefault()"
+      ondrop="event.preventDefault(); this.dataset.dropped = 'true'"
+    >拖拽目标</div>
+    <input id="upload" type="file" />
+    <div id="children"><span id="child-a">甲</span><span id="child-b">乙</span></div>
+    <div id="siblings"><span id="sibling-a">前</span><span id="sibling-target">中</span><span id="sibling-b">后</span></div>
+    <img
+      id="fixture-image"
+      alt="fixture"
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
+    />
+    <div id="spacer"></div>
+    <div id="bottom-marker">底部</div>
+  </body>
+</html>

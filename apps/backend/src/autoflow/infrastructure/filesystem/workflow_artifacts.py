@@ -59,6 +59,7 @@ class _BoundArtifactWriter:
             name=name,
             content=content,
             mime_type=mime_type,
+            cancellation=self._cancellation,
         )
 
     async def write_text(
@@ -208,7 +209,9 @@ class WorkflowArtifactStore:
         name: str,
         content: bytes,
         mime_type: str,
+        cancellation: CancellationToken | None,
     ) -> str:
+        self._raise_if_cancelled(cancellation)
         relative_name = self._relative_name(name)
         run_root = self._root / "runs" / run_id
         target = run_root / "artifacts" / Path(*relative_name.parts)
@@ -218,6 +221,7 @@ class WorkflowArtifactStore:
         self._place_file(target, content)
         relative_path = target.relative_to(self._root).as_posix()
         try:
+            self._raise_if_cancelled(cancellation)
             self._repository.register_artifact(
                 run_id=run_id,
                 artifact_id=str(uuid4()),

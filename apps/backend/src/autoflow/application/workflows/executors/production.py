@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
 from .base import ModuleExecutor
 from .basic import (
     ClickElementExecutor,
@@ -121,6 +122,7 @@ from .utility_tools import (
     URLEncodeDecodeExecutor,
     UUIDGeneratorExecutor,
 )
+from .web_basic import WEB_BASIC_EXECUTORS
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     OpenPageExecutor,
@@ -221,6 +223,8 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     NetworkMonitorStartExecutor,
     NetworkMonitorWaitExecutor,
     NetworkMonitorStopExecutor,
+    *WEB_BASIC_EXECUTORS,
+    *ADVANCED_BROWSER_EXECUTORS,
 )
 
 

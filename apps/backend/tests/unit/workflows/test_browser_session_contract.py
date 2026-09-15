@@ -8,11 +8,17 @@ from pathlib import Path
 from threading import Event
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
 
+from autoflow.application.workflows.executors.web_basic import SwitchIframeExecutor
 from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
-from autoflow.providers.browser.workflow_session import CloakBrowserWorkflowSession
+from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.providers.browser.workflow_session import (
+    CloakBrowserWorkflowPage,
+    CloakBrowserWorkflowSession,
+)
 from autoflow.providers.browser.workflow_worker import _run, run_workflow_worker
 
 
@@ -111,6 +117,80 @@ async def test_closed_current_page_does_not_silently_fall_back() -> None:
         session.current_page()
 
 
+def test_frame_selection_is_explicit_and_page_selection_restores_main_document() -> None:
+    raw = RawContext()
+    session = CloakBrowserWorkflowSession.from_context(raw)
+    main = session.current_page()
+    frame = CloakBrowserWorkflowPage("frame-1", RawPage("https://frame.test"))
+
+    session.select_frame(frame)
+    assert session.active_page() is frame
+    assert session.current_page() is main
+
+    session.select_page(main.id)
+    assert session.active_page() is main
+
+
+@pytest.mark.asyncio
+async def test_frame_wrappers_keep_stable_identity_and_index_skips_main_frame() -> None:
+    raw = RawContext()
+    main = raw.pages[0]
+    child = RawPage("https://frame.test")
+    child.page = main  # type: ignore[attr-defined]
+    main.main_frame = main  # type: ignore[attr-defined]
+    main.frames = [main, child]  # type: ignore[attr-defined]
+    child.wait_for_load_state = AsyncMock()  # type: ignore[attr-defined]
+    session = CloakBrowserWorkflowSession.from_context(raw)
+    page = session.current_page()
+
+    assert page.frames[0].id == page.main_frame.id
+    result = await SwitchIframeExecutor().execute(
+        {"locateBy": "index", "iframeIndex": 0},
+        ExecutionContext(browser=session),
+    )
+
+    assert result.success is True
+    assert session.active_page().url == "https://frame.test"
+
+
+@pytest.mark.asyncio
+async def test_frame_wrapper_delegates_page_level_operations_to_owner_page() -> None:
+    calls: list[tuple[str, object]] = []
+
+    class Keyboard:
+        async def press(self, key: str) -> None:
+            calls.append(("press", key))
+
+        async def type(self, value: str) -> None:
+            calls.append(("type", value))
+
+    main = RawPage("https://main.test")
+    main.keyboard = Keyboard()  # type: ignore[attr-defined]
+    main.close = AsyncMock()  # type: ignore[attr-defined]
+    main.reload = AsyncMock(return_value="reload")  # type: ignore[attr-defined]
+    main.go_back = AsyncMock(return_value="back")  # type: ignore[attr-defined]
+    main.go_forward = AsyncMock(return_value="forward")  # type: ignore[attr-defined]
+    main.screenshot = AsyncMock(return_value=b"png")  # type: ignore[attr-defined]
+    frame = RawPage("https://frame.test")
+    frame.page = main  # type: ignore[attr-defined]
+    wrapped = CloakBrowserWorkflowPage("frame", frame)
+
+    await wrapped.close()
+    assert await wrapped.reload(timeout_ms=100) == "reload"
+    assert await wrapped.go_back(timeout_ms=100) == "back"
+    assert await wrapped.go_forward(timeout_ms=100) == "forward"
+    await wrapped.keyboard_press("Enter")
+    await wrapped.keyboard_type("文本")
+    assert await wrapped.screenshot(full_page=True) == b"png"
+
+    main.close.assert_awaited_once()  # type: ignore[attr-defined]
+    main.reload.assert_awaited_once_with(timeout=100)  # type: ignore[attr-defined]
+    main.go_back.assert_awaited_once_with(timeout=100)  # type: ignore[attr-defined]
+    main.go_forward.assert_awaited_once_with(timeout=100)  # type: ignore[attr-defined]
+    main.screenshot.assert_awaited_once_with(full_page=True)  # type: ignore[attr-defined]
+    assert calls == [("press", "Enter"), ("type", "文本")]
+
+
 @pytest.mark.asyncio
 async def test_session_closes_context_once() -> None:
     raw = RawContext()
@@ -140,6 +220,114 @@ async def test_page_download_port_captures_action_and_saves_explicit_path(
     assert action_calls == ["clicked"]
     assert download.suggested_filename == "report.csv"
     assert raw.pages[0].saved_download == str(target)
+
+
+@pytest.mark.asyncio
+async def test_page_and_locator_expose_the_approved_web_action_ports(
+    tmp_path: Path,
+) -> None:
+    calls: list[tuple[Any, ...]] = []
+
+    class RawLocator:
+        def __init__(self, selector: str) -> None:
+            self.selector = selector
+
+        @property
+        def first(self) -> RawLocator:
+            return RawLocator(f"{self.selector}:first")
+
+        def nth(self, index: int) -> RawLocator:
+            return RawLocator(f"{self.selector}:nth({index})")
+
+        def locator(self, selector: str) -> RawLocator:
+            return RawLocator(f"{self.selector} {selector}")
+
+        async def count(self) -> int:
+            return 3
+
+        async def select_option(self, **options: Any) -> None:
+            calls.append(("select", self.selector, options))
+
+        async def check(self) -> None:
+            calls.append(("check", self.selector))
+
+        async def uncheck(self) -> None:
+            calls.append(("uncheck", self.selector))
+
+        async def drag_to(self, target: RawLocator) -> None:
+            calls.append(("drag", self.selector, target.selector))
+
+        async def bounding_box(self) -> dict[str, int]:
+            return {"x": 1, "y": 2, "width": 3, "height": 4}
+
+        async def set_input_files(self, path: str) -> None:
+            calls.append(("files", self.selector, path))
+
+        async def inner_text(self) -> str:
+            return self.selector
+
+    class RawMouse:
+        async def move(self, x: float, y: float, **options: Any) -> None:
+            calls.append(("move", x, y, options))
+
+        async def down(self) -> None:
+            calls.append(("down",))
+
+        async def up(self) -> None:
+            calls.append(("up",))
+
+        async def wheel(self, x: float, y: float) -> None:
+            calls.append(("wheel", x, y))
+
+    class RawChooser:
+        async def set_files(self, path: str) -> None:
+            calls.append(("chooser", path))
+
+    class ChooserContext:
+        async def __aenter__(self) -> Any:
+            async def value() -> RawChooser:
+                return RawChooser()
+
+            return SimpleNamespace(value=value())
+
+        async def __aexit__(self, *_args: object) -> None:
+            return None
+
+    raw = RawContext()
+    page = raw.pages[0]
+    page.mouse = RawMouse()  # type: ignore[attr-defined]
+    page.viewport_size = {"width": 1200, "height": 800}  # type: ignore[attr-defined]
+    page.locator = lambda selector: RawLocator(selector)  # type: ignore[attr-defined]
+    page.evaluate = AsyncMock(return_value="evaluated")  # type: ignore[attr-defined]
+    page.expect_file_chooser = lambda **_options: ChooserContext()  # type: ignore[attr-defined]
+    session = CloakBrowserWorkflowSession.from_context(raw)
+    wrapped_page = session.current_page()
+    locator = wrapped_page.locator(".item")
+
+    assert await locator.count() == 3
+    assert await locator.nth(1).inner_text() == ".item:nth(1):first"
+    await locator.select_option(label="二")
+    await locator.check()
+    await locator.uncheck()
+    await locator.drag_to(wrapped_page.locator("#target"))
+    assert await locator.bounding_box() == {"x": 1, "y": 2, "width": 3, "height": 4}
+    upload = tmp_path / "upload.txt"
+    upload.write_text("fixture", encoding="utf-8")
+    await locator.set_input_files(str(upload))
+    assert await wrapped_page.evaluate("1 + 1") == "evaluated"
+    assert wrapped_page.viewport_size == {"width": 1200, "height": 800}
+    await wrapped_page.mouse.move(10, 20, steps=2)
+    await wrapped_page.mouse.down()
+    await wrapped_page.mouse.up()
+    await wrapped_page.mouse.wheel(0, 500)
+
+    async def click() -> None:
+        calls.append(("click",))
+
+    await wrapped_page.choose_file(click, str(upload), timeout_ms=2500)
+
+    assert ("select", ".item:first", {"label": "二"}) in calls
+    assert ("chooser", str(upload)) in calls
 
 
 def test_page_request_watch_filters_redacts_and_stops() -> None:
@@ -463,6 +651,68 @@ async def test_workflow_worker_runs_pure_data_document_without_launching_browser
         "execution:completed",
     ]
     assert events[2]["data"] == "AutoFlow"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_externalizes_large_node_result(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure data workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    artifact_root = tmp_path / "artifacts"
+    large_value = "中" * 70_000
+    command = {
+        "runId": "run-large-result",
+        "workflowId": "workflow-large-result",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(artifact_root),
+        "document": {
+            "nodes": [
+                {
+                    "id": "concat",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "string_concat",
+                        "config": {
+                            "string1": large_value,
+                            "string2": large_value,
+                            "variableName": "joined",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    artifact = next(event for event in events if event["type"] == "artifact:registered")
+    completion = next(
+        event for event in events if event["type"] == "execution:node_complete"
+    )
+    assert artifact["mimeType"] == "application/json"
+    assert artifact["artifactId"] in completion["artifactIds"]
+    assert completion["data"] == {
+        "externalized": True,
+        "mimeType": "application/json",
+        "size": artifact["size"],
+    }
+    stored = artifact_root / artifact["relativePath"]
+    assert json.loads(stored.read_text(encoding="utf-8")) == large_value * 2
+    assert len(output.getvalue().encode("utf-8")) < 70_000
 
 
 @pytest.mark.asyncio

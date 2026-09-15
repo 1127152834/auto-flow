@@ -22,6 +22,8 @@ from autoflow.infrastructure.filesystem.workflow_table_workbook import (
 
 from .workflow_session import launch_workflow_session
 
+_MAX_INLINE_RESULT_BYTES = 64 * 1024
+
 
 def run_workflow_worker(
     stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout
@@ -221,6 +223,7 @@ class _WorkerEventSink:
                     cancellation=self._context.cancellation,
                 )
             elif event.get("type") == "execution:node_complete":
+                await self._externalize_large_result(event, execution_id)
                 event["artifactIds"] = list(self._artifacts.take(execution_id))
         _write(
             self._stdout,
@@ -230,6 +233,31 @@ class _WorkerEventSink:
                 "workflowId": self._workflow_id,
             },
         )
+
+    async def _externalize_large_result(
+        self, event: dict[str, Any], execution_id: str
+    ) -> None:
+        value = event.get("data")
+        if value is None:
+            return
+        encoded = json.dumps(
+            value, ensure_ascii=False, allow_nan=False, separators=(",", ":")
+        ).encode("utf-8")
+        if len(encoded) <= _MAX_INLINE_RESULT_BYTES:
+            return
+        writer = self._context.artifacts
+        if writer is None:
+            raise RuntimeError("节点大结果缺少产物写入器")
+        await writer.write_bytes(
+            name=f"node-results/{execution_id}.json",
+            content=encoded,
+            mime_type="application/json",
+        )
+        event["data"] = {
+            "externalized": True,
+            "mimeType": "application/json",
+            "size": len(encoded),
+        }
 
 
 def _initial_variables(document: dict[str, Any]) -> dict[str, Any]:
