@@ -1,0 +1,49 @@
+{
+  "evidenceId": "BE-B2-page-load-formal-electron",
+  "checkedAt": "2026-09-15T16:26:08.271Z",
+  "gitHead": "f9cb0b7f719e87809bd78fab77c235031b65c160",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "oiceyoDxSmGA9qnsEf4cD",
+  "profileId": "4723be01-0635-4747-9daf-4462a78b113b",
+  "runId": "40f8d144-5610-46a8-9baa-07b1fa60a751",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，并选择真实 sidecar Profile",
+    "通过画布原生右键菜单和配置面板添加、配置页面加载链；未直接修改 Store",
+    "通过画布连接手柄建立 open_page → wait_page_load → page_load_complete → open_page 变量消费链",
+    "正式保存经真实 HTTP 写入 SQLite，页面加载节点配置与 UI 输入一致",
+    "真实 CloakBrowser 完成页面等待与状态检查；page_ready 被后续节点解析，结果和两条正式日志均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "pageLoad": {
+    "waitNodeId": "PDhqCUDHAknQoQMJPizn0",
+    "completeNodeId": "lu3aogb4_MXoOC4ZLYFAD",
+    "outputVariable": "page_ready",
+    "completeResult": {
+      "loaded": true
+    },
+    "consumedByOpenPageLog": "已打开网页: file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/tests/fixtures/workflow-page.html?page_ready=True",
+    "logs": [
+      "页面已加载完成（domcontentloaded）",
+      "页面加载状态: 已完成（domcontentloaded）",
+      "已打开网页: file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/tests/fixtures/workflow-page.html?page_ready=True"
+    ]
+  },
+  "directoryPackage": {
+    "status": "needs-rebuild",
+    "backend": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "backendModifiedAt": "2026-09-15T15:39:45.539Z",
+    "newestB2Source": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/executors/production.py",
+    "newestB2SourceModifiedAt": "2026-09-15T16:15:34.634Z",
+    "reason": "目录包后端早于 B2 执行器/注册/接线路径，不能作为 B2 通过证据"
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard through the formal Studio UI; no Store access"
+  }
+}

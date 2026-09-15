@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B2-page-load-family-2026-09-16",
   "recordedAt": "2026-09-16",
-  "result": "source parity, production registration, HTTP admission and real CloakBrowser provider passed; formal Electron E2E pending",
+  "result": "source parity, production registration, HTTP admission, real CloakBrowser provider and formal Electron development entry passed",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -14,12 +14,18 @@
   },
   "nodes": {
     "wait_page_load": {
-      "configKeys": ["waitUntil", "timeout"],
+      "configKeys": [
+        "waitUntil",
+        "timeout"
+      ],
       "defaultBehavior": "wait for load for up to 60 seconds",
       "output": "success or the frozen Chinese node error"
     },
     "page_load_complete": {
-      "configKeys": ["checkState", "saveToVariable"],
+      "configKeys": [
+        "checkState",
+        "saveToVariable"
+      ],
       "defaultBehavior": "probe load with a 100 ms timeout and save page_loaded",
       "output": "a successful boolean observation; probe timeout means false"
     }
@@ -49,6 +55,19 @@
         "page_load_complete wrote true to the run variable",
         "the managed CloakBrowser context closed after execution"
       ]
+    },
+    "formalElectron": {
+      "script": "scripts/smoke-studio-backend-b2-page-load.mjs",
+      "result": "passed",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json",
+      "platform": "macOS arm64",
+      "entry": "development-build",
+      "observed": [
+        "the workflow was built and saved through formal Studio UI interactions",
+        "wait_page_load and page_load_complete ran in real CloakBrowser",
+        "page_ready was consumed by the following open_page node",
+        "logs persisted and the managed browser process tree was cleaned"
+      ]
     }
   },
   "quality": {
@@ -57,7 +76,6 @@
     "diffCheck": "passed"
   },
   "notClaimed": [
-    "formal Electron UI execution",
     "packaged sidecar execution after rebuilding the package",
     "macOS Intel or Windows verification"
   ],
