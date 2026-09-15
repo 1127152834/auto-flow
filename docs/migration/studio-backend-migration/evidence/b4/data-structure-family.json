@@ -1,0 +1,97 @@
+{
+  "evidenceId": "BE-B4-data-structure-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "result": "all 15 approved nodes passed source parity, production registration, HTTP admission and worker execution; 5 representative nodes passed formal Electron UI execution",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "file": "backend/app/executors/data_structure.py",
+    "approvedTypesInSource": 15,
+    "licenseRecord": "LICENSE.WebRPA"
+  },
+  "migratedTypes": [
+    "list_operation",
+    "list_get",
+    "list_length",
+    "list_export",
+    "dict_operation",
+    "dict_get",
+    "dict_keys",
+    "regex_extract",
+    "string_replace",
+    "string_split",
+    "string_join",
+    "string_concat",
+    "string_trim",
+    "string_case",
+    "string_substring"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入",
+    "importsAndExecutionContext": "AutoFlow必要适配",
+    "browserRequirementMetadata": "AutoFlow必要适配",
+    "fileOutput": "AutoFlow必要适配：运行绑定文本发布端口、相对路径隔离、原子目标写入及不可变产物副本"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b4_data_structure_executor_parity.py",
+      "result": "146 passed",
+      "behaviorPayloads": "126 non-file/error payloads plus 7 file behavior cases and registration assertions"
+    },
+    "productionRegistration": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "production registry contains all 15 approved data-structure types"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_pure_data_family_runs_through_http_without_browser_requirement",
+      "result": "passed",
+      "observed": "a 15-node document was accepted by the real coordinator with requiresBrowser=false"
+    },
+    "workerWithoutBrowser": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_runs_pure_data_document_without_launching_browser",
+      "result": "passed",
+      "observed": "the worker executed pure string data and list_export without CloakBrowser environment paths or browser launch; list_export emitted an artifact registration before node completion"
+    },
+    "fileOutput": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/integration/test_workflow_artifacts.py",
+      "result": "15 passed",
+      "observed": [
+        "relative output is isolated under the current run using verified directory descriptors",
+        "explicit absolute output, overwrite, append, empty and non-empty utf-8-sig semantics are preserved",
+        "relative escape, static symlink escape and parent-directory swap races cannot cross the boundary",
+        "append-copy and snapshot-copy cancellation leave the original file intact with no artifact or temporary file",
+        "snapshots stream bytes while computing size/hash and each successful write creates an immutable registered artifact"
+      ]
+    },
+    "sharedRegression": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q <B1/B2/B4 affected workflow suites>",
+      "result": "203 passed",
+      "scope": "differential, artifact storage, worker protocol, run repository, browser contract, production registry, admission, coordinator and HTTP run contract"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-electron-84TG6p/result.json",
+      "result": "passed on darwin-arm64 development build",
+      "uiExecutedTypes": [
+        "string_split",
+        "list_export",
+        "regex_extract",
+        "dict_operation",
+        "dict_get"
+      ],
+      "observed": "The formal Studio UI created, configured, connected, saved and ran a five-node pure-data chain. SQLite contained the same document, every node completed with persisted logs, list_export produced a registered immutable artifact with verified content and SHA-256, and no CloakBrowser process existed before or after the pure-data run."
+    }
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "notClaimed": [
+    "formal Electron UI execution of list_operation, list_get, list_length, dict_keys, string_replace, string_join, string_concat, string_trim, string_case and string_substring",
+    "all CPU-intensive operation cancellation checkpoints",
+    "rebuilt packaged sidecar execution",
+    "Windows list_export execution (fails closed with ARTIFACT_PLATFORM_UNSUPPORTED until handle-level path validation is implemented and tested)",
+    "macOS Intel verification"
+  ],
+  "userDatabaseModified": false
+}

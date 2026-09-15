@@ -55,7 +55,7 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 尚未验收 |
+| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：`wait_page_load`、`page_load_complete` 已完成冻结源码差分、正式注册、HTTP 准入、macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口验收；目录包需重建，其余 33 个网页节点仍待迁入。[模块族证据](studio-backend-migration/evidence/b2/page-load-family.json)、[正式 UI 证据](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
 | BE-B2-002 | CSS、XPath、多匹配、零匹配、非法语法 | 行为与冻结执行器一致；错误含 nodeId/path | 尚未验收 |
 | BE-B2-003 | 主页、同域/跨域嵌套 iframe、开放 Shadow DOM | 目标身份正确，不回退到其它页面或框架 | 尚未验收 |
 | BE-B2-004 | 弹窗、新标签、刷新、前进/后退、页关闭和下载 | 页面选择和关闭策略与原版一致，丢失当前页明确失败 | 尚未验收 |
@@ -81,11 +81,11 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B4-001 | 88 个节点的默认值、类型、空值、错误和独有分支 | 所有逐节点 source-parity/contract/real-execution 通过 | 尚未验收 |
-| BE-B4-002 | 字符串、正则、JSON、列表、字典、数学和统计边界 | 与原 type_utils/safe_expr/json_safe 行为一致 | 尚未验收 |
+| BE-B4-001 | 88 个节点的默认值、类型、空值、错误和独有分支 | 所有逐节点 source-parity/contract/real-execution 通过 | 部分通过：冻结 `data_structure.py` 的 15 个批准节点已全部完成冻结源码差分、正式注册、HTTP 准入及无浏览器 worker 执行；`list_export` 同时通过路径隔离、覆盖/追加、编码、取消和不可变产物登记测试。其中 `string_split`、`list_export`、`regex_extract`、`dict_operation`、`dict_get` 已通过 macOS arm64 正式 Electron 开发入口真实 UI 执行；同族其余 10 个节点的逐节点 UI 与其余 73 个 B4 节点仍待完成。[15 节点证据](studio-backend-migration/evidence/b4/data-structure-family.json)、[正式 UI 证据](studio-backend-migration/evidence/b4/formal-electron-84TG6p/result.json) |
+| BE-B4-002 | 字符串、正则、JSON、列表、字典、数学和统计边界 | 与原 type_utils/safe_expr/json_safe 行为一致 | 部分通过：列表、字典、字符串和 `regex` 的默认值、必填、变量标识、变量引用、捕获组、空匹配、非法 replacement、越界和错误类型已与冻结源对照；JSON、数学、统计和其余同步 CPU 操作取消仍待后续模块族。[15 节点证据](studio-backend-migration/evidence/b4/data-structure-family.json) |
 | BE-B4-003 | 表格/CSV 的中文、空单元格、大列表和文件往返 | 值、顺序、编码和哈希一致，不静默截断 | 尚未验收 |
-| BE-B4-004 | 无效编码、NaN/Infinity、超大索引和错误类型 | 结构化失败且后续策略按配置执行 | 尚未验收 |
-| BE-B4-005 | 运行中取消 CPU 密集或大序列化任务 | 在定义的检查点响应；无半份产物 | 尚未验收 |
+| BE-B4-004 | 无效编码、NaN/Infinity、超大索引和错误类型 | 结构化失败且后续策略按配置执行 | 部分通过：`list_export` 非法编码、data_structure 节点索引及原版异常文本已通过差分；其余 B4 模块待迁入。[15 节点证据](studio-backend-migration/evidence/b4/data-structure-family.json) |
+| BE-B4-005 | 运行中取消 CPU 密集或大序列化任务 | 在定义的检查点响应；无半份产物 | 部分通过：列表导出的逐项序列化、旧文件复制和提交前均有取消检查；复制中取消保留原文件且无产物或临时文件。其余 CPU 密集节点及正式 worker 停止仍待验证。[15 节点证据](studio-backend-migration/evidence/b4/data-structure-family.json) |
 
 ## 8. B5 AI、模型和 MCP
 

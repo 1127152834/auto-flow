@@ -309,6 +309,24 @@
         "多浏览器回退"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/data_structure.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/data_structure.py",
+      "changeSummary": "批量迁入列表、字典、字符串、正则和列表文本导出的15个批准执行器，保留默认值、变量名/值解析、原地变化、编码、覆盖/追加、结果与中文错误；list_export通过AutoFlow运行绑定产物端口发布用户目标并登记不可变快照。",
+      "retainedDependencies": [
+        "Python标准库",
+        "regex",
+        "ExecutionContext变量语义",
+        "type_utils.to_int",
+        "WorkflowArtifactStore运行绑定文本发布"
+      ],
+      "removedDependencies": [
+        "WebRPA全局执行上下文",
+        "节点内直接open与不受控相对工作目录"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }
