@@ -19,7 +19,7 @@ import { Input } from './controls/input'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
 import { cn } from '../lib/utils'
-import { browserApi, workflowApi, localWorkflowApi } from '../api'
+import { browserApi, workflowApi } from '../api'
 import { socketService } from '../events'
 import { getBackendBaseUrl } from '../api/config'
 import { GlobalConfigDialog } from './GlobalConfigDialog'
@@ -31,7 +31,7 @@ import { AutoBrowserDialog } from './AutoBrowserDialog'
 import { RecorderPanel } from './RecorderPanel'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
-import { LocalWorkflowDialog } from './LocalWorkflowDialog'
+import { WorkflowOpenDialog } from './WorkflowOpenDialog'
 import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
@@ -79,7 +79,6 @@ import {
 export function Toolbar() {
   const mounted = useRef(true)
   const savingDocument = useRef(false)
-  const defaultFolderRevision = useRef<number | null>(null)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const diagnosticRunId = useWorkflowStore(state => state.currentExecutionRunId)
   const documentId = useWorkflowStore(state => state.id)
@@ -110,7 +109,6 @@ export function Toolbar() {
   const [showScheduledTasks, setShowScheduledTasks] = useState(false)
   const [showLocalWorkflow, setShowLocalWorkflow] = useState(false)
   const [showVariableTracking, setShowVariableTracking] = useState(false)
-  const [defaultFolder, setDefaultFolder] = useState('')
   const [showScreenshotNameDialog, setShowScreenshotNameDialog] = useState(false)
   const [screenshotAsset, setScreenshotAsset] = useState<any>(null)
   const [isScreenshotting, setIsScreenshotting] = useState(false)
@@ -121,7 +119,7 @@ export function Toolbar() {
   const [editingCustomModuleName, setEditingCustomModuleName] = useState<string>('')
   const [showRecorder, setShowRecorder] = useState(false)
   const [isAutoLayouting, setIsAutoLayouting] = useState(false)
-  const { confirm, ConfirmDialog } = useConfirm()
+  const { ConfirmDialog } = useConfirm()
   const { promptPassword, passwordDialog } = usePasswordPrompt()
   
   // 用于记录输入框聚焦时的初始名称
@@ -166,18 +164,6 @@ export function Toolbar() {
       setWorkflowNameWithHistory(newName)
     }
   }, [name, setWorkflowName, setWorkflowNameWithHistory])
-
-  // Cached default paths belong to the connection that returned them.
-  useEffect(() => {
-    const revision = getStudioTransportRevision()
-    void localWorkflowApi.getDefaultFolder().then(result => {
-      if (!mounted.current || revision !== getStudioTransportRevision()) return
-      if (result.success && typeof result.data?.folder === 'string') {
-        defaultFolderRevision.current = revision
-        setDefaultFolder(result.data.folder)
-      }
-    }).catch(console.error)
-  }, [])
 
   // 检测是否正在编辑自定义模块
   useEffect(() => {
@@ -391,90 +377,27 @@ export function Toolbar() {
     try {
       if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
       const workflowData = JSON.parse(exportWorkflow())
-      let filename = workflowData.name || '未命名工作流'
-      let currentFolder = config.workflow?.localFolder || (defaultFolderRevision.current === revision ? defaultFolder : '')
-      if (!currentFolder) {
-        const result = await localWorkflowApi.getDefaultFolder()
-        requireActive()
-        if (result.error) { addLog({ level: 'error', message: result.error }); return false }
-        currentFolder = result.data?.folder || ''
-        if (currentFolder) { defaultFolderRevision.current = revision; setDefaultFolder(currentFolder) }
-      }
-      if (!currentFolder) {
-        if (!skipConfirm) {
-          addLog({ level: 'error', message: '未配置工作流保存路径' })
-        }
-        return false
-      }
-
-      // 覆盖提示 / 自动副本开关
-      const showOverwriteConfirm = config.workflow?.showOverwriteConfirm !== false
-      const autoSaveCopy = config.workflow?.autoSaveCopy === true
-
-      // Failed existence checks must not silently turn into overwrite permission.
-      if (!skipConfirm && (autoSaveCopy || showOverwriteConfirm)) {
-        const checkResponse = await studioFetch(`${getBackendBaseUrl()}/api/local-workflows/check-exists`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename, content: { _folder: currentFolder } })
-        })
-        const checkData = await checkResponse.json()
-        requireActive()
-        if (!checkResponse.ok || checkData.error || typeof checkData.exists !== 'boolean') {
-          throw new Error(checkData.error || '无法确认目标文件状态')
-        }
-        if (checkData.exists && autoSaveCopy) {
-          const d = new Date()
-          const p = (n: number) => String(n).padStart(2, '0')
-          const stamp = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`
-          filename = `${filename} - 副本 ${stamp}`
-          addLog({ level: 'info', message: `已开启"自动创建副本"，本次另存为：${filename}` })
-        } else if (checkData.exists) {
-          const shouldOverwrite = await confirm(
-            `工作流 "${checkData.filename}" 已存在，是否覆盖？`,
-            { type: 'warning', title: '文件已存在', confirmText: '覆盖', cancelText: '取消' }
-          )
-          requireActive()
-          if (!shouldOverwrite) {
-            addLog({ level: 'info', message: '已取消保存' })
-            return false
-          }
-        }
-      }
-
-      // 执行保存
       requireActive()
-      const API_BASE = getBackendBaseUrl()
       const savedContent = snapshotKey(JSON.stringify(workflowData))
-      const response = await studioFetch(`${API_BASE}/api/local-workflows/save-to-folder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename,
-          content: { ...workflowData, _folder: currentFolder }
-        })
-      })
-      const data = await response.json()
+      const result = workflowId
+        ? await workflowApi.update(workflowId, workflowData)
+        : await workflowApi.create(workflowData)
       requireActive()
-
-      if (response.ok && data.success === true && !data.error && typeof data.filename === 'string' && data.filename.trim()) {
-        if (!skipConfirm) {
-          addLog({ level: 'success', message: `工作流已保存: ${data.filename}` })
-        }
+      const data = result.data as { id?: unknown; revision?: unknown } | undefined
+      if (result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0) {
+        setWorkflowId(data.id)
+        if (!skipConfirm) addLog({ level: 'success', message: `工作流已保存: ${workflowData.name}` })
         const unchanged = snapshotKey(exportWorkflow()) === savedContent
         if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
         return unchanged
-      } else {
-        if (!skipConfirm) {
-          addLog({ level: 'error', message: `保存失败: ${data.error || '服务未返回有效保存确认'}` })
-        }
       }
+      if (!skipConfirm) addLog({ level: 'error', message: `保存失败: ${result.error || '服务未返回有效保存确认'}` })
       return false
     } catch (error) {
       if (mounted.current && !skipConfirm) addLog({ level: 'error', message: `保存失败: ${String(error)}` })
       return false
     } finally { savingDocument.current = false }
-  }, [config.workflow?.localFolder, config.workflow?.showOverwriteConfirm, config.workflow?.autoSaveCopy, defaultFolder, exportWorkflow, addLog, confirm])
+  }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
 
   const handleNewWorkflow = useCallback(() => {
     clearWorkflow()
@@ -1705,11 +1628,11 @@ export function Toolbar() {
       {/* 工作流仓库对话框 */}
       
       
-      {/* 本地工作流对话框 */}
-      <LocalWorkflowDialog
+      <WorkflowOpenDialog
         beforeReplace={confirmLeave}
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
+        onOpened={setWorkflowId}
         onLog={(level, message) => addLog({ level, message })}
       />
       

@@ -48,7 +48,7 @@ describe('workflow document write identity',()=>{
     expect(writes.map(body=>body.clientRequestId)).toEqual(['stable-request','stable-request'])
   })
 
-  it('uses the server revision after a concurrent update conflict',async()=>{
+  it('does not turn a concurrent update conflict into an implicit overwrite',async()=>{
     const writes:Record<string,unknown>[]=[]
     let attempt=0
     const {configureStudioConnection}=await import('../api/config')
@@ -65,6 +65,6 @@ describe('workflow document write identity',()=>{
     expect((await workflowApi.update('workflow-1',{name:'新名称',nodes:[],edges:[],variables:[]})).httpStatus).toBe(409)
     expect((await workflowApi.update('workflow-1',{name:'新名称',nodes:[],edges:[],variables:[]})).success).toBe(true)
 
-    expect(writes.map(body=>body.expectedRevision)).toEqual([1,4])
+    expect(writes.map(body=>body.expectedRevision)).toEqual([1,1])
   })
 })

@@ -57,6 +57,8 @@ it('opens the Studio through desktop IPC without changing the main page, even of
   expect(openAutomationStudio).toHaveBeenCalledOnce()
   expect(navigate).not.toHaveBeenCalled()
   expect(screen.getByRole('heading', { name: '总览' })).toBeInTheDocument()
+  expect(screen.getByText('编排并运行浏览器自动化流程')).toBeInTheDocument()
+  expect(screen.queryByText(/Mock 接口/)).not.toBeInTheDocument()
 })
 
 it('reports opening failures and keeps the entry available for retry', async () => {

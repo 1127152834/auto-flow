@@ -112,6 +112,7 @@ export async function apiRequest<T = any>(
       const baseError = `HTTP ${response.status}: ${response.statusText}`
       return { success: false, httpStatus: response.status, error: detailMessage ? `${baseError} - ${detailMessage}` : baseError, ...(errorDetails ? { errorDetails } : {}) }
     }
+    if (response.status === 204) return { success: true }
     const data = await response.json()
     // Frozen WebRPA dialog cancellation is a successful read with no selection.
     if (['/system/select-file', '/system/select-folder'].includes(endpoint) && data?.success === false && data.path === null && !data.error && data.message === '用户取消选择') {
@@ -194,14 +195,6 @@ function settleWorkflowWrite(key: string, result: ApiResponse<unknown>): void {
   }
 }
 
-function workflowConflictRevision(error: ApiWireError | undefined): number | undefined {
-  if (!error || !('details' in error)) return undefined
-  const revision = error.details?.currentRevision
-  return Number.isSafeInteger(revision) && Number(revision) > 0
-    ? Number(revision)
-    : undefined
-}
-
 export const workflowApi = {
   list: async () => {
     const result = await apiRequest<any[]>('/workflows')
@@ -234,10 +227,6 @@ export const workflowApi = {
       body: JSON.stringify({...data, expectedRevision, clientRequestId}),
     })
     if (result.success) rememberWorkflow(result.data, expectedRevision + 1)
-    const currentRevision = workflowConflictRevision(result.errorDetails)
-    if (currentRevision !== undefined) {
-      workflowRevisions.set(id, currentRevision)
-    }
     settleWorkflowWrite(key, result)
     return result
   },

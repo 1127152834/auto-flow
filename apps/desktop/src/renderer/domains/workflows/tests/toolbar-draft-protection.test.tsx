@@ -15,6 +15,8 @@ import { executeClientAction, emitAssistantUiEvent } from '../api/aiAssistantSki
 import { setStudioTransport } from '../api/transport'
 import { mockRequest } from '../api/mock-server'
 let saved: Record<string, unknown>[]
+const isDocumentCreate = (input: RequestInfo | URL, init?: RequestInit) =>
+  new URL(String(input)).pathname === '/api/workflows' && init?.method === 'POST'
 beforeEach(() => {
   confirm.mockClear(); saved = []
   useAiActionLogStore.getState().clear()
@@ -22,7 +24,7 @@ beforeEach(() => {
   useWorkflowStore.getState().addVariable({ name: 'draft', value: 'keep', type: 'string', scope: 'global' })
   useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, localFolder: 'mock://draft-tests', showOverwriteConfirm: false } } }))
   setStudioTransport(async (input, init) => {
-    if (String(input).endsWith('/local-workflows/save-to-folder')) saved.push(JSON.parse(String(init?.body)))
+    if (isDocumentCreate(input, init)) saved.push(JSON.parse(String(init?.body)))
     return mockRequest(input, init)
   })
 })
@@ -31,7 +33,7 @@ it('saves a variable-only document without requiring a canvas node', async () =>
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(saved).toHaveLength(1))
-  expect(saved[0].content).toMatchObject({ nodes: [], variables: [{ name: 'draft', value: 'keep' }] })
+  expect(saved[0]).toMatchObject({ nodes: [], variables: [{ name: 'draft', value: 'keep' }] })
   await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
 })
 it.each(['button', 'shortcut', 'assistant'])('protects a variable-only draft on new via %s', async mode => {
@@ -45,25 +47,24 @@ it.each(['button', 'shortcut', 'assistant'])('protects a variable-only draft on 
   fireEvent.click(screen.getByRole('button', { name: '取消' }))
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
 })
-it('does not save after a failed existence check', async () => {
-  useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, showOverwriteConfirm: true } } }))
+it('does not acknowledge a document after the service rejects the write', async () => {
   const transport = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    if (String(input).endsWith('/check-exists')) return Response.json({ error: 'fixture check failed' }, { status: 503 })
+    if (isDocumentCreate(input, init)) return Response.json({ error: 'fixture write failed' }, { status: 503 })
     return mockRequest(input, init)
   })
   setStudioTransport(transport)
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '保存' }))
-  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('fixture check failed'))).toBe(true))
-  expect(transport.mock.calls.some(([input]) => String(input).endsWith('/save-to-folder'))).toBe(false)
+  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('fixture write failed'))).toBe(true))
+  expect(transport.mock.calls.filter(([input, init]) => isDocumentCreate(input, init))).toHaveLength(1)
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
 it('keeps newer variable edits dirty while acknowledging only the submitted snapshot', async () => {
   let release!: (response: Response) => void
   let content: Record<string, unknown> | undefined
   setStudioTransport(async (input, init) => {
-    if (String(input).endsWith('/save-to-folder')) {
-      content = JSON.parse(String(init?.body)).content
+    if (isDocumentCreate(input, init)) {
+      content = JSON.parse(String(init?.body))
       return new Promise<Response>(resolve => { release = resolve })
     }
     return mockRequest(input, init)
@@ -72,7 +73,7 @@ it('keeps newer variable edits dirty while acknowledging only the submitted snap
   fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(content).toBeDefined())
   act(() => useWorkflowStore.getState().updateVariable('draft', 'newer'))
-  await act(async () => release(Response.json({ success: true, filename: 'draft.json' })))
+  await act(async () => release(Response.json({ ...content, revision: 1 }, { status: 201 })))
   expect(content).toMatchObject({ variables: [{ name: 'draft', value: 'keep' }] })
   expect(useWorkflowStore.getState().variables[0].value).toBe('newer')
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
@@ -83,10 +84,10 @@ it.each(['保存后继续', '放弃修改'])('creates a new document only after 
   fireEvent.click(await screen.findByRole('button', { name: choice }))
   await waitFor(() => expect(useWorkflowStore.getState().variables).toEqual([]))
   expect(saved).toHaveLength(choice === '保存后继续' ? 1 : 0)
-  if (choice === '保存后继续') expect(saved[0].content).toMatchObject({ variables: [{ name: 'draft', value: 'keep' }] })
+  if (choice === '保存后继续') expect(saved[0]).toMatchObject({ variables: [{ name: 'draft', value: 'keep' }] })
 })
 it('keeps the draft when save before new fails', async () => {
-  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder')
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init)
     ? Response.json({ success: false, error: 'disk full' }, { status: 507 }) : mockRequest(input, init))
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '新建' }))
@@ -97,27 +98,27 @@ it('keeps the draft when save before new fails', async () => {
 })
 it('does not leave after saving an older snapshot while the user continues editing', async () => {
   let release!: (response: Response) => void
-  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder')
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init)
     ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '新建' }))
   fireEvent.click(await screen.findByRole('button', { name: '保存后继续' }))
   await waitFor(() => expect(release).toBeDefined())
   act(() => useWorkflowStore.getState().updateVariable('draft', 'edited during save'))
-  await act(async () => release(Response.json({ success: true, filename: 'saved.json' })))
+  const current = JSON.parse(useWorkflowStore.getState().exportWorkflow())
+  await act(async () => release(Response.json({ ...current, revision: 1 }, { status: 201 })))
   expect(useWorkflowStore.getState().variables[0].value).toBe('edited during save')
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
-it('does not leave when overwrite confirmation is cancelled', async () => {
-  useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, showOverwriteConfirm: true } } }))
-  setStudioTransport(async (input, init) => String(input).endsWith('/check-exists')
-    ? Response.json({ exists: true, filename: 'existing.json' }) : mockRequest(input, init))
+it('does not leave when the revisioned save conflicts', async () => {
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init)
+    ? Response.json({ error: { code: 'WORKFLOW_REVISION_CONFLICT', message: '并发冲突', details: { expectedRevision: 1, currentRevision: 2 } } }, { status: 409 }) : mockRequest(input, init))
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '新建' }))
   fireEvent.click(await screen.findByRole('button', { name: '保存后继续' }))
-  await waitFor(() => expect(confirm).toHaveBeenCalledOnce())
+  await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.message.includes('并发冲突'))).toBe(true))
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
-  expect(saved).toEqual([])
+  expect(confirm).not.toHaveBeenCalled()
 })
 it('one confirmation cannot release duplicate new-document requests', async () => {
   render(<Toolbar />)
@@ -225,7 +226,7 @@ it.each(['保存后继续', '放弃修改'])('imports a bundle after %s and keep
 })
 it.each(['save', 'import'])('keeps the document when bundle %s fails', async failure => {
   const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    if (String(input).endsWith(failure === 'save' ? '/save-to-folder' : '/workflow-bundle/import')) return Response.json({ success: false, error: 'bundle fixture failure' }, { status: 507 })
+    if (failure === 'save' ? isDocumentCreate(input, init) : String(input).endsWith('/workflow-bundle/import')) return Response.json({ success: false, error: 'bundle fixture failure' }, { status: 507 })
     return mockRequest(input, init)
   })
   setStudioTransport(request)
@@ -285,22 +286,23 @@ it('successful AI edits record an independent complete before snapshot', async (
   expect(useWorkflowStore.getState().nodes[0].id).toBe('web')
   expect(useWorkflowStore.getState().variables[0].value).toBe('later')
 })
-it('does not write to a new connection after an old existence response', async () => {
+it('does not acknowledge an old document response after the connection changes', async () => {
   let release!: (response: Response) => void
-  useGlobalConfigStore.setState(state => ({ config: { ...state.config, workflow: { ...state.config.workflow, showOverwriteConfirm: true } } }))
-  setStudioTransport(async (input, init) => String(input).endsWith('/check-exists') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  let submitted: Record<string, unknown> = {}
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init) ? new Promise<Response>(resolve => { submitted = JSON.parse(String(init?.body)); release = resolve }) : mockRequest(input, init))
   render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' })); await waitFor(() => expect(release).toBeDefined())
   const next = vi.fn(mockRequest); act(() => { setStudioTransport(next) })
-  await act(async () => release(Response.json({ exists: false })))
-  expect(next.mock.calls.some(([input]) => String(input).endsWith('/save-to-folder'))).toBe(false)
+  await act(async () => release(Response.json({ ...submitted, revision: 1 }, { status: 201 })))
+  expect(next.mock.calls.some(([input, init]) => isDocumentCreate(input, init))).toBe(false)
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
 it('does not acknowledge a saved document after connection replacement', async () => {
   let release!: (response: Response) => void
-  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  let submitted: Record<string, unknown> = {}
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init) ? new Promise<Response>(resolve => { submitted = JSON.parse(String(init?.body)); release = resolve }) : mockRequest(input, init))
   render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' })); await waitFor(() => expect(release).toBeDefined())
   act(() => { setStudioTransport(mockRequest) })
-  await act(async () => release(Response.json({ success: true, filename: 'draft.json' })))
+  await act(async () => release(Response.json({ ...submitted, revision: 1 }, { status: 201 })))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
   expect(useWorkflowStore.getState().logs.some(log => log.message.includes('工作流已保存'))).toBe(false)
 })
@@ -310,19 +312,20 @@ it.each(['保存后继续', '放弃修改'])('invalidates a leave decision %s af
   fireEvent.click(screen.getByRole('button', { name: choice }))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: '保存当前工作流？' })).toBeNull())
   expect(useWorkflowStore.getState().variables[0]?.value).toBe('keep')
-  expect(next.mock.calls.some(([input]) => String(input).endsWith('/save-to-folder'))).toBe(false)
+  expect(next.mock.calls.some(([input, init]) => isDocumentCreate(input, init))).toBe(false)
 })
 it('serializes repeated save clicks', async () => {
   let release!: (response: Response) => void
-  const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => String(input).endsWith('/save-to-folder') ? new Promise<Response>(resolve => { release = resolve }) : mockRequest(input, init))
+  let submitted: Record<string, unknown> = {}
+  const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => isDocumentCreate(input, init) ? new Promise<Response>(resolve => { submitted = JSON.parse(String(init?.body)); release = resolve }) : mockRequest(input, init))
   setStudioTransport(request); render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '保存' })); fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(release).toBeDefined())
-  expect(request.mock.calls.filter(([input]) => String(input).endsWith('/save-to-folder'))).toHaveLength(1)
-  await act(async () => release(Response.json({ success: true, filename: 'draft.json' })))
+  expect(request.mock.calls.filter(([input, init]) => isDocumentCreate(input, init))).toHaveLength(1)
+  await act(async () => release(Response.json({ ...submitted, revision: 1 }, { status: 201 })))
 })
-it.each([{ success: 'true', filename: 'draft.json' }, { success: true }, { success: true, filename: 'draft.json', error: '未完成' }])('does not mark saved for malformed receipt %j', async receipt => {
-  setStudioTransport(async (input, init) => String(input).endsWith('/save-to-folder') ? Response.json(receipt) : mockRequest(input, init))
+it.each([{ id: 1, revision: 1 }, { id: 'draft' }, { id: 'draft', revision: '1' }])('does not mark saved for malformed receipt %j', async receipt => {
+  setStudioTransport(async (input, init) => isDocumentCreate(input, init) ? Response.json(receipt, { status: 201 }) : mockRequest(input, init))
   render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.level === 'error')).toBe(true))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)

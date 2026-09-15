@@ -4,9 +4,14 @@ import { StudioMockTools } from './domains/workflows/development/StudioMockTools
 import { createRoot } from 'react-dom/client'
 import { StudioErrorBoundary } from './domains/workflows/components/StudioErrorBoundary'
 import { StudioApp } from './app/StudioApp'
+import { StudioHostConnection } from './app/StudioHostConnection'
 import './domains/workflows/styles/webrpa.css'
 import './domains/workflows/styles/autoflow.css'
-configureStudioConnection('http://autoflow-studio.mock', mockRequest)
 const root = document.getElementById('root')
 if (!root) throw new Error('Studio root missing')
-createRoot(root).render(<StudioErrorBoundary><StudioApp tools={<StudioMockTools />} /></StudioErrorBoundary>)
+const electronHost = typeof window.autoflow?.getRuntimeContext === 'function'
+if (!electronHost) configureStudioConnection('http://autoflow-studio.mock', mockRequest)
+createRoot(root).render(<StudioErrorBoundary>{electronHost
+  ? <StudioHostConnection><StudioApp /></StudioHostConnection>
+  : <StudioApp tools={<StudioMockTools />} />
+}</StudioErrorBoundary>)

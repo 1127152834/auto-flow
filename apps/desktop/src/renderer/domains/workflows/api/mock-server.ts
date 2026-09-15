@@ -769,14 +769,35 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
     if (path === '/workflows') {
       if (method === 'GET') return response(Object.values(db.workflows))
       const id = String(body.id || crypto.randomUUID())
-      persist({ ...db, workflows: { ...db.workflows, [id]: { ...body, id } } })
-      return response({ ...body, id })
+      if (db.workflows[id]) return failure('工作流已经存在', 409)
+      const now = new Date().toISOString()
+      const { clientRequestId: _requestId, ...payload } = body
+      void _requestId
+      const saved = { ...payload, id, revision: 1, createdAt: now, updatedAt: now }
+      persist({ ...db, workflows: { ...db.workflows, [id]: saved } })
+      return response(saved, 201)
     }
     const workflow = path.match(/^\/workflows\/([^/]+)(.*)$/)
     if (workflow) {
       const [, id, action] = workflow
+      if (action === '' && method === 'GET') {
+        return db.workflows[id] ? response(db.workflows[id]) : failure('工作流不存在', 404)
+      }
       if (action === '' && method === 'PUT') {
-        persist({ ...db, workflows: { ...db.workflows, [id]: { ...body, id } } }); return response({ ...body, id })
+        const previous = db.workflows[id]
+        if (!previous) return failure('工作流不存在', 404)
+        if (body.expectedRevision !== previous.revision) return response({ error: { code: 'WORKFLOW_REVISION_CONFLICT', message: '流程已被其他窗口修改', details: { expectedRevision: body.expectedRevision, currentRevision: previous.revision }, requestId: crypto.randomUUID() } }, 409)
+        const { clientRequestId: _requestId, expectedRevision: _expectedRevision, ...payload } = body
+        void _requestId; void _expectedRevision
+        const saved = { ...payload, id, revision: Number(previous.revision) + 1, createdAt: previous.createdAt, updatedAt: new Date().toISOString() }
+        persist({ ...db, workflows: { ...db.workflows, [id]: saved } }); return response(saved)
+      }
+      if (action === '' && method === 'DELETE') {
+        const previous = db.workflows[id]
+        if (!previous) return failure('工作流不存在', 404)
+        if (Number(target.searchParams.get('expectedRevision')) !== previous.revision) return failure('流程已被其他窗口修改', 409)
+        const workflows = { ...db.workflows }; delete workflows[id]; persist({ ...db, workflows })
+        return new Response(null, { status: 204 })
       }
       if (action === '/variable-tracking') {
         if (method === 'DELETE') { tracking.set(id, []); return response({message:'变量追踪记录已清空'}) }
