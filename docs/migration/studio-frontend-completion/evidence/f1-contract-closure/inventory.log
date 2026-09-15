@@ -1,0 +1,16 @@
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.667167ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.0985ms)
+✔ the matrix registers every discovered service and event without treating registration as runtime backend proof (2.857333ms)
+✔ every service family is assigned to the frozen frontend contract matrix (0.627833ms)
+✔ inventory and matrix regenerate deterministically (669.435291ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.174083ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.117958ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.249083ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1485.592041

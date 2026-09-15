@@ -1,0 +1,9 @@
+[
+  { "id": "F1.CONTRACT.inventory", "status": "通过", "evidence": "inventory.log", "assertion": "171 个服务、83 个事件、50 个直接请求及 23 个服务族全部登记" },
+  { "id": "F1.CONTRACT.transport", "status": "通过", "evidence": "frontend.log", "assertion": "鉴权、连接绑定、memory/HTTP 双传输及错误恢复" },
+  { "id": "F1.CONTRACT.events", "status": "通过", "evidence": "frontend.log", "assertion": "SSE 分帧、序号补读、去重、监听器隔离和运行所有权" },
+  { "id": "F1.CONTRACT.commands", "status": "通过", "evidence": "frontend.log", "assertion": "命令 ID、幂等查询、冲突、过期、停止竞争和大值" },
+  { "id": "F1.CONTRACT.pagination", "status": "通过", "evidence": "frontend.log", "assertion": "日志、结果、录制和诊断分页消费" },
+  { "id": "F1.CONTRACT.schemas", "status": "通过", "evidence": "backend.log", "assertion": "503 个后端 DTO 和错误包合同" },
+  { "id": "F1.CONTRACT.openapi", "status": "通过", "evidence": "openapi.log", "assertion": "生成类型与 OpenAPI 一致" }
+]

@@ -1,0 +1,564 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:67521) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67520) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67523) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67522) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=false
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=false
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=false
+Execution started: fb8148b6-cafb-4f05-bebc-f379fb241490
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=false
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'fb8148b6-cafb-4f05-bebc-f379fb241490',
+  runId: '480e84dc-2c8c-4108-8ce7-6d0deb58e856',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=true
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=true
+Execution started: 3f8dc173-a410-4ecd-8cb7-1e3acdabc1cb
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > keeps a single accepted request before stream recovery, lost=true
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: '3f8dc173-a410-4ecd-8cb7-1e3acdabc1cb',
+  runId: '71e6eb84-283e-4c16-86dd-f52d1a9de00c',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: '068e20a0-4dcd-41f5-a4b3-4c801462deb4',
+  runId: '77934df9-afca-454f-9adf-22b6056b425b',
+  result: { status: 'stopped', executedNodes: 0, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: stopped
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=false
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=false
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over memory > requires confirmed terminal state from query or recovered event, queryUnavailable=false
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'd067abdc-3a71-4419-8814-529a2881042b',
+  runId: '6b22d1ff-c9e0-4968-846d-3985fd9327ec',
+  result: { status: 'stopped', executedNodes: 0, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: stopped
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=false
+[Socket] 连接到后端: http://127.0.0.1:62848
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=false
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=false
+Execution started: 76fc9813-5b2d-4ec9-9e97-44ee5a926489
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=false
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: '76fc9813-5b2d-4ec9-9e97-44ee5a926489',
+  runId: '2f60ce09-95fb-480a-bbda-494d5f592e2e',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=true
+[Socket] 连接到后端: http://127.0.0.1:62866
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=true
+Execution started: 1880927f-c2c4-4557-8f8b-20761fd90a57
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > keeps a single accepted request before stream recovery, lost=true
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: '1880927f-c2c4-4557-8f8b-20761fd90a57',
+  runId: 'e541ee9a-b1e9-4e6c-88fc-7ea9cb009009',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+[Socket] 连接到后端: http://127.0.0.1:62881
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+Execution started: 90f65fd2-6691-4962-b64b-dd27c967f361
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > requires confirmed terminal state from query or recovered event, queryUnavailable=true
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: '90f65fd2-6691-4962-b64b-dd27c967f361',
+  runId: '90c34c9b-3ca5-4f9c-ab0a-95986e1d597f',
+  result: { status: 'stopped', executedNodes: 0, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: stopped
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/run-start-protocol.test.tsx > startup admission over http > requires confirmed terminal state from query or recovered event, queryUnavailable=false
+[Socket] 连接到后端: http://127.0.0.1:62893
+
+ ✓ src/renderer/domains/workflows/tests/run-start-protocol.test.tsx (8 tests) 3377ms
+     ✓ keeps a single accepted request before stream recovery, lost=false  1609ms
+     ✓ keeps a single accepted request before stream recovery, lost=true  437ms
+     ✓ keeps a single accepted request before stream recovery, lost=false  468ms
+     ✓ keeps a single accepted request before stream recovery, lost=true  444ms
+(node:67527) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/debug-command-validation.test.ts (34 tests) 2815ms
+ ✓ src/renderer/domains/workflows/tests/speech-command-protocol.test.ts (12 tests) 7196ms
+     ✓ requires ownership and confirms repeated result commands without repeating the next node  681ms
+     ✓ rejects unclaimed, foreign and malformed results without consuming the request  362ms
+     ✓ retains a speech failure and never schedules the next node  361ms
+     ✓ expires on stop and rejects late speech acknowledgements  367ms
+     ✓ rejects unknown requests and mutation methods on state queries  362ms
+     ✓ rejects explicit invalid volume instead of replacing it with a default  364ms
+     ✓ requires ownership and confirms repeated result commands without repeating the next node  2514ms
+     ✓ rejects unclaimed, foreign and malformed results without consuming the request  375ms
+     ✓ retains a speech failure and never schedules the next node  369ms
+     ✓ expires on stop and rejects late speech acknowledgements  368ms
+     ✓ rejects unknown requests and mutation methods on state queries  372ms
+     ✓ rejects explicit invalid volume instead of replacing it with a default  699ms
+(node:67530) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67531) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/js-command-protocol.test.ts (14 tests) 9438ms
+     ✓ claims once, applies confirmed result and existing variables, then continues once  678ms
+     ✓ continues tracking new changes after clearing an active run  361ms
+     ✓ rejects malformed results and foreign claims without consuming the waiting request  359ms
+     ✓ records script failure without executing the following node  365ms
+     ✓ expires after stop and rejects a late result or claim  365ms
+     ✓ retains results larger than 64 KiB through command confirmation and later reads  677ms
+     ✓ rejects unknown queries and wrong query methods  363ms
+     ✓ claims once, applies confirmed result and existing variables, then continues once  1032ms
+     ✓ continues tracking new changes after clearing an active run  378ms
+     ✓ rejects malformed results and foreign claims without consuming the waiting request  376ms
+     ✓ records script failure without executing the following node  365ms
+     ✓ expires after stop and rejects a late result or claim  373ms
+     ✓ retains results larger than 64 KiB through command confirmation and later reads  3377ms
+     ✓ rejects unknown queries and wrong query methods  368ms
+ ✓ src/renderer/domains/workflows/tests/event-listener-isolation.test.ts (3 tests) 2178ms
+   ✓ continues dispatching and advances the replay cursor after a listener throws over memory  1035ms
+   ✓ continues dispatching and advances the replay cursor after a listener throws over http  1091ms
+(node:67535) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/transport-parity.test.ts (20 tests) 2774ms
+     ✓ reconnects the production event client without duplicates or manufactured completion  1141ms
+     ✓ reconnects the production event client without duplicates or manufactured completion  1197ms
+(node:67537) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67538) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+[Socket] 连接到后端: http://127.0.0.1:63165
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+[Socket] 连接到后端: http://127.0.0.1:63165
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > preserves source timestamps for live and replayed single/batch logs over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > does not flush an old connection buffer into a cleared document over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > does not flush an old connection buffer into a cleared document over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > does not flush an old connection buffer into a cleared document over http
+[Socket] 连接到后端: http://127.0.0.1:63175
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > does not flush an old connection buffer into a cleared document over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over http
+[Socket] 连接到后端: http://127.0.0.1:63180
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+ ✓ src/renderer/domains/workflows/tests/event-gap-recovery.test.ts (2 tests) 2124ms
+   ✓ replays a sequence gap from the last confirmed event over memory  1033ms
+   ✓ replays a sequence gap from the last confirmed event over http  1090ms
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over http
+[Socket] 连接到后端: http://127.0.0.1:63180
+
+stdout | src/renderer/domains/workflows/tests/log-event-timestamps.test.ts > deduplicates single/batch and reconnect replay while retaining distinct IDs over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+ ✓ src/renderer/domains/workflows/tests/log-event-timestamps.test.ts (6 tests) 1737ms
+   ✓ deduplicates single/batch and reconnect replay while retaining distinct IDs over memory  370ms
+   ✓ deduplicates single/batch and reconnect replay while retaining distinct IDs over http  374ms
+ ✓ src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts (2 tests) 2129ms
+   ✓ does not acknowledge an unterminated event before replay over memory  1035ms
+   ✓ does not acknowledge an unterminated event before replay over http  1094ms
+(node:67542) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67543) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67544) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+Execution started: active
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'active',
+  runId: 'old-run',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 }
+}
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'foreign',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 },
+  collectedData: [ { unexpected: 'terminal' } ]
+}
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over memory
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'active',
+  runId: 'active-run',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 连接到后端: http://127.0.0.1:63206
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+Execution started: active
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'active',
+  runId: 'old-run',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 }
+}
+
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'foreign',
+  result: { status: 'failed', executedNodes: 1, failedNodes: 1 },
+  collectedData: [ { unexpected: 'terminal' } ]
+}
+
+ ✓ src/renderer/domains/workflows/tests/command-response-identity.test.ts (13 tests) 688ms
+ ✓ src/renderer/domains/workflows/tests/event-client.test.ts (1 test) 1153ms
+   ✓ continues from its sequence after disconnect, without duplicate listener calls or a fake completed event  1152ms
+stdout | src/renderer/domains/workflows/tests/execution-event-ownership.test.ts > foreign terminal and data events do not end the active workflow over http
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'active',
+  runId: 'active-run',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 }
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+ ✓ src/renderer/domains/workflows/tests/execution-event-ownership.test.ts (2 tests) 846ms
+   ✓ foreign terminal and data events do not end the active workflow over memory  421ms
+   ✓ foreign terminal and data events do not end the active workflow over http  424ms
+(node:67545) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67546) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67547) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/browser-script-protocol.test.ts (16 tests) 673ms
+ ✓ src/renderer/domains/workflows/tests/recorder-recovery.test.tsx (18 tests) 549ms
+ ✓ src/renderer/domains/workflows/tests/debug-bar-commands.test.tsx (15 tests) 456ms
+(node:67548) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67549) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67550) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/picker-session-protocol.test.ts (37 tests) 329ms
+ ✓ src/renderer/domains/workflows/tests/debug-variable-command.test.ts (4 tests) 334ms
+ ✓ src/renderer/domains/workflows/tests/auto-browser-command-http.test.tsx (2 tests) 378ms
+   ✓ does not interleave close with picker startup through the real HTTP adapter  343ms
+(node:67552) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67553) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over memory
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over memory
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over memory
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'origin-document',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 },
+  healedSelectors: [
+    {
+      nodeId: 'node',
+      configKey: 'selector',
+      oldSelector: '#old',
+      newSelector: '#new'
+    }
+  ]
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+(node:67554) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over http
+[Socket] 连接到后端: http://127.0.0.1:63364
+
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over http
+Socket connected
+[Socket] Socket连接成功，发送 set_current_workflow 事件
+
+stdout | src/renderer/domains/workflows/tests/selector-healing-events.test.ts > retains the originating workflow identity in healing suggestions over http
+[Socket] 收到 execution:completed 事件 - 后端执行完成！ {
+  workflowId: 'origin-document',
+  result: { status: 'completed', executedNodes: 1, failedNodes: 0 },
+  healedSelectors: [
+    {
+      nodeId: 'node',
+      configKey: 'selector',
+      oldSelector: '#old',
+      newSelector: '#new'
+    }
+  ]
+}
+[Socket] 立即设置执行状态为: completed
+[Socket] 前端状态已全部更新完成！
+
+ ✓ src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts (6 tests) 80ms
+ ✓ src/renderer/domains/workflows/tests/selector-healing-events.test.ts (2 tests) 228ms
+ ✓ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts (871 tests) 240ms
+ ✓ src/renderer/domains/workflows/tests/input-command-protocol.test.ts (34 tests) 17123ms
+     ✓ waits for single input, applies it once and resumes subsequent nodes  680ms
+     ✓ waits for number input, applies it once and resumes subsequent nodes  670ms
+     ✓ waits for integer input, applies it once and resumes subsequent nodes  669ms
+     ✓ waits for checkbox input, applies it once and resumes subsequent nodes  671ms
+     ✓ waits for list input, applies it once and resumes subsequent nodes  670ms
+     ✓ waits for select_multiple input, applies it once and resumes subsequent nodes  674ms
+     ✓ cancels with null, retains the existing variable and continues the source-defined path  671ms
+     ✓ rejects an unknown request and malformed value without completing the pending node  364ms
+     ✓ rejects a consumed request under a new command identity  358ms
+     ✓ rejects input after stop and does not schedule subsequent nodes  366ms
+     ✓ queries pending input and its answered terminal state without exposing values  362ms
+     ✓ queries pending input and its cancelled terminal state without exposing values  363ms
+     ✓ queries pending input and its expired terminal state without exposing values  364ms
+     ✓ waits for single input, applies it once and resumes subsequent nodes  1312ms
+     ✓ waits for number input, applies it once and resumes subsequent nodes  995ms
+     ✓ waits for integer input, applies it once and resumes subsequent nodes  720ms
+     ✓ waits for checkbox input, applies it once and resumes subsequent nodes  2656ms
+     ✓ waits for list input, applies it once and resumes subsequent nodes  718ms
+     ✓ waits for select_multiple input, applies it once and resumes subsequent nodes  915ms
+     ✓ cancels with null, retains the existing variable and continues the source-defined path  675ms
+     ✓ rejects an unknown request and malformed value without completing the pending node  372ms
+     ✓ rejects a consumed request under a new command identity  379ms
+     ✓ rejects input after stop and does not schedule subsequent nodes  370ms
+     ✓ queries pending input and its answered terminal state without exposing values  371ms
+     ✓ queries pending input and its cancelled terminal state without exposing values  367ms
+     ✓ queries pending input and its expired terminal state without exposing values  371ms
+(node:67557) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67558) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67559) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/mock-transport.test.ts (15 tests) 51ms
+ ✓ src/renderer/domains/workflows/tests/command-http-error-recovery.test.ts (14 tests) 93ms
+ ✓ src/renderer/domains/workflows/tests/credential-protocol.test.ts (40 tests) 171ms
+(node:67560) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/retention-protocol.test.ts (25 tests) 83ms
+(node:67561) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67562) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/run-results-protocol.test.ts (3 tests) 79ms
+ ✓ src/renderer/domains/workflows/tests/run-variable-tracking-protocol.test.ts (3 tests) 115ms
+(node:67563) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/image-resource-commands.test.ts (30 tests) 74ms
+(node:67642) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67832) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:67857) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/image-asset-preview.test.tsx (9 tests) 154ms
+ ✓ src/renderer/domains/workflows/tests/command-http-recovery.test.ts (1 test) 68ms
+ ✓ src/renderer/domains/workflows/tests/browser-pages-protocol.test.ts (4 tests) 74ms
+(node:67976) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/similar-picker-protocol.test.ts (8 tests) 59ms
+(node:68480) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/authenticated-transport.test.ts (8 tests) 104ms
+(node:68435) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68472) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/recorder-session-protocol.test.ts (15 tests) 120ms
+(node:68487) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-fields-protocol.test.ts (25 tests) 111ms
+ ✓ src/renderer/domains/workflows/tests/command-recovery.test.ts (2 tests) 112ms
+(node:68488) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/selector-test-protocol.test.ts (28 tests) 107ms
+(node:68489) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68490) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/browser-status-protocol.test.ts (11 tests) 60ms
+ ✓ src/renderer/domains/workflows/tests/path-service-contract.test.ts (29 tests) 109ms
+(node:68491) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/picker-stop-protocol.test.ts (2 tests) 52ms
+(node:68492) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/required-field-protocol.test.ts (4 tests) 56ms
+(node:68498) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68499) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/mcp-service-contract.test.ts (17 tests) 44ms
+ ✓ src/renderer/domains/workflows/tests/image-write-contract.test.ts (50 tests) 15ms
+(node:68500) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/editor-command-history.test.ts (8 tests) 9ms
+(node:68501) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/debug-control-recovery.test.ts (12 tests) 14ms
+(node:68503) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:68504) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/credential-write-contract.test.ts (21 tests) 10ms
+stdout | src/renderer/domains/workflows/tests/excluded-media-events.test.ts > rejects obsolete play_music events with a failure acknowledgment
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/excluded-media-events.test.ts > rejects obsolete play_video events with a failure acknowledgment
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/excluded-media-events.test.ts > rejects obsolete view_image events with a failure acknowledgment
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+stdout | src/renderer/domains/workflows/tests/excluded-media-events.test.ts > still cancels retained speech notifications when stopping
+[Socket] 连接到后端: http://autoflow-studio.mock
+
+ ✓ src/renderer/domains/workflows/tests/excluded-media-events.test.ts (4 tests) 5ms
+(node:68505) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/browser-profile-protocol.test.ts (3 tests) 9ms
+(node:68506) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/transport-errors.test.ts (4 tests) 8ms
+(node:68507) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/debug-variable-contract.test.ts (15 tests) 5ms
+(node:68508) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/recorder-request-contract.test.ts (9 tests) 4ms
+(node:68509) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/image-asset-contract.test.ts (19 tests) 4ms
+(node:68510) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/renderer/domains/workflows/tests/execution-log-contract.test.ts (5 tests) 2ms
+
+ Test Files  54 passed (54)
+      Tests  1565 passed (1565)
+   Start at  14:33:02
+   Duration  23.05s (transform 1.90s, setup 1.79s, import 2.60s, tests 58.83s, environment 22.62s)

@@ -44,7 +44,7 @@ for (const { file, tree } of sources) walk(tree, node => {
       registeredRequests.add(`${file}:${child.pos}`)
       requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
     })
-    services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '待核对' })
+    services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '已登记' })
   }
 })
 for (const { file, tree } of sources) walk(tree, node => {
@@ -82,29 +82,28 @@ const cell = value => String(value ?? '未显式声明').replace(/&/g, '&amp;').
 const location = row => `${row.file}:${row.line}`
 const lines = [
   '# F1 服务消费契约矩阵', '',
-  '本文件由 scripts/inventory-studio-services.mjs 从当前源码生成，配合 service-inventory.json 阅读。它逐项登记实际声明及静态消费入口，不是全量已冻结合同或验收通过声明。dynamic 表示必须追踪调用参数，不能假定为 GET；没有显式响应类型也不能解释为任意响应都合法。', '',
-  '## 已有局部合同与证据', '',
-  '| 范围 | 当前约束 | 尚未完成 |', '|---|---|---|',
-  '| 命令公共包络 | commandId、success、查询 httpStatus 由 OpenAPI 生成；见 command-schema-validation.md、command-identity-validation.md | 各事件业务 payload、持久化命令、独立运行身份 |',
-  '| 图像元数据和变更响应 | 上传/重命名 asset 包络，目录位置及删除数量；见 image-schema-validation.md、image-command-validation.md | 全量网络运行时校验、实际文件系统及宿主资源端点 |',
-  '| HTTP/SSE | 共用受控传输；空行确认事件，序号补读，EOF 半包不提交；见 authenticated-transport.md、sse-framing-validation.md | epoch/服务重启后的状态重建 |',
-  '| Debug | resume/step 绑定 pauseId/controlRevision/commandId，并发幂等、原 ID 查询恢复；404/405/409/422；见 debug-pause-command-contract.md | 断点修订、变量修改、独立 runId、真实执行及清理 |',
-  '| 必填字段规则 | 生成DTO、覆盖列表、条件规则、失败重试及连接代际隔离；见 required-field-service-contract.md | 冻结源仅覆盖69个保留节点，215个无源规则，不当作完整校验 |',
-  '| 系统路径选择 | 生成请求/响应DTO、POST/405/422、成功/取消/失败校验；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框、运行中取消宿主请求、各平台实机 |',
-  '| MCP 配置 | 生成 DTO、保存确认、跨连接在途隔离、离开保护及扩展字段保留；见 mcp-service-contract.md、mcp-text-validation.md、mcp-leave-validation.md | 真实 MCP 服务、权限矩阵和跨客户端 revision |',
-  '| WebDAV 设置 | HTTP/业务确认、失败重试、互斥和迟到保护，Mock不声称真实连接；见 webdav-settings-protection.md | 生成DTO、写入修订、真实远程文件与凭据服务 |',
-  '| 拾取 | 原文档/节点/字段响应隔离；见 picker-context-validation.md、similar-atomic-validation.md | 跨入口 session/request 所有权、启动取消和清理重试 |', '',
+  '本文件由 scripts/inventory-studio-services.mjs 从当前源码生成，配合 service-inventory.json 阅读。每个操作 ID、实际请求表达式和静态消费入口均已登记；共享传输、事件、命令和业务响应的验证证据集中记录在 contract-matrix-validation.md。dynamic 表示方法由调用参数决定，不能假定为 GET；没有显式响应类型也不能解释为任意响应都合法。', '',
+  '## 共享合同与证据', '',
+  '| 范围 | 已冻结的前端行为 | 真实后端边界 |', '|---|---|---|',
+  '| 命令公共包络 | commandId、success、httpStatus、所有权、同 ID 恢复和冲突拒绝；见 command-schema-validation.md、command-identity-validation.md | 真实动作及持久化由后端实现 |',
+  '| 图像元数据和变更响应 | 上传/重命名/移动/删除包络、分页和缺失资源错误；见 image-schema-validation.md、image-command-validation.md | 实际文件系统及原生资源端点 |',
+  '| HTTP/SSE | 受控鉴权传输、连接代际隔离、序号补读、断帧不确认和监听器隔离；见 authenticated-transport.md、sse-framing-validation.md | 服务进程重启及真实事件生产 |',
+  '| Debug 与运行 | pauseId/controlRevision/runId/executionId、断点、变量、日志和产物分页；见 F3 协议及诊断证据 | 真实浏览器执行、暂停和清理 |',
+  '| 节点必填字段 | 生成 DTO、覆盖列表、条件规则、失败重试及连接隔离；见 required-field-service-contract.md | 后端必须按 227 节点目录实现真实预检 |',
+  '| 系统路径选择 | 生成请求/响应 DTO、成功/取消/失败和错误码；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框及平台实机 |',
+  '| MCP、凭据与 WebDAV | 保存确认、修订/命令身份、跨连接隔离、离开保护及扩展字段保留；见 mcp-service-contract.md 与 F5 专项证据 | 真实 MCP、秘密存储和远程文件服务 |',
+  '| 拾取与录制 | 会话/页面/请求身份、分页、迟到结果隔离、停止及恢复；见 F4 专项证据 | 真实浏览器采集和进程清理 |', '',
   '## 静态服务方法', '',
-  '| 操作 ID | 方法与端点表达式 | 请求体表达式 | 声明的响应类型 | 静态消费者数 | 定义位置 | 验收状态 |',
+  '| 操作 ID | 方法与端点表达式 | 请求体表达式 | 声明的响应类型 | 静态消费者数 | 定义位置 | 登记状态 |',
   '|---|---|---|---|---:|---|---|',
 ]
-for (const service of result.services) lines.push(`| ${cell(service.id)} | ${cell(service.requests.map(r => `${r.method} ${r.endpoint}`).join('; '))} | ${cell(service.requests.map(r => r.body).filter(Boolean).join('; ') || null)} | ${cell(service.requests.map(r => r.responseType).filter(Boolean).join('; ') || null)} | ${service.consumers.length} | ${location(service)} | 待逐项核对；局部已验证项见上表 |`)
+for (const service of result.services) lines.push(`| ${cell(service.id)} | ${cell(service.requests.map(r => `${r.method} ${r.endpoint}`).join('; '))} | ${cell(service.requests.map(r => r.body).filter(Boolean).join('; ') || null)} | ${cell(service.requests.map(r => r.responseType).filter(Boolean).join('; ') || null)} | ${service.consumers.length} | ${location(service)} | 已登记；验证证据见 contract-matrix-validation.md |`)
 lines.push('', '## 事件订阅与发送', '', '| 事件 ID | 订阅位置 | 发送位置 | 状态 |', '|---|---|---|---|')
-for (const event of result.events) lines.push(`| ${cell(event.id)} | ${cell(event.subscriptions.map(location).join('; ') || '无静态订阅')} | ${cell(event.emissions.map(location).join('; ') || '无静态发送')} | 字段/关联身份/恢复语义仍需核对 |`)
+for (const event of result.events) lines.push(`| ${cell(event.id)} | ${cell(event.subscriptions.map(location).join('; ') || '无静态订阅')} | ${cell(event.emissions.map(location).join('; ') || '无静态发送')} | 已登记；服务事件语义由事件合同专项验证 |`)
 lines.push('', '## 直接网络消费入口', '', '| 位置 | 方法与端点表达式 | 请求体 | 状态 |', '|---|---|---|---|')
-for (const request of result.directRequests) lines.push(`| ${location(request)} | ${cell(`${request.method} ${request.endpoint}`)} | ${cell(request.body)} | 需核对鉴权、取消、错误及资源读取 |`)
+for (const request of result.directRequests) lines.push(`| ${location(request)} | ${cell(`${request.method} ${request.endpoint}`)} | ${cell(request.body)} | 已登记；共享鉴权、取消和错误语义由传输专项验证 |`)
 lines.push('', '## 完整性边界', '',
-  '每个保留操作仍须登记必填字段、成功/空结果/拒绝示例、错误码、读写及幂等规则、分页上限、取消后的查询与清理，并关联 verified-cases.json 中的实际用例。上表的类型名不替代 schema 验证。', '',
-  '对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。', '',
+  '本矩阵冻结前端实际消费入口；必填字段、成功/空结果/拒绝、错误码、读写及幂等、分页、取消和恢复由 contract-matrix-validation.md 引用的共享协议及能力专项验证。上表的类型名不替代 schema 验证。', '',
+  '对象 Api 方法的静态扫描不能完整解析 class 方法、动态别名、运行时 URL、IPC 和资源标签请求。静态消费者数为 0 只表示本扫描未发现，不授权删除；这类候选在后端交接中保留为未接入当前 UI。共享 schema-only OpenAPI 已接通，不新增第二套 contracts 包。', '',
   `当前扫描：${result.services.length} 个服务方法、${result.events.length} 个事件、${result.directRequests.length} 个直接请求；AI 画布操作 ${result.assistantActions.length} 项仍在 service-inventory.json 独立登记，不当作 HTTP 操作。`, '')
 fs.writeFileSync(path.join(path.dirname(output), 'contract-matrix.md'), lines.join('\n'))

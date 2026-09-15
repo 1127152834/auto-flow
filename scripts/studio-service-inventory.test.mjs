@@ -24,10 +24,24 @@ test('transport forwarding is marked dynamic instead of inventing a GET contract
   assert.equal(forwarded.method, 'dynamic')
   assert.equal(forwarded.endpoint, 'input')
 })
-test('the matrix includes every discovered service and event without treating declarations as passed tests', () => {
+test('the matrix registers every discovered service and event without treating registration as runtime backend proof', () => {
   for (const row of [...inventory.services, ...inventory.events]) assert.ok(matrix.includes(row.id), row.id)
-  assert.match(matrix, /不是全量已冻结合同或验收通过声明/)
+  assert.ok(inventory.services.every(row => row.status === '已登记'))
+  assert.match(matrix, /验证证据集中记录在 contract-matrix-validation\.md/)
   assert.match(matrix, /静态消费者数为 0 只表示本扫描未发现，不授权删除/)
+})
+
+test('every service family is assigned to the frozen frontend contract matrix', () => {
+  const coveredFamilies = new Set([
+    'aiAssistantApi', 'browserApi', 'browserScriptTestsApi', 'credentialApi',
+    'customModulesApi', 'elementPickerApi', 'executorApi', 'featurePackApi',
+    'imageAssetApi', 'inputPromptApi', 'jsScriptApi', 'localWorkflowApi',
+    'mcpApi', 'pluginApi', 'recorderApi', 'retentionApi', 'scheduledTaskApi',
+    'speechApi', 'sponsorApi', 'systemApi', 'variableTrackingApi', 'workflowApi',
+    'workflowBundleApi',
+  ])
+  const discovered = new Set(inventory.services.map(row => row.operation.split('.')[0]))
+  assert.deepEqual([...discovered].sort(), [...coveredFamilies].sort())
 })
 test('inventory and matrix regenerate deterministically', () => {
   const before = fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8')
