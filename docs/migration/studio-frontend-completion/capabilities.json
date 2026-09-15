@@ -19126,7 +19126,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -19179,8 +19179,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "原版数学与统计行为已在Python 3.11对照；非JSON数值在事件边界结构化失败，排列组合增加同步计算容量护栏。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker代表链及macOS arm64正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
+      "risk": "原版数学行为已在Python 3.11对照，非JSON数值和排列组合容量均有保护；当前仅4节点完成正式UI，目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.list_sum.source-parity",
@@ -19208,7 +19208,7 @@
         },
         {
           "id": "BE.list_sum.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -19216,10 +19216,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 list_sum，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：列表求和模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json"
         }
       ],
-      "evidenceConfidence": "高：31节点冻结源码差分、生产注册、HTTP准入、worker执行、取消和传输边界已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及正式Electron UI执行已有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -25520,7 +25520,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -25574,8 +25574,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "原版数学与统计行为已在Python 3.11对照；非JSON数值在事件边界结构化失败，排列组合增加同步计算容量护栏。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker代表链及macOS arm64正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
+      "risk": "原版数学行为已在Python 3.11对照，非JSON数值和排列组合容量均有保护；当前仅4节点完成正式UI，目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.math_round.source-parity",
@@ -25603,7 +25603,7 @@
         },
         {
           "id": "BE.math_round.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -25611,10 +25611,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 math_round，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：四舍五入模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json"
         }
       ],
-      "evidenceConfidence": "高：31节点冻结源码差分、生产注册、HTTP准入、worker执行、取消和传输边界已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及正式Electron UI执行已有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -26881,7 +26881,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -26938,8 +26938,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "原版数学与统计行为已在Python 3.11对照；非JSON数值在事件边界结构化失败，排列组合增加同步计算容量护栏。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker代表链及macOS arm64正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
+      "risk": "原版数学行为已在Python 3.11对照，非JSON数值和排列组合容量均有保护；当前仅4节点完成正式UI，目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.math_log.source-parity",
@@ -26967,7 +26967,7 @@
         },
         {
           "id": "BE.math_log.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -26975,10 +26975,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 math_log，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：对数运算模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json"
         }
       ],
-      "evidenceConfidence": "高：31节点冻结源码差分、生产注册、HTTP准入、worker执行、取消和传输边界已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及正式Electron UI执行已有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -28897,7 +28897,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端按里程碑迁入中",
+      "status": "已实现且已验收",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -28951,8 +28951,8 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
-      "risk": "原版数学与统计行为已在Python 3.11对照；非JSON数值在事件边界结构化失败，排列组合增加同步计算容量护栏。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
+      "gap": "冻结源码差分、正式注册、HTTP准入、无浏览器worker代表链及macOS arm64正式Electron开发入口均已通过；重建目录包与其他平台仍待验收。",
+      "risk": "原版数学行为已在Python 3.11对照，非JSON数值和排列组合容量均有保护；当前仅4节点完成正式UI，目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.stat_median.source-parity",
@@ -28980,7 +28980,7 @@
         },
         {
           "id": "BE.stat_median.real-execution",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -28988,10 +28988,10 @@
           ],
           "operation": "经Studio真实UI添加和配置 stat_median，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：中位数模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json"
         }
       ],
-      "evidenceConfidence": "高：31节点冻结源码差分、生产注册、HTTP准入、worker执行、取消和传输边界已有实际证据；正式Electron逐节点验收尚未完成。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行及正式Electron UI执行已有实际证据；目录包及其他平台尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -44751,7 +44751,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -44791,12 +44791,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -44805,12 +44807,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.md5_encrypt.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#MD5EncryptExecutor",
@@ -44818,11 +44820,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 md5_encrypt 的默认配置、合法分支和错误分支；配置键为 encoding, inputText, outputFormat, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：MD5加密模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.md5_encrypt.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -44830,7 +44832,7 @@
           ],
           "operation": "通过正式传输提交包含 md5_encrypt 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.md5_encrypt.real-execution",
@@ -44845,7 +44847,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -44994,7 +44996,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45035,12 +45037,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -45049,12 +45053,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.sha_encrypt.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#SHAEncryptExecutor",
@@ -45062,11 +45066,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 sha_encrypt 的默认配置、合法分支和错误分支；配置键为 encoding, inputText, outputFormat, resultVariable, shaType",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：SHA加密模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.sha_encrypt.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -45074,7 +45078,7 @@
           ],
           "operation": "通过正式传输提交包含 sha_encrypt 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.sha_encrypt.real-execution",
@@ -45089,7 +45093,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45230,7 +45234,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45269,12 +45273,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -45283,12 +45289,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.url_encode_decode.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#URLEncodeDecodeExecutor",
@@ -45296,11 +45302,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 url_encode_decode 的默认配置、合法分支和错误分支；配置键为 encoding, inputText, operation, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：URL编解码模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.url_encode_decode.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -45308,7 +45314,7 @@
           ],
           "operation": "通过正式传输提交包含 url_encode_decode 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.url_encode_decode.real-execution",
@@ -45323,7 +45329,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45474,7 +45480,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45518,12 +45524,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -45532,12 +45540,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.random_password_generator.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#RandomPasswordGeneratorExecutor",
@@ -45545,11 +45553,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 random_password_generator 的默认配置、合法分支和错误分支；配置键为 excludeAmbiguous, includeDigits, includeLowercase, includeSymbols, includeUppercase, length, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：随机密码生成模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.random_password_generator.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -45557,7 +45565,7 @@
           ],
           "operation": "通过正式传输提交包含 random_password_generator 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.random_password_generator.real-execution",
@@ -45572,7 +45580,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45730,7 +45738,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45772,12 +45780,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -45786,12 +45796,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.uuid_generator.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#UUIDGeneratorExecutor",
@@ -45799,11 +45809,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 uuid_generator 的默认配置、合法分支和错误分支；配置键为 name, namespace, removeHyphens, resultVariable, uppercase, uuidVersion",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：UUID生成器模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.uuid_generator.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -45811,7 +45821,7 @@
           ],
           "operation": "通过正式传输提交包含 uuid_generator 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.uuid_generator.real-execution",
@@ -45826,7 +45836,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -45951,7 +45961,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -45990,12 +46000,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -46004,12 +46016,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.rgb_to_hsv.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#RGBToHSVExecutor",
@@ -46017,11 +46029,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 rgb_to_hsv 的默认配置、合法分支和错误分支；配置键为 b, g, r, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：RGB转HSV模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.rgb_to_hsv.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -46029,7 +46041,7 @@
           ],
           "operation": "通过正式传输提交包含 rgb_to_hsv 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.rgb_to_hsv.real-execution",
@@ -46044,7 +46056,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46169,7 +46181,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46207,12 +46219,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -46221,12 +46235,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.rgb_to_cmyk.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#RGBToCMYKExecutor",
@@ -46234,11 +46248,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 rgb_to_cmyk 的默认配置、合法分支和错误分支；配置键为 b, g, r, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：RGB转CMYK模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.rgb_to_cmyk.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -46246,7 +46260,7 @@
           ],
           "operation": "通过正式传输提交包含 rgb_to_cmyk 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.rgb_to_cmyk.real-execution",
@@ -46261,7 +46275,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46370,7 +46384,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46406,12 +46420,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -46420,12 +46436,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.hex_to_cmyk.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#HEXToCMYKExecutor",
@@ -46433,11 +46449,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 hex_to_cmyk 的默认配置、合法分支和错误分支；配置键为 hexColor, resultVariable",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：HEX转CMYK模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.hex_to_cmyk.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -46445,7 +46461,7 @@
           ],
           "operation": "通过正式传输提交包含 hex_to_cmyk 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.hex_to_cmyk.real-execution",
@@ -46460,7 +46476,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -46615,7 +46631,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "原版直接迁入",
       "milestone": "B4",
       "source": {
@@ -46656,12 +46672,14 @@
         "BE.SUPPORT.logs-artifacts"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
         "targets": [
-          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py"
+          "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+          "apps/backend/src/autoflow/application/workflows/executors/production.py",
+          "apps/backend/src/autoflow/providers/browser/workflow_worker.py"
         ]
       },
       "frontendContracts": [
@@ -46670,12 +46688,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "需对照原类型转换、空值、异常和序列化行为；第三方库版本差异以原测试和差分用例判定。",
+      "gap": "冻结源码差分、正式注册、HTTP准入及无浏览器worker代表链已通过；正式Electron逐节点UI、重建目录包与其他平台仍待验收。",
+      "risk": "同源文件内未批准的文件比较、目录比较和打印节点未迁入；随机密码增加1 MiB结果上限及协作取消。正式UI、目录包及macOS Intel/Windows结果仍须分别记录。",
       "acceptanceCases": [
         {
           "id": "BE.timestamp_converter.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/utility_tools.py#TimestampConverterExecutor",
@@ -46683,11 +46701,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 timestamp_converter 的默认配置、合法分支和错误分支；配置键为 datetimeFormat, inputValue, operation, resultVariable, timestampUnit",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：时间戳转换器模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.timestamp_converter.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -46695,7 +46713,7 @@
           ],
           "operation": "通过正式传输提交包含 timestamp_converter 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b4/utility-tools-family.json"
         },
         {
           "id": "BE.timestamp_converter.real-execution",
@@ -46710,7 +46728,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册、HTTP准入、worker执行、范围过滤和随机密码容量/取消已有实际证据；正式Electron逐节点验收尚未完成。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },

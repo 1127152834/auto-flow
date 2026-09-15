@@ -89,6 +89,17 @@
       "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q <B1/B2/B4 affected workflow suites>",
       "result": "458 passed before the exact boundary adjustment; 14 directly affected capacity/cancellation cases passed after the adjustment",
       "scope": "B1/B2/B4 differential, artifacts, worker, registry, admission, coordinator and HTTP run contract"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json",
+      "result": "passed on darwin-arm64 development build",
+      "uiExecutedTypes": [
+        "list_sum",
+        "math_round",
+        "math_log",
+        "stat_median"
+      ],
+      "observed": "The formal Studio UI created, configured, connected, saved and ran the four-node chain. HTTP and SQLite both recorded 32 → 32 → 5 → 6.8, all logs and execution IDs were persisted, cleanup completed, and CloakBrowser was never launched."
     }
   },
   "review": {
@@ -106,7 +117,7 @@
     "diffCheck": "passed"
   },
   "notClaimed": [
-    "formal Electron UI execution of the 31-node family",
+    "formal Electron UI execution of the remaining 27 math/statistics nodes",
     "rebuilt packaged sidecar execution",
     "macOS Intel verification",
     "Windows verification",

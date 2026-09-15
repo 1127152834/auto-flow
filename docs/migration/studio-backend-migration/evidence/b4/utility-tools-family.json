@@ -1,0 +1,75 @@
+{
+  "evidenceId": "BE-B4-utility-tools-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "gitHead": "a126935",
+  "result": "9 approved utility nodes passed frozen-source differential, production registration, HTTP admission and browser-free worker execution; formal Electron UI remains pending",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "file": "backend/app/executors/utility_tools.py",
+    "sha256": "f8d9b25d106c7bd4a4a50ab545acfaf08031a32c4fea4cdc13344ebbe86b0910",
+    "approvedTypesInSource": 9,
+    "excludedTypesInSameSource": [
+      "file_hash_compare",
+      "file_diff_compare",
+      "folder_hash_compare",
+      "folder_diff_compare",
+      "printer_call"
+    ]
+  },
+  "migratedTypes": [
+    "random_password_generator",
+    "url_encode_decode",
+    "md5_encrypt",
+    "sha_encrypt",
+    "timestamp_converter",
+    "rgb_to_hsv",
+    "rgb_to_cmyk",
+    "hex_to_cmyk",
+    "uuid_generator"
+  ],
+  "classifications": {
+    "businessBehavior": "原版直接迁入",
+    "importsExecutionContext": "AutoFlow必要适配",
+    "scopeFilter": "AutoFlow必要适配：同源文件中5个未批准的文件/打印节点没有迁入或注册",
+    "boundedPasswordGeneration": "AutoFlow必要适配：随机密码结果最多1048576字符，并每4096项响应生产取消令牌"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "test": "apps/backend/tests/differential/workflows/test_b4_utility_tools_executor_parity.py",
+      "result": "33 passed",
+      "coverage": "30 frozen-source payloads, exact approved type set, deterministic random/UUID branches, one capacity guard and one production-token cancellation case"
+    },
+    "productionRegistration": {
+      "test": "apps/backend/tests/unit/workflows/test_executor_registry.py#test_production_registry_contains_every_migrated_executor",
+      "result": "all 9 types registered; the 5 excluded source types remain absent"
+    },
+    "httpAdmission": {
+      "test": "apps/backend/tests/contract/test_workflow_runs_api.py#test_pure_data_family_runs_through_http_without_browser_requirement",
+      "result": "the real coordinator accepts the combined 55-node data/math/utility document with requiresBrowser=false"
+    },
+    "workerWithoutBrowser": {
+      "test": "apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_runs_utility_tools_without_browser",
+      "result": "MD5 to SHA to URL encoding followed by RGB-to-HSV and deterministic UUID v5 executed through the production worker without launching CloakBrowser"
+    },
+    "focusedRegression": {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q <utility differential, registry, HTTP admission and browser-free worker tests>",
+      "result": "36 passed, 2 dependency deprecation warnings"
+    }
+  },
+  "quality": {
+    "ruff": "passed",
+    "mypy": "passed",
+    "diffCheck": "passed"
+  },
+  "notClaimed": [
+    "formal Electron UI execution of the 9-node family",
+    "rebuilt packaged sidecar execution",
+    "macOS Intel verification",
+    "Windows verification",
+    "timezone portability beyond the frozen source's local-naive datetime behavior"
+  ],
+  "productionSourceSha256": "ba676bfe4fcd3edc9f4f43736f1d46d1c9100168e28c71a16a11bdc55f83d605",
+  "userDatabaseModified": false
+}
