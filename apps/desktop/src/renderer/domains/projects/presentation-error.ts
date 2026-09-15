@@ -31,6 +31,7 @@ const messages: Record<string, string> = {
 }
 export function safeProjectError(error: unknown): string {
   if (error && typeof error === 'object') {
+    if ('name' in error && error.name === 'ProjectCommandUncertain') return '上次保存结果尚未确认，请核对保存结果'
     if ('name' in error && error.name === 'DataCommandUncertain') return '上次操作结果尚未确认，请先核对原操作'
     if ('name' in error && error.name === 'DataCommandNotAccepted') return '原操作尚未接受，请核对后使用原请求重试'
     const code = 'code' in error && typeof error.code === 'string' ? error.code : undefined

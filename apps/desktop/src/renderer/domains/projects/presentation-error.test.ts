@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest'
 import { safeProjectError } from './presentation-error'
+import { ProjectCommandUncertain } from './api'
 import { ApiClientError } from '../../shared/api/client'
 const id = 'ab806c63-6b08-460b-bd2a-f3f6d2b07116'
 it('maps known codes without echoing messages, details or request identities', () => {
@@ -18,4 +19,8 @@ it('keeps unknown operation results distinct from confirmed failures', () => {
   expect(safeProjectError({ code: 'OPERATION_RESULT_UNKNOWN', message: id })).toBe('运行结果尚未确认，请先核对原操作')
   expect(safeProjectError({ code: 'RUN_FACTS_INCOMPLETE', message: id })).toBe('运行资料暂不完整，请重新读取并核验')
   expect(safeProjectError({ code: 'RUN_ARTIFACT_UNAVAILABLE', message: id })).toBe('运行产物暂不可用，请刷新后重试')
+})
+
+it('preserves uncertain project saves as a recovery action without raw diagnostics', () => {
+  expect(safeProjectError(new ProjectCommandUncertain(new Error(id)))).toBe('上次保存结果尚未确认，请核对保存结果')
 })
