@@ -834,6 +834,26 @@ def test_permutation_rejects_unbounded_synchronous_work(calc_type: str) -> None:
     assert "out" not in context.variables
 
 
+def test_permutation_allows_a_result_at_the_4000_digit_boundary() -> None:
+    context = ExecutionContext()
+
+    result = asyncio.run(
+        _target_executors()["math_permutation"]().execute(
+            {
+                "n": 1464,
+                "r": 1460,
+                "calcType": "permutation",
+                "resultVariable": "out",
+            },
+            context,
+        )
+    )
+
+    assert result.success is True
+    assert len(str(result.data)) == 4_000
+    assert context.variables["out"] == result.data
+
+
 def test_complex_result_is_normalized_only_at_the_test_transport() -> None:
     context = ExecutionContext()
     result = asyncio.run(

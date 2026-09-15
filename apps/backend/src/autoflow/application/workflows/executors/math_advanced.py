@@ -33,13 +33,13 @@ async def _permutation_fits_runtime_boundary(
     terms = r if calc_type == "permutation" else min(r, n - r)
     if terms > _MAX_COMBINATORIC_TERMS:
         return False
-    decimal_digits = 1.0
+    logarithm = 0.0
     for index in range(terms):
         await _checkpoint(context, index)
-        decimal_digits += math.log10(n - index)
+        logarithm += math.log10(n - index)
         if calc_type == "combination":
-            decimal_digits -= math.log10(index + 1)
-        if decimal_digits > _MAX_RESULT_DECIMAL_DIGITS:
+            logarithm -= math.log10(index + 1)
+        if logarithm >= _MAX_RESULT_DECIMAL_DIGITS:
             return False
     return True
 
