@@ -1,0 +1,419 @@
+{
+  "evidenceId": "BE-B4-data-structure-formal-electron",
+  "checkedAt": "2026-09-15T17:10:30.029Z",
+  "gitHead": "c3286d27e8396883f7c7973d1fe7657b51deef2d",
+  "buildSha256": "4013dc929c59e043222330597c765e41e1273bcd14529bbed74a49dcc26b3afc",
+  "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+  "profileId": "35bb7195-cc19-4ea3-8e3c-65cdd6d48c9e",
+  "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加并配置 5 个代表节点",
+    "通过画布拖拽节点与连接手柄建立 string/list_export → regex → dict 纯数据链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite，5 个节点类型、配置与 4 条边和输入一致",
+    "5 个节点均产生持久化结果与日志；相对路径 list_export 产物已通过正式 API 下载并核对内容与 SHA-256",
+    "纯数据链在已满足 Profile 前置条件的工作区完成，运行前后均无 CloakBrowser 进程"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 5,
+    "edgeCount": 4
+  },
+  "execution": {
+    "status": "completed",
+    "resultCount": 5,
+    "logCount": 6,
+    "artifactCount": 1,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "documentId": "DqIazTnSrqtkM1Hfub4q-"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "xOs8bLsf41v9ZwqUMR0q_",
+          "executionId": "9d5502a5-85db-4cd3-aecc-279a2590f448",
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "xOs8bLsf41v9ZwqUMR0q_",
+          "executionId": "9d5502a5-85db-4cd3-aecc-279a2590f448",
+          "success": true,
+          "sequence": 3
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "log": {
+            "sequence": 4,
+            "id": "55b3e97a-c06b-4764-97c4-d7e565113df5-4",
+            "timestamp": "2026-09-15T17:10:28.197469+00:00",
+            "level": "success",
+            "message": "分割为 3 个部分",
+            "nodeId": "xOs8bLsf41v9ZwqUMR0q_"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Htc1cOw0xPLCu5r-KgiKq",
+          "executionId": "cb1e2963-b693-4a8e-a454-d79b082f0781",
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Htc1cOw0xPLCu5r-KgiKq",
+          "executionId": "cb1e2963-b693-4a8e-a454-d79b082f0781",
+          "success": true,
+          "sequence": 6
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "log": {
+            "sequence": 7,
+            "id": "55b3e97a-c06b-4764-97c4-d7e565113df5-7",
+            "timestamp": "2026-09-15T17:10:28.208662+00:00",
+            "level": "success",
+            "message": "已导出 3 条数据到: reports/b4-items.txt",
+            "nodeId": "Htc1cOw0xPLCu5r-KgiKq"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Vnej38CtMre2l18qeSsos",
+          "executionId": "4680b20d-0fae-4524-862b-6e27923cb81b",
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Vnej38CtMre2l18qeSsos",
+          "executionId": "4680b20d-0fae-4524-862b-6e27923cb81b",
+          "success": true,
+          "sequence": 9
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "log": {
+            "sequence": 10,
+            "id": "55b3e97a-c06b-4764-97c4-d7e565113df5-10",
+            "timestamp": "2026-09-15T17:10:28.213542+00:00",
+            "level": "success",
+            "message": "匹配到: ITEM-42",
+            "nodeId": "Vnej38CtMre2l18qeSsos"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "fX9ohhxGKNOk9Vl8y2DzC",
+          "executionId": "54a39d0a-a593-4e93-9faa-fa5311da98d1",
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "fX9ohhxGKNOk9Vl8y2DzC",
+          "executionId": "54a39d0a-a593-4e93-9faa-fa5311da98d1",
+          "success": true,
+          "sequence": 12
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "log": {
+            "sequence": 13,
+            "id": "55b3e97a-c06b-4764-97c4-d7e565113df5-13",
+            "timestamp": "2026-09-15T17:10:28.219319+00:00",
+            "level": "success",
+            "message": "已设置 status = ITEM-42",
+            "nodeId": "fX9ohhxGKNOk9Vl8y2DzC"
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Zx_MWhxVBs3MzUQCEjbK8",
+          "executionId": "a7240e1a-0417-413f-8dc6-23b4b38823da",
+          "sequence": 14
+        }
+      },
+      {
+        "id": 15,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "nodeId": "Zx_MWhxVBs3MzUQCEjbK8",
+          "executionId": "a7240e1a-0417-413f-8dc6-23b4b38823da",
+          "success": true,
+          "sequence": 15
+        }
+      },
+      {
+        "id": 16,
+        "name": "execution:log",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "log": {
+            "sequence": 16,
+            "id": "55b3e97a-c06b-4764-97c4-d7e565113df5-16",
+            "timestamp": "2026-09-15T17:10:28.225232+00:00",
+            "level": "success",
+            "message": "获取 status = ITEM-42",
+            "nodeId": "Zx_MWhxVBs3MzUQCEjbK8"
+          }
+        }
+      },
+      {
+        "id": 17,
+        "name": "execution:completed",
+        "data": {
+          "runId": "55b3e97a-c06b-4764-97c4-d7e565113df5",
+          "workflowId": "DqIazTnSrqtkM1Hfub4q-",
+          "result": {
+            "status": "completed",
+            "executedNodes": 5,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "approvedFamilySize": 15,
+  "uiExecutedTypes": [
+    "string_split",
+    "list_export",
+    "regex_extract",
+    "dict_operation",
+    "dict_get"
+  ],
+  "notUiExecutedTypes": [
+    "list_operation",
+    "list_get",
+    "list_length",
+    "dict_keys",
+    "string_replace",
+    "string_join",
+    "string_concat",
+    "string_trim",
+    "string_case",
+    "string_substring"
+  ],
+  "uiNodes": [
+    {
+      "moduleType": "list_operation",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_get",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_length",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "list_export",
+      "label": "列表导出",
+      "status": "executed-through-ui",
+      "nodeId": "Htc1cOw0xPLCu5r-KgiKq",
+      "result": {
+        "path": "reports/b4-items.txt",
+        "count": 3
+      },
+      "logs": [
+        "已导出 3 条数据到: reports/b4-items.txt"
+      ]
+    },
+    {
+      "moduleType": "dict_operation",
+      "label": "字典操作",
+      "status": "executed-through-ui",
+      "nodeId": "fX9ohhxGKNOk9Vl8y2DzC",
+      "result": {
+        "dict": {
+          "status": "ITEM-42"
+        },
+        "keys": [
+          "status"
+        ]
+      },
+      "logs": [
+        "已设置 status = ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "dict_get",
+      "label": "字典取值",
+      "status": "executed-through-ui",
+      "nodeId": "Zx_MWhxVBs3MzUQCEjbK8",
+      "result": {
+        "value": "ITEM-42"
+      },
+      "logs": [
+        "获取 status = ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "dict_keys",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "regex_extract",
+      "label": "正则提取",
+      "status": "executed-through-ui",
+      "nodeId": "Vnej38CtMre2l18qeSsos",
+      "result": {
+        "value": "ITEM-42"
+      },
+      "logs": [
+        "匹配到: ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "string_replace",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "string_split",
+      "label": "分割文本",
+      "status": "executed-through-ui",
+      "nodeId": "xOs8bLsf41v9ZwqUMR0q_",
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "分割为 3 个部分"
+      ]
+    },
+    {
+      "moduleType": "string_join",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "string_concat",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "string_trim",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "string_case",
+      "status": "not-executed-through-ui"
+    },
+    {
+      "moduleType": "string_substring",
+      "status": "not-executed-through-ui"
+    }
+  ],
+  "listExport": {
+    "configuredPath": "reports/b4-items.txt",
+    "pathKind": "relative",
+    "result": {
+      "path": "reports/b4-items.txt",
+      "count": 3
+    },
+    "artifact": {
+      "artifactId": "b7913f65-78da-488d-af70-ac568404598a",
+      "ordinal": 1,
+      "nodeId": "Htc1cOw0xPLCu5r-KgiKq",
+      "executionId": "cb1e2963-b693-4a8e-a454-d79b082f0781",
+      "size": 16,
+      "sha256": "f3220283d05d1ff2ae350cfe9e0e367cb5aef46e10efb203c8a53c678e2218c8",
+      "mimeType": "text/plain",
+      "purpose": "result",
+      "eventSequence": 6,
+      "downloadedSha256": "f3220283d05d1ff2ae350cfe9e0e367cb5aef46e10efb203c8a53c678e2218c8",
+      "downloadedBytes": 16,
+      "downloadedText": "alpha\nbeta\ngamma"
+    }
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for setup and evidence reads; no Store or page-internal function access",
+    "claim": "5 of 15 approved data-structure nodes executed through the formal UI; the remaining 10 are explicitly not claimed by this run"
+  }
+}
