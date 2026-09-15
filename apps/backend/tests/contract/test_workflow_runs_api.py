@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock
 
+from fastapi.testclient import TestClient
+
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.workflows.browser import WorkflowWorkerSession
-from fastapi.testclient import TestClient
 
 
 def _workflow() -> dict[str, object]:
@@ -367,6 +368,15 @@ def test_pure_data_family_runs_through_http_without_browser_requirement(
         "stat_percentile",
         "stat_normalize",
         "stat_standardize",
+        "random_password_generator",
+        "url_encode_decode",
+        "md5_encrypt",
+        "sha_encrypt",
+        "timestamp_converter",
+        "rgb_to_hsv",
+        "rgb_to_cmyk",
+        "hex_to_cmyk",
+        "uuid_generator",
     ]
     workflow_payload = {
         **_workflow(),

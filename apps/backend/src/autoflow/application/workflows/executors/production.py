@@ -64,6 +64,17 @@ from .statistics import (
     StdevExecutor,
     VarianceExecutor,
 )
+from .utility_tools import (
+    HEXToCMYKExecutor,
+    MD5EncryptExecutor,
+    RandomPasswordGeneratorExecutor,
+    RGBToCMYKExecutor,
+    RGBToHSVExecutor,
+    SHAEncryptExecutor,
+    TimestampConverterExecutor,
+    URLEncodeDecodeExecutor,
+    UUIDGeneratorExecutor,
+)
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     OpenPageExecutor,
@@ -119,6 +130,15 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     PercentileExecutor,
     NormalizeExecutor,
     StandardizeExecutor,
+    RandomPasswordGeneratorExecutor,
+    URLEncodeDecodeExecutor,
+    MD5EncryptExecutor,
+    SHAEncryptExecutor,
+    TimestampConverterExecutor,
+    RGBToHSVExecutor,
+    RGBToCMYKExecutor,
+    HEXToCMYKExecutor,
+    UUIDGeneratorExecutor,
 )
 
 

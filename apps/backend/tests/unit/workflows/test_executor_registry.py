@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -118,6 +119,15 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "stat_percentile",
         "stat_normalize",
         "stat_standardize",
+        "random_password_generator",
+        "url_encode_decode",
+        "md5_encrypt",
+        "sha_encrypt",
+        "timestamp_converter",
+        "rgb_to_hsv",
+        "rgb_to_cmyk",
+        "hex_to_cmyk",
+        "uuid_generator",
     }
 
 

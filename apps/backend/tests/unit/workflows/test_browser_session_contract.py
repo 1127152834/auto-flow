@@ -10,6 +10,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+
 from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
 from autoflow.providers.browser.workflow_session import CloakBrowserWorkflowSession
 from autoflow.providers.browser.workflow_worker import _run, run_workflow_worker
@@ -507,6 +508,109 @@ async def test_workflow_worker_runs_math_and_statistics_without_browser(
     assert completions[1]["data"] == [3, 2, 1]
     assert completions[2]["data"] == 6.0
     assert completions[4]["data"] == 2.0
+    assert events[-1]["type"] == "execution:completed"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_runs_utility_tools_without_browser(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure utility workflow must not launch CloakBrowser")
+
+    monkeypatch.delenv("CLOAKBROWSER_BINARY_PATH", raising=False)
+    monkeypatch.delenv("CLOAKBROWSER_CACHE_DIR", raising=False)
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    module_configs = [
+        (
+            "md5",
+            "md5_encrypt",
+            {"inputText": "{text}", "outputFormat": "hex", "resultVariable": "md5"},
+        ),
+        (
+            "sha",
+            "sha_encrypt",
+            {
+                "inputText": "{md5}",
+                "shaType": "sha256",
+                "outputFormat": "hex",
+                "resultVariable": "sha",
+            },
+        ),
+        (
+            "url",
+            "url_encode_decode",
+            {"inputText": "{sha}", "operation": "encode", "resultVariable": "url"},
+        ),
+        (
+            "hsv",
+            "rgb_to_hsv",
+            {"r": 255, "g": 0, "b": 127, "resultVariable": "hsv"},
+        ),
+        (
+            "uuid",
+            "uuid_generator",
+            {
+                "uuidVersion": 5,
+                "namespace": "dns",
+                "name": "autoflow.cn",
+                "resultVariable": "uuid",
+            },
+        ),
+    ]
+    command = {
+        "runId": "run-utility",
+        "workflowId": "workflow-utility",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": node_id,
+                    "type": "moduleNode",
+                    "data": {"moduleType": module_type, "config": config},
+                }
+                for node_id, module_type, config in module_configs
+            ],
+            "edges": [
+                {
+                    "id": f"edge-{index}",
+                    "source": module_configs[index][0],
+                    "target": module_configs[index + 1][0],
+                }
+                for index in range(len(module_configs) - 1)
+            ],
+            "variables": [{"name": "text", "value": "AutoFlow中文"}],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    completions = [
+        event for event in events if event["type"] == "execution:node_complete"
+    ]
+    assert [event["nodeId"] for event in completions] == [
+        "md5",
+        "sha",
+        "url",
+        "hsv",
+        "uuid",
+    ]
+    assert completions[0]["data"] == "57979e746e277e6f10c20d7f9d3d03da"
+    assert completions[3]["data"] == {
+        "h": 330,
+        "s": 100,
+        "v": 100,
+        "string": "HSV(330, 100%, 100%)",
+    }
+    assert completions[4]["data"] == "70cf9137-871f-540f-83f1-ed78acf150de"
     assert events[-1]["type"] == "execution:completed"
 
 
