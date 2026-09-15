@@ -12,6 +12,7 @@ import json
 from typing import Any
 
 import regex
+
 from autoflow.domain.workflows.execution import ExecutionContext
 
 from .base import ModuleExecutor, ModuleResult
@@ -208,9 +209,9 @@ class ListExportExecutor(ModuleExecutor):
                 if index and index % 256 == 0:
                     await asyncio.sleep(0)
             content = separator.join(lines)
-            if context.artifacts is None:
+            if context.node_artifacts is None:
                 raise RuntimeError("文件输出服务不可用")
-            await context.artifacts.write_text(
+            await context.node_artifacts.write_text(
                 output_path=output_path,
                 content=content,
                 separator=separator,

@@ -134,15 +134,15 @@ class TableAddRowExecutor(ModuleExecutor):
                 not isinstance(row_data_str, str)
                 or len(row_data_str.encode("utf-8")) > _MAX_ROW_DATA_BYTES
             ):
-                return ModuleResult(
-                    success=False, error="行数据超过工作流安全限制"
-                )
+                return ModuleResult(success=False, error="行数据超过工作流安全限制")
             row_data = json.loads(row_data_str)
 
             if not isinstance(row_data, dict):
                 return ModuleResult(success=False, error="行数据必须是JSON对象格式")
             if len(row_data) > _MAX_TABLE_COLUMNS:
-                return ModuleResult(success=False, error="数据表格列数超过工作流安全限制")
+                return ModuleResult(
+                    success=False, error="数据表格列数超过工作流安全限制"
+                )
             _validate_json_shape(row_data)
             capacity_error = _table_capacity_error([*context.data_rows, row_data])
             if capacity_error is not None:
@@ -488,10 +488,7 @@ def _artifact_output_path(save_path: Any, file_name: str, extension: str) -> str
         path = PurePosixPath(file_name.replace("\\", "/"))
 
     windows_path = PureWindowsPath(save_path_text or file_name)
-    if (
-        bool(windows_path.drive)
-        or any(part in {"", ".", ".."} for part in path.parts)
-    ):
+    if bool(windows_path.drive) or any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError("导出路径无效")
     return path.as_posix()
 
@@ -566,13 +563,13 @@ class TableExportExecutor(ModuleExecutor):
         if len(context.data_rows) > _MAX_TABLE_ROWS:
             return ModuleResult(success=False, error="数据表格超过工作流安全限制")
         if _table_has_sensitive_data(context):
-            return ModuleResult(
-                success=False, error="数据表格包含凭据值，不能导出"
-            )
+            return ModuleResult(success=False, error="数据表格包含凭据值，不能导出")
         if any((format_sensitive, path_sensitive, name_sensitive, sheet_sensitive)):
             return ModuleResult(success=False, error="导出配置不能使用凭据值")
         if export_format not in {"excel", "csv"}:
-            return ModuleResult(success=False, error=f"不支持的导出格式: {export_format}")
+            return ModuleResult(
+                success=False, error=f"不支持的导出格式: {export_format}"
+            )
 
         try:
             timestamp = context.clock.now().strftime("%Y%m%d_%H%M%S")
@@ -585,7 +582,7 @@ class TableExportExecutor(ModuleExecutor):
         except ValueError as error:
             return ModuleResult(success=False, error=str(error))
 
-        if context.artifacts is None:
+        if context.node_artifacts is None:
             return ModuleResult(
                 success=False,
                 error=f"写入文件失败: 文件输出服务不可用（路径: {final_path}）",
@@ -600,7 +597,7 @@ class TableExportExecutor(ModuleExecutor):
         if export_format == "excel":
             assert context.table_workbooks is not None
             try:
-                existing = await context.artifacts.read_binary_output(
+                existing = await context.node_artifacts.read_binary_output(
                     output_path=final_path,
                     max_bytes=_MAX_XLSX_BYTES,
                 )
@@ -610,7 +607,7 @@ class TableExportExecutor(ModuleExecutor):
                     existing_content=existing.content,
                     cancellation=context.cancellation,
                 )
-                written_path = await context.artifacts.write_binary_output(
+                written_path = await context.node_artifacts.write_binary_output(
                     output_path=final_path,
                     content=workbook_content,
                     mime_type=(
@@ -631,8 +628,7 @@ class TableExportExecutor(ModuleExecutor):
             return ModuleResult(
                 success=True,
                 message=(
-                    f"已导出 {row_count} 行数据到: {written_path} "
-                    f"(Sheet: {sheet_name})"
+                    f"已导出 {row_count} 行数据到: {written_path} (Sheet: {sheet_name})"
                 ),
                 data={
                     "path": written_path,
@@ -657,7 +653,7 @@ class TableExportExecutor(ModuleExecutor):
             )
 
         try:
-            written_path = await context.artifacts.write_text(
+            written_path = await context.node_artifacts.write_text(
                 output_path=final_path,
                 content=content,
                 separator="\n",

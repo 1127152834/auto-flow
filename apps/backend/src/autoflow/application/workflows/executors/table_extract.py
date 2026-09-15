@@ -200,7 +200,7 @@ class ExtractTableDataExecutor(ModuleExecutor):
             return ModuleResult(success=True, data=result_data, message=message)
 
         try:
-            if context.artifacts is None:
+            if context.node_artifacts is None:
                 raise RuntimeError("文件输出服务不可用")
 
             renderer = context.table_workbooks
@@ -221,7 +221,7 @@ class ExtractTableDataExecutor(ModuleExecutor):
                 raise RuntimeError("Excel文件大小超过工作流安全限制")
 
             output_path = excel_path or "table_data.xlsx"
-            written_path = await context.artifacts.write_binary_output(
+            written_path = await context.node_artifacts.write_binary_output(
                 output_path=output_path,
                 content=content,
                 mime_type=_XLSX_MIME_TYPE,

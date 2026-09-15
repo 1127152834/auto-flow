@@ -2,18 +2,20 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections import deque
 from collections.abc import Coroutine, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.workflows.execution import ExecutionContext
-from autoflow.domain.workflows.graph import parse_workflow
+from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_workflow
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
 
 from .executors.base import ModuleResult
 from .executors.registry import ExecutorRegistry
+
+MAX_NODE_DISPATCHES = 100_000
+_LOOP_NODE_TYPES = frozenset({"loop", "foreach", "infinite_loop", "foreach_dict"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,90 +79,371 @@ class WorkflowRuntime:
         if issues:
             return WorkflowRuntimeResult(False, (), issues)
         _, graph = parse_workflow(document)
-        queue = deque(graph.get_start_nodes())
-        executed: list[str] = []
-        visited: set[str] = set()
-        while queue:
-            if context.cancellation is not None:
-                context.cancellation.raise_if_cancelled()
-            node_id = queue.popleft()
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            node = graph.get_node(node_id)
-            if node is None:
-                continue
-            executor = self._registry.get(node.type)
-            if executor is None:
-                return WorkflowRuntimeResult(
-                    False,
-                    tuple(executed),
-                    (
-                        WorkflowScopeIssue(
-                            node_id=node.id,
-                            path=f"nodes.{node.id}.data.moduleType",
-                            code="UNSUPPORTED_NODE_TYPE",
-                            message=f"节点类型 {node.type} 的真实执行器尚未迁入",
-                            node_type=node.type,
-                        ),
-                    ),
-                )
-            execution_id = str(uuid4())
-            context.current_node_id = node.id
-            context.current_execution_id = execution_id
+        return await _WorkflowScheduler(self._registry, graph, context).run()
+
+
+@dataclass(slots=True)
+class _WorkflowScheduler:
+    registry: ExecutorRegistry
+    graph: ExecutionGraph
+    context: ExecutionContext
+    executed_order: list[str] = field(default_factory=list)
+    executed: set[str] = field(default_factory=set)
+    executing: set[str] = field(default_factory=set)
+    pending: dict[str, set[str]] = field(default_factory=dict)
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    event_binding_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    dispatch_count: int = 0
+    halted: bool = False
+    failed_node_id: str | None = None
+    failed_result: ModuleResult | None = None
+
+    async def run(self) -> WorkflowRuntimeResult:
+        await self._execute_parallel(self.graph.get_start_nodes())
+        return WorkflowRuntimeResult(
+            success=self.failed_result is None,
+            executed_node_ids=tuple(self.executed_order),
+            failed_node_id=self.failed_node_id,
+            node_result=self.failed_result,
+        )
+
+    async def _execute_parallel(self, node_ids: list[str]) -> None:
+        if not node_ids or self.halted:
+            return
+        self._raise_if_cancelled()
+        async with self.lock:
+            claimed: list[str] = []
+            for node_id in dict.fromkeys(node_ids):
+                if node_id in self.executed or node_id in self.executing:
+                    continue
+                self.executing.add(node_id)
+                claimed.append(node_id)
+        if not claimed:
+            return
+
+        tasks = [
+            asyncio.create_task(self._execute_claimed(node_id)) for node_id in claimed
+        ]
+        try:
+            await asyncio.gather(*tasks)
+        except BaseException:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise
+
+    async def _execute_claimed(self, node_id: str) -> None:
+        node = self.graph.get_node(node_id)
+        if node is None:
+            async with self.lock:
+                self.executing.discard(node_id)
+            return
+        try:
+            result = await self._dispatch(node)
+        except BaseException:
+            async with self.lock:
+                self.executing.discard(node_id)
+            raise
+
+        async with self.lock:
+            self.executed.add(node_id)
+            self.executing.discard(node_id)
+            self.executed_order.append(node_id)
+
+        if not result.success:
+            self._remember_failure(node_id, result)
+            error_nodes = self.graph.get_error_nodes(node_id)
+            if error_nodes:
+                await self._execute_parallel(error_nodes)
+            else:
+                self.halted = True
+            return
+        if self.halted or bool(getattr(self.context, "stop_workflow", False)):
+            return
+        if bool(getattr(self.context, "should_break", False)) or bool(
+            getattr(self.context, "should_continue", False)
+        ):
+            return
+        if node.type in _LOOP_NODE_TYPES:
+            await self._handle_loop(node)
+            return
+
+        next_nodes = (
+            self.graph.get_next_nodes(node_id, result.branch)
+            if result.branch
+            else self.graph.get_next_nodes(node_id)
+        )
+        await self._notify_successors(next_nodes, node_id)
+
+    async def _dispatch(self, node: WorkflowNode) -> ModuleResult:
+        self._raise_if_cancelled()
+        if self.dispatch_count >= MAX_NODE_DISPATCHES:
+            result = ModuleResult(
+                success=False,
+                error=f"工作流节点调度次数超过安全上限 {MAX_NODE_DISPATCHES}",
+            )
+            self._remember_failure(node.id, result)
+            self.halted = True
+            return result
+        self.dispatch_count += 1
+        executor = self.registry.get(node.type)
+        if executor is None:
+            result = ModuleResult(
+                success=False, error=f"节点类型 {node.type} 的真实执行器尚未迁入"
+            )
+            self._remember_failure(node.id, result)
+            return result
+
+        execution_id = str(uuid4())
+        async with self.event_binding_lock:
+            self.context.current_node_id = node.id
+            self.context.current_execution_id = execution_id
             await _publish(
-                context,
+                self.context,
                 {
                     "type": "execution:node_start",
                     "nodeId": node.id,
                     "executionId": execution_id,
                 },
             )
-            raw_config = node.data.get("config")
-            config = (
-                dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
-            )
-            context.begin_node()
-            result = await _execute_with_cancellation(
-                executor.execute(config, context), context
-            )
-            if not _is_json_value(result.data):
-                result = ModuleResult(
-                    success=False,
-                    error="节点结果包含无法序列化的数据",
+            self.context.bind_node_artifacts()
+        raw_config = node.data.get("config")
+        config = (
+            dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
+        )
+        self.context.begin_node()
+        result = await _execute_with_cancellation(
+            executor.execute(config, self.context), self.context
+        )
+        if not _is_json_value(result.data):
+            result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
+        reported_result = _reported_result(result, self.context)
+        await _publish(
+            self.context,
+            {
+                "type": "execution:node_complete",
+                "nodeId": node.id,
+                "executionId": execution_id,
+                "success": reported_result.success,
+                "message": reported_result.message,
+                "error": reported_result.error,
+                "data": reported_result.data,
+            },
+        )
+        return reported_result if self.context.node_uses_sensitive_values else result
+
+    async def _handle_loop(self, loop_node: WorkflowNode) -> None:
+        body_nodes = self.graph.get_loop_body_nodes(loop_node.id)
+        done_nodes = self.graph.get_loop_done_nodes(loop_node.id)
+        if not self.context.loop_stack:
+            await self._notify_successors(done_nodes, loop_node.id)
+            return
+        loop_state = self.context.loop_stack[-1]
+        body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
+        while not self.halted and self._loop_should_continue(loop_state):
+            self._raise_if_cancelled()
+            self.context.should_continue = False
+            await self._reset_nodes(body_scope)
+            await self._execute_parallel(body_nodes)
+            if self.halted:
+                break
+            if bool(getattr(self.context, "should_break", False)):
+                self.context.should_break = False
+                break
+            self.context.should_continue = False
+            self._advance_loop(loop_state)
+            await asyncio.sleep(0)
+
+        if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
+            self.context.loop_stack.pop()
+        if done_nodes and not self.halted:
+            await self._notify_successors(done_nodes, loop_node.id)
+
+    def _loop_should_continue(self, state: Mapping[str, Any]) -> bool:
+        loop_type = state.get("type")
+        current = int(state.get("current_index", 0))
+        if loop_type == "count":
+            return current < int(state.get("count", 0))
+        if loop_type == "range":
+            end = state.get("end_value", 0)
+            step = state.get("step_value", 1)
+            return current <= end if step > 0 else current >= end
+        if loop_type in {"foreach", "foreach_dict"}:
+            data = state.get("data", [])
+            return isinstance(data, (list, tuple)) and current < len(data)
+        if loop_type == "infinite":
+            return True
+        if loop_type == "while":
+            resolved = self.context.resolve_value(state.get("condition"))
+            if isinstance(resolved, bool):
+                return resolved
+            if isinstance(resolved, str):
+                try:
+                    from .executors.safe_expr import safe_eval
+
+                    return bool(safe_eval(resolved, dict(self.context.variables)))
+                except Exception:  # noqa: BLE001 -- frozen boolean fallback.
+                    return resolved.strip().lower() in {"true", "1"}
+            return bool(resolved)
+        return False
+
+    def _advance_loop(self, state: dict[str, Any]) -> None:
+        loop_type = state.get("type")
+        step = state.get("step_value", 1) if loop_type == "range" else 1
+        state["current_index"] = state.get("current_index", 0) + step
+        current = state["current_index"]
+        index_variable = state.get("index_variable")
+        if isinstance(index_variable, str) and index_variable:
+            self.context.set_variable(index_variable, current)
+        data = state.get("data", [])
+        if loop_type == "foreach" and current < len(data):
+            item_variable = state.get("item_variable")
+            if isinstance(item_variable, str) and item_variable:
+                self.context.set_variable(item_variable, data[current])
+        if loop_type == "foreach_dict" and current < len(data):
+            key, value = data[current]
+            key_variable = state.get("key_variable")
+            value_variable = state.get("value_variable")
+            if isinstance(key_variable, str) and key_variable:
+                self.context.set_variable(key_variable, key)
+            if isinstance(value_variable, str) and value_variable:
+                self.context.set_variable(value_variable, value)
+
+    def _collect_loop_body_nodes(
+        self, loop_id: str, roots: list[str], done_nodes: list[str]
+    ) -> set[str]:
+        blocked = {loop_id, *done_nodes}
+        collected: set[str] = set()
+        queue = list(roots)
+        while queue:
+            current = queue.pop(0)
+            if current in blocked or current in collected:
+                continue
+            collected.add(current)
+            queue.extend(self._full_successors(current))
+        return collected
+
+    async def _reset_nodes(self, node_ids: set[str]) -> None:
+        async with self.lock:
+            for node_id in node_ids:
+                self.executed.discard(node_id)
+                self.executing.discard(node_id)
+                self.pending.pop(node_id, None)
+
+    async def _notify_successors(
+        self, next_nodes: list[str], completed_node_id: str
+    ) -> None:
+        if not next_nodes or self.halted:
+            return
+        ready: list[str] = []
+        async with self.lock:
+            for next_id in dict.fromkeys(next_nodes):
+                if next_id in self.executed or next_id in self.executing:
+                    if self._is_back_edge(next_id, completed_node_id):
+                        for cycle_id in self._nodes_between(next_id, completed_node_id):
+                            self.executed.discard(cycle_id)
+                            self.pending.pop(cycle_id, None)
+                    else:
+                        continue
+                prev_nodes = self.graph.get_join_prev_nodes(next_id)
+                if len(prev_nodes) <= 1:
+                    ready.append(next_id)
+                    continue
+                waiting = self.pending.setdefault(
+                    next_id,
+                    {node_id for node_id in prev_nodes if node_id not in self.executed},
                 )
-            executed.append(node_id)
-            reported_result = _reported_result(result, context)
-            await _publish(
-                context,
-                {
-                    "type": "execution:node_complete",
-                    "nodeId": node.id,
-                    "executionId": execution_id,
-                    "success": reported_result.success,
-                    "message": reported_result.message,
-                    "error": reported_result.error,
-                    "data": reported_result.data,
-                },
-            )
-            if not result.success:
-                return WorkflowRuntimeResult(
-                    False,
-                    tuple(executed),
-                    failed_node_id=node_id,
-                    node_result=reported_result,
-                )
-            queue.extend(
-                graph.get_next_nodes(node_id, result.branch)
-                if result.branch
-                else graph.get_next_nodes(node_id)
-            )
-        return WorkflowRuntimeResult(True, tuple(executed))
+                waiting.discard(completed_node_id)
+                if not waiting:
+                    self.pending.pop(next_id, None)
+                    ready.append(next_id)
+
+            for pending_id in list(self.pending):
+                waiting = {
+                    predecessor
+                    for predecessor in self.pending[pending_id]
+                    if predecessor not in self.executed
+                    and self._is_node_reachable(predecessor, next_nodes)
+                }
+                if waiting:
+                    self.pending[pending_id] = waiting
+                else:
+                    self.pending.pop(pending_id, None)
+                    ready.append(pending_id)
+        if ready:
+            await self._execute_parallel(list(dict.fromkeys(ready)))
+
+    def _is_node_reachable(self, target_id: str, additional_roots: list[str]) -> bool:
+        roots = set(self.executing) | set(additional_roots) | set(self.pending)
+        if target_id in roots:
+            return True
+        seen = set(roots)
+        queue = list(roots)
+        while queue:
+            current = queue.pop(0)
+            for successor in self._full_successors(current):
+                if successor == target_id:
+                    return True
+                if successor not in seen:
+                    seen.add(successor)
+                    queue.append(successor)
+        return False
+
+    def _full_successors(self, node_id: str) -> list[str]:
+        successors = list(self.graph.adjacency.get(node_id, []))
+        for targets in self.graph.condition_branches.get(node_id, {}).values():
+            successors.extend(targets)
+        for targets in self.graph.loop_branches.get(node_id, {}).values():
+            successors.extend(targets)
+        successors.extend(self.graph.error_branches.get(node_id, []))
+        return successors
+
+    def _is_back_edge(self, target_id: str, source_id: str) -> bool:
+        return target_id == source_id or source_id in self._reachable_from(target_id)
+
+    def _reachable_from(self, start: str) -> set[str]:
+        seen: set[str] = set()
+        queue = [start]
+        while queue:
+            current = queue.pop(0)
+            for successor in self._full_successors(current):
+                if successor not in seen:
+                    seen.add(successor)
+                    queue.append(successor)
+        return seen
+
+    def _nodes_between(self, start: str, end: str) -> set[str]:
+        forward = {start, *self._reachable_from(start)}
+        if end not in forward:
+            return {start, end}
+        reverse: dict[str, set[str]] = {}
+        for source in forward:
+            for target in self._full_successors(source):
+                if target in forward:
+                    reverse.setdefault(target, set()).add(source)
+        result = {end}
+        queue = [end]
+        while queue:
+            current = queue.pop(0)
+            for predecessor in reverse.get(current, set()):
+                if predecessor not in result:
+                    result.add(predecessor)
+                    queue.append(predecessor)
+        result.add(start)
+        return result
+
+    def _remember_failure(self, node_id: str, result: ModuleResult) -> None:
+        if self.failed_result is None:
+            self.failed_node_id = node_id
+            self.failed_result = result
+
+    def _raise_if_cancelled(self) -> None:
+        if self.context.cancellation is not None:
+            self.context.cancellation.raise_if_cancelled()
 
 
-def _reported_result(
-    result: ModuleResult, context: ExecutionContext
-) -> ModuleResult:
+def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleResult:
     if not context.node_uses_sensitive_values:
         return result
     return ModuleResult(
@@ -199,8 +482,7 @@ async def _execute_with_cancellation(
     cancellation_task = asyncio.create_task(_wait_until_cancelled(context))
     try:
         done, _ = await asyncio.wait(
-            {operation_task, cancellation_task},
-            return_when=asyncio.FIRST_COMPLETED,
+            {operation_task, cancellation_task}, return_when=asyncio.FIRST_COMPLETED
         )
         if operation_task in done:
             return operation_task.result()

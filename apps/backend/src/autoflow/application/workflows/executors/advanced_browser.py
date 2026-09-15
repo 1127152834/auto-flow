@@ -40,9 +40,7 @@ def _page(context: ExecutionContext) -> BrowserPagePort | None:
     try:
         active_page = getattr(context.browser, "active_page", None)
         return (
-            active_page()
-            if active_page is not None
-            else context.browser.current_page()
+            active_page() if active_page is not None else context.browser.current_page()
         )
     except Exception:  # noqa: BLE001 -- browser state is serialized as a node result.
         return None
@@ -441,7 +439,7 @@ class DownloadFileExecutor(ModuleExecutor):
             return ModuleResult(success=False, error="触发元素选择器不能为空")
         if mode == "url" and not url:
             return ModuleResult(success=False, error="下载URL不能为空")
-        if context.artifacts is None:
+        if context.node_artifacts is None:
             return ModuleResult(success=False, error="下载产物存储未配置")
         try:
             if mode == "url":
@@ -487,7 +485,7 @@ class DownloadFileExecutor(ModuleExecutor):
                 else str(file_name)
             )
             _raise_if_cancelled(context)
-            final_path = await context.artifacts.write_bytes(
+            final_path = await context.node_artifacts.write_bytes(
                 name=artifact_name,
                 content=content,
                 mime_type="application/octet-stream",
@@ -520,7 +518,7 @@ class SaveImageExecutor(ModuleExecutor):
         page = _page(context)
         if page is None:
             return ModuleResult(success=False, error="没有打开的页面")
-        if context.artifacts is None:
+        if context.node_artifacts is None:
             return ModuleResult(success=False, error="图片产物存储未配置")
         try:
             element = page.locator(str(selector))
@@ -537,7 +535,7 @@ class SaveImageExecutor(ModuleExecutor):
             if len(image_data) > _MAX_IMAGE_BYTES:
                 raise ValueError("图片超过 64 MiB 限制")
             _raise_if_cancelled(context)
-            final_path = await context.artifacts.write_bytes(
+            final_path = await context.node_artifacts.write_bytes(
                 name=str(save_path) or "saved_image.png",
                 content=image_data,
                 mime_type=mime_type,

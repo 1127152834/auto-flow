@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Protocol
@@ -114,14 +115,34 @@ class ExecutionContext:
     progress: Callable[[str, str], Awaitable[None]] | None = None
     current_node_id: str | None = None
     current_execution_id: str | None = None
+    should_break: bool = False
+    should_continue: bool = False
+    stop_workflow: bool = False
+    stop_reason: str = ""
     _node_uses_sensitive_values: bool = field(default=False, repr=False)
+    _node_sensitive_context: ContextVar[bool] = field(
+        default_factory=lambda: ContextVar("workflow_node_sensitive", default=False),
+        repr=False,
+    )
+    _node_artifact_context: ContextVar[tuple[bool, ArtifactWriter | None]] = field(
+        default_factory=lambda: ContextVar(
+            "workflow_node_artifacts", default=(False, None)
+        ),
+        repr=False,
+    )
 
     def begin_node(self) -> None:
         self._node_uses_sensitive_values = False
+        self._node_sensitive_context.set(False)
+
+    def bind_node_artifacts(self) -> None:
+        """Bind the current writer to this task before parallel node execution."""
+        self._node_artifact_context.set((True, self.artifacts))
 
     def resolve_value(self, value: Any) -> Any:
         if references_sensitive_value(value, self.sensitive_variables):
             self._node_uses_sensitive_values = True
+            self._node_sensitive_context.set(True)
         return resolve_value(value, self.variables, self.credentials)
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:
@@ -135,7 +156,7 @@ class ExecutionContext:
             self.cancellation.raise_if_cancelled()
         self.variables[name] = value
         effective_sensitive = (
-            self._node_uses_sensitive_values if sensitive is None else sensitive
+            self.node_uses_sensitive_values if sensitive is None else sensitive
         )
         if effective_sensitive:
             self.sensitive_variables.add(name)
@@ -144,7 +165,12 @@ class ExecutionContext:
 
     @property
     def node_uses_sensitive_values(self) -> bool:
-        return self._node_uses_sensitive_values
+        return self._node_sensitive_context.get()
+
+    @property
+    def node_artifacts(self) -> ArtifactWriter | None:
+        bound, writer = self._node_artifact_context.get()
+        return writer if bound else self.artifacts
 
     def get_variable(self, name: Any, default: Any = None) -> Any:
         if not isinstance(name, str):

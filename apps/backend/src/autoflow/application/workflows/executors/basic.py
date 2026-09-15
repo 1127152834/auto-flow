@@ -42,7 +42,9 @@ def _active_page(context: ExecutionContext) -> BrowserPagePort | None:
         return None
     try:
         active_page = getattr(context.browser, "active_page", None)
-        return active_page() if active_page is not None else context.browser.current_page()
+        return (
+            active_page() if active_page is not None else context.browser.current_page()
+        )
     except Exception:  # noqa: BLE001 -- executor serializes browser state as a node error.
         return None
 
@@ -243,7 +245,9 @@ class InputTextExecutor(ModuleExecutor):
             else:
                 await locator.fill(text)
             suffix = f" (在内部{input_type}元素)" if input_type == "inner" else ""
-            return ModuleResult(success=True, message=f"已输入文本到: {selector}{suffix}")
+            return ModuleResult(
+                success=True, message=f"已输入文本到: {selector}{suffix}"
+            )
         except Exception as error:  # noqa: BLE001 -- provider errors are node results.
             return ModuleResult(success=False, error=f"输入文本失败: {error}")
 
@@ -335,7 +339,9 @@ class ScreenshotExecutor(ModuleExecutor):
     async def execute(
         self, config: dict[str, Any], context: ExecutionContext
     ) -> ModuleResult:
-        screenshot_type = context.resolve_value(config.get("screenshotType", "fullpage"))
+        screenshot_type = context.resolve_value(
+            config.get("screenshotType", "fullpage")
+        )
         selector = context.resolve_value(config.get("selector", ""))
         save_path = context.resolve_value(config.get("savePath", ""))
         pattern = context.resolve_value(config.get("fileNamePattern", ""))
@@ -343,7 +349,7 @@ class ScreenshotExecutor(ModuleExecutor):
         page = _active_page(context) if screenshot_type == "element" else _page(context)
         if page is None:
             return ModuleResult(success=False, error="没有打开的页面")
-        if context.artifacts is None:
+        if context.node_artifacts is None:
             return ModuleResult(success=False, error="截图产物存储未配置")
         try:
             timestamp = context.clock.now().strftime("%Y%m%d_%H%M%S")
@@ -368,7 +374,7 @@ class ScreenshotExecutor(ModuleExecutor):
                 content = await locator.screenshot()
             else:
                 content = await page.screenshot(full_page=screenshot_type != "viewport")
-            final_path = await context.artifacts.write_bytes(
+            final_path = await context.node_artifacts.write_bytes(
                 name=artifact_name, content=content, mime_type="image/png"
             )
             if isinstance(variable_name, str) and variable_name:
