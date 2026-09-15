@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-selector.ts; see SOURCE.md for license and adaptation boundaries.
 export const selectorGuideContent = `# 选择器完全指南（CSS + XPath）
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 选择器是网页自动化的核心技能。本章从入门到精通，全面讲解 **CSS 选择器** 与 **XPath 选择器** 的使用方法、优缺点与实战技巧。
 
 ---
@@ -331,20 +333,20 @@ document.querySelectorAll('你的选择器').length
 
 ## XPath 选择器（进阶定位利器）
 
-很多复杂页面光靠 CSS 定位不准、不稳，这时 **XPath** 往往更精准。WebRPA 已完美支持手动填写 XPath，所有"元素选择器"输入框都能一键切换到 XPath 模式。
+很多复杂页面光靠 CSS 定位不准、不稳，这时 **XPath** 往往更精准。选择器表单支持手动填写 XPath，所有"元素选择器"输入框都能一键切换到 XPath 模式。
 
 ### 什么是 XPath？
 
 XPath（XML Path Language）是一套用"路径表达式"在 HTML/XML 文档树中定位节点的语言。它比 CSS 更强大：不仅能按标签、属性定位，还能**按文本内容定位**、**向上找父级/祖先**、**按位置/逻辑条件筛选**。
 
-### 在 WebRPA 中如何使用 XPath
+### 在 AutoFlow 中如何使用 XPath
 
 1. 在任意"元素选择器"输入框右上角，有一个 **CSS / XPath** 切换按钮
 2. 点击它即可在 **CSS 模式** 与 **XPath 模式** 之间切换（输入框为空时也能切换）
 3. 切到 XPath 模式后，直接粘贴或手写 XPath 表达式即可，例如 \`//button[text()="提交"]\`
 4. 底层会自动给值加上 \`xpath=\` 前缀（你无需手动输入前缀），执行引擎据此用 XPath 引擎定位
 
-> 小贴士：你也可以直接在 CSS 模式下粘贴以 \`/\` 或 \`//\` 开头的表达式，WebRPA 会自动识别为 XPath 并补全前缀，确保不会被当成 CSS 误解析。
+> 小贴士：你也可以直接在 CSS 模式下粘贴以 \`/\` 或 \`//\` 开头的表达式，AutoFlow 会自动识别为 XPath 并补全前缀，确保不会被当成 CSS 误解析。
 
 ### XPath 基础语法
 

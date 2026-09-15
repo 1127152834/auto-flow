@@ -290,7 +290,6 @@ export function CreateCustomModuleDialog({ open, onClose, editingModule }: Creat
                   <option value="工具">工具</option>
                   <option value="网页操作">网页操作</option>
                   <option value="文件操作">文件操作</option>
-                  <option value="数据库">数据库</option>
                   <option value="API">API</option>
                   <option value="邮件">邮件</option>
                   <option value="通知">通知</option>

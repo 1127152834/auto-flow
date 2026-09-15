@@ -1,9 +1,11 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-triggers.ts; see SOURCE.md for license and adaptation boundaries.
 export const triggersGuideContent = `# 触发器使用指南
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 ## 概述
 
-触发器模块允许工作流在特定条件满足时自动执行，实现真正的自动化。WebRPA提供了10种强大的触发器，覆盖各种自动化场景。
+触发器模块允许工作流在特定条件满足时自动执行，实现真正的自动化。AutoFlow提供了10种强大的触发器，覆盖各种自动化场景。
 
 ### 触发器工作流程
 
@@ -202,7 +204,7 @@ curl -X POST http://localhost:YOUR_PORT/api/triggers/webhook/your_id \\
 
 后续流程：
 1. 正则提取订单号（从 {{email_data.body}}）
-2. 查询数据库
+2. 请求业务接口
 3. 更新订单状态
 4. 发送确认邮件
 \`\`\`
@@ -346,9 +348,8 @@ curl -X POST http://localhost:YOUR_PORT/api/triggers/webhook/your_id \\
 - 保存到变量：mouse_position
 
 后续流程：
-1. 获取鼠标位置（{{mouse_position.x}}, {{mouse_position.y}}）
-2. 显示自定义菜单
-3. 执行对应操作
+1. 打印日志，记录触发事件
+2. 继续已配置的网页流程
 \`\`\`
 
 ### 示例2：右键手势打开网页

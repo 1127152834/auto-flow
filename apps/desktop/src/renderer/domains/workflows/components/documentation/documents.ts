@@ -12,7 +12,6 @@ import {
   Variable,
   Bug,
   Bell,
-  Server,
   Webhook,
   ClipboardCheck,
   Share2,
@@ -32,13 +31,13 @@ export const documents: DocumentItem[] = [
     id: 'getting-started',
     title: '快速入门',
     icon: Rocket,
-    description: '5分钟学会使用WebRPA',
+    description: '创建、配置和保存第一个流程',
   },
   {
     id: 'ai-assistant-guide',
     title: 'AI 小助手指南',
     icon: Bot,
-    description: '内置 AI 助手，自动操作 WebRPA、搭工作流、调配置',
+    description: 'AI 面板、画布操作与权限确认',
   },
   {
     id: 'browser-guide',
@@ -77,12 +76,6 @@ export const documents: DocumentItem[] = [
     description: '数学运算、统计分析、CSV处理、概率触发器',
   },
   {
-    id: 'database-guide',
-    title: '数据库操作',
-    icon: Server,
-    description: 'MySQL/PostgreSQL/SQLite/Redis 等数据库',
-  },
-  {
     id: 'network-guide',
     title: '网络请求与抓包',
     icon: Network,
@@ -107,16 +100,10 @@ export const documents: DocumentItem[] = [
     description: '创建和管理自定义模块，扩展功能',
   },
   {
-    id: 'plugin-dev-guide',
-    title: '插件市场与开发',
-    icon: Puzzle,
-    description: '开发/打包/上架插件，扩展特定网站场景的自动化能力',
-  },
-  {
     id: 'platform-guide',
     title: '平台能力',
     icon: Wrench,
-    description: '脚本/整包导出、加密凭据库、版本历史、留存清理',
+    description: '导出、凭据和远程存储配置',
   },
   {
     id: 'advanced-features',

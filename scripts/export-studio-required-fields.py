@@ -24,8 +24,8 @@ def extract():
     if found != names:
         raise ValueError('Frozen schema literal groups changed')
     retained = {entry['type'] for entry in json.loads(CAPABILITIES.read_text())}
-    if len(retained) != 284:
-        raise ValueError('Approved scope changed')
+    if len(retained) != 227:
+        raise ValueError(f'Approved 227-node scope changed: {len(retained)}')
     covered = sorted(retained & schemas.keys())
     result = {'schemaRevision': 'WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb', 'coveredModules': covered, 'requiredFields': {}, 'conditionalRequired': {}, 'fieldLabels': {}}
     for name in covered:

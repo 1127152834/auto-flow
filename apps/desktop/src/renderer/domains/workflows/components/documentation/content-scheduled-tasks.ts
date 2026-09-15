@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-scheduled-tasks.ts; see SOURCE.md for license and adaptation boundaries.
 export const scheduledTasksGuideContent = `# 计划任务系统
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 计划任务系统允许你自动化执行工作流，无需手动触发。
 
 ---
@@ -128,7 +130,7 @@ curl -X POST http://localhost:5241/api/scheduled-tasks/webhook/webhook/data-sync
 \`\`\`yaml
 监控路径: C:\\Downloads
 监控类型: 新建文件
-文件模式: *.xlsx
+文件模式: *.txt
 \`\`\`
 
 **监控类型**：
@@ -139,8 +141,8 @@ curl -X POST http://localhost:5241/api/scheduled-tasks/webhook/webhook/data-sync
 
 **文件模式**：
 \`\`\`
-*.xlsx          # 所有Excel文件
-report_*.pdf    # 以report_开头的PDF
+*.txt          # 所有文本文件
+report_*.csv    # 以report_开头的CSV
 **/*.txt        # 所有子文件夹中的txt文件
 \`\`\`
 
@@ -316,7 +318,7 @@ API地址: https://api.example.com/status
 \`\`\`
 
 **说明**：
-- WebRPA启动后自动执行
+- AutoFlow启动后自动执行
 - 可以设置延迟时间
 - 适合开机自启动场景
 
@@ -442,18 +444,6 @@ API地址: https://api.example.com/status
 4. 查看执行日志
 \`\`\`
 
-### 浏览器进程累积
-
-**解决方法**：
-\`\`\`
-已自动修复:
-- 执行完成后自动清理浏览器
-- 异常退出也会清理资源
-- 无需手动处理
-\`\`\`
-
----
-
 ## 实战案例
 
 ### 案例1：每日数据采集
@@ -467,14 +457,14 @@ Cron: 0 9 * * *  # 每天9:00
 无头模式: 是
 \`\`\`
 
-### 案例2：文件自动处理
+### 案例2：下载事件通知
 
 \`\`\`yaml
-任务名称: Excel自动处理
-工作流: excel-processor.json
+任务名称: 下载完成通知
+工作流: download-notification.json
 触发器: 文件监控
 监控路径: C:\\Downloads
-文件模式: *.xlsx
+文件模式: *.txt
 监控类型: 新建文件
 \`\`\`
 

@@ -11,9 +11,9 @@ import { Slider } from './controls/slider'
 import { Radio } from './controls/radio-group'
 import { useConfirm } from './controls/confirm-dialog'
 import { DialogPortal } from './controls/dialog-portal'
-import { useGlobalConfigStore, type BrowserType, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
-import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Database, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
-import { systemApi, browserApi, localWorkflowApi } from '../api'
+import { useGlobalConfigStore, type AIModelProfile, type AssistantScene } from '../hooks/stores/globalConfigStore'
+import { X, Settings, Brain, Mail, RotateCcw, Folder, Loader2, Monitor, Globe, Zap, Plus, Trash2, Bot, Check, Plug, Cpu, ShieldCheck, KeyRound, HardDrive, Download, Upload, AlertTriangle } from 'lucide-react'
+import { systemApi, localWorkflowApi } from '../api'
 import { aiAssistantApi } from '../api/aiAssistantApi'
 import { getBackendBaseUrl } from '../api/config'
 import { MCPConfigPanel } from './MCPConfigPanel'
@@ -117,15 +117,7 @@ interface GlobalConfigDialogProps {
   onClose: () => void
 }
 
-type TabType = 'system' | 'ai' | 'aiAssistant' | 'mcp' | 'aiScraper' | 'email' | 'workflow' | 'database' | 'display' | 'browser' | 'triggers' | 'security' | 'credentials' | 'retention'
-
-// 浏览器选项
-const browserOptions: { value: BrowserType; label: string; description: string }[] = [
-  { value: 'msedge', label: 'Microsoft Edge', description: '启动系统安装的 Edge 浏览器（非系统默认浏览器）' },
-  { value: 'chrome', label: 'Google Chrome', description: '启动系统安装的 Chrome 浏览器' },
-  { value: 'chromium', label: 'Chromium', description: '启动 Chromium 浏览器（开源版本）' },
-  { value: 'firefox', label: 'Firefox', description: '需要安装 Firefox 浏览器' },
-]
+type TabType = 'system' | 'ai' | 'aiAssistant' | 'mcp' | 'aiScraper' | 'email' | 'workflow' | 'display' | 'triggers' | 'security' | 'credentials' | 'retention'
 
 export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps) {
   const { 
@@ -140,9 +132,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
     updateFileTriggerConfig,
     updateWorkflowConfig,
     updateShortcuts, 
-    updateDatabaseConfig, 
     updateDisplayConfig, 
-    updateBrowserConfig, 
     resetConfig,
     importConfig,
     exportConfig,
@@ -167,14 +157,9 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
   useEffect(() => registerSettingsCloseHandler(() => isOpen ? leaveSettings(onClose) : Promise.resolve(true)), [isOpen, onClose, leaveSettings])
   const [defaultFolder, setDefaultFolder] = useState<string>('')
   const [isSelectingFolder, setIsSelectingFolder] = useState(false)
-  const [isSelectingBrowser, setIsSelectingBrowser] = useState(false)
-  const [showBrowserConfigTip, setShowBrowserConfigTip] = useState(false)
   // 小助手「测试连接」状态
   const [assistantTest, setAssistantTest] = useState<{ status: 'idle' | 'testing' | 'ok' | 'fail'; message: string; detail?: string; latency?: number }>({ status: 'idle', message: '' })
-  // 内置 Chromium 检测状态（用于提示浏览器扩展兜底是否生效）
-  const [chromiumStatus, setChromiumStatus] = useState<{ checked: boolean; available: boolean; path?: string }>({ checked: false, available: false })
   const { confirm, alert, ConfirmDialog } = useConfirm()
-  const browserConfigTipRef = useRef<HTMLDivElement>(null)
 
   // 获取默认文件夹路径
   useEffect(() => {
@@ -208,58 +193,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
       localWorkflowApi.setActiveFolder(latestFolderRef.current).catch(() => {})
     }
   }, [])
-
-  // 把「浏览器配置」同步到后端持久化，使计划任务/启动/热键/Webhook 触发等后端自治执行
-  // 也用用户选择的浏览器（Chrome/Chromium 等），而不是写死的 msedge。防抖 + 卸载兜底刷新。
-  const latestBrowserRef = useRef(config.browser)
-  useEffect(() => {
-    latestBrowserRef.current = config.browser
-    const b = config.browser
-    if (!b) return
-    const t = setTimeout(() => {
-      systemApi.setBrowserConfig(b as unknown as Record<string, unknown>).catch(() => {})
-    }, 500)
-    return () => clearTimeout(t)
-  }, [config.browser])
-  useEffect(() => {
-    return () => {
-      if (latestBrowserRef.current) {
-        systemApi.setBrowserConfig(latestBrowserRef.current as unknown as Record<string, unknown>).catch(() => {})
-      }
-    }
-  }, [])
-
-  // 当配置了浏览器扩展目录时，检测内置 Chromium 是否可用（决定扩展兜底能否生效）
-  useEffect(() => {
-    const hasDirs = !!(config.browser?.extensionDirs || '').trim()
-    if (!isOpen || !hasDirs) {
-      setChromiumStatus({ checked: false, available: false })
-      return
-    }
-    let cancelled = false
-    browserApi.chromiumStatus()
-      .then((data: any) => {
-        if (cancelled) return
-        setChromiumStatus({ checked: true, available: !!data?.available, path: data?.path })
-      })
-      .catch(() => {
-        if (!cancelled) setChromiumStatus({ checked: true, available: false })
-      })
-    return () => { cancelled = true }
-  }, [isOpen, config.browser?.extensionDirs])
-
-  // 当提示框显示时，自动滚动到提示框位置
-  useEffect(() => {
-    if (showBrowserConfigTip && browserConfigTipRef.current) {
-      // 使用 setTimeout 确保 DOM 已更新
-      setTimeout(() => {
-        browserConfigTipRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'nearest' 
-        })
-      }, 100)
-    }
-  }, [showBrowserConfigTip])
 
   if (!isOpen) return null
 
@@ -329,10 +262,9 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
       if (!ok) return
       const success = importConfig(data)
       if (success) {
-        // 显式兜底同步到后端（浏览器配置 / 工作流文件夹），确保计划任务等后端自治执行立即用上新配置
+        // 显式兜底同步工作流文件夹；浏览器内核及 Profile 由 AutoFlow 管理端负责。
         try {
           const cfg = useGlobalConfigStore.getState().config
-          if (cfg.browser) systemApi.setBrowserConfig(cfg.browser as unknown as Record<string, unknown>).catch(() => {})
           localWorkflowApi.setActiveFolder(cfg.workflow?.localFolder || '').catch(() => {})
         } catch { /* ignore */ }
         await alert('配置导入成功，已应用。若部分设置未即时生效，可刷新页面。', { title: '导入完成' })
@@ -360,9 +292,7 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
     { id: 'aiScraper',   label: 'AI智能',   Icon: Brain,          accent: 'violet'  },
     { id: 'email',       label: '邮件',     Icon: Mail,           accent: 'info'    },
     { id: 'workflow',    label: '存储',     Icon: Folder,         accent: 'warning' },
-    { id: 'database',    label: '数据库',   Icon: Database,       accent: 'teal'    },
     { id: 'display',     label: '显示',     Icon: Monitor,        accent: 'slate'   },
-    { id: 'browser',     label: '浏览器',   Icon: Globe,          accent: 'success' },
     { id: 'triggers',    label: '触发器',   Icon: Zap,            accent: 'amber'   },
     { id: 'security',    label: '安全',     Icon: ShieldCheck,    accent: 'success' },
     { id: 'credentials', label: '凭据库',   Icon: KeyRound,       accent: 'warning' },
@@ -1270,74 +1200,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
             </>
           )}
 
-          {activeTab === 'database' && (
-            <>
-              <p className="text-xs text-gray-500 mb-4">
-                配置数据库模块的默认连接信息，新建模块时将自动填充这些配置
-              </p>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-gray-700">主机地址</Label>
-                    <Input
-                      value={config.database?.host || 'localhost'}
-                      onChange={(e) => updateDatabaseConfig({ host: e.target.value })}
-                      placeholder="localhost"
-                      className="bg-white text-black border-gray-300"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-700">端口</Label>
-                    <Input
-                      type="number"
-                      value={config.database?.port || 3306}
-                      onChange={(e) => updateDatabaseConfig({ port: parseInt(e.target.value) || 3306 })}
-                      placeholder="3306"
-                      className="bg-white text-black border-gray-300"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">用户名</Label>
-                  <Input
-                    value={config.database?.user || ''}
-                    onChange={(e) => updateDatabaseConfig({ user: e.target.value })}
-                    placeholder="root"
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">密码</Label>
-                  <Input
-                    type="password"
-                    value={config.database?.password || ''}
-                    onChange={(e) => updateDatabaseConfig({ password: e.target.value })}
-                    placeholder="数据库密码"
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">数据库名</Label>
-                  <Input
-                    value={config.database?.database || ''}
-                    onChange={(e) => updateDatabaseConfig({ database: e.target.value })}
-                    placeholder="默认数据库名（可选）"
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">字符集</Label>
-                  <Input
-                    value={config.database?.charset || 'utf8mb4'}
-                    onChange={(e) => updateDatabaseConfig({ charset: e.target.value })}
-                    placeholder="utf8mb4"
-                    className="bg-white text-black border-gray-300"
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
           {activeTab === 'display' && (
             <>
               <p className="text-xs text-gray-500 mb-4">
@@ -1435,367 +1297,6 @@ export function GlobalConfigDialog({ isOpen, onClose }: GlobalConfigDialogProps)
                     </Button>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === 'browser' && (
-            <>
-              <p className="text-xs text-gray-500 mb-4">
-                配置浏览器自动化使用的浏览器类型，修改后需要重新打开浏览器才能生效
-              </p>
-              
-              {/* 登录状态持久化提示 */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-blue-900 mb-2">关于登录状态持久化</p>
-                    <div className="text-xs text-blue-800 space-y-1.5">
-                      <p>• <strong>使用默认浏览器（推荐）：</strong>登录状态会自动保存，下次运行工作流时无需重新登录</p>
-                      <p>• <strong>使用自定义浏览器路径：</strong>由于技术限制，登录状态无法持久化保存，每次运行都需要重新登录</p>
-                      <p className="pt-1 text-blue-700">如需保持登录状态，建议使用默认的 Microsoft Edge 浏览器（不指定自定义路径）</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-                <p className="text-xs text-amber-800">
-                  <strong>重要提示：</strong>浏览器类型选项会启动对应的浏览器程序，而不是系统默认浏览器。
-                  例如选择"Microsoft Edge"会启动系统安装的 Edge 浏览器，即使您的系统默认浏览器是 Chrome。
-                  如果选择的浏览器未安装或路径不正确，请使用"自定义浏览器路径"手动指定。
-                </p>
-              </div>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-gray-700">浏览器类型</Label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {browserOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                          (config.browser?.type || 'msedge') === option.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        <Radio
-                          value={option.value}
-                          checked={(config.browser?.type || 'msedge') === option.value}
-                          onSelect={() => updateBrowserConfig({ type: option.value as BrowserType })}
-                          dotOnly
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-700">{option.label}</div>
-                          <div className="text-xs text-gray-500">{option.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-gray-700">自定义浏览器路径（可选）</Label>
-                  <div className="flex gap-1">
-                    <Input
-                      value={config.browser?.executablePath || ''}
-                      onChange={(e) => updateBrowserConfig({ executablePath: e.target.value })}
-                      placeholder="留空则使用系统默认路径"
-                      className="bg-white text-black border-gray-300 flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      disabled={isSelectingBrowser}
-                      className="shrink-0 border-gray-300"
-                      onClick={async () => {
-                        setIsSelectingBrowser(true)
-                        try {
-                          // fileTypes 格式: [["描述", "*.扩展名"], ...]
-                          const result = await systemApi.selectFile('选择浏览器可执行文件', undefined, [
-                            ['可执行文件', '*.exe']
-                          ])
-                          if (result.data?.success && result.data.path) {
-                            updateBrowserConfig({ executablePath: result.data.path })
-                          }
-                        } catch (error) {
-                          console.error('选择文件失败:', error)
-                        } finally {
-                          setIsSelectingBrowser(false)
-                        }
-                      }}
-                    >
-                      {isSelectingBrowser ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Folder className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    如果选择的浏览器类型无法启动，可以手动指定浏览器可执行文件的路径
-                  </p>
-                </div>
-                {config.browser?.executablePath && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                    onClick={() => updateBrowserConfig({ executablePath: '' })}
-                  >
-                    清除自定义路径
-                  </Button>
-                )}
-                <div className="space-y-2">
-                  <Label className="text-gray-700">浏览器数据缓存目录（可选）</Label>
-                  <div className="flex gap-1">
-                    <Input
-                      value={config.browser?.userDataDir || ''}
-                      onChange={(e) => updateBrowserConfig({ userDataDir: e.target.value })}
-                      placeholder="留空则使用默认目录：backend/browser_data"
-                      className="bg-white text-black border-gray-300 flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      disabled={isSelectingFolder}
-                      className="shrink-0 border-gray-300"
-                      onClick={async () => {
-                        setIsSelectingFolder(true)
-                        try {
-                          const result = await systemApi.selectFolder('选择浏览器数据缓存目录')
-                          if (result.data?.success && result.data.path) {
-                            updateBrowserConfig({ userDataDir: result.data.path })
-                          }
-                        } catch (error) {
-                          console.error('选择文件夹失败:', error)
-                        } finally {
-                          setIsSelectingFolder(false)
-                        }
-                      }}
-                    >
-                      {isSelectingFolder ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Folder className="w-4 h-4" />
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    默认使用 backend/browser_data 目录存储浏览器数据（Cookie、缓存、登录状态等）。如需自定义存储位置或多项目共享数据，可在此指定
-                  </p>
-                </div>
-                {config.browser?.userDataDir && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                    onClick={() => updateBrowserConfig({ userDataDir: '' })}
-                  >
-                    恢复默认目录
-                  </Button>
-                )}
-                
-                {/* 浏览器启动参数配置 */}
-                <div className="space-y-2">
-                  <Label className="text-gray-700">浏览器启动参数</Label>
-                  <textarea
-                    value={config.browser?.launchArgs || ''}
-                    onChange={(e) => updateBrowserConfig({ launchArgs: e.target.value })}
-                    placeholder="每行一个启动参数，例如：&#10;--disable-blink-features=AutomationControlled&#10;--start-maximized"
-                    rows={8}
-                    className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black resize-none"
-                  />
-                  <p className="text-xs text-gray-500">
-                    每行一个参数，留空则使用默认参数。常用参数：
-                  </p>
-                  <div className="text-xs text-gray-600 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div><code className="bg-gray-200 px-1 rounded">--disable-blink-features=AutomationControlled</code> - 隐藏自动化特征</div>
-                    <div><code className="bg-gray-200 px-1 rounded">--start-maximized</code> - 最大化启动</div>
-                    <div><code className="bg-gray-200 px-1 rounded">--ignore-certificate-errors</code> - 忽略证书错误</div>
-                    <div><code className="bg-gray-200 px-1 rounded">--disable-web-security</code> - 禁用Web安全策略</div>
-                    <div><code className="bg-gray-200 px-1 rounded">--disable-notifications</code> - 禁用通知</div>
-                  </div>
-                </div>
-                {config.browser?.launchArgs && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-100"
-                    onClick={() => updateBrowserConfig({ 
-                      launchArgs: `--disable-blink-features=AutomationControlled
---start-maximized
---ignore-certificate-errors
---ignore-ssl-errors
---disable-web-security
---disable-features=IsolateOrigins,site-per-process
---allow-running-insecure-content
---disable-infobars
---disable-notifications` 
-                    })}
-                  >
-                    恢复默认启动参数
-                  </Button>
-                )}
-
-                {/* 浏览器扩展目录配置 */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-gray-700">浏览器扩展目录</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={isSelectingFolder}
-                      className="border-gray-300 text-gray-700 h-7 px-2 text-xs"
-                      onClick={async () => {
-                        setIsSelectingFolder(true)
-                        try {
-                          const result = await systemApi.selectFolder('选择浏览器扩展目录（含 manifest.json）')
-                          if (result.data?.success && result.data.path) {
-                            const picked = result.data.path
-                            const cur = (config.browser?.extensionDirs || '').replace(/\s+$/, '')
-                            const lines = cur ? cur.split('\n').map((l) => l.trim()).filter(Boolean) : []
-                            if (!lines.includes(picked)) {
-                              lines.push(picked)
-                            }
-                            updateBrowserConfig({ extensionDirs: lines.join('\n') })
-                          }
-                        } catch (error) {
-                          console.error('选择文件夹失败:', error)
-                        } finally {
-                          setIsSelectingFolder(false)
-                        }
-                      }}
-                    >
-                      {isSelectingFolder ? (
-                        <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                      ) : (
-                        <Folder className="w-3.5 h-3.5 mr-1" />
-                      )}
-                      选择文件夹添加
-                    </Button>
-                  </div>
-                  <textarea
-                    value={config.browser?.extensionDirs || ''}
-                    onChange={(e) => updateBrowserConfig({ extensionDirs: e.target.value })}
-                    placeholder="每行一个已解压的扩展目录（含 manifest.json 的文件夹），留空则不加载扩展"
-                    rows={4}
-                    className="w-full px-3 py-2 text-sm font-mono border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black resize-none"
-                  />
-                  <div className="text-xs text-gray-600 space-y-1 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                    <div>每行填写一个已解压的扩展目录（含 manifest.json 的文件夹），留空则不加载扩展。</div>
-                    <div>仅支持解压后的扩展，不支持从应用商店或 .crx 在线安装。</div>
-                    <div>仅在有头模式下生效，重新点击打开浏览器后应用。</div>
-                    <div>扩展会直接加载到上方「浏览器」里选择的浏览器（Edge/Chrome），并保留你的登录态。</div>
-                  </div>
-                  {chromiumStatus.checked && (
-                    chromiumStatus.available ? (
-                      <div className="flex items-start gap-2 text-xs text-green-700 bg-green-50 p-2.5 rounded-lg border border-green-200">
-                        <Check className="w-4 h-4 mt-0.5 shrink-0" />
-                        <span>已检测到内置 Chromium，可作为扩展加载异常时的备用浏览器。</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-                        <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0" />
-                        <span>可选：如个别浏览器版本无法加载扩展，可在项目目录运行「Python313\python.exe -m playwright install chromium」启用内置 Chromium 作为备用。</span>
-                      </div>
-                    )
-                  )}
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div>
-                    <Label className="text-gray-700 font-medium">窗口最大化启动</Label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      开启后浏览器将以最大化窗口启动（占满整个屏幕）
-                    </p>
-                  </div>
-                  <Switch
-                    checked={config.browser?.fullscreen ?? false}
-                    onCheckedChange={(c) => updateBrowserConfig({ fullscreen: c })}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div>
-                    <Label className="text-gray-700 font-medium">工作流结束后自动关闭浏览器</Label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      开启后工作流执行完成时将自动关闭浏览器窗口
-                    </p>
-                  </div>
-                  <Switch
-                    checked={config.browser?.autoCloseBrowser ?? true}
-                    onCheckedChange={(c) => {
-                      console.log('[GlobalConfig] 切换 autoCloseBrowser:', c)
-                      updateBrowserConfig({ autoCloseBrowser: c })
-                      setShowBrowserConfigTip(true)
-                      // 立即验证更新
-                      setTimeout(() => {
-                        const newConfig = useGlobalConfigStore.getState().config
-                        console.log('[GlobalConfig] 更新后的配置:', newConfig.browser?.autoCloseBrowser)
-                      }, 100)
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div>
-                    <Label className="text-gray-700 font-medium">自动复制选择器到剪贴板</Label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      开启后，在自动化浏览器里选择元素（单选或相似元素）时，自动把提取到的选择器复制到剪贴板
-                    </p>
-                  </div>
-                  <Switch
-                    checked={config.browser?.autoCopySelector ?? true}
-                    onCheckedChange={(c) => updateBrowserConfig({ autoCopySelector: c })}
-                  />
-                </div>
-                
-                {/* 浏览器配置更改提示 */}
-                {showBrowserConfigTip && (
-                  <div 
-                    ref={browserConfigTipRef}
-                    className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-fade-in"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-blue-900 mb-1">配置已保存</p>
-                        <p className="text-xs text-blue-700 mb-3">
-                          浏览器配置已更新。如果配置未立即生效，请刷新页面后重试。
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={() => {
-                              window.location.reload()
-                            }}
-                          >
-                            立即刷新
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs border-blue-300 text-blue-700 hover:bg-blue-100"
-                            onClick={() => setShowBrowserConfigTip(false)}
-                          >
-                            我知道了
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           )}

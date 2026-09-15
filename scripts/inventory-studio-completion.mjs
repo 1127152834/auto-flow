@@ -23,7 +23,7 @@ walk(sidebar,node=>{
 })
 if(!categories || !excluded || !extra)throw Error('Catalog structure changed; inventory cannot silently skip it')
 const retained=categories.filter(c=>!excluded.has(c.name)).flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-if(retained.length!==284 || new Set(retained.map(n=>n.type)).size!==284)throw Error('Approved 284-node scope changed')
+if(retained.length!==227 || new Set(retained.map(n=>n.type)).size!==227)throw Error('Approved 227-node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
 files.push(`${domain}/components/ConfigPanel.tsx`,`${domain}/editor-store.ts`)
 const evidence=new Map(retained.map(n=>[n.type,[]]))
@@ -153,13 +153,24 @@ const scenarios=[
  ['tools','逐个打开本节点配套工具，覆盖成功/空/失败/取消和迟到结果','正确结果可应用，取消/过期不写回','工具上下文和请求身份匹配'],
 ]
 const verified=JSON.parse(fs.readFileSync(path.join(out,'verified-cases.json'),'utf8'))
+const sharedAdvancedCase=verified.find(row=>row.id==='F2.ADV.shared' && ['通过','已实现且已验收'].includes(row.status))
+const previousCapabilitiesPath=path.join(out,'capabilities.json')
+const previousCapabilities=fs.existsSync(previousCapabilitiesPath)?JSON.parse(fs.readFileSync(previousCapabilitiesPath,'utf8')):[]
+const previousById=new Map(previousCapabilities.map(row=>[row.id,row]))
 const capabilities=retained.map(n=>{
-  const cases=verified.filter(row=>row.status==='通过' && (row.capability===`node:${n.type}` || row.preconditions?.nodeType===n.type))
-  return {...n,id:`node:${n.type}`,status:'缺验收',deliveryBlock:'F2.2',differenceClass:'原版功能迁入',
+  const id=`node:${n.type}`
+  const previous=previousById.get(id)
+  const cases=verified.filter(row=>['通过','已实现且已验收'].includes(row.status) && (row.capability===id || row.preconditions?.nodeType===n.type))
+  if(sharedAdvancedCase)cases.push(sharedAdvancedCase)
+  const supplementalEvidence=(previous?.evidence??[]).filter(item=>typeof item==='string')
+  return {...n,id,status:previous?.status??'缺验收',deliveryBlock:'F2.2',differenceClass:'原版功能迁入',
     verifiedCases:cases.map(row=>({id:row.id,status:'已实现且已验收',level:row.level,evidencePath:row.evidencePath})),
-    remaining:[{id:`NODE.${n.type}.field-map-and-unique-branches`,status:'缺验收',reason:'注册与默认创建往返已有证据；仅核销 verifiedCases 中已实际验证的字段，剩余独有字段/分支与工具接入尚未逐项核销，不能推定无缺实现'}],
-    evidence:evidence.get(n.type),toolDependencies:dependencies(n.type),
-    reviewRequired:'仅使用既有证据核销；AST 仅提供源码位置，不能自动证明字段行为。共享规则集中验证，各节点验证接入及独有分支。'}
+    remaining:previous?.remaining??[{id:`NODE.${n.type}.field-map-and-unique-branches`,status:'缺验收',reason:'注册与默认创建往返已有证据；仅核销 verifiedCases 中已实际验证的字段，剩余独有字段/分支与工具接入尚未逐项核销，不能推定无缺实现'}],
+    evidence:[...evidence.get(n.type),...supplementalEvidence.filter((item,index)=>supplementalEvidence.indexOf(item)===index)],toolDependencies:dependencies(n.type),
+    reviewRequired:'仅使用既有证据核销；AST 仅提供源码位置，不能自动证明字段行为。共享规则集中验证，各节点验证接入及独有分支。',
+    ...(previous?.fieldVerification?{fieldVerification:previous.fieldVerification}:{}),
+    ...(previous?.remainingDetails?{remainingDetails:previous.remainingDetails}:{}),
+  }
 })
 const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
 fs.mkdirSync(out,{recursive:true})

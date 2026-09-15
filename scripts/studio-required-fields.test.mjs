@@ -11,9 +11,12 @@ test('coverage accounts for every retained node and excludes removed nodes',()=>
  const read=path=>JSON.parse(fs.readFileSync(new URL(path,root),'utf8'))
  const coverage=read('docs/migration/studio-frontend-completion/required-field-source-coverage.json')
  const retained=read('docs/migration/studio-frontend-completion/capabilities.json').map(x=>x.type)
- assert.equal(coverage.coveredCount,69);assert.equal(coverage.uncovered.length,215)
+ assert.equal(coverage.approvedCount,227);assert.equal(coverage.coveredCount,69);assert.equal(coverage.uncovered.length,158)
  assert.deepEqual([...coverage.covered,...coverage.uncovered].sort(),retained.sort())
  const data=read('apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json')
  for(const map of [data.requiredFields,data.conditionalRequired,data.fieldLabels])assert.ok(Object.keys(map).every(key=>coverage.covered.includes(key)))
- assert.ok(!data.coveredModules.includes('real_keyboard'))
+ for(const removed of ['real_keyboard','db_connect','mongodb_connect','postgresql_connect','redis_connect','sqlite_connect','sqlserver_connect','oracle_connect','dp_open_page']){
+  assert.ok(!retained.includes(removed),`${removed} must stay outside the approved Studio scope`)
+  assert.ok(!data.coveredModules.includes(removed),`${removed} must stay outside required-field metadata`)
+ }
 })

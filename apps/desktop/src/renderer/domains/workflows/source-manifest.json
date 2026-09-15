@@ -695,11 +695,6 @@
     "sha256": "d689d98980c3efacd2103efddaef7bf32d90db8c34d2d81275874e42ad24eb09"
   },
   {
-    "source": "frontend/src/components/workflow/documentation/content-database.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.ts",
-    "sha256": "37c6ceb739e24e624085d822e4f322fb6a90fcda114e10fda3a7095f9b80792c"
-  },
-  {
     "source": "frontend/src/components/workflow/documentation/types.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/types.ts",
     "sha256": "b616e0a1a8010c3ec435c8a3de94378ba625c396005f74d4e76f154811c9a441"
@@ -708,11 +703,6 @@
     "source": "frontend/src/components/workflow/documentation/content-network.ts",
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-network.ts",
     "sha256": "e1ee4eda9cc6d1392681f889cec4ebfedfdcab06a82adddf462a402fc43519ca"
-  },
-  {
-    "source": "frontend/src/components/workflow/documentation/content-plugin-dev.ts",
-    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.ts",
-    "sha256": "ab99abb911f03131675cda61b593a6d653a605fb1d32e4bf88dfe6a5d38623df"
   },
   {
     "source": "frontend/src/components/workflow/documentation/MarkdownRenderer.tsx",

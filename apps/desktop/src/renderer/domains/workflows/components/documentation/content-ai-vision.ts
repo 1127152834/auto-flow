@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-ai-vision.ts; see SOURCE.md for license and adaptation boundaries.
 export const aiVisionGuideContent = `# AI 识别与计算机视觉
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 本章介绍 OCR 文字识别、验证码识别、人脸识别，以及 AI 智能爬虫模块。
 
 ---
@@ -139,7 +141,6 @@ Firecrawl 是专业的 AI 爬虫服务，支持 JS 渲染、智能内容提取�
 
 ## 使用技巧
 
-- **OCR 预处理**：对图片先做「图像锐化」再 OCR，可提高准确率
 - **验证码重试**：识别失败时刷新验证码重试（条件判断 + 循环）
 - **人脸识别阈值**：一般设 0.5-0.6，过小会误判，过大会漏判
 - **AI 爬虫提示词**：提示词越具体效果越好，如「提取 li 标签中的商品名称文字」

@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-basic.ts; see SOURCE.md for license and adaptation boundaries.
 export const basicModulesContent = `# 基础模块详解
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 本章详细介绍所有基础模块的功能和配置方法。
 
 ---

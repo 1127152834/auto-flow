@@ -321,6 +321,7 @@ const sourceModuleCategories = [
 ]
 // AutoFlow currently exposes Web automation; retain source definitions for imported documents.
 const excludedCategories = new Set([
+  'DP 反检测自动化', '数据库',
   '鼠标操作', '键盘操作', '图像识别与点击', '屏幕与录制', '桌面应用控制', '手机自动化', 'SAP自动化',
   'Excel自动化', '文件管理', 'Word自动化', 'PDF处理', '文档转换', '文件对比',
   '图像编辑', '盲水印', '视频处理', '音频处理', '媒体格式转换', '媒体播放',

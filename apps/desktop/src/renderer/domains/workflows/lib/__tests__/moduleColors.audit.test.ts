@@ -231,7 +231,8 @@ describe('模块配色三处同源审计 - module-integrity-audit Property 7', (
     }
 
     // 防空跑：分类清单为空或解析异常时，上面的循环不会报错却什么也没测。
-    expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(284)
+    // 用户追加排除48个数据库及9个DP节点；保留严格数量与逐项配色断言。
+    expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(227)
     expect(
       mismatches,
       `存在三处取色不同源的模块：\n${JSON.stringify(mismatches, null, 2)}`,

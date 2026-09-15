@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-debug.ts; see SOURCE.md for license and adaptation boundaries.
 export const debugGuideContent = `# 调试与错误处理
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 本章介绍如何调试工作流、处理错误和优化性能。
 
 ---

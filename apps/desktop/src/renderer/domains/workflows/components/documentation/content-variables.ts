@@ -1,13 +1,15 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-variables.ts; see SOURCE.md for license and adaptation boundaries.
 export const variablesGuideContent = `# 变量系统详解
 
-本章深入讲解 WebRPA 的变量系统，包括变量类型、作用域、引用方式等。
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
+本章深入讲解 AutoFlow 的变量系统，包括变量类型、作用域、引用方式等。
 
 ---
 
 ## 模块内置变量
 
-WebRPA 为常见模块自动定义了默认变量名，创建模块时会自动添加到变量补全列表。
+AutoFlow 为常见模块自动定义了默认变量名，创建模块时会自动添加到变量补全列表。
 
 ### 常见模块的默认变量
 
@@ -33,11 +35,6 @@ WebRPA 为常见模块自动定义了默认变量名，创建模块时会自动�
 - \`ocr_captcha\` -> \`captcha_text\`（验证码文本）
 - \`image_ocr\` -> \`ocr_text\`（OCR文本）
 - \`face_recognition\` -> \`face_match_result\`（人脸匹配结果）
-
-**数据库模块：**
-- \`db_query\` -> \`query_result\`（查询结果）
-- \`db_insert\` -> \`insert_result\`（插入结果）
-- \`db_update\` -> \`update_result\`（更新结果）
 
 ### 变量补全功能
 
@@ -70,7 +67,7 @@ WebRPA 为常见模块自动定义了默认变量名，创建模块时会自动�
 
 ## 变量类型
 
-WebRPA 支持 5 种变量类型：
+AutoFlow 支持 5 种变量类型：
 
 ### 1. 字符串（String）
 

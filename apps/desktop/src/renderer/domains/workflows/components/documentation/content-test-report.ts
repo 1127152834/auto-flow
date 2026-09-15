@@ -1,5 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-test-report.ts; see SOURCE.md for license and adaptation boundaries.
 export const testReportContent = `
+
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 # 测试报告模块
 
 测试报告模块基于 Allure 框架，帮助你生成专业的测试报告，记录工作流执行过程，分析测试结果。
@@ -118,7 +121,7 @@ export const testReportContent = `
 **常见用法：**
 \`\`\`
 1. 截图后添加附件：
-   屏幕截图 -> 添加附件
+   网页截图 -> 添加附件
 
 2. 保存日志文件：
    导出日志 -> 添加附件
@@ -214,7 +217,7 @@ export const testReportContent = `
    - 选择器：#password
    - 文本：123456
 
-9. 屏幕截图
+9. 网页截图
    - 保存路径：./screenshots/before-login.png
 
 10. 添加附件
@@ -246,7 +249,7 @@ export const testReportContent = `
         17. 添加测试步骤
             - 步骤名称：登录失败
             - 步骤状态：失败
-        18. 屏幕截图
+        18. 网页截图
             - 保存路径：./screenshots/login-failed.png
         19. 添加附件
             - 文件路径：./screenshots/login-failed.png

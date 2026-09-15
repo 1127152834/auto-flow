@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-notifications.ts; see SOURCE.md for license and adaptation boundaries.
 export const notificationsGuideContent = `# 消息通知与交互
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 本章介绍各种消息通知和用户交互功能。
 
 ---
@@ -160,7 +162,7 @@ export const notificationsGuideContent = `# 消息通知与交互
 用户输入：
   标题：搜索关键词
   提示：请输入要搜索的关键词
-  默认值：WebRPA
+  默认值：AutoFlow
   保存到：关键词
 
 打开网页：https://www.baidu.com/s?wd={关键词}
@@ -203,7 +205,7 @@ export const notificationsGuideContent = `# 消息通知与交互
 ### 邮件模板示例
 
 \`\`\`
-主题：【WebRPA】{任务名称} 执行完成
+主题：【AutoFlow】{任务名称} 执行完成
 
 内容：
 您好！
@@ -218,7 +220,7 @@ export const notificationsGuideContent = `# 消息通知与交互
 详细数据请查看附件或登录系统查看。
 
 ---
-此邮件由 WebRPA 自动发送
+此邮件由 AutoFlow 自动发送
 \`\`\`
 
 ---
@@ -291,7 +293,7 @@ API请求：
   请求体：{
     "msgtype": "text",
     "text": {
-      "content": "WebRPA 通知：{消息内容}"
+      "content": "AutoFlow 通知：{消息内容}"
     }
   }
 \`\`\`

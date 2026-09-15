@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-network.ts; see SOURCE.md for license and adaptation boundaries.
 export const networkGuideContent = `# 网络请求与抓包
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 本章介绍 HTTP 请求、Webhook 请求、网络抓包等网络相关模块。
 
 ---
@@ -65,7 +67,7 @@ HTTP请求 -> 方法: POST
 | SMTP 服务器 | 邮件服务器地址 | \`smtp.qq.com\` |
 | 端口 | SMTP 端口 | \`465\` |
 | 收件人 | 逗号分隔多个收件人 | \`a@qq.com,b@qq.com\` |
-| 主题 | 邮件标题 | \`WebRPA 任务完成通知\` |
+| 主题 | 邮件标题 | \`AutoFlow 任务完成通知\` |
 | 内容 | 邮件正文（支持 HTML） | \`任务已完成，共采集 {count} 条数据。\` |
 | 附件路径 | 要附带的文件路径（可选） | \`C:\\report.xlsx\` |
 

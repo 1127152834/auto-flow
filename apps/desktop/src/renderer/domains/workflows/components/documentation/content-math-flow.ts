@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-math-flow.ts; see SOURCE.md for license and adaptation boundaries.
 export const mathFlowGuideContent = `# 数学统计与 CSV 处理
 
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
 ---
 
 ## 数学运算
@@ -84,9 +86,9 @@ flowchart TD
 | 是否有标题行 | 第一行是否为列名 | 是 |
 | 结果变量 | 解析后的数据（列表或字典列表） | \`csv_data\` |
 
-**示例**（读取并处理 CSV 文件）：
+**示例**（解析已有 CSV 文本）：
 \`\`\`
-读取文本文件 -> 路径: data.csv -> 结果变量: raw_csv
+设置变量 -> 名称: raw_csv -> 值: 已准备的 CSV 文本
 CSV解析 -> 内容: {raw_csv}, 有标题行: 是 -> 结果变量: rows
 遍历列表 -> 列表: {rows}, 项变量: row
   └── 打印日志 -> 名称: {row["name"]}, 年龄: {row["age"]}

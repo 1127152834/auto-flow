@@ -490,5 +490,17 @@
     "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-desktop.ts",
     "sha256": "c9e47309860ce94275a4576c63ee0560990dd7c15b42b81efa53cbabe9f7f035",
     "reason": "2026-09-14 F0.2：已排除节点的专属中文教学文档，保留共享指南"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-plugin-dev.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-plugin-dev.ts",
+    "sha256": "ab99abb911f03131675cda61b593a6d653a605fb1d32e4bf88dfe6a5d38623df",
+    "reason": "教学范围清理：插件市场、发布与开发入口未保留"
+  },
+  {
+    "source": "frontend/src/components/workflow/documentation/content-database.ts",
+    "target": "apps/desktop/src/renderer/domains/workflows/components/documentation/content-database.ts",
+    "sha256": "37c6ceb739e24e624085d822e4f322fb6a90fcda114e10fda3a7095f9b80792c",
+    "reason": "2026-09-15 范围调整：Studio 排除数据库节点及其专属中文教学文档"
   }
 ]

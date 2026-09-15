@@ -1,7 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-utils.ts; see SOURCE.md for license and adaptation boundaries.
 export const utilsGuideContent = `# 实用工具
 
-本章介绍 WebRPA 提供的各类实用工具模块，包括文件对比、加密、编码、颜色转换、UUID、打印等。
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
+本章介绍 AutoFlow 提供的各类实用工具模块，包括文件对比、加密、编码、颜色转换、UUID、打印等。
 
 ---
 
@@ -14,7 +16,7 @@ export const utilsGuideContent = `# 实用工具
 | 参数 | 说明 | 示例 |
 |------|------|------|
 | 输入类型 | 字符串 / 文件 | 字符串 |
-| 输入内容 | 要计算的文字或文件路径 | \`Hello WebRPA\` |
+| 输入内容 | 要计算的文字或文件路径 | \`Hello AutoFlow\` |
 | 大写输出 | 是否输出大写哈希值 | 否 |
 | 结果变量 | 保存 MD5 值 | \`md5_hash\` |
 

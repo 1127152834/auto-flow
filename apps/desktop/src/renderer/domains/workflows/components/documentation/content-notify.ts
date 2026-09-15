@@ -1,7 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-notify.ts; see SOURCE.md for license and adaptation boundaries.
 export const notifyGuideContent = `# 多渠道通知
 
-本章介绍 WebRPA 支持的 16 种通知渠道，让工作流在完成、出错或达到特定条件时，自动向你发送通知。
+> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+
+本章介绍 AutoFlow 支持的 16 种通知渠道，让工作流在完成、出错或达到特定条件时，自动向你发送通知。
 
 ---
 
@@ -44,7 +46,7 @@ export const notifyGuideContent = `# 多渠道通知
 |------|------|------|
 | Webhook URL | Discord Webhook 地址 | \`https://discord.com/api/webhooks/...\` |
 | 消息内容 | 要发送的文字 | \`任务完成！\` |
-| 用户名 | 机器人显示名称（可选） | \`WebRPA Bot\` |
+| 用户名 | 机器人显示名称（可选） | \`AutoFlow Bot\` |
 | 头像 URL | 机器人头像（可选） | \`https://...\` |
 
 ---
@@ -122,7 +124,7 @@ iOS 设备专用推送，需先安装 Bark App。
 | 参数 | 说明 | 示例 |
 |------|------|------|
 | Bark URL | App 中显示的推送地址 | \`https://api.day.app/你的KEY/\` |
-| 标题 | 通知标题 | \`WebRPA 通知\` |
+| 标题 | 通知标题 | \`AutoFlow 通知\` |
 | 消息内容 | 正文 | \`任务已完成\` |
 | 声音 | 通知音效名称 | \`alarm\` |
 | 跳转链接 | 点击通知后跳转的 URL | \`https://...\` |
@@ -199,7 +201,7 @@ iOS 设备专用推送，需先安装 Bark App。
 | 服务器地址 | Ntfy 服务器 URL | \`https://ntfy.sh\` |
 | 主题名称 | 订阅的 topic | \`my-webrpa-alerts\` |
 | 消息内容 | 正文 | \`任务完成\` |
-| 标题 | 通知标题（可选） | \`WebRPA\` |
+| 标题 | 通知标题（可选） | \`AutoFlow\` |
 | 优先级 | 1-5（5最高） | \`3\` |
 
 ---
