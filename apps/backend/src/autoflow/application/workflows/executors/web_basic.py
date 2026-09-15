@@ -533,15 +533,15 @@ class InjectJavaScriptExecutor(ModuleExecutor):
                     success=False, error=f"不支持的注入模式: {inject_mode}"
                 )
 
-            wrapped_code = f"""
-(async () => {{
-    // 注入工作流变量
-    const vars = {variables_json};
-
-    // 用户代码
-    {javascript_code}
-}})()
-"""
+            wrapped_code = (
+                "\n(async () => {\n"
+                "    // 注入工作流变量\n"
+                f"    const vars = {variables_json};\n"
+                "    \n"
+                "    // 用户代码\n"
+                f"    {javascript_code}\n"
+                "})()\n"
+            )
             results: list[dict[str, Any]] = []
             errors: list[dict[str, Any]] = []
             for page in target_pages:
