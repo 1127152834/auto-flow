@@ -136,6 +136,9 @@ def projects_router(service: ProjectService) -> APIRouter:
             "updateProject",
             "createAutomation",
             "updateAutomation",
+            "startBatch",
+            "stopBatch",
+            "forceStopBatch",
             "createTable",
             "updateTable",
             "mutateField",
@@ -156,7 +159,9 @@ def projects_router(service: ProjectService) -> APIRouter:
         | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
         | None = None,
-        resource_type: Literal["project", "table", "field", "status", "record", "automation"]
+        resource_type: Literal[
+            "project", "table", "field", "status", "record", "automation", "batch"
+        ]
         | None = Query(None, alias="resourceType"),
     ):
         items, total = service.operations(
