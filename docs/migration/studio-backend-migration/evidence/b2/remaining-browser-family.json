@@ -1,0 +1,64 @@
+{
+  "evidenceId": "BE-B2-remaining-browser-family-2026-09-16",
+  "recordedAt": "2026-09-16",
+  "implementationCommit": "c5319eba",
+  "result": "最后3个批准的B2网页节点已完成冻结源码差分、生产注册、真实HTTP协调器准入和受影响回归；B2的30个节点均已具备生产入口。真实CloakBrowser和正式Electron集中矩阵仍待执行。",
+  "source": {
+    "repository": "reference/WebRPA",
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "licenseRecord": "LICENSE.WebRPA",
+    "files": [
+      {
+        "path": "backend/app/executors/switch_tab.py",
+        "sha256": "57830bfd08cffa3013386beb511018f7a4a732358360c9c44c6f984bc9d45229"
+      },
+      {
+        "path": "backend/app/executors/table_extract.py",
+        "sha256": "78755888ba5ad2e7a988644e78afee72d1496fea4548c90f54ef470ddef6d05b"
+      },
+      {
+        "path": "backend/app/executors/advanced.py",
+        "symbol": "NetworkCaptureExecutor",
+        "sha256": "3d827b3164852f2fa728b51a031fa344f7e8559385e79e64782a4b7cd042ae9c"
+      }
+    ]
+  },
+  "migratedTypes": [
+    "switch_tab",
+    "extract_table_data",
+    "network_capture"
+  ],
+  "classifications": {
+    "switch_tab": "原版直接迁入标签选择与变量行为；AutoFlow必要适配为CloakBrowser页面身份和敏感URL保护。",
+    "extract_table_data": "原版直接迁入表格读取和Excel格式；AutoFlow必要适配为工作区产物服务、容量和取消。",
+    "network_capture": "原版浏览器模式迁入；system/proxy依赖psutil和全局mitmproxy服务，属于已批准Web-only范围之外并明确拒绝。"
+  },
+  "tests": {
+    "sourceDifferential": {
+      "switchTab": "33 passed",
+      "tableExtract": "8 passed",
+      "networkCapture": "10 passed"
+    },
+    "affectedRegression": {
+      "result": "272 passed",
+      "coverage": "最后3节点、11基础网页、表格共享渲染器、浏览器端口、生产注册、HTTP准入和产物持久化"
+    },
+    "quality": {
+      "ruff": "passed",
+      "mypy": "passed"
+    }
+  },
+  "productionFiles": {
+    "switch_tab.py": "fab517cb14273d7cb84095339bb444476bac2638e49a9daf0891b7a675a0f059",
+    "table_extract.py": "335f1487193097d2f7dcd33cbdc4f57cdee5c528868b96238a3c8b01b01d5295",
+    "network_capture.py": "1552ecc907c1bfc8363c848c03e85d64f64b3207fb72b06f97311879bd91c88b",
+    "production.py": "440c0a8111965f7636d5c25dd82b98d3daebccc10c96bf60b37fe5a87442a83a"
+  },
+  "notClaimed": [
+    "真实CloakBrowser最后3节点矩阵",
+    "正式Electron UI执行",
+    "重建目录包执行",
+    "macOS Intel或Windows验证"
+  ],
+  "userDatabaseModified": false
+}

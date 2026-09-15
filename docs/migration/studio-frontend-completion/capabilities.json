@@ -1283,7 +1283,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -1334,7 +1334,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/switch_tab.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -1351,12 +1351,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
+      "gap": "冻结源码差分、生产注册、共享CloakBrowser页面身份端口和真实HTTP协调器准入已通过；真实CloakBrowser标签切换、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "risk": "标签页索引、标题、URL、前后页和变量输出已对照冻结实现；真实页面身份与正式UI仍须集中验收。",
       "acceptanceCases": [
         {
           "id": "BE.switch_tab.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/switch_tab.py#SwitchTabExecutor",
@@ -1364,11 +1364,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 switch_tab 的默认配置、合法分支和错误分支；配置键为 matchMode, saveIndexVariable, saveTitleVariable, saveUrlVariable, switchMode, tabIndex, tabTitle, tabUrl",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：标签页切换执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.switch_tab.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -1376,7 +1376,7 @@
           ],
           "operation": "通过正式传输提交包含 switch_tab 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.switch_tab.real-execution",
@@ -1391,7 +1391,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -5800,7 +5800,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -5848,7 +5848,7 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/table_extract.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
@@ -5865,12 +5865,12 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
+      "gap": "冻结源码差分、生产注册、真实HTTP协调器准入及OpenPyXL工作区产物往返已通过；真实CloakBrowser表格提取、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "risk": "表格读取语义已与冻结实现对照；文件输出按AutoFlow必要边界改经工作区产物服务，真实页面和正式UI仍须集中验收。",
       "acceptanceCases": [
         {
           "id": "BE.extract_table_data.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/table_extract.py#ExtractTableDataExecutor",
@@ -5878,11 +5878,11 @@
           ],
           "operation": "使用原版与AutoFlow分别执行 extract_table_data 的默认配置、合法分支和错误分支；配置键为 excelPath, exportToExcel, headerRow, includeHeader, tableSelector, variableName",
           "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：表格数据提取模块执行器",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.extract_table_data.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -5890,7 +5890,7 @@
           ],
           "operation": "通过正式传输提交包含 extract_table_data 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.extract_table_data.real-execution",
@@ -5905,7 +5905,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },
@@ -6811,7 +6811,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "真实后端待迁入",
+      "status": "真实后端按里程碑迁入中",
       "classification": "AutoFlow必要适配",
       "milestone": "B2",
       "source": {
@@ -6864,13 +6864,14 @@
         "BE.SUPPORT.browser-runtime"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_capture.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py",
           "apps/backend/src/autoflow/application/profiles/test_browser.py",
           "apps/backend/src/autoflow/providers/browser/worker.py"
         ],
         "targets": [
+          "apps/backend/src/autoflow/application/workflows/executors/network_capture.py",
           "apps/backend/src/autoflow/application/workflows/executors/advanced.py",
           "apps/backend/src/autoflow/providers/browser/workflow_actions.py"
         ]
@@ -6881,24 +6882,24 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
-      "risk": "原Playwright页面语义必须经CloakBrowser真实对照；定位、页面身份、超时、取消和清理不得由Mock推断。",
+      "gap": "冻结源码差分、浏览器模式生产注册和真实HTTP协调器准入已通过；系统进程与代理抓包按批准的Web-only范围明确返回CapabilityUnavailable；真实CloakBrowser请求捕获、正式Electron、重建目录包及其他平台仍待集中验收。",
+      "risk": "浏览器模式已复用CloakBrowser请求监听并对URL和请求数据执行容量与秘密保护；真实请求时序和正式UI仍须集中验收。",
       "acceptanceCases": [
         {
           "id": "BE.network_capture.source-parity",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "frozen-source differential",
           "preconditions": [
             "冻结源 reference/WebRPA/backend/app/executors/advanced.py#NetworkCaptureExecutor",
             "独立临时工作区和可复位输入"
           ],
-          "operation": "使用原版与AutoFlow分别执行 network_capture 的默认配置、合法分支和错误分支；配置键为 captureDuration, captureMode, filterType, proxyPort, searchKeyword, targetPorts, targetProcess, variableName",
-          "expected": "输入、输出、变量变化、错误和可观察副作用与原执行器一致：网络抓包模块执行器 - 支持浏览器抓包、系统抓包和代理抓包",
-          "evidencePath": null
+          "operation": "对照冻结实现执行browser模式的默认、过滤、取消、容量和错误分支；验证system/proxy按批准Web-only范围返回CapabilityUnavailable。",
+          "expected": "浏览器请求捕获、变量变化、过滤和错误与冻结实现一致；已排除的系统进程及全局代理模式不启动对应服务。",
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.network_capture.contract",
-          "status": "尚未验收",
+          "status": "已实现且已验收",
           "level": "HTTP/SSE integration",
           "preconditions": [
             "真实sidecar、真实仓储和稳定命令ID",
@@ -6906,7 +6907,7 @@
           ],
           "operation": "通过正式传输提交包含 network_capture 的工作流，查询命令并断开/续接事件流",
           "expected": "请求身份、状态、executionId、nodeId、事件序号、错误位置、分页和重连符合冻结合同；不重复动作、不伪造成功",
-          "evidencePath": null
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/remaining-browser-family.json"
         },
         {
           "id": "BE.network_capture.real-execution",
@@ -6921,7 +6922,7 @@
           "evidencePath": null
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产注册和HTTP准入已通过；真实CloakBrowser页面副作用与正式Electron UI尚须集中验收。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
   },

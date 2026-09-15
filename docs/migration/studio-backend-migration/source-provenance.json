@@ -481,6 +481,60 @@
         "运行时从reference目录导入"
       ],
       "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/switch_tab.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/switch_tab.py",
+      "changeSummary": "迁入批准范围内的标签页切换执行器，保留索引、标题、URL、相邻页及首尾页语义；页面身份改由CloakBrowser会话选择，并对敏感URL输出脱敏。",
+      "retainedDependencies": [
+        "Python标准库",
+        "ExecutionContext变量语义",
+        "CloakBrowser页面会话端口"
+      ],
+      "removedDependencies": [
+        "WebRPA全局browser_context",
+        "Playwright具体页面类型",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/table_extract.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/table_extract.py",
+      "changeSummary": "迁入批准范围内的网页表格提取执行器，保留表格识别、二维字符串结果和表头样式语义；Excel输出改由AutoFlow工作区产物端口登记，并加入容量与取消护栏。",
+      "retainedDependencies": [
+        "Python标准库",
+        "OpenPyXL",
+        "ExecutionContext变量语义",
+        "CloakBrowser定位器端口",
+        "WorkflowArtifactStore"
+      ],
+      "removedDependencies": [
+        "节点内任意主机路径直写",
+        "Playwright具体页面类型",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/executors/advanced.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/executors/network_capture.py",
+      "changeSummary": "迁入批准Web自动化范围内的浏览器请求抓取模式，保留时长、资源类型、关键词过滤和变量输出；系统进程与全局代理抓包属于明确排除能力并返回CapabilityUnavailable。",
+      "retainedDependencies": [
+        "Python标准库",
+        "ExecutionContext变量语义",
+        "CloakBrowser请求监听端口"
+      ],
+      "removedDependencies": [
+        "psutil系统连接枚举",
+        "mitmproxy全局代理服务",
+        "0.0.0.0代理监听",
+        "运行时从reference目录导入"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
     }
   ]
 }

@@ -55,14 +55,14 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：B1 的 5 个基础节点及 B2 的 27 个节点已完成冻结源码差分、正式注册及 HTTP 准入。其中 `wait_page_load`、`page_load_complete` 已通过 macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口；11 个基础网页节点与 11 个高级网页节点已接入共享页面、iframe、鼠标、下载和文件选择端口，真实 CloakBrowser 用例已建立但本机当前没有隔离测试内核，因此未执行；3 个网络监听节点仍待真实请求捕获、SSE 和正式 UI 集中验收。目录包需重建，剩余 `switch_tab`、`extract_table_data`、`network_capture` 三个节点继续按源码模块族迁入。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
+| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：B1 的 5 个基础节点及 B2 的全部 30 个节点已完成冻结源码差分、正式注册及 HTTP 准入，不再有缺少生产执行器的 B2 网页节点。其中 `wait_page_load`、`page_load_complete` 已通过 macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口；其余网页动作已接入共享页面、iframe、鼠标、下载、文件选择、请求监听和工作区产物端口，真实 CloakBrowser 用例已建立但本机当前没有隔离测试内核，因此尚未执行完整矩阵。网络抓取只迁入批准范围内的浏览器模式；系统进程及全局代理模式明确排除。目录包仍需重建。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
 | BE-B2-002 | CSS、XPath、多匹配、零匹配、非法语法 | 行为与冻结执行器一致；错误含 nodeId/path | 尚未验收 |
 | BE-B2-003 | 主页、同域/跨域嵌套 iframe、开放 Shadow DOM | 目标身份正确，不回退到其它页面或框架 | 尚未验收 |
 | BE-B2-004 | 弹窗、新标签、刷新、前进/后退、页关闭和下载 | 页面选择和关闭策略与原版一致，丢失当前页明确失败 | 尚未验收 |
 | BE-B2-005 | Profile 启动参数、指纹、语言、时区、代理、扩展和无头/可见模式 | 使用冻结快照且不修改 Profile；秘密不落日志 | 尚未验收 |
 | BE-B2-006 | 拾取→定位测试→应用→保存→独立运行 | 独立运行命中同一目标；取消和迟到结果不改文档 | 尚未验收 |
 | BE-B2-007 | 运行、Debug、拾取、录制争用同一工作区 | 取得资源原子互斥，清理前不释放 | 尚未验收 |
-| BE-B2-008 | 1 MiB 提取、下载和截图 | 事件只含摘要/引用，文件大小与哈希完整 | 尚未验收 |
+| BE-B2-008 | 1 MiB 提取、下载和截图 | 事件只含摘要/引用，文件大小与哈希完整 | 部分通过：超过 64 KiB 的节点 JSON 结果由 worker 写入登记产物，事件只保留摘要及 artifactIds；下载、图片和表格二进制均通过有界产物端口，取消后清除未登记临时文件。1 MiB 真实 CloakBrowser 下载、截图和提取哈希仍待集中验收。[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json) |
 
 ## 6. B3 控制流、变量、子流程和模块
 
