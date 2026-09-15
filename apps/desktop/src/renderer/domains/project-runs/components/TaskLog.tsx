@@ -6,12 +6,14 @@ import { SearchInput } from '../../../shared/components/ui/search-input'
 import { Select } from '../../../shared/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import { TableStatus } from '../../../shared/components/ui/table-status'
+import { presentRunFailure } from '../presentation'
 
-type Attempt = Omit<components['schemas']['NodeAttemptView'], 'nodeName'> & { nodeName?: string }
-type Attempts = Omit<components['schemas']['NodeAttemptPage'], 'items'> & { items: Attempt[] }; type Logs = components['schemas']['RunLogPage']
+type Attempt = components['schemas']['NodeAttemptView']
+type Attempts = components['schemas']['NodeAttemptPage']; type Logs = components['schemas']['RunLogPage']
 const statuses: Record<string, string> = { running: '运行中', succeeded: '成功', failed: '失败' }
 const tone = (status: string) => status === 'failed' ? 'danger' : status === 'succeeded' ? 'success' : 'neutral'
-const nodeName = (nodeNames: Record<string, string> | undefined, nodeId: string | null | undefined, frozen?: string) => nodeId && nodeNames?.[nodeId]?.trim() || frozen?.trim() || '步骤'
+const nodeName = (nodeNames: Record<string, string> | undefined, nodeId: string | null | undefined, frozen?: string) => nodeId && nodeNames?.[nodeId]?.trim() || frozen?.trim() || '未命名节点'
+const visibleMessage = (level: string, message: string) => level === 'error' ? '节点执行失败，请查看异常与证据。' : message
 const clock = (value: string | null) => value ? new Date(value).toLocaleTimeString('zh-CN', { hour12: false }) : '未执行'
 
 export function TaskLog({ attempts, logs, nodeNames, selectedNode, level, query, loading, error, onNodeChange, onLevelChange, onQueryChange, onLoadMore, onLoadMoreAttempts, onRetry }: { attempts?: Attempts; logs?: Logs; nodeNames?: Record<string, string>; selectedNode: string | null; level: string | null; query: string; loading?: boolean; error?: string; onNodeChange(value: string | null): void; onLevelChange(value: string | null): void; onQueryChange(value: string): void; onLoadMore(): void; onLoadMoreAttempts(): void; onRetry(): void }) {
@@ -25,6 +27,9 @@ export function TaskLog({ attempts, logs, nodeNames, selectedNode, level, query,
   const nodeOptions = groups.map(([id, items]) => ({ value: id, label: nodeName(nodeNames, id, items[0]?.nodeName) }))
   const selectedGroup = groups.find(([id]) => id === selectedNode)?.[1]
   const selectedName = selectedNode ? nodeName(nodeNames, selectedNode, selectedGroup?.[0]?.nodeName) : null
+  const selectedOption = selectedNode && !nodeOptions.some(option => option.value === selectedNode)
+    ? [{ value: selectedNode, label: selectedName ?? '未命名节点', disabled: true }]
+    : []
   return <div className="grid min-w-0 gap-4 lg:grid-cols-[20rem_minmax(0,1fr)]">
     <aside className="min-w-0 rounded-card border border-line bg-surface p-4">
       <h3 className="mt-0">节点时间线</h3>
@@ -36,9 +41,9 @@ export function TaskLog({ attempts, logs, nodeNames, selectedNode, level, query,
       {attempts && attempts.items.length < attempts.total ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreAttempts}>加载更多尝试</Button> : null}
     </aside>
     <section className="min-w-0 rounded-card border border-line bg-surface p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="m-0">{selectedName ? `${selectedName} · 历史日志` : '历史日志'}</h3><div className="flex flex-wrap gap-2"><form role="search" aria-label="日志全文搜索" className="flex min-w-0 gap-1" onSubmit={event => { event.preventDefault(); onQueryChange(searchDraft.trim()) }}><SearchInput className="w-56 max-w-full" aria-label="搜索日志内容" placeholder="搜索日志内容" maxLength={200} value={searchDraft} loading={loading} onChange={event => setSearchDraft(event.target.value)} onClear={() => { setSearchDraft(''); onQueryChange('') }} clearLabel="清除日志搜索"/><Button type="submit" variant="ghost" className="h-10 w-10 p-0" aria-label="应用日志搜索"><MagnifyingGlass size={18} aria-hidden/></Button></form><Select aria-label="筛选日志节点" className="w-40" clearable={false} value={selectedNode ?? ''} options={[{ value: '', label: '全部节点' }, ...nodeOptions]} onValueChange={value => onNodeChange(value || null)}/><Select aria-label="筛选日志级别" className="w-36" clearable={false} value={level ?? ''} options={[{ value: '', label: '全部级别' }, { value: 'debug', label: '调试' }, { value: 'info', label: '信息' }, { value: 'warning', label: '警告' }, { value: 'error', label: '错误' }]} onValueChange={value => onLevelChange(value || null)}/></div></div>
-      {error ? <div role="alert" className="my-3 flex items-center justify-between gap-3 rounded-control bg-warning/10 p-3"><span className="min-w-0 break-words">{error}</span><Button onClick={onRetry}>重试</Button></div> : null}
-      <TableScroll label="任务日志" className="mt-4 rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>时间</TableHead><TableHead>级别</TableHead><TableHead>日志内容</TableHead></TableRow></TableHeader><TableBody>{logs?.items.map(item => <TableRow key={item.eventId}><TableCell><time dateTime={item.occurredAt}>{new Date(item.occurredAt).toLocaleTimeString('zh-CN', { hour12: false })}</time></TableCell><TableCell><TableStatus tone={item.level === 'error' ? 'danger' : item.level === 'warning' ? 'warning' : 'neutral'}>{item.level.toUpperCase()}</TableStatus></TableCell><TableCell className="max-w-xl whitespace-normal break-words">{item.message}</TableCell></TableRow>)}</TableBody></Table></TableScroll>
+      <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="m-0">{selectedName ? `${selectedName} · 历史日志` : '历史日志'}</h3><div className="flex flex-wrap gap-2"><form role="search" aria-label="日志全文搜索" className="flex min-w-0 gap-1" onSubmit={event => { event.preventDefault(); onQueryChange(searchDraft.trim()) }}><SearchInput className="w-56 max-w-full" aria-label="搜索日志内容" placeholder="搜索日志内容" maxLength={200} value={searchDraft} loading={loading} onChange={event => setSearchDraft(event.target.value)} onClear={() => { setSearchDraft(''); onQueryChange('') }} clearLabel="清除日志搜索"/><Button type="submit" variant="ghost" className="h-10 w-10 p-0" aria-label="应用日志搜索"><MagnifyingGlass size={18} aria-hidden/></Button></form><Select aria-label="筛选日志节点" className="w-40" clearable={false} value={selectedNode ?? ''} options={[{ value: '', label: '全部节点' }, ...selectedOption, ...nodeOptions]} onValueChange={value => onNodeChange(value || null)}/><Select aria-label="筛选日志级别" className="w-36" clearable={false} value={level ?? ''} options={[{ value: '', label: '全部级别' }, { value: 'debug', label: '调试' }, { value: 'info', label: '信息' }, { value: 'warning', label: '警告' }, { value: 'error', label: '错误' }]} onValueChange={value => onLevelChange(value || null)}/></div></div>
+      {error ? <div role="alert" className="my-3 flex items-center justify-between gap-3 rounded-control bg-warning/10 p-3"><span className="min-w-0 break-words">{presentRunFailure(error)}</span><Button onClick={onRetry}>重试</Button></div> : null}
+      <TableScroll label="任务日志" className="mt-4 rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>时间</TableHead><TableHead>级别</TableHead><TableHead>日志内容</TableHead></TableRow></TableHeader><TableBody>{logs?.items.map(item => <TableRow key={item.eventId}><TableCell><time dateTime={item.occurredAt}>{new Date(item.occurredAt).toLocaleTimeString('zh-CN', { hour12: false })}</time></TableCell><TableCell><TableStatus tone={item.level === 'error' ? 'danger' : item.level === 'warning' ? 'warning' : 'neutral'}>{item.level.toUpperCase()}</TableStatus></TableCell><TableCell className="max-w-xl whitespace-normal break-words">{visibleMessage(item.level, item.message)}</TableCell></TableRow>)}</TableBody></Table></TableScroll>
       {loading ? <p role="status">正在读取日志…</p> : null}
       {!loading && !error && !logs?.items.length ? <p className="text-sm text-muted">{logs ? '没有匹配的日志。' : '尚未读取日志。'}</p> : null}
       {logs?.hasMore ? <Button className="mt-3" disabled={loading} onClick={onLoadMore}>加载更多日志</Button> : null}

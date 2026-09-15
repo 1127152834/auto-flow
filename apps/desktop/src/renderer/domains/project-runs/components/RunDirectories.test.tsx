@@ -10,7 +10,7 @@ afterEach(cleanup)
 
 const batch = { batchId: 'batch-1', projectId: 'project-1', automationId: 'automation-1', automationName: '资料整理', startOperationId: 'operation-1', status: 'completed', statusRevision: 2, managementRevision: 1, requestedCount: 3, createdTaskCount: 3, activeTaskCount: 0, createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:03:00Z' }
 const batchPage = { items: [batch], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }
-const task = { taskId: 'task-1', taskOrdinal: 1, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }
+const task = { taskId: 'task-1', taskOrdinal: 1, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', automationName: '资料整理', batchStartedAt: '2026-09-15T01:00:00Z', inputIdentifier: 'R001', endNodeName: '读取页面', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }
 
 describe('run directories', () => {
   it('renders persisted batches and opens the selected batch', async () => {
@@ -32,8 +32,20 @@ describe('run directories', () => {
     const onOpen = vi.fn()
     render(<TaskDirectory page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: null, status: null, period: null }} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={onOpen} onRetry={vi.fn()}/>)
     expect(screen.getByText('失败')).toBeInTheDocument()
+    expect(screen.getByText('任务 1')).toBeInTheDocument()
+    expect(screen.queryByText(/T0001/)).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: '查看任务' }))
     expect(onOpen).toHaveBeenCalledWith(task)
+  })
+
+  it('uses the approved batch task columns without repeating the owning batch', () => {
+    render(<TaskDirectory context="batch" page={{ items: [task], page: 1, pageSize: 50, total: 1, sort: '-createdAt' }} filters={{ q: null, batchId: 'batch-1', status: null, period: null }} batchOptions={[{ id: 'batch-1', name: '资料整理 · 09:00' }]} onFiltersChange={vi.fn()} onPageChange={vi.fn()} onOpen={vi.fn()} onRetry={vi.fn()}/>)
+    expect(screen.getByRole('columnheader', { name: '输入标识' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: '结束节点' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: '结束时间' })).toBeVisible()
+    expect(screen.queryByRole('columnheader', { name: '所属批次' })).not.toBeInTheDocument()
+    expect(screen.getByText('R001')).toBeVisible()
+    expect(screen.getByText('读取页面')).toBeVisible()
   })
 
   it('applies directory search only when the user submits it', async () => {
@@ -55,7 +67,7 @@ describe('run directories', () => {
   })
 
   it('does not claim a completed batch with failures fully succeeded', () => {
-    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 2, failed: 1 }, taskCount: 3, stopOperation: null, configurationSnapshot: { automation: { name: '资料整理', managementRevision: 7, parameterSchema: [{ parameterId: 'parameter-id', name: '关键词' }], environmentPolicy: { source: 'newFromProfile' } }, parameters: { 'parameter-id': '种植资料' }, maxTasks: 3, concurrency: 1, workflowRevision: 5, resourceRequest: { browser: 'none', modelProviderId: null } } }} onBack={vi.fn()}/>)
+    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 2, failed: 1 }, taskCount: 3, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: { automation: { name: '资料整理', managementRevision: 7, parameterSchema: [{ parameterId: 'parameter-id', name: '关键词' }], environmentPolicy: { source: 'newFromProfile' } }, parameters: { 'parameter-id': '种植资料' }, maxTasks: 3, concurrency: 1, workflowRevision: 5, resourceRequest: { browser: 'none', modelProviderId: null } } }} onBack={vi.fn()}/>)
     expect(screen.getByRole('heading', { name: '资料整理' })).toBeVisible()
     expect(screen.getByText(/批次开始于/)).toBeVisible()
     expect(screen.getByText('耗时').parentElement).toHaveTextContent('3 分钟')
@@ -69,7 +81,7 @@ describe('run directories', () => {
   })
 
   it('uses the frozen automation and start time without exposing the internal identifier', () => {
-    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 3 }, taskCount: 3, stopOperation: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    render(<BatchDetail detail={{ batch, statusCounts: { succeeded: 3 }, taskCount: 3, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
     expect(screen.getByRole('heading', { name: '资料整理' })).toBeVisible()
     expect(screen.getByText(/批次开始于/)).toBeVisible()
     expect(screen.queryByText('batch-1')).not.toBeInTheDocument()
@@ -77,9 +89,9 @@ describe('run directories', () => {
 
   it('renders stop actions only when admitted by props', () => {
     const running = { ...batch, status: 'running', completedAt: null, activeTaskCount: 2 }
-    const { rerender } = render(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
+    const { rerender } = render(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()}/>)
     expect(screen.queryByRole('button', { name: '停止批次' })).not.toBeInTheDocument()
-    rerender(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, configurationSnapshot: {} }} onBack={vi.fn()} onStop={vi.fn()} onForceStop={vi.fn()}/>)
+    rerender(<BatchDetail detail={{ batch: running, statusCounts: { running: 2 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }} onBack={vi.fn()} onStop={vi.fn()} onForceStop={vi.fn()}/>)
     expect(screen.getByRole('button', { name: '停止批次' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '强制停止' })).toBeInTheDocument()
   })

@@ -25,7 +25,7 @@ it('can send force stop after a verified normal stop was accepted', async () => 
   const request = vi.fn(async (path: string, init?: { method?: string; headers?: Record<string, string> }) => {
     if (path.endsWith(`/batches/${baseBatch.batchId}`) && !init?.method) {
       const batch = { ...baseBatch, status: stopping ? 'stopping' : 'running', statusRevision: stopping ? 2 : 1 }
-      return { batch, statusCounts: { running: 1, queued: 1 }, taskCount: 2, stopOperation: null }
+      return { batch, statusCounts: { running: 1, queued: 1 }, taskCount: 2, stopOperation: null, forceStopAllowed: stopping, forceStopAvailableAt: stopping ? '2026-09-15T00:00:30Z' : null, configurationSnapshot: {} }
     }
     if (path.includes('/tasks?')) return { items: [], page: 1, pageSize: 50, total: 0, sort: 'createdAt' }
     if (path.endsWith('/stop')) {
@@ -60,7 +60,7 @@ it('refetches tasks once when the batch first enters a terminal state', async ()
   let terminal = false
   let taskReads = 0
   const request = vi.fn(async (path: string) => {
-    if (path.endsWith(`/batches/${baseBatch.batchId}`)) return { batch: { ...baseBatch, status: terminal ? 'completed' : 'running', statusRevision: terminal ? 2 : 1 }, statusCounts: terminal ? { completed: 2 } : { running: 1, queued: 1 }, taskCount: 2, stopOperation: null }
+    if (path.endsWith(`/batches/${baseBatch.batchId}`)) return { batch: { ...baseBatch, status: terminal ? 'completed' : 'running', statusRevision: terminal ? 2 : 1 }, statusCounts: terminal ? { completed: 2 } : { running: 1, queued: 1 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: null, configurationSnapshot: {} }
     if (path.includes('/tasks?')) { taskReads += 1; return { items: [], page: 1, pageSize: 50, total: 0, sort: 'createdAt' } }
     throw new Error(`unexpected ${path}`)
   }) as StreamingApiClient['request']
@@ -74,4 +74,17 @@ it('refetches tasks once when the batch first enters a terminal state', async ()
   await waitFor(() => expect(taskReads).toBe(2))
   await new Promise(resolve => setTimeout(resolve, 20))
   expect(taskReads).toBe(2)
+})
+
+it('does not offer force stop while the backend grace gate is closed', async () => {
+  const request = vi.fn(async (path: string) => {
+    if (path.endsWith(`/batches/${baseBatch.batchId}`)) return { batch: { ...baseBatch, status: 'stopping', statusRevision: 2 }, statusCounts: { stopping: 1, cancelled: 1 }, taskCount: 2, stopOperation: null, forceStopAllowed: false, forceStopAvailableAt: '2026-09-15T00:00:30Z', configurationSnapshot: {} }
+    if (path.includes('/tasks?')) return { items: [], page: 1, pageSize: 50, total: 0, sort: 'createdAt' }
+    throw new Error(`unexpected ${path}`)
+  }) as StreamingApiClient['request']
+  const client = { request, stream: vi.fn(), health: vi.fn() } as StreamingApiClient
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={queryClient}><BatchDetailPage workspaceKey="workspace" instanceId="instance" projectId={baseBatch.projectId} batchId={baseBatch.batchId} client={client} disabled={false} readOnly={false} onNavigate={vi.fn()}/></QueryClientProvider>)
+  expect(await screen.findByText(/普通停止宽限期结束后才允许强制停止/)).toBeVisible()
+  expect(screen.queryByRole('button', { name: '强制停止' })).not.toBeInTheDocument()
 })

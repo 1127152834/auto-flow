@@ -63,6 +63,9 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
   const finalOutputs = outputs?.items.filter(item => !item.nodeId) ?? []
   const nodeOutputs = outputs?.items.filter(item => item.nodeId) ?? []
   const inlineArtifact = artifacts?.items.find(item => item.availability === 'available')
+  const enlargementLabel = inlineScreenshotLabel.startsWith('失败截图：')
+    ? `放大${inlineScreenshotLabel}`
+    : `放大失败截图：${inlineScreenshotLabel}`
   const renderArtifacts = (items: Artifact[]) => <div className="grid gap-3">{items.map(item => <article className="rounded-control border border-line p-3" key={item.artifactId}>
     <strong className="block truncate">{nodeName(detail, item.nodeId, item.nodeName)}</strong>
     <p className="my-1 text-sm text-muted">失败截图 · {time(item.createdAt)} · {size(item.byteSize)}</p>
@@ -83,7 +86,7 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
         <h3 className="mt-0">失败时页面截图</h3>
         {inlineScreenshotUrl ? <div className="grid gap-2">
           {inlineArtifact && onOpenArtifact
-            ? <button type="button" className="overflow-hidden rounded-control border border-line bg-canvas text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label={`放大失败截图：${inlineScreenshotLabel}`} onClick={() => onOpenArtifact(inlineArtifact)}><img className="max-h-[32rem] w-full object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/></button>
+            ? <button type="button" className="overflow-hidden rounded-control border border-line bg-canvas text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label={enlargementLabel} onClick={() => onOpenArtifact(inlineArtifact)}><img className="max-h-[32rem] w-full object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/></button>
             : <img className="max-h-[32rem] w-full rounded-control border border-line object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/>}
           {inlineArtifact ? <p className="m-0 text-sm text-muted">{nodeName(detail, inlineArtifact.nodeId, inlineArtifact.nodeName)} · {time(inlineArtifact.createdAt)} · {size(inlineArtifact.byteSize)}</p> : null}
           {artifacts?.items.filter(item => item.artifactId !== inlineArtifact?.artifactId).length ? renderArtifacts(artifacts.items.filter(item => item.artifactId !== inlineArtifact?.artifactId)) : null}

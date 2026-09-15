@@ -13,6 +13,12 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
   const parts = hash.replace(/^#\/?/, '').split('?')[0].split('/')
   if (parts[0] !== 'projects') return { section: globalRoutes.includes(parts[0] as AppRoute) ? parts[0] as AppRoute : 'dashboard' }
   if (parts.length === 1) return { section: 'projects', project: { tab: 'overview' } }
+  if (projectIdPattern.test(parts[1] ?? '') && parts[2] === 'runs') {
+    const base = { projectId: parts[1], tab: 'runs' as const }
+    if (parts.length === 4 && ['batches', 'tasks'].includes(parts[3])) return { section: 'projects', project: { ...base, runView: parts[3] as 'batches' | 'tasks' } }
+    if (parts.length === 5 && parts[3] === 'batches' && projectIdPattern.test(parts[4])) return { section: 'projects', project: { ...base, runView: 'batches', batchId: parts[4] } }
+    if (parts.length === 6 && parts[3] === 'tasks' && projectIdPattern.test(parts[4]) && ['logs', 'io', 'evidence'].includes(parts[5])) return { section: 'projects', project: { ...base, taskId: parts[4], taskTab: parts[5] as 'logs' | 'io' | 'evidence' } }
+  }
   if (parts.length === 4 && projectIdPattern.test(parts[1]) && parts[2] === 'automations' && (parts[3] === 'new' || projectIdPattern.test(parts[3]))) {
     return { section: 'projects', project: { projectId: parts[1], tab: 'automations', ...(parts[3] === 'new' ? { automationCreate: true } : { automationId: parts[3] }) } }
   }
@@ -37,6 +43,19 @@ export function parseAppLocation(hash: string): { section: AppRoute; project?: P
 export function projectHash(route: ProjectRoute) {
   if (!route.projectId) return '#/projects'
   const base = `#/projects/${encodeURIComponent(route.projectId)}/${route.tab}`
+  if (route.taskId || route.batchId || route.runView || route.taskTab) {
+    if (route.tab !== 'runs' || (route.taskId && route.batchId)) throw new Error('运行记录地址无效')
+    if (route.taskId) {
+      if (!projectIdPattern.test(route.taskId) || (route.taskTab && !['logs', 'io', 'evidence'].includes(route.taskTab))) throw new Error('任务地址无效')
+      return `${base}/tasks/${route.taskId}/${route.taskTab ?? 'logs'}`
+    }
+    if (route.taskTab) throw new Error('任务地址无效')
+    if (route.batchId) {
+      if (!projectIdPattern.test(route.batchId)) throw new Error('批次地址无效')
+      return `${base}/batches/${route.batchId}`
+    }
+    return `${base}/${route.runView}`
+  }
   if (route.automationCreate || route.automationId) {
     if (route.tab !== 'automations' || (route.automationCreate && route.automationId) || (route.automationId && !projectIdPattern.test(route.automationId))) throw new Error('自动化地址无效')
     return `${base}/${route.automationCreate ? 'new' : route.automationId}`

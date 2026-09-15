@@ -14,7 +14,7 @@ export type ProjectPatch = components['schemas']['ProjectPatch']
 
 export type ProjectTab = 'overview' | 'automations' | 'runs' | 'statistics' | 'data' | 'environments'
 export type RecordLocation = { mode: 'create' } | { mode: 'detail' | 'edit'; datasetGeneration: string; recordKey: RecordKey }
-export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab; record?: RecordLocation; automationId?: string; automationCreate?: boolean }
+export type ProjectRoute = { projectId?: string; tab: ProjectTab; tableId?: string; dataTab?: DataTableTab; record?: RecordLocation; automationId?: string; automationCreate?: boolean; runView?: 'batches' | 'tasks'; batchId?: string; taskId?: string; taskTab?: 'logs' | 'io' | 'evidence' }
 export type ProjectLifecycleFilter = 'active' | 'archived' | 'all'
 export type ProjectSort = 'name' | '-name' | 'updatedAt' | '-updatedAt' | 'lastOpenedAt' | '-lastOpenedAt'
 

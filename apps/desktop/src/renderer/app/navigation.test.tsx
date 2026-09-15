@@ -134,3 +134,14 @@ it('preserves the mounted project guard after replacing a newly created resource
   expect(guard).toHaveBeenCalledOnce()
   expect(window.location.hash).toBe('#/settings')
 })
+
+it('round trips run directories, batches and task evidence without losing scoped identities', () => {
+  const projectId = '00000000-0000-4000-8000-000000000001', id = '00000000-0000-4000-8000-000000000002'
+  const routes = [
+    { projectId, tab: 'runs' as const, runView: 'tasks' as const },
+    { projectId, tab: 'runs' as const, runView: 'batches' as const, batchId: id },
+    ...(['logs', 'io', 'evidence'] as const).map(taskTab => ({ projectId, tab: 'runs' as const, taskId: id, taskTab })),
+  ]
+  for (const route of routes) expect(parseAppLocation(projectHash(route)).project).toEqual(route)
+  for (const suffix of ['batches/invalid', `tasks/${id}/other`, `tasks/${id}/logs/extra`]) expect(parseAppLocation(`#/projects/${projectId}/runs/${suffix}`).error).toBeTruthy()
+})
